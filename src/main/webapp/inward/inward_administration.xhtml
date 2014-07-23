@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGrid columns="3" columnClasses="grid1 grid1 grid1" styleClass="alignTop"  >
+                        <p:panel header="Manage Admission Types">
+                            <p:panelGrid columns="1">
+                                <p:commandButton  ajax="false" value="Manage Admission Types" 
+                                                  action="inward_admission_type" onclick="onSubmitButton();" ></p:commandButton>
+
+                            </p:panelGrid>
+                        </p:panel>
+
+                        <p:panel header="Price Matrix">
+                            <h:panelGrid columns="1">
+                                <p:commandButton ajax="false" value="Inward Price Adjustment - Service " action="inward_price_adjustment_service" onclick="onSubmitButton();"></p:commandButton>
+                                <p:commandButton ajax="false" value="Inward Price Adjustment - Invesitaation " action="inward_price_adjustment_investigation" onclick="onSubmitButton();"></p:commandButton>
+                                <p:commandButton ajax="false" value="Inward Price Adjustment - Pharmacy " action="inward_price_adjustment_pharmacy" onclick="onSubmitButton();"></p:commandButton>
+                                <p:commandButton ajax="false" value="Inward Price Adjustment - Store " action="inward_price_adjustment_store" onclick="onSubmitButton();"></p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+
+                        <p:panel header="Manage Rooms">
+                            <h:panelGrid columns="1" >
+                                <p:commandButton  ajax="false" value="Manage Rooms" action="inward_room" onclick="onSubmitButton();" ></p:commandButton>
+                                <p:commandButton  ajax="false" value="Manage Room Facility Categories" action="inward_room_category" onclick="onSubmitButton();" ></p:commandButton>
+                                <p:commandButton  ajax="false" value="Manage Room Charge" action="inward_room_facility" onclick="onSubmitButton();" ></p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+
+                        <p:panel header="Manage Time-based Services">
+                            <p:panelGrid columns="1">
+                                <p:commandButton value="Manage Timebased Service Categogries" action="inward_timed_item_category" onclick="onSubmitButton();" ></p:commandButton>
+                                <p:commandButton value="Manage Timebased Services" action="inward_timed_item" onclick="onSubmitButton();" ></p:commandButton>
+                                <p:commandButton value="Manage Timebased Services Charges" action="inward_timed_item_fee" onclick="onSubmitButton();" ></p:commandButton>
+                            </p:panelGrid>
+                        </p:panel>
+
+                        <p:panel header="Manage Clinical Data">
+                            <p:panelGrid columns="1">
+                                <p:commandButton value="Manage Surgeries" action="/clinical/clinical_procedures" onclick="onSubmitButton();" ></p:commandButton>
+                            </p:panelGrid>
+                        </p:panel>
+
+
+                    </h:panelGrid>                    
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

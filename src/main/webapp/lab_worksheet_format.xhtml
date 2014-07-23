@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="./resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Worksheet Items" >
+
+                        <p:panelGrid columns="2" >
+
+                            <h:outputLabel value="Investigation"      />
+                            <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
+                                            value="#{labWorksheetController.investigation}" 
+                                            completeMethod="#{investigationController.completeInvest}" 
+                                            var="apt" itemLabel="#{apt.name}" 
+                                            itemValue="#{apt}" size="30"  style="width: 400px;">
+                                <p:ajax event="itemSelect" process="acPt" update="tbl"/>
+                            </p:autoComplete> 
+
+
+                            <h:outputLabel value="New Worksheet Item" />
+
+                            <h:panelGroup >
+                                <p:inputText autocomplete="off" value="#{labWorksheetController.current.name}" />
+                                <p:commandButton value="Add" ajax="false" action="#{labWorksheetController.addWorksheetItem()}" />
+                            </h:panelGroup>
+
+
+                            <h:outputLabel value="Already Added Items" />
+
+
+
+                            <p:dataTable id="tbl" var="wsi" value="#{labWorksheetController.investigation.worksheetItems}" editable="true" editMode="cell" widgetVar="wsisTable">  
+
+                                <f:facet name="header">  
+                                    Worksheet Items 
+                                </f:facet>  
+
+                                <p:ajax event="cellEdit" listener="#{labWorksheetController.saveIx()}"  />  
+
+                                <p:column headerText="Name" >  
+                                    <p:cellEditor>  
+                                        <f:facet name="output"><h:outputText value="#{wsi.name}" /></f:facet>  
+                                        <f:facet name="input"><p:inputText autocomplete="off" id="modelInput" value="#{wsi.name}" style="width:96%"/></f:facet>  
+                                    </p:cellEditor>  
+                                </p:column>  
+
+
+
+
+                                <p:column headerText="Name" >  
+                                    <p:commandButton ajax="false"  value="Remove" action="#{labWorksheetController.removeWorksheetItem()}" >
+                                        <f:setPropertyActionListener value="#{wsi}" target="#{labWorksheetController.current}" />
+                                    </p:commandButton>
+                                </p:column>  
+
+
+                            </p:dataTable>                        
+
+
+                        </p:panelGrid>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

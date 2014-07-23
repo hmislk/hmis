@@ -1,0 +1,381 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="BHT Income by Categories" ></h:outputLabel>
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{inwardReportControllerBht.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientFinaled}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >
+                                <!--                                <p:ajax event="itemSelect" 
+                                                                        process="@this" 
+                                                                        update="@all" 
+                                                                        listener="#{bhtSummeryFinalizedController.selectLitener}"/>-->
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                            </p:autoComplete>
+
+
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{inwardReportControllerBht.process2()}" ></p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
+                            <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5" fileName="newly_added_report"  />
+                        </p:commandButton>  
+                        <p:panel id="gpBillPreview">
+                            <p:panelGrid columns="2" style="width: 100%;">
+                                <p:panel header="Patient Detail">
+                                    <p:panelGrid columns="2" rendered="#{inwardReportControllerBht.patientEncounter ne null}">
+                                        <h:outputLabel value="Room "/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.roomFacilityCharge.name}"/>
+                                        <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle }" ></h:outputLabel>
+                                        <h:outputLabel value="BHT No"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.bhtNo}"/>
+                                        <h:outputLabel value="Age" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}"  />
+                                        <h:outputLabel value="Dob" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.dob}" >
+                                            <f:convertDateTime pattern="dd MM yyyy"/>
+                                        </h:outputLabel>                                    
+                                        <h:outputLabel value="Date Of Admission"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
+                                            <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Date Of Discharge"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
+                                            <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="BHT Type"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.paymentMethod}"/>
+                                        <h:outputLabel value="Final Bill Number"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.finalBill.insId}"/>
+                                        <h:outputLabel value="Addmission Type"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.admissionType.name}"/>
+                                        <h:outputLabel value="Credit Company" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.creditCompany.name}"/>
+                                    </p:panelGrid>
+                                </p:panel>                           
+                            </p:panelGrid>
+                            <p:dataTable id="tb1" value="#{inwardReportControllerBht.opdServices}" var="rec" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Inward Service"/>
+                                </f:facet>
+                                <p:column headerText="Category" >
+                                    <h:outputLabel value="#{rec.category.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Gross"  style="text-align: right; padding: 5px;" >                              
+                                    <h:outputLabel value="#{rec.grossValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.opdSrviceGross}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Margin"  style="text-align: right; padding: 5px;"  >                              
+                                    <h:outputLabel value="#{rec.margin}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.opdServiceMargin}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Discount"  style="text-align: right; padding: 5px;"  >                               
+                                    <h:outputLabel value="#{rec.discount}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.opdServiceDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Net Amount" style="text-align: right; padding: 5px;" >                             
+                                    <h:outputLabel value="#{rec.netValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.opdSrviceGross+inwardReportControllerBht.opdServiceMargin-inwardReportControllerBht.opdServiceDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column> 
+
+                            </p:dataTable>
+
+                            <p:dataTable id="tb2" value="#{inwardReportControllerBht.roomChargeInwards}" var="rm">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Room Charges"/>
+                                </f:facet>
+                                <p:column headerText="Charge Name">
+                                    <h:outputLabel value="#{rm.inwardChargeType}" />
+                                </p:column>
+                                <p:column headerText="Calculated" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel value="#{rm.calculated}"/>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.roomGross}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>        
+                                <p:column headerText="Additional" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel value="#{rm.addition}"/>
+                                </p:column>
+                                <p:column headerText="Discount" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel value="#{rm.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.roomDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Net Value" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel value="#{rm.calculated+rm.addition-rm.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.roomGross+inwardReportControllerBht.roomAddition-inwardReportControllerBht.roomDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:dataTable id="tb3" value="#{inwardReportControllerBht.timedServices}" var="tim">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Timed Service"/>
+                                </f:facet>
+                                <p:column headerText="Item Name">
+                                    <p:outputLabel value="#{tim.string}" />
+                                </p:column>
+                                <p:column headerText="Gross Value" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel  value="#{tim.value1}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.timedGross}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Margin" style="text-align: right; padding: 5px;">
+
+                                </p:column>
+                                <p:column headerText="Discount" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel value="#{tim.value2}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.timedDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Net Value" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel  value="#{tim.value1-tim.value2}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.timedGross-inwardReportControllerBht.timedDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+
+                            <p:dataTable id="tb4" value="#{inwardReportControllerBht.professionals}" var="pro" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Professional Fee"/>
+                                </f:facet>
+                                <p:column headerText="Speciality">
+                                    <h:outputLabel value="#{pro.string}"/>
+                                </p:column>
+                                <p:column headerText="Gross" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel value="#{pro.value1}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.professionalGross}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Margin" style="text-align: right; padding: 5px;">
+
+                                </p:column>
+                                <p:column headerText="Discount" style="text-align: right; padding: 5px;">
+                                </p:column>
+                                <p:column headerText="Net Value" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel value="#{pro.value1}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.professionalGross}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:dataTable id="tb5" value="#{inwardReportControllerBht.inwardCharges}" var="in">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Inward Charges"/>
+                                </f:facet>
+                                <p:column headerText="Charge Name">
+                                    <p:outputLabel value="#{in.string}" />
+                                </p:column>
+                                <p:column headerText="Gross Value" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel value="#{in.value1}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.inwardGross}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Margin" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel value="#{in.value2}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.inwardMargin}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Discount" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel  value="#{in.value3}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.inwardDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Net Value" style="text-align: right; padding: 5px;">
+                                    <h:outputLabel  value="#{in.value1+in.value2-in.value3}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.inwardGross+inwardReportControllerBht.inwardMargin-inwardReportControllerBht.inwardDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+
+                                </p:column>
+                            </p:dataTable>
+                            <p:dataTable value="#{inwardReportControllerBht.finalBill.backwardReferenceBills}" var="pay" id="tbl2">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Payement Detail"/>
+                                </f:facet>
+                                <p:column headerText="Bill No">
+                                    <h:outputLabel value="#{pay.insId}"></h:outputLabel>                                
+                                </p:column>
+                                <p:column headerText="Bill Date">
+                                    <h:outputLabel value="#{pay.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                    </h:outputLabel>                                
+                                </p:column>
+                                <p:column headerText="Amount">
+                                    <h:outputLabel value="#{pay.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+                                </p:column>
+
+                            </p:dataTable>
+
+                            <p:panel header="Summery" style="text-align: center;">
+                                <p:panel style="text-align: left;">
+                                    <h:panelGrid columns="3"  style="min-width: 100%;">
+                                        <h:outputLabel value="Gross &nbsp;"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.opdSrviceGross+inwardReportControllerBht.opdServiceMargin
+                                                                + inwardReportControllerBht.roomGross+inwardReportControllerBht.roomAddition
+                                                                + inwardReportControllerBht.timedGross-inwardReportControllerBht.timedDiscount
+                                                                + inwardReportControllerBht.professionalGross
+                                                                + inwardReportControllerBht.inwardGross+inwardReportControllerBht.inwardMargin}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                      
+                                        <h:outputLabel value="#{inwardReportControllerBht.finalBill.grantTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Discount &nbsp;"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.opdServiceDiscount
+                                                                +inwardReportControllerBht.roomDiscount
+                                                                + inwardReportControllerBht.timedDiscount
+                                                                +inwardReportControllerBht.inwardDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                      
+                                        <h:outputLabel value="#{inwardReportControllerBht.finalBill.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="NetTotal &nbsp;"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.opdSrviceGross+inwardReportControllerBht.opdServiceMargin-inwardReportControllerBht.opdServiceDiscount
+                                                                + inwardReportControllerBht.roomGross+inwardReportControllerBht.roomAddition-inwardReportControllerBht.roomDiscount
+                                                                + inwardReportControllerBht.timedGross-inwardReportControllerBht.timedDiscount
+                                                                + inwardReportControllerBht.professionalGross
+                                                                + inwardReportControllerBht.inwardGross+inwardReportControllerBht.inwardMargin-inwardReportControllerBht.inwardDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                      
+                                        <h:outputLabel value="#{inwardReportControllerBht.finalBill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                    </h:panelGrid>
+
+                                </p:panel>
+                            </p:panel>
+                        </p:panel>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

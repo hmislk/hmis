@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:bill="http://java.sun.com/jsf/composite/inward/bill"
+                xmlns:in="http://java.sun.com/jsf/composite/inward"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:panel header="Inward Payment Bill" rendered="#{!inwardPaymentController.printPreview}">
+                    <h:panelGrid columns="2">
+                        <p:panel header="BHT">
+
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{inwardPaymentController.current.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  style="width: 400px;">
+                                <p:ajax event="itemSelect" process="acPt" update="panSearch2 "/>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.bhtNo}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                            </p:autoComplete>   
+                            <h:panelGroup id="panSearch2">
+                                <in:bhtDetail admission="#{inwardPaymentController.current.patientEncounter}"/>
+                            </h:panelGroup>
+                        </p:panel>
+
+                        <p:panel id="due">
+                            <h:panelGrid columns="2">
+                                <h:outputLabel value="Paying Amount"/>
+                                <p:inputText autocomplete="off" value="#{inwardPaymentController.current.total}"/>
+                            </h:panelGrid>
+                        </p:panel>
+
+
+                        <p:panel header="Payment Detail">
+                            <h:panelGrid columns="7">
+                                <p:selectOneMenu   id="cmbPs" value="#{inwardPaymentController.current.paymentMethod}"  >
+                                    <f:selectItem itemLabel="Select Payment Method" />
+                                    <f:selectItems value="#{enumController.paymentMethods}"  />
+                                    <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                </p:selectOneMenu>
+                                <h:panelGroup id="creditCard" style="display: #{inwardPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                    <pa:creditCard paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="cheque" style="display: #{inwardPaymentController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                    <pa:cheque paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="slip" style="display: #{inwardPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                    <pa:slip paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
+                                </h:panelGroup>
+
+
+                            </h:panelGrid>
+                            <p:commandButton id="btnPay" value="Pay" ajax="false" action="#{inwardPaymentController.pay}"/>
+                            <p:commandButton value="Clear" ajax="false" action="#{inwardPaymentController.makeNull}"/>
+                            <p:defaultCommand target="btnPay"/>
+                        </p:panel>
+                    </h:panelGrid>
+                </p:panel>
+
+                <h:panelGroup rendered="#{inwardPaymentController.printPreview}">
+                    <p:commandButton value="New Payment" ajax="false" action="#{inwardPaymentController.makeNull}"/>
+                    <p:commandButton value="Print" ajax="false" action="#" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>
+                    <h:panelGroup id="gpBillPreview">
+                        <bill:payment bill="#{inwardPaymentController.current}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

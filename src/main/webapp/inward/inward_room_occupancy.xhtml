@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+        <h:form>
+            <p:commandButton ajax="false" 
+                             action="#{roomOccupancyController.createPatientRoom}"
+                             value="Fill" onclick="onSubmitButton();" />
+             <p:commandButton ajax="false" 
+                             action="#{roomOccupancyController.createPatientRoomAll}"
+                             value="Fill All" onclick="onSubmitButton();" />
+            <p:dataTable value="#{roomOccupancyController.patientRooms}" var="pr">
+                <f:facet name="header">
+                    Room Occupancy Detail
+                </f:facet>
+                <p:column headerText="Room">
+                    #{pr.roomFacilityCharge.room.name}                    
+                </p:column>
+                <p:column headerText="BHT No">
+                    #{pr.patientEncounter.bhtNo}
+                </p:column>
+                <p:column headerText="Patient" >
+                    #{pr.patientEncounter.patient.person.name}
+                </p:column>
+                <p:column headerText="Guardian">
+                    #{pr.patientEncounter.guardian.name}
+                </p:column>
+                <p:column headerText="Guardian Phone">
+                    #{pr.patientEncounter.guardian.phone}
+                </p:column>
+                <p:column headerText="Guardian Addres">
+                    #{pr.patientEncounter.guardian.address}
+                </p:column>
+                <p:column headerText="Room No">
+                    <h:outputLabel value="#{pr.roomFacilityCharge.room.name}"/>
+                </p:column>
+                <p:column>
+                    <p:selectBooleanCheckbox value="#{pr.discharged}" 
+                                             itemLabel="Discharge"/>
+                </p:column>
+                <p:column>
+                    <p:commandButton ajax="false" value="Update" action="#{roomOccupancyController.update(pr)}" onclick="onSubmitButton();" />
+                </p:column>
+            </p:dataTable>
+
+
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

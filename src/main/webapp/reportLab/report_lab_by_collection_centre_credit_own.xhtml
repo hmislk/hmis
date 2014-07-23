@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+        <h:form>
+
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Lab Credit Sale Report">
+                <f:facet name="header"  >
+                    <p:outputLabel value="Lab Credit Company Sale Report" styleClass="noPrintButton"/>
+                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" />
+
+                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                        <p:dataExporter type="xls" target="tbl"  fileName="Collecting_Centre_Sale_Report" />
+                    </p:commandButton>  
+
+                    <p:panelGrid columns="5" style="min-width: 100%;" styleClass="noPrintButton">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <p:autoComplete forceSelection="true" value="#{commonReport.creditCompany}" completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.institutionCode}
+                            </p:column>
+                        </p:autoComplete>
+
+                    </p:panelGrid>
+                </f:facet>
+                <br/><br/>
+                <p:dataTable id="tbl" value="#{commonReport.getBillsByLabCreditOwn}" var="d" >
+                    <f:facet name="header">
+                        <h:outputLabel value="#{commonReport.creditCompany.name}"/>                    
+                        <h:outputLabel value="#{commonReport.fromDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputLabel>
+
+                        <h:outputLabel value="---"/>                       
+                        <h:outputLabel value="#{commonReport.toDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </h:outputLabel>
+
+                    </f:facet>
+                   
+                    <p:column headerText="Bill Code"  >
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill Code"/>                        
+                        </f:facet>
+                        <h:outputLabel value="#{d.insId}"/>
+                    </p:column>
+                    <p:column headerText="Patient Name"  >
+                        <f:facet name="header">
+                            <h:outputLabel value="Patient Name"/>                        
+                        </f:facet>
+                        <h:outputLabel value="#{d.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Patient Name" rendered="#{commonReport.creditCompany eq null}" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Collecting Centre"/>                        
+                        </f:facet>
+                        <h:outputLabel value="#{d.collectingCentre.name}"/>
+                    </p:column>
+                    <p:column headerText="Cancel Or Refunded" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Cancel oR Refunded"/>                        
+                        </f:facet>
+                        <h:outputLabel rendered="#{d.cancelled}" value="Cancelled"/>
+                        <h:outputLabel rendered="#{d.refunded}" value="Refunded"/>
+                    </p:column>
+                   
+                    <p:column headerText="Discount" style="text-align: right;" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Discount"/>                        
+                        </f:facet>
+                        <h:outputLabel value="#{d.discount}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>                    
+                    <p:column headerText="Net Total" style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Net Total"/>                        
+                        </f:facet>
+                        <h:outputLabel value="#{d.netTotal}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:columnGroup type="footer">  
+                        <p:row>                              
+                            <p:column footerText="Total" colspan="4"/>
+                            <p:column footerText="#{commonReport.total}" style=" text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{commonReport.total}" style=" text-align: right;">
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>                             
+                        </p:row>  
+                    </p:columnGroup>  
+                </p:dataTable>
+            </p:panel>   
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

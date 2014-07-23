@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface >
+
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+
+    <cc:implementation>
+        <p:dataTable  value="#{bhtSummeryFinalizedController.billItems}" var="bi"
+                      sortBy="#{bi.bill.billClass}">       
+
+            <p:subTable value="#{bi.billFees}" var="bf">
+                <f:facet name="header">
+                    <h:panelGrid columns="8">
+                        <h:outputLabel value="#{bi.item.inwardChargeType}"/>
+                        <h:outputLabel value="#{bi.item.name}"/>
+                        <p:inputText value="#{bi.grossValue}"/>
+                        <h:outputLabel value="#{bi.marginValue}"/>
+                        <p:inputText value="#{bi.discount}"/>
+                        <h:outputLabel value="#{bi.netValue}"/>                        
+                        <p:commandButton ajax="false" value="update Updae Bill Item" 
+                                         action="#{bhtSummeryFinalizedController.updateBillItem(bi)}"/>
+                    </h:panelGrid>
+                </f:facet>
+                <p:column>
+                    #{bf.id}
+                </p:column>
+                <p:column>
+                    #{bf.staff.person.name}
+                </p:column>
+                <p:column >    
+                    <p:inputText value="#{bf.feeGrossValue}"/>
+                </p:column>
+                <p:column >
+                    <p:inputText value="#{bf.feeMargin}" />
+                </p:column>
+                <p:column >
+                    <p:inputText value="#{bf.feeDiscount}"/>                    
+                </p:column>
+                <p:column >
+                    <p:inputText  value="#{bf.feeValue}"/>
+                </p:column>
+                <p:column>
+                    <p:commandButton ajax="false" value="Delete Bill Feee" action="#{bhtSummeryFinalizedController.delete(bf)}"/>
+                </p:column>
+                <p:column>
+                    <p:commandButton ajax="false" value="update Updae Bill Fee" action="#{bhtSummeryFinalizedController.updateBillFee(bf)}"/>
+                </p:column>
+            </p:subTable>
+
+        </p:dataTable>
+    </cc:implementation>
+</html>

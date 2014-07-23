@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable value="#{cc.attrs.controller.departmentPayment}" var="a" rendered="#{cc.attrs.controller.departmentPayment.size()!=0}"  >
+            <f:facet name="header">               
+                <p:outputLabel value="Professional Payment" />    
+            </f:facet>
+            <p:column>
+                <h:outputLabel value="#{a.department.name}" rendered="#{a.totalPayment!=0}"/>
+            </p:column>
+            <p:column style="text-align: right;">
+                <h:outputLabel value="#{-a.totalPayment}" rendered="#{a.totalPayment!=0}" >
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+            </p:column>                
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="1" footerText="Department Payment Total"/>
+                    <p:column style="text-align: right;" footerText="#{-cc.attrs.controller.doctorPaymentTot}">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{-cc.attrs.controller.doctorPaymentTot}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>   
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+
+        </p:dataTable>   
+      
+        
+        <p:dataTable value="#{cc.attrs.controller.inwardProfessions}" var="b" rendered="#{cc.attrs.controller.inwardProfessions.size()!=0}" >
+            <f:facet name="header">               
+                <p:outputLabel value="Inward Professional Payment" />    
+            </f:facet>
+            <p:column>
+                <h:outputLabel value="#{b.string}" rendered="#{b.value!=0}"/>
+            </p:column> 
+            <p:column style="text-align: right;">
+                <h:outputLabel value="#{-b.value}" rendered="#{b.value!=0}">
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+            </p:column> 
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column>
+                        <f:facet name="footer">
+                            Total Inward Professions
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{-cc.attrs.controller.inwardProfTot}">
+                                 <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+        </p:dataTable>
+    </cc:implementation>
+</html>

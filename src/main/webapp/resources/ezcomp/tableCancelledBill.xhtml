@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />      
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="report2"  value="#{cc.attrs.bill.bills}" var="b1"  sortBy="#{b1.billType}" rendered="#{cc.attrs.bill.bills.size()!=0}" >
+            <f:facet name="header">  
+                <h:outputLabel value="Cancelled"/>
+            </f:facet> 
+            <p:column headerText="Time"   >
+                <h:outputLabel value="#{b1.createdAt}" >
+                    <f:convertDateTime pattern="hh:mm a"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Cancelled Id" >
+                #{b1.insId}
+            </p:column>
+
+            <p:column headerText="Billed Id" >
+                <h:outputLabel value="#{b1.billedBill.insId}" >
+                </h:outputLabel>
+            </p:column>
+
+            <p:column headerText="Patient Name" >
+                #{b1.patient.person.nameWithTitle}
+            </p:column>
+            <p:column headerText="Comment" >
+                #{b1.comments}
+            </p:column>
+
+            <p:column headerText="Cash"  style=" text-align: right"  >
+                <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.netTotal}" >
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00"/>
+            </p:column>
+            <p:column headerText="Credit"  style=" text-align: right" >
+                <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.netTotal}" >
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00"/>
+
+            </p:column>
+            <p:column headerText="C Card"  style=" text-align: right" >
+                <h:outputLabel rendered="#{b1.paymentMethod=='Card'}" value="#{b1.netTotal}"  >
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{b1.paymentMethod!='Card'}" value="0.00"/>
+            </p:column>
+            <p:column headerText="Checque" style=" text-align: right" >
+                <h:outputLabel rendered="#{b1.paymentMethod=='Cheque'}" value="#{b1.netTotal}" >
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{b1.paymentMethod!='Cheque'}" value="0.00"/>
+            </p:column>
+
+            <p:column headerText="Slip" style=" text-align: right" >
+                <h:outputLabel rendered="#{b1.paymentMethod=='Slip'}" value="#{b1.netTotal}" >
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{b1.paymentMethod!='Slip'}" value="0.00"/>
+            </p:column>
+
+
+
+            <p:summaryRow  >
+                <p:column colspan="5">
+                    Total:
+                </p:column>
+                <p:column  style=" text-align: right">
+                    <h:outputLabel value="#{cc.attrs.bill.cash}">
+                        <f:convertNumber pattern="#,000.00" />
+                    </h:outputLabel>
+                </p:column>
+                <p:column  style=" text-align: right" >
+                    <h:outputLabel value="#{cc.attrs.bill.credit}">
+                        <f:convertNumber pattern="#,000.00" />
+                    </h:outputLabel>
+
+                </p:column>
+                <p:column  style=" text-align: right">
+                    <h:outputLabel value="#{cc.attrs.bill.card}">
+                        <f:convertNumber pattern="#,000.00" />
+
+                    </h:outputLabel>
+                </p:column>  
+                <p:column  style=" text-align: right">
+                    <h:outputLabel value="#{cc.attrs.bill.cheque}">
+                        <f:convertNumber pattern="#,000.00" />
+                    </h:outputLabel>
+                </p:column>  
+                <p:column  style=" text-align: right">
+                    <h:outputLabel value="#{cc.attrs.bill.slip}">
+                        <f:convertNumber pattern="#,000.00" />
+                    </h:outputLabel>
+                </p:column> 
+            </p:summaryRow>
+
+        </p:dataTable>
+    </cc:implementation>
+</html>

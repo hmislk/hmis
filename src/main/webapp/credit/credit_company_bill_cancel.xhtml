@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill">
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!creditCompanyBillSearch.printPreview}" styleClass="alignTop" >
+                        <p:panel  header="Cancellation">
+                            <p:selectOneMenu   id="cmbPs" value="#{creditCompanyBillSearch.paymentMethod}" required="true"  >
+                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                            </p:selectOneMenu>
+                            <h:commandButton value="Cancel" action="#{creditCompanyBillSearch.cancelBill()}" >
+                            </h:commandButton>                            
+                        </p:panel>
+                        <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panel header="Credit Company Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Company Name:" ></h:outputLabel>
+                                    <h:outputLabel value="#{creditCompanyBillSearch.bill.fromInstitution.name }" ></h:outputLabel>                                        
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panel header="Bill Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{creditCompanyBillSearch.bill.insId}" ></h:outputLabel>                                  
+                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{creditCompanyBillSearch.bill.netTotal}" ></h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:panelGrid>
+                        <p:panel header="Bill Item Detail">
+                            <p:dataTable rowIndexVar="rowIndex" value="#{creditCompanyBillSearch.billItems}" var="b" >
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="No"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{rowIndex+1}"/>
+                                </p:column>
+                                <p:column >    
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bht No" rendered="#{b.patientEncounter ne null}"/>
+                                        <p:outputLabel value="Bill No" rendered="#{b.patientEncounter eq null}"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{b.referenceBill.insId}" rendered="#{b.patientEncounter eq null}"/>
+                                    <p:outputLabel value="#{b.patientEncounter.bhtNo}" rendered="#{b.patientEncounter ne null}"/>
+                                </p:column>                                    
+                                <p:column headerText="Patient Name">
+                                    <p:outputLabel value="#{b.referenceBill.patient.person.name}" rendered="#{b.patientEncounter eq null}"/>
+                                    <p:outputLabel value="#{b.patientEncounter.patient.person.name}" rendered="#{b.patientEncounter ne null}"/>
+                                </p:column>                                    
+                                <p:column headerText="Net Total">#{b.netValue}</p:column>
+                            </p:dataTable>
+                        </p:panel>
+                        <p:panel header="Comments">
+                            <h:inputTextarea value="#{creditCompanyBillSearch.comment}"/>                            
+                        </p:panel>
+                    </h:panelGroup>
+
+
+                    <h:panelGroup rendered="#{creditCompanyBillSearch.printPreview}" >
+                        <bi:insRecieve billController ="#{creditCompanyBillSearch}"  bill="#{creditCompanyBillSearch.bill.cancelledBill}" dup="false"/>  
+                    </h:panelGroup>
+
+
+                </h:form>                
+            </ui:define>
+        </ui:composition>
+    </body>
+</html>

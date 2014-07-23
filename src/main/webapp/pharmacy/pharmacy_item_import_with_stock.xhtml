@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form enctype="multipart/form-data">
+            <h:outputLabel value="Import Pharmaceutical Items With Stocks" ></h:outputLabel>
+            <p>Please make sure the following order of Columns.</p>
+            <p>Leave First Row for Row Headings.</p>
+            <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
+            <p:panelGrid columns="13" style="border: 1px solid blue;" >
+                <h:outputLabel value ="0. Category" ></h:outputLabel>
+                <h:outputLabel value ="1. Product " ></h:outputLabel>
+                <h:outputLabel value ="2. Code" ></h:outputLabel>
+                <h:outputLabel value ="3. Bar Code" ></h:outputLabel>
+                <h:outputLabel value ="4. Generic Name" ></h:outputLabel>
+                <h:outputLabel value ="5. Strength" ></h:outputLabel>
+                <h:outputLabel value ="6. Strength Unit" ></h:outputLabel>
+                <h:outputLabel value ="7. Pack Size" ></h:outputLabel>
+                <h:outputLabel value ="8. Issue Unit" ></h:outputLabel>
+                <h:outputLabel value ="9. Pack Unit" ></h:outputLabel>
+                <h:outputLabel value ="10. Distributor" ></h:outputLabel>
+                <h:outputLabel value ="11. Manufacturer" ></h:outputLabel>
+                <h:outputLabel value ="12. Importer" ></h:outputLabel>
+                <h:outputLabel value ="13. Date of Expiary (M/d/yyyy)" ></h:outputLabel>
+                <h:outputLabel value ="14. Batch" ></h:outputLabel>
+                <h:outputLabel value ="15. Quentity" ></h:outputLabel>
+                <h:outputLabel value ="16. Purchase Price" ></h:outputLabel>
+                <h:outputLabel value ="17. Sale Price" ></h:outputLabel>
+                    
+            </p:panelGrid>
+
+            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+            <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importToExcelWithStock}"/>
+        </h:form>
+
+       
+
+    </ui:define>
+
+
+</ui:composition>

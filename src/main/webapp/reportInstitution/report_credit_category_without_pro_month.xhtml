@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"                
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+
+            <p:panel>
+                <f:facet name="header" >
+                    <h:outputLabel value="Book Keeping Summery Without Pro (Month - CREDIT)"  styleClass="noPrintButton" />
+                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                     action="#{bookKeepingSummery.createCashCategoryWithoutProMonth}"/>
+
+                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                        <pe:exporter type="xlsx" target="
+                                     opd,outSide,
+                                     pharmacy,inward,                                    
+                                     col,finalSum" 
+                                     fileName="Book_Keeping_Summery_without_pro_month"
+                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                     fontName="Courier New"  />
+                    </p:commandButton>
+
+                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="Select Institution"/>
+
+                        <p:autoComplete completeMethod="#{institutionController.completeCreditCompany}" required="true" 
+                                        forceSelection="true"
+                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                    </h:panelGrid>
+
+                </f:facet>
+            </p:panel>
+            <!--            <p:spacer height="30" />-->
+
+            <p:dataTable id="opd"  value="#{bookKeepingSummery.opdList}" var="d" 
+                         rendered="#{bookKeepingSummery.opdList.size()>0}">                   
+                <f:facet name="header">
+                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
+                        <p:outputLabel value="#{sessionController.institution.name}"/><h:outputLabel/>
+                        <p:outputLabel value="Book Keeping Summary"/><h:outputLabel/>   
+                        <h:outputLabel/><h:outputLabel/>
+                        <h:panelGroup>
+                            <h:outputLabel value="From : "  />
+                            <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
+                                <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                            </h:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup>
+                            <h:outputLabel value="To : "/> 
+                            <h:outputLabel  value="#{bookKeepingSummery.toDate}" style="float: right" >
+                                <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                            </h:outputLabel>
+                        </h:panelGroup>
+                    </h:panelGrid>
+                    <h:outputLabel value="OPD Service"/>     
+
+                </f:facet>       
+                <p:column headerText="Category Name" style="text-align: left;">                 
+                    <h:outputLabel value="#{d.string}"  />
+                </p:column>                                               
+                <p:column headerText="Total" style="text-align: right;">
+                    <h:outputLabel value="#{d.value2}">
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </p:column>
+                <p:columnGroup type="footer">
+                    <p:row>
+                        <p:column colspan="1" footerText="Total OPD Service Collection"/>
+                        <p:column style="text-align: right;" footerText="#{bookKeepingSummery.opdHospitalTotal}" >
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+                </p:columnGroup>
+
+
+            </p:dataTable> 
+
+         
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

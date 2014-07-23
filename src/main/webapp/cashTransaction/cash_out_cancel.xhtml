@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/cashTransaction">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
+                        <p:panel  header="Cancellation">
+                            <h:commandButton value="Cancel" action="#{billSearch.cancelCashOutBill()}" >
+                            </h:commandButton>                            
+                        </p:panel>
+                        <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panel header="Patient Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="To Web User:" ></h:outputLabel>
+                                    <h:outputLabel value="#{billSearch.bill.toWebUser.webUserPerson.nameWithTitle}" ></h:outputLabel>
+
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panel header="Bill Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
+                                   
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:panelGrid>
+                    
+                        <p:panel header="Comments">
+                            <h:inputTextarea value="#{billSearch.comment}"/>                            
+                        </p:panel>
+                    </h:panelGroup>
+
+
+                    <h:panelGroup rendered="#{billSearch.printPreview}" styleClass="alignTop" >
+                        <bi:cashOut bill="#{billSearch.bill.cancelledBill}"/>
+                    </h:panelGroup>
+
+                </h:form>                
+            </ui:define>
+        </ui:composition>
+    </body>
+</html>

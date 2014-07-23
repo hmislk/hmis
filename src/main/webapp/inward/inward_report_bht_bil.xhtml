@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Reprint" styleClass="alignTop" >
+                        <h:panelGrid columns="1">
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientAll}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >
+                                <p:ajax event="itemSelect" 
+                                        process="@this" 
+                                        update="@all" 
+                                        listener="#{bhtSummeryFinalizedController.selectLitener}"/>
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
+                                </p:column>
+                            </p:autoComplete>   
+
+                        </h:panelGrid>
+                        <h:panelGrid columns="3">
+
+                            <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                <pe:exporter type="xlsx" target="tbl,tbl2" fileName="newly_added_report"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+                        
+
+                    </p:panel>
+
+                    <p:panel id="gpBillPreview">
+                        <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panel header="Patient Detail">
+                                <p:panelGrid columns="2" rendered="#{bhtSummeryFinalizedController.patientEncounter ne null}">
+                                    <h:outputLabel value="Room : "/>
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.patient.person.nameWithTitle }" ></h:outputLabel>
+                                    <h:outputLabel value="Age" />
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.patient.age}"  />
+                                    <h:outputLabel value="Dob" />
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.patient.person.dob}" />                                    
+                                    <h:outputLabel value="Date Of Admission"/>
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.dateOfAdmission}"/>
+                                    <h:outputLabel value="Date Of Discharge"/>
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.dateOfDischarge}"/>
+                                    <h:outputLabel value="Bht Type"/>
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.paymentMethod}"/>
+                                </p:panelGrid>
+                            </p:panel>                           
+                        </p:panelGrid>
+
+                        <p:dataTable value="#{bhtSummeryFinalizedController.bill.billItems}" var="bip" id="tbl"
+                                     rowStyleClass="#{bip.netValue !=0 ?'':'noDisplayRow' }">
+                            <f:facet name="header">
+                                <h:outputLabel value="BillItems"/>
+                            </f:facet>
+                            <p:column headerText="Inward Charge Type">
+                                <h:outputLabel   value="#{bip.inwardChargeType.label}"/>
+                            </p:column>
+                            <p:column headerText="Total Value" style="text-align: right;">
+                                <h:outputLabel  value="#{bip.grossValue}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.grantTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>                            
+                            <p:column headerText="Discount Value"  style="text-align: right;">
+                                <h:outputLabel  value="#{bip.discount}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.discount}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Net Value"  style="text-align: right;">
+                                <h:outputLabel  value="#{bip.netValue}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.netTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:dataTable value="#{bhtSummeryFinalizedController.bill.backwardReferenceBills}" var="pay" id="tbl2">
+                            <f:facet name="header">
+                                <h:outputLabel value="Payement Detail"/>
+                            </f:facet>
+                            <p:column headerText="Bill No">
+                                <h:outputLabel value="#{pay.insId}"></h:outputLabel>                                
+                            </p:column>
+                            <p:column headerText="Amount">
+                                <h:outputLabel value="#{pay.netTotal}"></h:outputLabel>
+                                
+                            </p:column>
+                            
+                        </p:dataTable>
+                        
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Paid By Patient"/>
+                            <h:outputLabel value="#{bhtSummeryFinalizedController.bill.paidAmount}"/>
+                            <h:outputLabel value="Due"/>
+                            <h:outputLabel value="#{bhtSummeryFinalizedController.bill.netTotal
+                                                    -bhtSummeryFinalizedController.bill.paidAmount}"/>
+                        </h:panelGrid>
+                    </p:panel>
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

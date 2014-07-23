@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:in="http://java.sun.com/jsf/composite/inward"
+                xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
+
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:panel >
+                    <f:facet name="header" >
+                        <h:panelGrid columns="15"  >
+                            <h:outputLabel value="Inward Final Bill" />                          
+                            <p:commandButton  value="Save Intrim" action="#{intrimPrintController.saveIntrimBill}" ajax="false"
+                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                            </p:commandButton>
+                            <p:commandButton value="Print Intrim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}" onclick="onSubmitButton();" >
+                                <p:printer target="intrim" ></p:printer>
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>       
+
+                    <h:panelGrid columns="3">
+                        <h:panelGroup id="panSearch2">
+                            <in:bhtDetail admission="#{intrimPrintController.currentBill.patientEncounter}"/>
+                        </h:panelGroup>  
+                        <h:panelGroup>                          
+                            <p:panelGrid columns="2" id="tot" style="min-width: 100%;">
+                                <h:outputLabel  value="Total Charges" style="font-weight: bold"/>
+                                <h:outputLabel value="#{intrimPrintController.currentBill.total}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>                                                               
+                                <h:outputLabel value="Paid " style="font-weight: bold"/>
+                                <h:outputLabel value="#{intrimPrintController.currentBill.paidAmount}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="Due " style="font-weight: bold"/>
+                                <h:outputLabel value="#{intrimPrintController.currentBill.total-intrimPrintController.currentBill.paidAmount}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="Adjusted Total " style="font-weight: bold" />
+                                <h:outputLabel id="claim" value="#{intrimPrintController.currentBill.adjustedTotal}" >
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="Different With Actual and Adjusted " style="font-weight: bold" />
+                                <h:outputLabel value="#{intrimPrintController.currentBill.total-intrimPrintController.currentBill.adjustedTotal}" >
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                            </p:panelGrid>      
+                        </h:panelGroup>
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Printing Admission Time"/>
+                            <p:calendar value="#{intrimPrintController.currentBill.patientEncounter.printingAdmissionTime}" pattern="dd MMMM yyyy hh mm a" >                               
+                            </p:calendar>     
+                            <h:outputLabel value="Printing Discharge Time"/>
+                            <p:calendar value="#{intrimPrintController.currentBill.patientEncounter.printingDischargeTime}" pattern="dd MMMM yyyy hh mm a" >                               
+                            </p:calendar>    
+                        </h:panelGrid>
+                    </h:panelGrid>
+
+                    <p:dataTable id="dList" value="#{intrimPrintController.currentBill.billItems}" 
+                                 var="c" scrollable="true" scrollHeight="500">
+                        <p:column headerText="Inward Charge Type" >
+                            <h:outputLabel  value="#{c.inwardChargeType.label}"  />
+                        </p:column>
+                        <p:column headerText="Total">
+                            <h:outputLabel value="#{c.grossValue}" >
+                                <f:convertNumber pattern="#,000.00" />
+                            </h:outputLabel>                            
+                        </p:column>                      
+                        <p:column headerText="Adjusted Value">
+                            <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedValue}">
+                                <f:convertNumber pattern="#,000.00" />  
+                                <p:ajax event="blur" update=":#{p:component('tot')} :#{p:component('intrim')}" listener="#{intrimPrintController.calAdjustedTotal()}"/>
+                            </p:inputText>
+                        </p:column>
+                        <p:column headerText="Previous Print Adjusted Value">
+                            <h:outputLabel value="#{c.referanceBillItem.adjustedValue}">
+                                <f:convertNumber pattern="#,000.00" />                               
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable> 
+
+
+                    <h:panelGroup id="intrim" styleClass="noBorder">                  
+                        <bi:intrimBill  bill="#{intrimPrintController.currentBill}"/>
+                    </h:panelGroup>
+
+
+                </p:panel>
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <body>
+        <ui:composition template="./resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <p:panel header="Manage Investigatio Calculations" >
+                        <p:panelGrid columns="1" >
+                            <p:panelGrid columns="2" >
+                                <h:outputLabel value="Investigation" ></h:outputLabel>
+                                <p:autoComplete converter="ixcon" forceSelection="true" id="acIx"  value="#{ixCalController.ix}" completeMethod="#{investigationController.completeItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                    <p:ajax event="itemSelect" process="acIx" update="tbl acIiv" />
+                                </p:autoComplete>
+                                <h:outputLabel value="Calculation Field" ></h:outputLabel>
+                                <p:selectOneMenu id="acIiv" value="#{ixCalController.cal }" >
+                                    <f:selectItem itemLabel="Select" />
+                                    <f:selectItems value="#{ixCalController.cals}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv}" />
+                                    <f:ajax event="change" execute="acIiv" render="tbl" />
+                                </p:selectOneMenu>
+                            </p:panelGrid>
+
+                            <p:panel>
+                                <p:panelGrid columns="2" >
+
+                                    <h:outputLabel value="Type" />
+
+                                    <p:selectOneMenu id="cmbCal" value="#{ixCalController.addingIxCal.calculationType}" >
+                                        <f:selectItem itemLabel="Select"  />
+                                        <f:selectItem itemLabel="Value" itemValue="Value" />
+                                        <f:selectItem itemLabel="Constant" itemValue="Constant" />
+                                        <f:selectItem itemLabel="Addition" itemValue="Addition" />
+                                        <f:selectItem itemLabel="Substraction" itemValue="Substraction" />
+                                        <f:selectItem itemLabel="Multiplication" itemValue="Multiplication" />
+                                        <f:selectItem itemLabel="Devision" itemValue="Devision" />
+                                        <f:selectItem itemLabel="ClosingBracket" itemValue="ClosingBracket" />
+                                        <f:selectItem itemLabel="Devision" itemValue="Devision" />
+                                        <f:selectItem itemLabel="OpeningBracket" itemValue="OpeningBracket" />
+                                        <!--<f:ajax event="change" execute="cmbCal" render="lblCon lblVal txtCon cmbVal" />-->
+                                    </p:selectOneMenu>
+
+                                    <h:panelGroup >
+                                        <h:outputLabel id="lblVal"    value="Value" />
+                                    </h:panelGroup>
+                                    <h:panelGroup >
+                                        <p:selectOneMenu id="cmbVal"  value="#{ixCalController.addingIxCal.valIxItem }" >
+                                            <f:selectItem itemLabel="Select Value" />
+                                            <f:selectItems value="#{ixCalController.vals}" var="v" itemLabel="#{v.name}" itemValue="#{v}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup >
+                                        <h:outputLabel id="lblCon"  value="Constant"  rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}"   />
+                                    </h:panelGroup>
+                                    <h:panelGroup >
+                                        <p:inputText autocomplete="off" id="txtCon"   value="#{ixCalController.addingIxCal.constantValue}" />
+                                    </h:panelGroup>
+                                    
+                                    <p:commandButton ajax="false" value="Remove Last" action="#{ixCalController.removeLastCal() }" onclick="onSubmitButton();"  >
+                                    </p:commandButton>
+                                    <p:commandButton value="Add" action="#{ixCalController.addCal()}" ajax="false" onclick="onSubmitButton();"  >
+                                    </p:commandButton>
+                                </p:panelGrid>
+
+
+                            </p:panel>
+                            <p:panel >
+                                <p:dataTable id="tbl" value="#{ixCalController.items}" var="c" >
+                                    <p:column >
+                                        <h:outputLabel value="#{c.calculationType}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputLabel value="#{c.constantValue}" rendered="#{c.calculationType eq 'Constant'}"  />
+                                        <h:outputLabel  value="#{c.valIxItem.name}"  rendered="#{c.calculationType eq 'Value'}"  />
+                                    </p:column>
+
+                                </p:dataTable>
+
+                            </p:panel>
+                        </p:panelGrid>
+
+
+                    </p:panel>
+
+
+                </h:form>
+
+
+            </ui:define>
+        </ui:composition>
+    </body>
+</html>

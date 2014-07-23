@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel header="Pharmacy Reports" >
+                        <p:panelGrid columns="4" styleClass="alignTop">
+                            <p:panel header="Transfer Reports" >
+                                <p:panelGrid columns="1" styleClass="alignTop">
+                                    <p:commandButton value="Transfer Issue By Bill Item" action="pharmacy_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Transfer Receive By Bill Item" action="pharmacy_report_transfer_receive_bill_item" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Transfer Issue by Bill" action="pharmacy_report_transfer_issue_bill" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Transfer Receive by Bill" action="pharmacy_report_transfer_receive_bill" ajax="false" ></p:commandButton>                            
+                               </p:panelGrid>
+                            </p:panel>                            
+                        </p:panelGrid>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

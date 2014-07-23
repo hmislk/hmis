@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGrid columns="2">
+                        <h:outputText value="Institution" ></h:outputText>
+                        <p:selectOneMenu id="cmbIns" value="#{serviceController.current.institution}" >
+                            <f:selectItem itemLabel="Please select a Institution"/>
+                            <f:selectItems value="#{institutionController.company}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
+                        </p:selectOneMenu>
+                        <h:outputText value="Department" ></h:outputText>
+                        <p:selectOneMenu id="cmbDep" value="#{reorderController.department}" >
+                            <f:selectItem itemLabel="Please select a Department"/>
+                            <f:selectItems value="#{serviceController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                        </p:selectOneMenu>
+                        <p:commandButton ajax="false" value="Create Reorder Level" action="#{reorderController.fillDepartmentReorders()}"/>
+                    </h:panelGrid>
+                    <p:dataTable value="#{reorderController.items}" var="i" editable="true" >
+                        <p:ajax event="rowEdit" listener="#{reorderController.onEdit}" />  
+                     
+
+
+                        <p:column headerText="Item">#{i.item.name}</p:column>
+                        <p:column headerText="Reorder Level">
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:outputLabel value="#{i.rol}"/>
+                                </f:facet>
+                                <f:facet name="input"> 
+                                    <p:inputText autocomplete="off"  value="#{i.rol}"/>
+                                </f:facet>
+                            </p:cellEditor>  
+                        </p:column>
+                        <p:column headerText="Reorder Quantity">                           
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:outputLabel value="#{i.roq}"/>
+                                </f:facet>
+                                <f:facet name="input"> 
+                                    <p:inputText autocomplete="off"  value=" #{i.roq}"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column style="width:6%">  
+                            <p:rowEditor > 
+                            </p:rowEditor>
+                        </p:column>                     
+                    </p:dataTable>
+
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

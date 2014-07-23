@@ -1,0 +1,50 @@
+/* 
+    Document   : css1
+    Created on : Aug 5, 2013, 10:11:08 PM
+    Author     : ruhunu
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+
+.cssTest{
+    background: blueviolet;
+    color: red;
+    font-size: 20px;
+}
+
+
+.idCol{
+    min-width: 50px;
+    text-align: left;
+    padding: 5px;
+
+}
+
+.nameCol{
+    min-width: 200px;
+    text-align: left;
+    padding: 5px;
+}
+
+.numberCol {
+    width: 100px;
+    text-align: right;
+    padding: 5px;
+}
+
+.textCol {
+    text-align: left;
+}
+
+
+.printingReports{
+    padding:20px;
+    margin: 20px;
+    width: 90%;
+    font-size: 12px!important;
+}

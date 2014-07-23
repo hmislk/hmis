@@ -1,0 +1,2034 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:cashier="http://xmlns.jcp.org/jsf/composite/cashier">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
+
+                    <f:facet name="header" >
+                        <h:outputLabel value="#{labels.company_name}"/> <br/>
+
+                        <p:commandButton  id="btnRefresh"  ajax="false" value="Refresh" 
+                                          styleClass="noPrintButton" 
+                                          actionListener="#{commonReport.createTableByBillType()}" style="float: right;" />  
+                        <p:defaultCommand target="btnRefresh"/>
+
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>  
+                        <p:commandButton ajax="false" actionListener="#{commonReport.createTableByBillType()}" value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" 
+                                         target="#{commonReport.institutionBilledBillsOwn.bills.size()>0 and commonReport.billType eq 'OpdBill' ?'billed,':''}
+                                         #{commonReport.institutionCancelledBillsOwn.bills.size() ne 0 and commonReport.billType eq 'OpdBill' ?'cancelled,':''}
+                                         #{commonReport.institutionRefundedBillsOwn.bills.size() ne 0 and commonReport.billType eq 'OpdBill' ?'refunded,':''}
+                                         #{commonReport.institutionBilledBillsOwnPh.bills.size() ne 0 ?'billedPh,':''}
+                                         #{commonReport.institutionCancelledBillsOwnPh.bills.size() ne 0 ?'cancelledPh,':''}
+                                         #{commonReport.institutionRefundedBillsOwnPh.bills.size() ne 0 ?'refundPh,':''}
+                                         #{commonReport.institutionPaymentBillsOwn.bills.size() ne 0  and commonReport.billType eq 'PaymentBill'?'payment,':''}
+                                         #{commonReport.institutionPaymentCancelBillsOwn.bills.size() ne 0 and commonReport.billType eq 'PaymentBill' ?'paymentCancel,':''}
+                                         #{commonReport.institutionPettyPaymentBillsOwn.bills.size() ne 0 and commonReport.billType eq 'PettyCash' ?'petty,':''}
+                                         #{commonReport.institutionPettyCancellBillsOwn.bills.size() ne 0 and commonReport.billType eq 'PettyCash' ?'pettyCancel,':''}
+                                         #{commonReport.institutionCashRecieveBillsOwn.bills.size() ne 0 and commonReport.billType eq 'CashRecieveBill' ?'companyPay,':''}
+                                         #{commonReport.institutionCashRecieveCancellBillsOwn.bills.size() ne 0 and commonReport.billType eq 'CashRecieveBill' ?'companyCancel,':''}
+                                         #{commonReport.institutionAgentBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'AgentPaymentReceiveBill'?'agent,':''}
+                                         #{commonReport.institutionAgentCancellBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'AgentPaymentReceiveBill' ?'agentCancel,':''}
+                                         #{commonReport.institutionInwardPaymentBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'InwardPaymentBill' ?'inward,':''}
+                                         #{commonReport.institutionInwardPaymentCancelBillsOwn.bills.size() ne 0 and  commonReport.billType eq 'InwardPaymentBill' ?'inwardCancel,':''}
+                                         sum"  fileName="Day_END_By_Bill_Type" />
+                        </p:commandButton> 
+                        <h:panelGrid columns="7" styleClass="printBlock" style="min-width: 100%;">
+                            <h:panelGroup>
+                                <h:outputLabel value="#{commonReport.webUser.webUserPerson.name} "/>
+                                <h:outputLabel value="Cashier Day End Detailed Report "/>
+                            </h:panelGroup>
+                            <p:spacer width="20" height="0"/>
+                            <h:outputLabel value="From" />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                            </h:outputLabel>
+                            <p:spacer width="10" height="0"/>
+                            <h:outputLabel value="To"/>
+                            <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                            </h:outputLabel>
+                        </h:panelGrid>
+                    </f:facet>
+
+
+                    <h:panelGrid columns="8" styleClass="noPrintButton" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MM yy hh:mm a" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MM yy hh:mm a" >
+                        </p:calendar>
+
+                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                        <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                        forceSelection="true"
+                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                        value="#{commonReport.webUser}" ></p:autoComplete>
+
+                        <h:outputLabel value="Select Bill Type"/>
+                        <h:selectOneMenu value="#{commonReport.billType}">
+                            <f:selectItem itemLabel="Select Bill Type"/>
+                            <f:selectItems value="#{enumController.cashFlowBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
+                        </h:selectOneMenu>
+                    </h:panelGrid>
+
+
+                    <h:panelGroup rendered="#{commonReport.billType eq 'OpdBill'}" >                       
+                        <p:dataTable id="billed"  value="#{commonReport.billedBills.bills}" var="b" 
+                                     rendered="#{commonReport.billedBills.bills.size()>0}" sortBy="#{b.billType}"  >
+
+                            <f:facet name="header">  
+                                <h:outputLabel value="Opd Bills "/> 
+                            </f:facet>
+
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="Time"  > 
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime pattern="h:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+
+                            </p:column>
+
+
+
+                            <p:column headerText="To Department"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="To Department"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.toDepartment.name}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Patient Name" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Patient Name"/>
+                                </f:facet> 
+                                <h:outputLabel value=" #{b.patient.person.nameWithTitle}"/>               
+                            </p:column>
+
+                            <p:column headerText="Dis." style=" text-align: right">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Dis."/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.discount}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cash" style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                            </p:column>
+
+                            <p:column headerText="Credit" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="C Card" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="C Card"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00">
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Checque" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Checque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Slip" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Slip'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Remark" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Remark"/>
+                                </f:facet> 
+                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.insId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>  
+
+                                    <p:column footerText="#{commonReport.billedBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.credit}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.credit}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.card}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.card}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.slip}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>  
+                            </p:columnGroup>  
+
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                        <p:dataTable id="cancelled"  value="#{commonReport.cancellededBills.bills}" var="b1" 
+                                     rendered="#{commonReport.cancellededBills.bills.size()>0}" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cancelled"/>
+                            </f:facet> 
+
+                            <p:column headerText="Time"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.createdAt}" >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Cancelled Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cancelled Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="Billed Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.billedBill.insId}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Patient Name" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Patient Name"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.patient.person.nameWithTitle}"/>
+
+                            </p:column>
+                            <p:column headerText="Comment" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Comment"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.comments}"/>
+                            </p:column>
+
+                            <p:column headerText="Cash"  style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Credit"  style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="C Card"  style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="C Card"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Card'}" value="#{b1.netTotal}"  >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Card'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Checque" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Checque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Cheque'}" value="#{b1.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Slip" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Slip'}" value="#{b1.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column>
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+
+                                <p:row>  
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:">
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.institutionCancelledBillsOwn.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionCancelledBillsOwn.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>      
+
+                                    <p:column footerText="#{commonReport.institutionCancelledBillsOwn.credit}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionCancelledBillsOwn.credit}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.institutionCancelledBillsOwn.card}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionCancelledBillsOwn.card}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.institutionCancelledBillsOwn.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionCancelledBillsOwn.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.institutionCancelledBillsOwn.slip}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionCancelledBillsOwn.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                </p:row>  
+
+                            </p:columnGroup>  
+
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                        <p:dataTable id="refunded" value="#{commonReport.refundedBills.bills}" var="b"
+                                     sortBy="#{b.billType}"  rendered="#{commonReport.refundedBills.bills.size()>0}" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Refunded" />
+                            </f:facet> 
+
+                            <p:column headerText="Time"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Refunded Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Refunded Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.insId}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Billed Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.billedBill.insId}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Patient Name" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Patient Name"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.patient.person.nameWithTitle}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Comment" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Comment"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.comments}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cash" style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Credit" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="C Card" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="C Card"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Checque" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Checque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Slip" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Slip'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>
+
+                                    <p:column footerText="#{commonReport.institutionRefundedBillsOwn.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionRefundedBillsOwn.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.institutionRefundedBillsOwn.credit}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionRefundedBillsOwn.credit}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.institutionRefundedBillsOwn.card}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionRefundedBillsOwn.card}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>                                          
+
+                                    <p:column footerText="#{commonReport.institutionRefundedBillsOwn.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionRefundedBillsOwn.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column> 
+
+                                    <p:column footerText="#{commonReport.institutionRefundedBillsOwn.slip}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.institutionRefundedBillsOwn.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                </p:row>  
+                            </p:columnGroup>  
+
+                        </p:dataTable>   
+
+                    </h:panelGroup>
+
+                    <p:spacer height="30"/>
+
+                    <h:panelGroup rendered="#{commonReport.billType eq 'PharmacySale'}" >      
+                        <p:dataTable id="billedPh"  value="#{commonReport.billedBills.bills}" var="b" rendered="#{commonReport.billedBills.bills.size()>0}" sortBy="#{b.billType}"  >
+
+                            <f:facet name="header">  
+                                <h:outputLabel value="Opd Bills "/>
+                            </f:facet>
+
+                            <p:column headerText="Time"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime pattern="h:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="To Department"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="To Department"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.toDepartment.name}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Patient Name" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Patient Name"/>
+                                </f:facet> 
+                                <h:outputLabel value=" #{b.patient.person.nameWithTitle}"/>               
+                            </p:column>
+
+                            <p:column headerText="Dis." style=" text-align: right">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Dis."/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.discount}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cash" style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                            </p:column>
+
+                            <p:column headerText="Credit" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="C Card" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="C Card"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Checque" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Checque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Slip" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Slip'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Remark" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Remark"/>
+                                </f:facet> 
+                                <h:outputLabel value="Cancelled. (#{b.cancelledBill.insId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row >  
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>
+
+                                    <p:column footerText="#{commonReport.billedBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.credit}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.credit}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>  
+
+
+                                    <p:column footerText="#{commonReport.billedBills.card}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.card}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>  
+
+                                    <p:column footerText="#{commonReport.billedBills.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column> 
+
+                                    <p:column footerText="#{commonReport.billedBills.slip}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                </p:row>  
+                            </p:columnGroup>  
+
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                        <p:dataTable id="cancelledPh"  value="#{commonReport.cancellededBills.bills}" var="b1"  rendered="#{commonReport.cancellededBills.bills.size()>0}" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cancelled"/>
+                            </f:facet> 
+                            <p:column headerText="Time"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.createdAt}" >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.creater.webUserPerson.name}"/>
+
+                            </p:column>
+                            <p:column headerText="Cancelled Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cancelled Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="Billed Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.billedBill.insId}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Patient Name" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Patient Name"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.patient.person.nameWithTitle}"/>
+
+                            </p:column>
+                            <p:column headerText="Comment" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Comment"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b1.comments}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Cash"  style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+                            <p:column headerText="Credit"  style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00"/>
+
+                            </p:column>
+                            <p:column headerText="C Card"  style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="C Card"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Card'}" value="#{b1.netTotal}"  >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Card'}" value="0.00"/>
+                            </p:column>
+                            <p:column headerText="Checque" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Checque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Cheque'}" value="#{b1.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Slip" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b1.paymentMethod=='Slip'}" value="#{b1.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b1.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column>
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+
+                                <p:row>  
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:">
+
+                                    </p:column>
+                                    <p:column footerText="#{commonReport.cancellededBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+
+                                    </p:column>                                                           
+                                    <p:column footerText="#{commonReport.cancellededBills.credit}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.credit}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>                   
+                                    <p:column footerText="#{commonReport.cancellededBills.card}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.card}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>  
+                                    <p:column footerText="#{commonReport.cancellededBills.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column> 
+                                    <p:column footerText="#{commonReport.cancellededBills.slip}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>                                                                 
+                                </p:row>  
+
+                            </p:columnGroup>  
+
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                        <p:dataTable id="refundPh" value="#{commonReport.refundedBills.bills}" var="b" sortBy="#{b.billType}"  rendered="#{commonReport.refundedBills.bills.size()>0}" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Refunded" />
+                            </f:facet> 
+                            <p:column headerText="Time"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Refunded Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Refunded Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.insId}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Billed Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.billedBill.insId}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Patient Name" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Patient Name"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.patient.person.nameWithTitle}" >
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Comment" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Comment"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.comments}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cash" style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Credit" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="C Card" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="C Card"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Checque" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Checque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Slip" style=" text-align: right" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Slip'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>  
+                                    <p:column footerText="#{commonReport.refundedBills.cash}">  
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.refundedBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="#{commonReport.refundedBills.credit}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.refundedBills.credit}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="#{commonReport.refundedBills.card}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.refundedBills.card}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="#{commonReport.refundedBills.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.refundedBills.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="#{commonReport.refundedBills.slip}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.refundedBills.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>  
+                            </p:columnGroup>  
+
+                        </p:dataTable>
+
+                    </h:panelGroup>
+
+                    <p:spacer height="30"/>
+
+                    <h:panelGroup rendered="#{commonReport.billType eq 'PaymentBill'}">
+                        <p:dataTable id="payment" value="#{commonReport.billedBills.bills}" var="b" 
+                                     sortBy="#{b.billType}" rendered="#{commonReport.billedBills.bills.size()>0}" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Payments"/>
+                            </f:facet> 
+
+                            <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.createdAt}"  >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>   
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="Paid to"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Paid to"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.staff.person.nameWithTitle}"/>
+                            </p:column>
+
+                            <p:column headerText="Cash" style=" text-align: right" rendered="#{commonReport.institutionPaymentBillsOwn.cash!=0.0}"  >
+                                <f:facet name="footer">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="4" style="text-align:left" footerText="Totals:"/>  
+                                    <p:column footerText="#{commonReport.billedBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>                      
+                                </p:row>  
+                            </p:columnGroup>
+
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                        <p:dataTable id="paymentCancel"
+                                     value="#{commonReport.cancellededBills.bills}"
+                                     var="b"   sortBy="#{b.billType}" 
+                                     rendered="#{commonReport.cancellededBills.bills.size()>0}" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="PaymentsCancel" />
+                            </f:facet> 
+
+                            <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="PaymentsCancel" />
+                                </f:facet>
+                                <h:outputLabel value="#{b.createdAt}"  >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id" />
+                                </f:facet>
+                                <h:outputLabel value="#{b.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="For Wich Staff"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="For Wich Staff" />
+                                </f:facet>
+                                <h:outputLabel value="#{b.staff.person.nameWithTitle}"/>
+                            </p:column>
+
+                            <p:column headerText="Comment"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Comment" />
+                                </f:facet>
+                                <h:outputLabel value="#{b.comments}"/>                           
+                            </p:column>
+
+                            <p:column headerText="Cash" style=" text-align: right" rendered="#{commonReport.institutionPaymentCancelBillsOwn.cash!=0.0}"  >
+                                <f:facet name="footer">  
+                                    <h:outputLabel value="Cash" />
+                                </f:facet>
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="5" style="text-align:left" footerText="Totals:"/>  
+                                    <p:column footerText="#{commonReport.cancellededBills.cash}"/>                    
+                                </p:row>  
+                            </p:columnGroup> 
+                        </p:dataTable>
+
+                    </h:panelGroup>
+
+                    <p:spacer height="30"/>
+
+                    <h:panelGroup rendered="#{commonReport.billType eq 'PettyCash'}">
+                        <p:dataTable id="petty" value="#{commonReport.billedBills.bills}"
+                                     var="b4"   sortBy="#{b4.billType}"
+                                     rendered="#{commonReport.billedBills.bills.size()>0}">
+                            <f:facet name="header">  
+                                <h:outputLabel value="Petty Cash Payment"/>
+                            </f:facet>
+
+                            <p:column headerText="Time" style="width:16%; " >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b4.createdAt}" >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b4.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet>
+                                <h:outputLabel value=" #{b4.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="For Whome"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="For Whome"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b4.staff.person.nameWithTitle}" rendered="#{b4.person eq null}"/>
+                                <h:outputLabel value="#{b4.person.nameWithTitle}" rendered="#{b4.person ne null}"/>
+                            </p:column>
+
+                            <p:column headerText="Cash" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b4.paymentMethod=='Cash'}" value="#{b4.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b4.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Cheque" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Checque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b4.paymentMethod=='Cheque'}" value="#{b4.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b4.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>    
+
+                            <p:column headerText="Descripion"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Descripion"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b4.comments}"/>
+                            </p:column>
+
+                            <p:column headerText="Invoice" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Invoice"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b4.invoiceNumber}"/>
+                            </p:column>
+
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="4" style="text-align:left" footerText="Totals:"/>
+
+                                    <p:column footerText="#{commonReport.billedBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                </p:row>  
+                            </p:columnGroup> 
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+
+                        <p:dataTable id="pettyCancel" value="#{commonReport.cancellededBills.bills}" 
+                                     var="b4"   sortBy="#{b4.billType}" 
+                                     rendered="#{commonReport.cancellededBills.bills.size()>0}" >
+                            <f:facet name="header">  
+                                <h:outputLabel  value="Petty Cash Payment Cancel"/>
+                            </f:facet>
+
+                            <p:column headerText="Time" style="width:16%; " >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b4.createdAt}" >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b4.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="For Whome" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="For Whome"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b4.staff.person.nameWithTitle}" rendered="#{b4.person eq null}"/>
+                                <h:outputLabel value="#{b4.person.nameWithTitle}" rendered="#{b4.person ne null}"/>
+                            </p:column>
+
+                            <p:column headerText="Cash" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b4.paymentMethod=='Cash'}" value="#{b4.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b4.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Cheque" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cheque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b4.paymentMethod=='Cheque'}" value="#{b4.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b4.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Descripion" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Descripion"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b4.comments}"/>
+                            </p:column>
+
+                            <p:column headerText="Billed Id"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b4.billedBill.insId}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Billed Date/Time"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Date/Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b4.billedBill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="4" style="text-align:left" footerText="Totals:"/>  
+                                    <p:column footerText="#{commonReport.cancellededBills.cash}">
+
+                                    </p:column>                  
+                                    <p:column footerText="#{commonReport.cancellededBills.cheque}"/>                  
+                                </p:row>  
+                            </p:columnGroup>
+
+                        </p:dataTable>
+
+                    </h:panelGroup>
+
+                    <p:spacer height="30"/>
+
+
+
+                    <h:panelGroup rendered="#{commonReport.billType eq 'CashRecieveBill'}">
+                        <p:dataTable id="companyPay" value="#{commonReport.billedBills.bills}"
+                                     var="b7"   sortBy="#{b7.billType}" 
+                                     rendered="#{commonReport.billedBills.bills.size()>0}">
+                            <f:facet name="header">  
+                                <h:outputLabel value="Credit Company Payment Recieve"/>
+                            </f:facet> 
+
+                            <p:column headerText="Time" style="width:16%; ">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.createdAt}" >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Id"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.insId}" />
+                            </p:column>
+
+                            <p:column headerText="Credit Company"  > 
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit Company"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.fromInstitution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Cash" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Cash'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Cheque" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cheque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Cheque'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Slip" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Slip'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column headerText="Descripion" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Descripion"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.comments}" />
+                            </p:column>                                               
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="4" style="text-align:left" footerText="Totals:"/>  
+
+                                    <p:column footerText="#{commonReport.billedBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.cheque}">                                    
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet> 
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.slip}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column> 
+                                </p:row>  
+                            </p:columnGroup> 
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                        <p:dataTable id="companyCancel" value="#{commonReport.cancellededBills.bills}"
+                                     var="b7"   sortBy="#{b7.billType}" 
+                                     rendered="#{commonReport.cancellededBills.bills.size()>0}">
+                            <f:facet name="header">  
+                                <h:outputLabel value="Credit Company Payment Cancel"/>
+                            </f:facet> 
+                            <p:column headerText="Time" style="width:16%; " >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.createdAt}" >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.creater.webUserPerson.name}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="Credit Company"  >   
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Credit Company"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.fromInstitution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Cash" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Cash'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>   
+
+                            <p:column headerText="Cheque" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cheque"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Cheque'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>    
+
+                            <p:column headerText="Slip" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet> 
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Slip'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column>    
+
+                            <p:column headerText="Descripion"  style="">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Descripion"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.comments}" />
+                            </p:column>    
+                            <p:column headerText="Billed Id" style="" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Id"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.billedBill.insId}" >
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Billed Date/Time" style="" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Date/Time"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.billedBill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="4" style="text-align:left" footerText="Totals:"/>
+
+                                    <p:column footerText="#{commonReport.cancellededBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.cancellededBills.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>                                
+                                    </p:column>   
+
+                                    <p:column footerText="#{commonReport.cancellededBills.slip}">                                
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column> 
+
+                                </p:row>  
+                            </p:columnGroup>
+                        </p:dataTable>
+
+                    </h:panelGroup>
+
+                    <p:spacer height="30"/>
+
+                    <h:panelGroup rendered="#{commonReport.billType eq 'AgentPaymentReceiveBill'}">
+
+                        <p:dataTable id="agent" value="#{commonReport.billedBills.bills}" 
+                                     var="b7"   sortBy="#{b7.billType}"
+                                     rendered="#{commonReport.billedBills.bills.size()>0}">
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cashier Agent Payment Detail Report"/>
+                            </f:facet> 
+
+
+                            <p:column headerText="Cashier Name"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier Name"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.creater.webUserPerson.name}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Id"  style="">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="Date And Time" style="width:16%; ">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Date And Time"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.createdAt}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                </h:outputLabel>
+                            </p:column>
+
+
+                            <p:column headerText="Agent Name"  style="">      
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Agent Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.fromInstitution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Cash" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Cash'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>    
+                            <p:column headerText="Cheque" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cheque"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Cheque'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column>  
+                            <p:column headerText="Slip" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Slip'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column>  
+                            <p:column headerText="Descripion"  style="">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Descripion"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.comments}" />
+                            </p:column>                                               
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="4" style="text-align:left" footerText="Totals:"/>
+
+                                    <p:column footerText="#{commonReport.billedBills.cash}">                                    
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.billedBills.slip}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column> 
+
+                                </p:row>  
+                            </p:columnGroup> 
+
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                        <p:dataTable id="agentCancel"  value="#{commonReport.cancellededBills.bills}"
+                                     var="b7"   sortBy="#{b7.billType}"
+                                     rendered="#{commonReport.cancellededBills.bills.size()>0}">
+                            <f:facet name="header">  
+                                <h:outputLabel value="Agent Payment Cancel"/>
+                            </f:facet>
+
+                            <p:column headerText="Time" style="width:16%; " >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.createdAt}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b7.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Id"  style="">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="Agent"  style=""> 
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Agent"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.fromInstitution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Cash" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cash"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Cash'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>    
+
+                            <p:column headerText="Cheque" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cheque"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Cheque'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Cheque'}" value="0.00"/>
+                            </p:column> 
+
+                            <p:column headerText="Slip" style="text-align: right;"   >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Slip"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b7.paymentMethod=='Slip'}" value="#{b7.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
+                            </p:column> 
+
+                            <p:column headerText="Descripion"  style="">
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Descripion"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.comments}"/>
+                            </p:column>
+
+                            <p:column headerText="Billed Id" style="" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Id"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.billedBill.insId}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Billed Date/Time" style="" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed Date/Time"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b7.billedBill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="4" style="text-align:left" footerText="Totals:"/>  
+
+                                    <p:column footerText="#{commonReport.cancellededBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>                  
+
+                                    <p:column footerText="#{commonReport.cancellededBills.cheque}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.cheque}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column footerText="#{commonReport.cancellededBills.slip}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.slip}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                </p:row>                   
+                            </p:columnGroup> 
+                        </p:dataTable>
+
+                    </h:panelGroup>
+
+                    <p:spacer height="30"/>
+
+                    <h:panelGroup rendered="#{commonReport.billType eq 'InwardPaymentBill'}">
+
+                        <p:dataTable id="inward" value="#{commonReport.billedBills.bills}" 
+                                     var="b"   sortBy="#{b.billType}"
+                                     rendered="#{commonReport.billedBills.bills.size()>0}" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Inward Payments" />
+                            </f:facet> 
+                            <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.createdAt}"  >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>     
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+
+                            </p:column>
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.insId}"/>
+                            </p:column>
+                            <p:column headerText="Bht No"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
+                                <h:outputLabel  value="#{b.patientEncounter.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Patient"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Cash" style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="5" style="text-align:left" footerText="Totals:"/>  
+                                    <p:column footerText="#{commonReport.billedBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.billedBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>               
+                                </p:row>                   
+                            </p:columnGroup> 
+                        </p:dataTable>
+
+                        <p:spacer height="30"/>
+
+                        <p:dataTable id="inwardCancel" value="#{commonReport.cancellededBills.bills}" 
+                                     var="b"   sortBy="#{b.billType}"
+                                     rendered="#{commonReport.cancellededBills.bills.size()>0}" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Inward Payments Cancel"/>
+                            </f:facet> 
+                            <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.createdAt}"  >
+                                    <f:convertDateTime pattern="hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Cashier"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Cashier"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+
+                            </p:column>
+
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Id"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="Bht No"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Bht No"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.patientEncounter.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Patient"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Patient"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Comment"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Comment"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.comments}"/>
+                            </p:column>
+
+                            <p:column headerText="Cash" style=" text-align: right"  >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Time"/>
+                                </f:facet>
+                                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
+                            </p:column>
+
+                            <p:column exportable="false">
+                                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+                            </p:column>
+
+                            <p:columnGroup type="footer">  
+                                <p:row>  
+                                    <p:column colspan="6" style="text-align:left" footerText="Totals:"/>  
+                                    <p:column footerText="#{commonReport.cancellededBills.cash}">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{commonReport.cancellededBills.cash}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>                   
+                            </p:columnGroup> 
+                        </p:dataTable>
+
+                    </h:panelGroup>
+
+                    <p:spacer height="30"/>
+
+                    <p:dataTable id="sum" value="#{commonReport.dataTableDataByType2}"  var="i" >
+                        <f:facet name="header">
+                            Summery
+                        </f:facet>
+                        <p:column>
+                            <h:outputLabel value="#{i.string}"/>
+                        </p:column>
+                        <p:column style="font-weight: bold;text-align:right;" >
+                            <h:outputLabel value="#{i.value}">
+                                <f:convertNumber pattern="#,000.00" />
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

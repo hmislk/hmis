@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div id="centrewrapper">
+            <div id="centrecell">
+                <div class="centrecontent">
+                    <p:commandButton value="Print" ajax="false" action="#" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>
+
+
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+                    <div style="border: 1px solid;" >
+                        <h:panelGroup id="gpBillPreview" >
+
+                            <div  class="fiveinchbill">
+
+
+                                <div  class="receiptno">
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.cancelledBill.insId} **Cancelled"  
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}"/> 
+
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.refundedBill.insId} **Refunded" 
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}"/> 
+
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.insId} **Duplicate" 
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and
+                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }"/> 
+                                </div>
+
+                                <div  class="billdate">
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.cancelledBill.billDate}"
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.refundedBill.billDate}"
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.billDate}"
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and 
+                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputLabel>
+                                </div>
+
+                                <div class="payment">
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.cancelledBill.paymentMethod}" 
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}" />
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.refundedBill.paymentMethod}" 
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}"/>
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.paymentMethod}" 
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and 
+                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }"/>
+                                </div>
+
+                                <div class="billtime">
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.cancelledBill.billTime}"  
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}">
+                                        <f:convertDateTime pattern="hh mm a"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.refundedBill.billTime}"  
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}">
+                                        <f:convertDateTime pattern="hh mm a"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.billTime}" 
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and 
+                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }">
+                                        <f:convertDateTime pattern="hh mm a"/>
+                                    </h:outputLabel>
+                                </div>
+
+                                <h:outputLabel value="#{cc.attrs.controller.bill.patient.person.nameWithTitle}" styleClass="ptname" />
+
+                                <h:outputLabel value="#{cc.attrs.controller.bill.patient.person.phone}" styleClass="phone" />
+
+
+
+                                <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" styleClass="items"   >
+                                    <h:column >
+                                        <h:outputLabel value="#{bip.item.printName}" style="margin: 4px;" />
+                                        <h:panelGroup rendered="#{bip.billSession ne null }"  >
+                                            <br/>
+
+                                            <h:outputLabel value="Session No . " ></h:outputLabel>
+                                            <h:outputLabel value="#{bip.billSession.serialNo}"
+                                                           style="margin: 4px; font-size: 11px!important;" >
+
+                                        </h:panelGroup>
+                                        </h:panelGroup>
+                                    </h:column>
+                                </h:dataTable>
+
+                                <div class="rates" >
+                                    <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip1"  >
+                                        <h:column>
+                                            <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px;" >
+                                                <f:convertNumber pattern="#,000.00" />
+                                            </h:outputLabel>
+                                        </h:column>
+                                    </h:dataTable>
+                                </div>
+
+                                <div class="totals">
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <br/>
+                                                <br/>
+                                            </td>
+                                            <td>
+                                                <br/>
+                                                <br/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: left; min-width: 3cm;">
+                                                <h:outputLabel value="Total" style="  text-align: right!important;  font-size: 15px!important;   "/>
+                                            </td>
+                                            <td style="text-align: right!important; ">
+                                                <h:outputLabel value="#{cc.attrs.controller.bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                    <f:convertNumber pattern="#,000.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: left;">
+                                                <h:outputLabel  rendered="#{cc.attrs.controller.bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
+                                            </td>
+                                            <td style="text-align: right!important; ">
+                                                <h:outputLabel rendered="#{cc.attrs.controller.bill.discount ne 0.0}"   value="#{cc.attrs.controller.bill.discount}"  style=" text-align: right!important;  font-size: 15px!important;   ">
+                                                    <f:convertNumber pattern="#,000.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: left;">
+                                                <h:outputLabel  rendered="#{cc.attrs.controller.bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                            </td>
+                                            <td style="text-align: right!important; ">
+                                                <h:outputLabel  rendered="#{cc.attrs.controller.bill.discount ne 0.0}"    value="#{cc.attrs.controller.bill.netTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                    <f:convertNumber pattern="#,000.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+
+
+                                    </table>
+                                </div>
+
+                                <div class="cashier" >
+                                    <h:outputLabel value="Cashier : #{cc.attrs.controller.bill.cancelledBill.creater.code}"  
+                                                   rendered="#{cc.attrs.controller.bill.cancelledBill.insId ne null}" />
+                                    <h:outputLabel value="Cashier : #{cc.attrs.controller.bill.refundedBill.creater.code}"
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId ne null}"   />
+                                    <h:outputLabel value="Cashier : #{cc.attrs.controller.bill.creater.code}" 
+                                                   rendered="#{cc.attrs.controller.bill.refundedBill.insId eq null and
+                                                               cc.attrs.controller.bill.cancelledBill.insId eq null }"/>
+
+
+                                </div>
+
+                                <div class="consult">
+                                    <h:outputLabel value="#{cc.attrs.controller.bill.collectingCentre.name} #{cc.attrs.controller.bill.creditCompany.name}" />
+                                </div>
+
+                            </div>
+
+
+
+                        </h:panelGroup>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </cc:implementation>
+</html>

@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="CASH BILL SEARCH "/>                          
+                            <h:panelGrid columns="5" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                                </p:calendar>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createTableCashOut()}" onclick="onSubmitButton();"/>
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+
+                                <h:outputLabel value="Bill No"/>
+                                <h:outputLabel value="To Person"/>
+                                <h:outputLabel value="Total"/>
+                                <h:outputLabel/><h:outputLabel/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.personName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}" />
+
+                            </h:panelGrid>
+                            <p:defaultCommand target="btnSearch" />
+
+
+                        </f:facet>
+
+                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill"  style="min-width: 100%;"  >
+                            <p:column headerText="No" styleClass="alignTop">
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+                            <p:column headerText="View Bill">
+                                <p:commandButton ajax="false" value="View Bill" action="cash_out_reprint" onclick="onSubmitButton();">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                            </p:column>
+                            <p:column headerText="Bill No" >                                
+                                <h:outputLabel  value="#{bill.insId}"></h:outputLabel>
+                            </p:column>                            
+                            <p:column headerText="To Web User"  >                                
+                                <h:outputLabel  value="#{bill.toWebUser.webUserPerson.nameWithTitle}"></h:outputLabel>                                
+                            </p:column>
+                            <p:column headerText="Billed at"  >
+                                <h:outputLabel value="#{bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>  
+
+                            <p:column headerText="Value"  >                                
+                                <h:outputLabel value="#{bill.netTotal}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>                                 
+                            </p:column>                                                   
+                            <p:column headerText="Comments" >
+                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

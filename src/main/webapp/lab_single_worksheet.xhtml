@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:outputStylesheet library="css" name="maincss.css" />
+
+
+
+        <h:form  >
+
+
+
+            <p:growl autoUpdate="true" />
+
+
+            <h:panelGroup id="pWorksheet">
+
+                <h:outputStylesheet library="css" name="printing.css" />
+
+                <div class="nonPrintBlock" >
+                    <p:commandButton value="Print" ajax="false" action="#" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>
+
+                </div>
+                <p:panel id="pPrintWorksheet"  style="margin: auto; border: 0px; padding: 10px!important; font-size:110%" >
+
+
+                    <div >
+                        <div>
+
+
+
+                            <h:panelGroup   id="gpBillPreview"  class="fiveinchbill" style="padding: 15px!important;"  >
+
+                                <div >
+                                    <div>
+
+                                        <h:panelGrid columns="4"  style="min-width: 100%; padding: 10px!important;margin: 10px;">
+                                            <h:outputLabel value="Name : " style="font-size: 11px!important;" />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.patient.person.nameWithTitle}" ></h:outputLabel>
+
+                                            <h:outputLabel style="font-size: 11px!important;" value="Sex : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.patient.person.sex}" ></h:outputLabel>
+
+
+                                            <h:outputLabel style="font-size: 11px!important;" value="Age : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.patient.age }" ></h:outputLabel>
+
+
+                                            <h:outputLabel style="font-size: 11px!important;" value="Doc : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.referredBy.person.nameWithTitle}" ></h:outputLabel>
+                                            <h:outputLabel style="font-size: 11px!important;" value="Investigation : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.investigation.name}" ></h:outputLabel>
+
+                                            <h:outputLabel style="font-size: 11px!important;" value="Id : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.insId}" ></h:outputLabel>
+
+                                            <h:outputLabel style="font-size: 11px!important;" value="Billed At : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.createdAt}" >
+                                                <f:convertDateTime pattern="dd MM yyyy HH:mm a "/>
+                                            </h:outputLabel>
+                                        </h:panelGrid>
+                                        
+                                        
+sfsdfsdfsd
+                                            <h:panelGroup rendered="#{patientInvestigationController.current.investigation.reportType eq 'Microbiology'}"  style="width: 100%;" >
+                                                <p:panelGrid columns="2"  >
+
+                                                    <h:outputLabel value="Macroscopy"   style="font-size: 11px!important;">
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="................................................................................................"   style="font-size: 11px!important;">
+                                                    </h:outputLabel>
+
+                                                    <h:outputLabel value="Microscopy"   style="font-size: 11px!important;">
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
+                                                    </h:outputLabel>
+
+                                                    <h:outputLabel value="Colony Count"   style="font-size: 11px!important;">
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
+                                                    </h:outputLabel>
+
+                                                    <h:outputLabel value="Comments"   style="font-size: 11px!important;">
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
+                                                    </h:outputLabel>
+                                                </p:panelGrid>
+
+                                                <p:dataGrid style="padding: 1px!important;margin: 1px!important;" columns="4" value="#{antibioticController.items}" var="ab" >
+                                                    <h:outputLabel value="#{ab.code}"   style="font-size: 11px!important;"></h:outputLabel>
+                                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"   style="font-size: 11px!important;"></h:outputLabel>
+                                                    <h:outputLabel value="....."   style="font-size: 11px!important;"></h:outputLabel>
+                                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"   style="font-size: 11px!important;"></h:outputLabel>
+                                                </p:dataGrid>
+
+                                            </h:panelGroup>
+
+                                        
+                                        <table>
+                                            <ui:repeat value="#{patientInvestigationController.current.investigation.reportItems}" var="myix" >
+                                                
+                                              
+                                                                                                
+                                                <h:panelGroup rendered="#{myix.retired==false and myix.ixItemType eq 'Value' and myix.item.reportType ne 'Microbiology'}" style="padding-left: 10px!important;margin-left:  10px!important;">
+                                                    <tr>
+                                                        <td>
+                                                            <h:outputLabel value="#{myix.name}" style="font-size: 11px!important;" ></h:outputLabel>
+                                                        </td>
+                                                        <td>
+                                                            <h:outputLabel value="_____________"   style="font-size: 11px!important;"  ></h:outputLabel>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                            </ui:repeat>
+
+
+
+
+                                        </table>
+
+                                    </div>
+
+                                </div>
+
+                            </h:panelGroup>
+
+
+                        </div>
+                    </div>
+
+                </p:panel>
+
+
+            </h:panelGroup>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

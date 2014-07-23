@@ -1,0 +1,242 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://java.sun.com/jsf/composite/inward">
+
+
+
+    <ui:define name="content">       
+
+        <h:panelGroup rendered="true" styleClass="opdPanel" >
+            <h:form id="form">
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputLabel value="Total Value : "/>
+                        <h:outputLabel value="#{surgeryBillController.batchBill.total}"/>
+                        <p:commandButton value="Clear All" ajax="false"
+                                         action="#{surgeryBillController.makeNull}" onclick="onSubmitButton();"/>
+                        <p:commandButton value="Save Surgery Detail" ajax="false" 
+                                         action="#{surgeryBillController.save()}" 
+                                         styleClass="highLight"
+                                         disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
+
+
+                    </f:facet>
+
+                    <p:panel> 
+                        <f:facet name="header">
+                            <h:outputLabel value="Surgery &amp; BHT Detail"/>
+                        </f:facet>
+                        <h:panelGrid columns="2">
+                            <p:panel>
+                                <h:outputLabel value="Type Patient Name or BHT : "/>
+                                <p:autoComplete  forceSelection="true" converter="admis"
+                                                 value="#{surgeryBillController.batchBill.patientEncounter}" 
+                                                 completeMethod="#{admissionController.completePatient}"
+                                                 var="apt2" itemLabel="#{apt2.patient.person.name}"
+                                                 itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                    <p:ajax event="itemSelect"  update="panSearch2"  process="@this" />
+                                    <p:column >
+                                        #{apt2.bhtNo} 
+                                    </p:column>
+                                    <p:column >
+                                        #{apt2.patient.person.name} 
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                </p:autoComplete>
+                                <h:panelGroup id="panSearch2">
+                                    <in:bhtDetail admission="#{surgeryBillController.batchBill.patientEncounter}"/>
+                                </h:panelGroup>
+                            </p:panel>
+                            <p:panel>
+                                <p:panelGrid columns="2" >
+                                    <h:outputLabel value="Surgery Name" >
+                                    </h:outputLabel>
+                                    <p:autoComplete forceSelection="true"
+                                                    value="#{surgeryBillController.batchBill.procedure.item}" 
+                                                    completeMethod="#{procedureController.completeDiagnosis}"
+                                                    var="apt2" itemLabel="#{apt2.name}"
+                                                    itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                    </p:autoComplete>
+
+                                </p:panelGrid>
+                            </p:panel>
+                        </h:panelGrid>
+                    </p:panel>
+
+
+                </p:panel>  
+
+                <p:panelGrid columns="2" >
+                    <p:panel header="Professional">                        
+                        <p:dataTable value="#{surgeryBillController.proEncounterComponents}" id="surgery"   var="c" >
+                            <p:column>
+                                <h:outputLabel value="#{c.patientEncounterComponentType}"></h:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"></h:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <p:inputText autocomplete="off" value="#{c.billFee.feeValue}" disabled="#{c.billFee.paidValue!=0}" />
+                            </p:column>
+                            <p:column >
+                                <h:outputLabel value="#{c.billFee.createdAt}">
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>                                                   
+                                <br/>
+                                <h:panelGroup rendered="#{c.billFee.retired}" >
+                                    <h:outputLabel style="color: red;" value="Deleted at " />
+                                    <h:outputLabel style="color: red;"  value="#{c.billFee.retiredAt}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column >
+                                <h:outputLabel value="#{c.billFee.creater.webUserPerson.name}"/>     
+                                <br/>
+                                <h:panelGroup rendered="#{c.billFee.retired}" >
+                                    <h:outputLabel style="color: red;" value="Deleted By " />
+                                    <h:outputLabel style="color: red;"  value="#{c.billFee.retirer.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                    <p:panel header="Timed Service">
+                        <p:dataTable value="#{surgeryBillController.timedEncounterComponents}" var="ti">
+                            <p:column headerText="Service Name">
+                                #{ti.billFee.patientItem.item.name}
+                            </p:column>
+                            <p:column headerText="Start Time">
+                                <p:calendar navigator="true"  
+                                            value="#{ti.billFee.patientItem.fromTime}" 
+                                            pattern="dd MMMM yyyy hh mm a" />                                      
+                            </p:column>                               
+                            <p:column headerText="Stopped Time">
+                                <p:calendar navigator="true"  
+                                            value="#{ti.billFee.patientItem.toTime}" 
+                                            pattern="dd MMMM yyyy hh mm a" />  
+                            </p:column>
+                            <p:column headerText="Total">
+                                #{ti.billFee.patientItem.serviceValue}
+                            </p:column>
+                            <p:column >
+                                <h:outputLabel value="#{ti.billFee.createdAt}">
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>                                                   
+                                <br/>
+                                <h:panelGroup rendered="#{ti.billFee.retired}" >
+                                    <h:outputLabel style="color: red;" value="Deleted at " />
+                                    <h:outputLabel style="color: red;"  value="#{ti.billFee.retiredAt}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column >
+                                <h:outputLabel value="#{ti.billFee.creater.webUserPerson.name}"/>     
+                                <br/>
+                                <h:panelGroup rendered="#{ti.billFee.retired}" >
+                                    <h:outputLabel style="color: red;" value="Deleted By " />
+                                    <h:outputLabel style="color: red;"  value="#{ti.billFee.retirer.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>     
+
+                        </p:dataTable>
+                    </p:panel>
+
+                    <p:panel header="Service Detail">                                    
+                        <p:dataTable  scrollable="true" scrollHeight="300" 
+                                      value="#{surgeryBillController.departmentBillItems}" var="dep">
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Item Name
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">
+                                            Count
+                                        </f:facet>
+                                    </p:column>   
+                                </p:row>
+                            </p:columnGroup>
+                            <p:subTable value="#{dep.items}" var="ser">
+                                <f:facet name="header">
+                                    <h:outputLabel value="#{dep.department.name}"/>
+                                </f:facet>
+                                <p:column>
+                                    #{ser.name}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{ser.transBillItemCount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:subTable>
+                        </p:dataTable>
+                    </p:panel>
+                    <p:panel header="Pharmacy Issue">                     
+                        <p:dataTable value="#{surgeryBillController.pharmacyIssues}" var="iss" scrollable="true"
+                                     scrollHeight="300">
+                            <p:column headerText="Bill No">
+                                #{iss.bill.deptId}
+                            </p:column>   
+                            <p:column headerText="Item Name">
+                                #{iss.item.name}
+                            </p:column>   
+                            <p:column headerText="Qty">
+                                #{iss.qty}
+                            </p:column> 
+                            <p:column headerText="Bill At">
+                                <h:outputLabel value="#{iss.createdAt}">
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>                                                   
+                                <br/>
+                                <h:panelGroup rendered="#{iss.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
+                                                   value="#{iss.bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column headerText="Billed Time"  >
+                                <h:outputLabel value="#{iss.createdAt}">
+                                    <f:convertDateTime pattern="hh mm a"/>
+                                </h:outputLabel>                                                   
+                                <br/>
+                                <h:panelGroup rendered="#{iss.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
+                                                   value="#{iss.bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="hh mm a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column headerText="Billed By">
+                                <h:outputLabel value="#{iss.creater.webUserPerson.name}"/>     
+                                <br/>
+                                <h:panelGroup rendered="#{iss.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
+                                                   value="#{iss.bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column> 
+                        </p:dataTable>
+                    </p:panel>
+                </p:panelGrid>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

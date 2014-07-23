@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="dup" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:form>
+
+            <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
+                <p:printer target="gpBillPreview" ></p:printer>
+            </p:commandButton>    
+
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+            <div  >
+                <h:panelGroup id="gpBillPreview" >
+
+                    <div class="fiveinchbill" >
+
+                        <div class="heading">
+                            <h:outputLabel value="PAYMENT VOUCHER : "   />   
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="text-transform: capitalize; "  />
+                            <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.dup eq true}"/>
+                        </div>
+
+                        <div class="cel1R1L" >
+                            <h:outputLabel value="Bill No"/><h:outputLabel value=":"/>
+                            <h:outputLabel value="#{cc.attrs.bill.insId}"/>
+                        </div>
+
+                        <div class="cel2R1L" >
+                            <h:outputLabel value="BHT No"/><h:outputLabel value=":"/>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/>
+                        </div>
+
+                        <div class="cel3R1L" >
+                            <h:outputLabel value="Date">
+                            </h:outputLabel>
+                            <h:outputLabel value=":">
+                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.billDate}" >
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </h:outputLabel>
+                        </div>
+
+                        <div Class="cel4R1L" >
+                            <h:outputLabel value="Payment" ></h:outputLabel>
+                            <h:outputLabel value=":" ></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" >
+                            </h:outputLabel>
+                        </div>
+
+                        <div style="position: absolute;left: 5%;top: 50%;min-width: 85%;" >
+
+                            <table style="min-width:100%;padding-left: 30px;">
+                                <tr>
+                                    <td style="text-align: left; min-width: 3cm; font-weight: bold;">
+                                        <h:outputLabel value="Total:&nbsp;&nbsp;" style="text-align: right!important;  font-size: 15px!important;"/>
+
+
+                                        <h:outputLabel value="Rs. "/>
+                                        <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                            <f:convertNumber pattern="#,000.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value=" /="/>
+                                    </td>
+
+                                </tr>
+                            </table>
+                            <br/>
+                            <br/>
+                            <br/>
+
+
+
+
+
+                            <div class="cashierBlock" >
+                                <h:outputLabel value=".................."  /><br/>
+                                <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}"   />
+                            </div>
+
+                        </div>
+                    </div>
+
+                </h:panelGroup>
+            </div>
+
+
+        </h:form>
+    </cc:implementation>
+</html>

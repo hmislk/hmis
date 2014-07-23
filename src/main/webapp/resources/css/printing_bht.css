@@ -1,0 +1,662 @@
+/* 
+    Document   : printing
+    Created on : Oct 6, 2013, 11:53:48 AM
+    Author     : Buddhika
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+
+@media print{
+    .fiveinchbill{
+        // page-break-after:always!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 0px!important; 
+        width: 95%;
+        height: 95%;
+        padding: 0px;
+        font-size: 180%;
+    }
+
+    .fiveinchbillBreak{
+        // page-break-before: always!important;
+        page-break-after:always!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 0px!important; 
+        width: 95%;
+        height: 95%;
+        padding: 1px;
+        font-size: 180%;
+    }
+
+    .fiveinchbillNoBreak{
+        // page-break-before: always!important;
+        page-break-after:always!important; 
+        font-family: sans-serif!important;
+        page-break-inside: avoid;
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 0px!important; 
+        width: 95%;
+        height: 95%;
+        padding: 1px;
+        font-size: 180%;
+    }
+
+}
+
+
+@media screen{
+    .patientCard{
+        width: 8.56cm;
+        height: 5.398cm;
+        border: 1px solid black;
+    }
+
+    .fiveinchbill{
+        position: relative!important;
+        padding: 5px!important;
+        height:550px!important;
+        width:550px!important; 
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 130%;
+        text-transform: capitalize!important;
+    }
+
+    .fiveinchbillBreak{
+        position: relative!important;
+        padding: 5px!important;
+        height:550px!important;
+        width:550px!important; 
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 130%;
+
+    }
+
+
+
+
+
+}
+
+
+@media print{
+
+    .patientCard{
+        width: 8.56cm;
+        height: 5.398cm;
+        border: 1px solid black;
+    }
+
+
+    .summery{
+        // page-break-after:always!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 0px!important; 
+        //    width: 95%!important;
+        //    height: 95%!important;
+        padding: 0px!important;
+        font-size: 100%!important;
+    }
+
+
+
+}
+
+
+@media screen{
+    .summery{
+        position: relative!important;
+        //   padding: 5px!important;
+        //   height:550px!important;
+        //    width:550px!important; 
+        //     overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        // margin: auto!important; 
+        //   background-size: 100% auto!important; 
+        //     border: 1px solid!important;
+        font-size: 100%!important;
+    }
+
+
+
+}
+
+
+
+
+
+@media print{
+    .staffFive{
+        position: relative!important;
+        padding: 5px!important;
+        height:800px!important;
+        width:1100px!important; 
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 100%;
+    }
+
+}
+
+@media screen{
+    .staffFive{
+        position: relative!important;
+        padding: 5px!important;
+        height:550px!important;
+        width:550px!important; 
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 130%;
+    }
+
+
+
+}
+
+@media print{
+    .staffFive{
+        // page-break-after:always!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 0px!important; 
+        width: 95%;
+        height: 95%;
+        padding: 0px;
+        font-size: 180%;
+    }
+
+}
+
+
+@media print{
+    .a4bill{
+        page-break-after:always!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 0px!important; 
+        width: 95%;
+        height: 95%;
+        padding: 0px;
+        font-size: 100%;
+
+    }
+
+
+}
+
+.heading{
+    text-align: center!important; 
+    min-width: 90%!important; 
+    /*padding: 5px!important;*/ 
+    padding-top: 30%!important;
+    margin: auto!important; 
+    font-size: 13px!important;
+}
+
+.headingTitle{
+    position: absolute;
+    text-align: center;
+    text-decoration: underline;
+    font-weight: bold;
+    font-size: 150%;
+    margin-top: 0%;
+    margin-left: 25%;
+
+}
+
+.tbl{
+    text-align: center!important;
+    min-width: 90%!important;
+    padding: 5px!important; 
+    padding-top: 10%!important;
+    margin: auto!important; 
+    border: 1px!important;    
+}
+
+.cashier{
+    position:absolute!important;
+    left:25%!important;
+    bottom:10%!important;
+
+}
+
+.description{
+    position:absolute!important;
+    left:2.0cm!important;
+    bottom:5%!important;
+
+}
+
+.mark{
+    font-weight: bold;
+
+}
+
+@media screen{
+    .a4bill{
+        /*        position: relative!important;
+                padding: 5px!important;
+                height:800px!important;
+                width:1100px!important;        
+                font-family: sans-serif!important; 
+                font-size: 11px!important; 
+                margin: auto!important; 
+                background-size: 100% auto!important; 
+                border: 1px solid!important;
+                font-size: 100%;*/
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 0px!important; 
+        width: 95%;
+        height: 95%;
+        padding: 0px;
+        font-size: 100%;
+    }
+
+
+}
+
+.receiptno{
+    position: absolute;
+    left: 35%;
+    top: 15%;
+}
+
+.billdate{
+    position: absolute;
+    left: 80%;
+    top: 15%;
+
+}
+.payment{
+    position: absolute;
+    left: 35%;
+    top: 18%;
+
+}
+
+.billtime{
+    position: absolute;
+    left:80%;
+    top: 18%;
+
+}
+
+
+.ptname{
+    position: absolute;
+    left: 35%;
+    top: 22%;
+
+}
+
+.billName{
+    position: absolute;
+    left: 75%;
+    top: 25%;
+    // text-align: center;
+    //  width: 90%;
+
+}
+
+.phone{
+    position: absolute;
+    left: 35%;
+    top: 24%;
+
+}
+
+
+
+.cashier{
+    position: absolute;
+    bottom: 1%;
+    left: 10%;
+
+}
+
+.consult{
+    position: absolute;bottom: 1%;left: 60%;
+}
+
+.consult2{
+    position: absolute;
+
+    left: 60%;
+    top: -1%;
+}
+
+.collecting{
+    position: absolute;
+    left: 10%;
+    top: 22%;
+
+
+}
+
+
+.items{
+    position: absolute;
+    left: 15%;
+    top: 37%;
+
+}
+
+.rates{
+    position: absolute;
+    left: 70%;
+    top: 37%;
+
+}
+
+.totals{
+    position: absolute;
+    left: 30%;
+    bottom: 25%;
+    font-size: 150%;
+    font-weight: bolder;
+}
+
+.worksheetfont{
+    font-size: 13px!important;
+    font-weight: bolder;
+}
+
+
+.worksheetval{
+    font-size: 110%;
+}
+
+.DataTable {
+    border: none !important;
+    background: none!important;
+    background-color: white;
+}
+
+.noBorder div *,
+.noBorder div ,
+.noBorder table *,
+.noBorder td{
+    border: none!important;
+    border-top:none!important;
+    font-family: Verdana!important;
+    font-size: 11px!important;
+  
+}
+
+
+
+.ui-datatable.borderless .ui-datatable-data tr,
+.ui-datatable.borderless .ui-datatable-data-empty tr,
+.ui-datatable.borderless .ui-datatable-data td,
+.ui-datatable.borderless .ui-datatable-data-empty td {
+    border-style: none!Important;
+    padding: 1px;
+    border: 1px;
+    overflow: hidden;
+}
+
+.itemsToLeft{
+    position: absolute;
+    left: 25%;
+    top: 24%!important;
+
+}
+
+.myTable td:nth-child(1) {
+    width: 20px;
+}
+
+.myTable td:nth-child(1) {
+    width: 180px;
+}
+
+
+.cel1R1L{
+    position: absolute;
+    left: 10%;
+    top: 0%;
+}
+
+
+.cel1R1C{
+    position: absolute;
+    left: 20%;
+    top: 25%;
+
+}
+
+.cel1R1V{
+    position: absolute;
+    left: 25%;
+    top: 25%;
+
+}
+
+.cel2R1L{
+    position: absolute;
+    left: 65%;
+    top: 0%;
+
+}
+
+
+.cel2R1C{
+    position: absolute;
+    left: 75%;
+    top: 25%;
+
+}
+
+.cel2R1V{
+    position: absolute;
+    left: 80%;
+    top: 25%;
+
+}
+
+.cel1R2L{
+    position: absolute;
+    left: 10%;
+    top: 28%;
+
+
+}
+
+.cel1R2C{
+    position: absolute;
+    left: 20%;
+    top: 28%;
+
+}
+.cel1R2V{
+    position: absolute;
+    left: 25%;
+    top: 28%;
+
+}
+
+
+.cel2R2L{
+    position: absolute;
+    left: 65%;
+    top: 28%;
+
+
+}
+
+.cel2R2C{
+    position: absolute;
+    left: 75%;
+    top: 28%;
+
+}
+.cel2R2V{
+    position: absolute;
+    left: 80%;
+    top: 28%;
+
+}
+
+.cel1R3L{
+    position: absolute;
+    left: 10%;
+    top: 31%;
+
+
+}
+
+.cel1R3C{
+    position: absolute;
+    left: 20%;
+    top: 31%;
+
+}
+.cel1R3V{
+    position: absolute;
+    left: 25%;
+    top: 31%;
+
+}
+
+
+.cel2R3L{
+    position: absolute;
+    left: 65%;
+    top: 31%;
+
+
+}
+
+.cel2R3C{
+    position: absolute;
+    left: 75%;
+    top: 31%;
+
+}
+.cel2R3V{
+    position: absolute;
+    left: 80%;
+    top: 31%;
+
+}
+
+
+.cel1R4L{
+    position: absolute;
+    left: 10%;
+    top: 34%;
+
+
+}
+
+.cel1R4C{
+    position: absolute;
+    left: 20%;
+    top: 34%;
+
+}
+.cel1R4V{
+    position: absolute;
+    left: 25%;
+    top: 34%;
+
+}
+
+
+.cel2R4L{
+    position: absolute;
+    left: 65%;
+    top: 34%;
+
+
+}
+
+.cel2R4C{
+    position: absolute;
+    left: 75%;
+    top: 34%;
+
+}
+.cel2R4V{
+    position: absolute;
+    left: 80%;
+    top: 34%;
+
+}
+
+
+
+
+@media screen{
+    .fiveinchbillPharmacy{
+        position: relative!important;
+        padding: 5px!important;
+        height:550px!important;
+        width:550px!important; 
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 130%;
+    }
+
+}
+
+
+@media print{
+
+    .fiveinchbillPharmacy{
+        page-break-after:always!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 0px!important; 
+        width: 95%;
+        height: 95%;
+        padding: 0px;
+        font-size: 180%;
+    }
+
+
+}
+
+.summeryBorder{
+    width: 100%!important; margin:0px!important;padding:0px!important;border:none!important;
+
+}

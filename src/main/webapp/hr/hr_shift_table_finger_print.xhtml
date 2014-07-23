@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="form">  
+            <h:panelGrid columns="2">
+                <h:outputLabel value="From Date"/>
+                <p:calendar id="frmDate" 
+                            value="#{shiftFingerPrintAnalysisController.fromDate}"
+                            pattern="dd MMMM yyyy" />
+                <h:outputLabel value="To Date"/>
+                <p:calendar id="toDate" 
+                            value="#{shiftFingerPrintAnalysisController.toDate}" 
+                            pattern="dd MMMM yyyy" />
+                <h:outputLabel value="Roster"/>
+                <p:selectOneMenu id="roster" value="#{shiftFingerPrintAnalysisController.roster}">
+                    <f:selectItem itemLabel="Select Roster"/>
+                    <f:selectItems value="#{rosterController.items}" 
+                                   var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
+                    <f:ajax event="change" execute="@this" render="lst" 
+                            listener="#{shiftFingerPrintAnalysisController.selectRosterLstener()}" />
+                </p:selectOneMenu>
+                <p:commandButton value="Fill"
+                                 process="@this frmDate toDate roster"
+                                 update="lst"
+                                 actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                 action="#{shiftFingerPrintAnalysisController.createShiftTable()}" onclick="onSubmitButton();" />    
+                <p:commandButton value="SAVE"
+                                 action="#{shiftFingerPrintAnalysisController.save()}" onclick="onSubmitButton();"/>
+            </h:panelGrid>
+
+            <p:dataGrid  id="lst" columns="1" var="data"
+                         value="#{shiftFingerPrintAnalysisController.shiftTables}" >
+                <p:dataTable value="#{data.staffShift}" var="sts"
+                             rowStyleClass="#{sts.shift.dayType eq 'DayOff'
+                                              or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
+                    <f:facet name="header">
+                        <h:outputLabel value="#{data.date}" >
+                            <f:convertDateTime pattern="dd MM yyyy"/>
+                        </h:outputLabel>
+                    </f:facet>
+                    <p:column headerText="Shift Name" styleClass="singleLine">
+                        <h:outputLabel value="#{sts.shift.name}" />
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Staff Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{sts.staff.person.name}"/>
+                    </p:column> 
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Staff Code"/>
+                        </f:facet>
+                        <h:outputLabel value="#{sts.staff.code}"/>
+                    </p:column>     
+
+                    <p:column headerText="Starting Record Frm Attendence"> 
+                        <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
+                            <h:panelGroup  rendered="#{sts.startRecord.staffShift eq null}">
+                                <h:outputLabel id="lbrStart" value="Select Start  Record"
+                                               rendered="#{sts.startRecord.recordTimeStamp eq null}"/><br/>
+                                <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
+                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
+                                                   itemLabel="#{i.timeLabel}" itemValue="#{i}" />
+                                    <f:ajax event="change" execute="@this" render="strRc lbrStart"
+                                            listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                            <h:outputLabel value="#{sts.startRecord.timeLabel}"
+                                           rendered="#{sts.startRecord.staffShift ne null}"/>
+                        </h:panelGroup>
+                        <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
+                    </p:column>
+
+                    <p:column headerText="Ending Record Frm Attendence">
+                        <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
+                            <h:panelGroup rendered="#{sts.endRecord.staffShift eq null}">
+                                <h:outputLabel id="lblEnd" value="Select End  Record"
+                                               rendered="#{sts.endRecord.recordTimeStamp eq null}"/><br/>
+                                <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
+                                    <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
+                                    <f:ajax event="change" execute="@this" render="endRc lblEnd"
+                                            listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
+                                </p:selectOneMenu>   
+                            </h:panelGroup>
+                            <h:outputLabel value="#{sts.endRecord.timeLabel}"
+                                           rendered="#{sts.endRecord.staffShift ne null}"/>
+                        </h:panelGroup>
+                        <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
+                    </p:column>
+
+                    <p:column headerText="Starting Record Varified">
+                        <h:panelGroup rendered="#{sts.previousStaffShift eq null}">
+                            <p:calendar id="strRc" 
+                                        value="#{sts.startRecord.recordTimeStamp}" 
+                                        pattern="dd MM yy hh mm a"
+                                        disabled="#{sts.consideredForSalary or sts.consideredForOt}"  >                           
+                            </p:calendar>
+                        </h:panelGroup>
+                        <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
+                    </p:column>
+
+                    <p:column headerText="Ending Record  Varified">
+                        <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
+                            <p:calendar id="endRc"
+                                        value="#{sts.endRecord.recordTimeStamp}" 
+                                        pattern="dd MM yy hh mm a" 
+                                        disabled="#{sts.consideredForSalary or sts.consideredForOt}" >                            
+                            </p:calendar>
+                        </h:panelGroup>
+                        <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
+                    </p:column>
+
+
+                </p:dataTable>  
+            </p:dataGrid>
+
+
+        </h:form>  
+
+
+
+    </ui:define>
+
+
+
+</ui:composition>

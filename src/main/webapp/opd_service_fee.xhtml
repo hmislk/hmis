@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl autoUpdate="true" />
+
+                <p:panel header="Manage Service Fees" >
+
+                    <p:panelGrid columns="1" >
+                        <p:panelGrid columns="2" >
+                            <h:outputLabel value="Select Service" />
+                            <p:autoComplete widgetVar="serv" id="acIx" forceSelection="true" converter="itemcon"
+                                            value="#{serviceFeeController.currentIx}" completeMethod="#{itemController.completeInwardItems}"
+                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                <p:ajax event="itemSelect" process="@this" update="gpDetail" listener="#{serviceFeeController.createCharges()}" ></p:ajax>
+                                <p:column>#{ix.name}</p:column>
+                                <p:column>#{ix.category.name}</p:column>
+                                <p:column>#{ix.category.parentCategory.name}</p:column>
+                                <p:column>#{ix.department.name}</p:column>
+                            </p:autoComplete>
+                        </p:panelGrid>
+
+                        <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
+                            <p:panel id="gpDetail" >
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Charge Detail" ></h:outputLabel>
+                                    <h:outputText style="float:right;" id="lblTotal" value="Total : #{serviceFeeController.currentIx.total}"/>
+                                </f:facet>
+                                <h:panelGrid columns="2">
+                                    <h:outputText value="Fee Name"/>
+                                    <h:inputText autocomplete="off" id="txtFeeName" value="#{serviceFeeController.currentFee.name}"/>
+                                    <h:outputText value="Fee Type"/>
+                                    <h:selectOneListbox id="cmbFeeType" size="1" value="#{serviceFeeController.currentFee.feeType}" >
+                                        <f:selectItem itemLabel="Select Fee Type"/>
+                                        <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
+                                    </h:selectOneListbox>
+
+
+                                    <h:outputText value="Speciality"/>
+                                    <p:autoComplete converter="specilityCon"  forceSelection="true" id="cmbSpe" 
+                                                    value="#{serviceFeeController.currentFee.speciality}"
+                                                    completeMethod="#{specialityController.completeSpeciality}"
+                                                    var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" 
+                                                    size="30"  style="width: 400px;">
+                                        <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
+                                    </p:autoComplete>
+
+
+                                    <h:outputText value="Staff"/>
+                                    <p:autoComplete converter="stfcon"  forceSelection="true" id="cmbDoc" value="#{serviceFeeController.currentFee.staff}" completeMethod="#{serviceFeeController.completeStaff}" var="st" itemLabel="#{st.person.name}" itemValue="#{st}" size="30"  style="width: 400px;">
+                                    <f:ajax execute="cmbSpe" event="keypress"/>
+                                    </p:autoComplete>
+
+                                    <h:outputText value="Institution"/>
+                                    <h:selectOneListbox id="cmbInstitution" size="1" value="#{serviceFeeController.currentFee.institution}" >
+                                        <f:selectItem itemLabel="Select Institution"/>
+                                        <f:selectItems value="#{institutionController.company}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/>                                        
+                                    </h:selectOneListbox>
+                                    <h:outputText value="Department"/>
+                                    <h:selectOneListbox id="cmbDepartment" size="1" value="#{serviceFeeController.currentFee.department}" >
+                                        <f:selectItem itemLabel="Select Department"/>
+                                        <f:selectItems value="#{serviceFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
+                                    </h:selectOneListbox>
+
+                                    <h:outputText value="Local Fee"/>
+                                    <h:inputText autocomplete="off" id="txtFee" value="#{serviceFeeController.currentFee.fee}"/>
+
+                                    <h:outputText value="Foreign Fee"/>
+                                    <h:inputText autocomplete="off" id="txtFFee" value="#{serviceFeeController.currentFee.ffee}"/>
+
+
+                                    <h:outputText value=""/>
+                                    <h:commandButton id="btnAddTo" value="Add"  action="#{serviceFeeController.saveCharge}" styleClass="buttons">
+                                    </h:commandButton>
+                                    <p:defaultCommand target="btnAddTo"/>
+                                </h:panelGrid>
+
+
+
+
+                                <p:dataTable id="dtbFee" rowIndexVar="rowIndex" value="#{serviceFeeController.charges}" var="bi" >
+                                    <p:column headerText="Fee Name">
+                                        <h:inputText value="#{bi.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        
+                                        <p:autoComplete converter="specilityCon"  forceSelection="true" id="cmbSpe2" rendered="#{bi.feeType eq 'Staff'}"
+                                                        value="#{bi.speciality}"
+                                                        completeMethod="#{specialityController.completeSpeciality(qry)}" 
+                                                        var="b" itemLabel="#{b.name}" itemValue="#{b}" size="30"  style="width: 400px;">
+                                            <f:ajax execute="cmbSpe2" render="cmbDoc2" event="keypress"/>
+                                        </p:autoComplete>
+                                        
+                                        
+                                    </p:column>
+
+                                    <p:column headerText="Staff">
+                                        <p:autoComplete converter="stfcon"  forceSelection="true" 
+                                                        id="cmbDoc2" rendered="#{bi.feeType eq 'Staff'}"
+                                                        value="#{bi.staff}"
+                                                        completeMethod="#{serviceFeeController.completeStaff}"
+                                                        var="b" itemLabel="#{b.person.nameWithTitle}"
+                                                        itemValue="#{b}" size="30"  style="width: 400px;">
+                                    <f:ajax execute="cmbSpe2" event="keypress"/>
+                                    </p:autoComplete>
+                                        
+                                    </p:column>
+                                    <p:column headerText="Fee Type">
+                                        
+                                        <h:selectOneListbox size="1" value="#{bi.feeType}" >
+                                            <f:selectItem itemLabel="Select Fee Type"/>
+                                            <f:selectItems value="#{enumController.feeTypes}" var="i"
+                                                           itemLabel="#{i.label}" itemValue="#{i}" />                                        
+                                        </h:selectOneListbox>
+                                       
+                                    </p:column>
+                                    
+                                    <p:column headerText="Fee Id">
+                                        #{bi.id}
+                                    </p:column>
+                                    
+                                    <p:column headerText="Department">
+                                        #{bi.department.name}
+                                    </p:column>
+                                    <p:column headerText="Local Fee">
+                                        <p:inputText value="#{bi.fee}"/>
+                                    </p:column>
+                                    <p:column headerText="Foreigner Fee">
+                                        <p:inputText value="#{bi.ffee}"/>
+                                    </p:column>
+                                    <p:column headerText="Created Date">
+                                        <h:outputLabel value="#{bi.createdAt}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Created Person">
+                                        #{bi.creater.webUserPerson.nameWithTitle}
+                                    </p:column>
+                                    
+                                    <p:column headerText="Edited Date">
+                                        #{bi.editedAt}
+                                    </p:column>
+                                    
+                                    <p:column headerText="Edited Person">
+                                        #{bi.editer.webUserPerson.nameWithTitle}
+                                    </p:column>
+                                    
+                                    <p:column headerText="MakeNull">
+                                        <p:commandButton ajax="false" value="MakeNull" action="#{serviceFeeController.makeNullst(bi)}"/>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Update">
+                                        <p:commandButton ajax="false" value="Update" action="#{serviceFeeController.edit(bi)}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Remove">
+                                        <h:commandButton id="remove" value="Remove" action="#{serviceFeeController.removeFee}" >
+                                            <f:setPropertyActionListener value="#{bi}" target="#{serviceFeeController.removedItemFee}"/>
+                                            <p:ajax update=":#{p:component('lblTotal')} dtbFee"  process="remove dtbFee" />
+                                        </h:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </p:panel>
+
+                        </h:panelGrid>
+
+                    </p:panelGrid>
+
+
+
+
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

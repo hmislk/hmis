@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form>
+
+                    <h:panelGrid columns="4"  >   
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Lab Investigation With Credit" />
+                            </f:facet>                            
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Month End Detail" action="report_lab_investigation_month_end_detail"/>
+
+                           
+                        </h:panelGrid>
+                        
+                         <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Lab Investigation Without Credit" />
+                            </f:facet>                            
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Month end Details without credit" action="report_lab_investigation_month_end_detail_without_credit.xhtml"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Month end Summery without credit" action="report_lab_investigation_month_end_summery_without_credit.xhtml"/>
+
+                        </h:panelGrid>
+
+                        <p:commandButton styleClass="linkButton" ajax="false" 
+                                         value="Fees for outside institutions" 
+                                         action="#{commonReport.displayOutsideBillFees()}"/>
+                        
+                    </h:panelGrid>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

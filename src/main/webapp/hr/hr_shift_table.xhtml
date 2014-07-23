@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="form">  
+            <h:panelGrid columns="2">
+                <h:outputLabel value="From Date"/>
+                <p:calendar id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
+                <h:outputLabel value="To Date"/>
+                <p:calendar id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
+                <h:outputLabel value="Roster"/>
+                <p:selectOneMenu id="roster" value="#{shiftTableController.roster}">
+                    <f:selectItem itemLabel="Select Roster"/>
+                    <f:selectItems value="#{rosterController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
+                    <f:ajax event="change" execute="@this" render="lst" 
+                            listener="#{shiftTableController.selectRosterLstener()}" />
+                </p:selectOneMenu>
+                <p:commandButton ajax="false" value="Fill"
+                                 actionListener="#{shiftTableController.makeTableNull()}"
+                                 action="#{shiftTableController.createShiftTable()}" onclick="onSubmitButton();" />       
+                <p:commandButton ajax="false" value="Save"
+                                 action="#{shiftTableController.save}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Clear" 
+                                 action="#{shiftTableController.makeNull()}" onclick="onSubmitButton();" />
+            </h:panelGrid>
+
+            <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
+                         var="data" value="#{shiftTableController.shiftTables}" >
+                <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine" >
+                    <p:column headerText="Staff Name" rendered="#{data.flag eq true}">                      
+                        <h:outputLabel value="#{sts.staff.person.name}" />
+
+                    </p:column>
+                    <p:column headerText="Staff Code" rendered="#{data.flag eq true}" >                        
+                        <h:outputLabel value="#{sts.staff.code}"/>
+                    </p:column>
+<!--
+                    <p:column>
+                        <p:panelGrid columns="2">
+                            <h:outputLabel value="ID"/>
+                            <h:outputLabel value="#{sts.id}"/>
+                            <h:outputLabel value="Prev"/>
+                            <h:outputLabel value="#{sts.previousStaffShift.id}"/>
+                            <h:outputLabel value="Next"/>
+                            <h:outputLabel value="#{sts.nextStaffShift.id}"/>
+                        </p:panelGrid>
+                    </p:column>-->
+
+                    <p:column rendered="#{data.date ne null}">
+                        <f:facet name="header">                            
+                            <h:outputLabel value="#{data.date}" >
+                                <f:convertDateTime pattern="dd MM yyyy"/>
+                            </h:outputLabel>
+                        </f:facet>
+
+                        <p:autoComplete value="#{sts.shift}"
+                                        forceSelection="true"     
+                                        styleClass="autoComplete75px"
+                                        completeMethod="#{shiftController.completeShift}"
+                                        var="mys" 
+                                        size="50"
+                                        itemLabel="#{mys.name}" 
+                                        itemValue="#{mys}">                                  
+                        </p:autoComplete>
+
+                    </p:column>                   
+
+
+                </p:dataTable>  
+            </p:dataGrid>
+
+        </h:form>  
+
+
+
+    </ui:define>
+
+
+
+</ui:composition>

@@ -1,0 +1,344 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Inward Payment Bill Items" >
+
+                        <h:panelGrid columns="6" >
+                            
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.listInwardPaymentBill()}" onclick="onSubmitButton();"  ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{mdInwardReportController.bil}" var="i"  >
+                                <f:facet name="header">
+                                    
+                                    <h:panelGrid columns="4">
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{mdInwardReportController.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{mdInwardReportController.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </f:facet>
+
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.insId}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.createdAt}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Cash Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cash Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{i.paymentMethod == 'Cash'}" value="#{i.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{i.paymentMethod!='Cash'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Credit Card Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Card Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{i.paymentMethod == 'Card'}" value="#{i.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{i.paymentMethod!='Card'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Credit Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{i.paymentMethod == 'Credit'}" value="#{i.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{i.paymentMethod!='Credit'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Cheque Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cheque Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{i.paymentMethod == 'Cheque'}" value="#{i.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{i.paymentMethod!='Cheque'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Slip Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Slip Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{i.paymentMethod == 'Slip'}" value="#{i.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{i.paymentMethod!='Slip'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Agent Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Agent Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{i.paymentMethod == 'Agent'}" value="#{i.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{i.paymentMethod!='Agent'}" value="0.00"/>
+                                </p:column>
+
+                                
+                                <p:columnGroup type="footer">
+
+                                    <p:row>
+
+                                        <p:column colspan="2" footerText="Total"></p:column>
+                                        <p:column footerText="#{mdInwardReportController.billedCashValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.billedCashValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.billedCreditCardValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.billedCreditCardValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.billedCreditValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.billedCreditValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.billedChequeValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.billedChequeValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.billedSlipValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.billedSlipValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.billedAgentValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.billedAgentValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+
+                                    </p:row>
+
+                                </p:columnGroup>
+
+                            </p:dataTable>
+                            
+                            <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.cancel}" 
+                                         var="can">
+                            
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{can.insId}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{can.createdAt}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Cash Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cash Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{can.paymentMethod == 'Cash'}" value="#{can.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{can.paymentMethod!='Cash'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Credit Card Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Card Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{can.paymentMethod == 'Card'}" value="#{can.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{can.paymentMethod!='Card'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Credit Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{can.paymentMethod == 'Credit'}" value="#{can.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{can.paymentMethod!='Credit'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Cheque Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cheque Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{can.paymentMethod == 'Cheque'}" value="#{can.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{can.paymentMethod!='Cheque'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Slip Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Slip Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{can.paymentMethod == 'Slip'}" value="#{can.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{can.paymentMethod!='Slip'}" value="0.00"/>
+                                </p:column>
+                                
+                                <p:column headerText="Agent Amount" style="text-align: right">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Agent Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel rendered="#{can.paymentMethod == 'Agent'}" value="#{can.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber> 
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{can.paymentMethod!='Agent'}" value="0.00"/>
+                                </p:column>
+
+                                
+                                <p:columnGroup type="footer">
+
+                                    <p:row>
+
+                                        <p:column colspan="2" footerText="Total"></p:column>
+                                        <p:column footerText="#{mdInwardReportController.cancelledCashValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.cancelledCashValue}">
+                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                </p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.cancelledCreditCardValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.cancelledCreditCardValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.cancelledCreditValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.cancelledCreditValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.cancelledChequeValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.cancelledChequeValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.cancelledSlipValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.cancelledSlipValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column footerText="#{mdInwardReportController.cancelledAgentValue}" style="text-align: right">
+                                            <f:facet name="footer">
+                                                <p:outputLabel value="#{mdInwardReportController.cancelledAgentValue}">
+                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+
+                                    </p:row>
+
+                                </p:columnGroup>
+                                
+                                
+                            </p:dataTable>
+                            
+                            <p:panelGrid columns="2" styleClass="noBorder normalFont">
+                                <p:outputLabel value="Net Bill Total"/>
+                            <p:outputLabel value="#{mdInwardReportController.totalValue}">
+                                <f:convertNumber pattern="#000.00"></f:convertNumber></p:outputLabel>
+                            
+                            <p:outputLabel value="Net Cancel Bill Total"/>
+                            <p:outputLabel value="#{mdInwardReportController.cancelledTotal}">
+                                <f:convertNumber pattern="#000.00"></f:convertNumber></p:outputLabel>
+                            </p:panelGrid>
+                            
+                            
+                            
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

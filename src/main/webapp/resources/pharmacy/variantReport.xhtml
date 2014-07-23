@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>       
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
+           
+            <p:dataTable id="tbl" value="#{variantAdjustment.stockVarientBillItems}" var="i"  >
+                <f:facet name="header">
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="Department : #{variantAdjustment.adjustedBill.department.name} "/>   <br/>                               
+
+                        <h:outputLabel value="Adjusted By : #{variantAdjustment.adjustedBill.creater.name}"/>
+                        <h:outputLabel value="Adjusted Time : #{variantAdjustment.adjustedBill.createdAt}"/>
+                    </h:panelGrid>
+                    <h:outputLabel value="Report Id : #{variantAdjustment.adjustedBill.deptId}"/>                                   
+                </f:facet> 
+
+                <p:column headerText="Item">
+                    <f:facet name="header">
+                        <h:outputLabel value="Item"/>    
+                    </f:facet>
+                    <h:outputLabel value="#{i.item.name}" ></h:outputLabel>
+                </p:column>
+
+                <p:column headerText="System Stock" style="text-align: right;" >
+                    <f:facet name="header">
+                        <h:outputLabel value="System Stock"/>    
+                    </f:facet>
+                    <h:outputLabel value="#{i.systemStock}"  >
+                        <f:convertNumber integerOnly="true" ></f:convertNumber>
+                    </h:outputLabel>                                  
+                </p:column>
+
+                <p:column headerText="Calculated Stock" style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Calculated Stock"/>    
+                    </f:facet>
+                    <h:outputLabel  value="#{i.calCulatedStock}"  >
+                        <f:convertNumber integerOnly="true" ></f:convertNumber>
+                    </h:outputLabel>                                  
+                </p:column>
+
+                <p:column headerText="Physical Stock" style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Physical Stock"/>    
+                    </f:facet>
+                    <h:outputLabel  value="#{i.physicalStock}"  >
+                        <f:convertNumber integerOnly="true" ></f:convertNumber>
+                    </h:outputLabel>                           
+                </p:column>
+
+                <p:column headerText="System - Physical" style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="System - Physical"/>    
+                    </f:facet>
+                    <h:outputLabel value="#{i.systemStock-i.physicalStock}"  >
+                        <f:convertNumber integerOnly="true" ></f:convertNumber>
+                    </h:outputLabel>                    
+                </p:column>
+
+                <p:column headerText="Calculated - Physical" style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Calculated - Physical"/>    
+                    </f:facet>
+                    <h:outputLabel value="#{i.calCulatedStock-i.physicalStock}"  >
+                        <f:convertNumber integerOnly="true" ></f:convertNumber>
+                    </h:outputLabel>                            
+                </p:column>
+
+                <p:column headerText="Adjusted Total" style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Adjusted Total"/>    
+                    </f:facet>
+                    <p:inputText autocomplete="off" value="#{i.adjustedStock}"  >
+                        <f:convertNumber integerOnly="true" ></f:convertNumber>
+                    </p:inputText>                           
+                </p:column>
+
+
+            </p:dataTable>
+
+
+        </h:panelGroup>
+    </cc:implementation>
+</html>

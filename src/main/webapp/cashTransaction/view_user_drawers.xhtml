@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+        <h:panelGroup rendered="false" >
+            <h:outputLabel value="You are NOT authorized"/>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="true" >
+            <h:form  >
+                <p:commandButton ajax="false" value="Process" action="#{webUserController.createWebUserDrawers()}" onclick="onSubmitButton();"/>
+
+                <p:dataTable id="lstSelect" value="#{webUserController.webUsers}" var="u">
+                    <p:column headerText="Drawer Name">
+                        <h:outputLabel value="#{u.drawer.name}"/>
+                    </p:column>
+                    <p:column headerText="Cashier Name">
+                        <h:outputLabel value="#{u.webUserPerson.name}"/>
+                    </p:column>                    
+                    <p:column headerText="Cash Value">
+                        <h:outputLabel value="#{u.drawer.runningBallance}">
+                            <f:convertNumber pattern="#000.00"/>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cheque Value">
+                        <h:outputLabel value="#{u.drawer.chequeBallance}">
+                            <f:convertNumber pattern="#000.00"/>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Credit Card Value">
+                        <h:outputLabel value="#{u.drawer.creditCardBallance}">
+                            <f:convertNumber pattern="#000.00"/>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Slip Value">
+                        <h:outputLabel value="#{u.drawer.slipBallance}">
+                            <f:convertNumber pattern="#000.00"/>
+                        </h:outputLabel>
+                    </p:column>
+                </p:dataTable>
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

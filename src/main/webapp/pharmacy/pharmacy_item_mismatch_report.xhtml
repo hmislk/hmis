@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <p:panel >
+                    <p:panel >
+                        <h:outputLabel value="Check Missing Items in this software." ></h:outputLabel>
+                        <p>Upload excel 2003 files with all the items in other software.</p>
+                        <p>Please make sure the following order of Columns.</p>
+                        <p>Leave First Row for Row Headings.</p>
+                        <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
+                        <p:panelGrid columns="13" style="border: 1px solid blue;" >
+                            <h:outputLabel value ="0. Category" ></h:outputLabel>
+                            <h:outputLabel value ="1. Product " style="color: red;" ></h:outputLabel>
+                            <h:outputLabel value ="2. Code"  style="color: red;" ></h:outputLabel>
+                            <h:outputLabel value ="3. Bar Code" ></h:outputLabel>
+                            <h:outputLabel value ="4. Generic Name"  style="color: red;" ></h:outputLabel>
+                            <h:outputLabel value ="5. Strength" ></h:outputLabel>
+                            <h:outputLabel value ="6. Strength Unit" ></h:outputLabel>
+                            <h:outputLabel value ="7. Pack Size" ></h:outputLabel>
+                            <h:outputLabel value ="8. Issue Unit" ></h:outputLabel>
+                            <h:outputLabel value ="9. Pack Unit" ></h:outputLabel>
+                            <h:outputLabel value ="10. Distributor" ></h:outputLabel>
+                            <h:outputLabel value ="11. Manufacturer" ></h:outputLabel>
+                            <h:outputLabel value ="12. Importer" ></h:outputLabel>
+                        </p:panelGrid>
+                    </p:panel>
+                </p:panel>
+                <p:panel >
+                    <h:form enctype="multipart/form-data">
+                        <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+                        <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.detectMismatch}"/>
+                    </h:form>
+                </p:panel>
+                <h:form>
+                    <p:tabView >
+                        <p:tab title="Missing Items" >
+                            <p:commandButton value="Excel" ajax="false" >
+                                <p:dataExporter target="tblNoItems" fileName="Items not in the system" type="xls" ></p:dataExporter>
+                            </p:commandButton>
+                            <p:dataTable id="tblNoItems" value="#{pharmacyItemExcelManager.itemNotPresent}" var="inp" >
+                                <p:column headerText="Category" >
+                                    <h:outputLabel value="#{inp.item1_itemCatName}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Item">
+                                    <h:outputLabel value="#{inp.item2_ampName}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Code">
+                                    <h:outputLabel value="#{inp.item3_code}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Barcode">
+                                    <h:outputLabel value="#{inp.item4_barcode}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Generic">
+                                    <h:outputLabel value="#{inp.item5_genericName}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Strength">
+                                    <h:outputLabel value="#{inp.item6_StrengthOfIssueUnit}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Strength Unit">
+                                    <h:outputLabel value="#{inp.item7_StrengthUnit}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Pack Size">
+                                    <h:outputLabel value="#{inp.item8_IssueUnitsPerPack}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Issue Units">
+                                    <h:outputLabel value="#{inp.item9_IssueUnit}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Pack Size">
+                                    <h:outputLabel value="#{inp.item10_PackUnit}" ></h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                            
+                        </p:tab>
+                        <p:tab title="Different Codes" >
+                            <p:commandButton value="Excel" ajax="false">
+                                <p:dataExporter target="tblNoItems" fileName="Codes differ" type="xls" ></p:dataExporter>
+                            </p:commandButton>
+                            <p:dataTable value="#{pharmacyItemExcelManager.itemsWithDifferentCode}" var="inc" >
+                                <p:column >
+                                    <h:outputLabel value="#{inc}" ></h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </p:tab>
+                        <p:tab title="Different Generic Name" >
+                            <p:commandButton value="Excel" ajax="false">
+                                <p:dataExporter target="tblNoItems" fileName="Generic Name differ" type="xls" ></p:dataExporter>
+                            </p:commandButton>
+                            <p:dataTable value="#{pharmacyItemExcelManager.itemsWithDifferentGenericName}" var="ing" >
+                                <p:column >
+                                    <h:outputLabel value="#{ing}" ></h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+
+                        </p:tab>
+                    </p:tabView>
+                </h:form> 
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

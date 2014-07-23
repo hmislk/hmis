@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl autoUpdate="true" />
+                <p:panel id="panIx"  >
+
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Service to Delete"></h:outputLabel>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                            <p:printer target="panIx" />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" >
+                            <p:dataExporter target="panIx" type="xls" fileName="All Services" />
+                        </p:commandButton>
+                    </f:facet>
+
+
+
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="List of Service to Delete"></h:outputLabel>
+                            <p:commandButton ajax="false" value="Remove" styleClass="noPrintButton" action="#{serviceController.removeSelectedItems()}">
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:dataTable id="dtF" value="#{serviceController.items}" var="sv" 
+                                     rowKey="#{sv.id}" selection="#{serviceController.itemsToRemove}" >
+                            <p:column id="colSelect"  selectionMode="multiple" >
+                            </p:column>
+
+                            <p:column headerText="Category" style="font-weight:normal ;color: black;text-align: left;" >
+                                <h:outputLabel value="#{sv.category.name}" />
+                            </p:column>
+                            <p:column headerText="Sub Category" style="font-weight:normal ;color: black;text-align: left;">
+                                <h:outputLabel value="#{sv.category.parentCategory.name}" rendered="#{sv.category ne null}" />
+                            </p:column>
+                            <p:column headerText="Item" style="font-weight:normal ;color: black;text-align: left;">
+                                <h:outputLabel value="#{sv.name}" />
+                            </p:column>
+                            <p:column headerText="Service Date Created">
+                                #{sv.createdAt}
+                            </p:column>
+                            <p:column headerText="Fee Date Created">
+                                #{sv.itemFee.createdAt}
+                            </p:column>
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

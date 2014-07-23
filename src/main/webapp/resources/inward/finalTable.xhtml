@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+            <pe:exporter type="xlsx" target="tb1" fileName="bht_details"  />
+        </p:commandButton>
+        <p:dataTable id="tb1" value="#{cc.attrs.bill.billItems}" var="bip"
+                     rowStyleClass="#{bip.netValue !=0 or bip.adjustedValue!=0 ?'':'noDisplayRow' }">
+            <p:column headerText="Inward Charge Type">
+                <h:outputLabel   value="#{bip.inwardChargeType.label}"/>
+            </p:column>
+            <p:column headerText="Total Value" style="text-align: right;">
+                <h:outputLabel  value="#{bip.grossValue}">
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+                <f:facet name="footer">
+                    <h:outputLabel  value="#{cc.attrs.bill.grantTotal}">
+                        <f:convertNumber pattern="#,000.00" />
+                    </h:outputLabel>
+                </f:facet>
+            </p:column>                            
+            <p:column headerText="Discount Value"  style="text-align: right;">
+                <h:outputLabel  value="#{bip.discount}">
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+                <f:facet name="footer">
+                    <h:outputLabel  value="#{cc.attrs.bill.discount}">
+                        <f:convertNumber pattern="#,000.00" />
+                    </h:outputLabel>
+                </f:facet>
+            </p:column>
+
+            <p:column headerText="Net Value"  style="text-align: right;">
+                <h:outputLabel  value="#{bip.netValue}">
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+                <f:facet name="footer">
+                    <h:outputLabel  value="#{cc.attrs.bill.netTotal}">
+                        <f:convertNumber pattern="#,000.00" />
+                    </h:outputLabel>
+                </f:facet>
+            </p:column>
+
+            <p:column headerText="Adjusted Value"  style="text-align: right;">
+                <h:outputLabel  value="#{bip.adjustedValue}">
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+            </p:column>
+
+        </p:dataTable>
+    </cc:implementation>
+</html>

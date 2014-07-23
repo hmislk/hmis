@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <f:facet name="header" >
+            <h:panelGrid columns="15"  >
+                <h:outputLabel value="OPD Bill" />
+                <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
+                <p:selectOneMenu   id="cmbPs" value="#{cc.attrs.controller.paymentScheme}">                                                                     
+                    <f:selectItems value="#{paymentSchemeController.items}" var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                    <p:ajax process="cmbPs" update="pBillDetails tblBillItem lblCardRef txtCardRef creditBank lblCheqRef txtCheqRef bank lblSlipRef txtSlipRef slipBank" event="change" />
+                </p:selectOneMenu>
+
+                <h:outputLabel id="lblCardRef" value="Card Ref. No" style="display: #{cc.attrs.controller.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />                                
+                <p:inputMask mask="9999-9999-9999-9999" id="txtCardRef" autocomplete="off" maxlength="16" value="#{cc.attrs.controller.creditCardRefNo}" style="display: #{cc.attrs.controller.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />                                
+                <h:selectOneMenu id="creditBank" value="#{cc.attrs.controller.creditBank}" style="display: #{cc.attrs.controller.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                </h:selectOneMenu>
+
+                <h:outputLabel id="lblCheqRef" value="Cheque No" style="display: #{cc.attrs.controller.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
+                <p:inputText autocomplete="off"  id="txtCheqRef" value="#{cc.attrs.controller.chequeRefNo}" style="display: #{cc.attrs.controller.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
+                <h:selectOneMenu id="bank" value="#{cc.attrs.controller.chequeBank}" style="display: #{cc.attrs.controller.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; ">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                </h:selectOneMenu>
+
+                <h:outputLabel id="lblSlipRef" value="Slip Memo" style="display: #{cc.attrs.controller.paymentMethod ne 'Slip' ? 'none' : 'block'} ; " />
+                <p:inputText autocomplete="off"  id="txtSlipRef" value="#{cc.attrs.controller.comment}" style="display: #{cc.attrs.controller.paymentMethod ne 'Slip' ? 'none' : 'block'} ; " />
+                <h:selectOneMenu id="slipBank" value="#{cc.attrs.controller.slipBank}" style="display: #{cc.attrs.controller.paymentMethod ne 'Slip' ? 'none' : 'block'} ; ">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                </h:selectOneMenu>
+
+                <p:commandButton  value="Settle" action="#{cc.attrs.controller.settleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                </p:commandButton>
+                <p:commandButton value="New Bill" ajax="false" action="#{cc.attrs.controller.prepareNewBill()}" >
+                </p:commandButton>
+                <p:commandButton value="Mark as Foreigner" action="#{cc.attrs.controller.markAsForeigner}" rendered="#{!cc.attrs.controller.foreigner}" ajax="false" ></p:commandButton>
+                <p:commandButton value="Mark as Local" action="#{cc.attrs.controller.markAsLocal}" rendered="#{cc.attrs.controller.foreigner}" ajax="false" ></p:commandButton>
+
+            </h:panelGrid>
+        </f:facet>   
+    </cc:implementation>
+</html>

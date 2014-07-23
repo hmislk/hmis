@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:growl autoUpdate="true" />
+
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <p:panel header="Item Distributor">
+
+                            <h:outputLabel value="Search"/>
+                            <p:autoComplete converter="deal"  id="lstSelect"   
+                                            value="#{itemsDistributorsController.currentInstituion}" 
+                                            forceSelection="true"
+                                            style="min-width: 223px" completeMethod="#{dealerController.completeDealor}"   
+                                            var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                                <p:column headerText="Item">
+                                    <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <f:ajax event="itemSelect" render="gpDetail" execute="lstSelect" >
+                                </f:ajax>
+                            </p:autoComplete>
+
+                        </p:panel>
+                        <p:panel header="Select Item For Distributor">
+                            <p:autoComplete converter="itemcon" value="#{itemsDistributorsController.currentItem}" 
+                                            forceSelection="true"
+                                            completeMethod="#{itemController.completePharmacyItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column headerText="Name" >
+                                    <h:outputLabel value="#{vt.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Code" >
+                                    <h:outputLabel value="#{vt.code}" ></h:outputLabel>
+                                </p:column>
+                            </p:autoComplete>  
+                            <h:commandButton id="btnAdd" value="Add" action="#{itemsDistributorsController.addToPackage()}">
+                                </h:commandButton>
+                                <p:defaultCommand target="btnAdd"/>
+                        </p:panel>
+                        <p:panel header="Items suply current Distributor">
+                            <h:panelGroup id="gpDetail" >
+                                <p:dataTable scrollable="true" scrollHeight="450" id="packageItem" value="#{itemsDistributorsController.items}" var="i">
+                                    <p:column headerText="Item Name">
+                                        <h:outputLabel value="#{i.item.name}"/> 
+                                    </p:column>
+                                    <p:column headerText="Item Code">
+                                        <h:outputLabel value="#{i.item.code}"/> 
+                                    </p:column>
+                                     <p:column headerText="Item BarCode">
+                                         <h:outputLabel value="#{i.item.barcode}"/> 
+                                    </p:column>
+                                    <p:column headerText="Retire">
+                                        <h:outputLabel value="#{i.item.retired}"/> 
+                                    </p:column>
+                                    <p:column headerText="Action">
+                                        <p:commandButton ajax="false" value="Remove" action="#{itemsDistributorsController.removeFromPackage()}" >
+                                            <f:setPropertyActionListener target="#{itemsDistributorsController.current}" value="#{i}"/>
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>                              
+                            </h:panelGroup>
+                        </p:panel>
+                        
+                        
+                        
+                    </h:panelGrid>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

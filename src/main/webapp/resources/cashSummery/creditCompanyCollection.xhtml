@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable value="#{cc.attrs.controller.creditCompanyCollection}" var="c" rendered="#{cc.attrs.controller.creditCompanyCollection.size()!=0}">
+            <f:facet name="header">
+                <p:outputLabel value="Credit Company Collection"/>    
+            </f:facet>                               
+            <p:subTable value="#{c.billItems}" var="b">
+
+                <p:column headerText="#{c.bill.fromInstitution.name}" style="width: 200px;">  
+                    <p:outputLabel value="#{b.referenceBill.insId}(opd)" rendered="#{b.patientEncounter eq null}"/>
+                    <p:outputLabel value="#{b.patientEncounter.bhtNo}(bht)" rendered="#{b.patientEncounter ne null}"/>
+                </p:column>                                    
+                <p:column headerText="Patient Name" style="width: 40%;">
+                    <p:outputLabel value="#{b.referenceBill.patient.person.name}" rendered="#{b.patientEncounter eq null}"/>
+                    <p:outputLabel value="#{b.patientEncounter.patient.person.name}" rendered="#{b.patientEncounter ne null}"/>
+                </p:column>                                    
+                <p:column headerText="Total" style="width: 200px;text-align: right;">
+                    <h:outputLabel value="#{b.netValue}">
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </p:column> 
+                <p:columnGroup type="footer">
+                    <p:row>
+                        <p:column colspan="2" footerText="Total"/>
+                        <p:column style="text-align: right;">
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{c.bill.netTotal}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>   
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+                </p:columnGroup>
+            </p:subTable>
+
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="2" footerText="Total Credit Company Collection"/>
+                    <p:column style="text-align: right;" footerText="#{cc.attrs.controller.creditCompanyTotal}">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.controller.creditCompanyTotal}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>   
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+        </p:dataTable>
+    </cc:implementation>
+</html>

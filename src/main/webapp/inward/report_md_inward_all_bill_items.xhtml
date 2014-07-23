@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:bil="http://java.sun.com/jsf/composite/bill"
+      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
+      xmlns:bill="http://java.sun.com/jsf/composite/inward">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <p:panel header="All Bill Items ( Pharmacy Issue )">
+                    <p:panel header="patient Details">
+                        <h:outputLabel value="Type Patinet Name or BHT : "/>
+                        <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" converter="admis"
+                                        value="#{patientEncounterReportController.current}" 
+                                        completeMethod="#{admissionController.completePatient}"
+                                        var="apt2" itemLabel="#{apt2.bhtNo}"
+                                        itemValue="#{apt2}" size="30"  style="width: 400px;"> 
+
+                            <p:column >
+                                <h:outputLabel value="#{apt2.bhtNo}"/> 
+                            </p:column>
+                            <p:column >
+                                <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                            </p:column>
+                            <p:ajax event="itemSelect" process="acPt2" update=":#{p:component('gpDetail')}" />
+                        </p:autoComplete>
+                        
+                        <h:form>
+                            <p:commandButton action="#{patientEncounterReportController.selectAllBillItems()}" value="Fill" ajax="false" onclick="onSubmitButton();"  ></p:commandButton>
+                        </h:form>
+                    </p:panel>
+                    <p:panel header="Issuing Details" id="gpDetail">
+                        <h:form>
+                            <p:dataTable value="#{patientEncounterReportController.billItem}" var="b">
+                                <p:column headerText="Date">
+                                    <p:outputLabel value="#{b.createdAt}" />
+                                </p:column>
+                                <p:column headerText="Item">
+                                    <p:outputLabel value="#{b.item}" />
+                                </p:column>
+                                <p:column headerText="Quntity">
+                                    <p:outputLabel value="#{b.qty}" />
+                                </p:column>
+                                <p:column headerText="Value">
+                                    <p:outputLabel value="#{b.rate}" />
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </p:panel>
+                </p:panel>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

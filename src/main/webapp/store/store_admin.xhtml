@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel header="Stores Administration" >
+
+                        <h:panelGrid columns="3" >
+
+                            <p:panel header="Store Item" >
+                                <h:panelGrid columns="1" >     
+                                    <p:commandButton ajax="false" value="Categories" action="store_item_category" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Item Master" action="store_item_master" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Import from Excel" action="store_item_import" ></p:commandButton>
+                                </h:panelGrid>
+                            </p:panel>
+
+                            <p:panel header="Institutions" >
+                                <h:panelGrid columns="1" >                                
+                                    <p:commandButton ajax="false" value="Distributor" action="store_dealer" ></p:commandButton>                                
+                                    <p:commandButton ajax="false" value="Item Distributors" action="store_items_distributors" ></p:commandButton>
+                                </h:panelGrid>
+                            </p:panel>
+
+
+                            <p:panel header="Other" >
+                                <h:panelGrid columns="1" >
+                                    <p:commandButton ajax="false" value="Measurment Units" action="store_measurement_unit" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Frequencies" action="store_frequency_unit" ></p:commandButton>
+                                </h:panelGrid>
+                            </p:panel>
+                            <p:panel header="Check Entered Data">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton ajax="false" value="Item Distributor" action="store_item_by_distributor" ></p:commandButton>
+                                </h:panelGrid>
+
+                            </p:panel>
+                            <p:panel header="Error Checking">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton ajax="false" value="Error Detection" action="store_error_checking" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Error Detection By Date" action="store_error_checking_date" ></p:commandButton>                                   
+
+                                    <p:commandButton ajax="false" value="1)Stock Variant Report" 
+                                                     action="store_variant_category_stock_by_item" />
+                                    <p:commandButton ajax="false" value="2)Stock Variant Adjustment" 
+                                                     action="store_variant_ajustment_pre_list" />
+
+                                </h:panelGrid>
+
+                            </p:panel>
+
+                        </h:panelGrid>
+
+                    </p:panel>
+
+
+                </h:form>
+
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

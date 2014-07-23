@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+
+            <h:form  enctype="multipart/form-data">
+                <h:outputLabel value="Upload Attendance" ></h:outputLabel>
+                <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+                <p:commandButton ajax="false" value="Submit" action="#{pharmacyItemExcelManager.importToExcel()}">
+                    
+                </p:commandButton>
+            </h:form>
+            <p:dataTable value="#{ampController.items}" var="i" rowKey="r" >
+                <p:column headerText="No" >
+                    <h:outputLabel value="#{r +1 }" ></h:outputLabel>
+                </p:column>
+                <p:column headerText="Category" >
+                    <h:outputLabel value="#{i.category.name}" ></h:outputLabel>
+                </p:column>
+                <p:column headerText="Item Name" >
+                    <h:outputLabel value="#{i.staff.person.name}" ></h:outputLabel>
+                </p:column>
+                <p:column headerText="Code" >
+                    <h:outputLabel value="#{i.recordTimeStamp}" >
+                        <f:convertDateTime pattern="dd MMM yyyy hh:mm" />
+                    </h:outputLabel>
+                </p:column>
+                <p:column headerText="Generic" >
+                    <h:outputLabel value="#{i.recordTimeStamp}" >
+                        <f:convertDateTime pattern="dd MMM yyyy hh:mm" />
+                    </h:outputLabel>
+                </p:column>
+                <p:column headerText="Strength" >
+                    <h:outputLabel value="#{i.recordTimeStamp}" >
+                        <f:convertDateTime pattern="dd MMM yyyy hh:mm" />
+                    </h:outputLabel>
+                </p:column>
+                <p:column headerText="Pack" >
+                    <h:outputLabel value="#{i.recordTimeStamp}" >
+                        <f:convertDateTime pattern="dd MMM yyyy hh:mm" />
+                    </h:outputLabel>
+                </p:column>
+                <p:column headerText="Distributor" >
+                    <h:outputLabel value="#{i.recordTimeStamp}" >
+                        <f:convertDateTime pattern="dd MMM yyyy hh:mm" />
+                    </h:outputLabel>
+                </p:column>
+            </p:dataTable>
+
+
+        </h:panelGroup>
+
+        <h:form>
+            <p:commandButton ajax="false" value="Remove duplicate AMPPs" action="#{pharmacyItemExcelManager.removeDuplicateAmpps}" >
+                
+            </p:commandButton>
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

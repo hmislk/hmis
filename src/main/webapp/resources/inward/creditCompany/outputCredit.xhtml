@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="patientEncounter" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGrid columns="2" >
+            <h:outputLabel value="Company Name : " style="min-width: 100px;"  />  
+            <h:outputLabel value="#{cc.attrs.patientEncounter.creditCompany.name}"/>          
+            <p:outputLabel value="Credit Limit : " style="min-width: 100px;" />
+            <h:outputLabel value="#{cc.attrs.patientEncounter.creditLimit}" />
+            <h:outputLabel value="Description : "/>                            
+            <h:outputText  value="#{cc.attrs.patientEncounter.creditCompany.descreption}" />
+            <h:outputLabel  value="Ploicy Number : " style="min-width: 100px;" />
+            <h:outputLabel value="#{cc.attrs.patientEncounter.policyNo}" />
+            <p:outputLabel value="Referance Number : " style="min-width: 100px;" />
+            <h:outputLabel value="#{cc.attrs.patientEncounter.referanceNo}" />
+        </h:panelGrid>
+    </cc:implementation>
+</html>

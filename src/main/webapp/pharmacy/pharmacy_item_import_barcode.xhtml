@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form enctype="multipart/form-data">
+            <h:outputLabel value="Import Pharmaceutical Items" ></h:outputLabel>
+            <p>Please make sure the following order of Columns.</p>
+            <p>Leave First Row for Row Headings.</p>
+            <p:panelGrid columns="13" style="border: 1px solid blue;" >
+                <h:outputLabel value ="2. Product " ></h:outputLabel>
+                <h:outputLabel value ="4. Barcode" ></h:outputLabel>
+            </p:panelGrid>
+
+            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+            <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importToExcelBarcode()}"/>
+        </h:form>
+
+        
+    </ui:define>
+
+
+</ui:composition>

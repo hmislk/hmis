@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>            
+                    <p:commandButton id="btnSearch" ajax="false" value="Process Cash Access Age" action="#{creditCompanyDueController.createInwardCashAgeTableAccess()}" onclick="onSubmitButton();" />
+                    <p:defaultCommand target="btnSearch"/>
+                    
+                    <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"
+                                 filteredValue="#{creditCompanyDueController.filteredList}">                       
+                        <p:column headerText="Dealor Name" filterBy="#{i.string}" filterMatchMode="contains">       
+                            <h:outputLabel  value="#{i.string}"/>
+                        </p:column>                               
+                        <p:column headerText="0-30" filterBy="#{i.value1}" filterMatchMode="contains">   
+                            <h:outputLabel  value="#{i.value1}">
+                                 <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="30-60" filterBy="#{i.value2}" filterMatchMode="contains">    
+                             <h:outputLabel  value="#{i.value2}">
+                                  <f:convertNumber pattern="#,##0.00" />
+                             </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="60-90" filterBy="#{i.value3}" filterMatchMode="contains">  
+                             <h:outputLabel  value="#{i.value3}">
+                                  <f:convertNumber pattern="#,##0.00" />
+                             </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="90 More" filterBy="#{i.value4}" filterMatchMode="contains">   
+                             <h:outputLabel  value="#{i.value4}">
+                                  <f:convertNumber pattern="#,##0.00" />
+                             </h:outputLabel>
+                        </p:column>                      
+                    </p:dataTable>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

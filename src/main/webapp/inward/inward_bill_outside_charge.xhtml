@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:in="http://java.sun.com/jsf/composite/inward">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:panel>
+                    <f:facet name="header">
+                        <p:outputLabel value="Inward Additional Charge"/>
+                        <p:commandButton id="btnAdd" value="Add" ajax="false" action="#{inwardAdditionalChargeController.addCharge}" onclick="onSubmitButton();"/>
+                        <p:defaultCommand target="btnAdd"/>
+
+                        <p:commandButton value="Clear" ajax="false" action="#{inwardAdditionalChargeController.makeNull}" onclick="onSubmitButton();"/>
+                    </f:facet>
+                    <h:panelGrid columns="2">
+                        <p:panel header="BHT">
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{inwardAdditionalChargeController.current.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatient}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  style="width: 400px;">
+                                <p:ajax event="itemSelect" process="acPt" update="panSearch2"/>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.bhtNo}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>  
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                            </p:autoComplete>   
+
+                            <h:panelGroup id="panSearch2">
+                                <in:bhtDetail admission="#{inwardAdditionalChargeController.current.patientEncounter}"/>
+                            </h:panelGroup>
+                        </p:panel>
+                        <p:panel header="Charge Detail">
+                            <h:panelGrid columns="2">
+                                <h:outputLabel value="Inward Charge Type"/>
+                                <p:selectOneMenu  value="#{inwardAdditionalChargeController.inwardChargeType}" >
+                                    <f:selectItem itemLabel="Please select Charge"/>
+                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="From Institution"/>
+                                <p:autoComplete forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
+                                                completeMethod="#{institutionController.completeIns}"
+                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                    <p:column>
+                                        #{ix.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{ix.institutionCode}
+                                    </p:column>
+                                </p:autoComplete>
+                                <p:outputLabel value="Amount"/>
+                                <p:inputText autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
+                                <p:outputLabel value="Description"/>
+                                <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}"/>
+                            </h:panelGrid>
+                        </p:panel>
+                    </h:panelGrid>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

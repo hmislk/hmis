@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGrid columns="4">
+            
+            <p:inputText autocomplete="off"  value="#{cc.attrs.paymentMethodData.cheque.no}" id="chequNo"/>
+            <p:selectOneMenu  value="#{cc.attrs.paymentMethodData.cheque.institution}" >
+                <f:selectItem itemLabel="Select Bank"/>
+                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+            </p:selectOneMenu>
+<!--            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.comment}"  id="memo"/>-->
+            
+            <p:calendar   value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy" id="ChequeDate">                            
+            </p:calendar>
+            <p:watermark value="Cheque No" for="chequNo"/>
+            <p:watermark value="Cheque Date" for="ChequeDate"/>
+<!--            <p:watermark value="Memo" for="memo" />-->
+        </h:panelGrid>
+    </cc:implementation>
+</html>

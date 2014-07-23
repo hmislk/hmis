@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGrid columns="2" >
+            <h:outputLabel value="Title"/>
+            <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.controller.newPatient.person.title}"  >
+                <f:selectItem itemLabel="Select Title" />
+                <f:selectItems value="#{cc.attrs.controller.title}"/>
+            </p:selectOneMenu>
+            <h:outputLabel value="Name"/>
+            <p:inputText autocomplete="off"  id="txtNewPtName" value="#{cc.attrs.controller.newPatient.person.name}" style="width: 200px;text-transform:uppercase;">
+            </p:inputText>
+            <h:outputLabel value="Sex"/>
+            <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.controller.newPatient.person.sex}" style="width: 200px;">
+                <f:selectItem itemLabel="Select Sex"/>
+                <f:selectItems value="#{cc.attrs.controller.sex}"/>
+            </p:selectOneMenu>
+            <h:outputLabel value="Age"/>
+            <h:panelGroup>
+                <p:inputText autocomplete="off"  id="year" value="#{cc.attrs.controller.yearMonthDay.year}">
+                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}"  />
+                </p:inputText>
+
+                <p:inputText autocomplete="off" id="month"   value="#{cc.attrs.controller.yearMonthDay.month}">
+                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}"  />
+                </p:inputText>
+
+                <p:inputText autocomplete="off" id="day"  value="#{cc.attrs.controller.yearMonthDay.day}">
+                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}" />
+                </p:inputText>
+            </h:panelGroup>
+            <h:outputLabel value="Address"/>
+            <p:autoComplete id="acNewPtArea" converter="areaCon" completeMethod="#{areaController.completeArea}" var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.newPatient.person.area}" ></p:autoComplete>
+
+            <h:outputLabel value="Phone"/>
+            <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.phone}">
+            </p:inputMask>
+            <h:outputLabel value="Date of Birth"/>
+            <p:calendar  value="#{cc.attrs.controller.newPatient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
+                <f:ajax event="dateSelect" />
+            </p:calendar>
+
+            <p:watermark value="YEAR" for="year" />
+            <p:watermark value="MONTH" for="month" />
+            <p:watermark value="DAYS" for="day" />
+        </h:panelGrid>
+    </cc:implementation>
+</html>

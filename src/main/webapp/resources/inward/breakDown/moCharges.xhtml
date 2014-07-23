@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface >
+
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+
+    <cc:implementation>
+        <p:dataTable value="#{bhtSummeryFinalizedController.patientRooms}" var="rm">
+            <f:facet name="header">
+                <h:outputLabel value="Mo Charge"/>
+            </f:facet>
+            <p:column headerText="Room Name">
+                #{rm.roomFacilityCharge.name}
+            </p:column>                                                                          
+            <p:column headerText="Total Charge">
+                <h:outputLabel value="#{rm.calculatedMoCharge}">
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+            </p:column> 
+            <p:column headerText="Discount Charge">
+                <h:outputLabel value="#{rm.discountMoCharge}">
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+            </p:column> 
+            <p:column headerText="Net Charge">
+                <h:outputLabel value="#{rm.calculatedMoCharge-rm.discountMoCharge}">
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+            </p:column> 
+        </p:dataTable>
+    </cc:implementation>
+</html>

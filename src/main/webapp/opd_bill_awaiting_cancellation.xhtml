@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="./resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:panelGroup rendered="true" >
+
+                    <h:form>
+
+                        <p:dataTable id="dtF" value="#{billSearch.opdBillsToApproveCancellation}" var="smpIx" 
+                                      selection="#{billSearch.billsApproving}" rowKey="#{smpIx.insId}"  >
+                            <f:facet name="header" >
+                                <p:commandButton ajax="false " value="Approve Cancel" action="#{billSearch.approveCancellation()}" />
+                            </f:facet>
+
+                             <p:column   selectionMode="multiple"  >
+                                    </p:column>
+
+                            <p:column headerText="Bill Id">
+                                <p:outputLabel value="#{smpIx.insId}"/>
+                            </p:column>
+                            <p:column headerText="Patient Name" >
+                                <h:outputLabel value="#{smpIx.patient.person.nameWithTitle}"/>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>  
+                </h:panelGroup>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

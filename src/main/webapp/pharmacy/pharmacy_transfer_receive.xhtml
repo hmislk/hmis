@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+
+    <ui:define name="content">
+        <h:form>
+            <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+            <p:panel rendered="#{!transferReceiveController.printPreview}">
+                <p:panel>
+
+                    <f:facet name="header" >                                  
+                        <h:panelGrid columns="4"  >                        
+                            <p:outputLabel value="Staff :#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
+
+                            <p:commandButton  value="Recieve" action="#{transferReceiveController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                    </f:facet>
+                </p:panel>
+
+                <p:dataTable styleClass="noBorder" var="ph" value="#{transferReceiveController.billItems}" 
+                             id="itemList" scrollable="true" scrollHeight="250" sortBy="#{ph.searialNo}"
+                             editable="true">  
+
+                    <p:ajax event="rowEdit" listener="#{transferReceiveController.onEdit}" />  
+                    <p:ajax event="rowEditCancel" listener="#{transferReceiveController.onEdit}"/> 
+
+
+                    <f:facet name="header">  
+                        Requested Item 
+                    </f:facet>  
+
+                    <p:column headerText="Item Name"  style="width:25px!important;">  
+                        <h:outputText id="item" value="#{ph.item.name}" >                                   
+                        </h:outputText>
+                    </p:column>  
+
+                    <p:column style="width:6%">  
+                        <p:rowEditor />  
+                    </p:column>
+
+                    <p:column headerText="Qty" style="width:25px!important;">                      
+                        <p:cellEditor>  
+                            <f:facet name="output">  
+                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.qtyInUnit}" />                               
+                            </f:facet>                        
+                            <f:facet name="input">  
+                                <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" >
+                                    <f:ajax event="focus" render=":#{p:component('tab')}" execute="@this" listener="#{transferReceiveController.onFocus(ph)}"/>
+                                </p:inputText>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>  
+
+                </p:dataTable>  
+
+                <p:spacer height="50"/>
+                <ph:history/>
+
+            </p:panel>
+            <p:panel rendered="#{transferReceiveController.printPreview}">
+                <p:commandButton ajax="false" action="pharmacy_transfer_issued_list" actionListener="#{transferReceiveController.makeNull()}" value="Issued List"/>                    
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+
+                <p:panel   id="gpBillPreview"   >
+
+                    <ph:transferReceive bill="#{transferReceiveController.receivedBill}" />
+
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>  
+
+</ui:composition>

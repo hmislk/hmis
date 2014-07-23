@@ -1,0 +1,186 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:growl autoUpdate="true" />
+                <p:focus id="selectFocus" context="gpSelect" />
+                <p:focus id="detailFocus" context="gpDetail" />
+
+
+
+                <p:panel header="Manage Staff" >
+
+                    <h:panelGrid id ="gpVeda" columns="2" >
+
+                        <h:panelGrid id="gpSelect" columns="1"  >
+                            <p:panel >
+
+                                <h:panelGrid id="gpSelectText" >
+                                    <p:inputText autocomplete="off" id="txtSearch" value="#{staffController.selectText}" >
+                                        <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
+                                    </p:inputText>
+
+                                    <p:selectOneListbox converter="stfcon"   id="lstSelect"   value="#{staffController.current}" style="min-width: 223px; height: 300px;">
+                                        <f:selectItems  value="#{staffController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}" ></f:selectItems>
+                                        <p:ajax event="change" process="lstSelect" update="gpDetail"/>                                        
+                                    </p:selectOneListbox>
+
+
+                                </h:panelGrid>
+                                <h:panelGrid id="gpSelectButtons" columns="3"  >
+                                    <p:commandButton id="btnAdd" ajax="false" value="Add"  action="#{staffController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
+                                        </f:ajax>
+                                    </p:commandButton>
+
+                                    <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                return false;" action="#{staffController.delete()}"  value="Delete"  >
+                                    </p:commandButton>
+                                </h:panelGrid>
+
+                            </p:panel>
+                        </h:panelGrid  >
+
+                        <p:panel>
+                            <h:panelGrid id="gpDetail" columns="1">
+                                <p:tabView>
+                                    <p:tab title="General">
+                                        <h:panelGrid  columns="2">
+                                            <h:outputLabel value="Title"/>
+                                            <p:selectOneMenu value="#{staffController.current.person.title}"  >
+                                                <f:selectItem itemLabel="Select Title" />
+                                                <f:selectItems value="#{billController.title}"/>
+                                            </p:selectOneMenu>
+                                            <h:outputText  value="Name" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.name}"  />
+                                            <h:outputText  value="Finger Print Id" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.acNo}"  />
+                                            <h:outputText  value="Code" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.code}"  />
+                                            <h:outputText  value="EPF" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.epfNo}"  />
+                                            <h:outputText value="Registration" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.registration}"  />             
+                                            <h:outputText  value="Qualification" ></h:outputText>
+                                            <p:inputTextarea  value="#{staffController.current.qualification}"  />                
+                                            <p:outputLabel value="Date Joined "/>
+                                            <p:calendar value="#{staffController.current.dateJoined}" pattern="dd MMMM yyyy" >
+                                            </p:calendar>
+                                            <h:outputText value="Speciality" />
+                                            <h:selectOneListbox size="1" value="#{staffController.current.speciality}" >
+                                                <f:selectItem itemLabel="Please select a speciality"/>
+                                                <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                            </h:selectOneListbox>
+                                        </h:panelGrid> 
+                                    </p:tab>
+                                    <p:tab title="Welfare" >
+                                        <h:panelGrid columns="2" >
+                                            <h:outputLabel value="Eligible Welfare Value" ></h:outputLabel>
+                                            <p:inputText autocomplete="off" value="#{staffController.current.annualWelfareQualified}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </p:inputText>
+                                            
+                                            <h:outputLabel value="Utilized Welfare Value for this year" ></h:outputLabel>
+                                            <h:outputLabel value="#{staffController.current.annualWelfareUtilized}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Administartion">
+                                        <h:panelGrid columns="2">
+                                            <h:outputText value="Institution" ></h:outputText>                                     
+                                            <p:selectOneMenu id="cmbIns" value="#{staffController.current.institution}" >
+                                                <f:selectItem itemLabel="Please select a institution"/>
+                                                <f:selectItems value="#{institutionController.company}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                <f:ajax execute="cmbIns" render="cmbDep" event="change"/>  
+                                            </p:selectOneMenu>                                          
+                                            <h:outputText value="Working Department" ></h:outputText>                                     
+                                            <p:selectOneMenu   id="cmbDep" value="#{staffController.current.workingDepartment}" disabled="#{staffController.current.workingDepartment ne null}" >
+                                                <f:selectItem itemLabel="Please select a Department"/>
+                                                <f:selectItems value="#{staffController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value="Employee Status "/>
+                                            <p:selectOneMenu value="#{staffController.current.employeeStatus}" disabled="#{staffController.current.employeeStatus ne null}">
+                                                <f:selectItem itemLabel="Please select Employee Status"/>
+                                                <f:selectItems value="#{staffController.employeeStatuses}"/>
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value="Staff Category "/>
+                                            <p:selectOneMenu value="#{staffController.current.staffCategory}" disabled="#{staffController.current.staffCategory ne null}">
+                                                <f:selectItem itemLabel="Please Staff Category"/>
+                                                <f:selectItems value="#{staffCategoryController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value="Staff Grade "/>
+                                            <p:selectOneMenu value="#{staffController.current.grade}" disabled="#{staffController.current.grade ne null}">
+                                                <f:selectItem itemLabel="Please Staff Grade"/>
+                                                <f:selectItems value="#{gradeController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value="Staff Designation " />
+                                            <p:selectOneMenu value="#{staffController.current.designation}" disabled="#{staffController.current.designation ne null}">
+                                                <f:selectItem itemLabel="Please Staff Designation"/>
+                                                <f:selectItems value="#{designationController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
+                                            </p:selectOneMenu>
+
+                                        </h:panelGrid>
+                                    </p:tab>
+                                    <p:tab title="Payment">
+                                        <h:panelGrid columns="2">
+                                            <p:outputLabel value="Paying Method "/>
+                                            <p:selectOneMenu value="#{staffController.current.payingMethod}">
+                                                <f:selectItem itemLabel="Please select PayingMethod"/>
+                                                <f:selectItems value="#{staffController.payingMethod}"/>
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value="Salary PaymentMethod "/>
+                                            <p:selectOneMenu value="#{staffController.current.salaryPaymentMethod}">
+                                                <f:selectItem itemLabel="Please selectSalary Paymentmethod"/>
+                                                <f:selectItems value="#{staffController.salaryPaymentMethods}"/>
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
+                                    </p:tab>
+                                    <p:tab title="Bank Detail">
+                                        <h:panelGrid columns="2">
+                                            <p:outputLabel value="Bank"/>                                           
+                                            <p:selectOneMenu  value="#{institutionController.current}">
+                                                <f:selectItem itemLabel="Select Bank"/>
+                                                <f:selectItems value="#{institutionController.banks}" var='i' itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                <f:ajax execute="@this" render="br" event="change"/>
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value="Bank Branch"/>                                           
+                                            <p:selectOneMenu id='br' value="#{staffController.current.bankAccount.bankBranch}">
+                                                <f:selectItem itemLabel="Select Bank"/>
+                                                <f:selectItems value="#{institutionController.current.branch}" var='i' itemValue="#{i}" itemLabel="#{i.name}"/>
+                                            </p:selectOneMenu>
+
+                                            <h:outputText  value="Account No" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.bankAccount.accountNo}"  />
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                </p:tabView>
+                                <h:panelGrid id="gpDetailButtons" columns="2">
+                                    <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{staffController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
+                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
+                                        </f:ajax>
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnSave"/>
+                                </h:panelGrid>
+                            </h:panelGrid>
+                        </p:panel>
+                    </h:panelGrid>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup  rendered="#{webUserController.hasPrivilege('LabEditPatient')}"  >
+            <h:form  >
+                <h:panelGrid columns="2" >
+                    <h:outputLabel value="Serach Person"/>
+                    <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
+                                    value="#{patientController.current}" 
+                                    completeMethod="#{patientController.completePatient}" 
+                                    var="apt" itemLabel="#{apt.person.nameWithTitle}" 
+                                    itemValue="#{apt}" size="30"  style="width: 400px;">
+                        <p:ajax event="itemSelect" process="acPt" update="panSearch"/>
+                    </p:autoComplete>   
+                </h:panelGrid>
+                <h:panelGrid id="panSearch" columns="2" >
+                    <h:outputLabel value="Title"/>
+                    <h:selectOneMenu  id="cmbTitle" value="#{patientController.current.person.title}"  >
+                        <f:selectItem itemLabel="Mr." itemValue="Mr"/>
+                        <f:selectItem itemLabel="Mrs." itemValue="Mrs"/>
+                        <f:selectItem itemLabel="Miss." itemValue="Miss"/>
+                        <f:selectItem itemLabel="Ms." itemValue="Ms"/>
+                        <f:selectItem itemLabel="Master." itemValue="Master"/>
+                        <f:selectItem itemLabel="Baby" itemValue="Baby"/>
+                        <f:selectItem itemLabel="Rev." itemValue="Rev"/>
+                        <f:selectItem itemLabel="Rt.Rev" itemValue="RtRev"/>
+                        <f:selectItem itemLabel="Hon" itemValue="Hon"/>
+                        <f:selectItem itemLabel="Rt.Hon" itemValue="RtHon"/>
+                        <f:selectItem itemLabel="Dr." itemValue="Dr"/>
+                        <f:selectItem itemLabel="Dr.(Mrs)" itemValue="DrMrs"/>
+                        <f:selectItem itemLabel="Dr.(Ms.)" itemValue="DrMs"/>
+                        <f:selectItem itemLabel="Dr.(Miss)" itemValue="DrMiss"/>
+                        <f:selectItem itemLabel="Prof." itemValue="Prof"/>
+                        <f:selectItem itemLabel="Other" itemValue="Other"/>
+                    </h:selectOneMenu>
+                    <h:outputLabel  value="Name" />
+                    <h:inputText autocomplete="off" value="#{patientController.current.person.nameWithTitle}" ></h:inputText>
+                    <h:outputLabel value="Sex"/>
+                    <p:selectOneMenu id="txtNewSex"  value="#{patientController.current.person.sex}" style="width: 200px;">
+                        <f:selectItem itemLabel="Select Sex"/>
+                        <f:selectItem itemLabel="Male" itemValue="Male"/>
+                        <f:selectItem itemLabel="Female" itemValue="Female"/>
+                        <f:selectItem itemLabel="Unknown" itemValue="Unknown"/>
+                        <f:selectItem itemLabel="Other" itemValue="Other"/>
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Date of Birth"/>
+                    <p:calendar value="#{patientController.current.person.dob}" yearRange="c-100:c+1" navigator="true" pattern="dd/MM/yy" ></p:calendar>
+                    <h:outputLabel  value="Adress" />
+                    <h:inputText autocomplete="off" value="#{patientController.current.person.address}" ></h:inputText>
+                    <h:outputLabel value="Phone"/>
+                    <p:inputMask mask="999-9999999" id="txtNewPtPhone" maxlength="11" value="#{patientController.current.person.phone}">
+                    </p:inputMask>
+                </h:panelGrid>
+                <h:commandButton value="Save" action="#{patientController.saveSelected()}"/>
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

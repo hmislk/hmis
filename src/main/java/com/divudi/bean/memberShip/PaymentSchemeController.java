@@ -1,0 +1,360 @@
+/*
+ * MSc(Biomedical Informatics) Project
+ *
+ * Development and Implementation of a Web-based Combined Data Repository of
+ Genealogical, Clinical, Laboratory and Genetic Data
+ * and
+ * a Set of Related Tools
+ */
+package com.divudi.bean.memberShip;
+
+import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
+import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.PaymentMethodData;
+import java.util.TimeZone;
+import com.divudi.facade.PaymentSchemeFacade;
+import com.divudi.entity.PaymentScheme;
+import com.divudi.entity.memberShip.AllowedPaymentMethod;
+import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.facade.AllowedPaymentMethodFacade;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import javax.inject.Named;
+import javax.ejb.EJB;
+import javax.inject.Inject;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
+
+/**
+ *
+ * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * Informatics)
+ */
+@Named
+@SessionScoped
+public class PaymentSchemeController implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    @Inject
+    SessionController sessionController;
+    @EJB
+    private PaymentSchemeFacade ejbFacade;
+    @EJB
+    AllowedPaymentMethodFacade allowedPaymentMethodFacade;
+    MembershipScheme membershipScheme;
+    AllowedPaymentMethod paymentSchemeAllowedPaymentMethod;
+    List<PaymentScheme> selectedItems;
+    private PaymentScheme paymentScheme;
+    private List<PaymentScheme> items = null;
+    List<AllowedPaymentMethod> allowedPaymentMethods;
+    String selectText = "";
+
+    public AllowedPaymentMethod getCurrentAllowedPaymentMethod() {
+        if (paymentSchemeAllowedPaymentMethod == null) {
+            paymentSchemeAllowedPaymentMethod = new AllowedPaymentMethod();
+        }
+        return paymentSchemeAllowedPaymentMethod;
+    }
+
+    public void setCurrentAllowedPaymentMethod(AllowedPaymentMethod paymentSchemeAllowedPaymentMethod) {
+        this.paymentSchemeAllowedPaymentMethod = paymentSchemeAllowedPaymentMethod;
+    }
+
+    public AllowedPaymentMethodFacade getAllowedPaymentMethodFacade() {
+        return allowedPaymentMethodFacade;
+    }
+
+    public void setAllowedPaymentMethodFacade(AllowedPaymentMethodFacade allowedPaymentMethodFacade) {
+        this.allowedPaymentMethodFacade = allowedPaymentMethodFacade;
+    }
+
+    public MembershipScheme getMembershipScheme() {
+        return membershipScheme;
+    }
+
+    public void setMembershipScheme(MembershipScheme membershipScheme) {
+        this.membershipScheme = membershipScheme;
+    }
+
+    public boolean errorCheckPaymentMethod(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+        if (paymentMethod == PaymentMethod.Cheque) {
+            if (paymentMethodData.getCheque().getInstitution() == null
+                    || paymentMethodData.getCheque().getNo() == null
+                    || paymentMethodData.getCheque().getDate() == null) {
+                UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
+                return true;
+            }
+
+        }
+
+        if (paymentMethod == PaymentMethod.Slip) {
+            if (paymentMethodData.getSlip().getInstitution() == null
+                    
+                    || paymentMethodData.getSlip().getDate() == null) {
+                UtilityController.addErrorMessage("Please Fill Memo,Bank and Slip Date ");
+                return true;
+            }
+
+        }
+
+        if (paymentMethod == PaymentMethod.Card) {
+            if (paymentMethodData.getCreditCard().getInstitution() == null
+                    || paymentMethodData.getCreditCard().getNo() == null) {
+                UtilityController.addErrorMessage("Please Fill Credit Card Number and Bank");
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+
+    public boolean checkPaid(PaymentMethod paymentMethod, double paid, double amount) {
+
+        if (paymentMethod == PaymentMethod.Cash) {
+            if (paid == 0.0) {
+                UtilityController.addErrorMessage("Please select tendered amount correctly");
+                return true;
+            }
+            if (paid < amount) {
+                UtilityController.addErrorMessage("Please select tendered amount correctly");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void setItems(List<PaymentScheme> items) {
+        this.items = items;
+    }
+
+    public List<PaymentScheme> getSelectedItems() {
+        selectedItems = getFacade().findBySQL("select c from PaymentScheme c"
+                + " where c.retired=false "
+                + " and c.membershipScheme is null "
+                + " and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' "
+                + " order by c.name");
+        return selectedItems;
+    }
+
+    public void prepareAdd() {
+        paymentScheme = new PaymentScheme();
+        paymentSchemeAllowedPaymentMethod = new AllowedPaymentMethod();
+        //membershipScheme = null;
+    }
+
+    public void setSelectedItems(List<PaymentScheme> selectedItems) {
+        this.selectedItems = selectedItems;
+    }
+
+    public String getSelectText() {
+        return selectText;
+    }
+
+    public void recreateModel() {
+        items = null;
+        //   membershipScheme = null;
+    }
+
+    public void saveSelected() {
+
+        //  getCurrent().setMembershipScheme(membershipScheme);
+//        if (getCurrent().getPaymentMethod() == null) {
+//            UtilityController.addErrorMessage("Payment Method?");
+//            return;
+//        }
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            getFacade().edit(paymentScheme);
+            UtilityController.addSuccessMessage("savedOldSuccessfully");
+        } else {
+            paymentScheme.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            paymentScheme.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(paymentScheme);
+            UtilityController.addSuccessMessage("savedNewSuccessfully");
+        }
+
+        paymentScheme = null;
+        //  createPaymentSchemesMembership();
+        //    recreateModel();
+
+    }
+
+    public void saveSelectedAllowedPaymentMethod() {
+
+        getCurrentAllowedPaymentMethod().setPaymentScheme(getCurrent());
+        getCurrentAllowedPaymentMethod().setMembershipScheme(getMembershipScheme());
+
+        if (getCurrentAllowedPaymentMethod().getId() != null && getCurrentAllowedPaymentMethod().getId() > 0) {
+            getAllowedPaymentMethodFacade().edit(getCurrentAllowedPaymentMethod());
+            UtilityController.addSuccessMessage("savedOldSuccessfully");
+        } else {
+            getCurrentAllowedPaymentMethod().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrentAllowedPaymentMethod().setCreater(getSessionController().getLoggedUser());
+            getAllowedPaymentMethodFacade().create(getCurrentAllowedPaymentMethod());
+            UtilityController.addSuccessMessage("savedNewSuccessfully");
+        }
+
+        paymentSchemeAllowedPaymentMethod = null;
+        createAllowedPaymentMethods();
+        //  createPaymentSchemesMembership();
+        //    recreateModel();
+
+    }
+
+    public void setSelectText(String selectText) {
+        this.selectText = selectText;
+    }
+
+    public PaymentSchemeFacade getEjbFacade() {
+        return ejbFacade;
+    }
+
+    public void setEjbFacade(PaymentSchemeFacade ejbFacade) {
+        this.ejbFacade = ejbFacade;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public PaymentSchemeController() {
+    }
+
+    public PaymentScheme getCurrent() {
+        if (paymentScheme == null) {
+            paymentScheme = new PaymentScheme();
+        }
+        return paymentScheme;
+    }
+
+    public void setCurrent(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public void delete() {
+
+        if (paymentScheme != null) {
+            paymentScheme.setRetired(true);
+            paymentScheme.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            paymentScheme.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(paymentScheme);
+            UtilityController.addSuccessMessage("DeleteSuccessfull");
+        } else {
+            UtilityController.addSuccessMessage("NothingToDelete");
+        }
+        recreateModel();
+        getItems();
+        paymentScheme = null;
+        getCurrent();
+    }
+
+    private PaymentSchemeFacade getFacade() {
+        return ejbFacade;
+    }
+
+    public List<PaymentScheme> getItems() {
+        if (items == null) {
+            createPaymentSchemes();
+        }
+        return items;
+    }
+
+    public void createPaymentSchemes() {
+        String temSql;
+        temSql = "SELECT i FROM PaymentScheme i "
+                + " where  i.retired=false "
+                //+ " and i.membershipScheme is null "
+                + " order by i.orderNo, i.name";
+        items = getFacade().findBySQL(temSql);
+    }
+
+    public List<PaymentScheme> completePaymentScheme(String qry) {
+        List<PaymentScheme> c;
+        HashMap hm = new HashMap();
+        String sql = "select c from PaymentScheme c "
+                + " where c.retired=false "
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        c = getFacade().findBySQL(sql, hm);
+
+        if (c == null) {
+            c = new ArrayList<>();
+        }
+        return c;
+    }
+
+    public void createAllowedPaymentMethods() {
+        String temSql;
+        temSql = "SELECT i FROM AllowedPaymentMethod i "
+                + " where  i.retired=false "
+                + " and (i.membershipScheme=:mem "
+                + " or i.paymentScheme=:pay )"
+                + " order by i.paymentMethod";
+        HashMap hm = new HashMap();
+        hm.put("mem", membershipScheme);
+        hm.put("pay", paymentScheme);
+
+        allowedPaymentMethods = getAllowedPaymentMethodFacade().findBySQL(temSql, hm);
+    }
+
+    public List<AllowedPaymentMethod> getAllowedPaymentMethods() {
+        return allowedPaymentMethods;
+    }
+
+    public void setAllowedPaymentMethods(List<AllowedPaymentMethod> allowedPaymentMethods) {
+        this.allowedPaymentMethods = allowedPaymentMethods;
+    }
+
+    @FacesConverter(forClass = PaymentScheme.class)
+    public static class PaymentSchemeControllerConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            PaymentSchemeController controller = (PaymentSchemeController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "paymentSchemeController");
+            return controller.getEjbFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof PaymentScheme) {
+                PaymentScheme o = (PaymentScheme) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + PaymentSchemeController.class.getName());
+            }
+        }
+    }
+}

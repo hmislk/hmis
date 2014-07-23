@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Manage Shift" >
+                <h:panelGrid id ="gpVeda" columns="4" >
+
+                    <h:panelGrid id="gpSelect" columns="1"  >
+                        <h:panelGrid columns="2">
+                            <h:outputText  value="Roster" ></h:outputText>
+                            <p:selectOneMenu  id='roster' value="#{shiftController.currentRoster}">
+                                <f:selectItem itemLabel="Select Roster"/>
+                                <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                <f:ajax event="change" execute="@this" render="gpSelectText gpDetail" listener="#{shiftController.createShiftList()}" />
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+                        <p:panel >
+                            <h:panelGrid id="gpSelectText" >
+                                <p:selectOneListbox  id="lstSelect"   value="#{shiftController.current}" style="min-width: 223px;min-height: 300px;">
+                                    <f:selectItems  value="#{shiftController.shiftList}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:ajax render="gpDetail" execute="@this" >
+                                    </f:ajax>
+                                </p:selectOneListbox>                               
+                            </h:panelGrid>
+                            <h:panelGrid id="gpSelectButtons" columns="3"  >
+                                <p:commandButton id="btnAdd" ajax="false" value="Add"  action="#{shiftController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                                </p:commandButton>
+                                <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" action="#{shiftController.delete()}"  value="Delete"  >
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+                    </h:panelGrid  >
+
+
+
+                    <p:panel id="gpDetail">
+                        <h:panelGrid id="gpDetailText" columns="2">
+
+                            <h:outputText  value="Name" ></h:outputText>
+                            <p:inputText autocomplete="off"  value="#{shiftController.current.name}"  />
+                            <h:outputText  value="Day Type" ></h:outputText>
+                            <p:selectOneMenu   value="#{shiftController.current.dayType}">                               
+                                <f:selectItems value="#{enumController.dayTypeForShift}"/>
+                                <f:ajax execute="@this roster" render="start" event="change"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Shift Order"/>
+                            <p:inputText autocomplete="off" value="#{shiftController.current.shiftOrder}"/>
+                            <p:outputLabel value="Starting Time"/>
+                            <p:calendar id='start'  value="#{shiftController.current.startingTime}" navigator="true" pattern="hh:mm a" timeOnly="true">                            
+                            </p:calendar>  
+
+                            <p:outputLabel value="End Time"/>                        
+                            <p:calendar  value="#{shiftController.current.endingTime}" navigator="true" pattern="hh:mm a" timeOnly="true">                            
+                            </p:calendar>  
+
+                            <p:outputLabel value="Previous Shif"/>
+                            <p:autoComplete value="#{shiftController.current.previousShift}"
+                                            forceSelection="true"
+                                            completeMethod="#{shiftController.completeShift}"
+                                            var="mys" 
+                                            itemLabel="#{mys.name}" 
+                                            itemValue="#{mys}">                                  
+                            </p:autoComplete>
+
+                            <p:outputLabel value="Next Shif"/>
+                            <p:autoComplete value="#{shiftController.current.nextShift}"
+                                            forceSelection="true"
+                                            completeMethod="#{shiftController.completeShift}"
+                                            var="mys" 
+                                            itemLabel="#{mys.name}" 
+                                            itemValue="#{mys}">                                  
+                            </p:autoComplete>
+
+                            <p:commandButton ajax="false" value="Save"  
+                                             action="#{shiftController.saveSelected}"  onclick="onSubmitButton();"/>
+                        </h:panelGrid>
+                    </p:panel>
+
+
+                </h:panelGrid>
+            </p:panel>
+
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

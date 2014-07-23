@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+
+            <p:panel>
+                <f:facet name="header" >
+                    <p:outputLabel value="#{sessionController.institution.name}"/> <br/>
+                    <p:outputLabel value="Daily Summery Report Category"/>
+                    <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" />
+                    <p:defaultCommand target="btnRefresh"/>
+
+                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+
+                    <p:commandButton value="Excel" ajax="false" style="float: right;">
+                        <pe:exporter type="xlsx" fileName="Accountant" facetBackground="#AAFFBB"   datasetPadding="4"
+                                     target="opd,s1,col,s2,finalSum"/>
+                    </p:commandButton>
+
+                    <p:panelGrid columns="4" style="min-width: 100%;border: none;">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{cashSummeryController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{cashSummeryController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                    </p:panelGrid>
+                </f:facet>
+            </p:panel>
+            <p:spacer height="30"/>
+
+            <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d">                   
+                <f:facet name="header">
+                    <h:outputLabel value="Opd Category" />
+                </f:facet>               
+                <p:column>
+                    <f:facet name="header">
+                        <h:outputLabel value="Category" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.category.name}" />
+                </p:column>
+                <p:column>
+                    <f:facet name="header">
+                        <h:outputLabel value="Department" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.department.name}"/> 
+                </p:column>
+                <p:column style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="HosppitalFee" />
+                    </f:facet>
+                    <h:outputLabel value="#{d.subHosTotal}">
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </p:column>
+                <p:column style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Professional Fee" />
+                    </f:facet>
+                    <h:outputLabel value="#{d.subTotal-d.subHosTotal}">
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </p:column>
+                <p:column style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Total Fee" />
+                    </f:facet>
+                    <h:outputLabel value="#{d.subTotal}">
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </p:column>              
+                <p:columnGroup type="footer">
+                    <p:row>
+                        <p:column colspan="4" footerText="Total OPD Service Collection"/>
+                        <p:column style="text-align: right;" footerText="#{cashSummeryController.categoryTotal}" >
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{cashSummeryController.categoryTotal}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+                </p:columnGroup>
+            </p:dataTable> 
+
+            <p:spacer height="30"/>
+
+            <p:dataTable id="s1" value="#{cashSummeryController.summerizeTable}" var="d">
+                <p:column>
+                    <h:outputLabel value="#{d.string}" />
+                </p:column>
+                <p:column style="text-align: right;">
+                    <h:outputLabel value="#{d.value}" >
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </p:column>
+            </p:dataTable>
+
+            <p:spacer height="30"/>
+
+            <p:dataTable id="col"  value="#{cashSummeryController.collections2}" var="sm">
+                <p:column >
+                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+                </p:column>
+                <p:column style="text-align: right;" >
+                    <h:outputLabel value="#{sm.value}" >
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </p:column>
+            </p:dataTable>
+
+            <p:spacer height="30"/>
+
+            <p:dataTable id="s2" value="#{cashSummeryController.summerizeTableAfter}" var="sm">
+                <p:column >
+                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+                </p:column>
+                <p:column style="text-align: right;" >
+                    <h:outputLabel value="#{-sm.value}" >
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </p:column>
+            </p:dataTable>
+
+            <p:spacer height="30"/>
+
+            <p:dataTable id="finalSum" value="#{cashSummeryController.finalSummery}" var="s">
+                <p:column>
+                    <h:outputLabel value="#{s.string}"/>
+                </p:column>
+                <p:column style="text-align: right;">
+                    <h:outputLabel value="#{s.value}" rendered="#{s.value!=0}">
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="................" rendered="#{s.value==0}"/>
+                </p:column>
+            </p:dataTable>
+
+            <p:spacer height="30"/>
+
+
+            <p:dataTable value="#{cashSummeryController.bankingData}" var="b">
+                <f:facet name="header">
+                    <h:outputLabel value="Bank Deposit" />
+                </f:facet>
+                <p:column >
+                    <h:outputLabel value="#{b.string}"/>
+                </p:column>
+                <p:column style="text-align: right;" >
+                    <h:outputLabel value="......................." />
+                </p:column>
+            </p:dataTable>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

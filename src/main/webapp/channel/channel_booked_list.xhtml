@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html">
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGrid columns="4" id="spec">     
+                <p:panel header="Speciality">       
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingPastController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                            <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                            <f:ajax  event="change" execute="@this" render="scStaff tbl bSession "  /> 
+                        </p:selectOneListbox>
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:panel header="Consultant">       
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingPastController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                            <f:selectItems value="#{bookingPastController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
+                            <f:ajax  event="change" execute="@this" render="tbl bSession"  /> 
+                        </p:selectOneListbox>
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel>
+                    <p:calendar id="date"  value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
+                        <f:ajax event="dateSelect" execute="scStaff"  render="tbl bSession"/>
+                    </p:calendar>
+                </p:panel>
+                <p:panel header="Session">  
+
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox converter="sscon" id="tbl" value="#{bookingPastController.selectedServiceSession}"
+                                            style="height: 150px; width: 300px; padding: 2px; margin: auto;" >
+
+                            <f:selectItems value="#{bookingPastController.serviceSessions}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
+                            <f:ajax  event="change" execute="@this scStaff date" render=":#{p:component('bSession')} "  /> 
+                        </p:selectOneListbox>
+                    </h:panelGrid>
+
+                </p:panel>
+
+
+
+            </h:panelGrid>
+            <p:panel>
+                <p:dataTable id="bSession" value="#{bookingPastController.billSessions}" var='bs' sortBy="#{bs.bill.billClass}"
+                             filteredValue="#{bookingPastController.filltredBillSession}">
+                    <p:column headerText="Serial No" filterBy="#{bs.bill.insId}" filterMatchMode="contains">
+                        <h:outputLabel value="#{bs.bill.insId}"/>
+                    </p:column>
+                    <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
+                        <h:outputLabel value="#{bs.bill.bookingId}"/>                    
+                    </p:column>                
+                    <p:column headerText="Patient Name" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
+                        <h:outputLabel value="#{bs.bill.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Paid or Not" filterBy="#{bs.bill.billType}" filterMatchMode="contains">
+                        <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+
+                        <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                    </p:column>
+                    <p:column headerText="C/R" filterBy="#{bs.bill.billClass}" filterMatchMode="contains">
+                        <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                        <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>                        
+                    </p:column>   
+                    <p:column headerText="Doctor Fee">
+                        <h:outputLabel value="#{bs.doctorFee.billedFee.feeValue}"/>
+                    </p:column>
+                    <p:column headerText="Hospital Fee">
+                        <h:outputLabel value="#{bs.hospitalFee.billedFee.feeValue}"/>
+                    </p:column>
+                    <p:column headerText="Agent Fee">
+                        <h:outputLabel value="#{bs.agentFee.billedFee.feeValue}"/>
+                    </p:column>
+                    <p:column headerText="Tax Fee">
+                        <h:outputLabel value="#{bs.tax.billedFee.feeValue}"/>
+                    </p:column>
+                    <p:column headerText="Repaid Doctor Fee">
+                        <h:outputLabel value="#{bs.doctorFee.prevFee.feeValue}"/>
+                    </p:column>
+                    <p:column headerText="Repaid Hospital Fee">
+                        <h:outputLabel value="#{bs.hospitalFee.prevFee.feeValue}"/>
+                    </p:column>
+                    <p:column headerText="Repaid Agent Fee">
+                        <h:outputLabel value="#{bs.agentFee.prevFee.feeValue}"/>
+                    </p:column>
+                    <p:column headerText="Repaid Tax Fee">
+                        <h:outputLabel value="#{bs.tax.prevFee.feeValue}"/>
+                    </p:column>
+                    <p:column headerText="Paid To Doctor">
+                        <p:outputLabel value="Paid" rendered="#{bs.doctorFee.billedFee.paidValue!=0.0}"/>
+                    </p:column>
+                    <p:summaryRow>
+                        <p:column colspan="5">
+                            <h:outputLabel value="Total"/>
+                        </p:column>
+                        <p:column>#{bookingPastController.doctorTotal}</p:column>
+                        <p:column>#{bookingPastController.hospitalTotal}</p:column>
+                        <p:column>#{bookingPastController.agentTotal}</p:column>
+                        <p:column>#{bookingPastController.taxTotal}</p:column>
+                        <p:column>#{bookingPastController.doctorTotalR}</p:column>
+                        <p:column>#{bookingPastController.hospitalTotalR}</p:column>
+                        <p:column>#{bookingPastController.agentTotalR}</p:column>
+                        <p:column>#{bookingPastController.taxTotalR}</p:column>
+                    </p:summaryRow>
+                </p:dataTable>                    
+            </p:panel>   
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+        <h:form>
+
+          
+            <p:panel>
+                <p:panel header="Admitted Patients">
+                    <h:panelGrid id="gpSelectText" columns="4" >
+                        <h:outputLabel value="Type Patinet Name or BHT"/>
+                        <p:autoComplete converter="dis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                        value="#{roomChangeController.current}"
+                                        completeMethod="#{admissionController.completePatient}" 
+                                        var="myItem" itemValue="#{myItem}" 
+                                        itemLabel="#{myItem.bhtNo}" 
+                                        size="30"  style="width: 400px;" required="true"> 
+                            <f:ajax execute="acPt" render="@all" event="itemSelect"
+                                    listener="#{roomChangeController.createPatientRoom()}"/>
+                            <p:column>
+                                <h:outputLabel value="#{myItem.bhtNo}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                            </p:column>
+                        </p:autoComplete>   
+
+                        <p:commandButton value="Clear"  
+                                         action="#{roomChangeController.recreate()}"
+                                         ajax="false" styleClass="buttons" onclick="onSubmitButton();" />
+
+                    </h:panelGrid>
+                </p:panel>
+
+
+                <p:tabView >
+
+                    <p:tab title="Patient Detail">                            
+                        <h:panelGrid columns="2">
+                            <h:outputText  value="Name" ></h:outputText>
+                            <h:outputText value="#{roomChangeController.current.patient.person.nameWithTitle}"/>
+                            <h:outputText value="NIC" ></h:outputText>
+                            <h:outputText  value="#{roomChangeController.current.patient.person.nic}"  />
+                            <h:outputLabel value="Age"/>
+                            <h:outputLabel value="#{roomChangeController.current.patient.age}"/>
+                            <h:outputText value="Address" ></h:outputText>
+                            <h:outputText  value="#{roomChangeController.current.patient.person.address}" />
+                            <h:outputText value="Phone No" ></h:outputText>
+                            <h:outputText  value="#{roomChangeController.current.patient.person.phone}"  />
+                        </h:panelGrid>
+                    </p:tab>
+                    <p:tab title="Gardian Detail">
+                        <h:panelGrid columns="2">
+                            <h:outputText  value="Name" ></h:outputText>
+                            <h:outputText value="#{roomChangeController.current.guardian.name}"  />
+                            <h:outputText value="Address" ></h:outputText>
+                            <h:outputText  value="#{roomChangeController.current.guardian.address}"  />
+                            <h:outputText value="Phone No" ></h:outputText>
+                            <h:outputText  value="#{roomChangeController.current.guardian.phone}"  />
+                        </h:panelGrid>
+                    </p:tab>
+
+                    <p:tab title="Current Room Detail">
+                        <p:panelGrid columns="2">
+
+                            <h:outputLabel value="Room Name"/>
+                            <h:outputLabel value=" #{roomChangeController.current.currentPatientRoom.roomFacilityCharge.name}"/>
+
+                            <h:outputLabel  value="Admitted At"/>
+                            <h:outputLabel  value="#{roomChangeController.current.currentPatientRoom.admittedAt}">
+                                <f:convertDateTime pattern="dd MM yy hh mm a" />
+                            </h:outputLabel>
+
+                        </p:panelGrid>
+                    </p:tab>
+                </p:tabView>
+
+                <p:tabView >
+                    <p:tab title="New Room Detail">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Type Room Number or Facility"/>
+                            <p:autoComplete converter="fac" forceSelection="true"
+                                            id="cmbDoc" value="#{roomChangeController.newRoomFacilityCharge}" 
+                                            completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                            var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
+                                            style="width: 400px;" >
+                            </p:autoComplete>
+
+                            <h:outputLabel value="Change at"/>                          
+                            <p:calendar  id="changeTimeStamp" 
+                                         value="#{roomChangeController.changeAt}"
+                                         navigator="false" pattern="dd MM yyyy hh mm a"  >                                                               
+                            </p:calendar>
+                            <p:commandButton  value="Change"  
+                                              action="#{roomChangeController.change()}"
+                                              ajax="false" styleClass="buttons" onclick="onSubmitButton();" />
+
+                        </h:panelGrid>                                    
+                    </p:tab>
+
+
+                    <p:tab title="Room Detail">
+                        <p:dataTable value="#{roomChangeController.patientRoom}" var="rm" >
+                            <p:column headerText="Admitted At">                                          
+                                <p:calendar navigator="true"  
+                                            id="admittedTimeStamp"
+                                            value="#{rm.admittedAt}" 
+                                            pattern="dd MM yyyy hh mm a" />     
+                            </p:column>
+                            <p:column headerText="Admitted By">
+                                <h:outputLabel value="#{rm.addmittedBy.webUserPerson.name}"  /><br/>
+                                <h:outputLabel value="Deleted By #{rm.retirer.webUserPerson.name} " style="color: red;" rendered="#{rm.retired eq true}" />
+                            </p:column>
+                            <p:column headerText="Discahrged At">                                            
+                                <p:calendar navigator="true"
+                                            id="dischargedTimeStamp"
+                                            value="#{rm.dischargedAt}" 
+                                            pattern="dd MM yyyy hh mm a" />   
+                            </p:column>
+                            <p:column headerText="Discharge By">
+                                #{rm.dischargedBy.webUserPerson.name}
+                            </p:column>
+                            <p:column headerText="Room">
+                                <p:autoComplete converter="fac" 
+                                                forceSelection="true"
+                                                value="#{rm.roomFacilityCharge}" 
+                                                completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                                var="rf" itemLabel="#{rf.name}" itemValue="#{rf}"  
+                                                disabled="#{rm.retired eq true}">
+                                </p:autoComplete>                                        
+                            </p:column>                          
+                            <p:column>
+                                <p:commandButton ajax="false" value="Update" 
+                                                 action="#{roomChangeController.update(rm)}"
+                                                 disabled="#{rm.retired eq true}" onclick="onSubmitButton();" />
+                            </p:column>
+                            <p:column>
+                                <p:commandButton ajax="false" value="Discharge" onclick="if (!confirm('Are you sure you want to Discharge this record?'))
+                                            return false;" action="#{roomChangeController.discharge(rm)}"/>
+                            </p:column> 
+                            <p:column>
+                                <p:commandButton ajax="false" value="Remove" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" action="#{roomChangeController.remove(rm)}"/>
+                            </p:column>                         
+                        </p:dataTable>
+                    </p:tab>
+
+                    <p:tab title="Add Extra Charge Detail">
+                        <p:dataTable value="#{roomChangeController.patientRoom}" var="rm" >                        
+                            <p:column headerText="Room">
+                                <h:outputLabel value="#{rm.roomFacilityCharge.name}" />                                                                 
+                            </p:column>     
+                            <p:column>
+                                <p:commandButton ajax="false" value="Update" 
+                                                 action="#{roomChangeController.update(rm)}"
+                                                 disabled="#{rm.retired eq true}" onclick="onSubmitButton();" />
+                            </p:column>
+
+                            <p:column headerText="Adminitraion Charge">
+                                <p:inputText autocomplete="off" value="#{rm.addedAdministrationCharge}"
+                                             disabled="#{rm.retired eq true}"/>                                            
+                            </p:column>
+
+                            <p:column headerText="Linen Charge">
+                                <p:inputText autocomplete="off" value="#{rm.addedLinenCharge}"
+                                             disabled="#{rm.retired eq true}"/>                                            
+                            </p:column>
+
+                            <p:column headerText="Maintain Charge">
+                                <p:inputText autocomplete="off" value="#{rm.addedMaintainCharge}"
+                                             disabled="#{rm.retired eq true}"/>                                            
+                            </p:column>
+                            <p:column headerText="Mo Charge">
+                                <p:inputText autocomplete="off" value="#{rm.addedMoCharge}"
+                                             disabled="#{rm.retired eq true}"/>                                            
+                            </p:column>
+                            <p:column headerText="Madical Care">
+                                <p:inputText autocomplete="off" value="#{rm.addedMedicalCareCharge}"
+                                             disabled="#{rm.retired eq true}"/>                                            
+                            </p:column>
+
+                            <p:column headerText="Nursing Charge">
+                                <p:inputText autocomplete="off" value="#{rm.addedNursingCharge}"
+                                             disabled="#{rm.retired eq true}"/>                                            
+                            </p:column>
+
+                            <p:column headerText="Room Charge">
+                                <p:inputText autocomplete="off" value="#{rm.addedRoomCharge}"
+                                             disabled="#{rm.retired eq true}"/>                                            
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                </p:tabView>
+
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+
+                <h:panelGrid columns="2" >
+                    <p:panel header="Detail" >
+                        <h:panelGrid columns="2"  >
+                           
+                            <h:outputLabel value="Staff Name"/>
+                            <p:autoComplete  forceSelection="true" 
+                                             value="#{staffBasicController.current.staff}"
+                                             completeMethod="#{staffController.completeStaffCode}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                             converter="stfcon"   >   
+                                <f:ajax event="itemSelect" execute="@this" render="lst" listener="#{staffBasicController.makeItemNul}" />
+                                <p:column headerText="Staff Name">
+                                    <h:outputLabel value="#{mys.person.name}"/>
+                                    <h:outputLabel value="#{mys.code}"/>
+                                </p:column>
+                                
+                            </p:autoComplete>
+                            <h:outputLabel value="From"/>
+                            <p:calendar id="frm"  value="#{staffBasicController.current.fromDate}" pattern="dd MMMM yyyy" >                                
+                            </p:calendar>
+                            <h:outputLabel value="To"/>
+                            <p:calendar id="to"  value="#{staffBasicController.current.toDate}" pattern="dd MMMM yyyy">                                      
+                                </p:calendar>                    
+                            <h:outputLabel value="Salary"/>
+                            <p:inputText autocomplete="off"  value="#{staffBasicController.current.staffPaySheetComponentValue}"/>
+
+                            <p:commandButton id="btnAdd" value="Add"  action="#{staffBasicController.save}" ajax="false" onclick="onSubmitButton();"/>
+                            <p:defaultCommand target="btnAdd"/>
+                            
+                            <p:commandButton value="Clear" action="#{staffBasicController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
+
+                        </h:panelGrid>
+                    </p:panel>
+
+                </h:panelGrid>
+
+
+                <p:spacer height="30" />
+
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputLabel value="Basic List"/>
+                        <p:commandButton value="Refresh" action="#{staffBasicController.makeItemNul}" ajax="false" style="float: right;" onclick="onSubmitButton();"/>
+
+                    </f:facet>
+                    <p:dataTable id="lst" value="#{staffBasicController.items}" 
+                                 filteredValue="#{staffBasicController.filteredStaffPaysheet}"
+                                 var="i" scrollHeight="350" 
+                                 scrollable="true"  selection="#{staffBasicController.selectedStaffComponent}" 
+                                 rowKey="#{i.id}"  >
+
+                        <p:column  selectionMode="multiple" >                            
+                        </p:column>
+
+                        <p:column headerText="From" filterBy="#{i.fromDate}" filterMatchMode="contains" >
+                            <h:outputLabel value="#{i.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="To" filterBy="#{i.toDate}"  filterMatchMode="contains">
+                            <p:cellEditor>  
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{i.toDate}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:calendar value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                                </f:facet>
+                            </p:cellEditor>
+
+                        </p:column>
+
+                        <p:column headerText="Grade" filterBy="#{i.staff.grade}" filterMatchMode="contains">
+                            <h:outputLabel value="#{i.staff.grade}"/>                           
+                        </p:column>
+
+                        <p:column headerText="Category" filterBy="#{i.staff.staffCategory.name}" filterMatchMode="contains">
+                            <h:outputLabel value="#{i.staff.staffCategory.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Designtion" filterBy="#{i.staff.designation.name}" filterMatchMode="contains">
+                            <h:outputLabel value="#{i.staff.designation.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Staff" filterBy="#{i.staff.person.nameWithTitle}" filterMatchMode="contains">
+                            <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Basic"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains">
+
+                            <h:outputLabel value="#{i.staffPaySheetComponentValue}">
+                                <f:convertNumber pattern="#,000.00" />
+                            </h:outputLabel>
+
+                        </p:column>
+
+                        <p:column style="width:6%">  
+                            <p:commandButton ajax="false" value="Remove" action="#{staffBasicController.remove}" onclick="onSubmitButton();">
+                                <f:setPropertyActionListener target="#{staffBasicController.current}" value="#{i}" />
+                            </p:commandButton>
+                        </p:column>  
+
+
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                <h:panelGrid columns="6" styleClass="noPrintButton">
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar value="#{storeSaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm a"  >
+                    </p:calendar>
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar value="#{storeSaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm a" >
+                    </p:calendar>
+                    <h:outputLabel value="Department"/>
+                    <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    </p:autoComplete>
+                    
+                </h:panelGrid>
+                
+                <h:panelGrid columns="3">
+                    <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.createSaleReportByDate()}"/>
+                    <p:commandButton ajax="false" value="Excel" actionListener="#{storeSaleReport.createSaleReportByDate()}" styleClass="noPrintButton" style="float: right;" >
+                        <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
+                    </p:commandButton>
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                </h:panelGrid>
+
+                <h:panelGrid styleClass="printBlock" columns="2">
+                    <h:outputLabel value="#{storeSaleReport.department.name}"/>
+                    <h:outputLabel value=" DEPARTMENT SALE REPORT SUMMERY"/>                   
+                    <h:outputLabel value="From Date :  "/>
+                    <h:outputLabel value="#{storeSaleReport.fromDate}"  >
+                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    </h:outputLabel>
+                    <h:outputLabel value="To Date"/>
+                    <h:outputLabel value="#{storeSaleReport.toDate}"  >
+                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    </h:outputLabel>                       
+                </h:panelGrid>
+
+
+                <p:dataTable id="sum1" value="#{storeSaleReport.billedSummery.bills}" var="i">   
+                    <f:facet name="header">
+                        <p:outputLabel value="Sales Summery Report By Date" />
+                    </f:facet>
+                    
+                    <p:column headerText="Date">
+                        <f:facet name="header">
+                            <h:outputLabel value="Date" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.string}" />
+                    </p:column>
+                    <p:column headerText="Billed" style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Billed" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.value1}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Cancelled" style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Cancelled" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.value2}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Refunded" style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Refunded" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.value3}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Net Value" style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Net Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.value1+i.value2+i.value3}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column footerText="Total  "/>
+                            <p:column footerText="#{storeSaleReport.billedSummery.billedTotal}" style="text-align: right;">
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{storeSaleReport.billedSummery.billedTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{storeSaleReport.billedSummery.cancelledTotal}" style="text-align: right;">
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{storeSaleReport.billedSummery.cancelledTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{storeSaleReport.billedSummery.refundedTotal}" style="text-align: right;">
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{storeSaleReport.billedSummery.refundedTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column footerText="#{storeSaleReport.billedSummery.billedTotal+storeSaleReport.billedSummery.cancelledTotal+storeSaleReport.billedSummery.refundedTotal}" style="text-align: right;">
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{storeSaleReport.billedSummery.billedTotal+storeSaleReport.billedSummery.cancelledTotal+storeSaleReport.billedSummery.refundedTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:row>
+                    </p:columnGroup>
+                </p:dataTable>
+
+                <h:panelGrid columns="2" style="min-width: 100%;">
+                    <h:outputLabel value="Net Amount"/>
+                    <h:outputLabel value="#{storeSaleReport.grantNetTotal}" style="float:  right;">
+                        <f:convertNumber pattern="#,000.00" />
+                    </h:outputLabel>                    
+                </h:panelGrid>
+
+            </p:panel>         
+
+
+        </h:form>
+
+    </ui:define>
+
+
+
+</ui:composition>

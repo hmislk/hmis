@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="./../resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="BHT-Vice Income" ></h:outputLabel>
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd MMMM yyyy" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd MMMM yyyy" ></p:calendar>
+
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController.listBhtViceIncome()}" onclick="onSubmitButton();"  ></p:commandButton>
+                        <p:commandButton ajax="false" value="Export to Excel" onclick="onSubmitButton();"  >
+                            <p:dataExporter target="tbl" type="xls" fileName="BHT Vice Income by Categories" ></p:dataExporter>
+                        </p:commandButton>
+
+
+                        <p:dataTable id="tbl" value="#{inwardReportController.individualBhtIncomeByCategoryRecord}" var="rec" >
+                            <p:column headerText="BHT No" >
+                                 <h:outputLabel value="#{rec.bht.bhtNo}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Final Bill No" >
+                                <h:outputLabel value="#{rec.finalBill.insId}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Patient Name" >
+                                <h:outputLabel value="#{rec.bht.patient.person.nameWithTitle}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Paid As" >
+                                <h:outputLabel value="#{rec.bht.paymentMethod}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Inward Service Category" >
+                                <h:outputLabel value="#{rec.inwardChargeType}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Service Category" >
+                                <h:outputLabel value="#{rec.category.parentCategory.name}"  rendered="#{rec.category.parentCategory eq null}" ></h:outputLabel>
+                            </p:column>
+                             
+                            <p:column headerText="Service sub-Category" >
+                                <h:outputLabel value="#{rec.category.name}" rendered="#{rec.category.parentCategory ne null}" ></h:outputLabel>
+                            </p:column>
+                             
+                            
+                            <p:column headerText="Amount"  style="text-align: right;" >
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{inwardReportController.grossTotals}" >
+                                        <f:convertNumber pattern="##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+
+                                <h:outputLabel value="#{rec.grossValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Discount"  style="text-align: right;" >
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{inwardReportController.discounts}" >
+                                        <f:convertNumber pattern="##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+
+                                <h:outputLabel value="#{rec.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Net Amount" style="text-align: right;" >
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{inwardReportController.netTotals}" >
+                                        <f:convertNumber pattern="##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{rec.netValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

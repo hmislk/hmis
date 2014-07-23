@@ -1,0 +1,260 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel id="panelReport" styleClass="noBorder summeryBorder">
+
+                        <f:facet name ="header" >
+                            <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
+                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.fromDate}" pattern="dd MMMM yyyy hh:mm a" >
+                            </p:calendar>
+                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.toDate}" pattern="dd MMMM yyyy hh:mm a" >
+                            </p:calendar>
+                            <h:outputLabel styleClass="noPrintButton" value="Department" style="text-align: left; margin: 5px; padding: 5px;" >
+                            </h:outputLabel>
+                            <p:autoComplete styleClass="noPrintButton"  value="#{labReportSearchByDepartmentController.department}" 
+                                            style="text-align: left; margin: 5px; padding: 5px;" 
+                                            completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
+                                            itemLabel="#{dept.name}" forceSelection="true" rendered="true"
+                                            requiredMessage="You must select a department" >
+                            </p:autoComplete>
+                            
+                            <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" >
+                            </p:commandButton>
+                            <p:defaultCommand target="btnRefresh"/>
+                            
+                            <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
+                                <p:printer target="panelReport" />
+                            </p:commandButton>
+                            <p:commandButton value="Excel" ajax="false">
+                                <pe:exporter type="xlsx" target="tbl" fileName="DepartmentIncome"
+                                             facetBackground="#008000" facetFontSize="15" 
+                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+                        </f:facet>
+
+
+                        <p:panel styleClass="printBlock" >
+
+                            <h:outputLabel value="#{labels.topic}" styleClass="rh1"  /> 
+                            <br/>
+                            <h:outputLabel value="#{labReportSearchByDepartmentController.department.name}"  >
+                            </h:outputLabel>
+                            <h:outputLabel value=" - Handover Report" />
+                            <br/>
+                            <h:outputLabel value="From : " />
+                            <h:outputLabel value="#{labReportSearchByDepartmentController.fromDate}"  >
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                            </h:outputLabel>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <h:outputLabel value="To : "  ></h:outputLabel>
+                            <h:outputLabel value="#{labReportSearchByDepartmentController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                            </h:outputLabel>
+
+                        </p:panel>
+
+                        <p:dataTable id="tbl" value="#{labReportSearchByDepartmentController.labBillsOwn}" var="b" sortBy="#{b.billClass}" >
+
+                            <f:facet name="header">
+                                <h:outputLabel value="Lab Handover Report"/>
+                                <h:outputLabel value="From : " />
+                                <h:outputLabel value="#{labReportSearchByDepartmentController.fromDate}"  >
+                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                </h:outputLabel>
+
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                <h:outputLabel value="To : "  ></h:outputLabel>
+                                <h:outputLabel value="#{labReportSearchByDepartmentController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                </h:outputLabel>
+                            </f:facet>
+
+                            <p:column headerText="BillId" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="BillId"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.insId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" ></h:outputLabel>
+
+                                <h:outputLabel value="#{b.billedBill.insId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}"  ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Date and Time" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Date and Time"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Name" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.patient.person.name}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Hospital Fee" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Hospital Fee"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.total - b.staffFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Dis." style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Dis."/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Prof. Fee" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Prof. Fee"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.staffFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Net Total" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Net Total"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:summaryRow >
+                                <p:column colspan="2" >
+                                    <h:outputLabel rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
+                                        <h:outputLabel value="Billed Bill Totals"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
+                                        <h:outputLabel value="Cancelled Bill Totals"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
+                                        <h:outputLabel value="Refund Bill Totals"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column  >
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.hosTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.hosTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.hosTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+                                </p:column>
+                                <p:column  >
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.disTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.disTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.disTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+                                </p:column>
+                                <p:column  >
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.profTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.profTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.profTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+                                </p:column>
+                                <p:column  >
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.netTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.netTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.netTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+                                </p:column>
+                            </p:summaryRow>
+                            <f:facet name="footer" >
+                                <p:panelGrid columns="2" style="text-align: right;">
+                                    <h:outputLabel value="Total Hospital Fee" ></h:outputLabel>
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.hosTot }" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Total Discount" ></h:outputLabel>
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.disTot}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Total Net" ></h:outputLabel>
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.netTot}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Total Professional Fee" ></h:outputLabel>
+                                    <h:outputLabel value="#{labReportSearchByDepartmentController.profTot}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel style="font-weight: bolder; " value="Net Department Income" ></h:outputLabel>
+                                    <h:outputLabel style="font-weight: bolder; " value="#{labReportSearchByDepartmentController.labHandover}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:panelGrid>
+                            </f:facet>
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

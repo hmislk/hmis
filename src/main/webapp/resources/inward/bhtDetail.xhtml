@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="admission" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGrid  columns="2" style="min-width: 100%!important;" rendered="#{cc.attrs.admission!=null}" >
+            <h:outputLabel   value="BHT NO : " />
+            <h:outputLabel  value="#{cc.attrs.admission.bhtNo}" />
+            <h:outputLabel   value="Admission Type : " />
+            <h:outputLabel  value="#{cc.attrs.admission.admissionType.name}" />
+            <h:outputLabel   value="Paymentmethod : " />
+            <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" />
+            <h:outputLabel   value="Membership Scheme : " />
+            <h:outputLabel  value="#{cc.attrs.admission.patient.person.membershipScheme.name}" />
+            <h:outputLabel   value="Room : " />
+            <h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
+            <h:outputLabel   value="Name : " />
+            <h:outputLabel  value="#{cc.attrs.admission.patient.person.nameWithTitle}" />
+            <h:outputLabel   value="Age : " />
+            <h:outputLabel value="#{cc.attrs.admission.patient.age}" />
+            <h:outputLabel  value="DOB : "  />
+            <p:outputLabel value="#{cc.attrs.admission.patient.person.dob}"   >
+                <f:convertDateTime pattern="dd/MM/yy" />
+            </p:outputLabel>           
+            <h:outputLabel  value="Adress : " />
+            <h:outputLabel  value="#{cc.attrs.admission.patient.person.address}" />
+            <h:outputLabel  value="Date of Admission : "  />
+            <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}"   >
+                <f:convertDateTime pattern="dd/MM/yy" />
+            </h:outputLabel>
+            <h:outputLabel/>
+            <h:outputLabel rendered="#{cc.attrs.admission.foriegner}" value="Foriegner "/>
+            <h:outputLabel/>
+            <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="Claimable Bill : "/>
+            <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="#{cc.attrs.admission.creditCompany.name}"/>
+        </h:panelGrid>
+    </cc:implementation>
+</html>

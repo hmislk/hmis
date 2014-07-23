@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Reprint" styleClass="alignTop" >
+                        <h:panelGrid columns="1">
+
+                            <p:commandButton value="Reprint Intrim" ajax="false" onclick="onSubmitButton();"  >
+                                <p:printer target="intrim" ></p:printer>
+                            </p:commandButton>  
+
+                        </h:panelGrid>
+
+                    </p:panel>
+
+                    <p:panel id="print">
+                        <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panel header="Patient Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
+                                    <h:outputLabel value="Age" />
+                                    <h:outputLabel value="#{inwardSearch.bill.patient.age}"  />
+                                    <h:outputLabel value="Sex" >
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}" >
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Phone" >
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" >
+                                    </h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panel header="Bill Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.grantTotal}" style="float: right;" >
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Discount :" ></h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.discount}" style="float: right;" >
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.netTotal}" style="float: right;" >
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Paid Amount :" ></h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.paidAmount}" style="float: right;" >
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Due :" ></h:outputLabel>
+                                    <h:outputLabel value="#{inwardSearch.bill.netTotal+inwardSearch.bill.paidAmount}" style="float: right;" >
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                   
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:panelGrid>
+
+                        <p:dataTable value="#{inwardSearch.bill.billItems}" var="bip"
+                                     rowStyleClass="#{bip.netValue !=0 or bip.adjustedValue!=0 ?'':'noDisplayRow' }">
+                            <p:column headerText="Inward Charge Type">
+                                <h:outputLabel   value="#{bip.inwardChargeType.label}"/>
+                            </p:column>
+                            <p:column headerText="Total Value" style="text-align: right;">
+                                <h:outputLabel  value="#{bip.grossValue}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                            </p:column>                            
+                            <p:column headerText="Adjusted Value"  style="text-align: right;">
+                                <h:outputLabel  value="#{bip.adjustedValue}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+
+                    <h:panelGroup id="intrim" styleClass="noBorder">                  
+                        <bi:intrimBill  bill="#{inwardSearch.bill}"/>
+                    </h:panelGroup>
+
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

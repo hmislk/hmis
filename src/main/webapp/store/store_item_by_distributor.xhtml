@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGrid columns="5" >              
+
+                <h:outputLabel value="Distributor"/>
+                <h:outputLabel value="Item Name"/>
+                <h:outputLabel value="Item Code"/>
+                <h:outputLabel value="Category"/>
+                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{storeItemsDistributorsController.createItemDistributorTable()}"/>
+
+                <p:inputText autocomplete="off"  value="#{storeItemsDistributorsController.searchKeyword.institution}" />
+                <p:inputText autocomplete="off"  value="#{storeItemsDistributorsController.searchKeyword.itemName}" />
+                <p:inputText autocomplete="off"  value="#{storeItemsDistributorsController.searchKeyword.code}" />
+                <p:inputText autocomplete="off"  value="#{storeItemsDistributorsController.searchKeyword.category}" />
+                <h:outputLabel/><h:outputLabel/>
+            </h:panelGrid>
+
+            <p:dataTable rowIndexVar="r" value="#{storeItemsDistributorsController.searchItems}" var="i">
+                <p:column>
+                    #{r+1}
+                </p:column>
+                <p:column headerText="Distributor">
+                    <h:outputLabel value="#{i.institution.name}"/>
+                </p:column>
+                <p:column headerText="Item Name" >
+                    <h:outputLabel value="#{i.item.name}"/>
+                </p:column>   
+                <p:column headerText="Item CODE" >
+                    <h:outputLabel value="#{i.item.code}"/>
+                </p:column>   
+
+                <p:column headerText="Catogory" >
+                    <h:outputLabel value="#{i.item.category.name}"/>
+                </p:column>               
+            </p:dataTable>
+
+        </h:form>    
+
+
+    </ui:define>
+
+</ui:composition>

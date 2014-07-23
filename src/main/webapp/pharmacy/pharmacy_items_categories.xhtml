@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:growl autoUpdate="true" />
+
+                <p:panel>
+                    <h:panelGrid columns="4" >
+                        <p:panel header="Category">
+                            <h:inputText autocomplete="off" id="txtSearch" value="#{categoryController.selectText}" >
+                                <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
+                            </h:inputText>
+                            <h:selectOneListbox  id="lstSelect"   size="10" value="#{itemsCategoriesController.currentCategory}" style="min-width: 223px">
+                                <f:selectItems  value="#{categoryController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <f:ajax render="gpDetail" execute="lstSelect" >
+                                </f:ajax>
+                            </h:selectOneListbox>
+                        </p:panel>
+                        <p:panel header="Items for current Category">
+                            <h:panelGroup id="gpDetail" >
+                                <h:selectOneListbox size="10" id="packageItem"  value="#{itemsCategoriesController.current}" >
+                                    <f:selectItems value="#{itemsCategoriesController.items}" var="myPis"  itemLabel="#{myPis.item.name}" itemValue="#{myPis}"  />
+                                </h:selectOneListbox>
+                            </h:panelGroup>
+                        </p:panel>
+                        <p:panel>
+                            <h:panelGroup >
+                                <h:commandButton value="Add" action="#{itemsCategoriesController.addToPackage()}"></h:commandButton>
+                                <h:commandButton value="Remove" action="#{itemsCategoriesController.removeFromPackage()}"></h:commandButton>
+                            </h:panelGroup> 
+                        </p:panel>
+                        <p:panel header="Select Item For Category">
+                            <p:autoComplete converter="itemcon" value="#{itemsCategoriesController.currentItem}" 
+                                            forceSelection="true"
+                                            completeMethod="#{itemController.completePharmacyItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                            </p:autoComplete>                                    
+                        </p:panel>                       
+                    </h:panelGrid>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Payment Reprint" >
+                        <h:panelGrid columns="2">
+                            <p:panel>
+                                <p:commandButton ajax="false" value="Cancel"
+                                                 action="inward_cancel_bill_payment" 
+                                                 disabled="#{inwardSearch.bill.cancelled}" onclick="onSubmitButton();" >                           
+                                </p:commandButton>
+                                
+                                <p:commandButton value="RePrint" ajax="false" action="#" onclick="onSubmitButton();"  >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                            </p:panel>
+                            
+                             <p:panel>
+                                <p:commandButton ajax="false" value="Mark As Checked"
+                                                 action="#{inwardSearch.markAsChecked()}"
+                                                 rendered="#{webUserController.hasPrivilege('InwardCheck')}" onclick="onSubmitButton();" />
+                                <p:commandButton ajax="false" value="Mark As Un Check"
+                                                 action="#{inwardSearch.markAsUnChecked()}"
+                                                 rendered="#{webUserController.hasPrivilege('InwardUnCheck')}" onclick="onSubmitButton();" />
+                               
+                                <p:commandButton ajax="false" value="Back To Intrim" action="/inward/inward_bill_intrim" 
+                                                 actionListener="#{bhtSummeryController.createTables()}"
+                                                 onclick="onSubmitButton();" />
+                            </p:panel>
+
+
+                        </h:panelGrid>
+                        <p:panel>
+                            <p:panelGrid columns="2" style="width: 100%;">
+                                <p:panel header="Patient Detail">
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
+                                        <h:outputLabel value="Bht No:" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo }" ></h:outputLabel>
+                                        <h:outputLabel value="Age" />
+                                        <h:outputLabel value="#{inwardSearch.bill.patient.age}"  />
+                                        <h:outputLabel value="Sex" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Phone" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" >
+                                        </h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                                <p:panel header="Bill Detail">
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.paymentMethod}" ></h:outputLabel>
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.netTotal}" ></h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </p:panelGrid>
+
+                            <p:panel header="Bill Item Detail">
+                                <p:dataTable rowIndexVar="rowIndex"
+                                             value="#{inwardSearch.billItems}" var="bip" >                                    
+                                    <p:column>
+                                        <f:facet name="header">No</f:facet>
+                                        <h:outputLabel value="#{rowIndex+1}"/>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">Fee</f:facet>
+                                        <h:outputLabel value="#{bip.netValue}"/>
+                                    </p:column>  
+
+                                </p:dataTable>
+                            </p:panel>
+                        </p:panel>
+                    </p:panel>
+
+                    <h:panelGroup id="gpBillPreview">
+                        <bi:payment bill="#{inwardSearch.bill}" dup="true" />
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

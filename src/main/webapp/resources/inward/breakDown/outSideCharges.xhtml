@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface >
+
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+
+    <cc:implementation>
+        <p:dataTable value="#{bhtSummeryFinalizedController.outSideBills}" var="bil">
+            <f:facet name="header">
+                <h:outputLabel value="Additional"/>
+            </f:facet>
+            <p:column headerText="Name">
+                <p:outputLabel value="#{bil.comments}" />
+            </p:column>
+            <p:column headerText="Added Date">
+                <h:outputLabel value="#{bil.createdAt}">
+                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Added Time">
+                <h:outputLabel value="#{bil.createdAt}">
+                    <f:convertDateTime pattern="hh mm a"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Total">
+                <h:outputLabel value="#{bil.total}" >
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Discount">
+                <h:outputLabel value="#{bil.discount}" >
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Net Value">
+                <h:outputLabel value="#{bil.netTotal}" >
+                    <f:convertNumber pattern="#,000.00" />
+                </h:outputLabel>
+            </p:column>
+        </p:dataTable>
+    </cc:implementation>
+</html>

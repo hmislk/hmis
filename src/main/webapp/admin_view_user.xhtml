@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}" >
+            <h:outputLabel value="You are NOT authorized"/>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
+            <h:form  >
+                <h:inputText autocomplete="off" id="txtSearch" value="#{webUserController.selectText}" >
+                    <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
+                </h:inputText>
+
+                <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u">
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of All Users" />
+                    </f:facet>
+                    <p:column headerText="Full Name">
+                        <h:outputLabel value="#{u.webUserPerson.name}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Department">
+                        <h:outputLabel value="#{u.department.name}"/>
+                    </p:column>
+                    
+                    <p:column headerText="User Name">
+                        <h:outputLabel value="#{u.name}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Staff Code">
+                        <h:outputLabel value="#{u.staff.code}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Staff Name">
+                        <h:outputLabel value="#{u.staff.person.name}"/>
+                    </p:column>
+                    <p:column headerText="Remove User">
+                        <p:commandButton ajax="false" value="Remove" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                     return false;" action="#{webUserController.removeUser}">
+                            <f:setPropertyActionListener value="#{u}" target="#{webUserController.removingUser}" />
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

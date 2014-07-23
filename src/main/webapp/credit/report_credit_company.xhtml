@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                    <p:panel styleClass="summeryReport" id="reportPrint" header="Casheir Session Report Detail">
+
+                        <f:facet name="header" >
+
+                            <h:outputLabel value="#{creditCompanyDueController.institution.name}"/> <br/>
+
+
+                            <p:commandButton ajax="false" value="Refresh" styleClass="noPrintButton" style="float: right;" actionListener="#{commonReport.recreteModal()}" onclick="onSubmitButton();" />  
+
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                                <p:printer target="reportPrint" />
+                            </p:commandButton>  
+
+
+                        </f:facet>
+
+
+                        <h:panelGrid columns="6" styleClass="noPrintButton" >
+
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" value="#{creditCompanyDueController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel styleClass="noPrintButton" value="Credit Company"/>
+
+                            <p:autoComplete id="creditCom" forceSelection="true" value="#{creditCompanyDueController.institution}"  completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+
+                            </p:autoComplete>       
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="7" styleClass="printBlock"  style="min-width: 100%;">
+
+                            <h:outputLabel value="Credit Company Detailed Report &nbsp;&nbsp; #{creditCompanyDueController.institution.name}"/>
+                            <p:spacer width="200" height="0"/>
+
+                            <h:outputLabel value="From"  />
+                            <h:outputLabel  value="#{creditCompanyDueController.fromDate}" >
+                                <f:convertDateTime pattern="dd MM yyyy"/>
+                            </h:outputLabel>
+                            <p:spacer width="50" height="0"/>
+                            <h:outputLabel value="To" />
+                            <h:outputLabel  value="#{creditCompanyDueController.toDate}" >
+
+                                <f:convertDateTime pattern="dd MM yyyy"/>
+                            </h:outputLabel>
+
+                        </h:panelGrid>
+
+                        <p:dataTable id="lst" value="#{creditCompanyDueController.items2}" var="i">                      
+                            <f:facet name="header">
+                                <h:outputLabel  value="#{i.institution.name}"/>
+                            </f:facet>
+                            <p:column headerText="Bill No">                               
+                                <h:outputLabel value="#{i.insId}" /> 
+                            </p:column>
+                            <p:column headerText="Patient Name">                                
+                                <h:outputLabel value="#{i.patient.person.nameWithTitle}" />                                 
+                            </p:column>
+                            <p:column headerText="Value" style="text-align:right;"  >                              
+                                <h:outputLabel value="#{i.netTotal}" >    
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </p:column>                            
+                            <p:columnGroup type="footer">  
+                                <p:row >  
+                                    <p:column colspan="2" style="text-align:left" footerText="Total:"/>
+                                    <p:column style="text-align:right;" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.creditTotal}">
+                                                <f:convertNumber pattern="#,000.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:panel header="Search Patient">
+                    <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
+                                    value="#{patientHistoryController.searchedPatient}" 
+                                    completeMethod="#{patientController.completePatient}" 
+                                    var="apt" itemLabel="#{apt.person.nameWithTitle}" 
+                                    itemValue="#{apt}" size="30"  style="width: 400px;">
+                        <p:ajax event="itemSelect" process="acPt" update="panSearch invest encounter serv tserv"/>
+                    </p:autoComplete>   
+
+                    <h:panelGrid id="panSearch" columns="2" >
+                        <h:outputLabel  rendered="#{patientHistoryController.searchedPatient!=null}" value="Name" />
+                        <h:outputLabel rendered="#{patientHistoryController.searchedPatient!=null}" value="#{patientHistoryController.searchedPatient.person.nameWithTitle}" ></h:outputLabel>
+                        <h:outputLabel  rendered="#{patientHistoryController.searchedPatient!=null}" value="Sex" />
+                        <h:outputLabel rendered="#{patientHistoryController.searchedPatient!=null}" value="#{patientHistoryController.searchedPatient.person.sex}" ></h:outputLabel>
+                        <h:outputLabel  rendered="#{patientHistoryController.searchedPatient!=null}" value="DOB"  />
+
+                        <h:outputLabel rendered="#{patientHistoryController.searchedPatient!=null}" value="#{patientHistoryController.searchedPatient.person.dob}"   >
+                            <f:convertDateTime pattern="dd/MM/yy" />
+                        </h:outputLabel>
+
+                        <h:outputLabel  rendered="#{patientHistoryController.searchedPatient!=null}" value="Adress" />
+                        <h:outputLabel rendered="#{patientHistoryController.searchedPatient!=null}" value="#{patientHistoryController.searchedPatient.person.address}" ></h:outputLabel>
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:panel header="Patient Encounter Detail" id="encounter" rendered="">
+                    <p:dataTable value="#{patientHistoryController.patientEncounters}" var="pe">
+                        <p:column headerText="BHT No" >
+                            #{pe.bhtNo}
+                        </p:column>
+
+                        <p:column headerText="Admitted At" >
+                            <p:outputLabel value="#{pe.dateOfAdmission}">
+                                <f:convertDateTime pattern="dd/MM/yy" />
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Discharge At" >
+                            <p:outputLabel value="#{pe.dateOfDischarge}">
+                                <f:convertDateTime pattern="dd/MM/yy" />
+                            </p:outputLabel>
+                        </p:column>
+
+                    </p:dataTable>
+                </p:panel>
+
+                <p:panel header="Investigation" id="invest">
+                    <p:dataTable value="#{patientHistoryController.investigations}" var="ins">
+                        <p:column headerText="Name">
+                            #{ins.createdAt}
+                        </p:column>
+
+                    </p:dataTable>                    
+                </p:panel>
+
+                <p:panel header="Opd Service" id="serv">
+                    <p:dataTable value="#{patientHistoryController.service}" var="se">
+                        <p:column headerText="Name">
+                            #{se.createdAt}
+                        </p:column>
+
+                    </p:dataTable>                    
+                </p:panel>
+
+                <p:panel header="Timed Service" id="tserv">
+                    <p:dataTable value="#{patientHistoryController.timedItems}" var="ts">
+                        <p:column headerText="Name">
+                            #{ts.createdAt}
+                        </p:column>
+
+                    </p:dataTable>                    
+                </p:panel>
+
+
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

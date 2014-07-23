@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
+            You are NOT authorized
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+
+            <h:form  >
+
+                <p:growl autoUpdate="true" />
+
+                <p:panel style="width: 100%;min-height: 400px;" >
+
+                    <p:panel header="Sample" >
+
+
+
+
+                        <p:panelGrid columns="5">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="fromDate" value="#{patientInvestigationController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm a" >
+                                <f:ajax event="dateSelect" execute="sample"  render="sample toDate fromDate"/>
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{patientInvestigationController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm a" >
+                                <f:ajax event="dateSelect" execute="sample"  render="sample toDate fromDate"/>
+                            </p:calendar>
+                            
+                            <p:commandButton id="btnRefresh" ajax="false" actionListener="#{patientInvestigationController.prepareToSample()}" value="Refresh" onclick="onSubmitButton();"  >
+                            </p:commandButton>
+                            <p:defaultCommand target="btnRefresh"/>
+                            
+                        </p:panelGrid>
+                        <p:dataTable  id="sample" value="#{patientInvestigationController.lstToSamle}" var="smpIx" >
+                            <p:column headerText="Bill Id">
+                                <p:outputLabel value="#{smpIx.billItem.bill.insId}"/>
+                            </p:column>
+                            <p:column headerText="Patient" >
+                                <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Investigation" >
+                                <h:outputLabel value="#{smpIx.investigation.name}"/>
+                            </p:column>
+                            <p:column >
+                                <p:selectBooleanCheckbox disabled="#{smpIx.collected}" id="chkSampledOutside" value="#{smpIx.sampleOutside}"  itemLabel="Outside" >
+                                    <f:ajax render="calSampledDate" event="change" execute="chkSampledOutside"/>
+                                </p:selectBooleanCheckbox>
+                            </p:column>
+                            <p:column >
+                                <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="dd MM yyyy hh mm a" value="#{patientInvestigationController.sampledOutsideDate}" ></p:calendar>
+                                <h:outputLabel rendered="#{smpIx.collected}"  id="lblSampledDate" value="#{smpIx.sampledAt}" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"  />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column >
+                                <h:commandButton  disabled="#{smpIx.collected or smpIx.billItem.bill.cancelled eq true}"   id="btnSample" value="Collect Sample" action="#{patientInvestigationController.markAsSampled()}" >
+                                    <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                    <f:ajax execute="chkSampledOutside calSampledDate btnSample" render="@all" />
+                                </h:commandButton>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+
+                </p:panel>
+            </h:form>
+
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

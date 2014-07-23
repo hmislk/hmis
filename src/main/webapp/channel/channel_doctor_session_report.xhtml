@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html">
+
+    <ui:define name="content">
+        <h:form>
+            <p:dataTable value="#{sheduleController.allSession}" var="s" filteredValue="#{sheduleController.filteredValue}">
+                
+                <p:column headerText="Speciality" filterBy="#{s.staff.speciality}" filterMatchMode="contains">
+                    <p:outputLabel value="#{s.staff.speciality.name}" />
+                </p:column>
+                <p:column headerText="Staff" filterBy="#{s.staff.person.name}" filterMatchMode="contains">
+                    <h:outputLabel value="#{s.staff.person.nameWithTitle}"/>
+                </p:column>            
+                <p:column headerText="Day" filterBy="#{s.dayString}" filterMatchMode="contains">
+                    <h:outputLabel value="#{s.dayString}"/>
+                </p:column>
+                <p:column headerText="Session Name" filterBy="#{s.name}" filterMatchMode="contains">
+                    <h:outputLabel value="#{s.name}"/>
+                </p:column>
+                <p:column headerText="StartTime" filterBy="#{s.startingTime}" filterMatchMode="contains">
+                    <h:outputLabel value="#{s.startingTime}"/>
+                </p:column>
+               
+            </p:dataTable>
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

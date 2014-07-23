@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+
+    <!--  testing  -->
+
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}" >
+            You are NOT authorized
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
+            <p:growl autoUpdate="true" />
+            <p:panel header="Mange Users" rendered="#{sessionController.admin}" >
+                <h:form >
+                    <h:panelGrid columns="1">
+                        <h:outputLabel class="pdPageTitle" value="Manage User Accounts" />
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" >
+
+                        <h:panelGrid id="gpSelect" columns="1" >
+                            <h:outputLabel class="pdPageText" value="Users"  />
+                            <h:selectOneListbox class="pdDropDownList" value="#{webUserController.current}" size="5" >
+                                <f:selectItems value="#{webUserController.items}" var="users" itemValue="#{users}" itemLabel="#{users.webUserPerson.name}" />
+                                <f:ajax event="change" render="gpDetail" execute="gpSelect"/>
+                            </h:selectOneListbox>
+                        </h:panelGrid>
+
+                        <h:panelGroup id="gpDetail" >
+                            <h:panelGrid columns="2" >
+
+                                <h:selectOneListbox  value="#{webUserController.current.role}" >
+                                    <f:selectItems value="#{webUserRoleController.userRoles}" var="adminRole" itemLabel="#{adminRole.name}" itemValue="#{adminRole}"  />
+                                </h:selectOneListbox>
+
+
+
+
+                            </h:panelGrid>
+
+
+                            <h:panelGroup>
+                                <h:commandButton value="Save" action="#{userApproveController.saveUser}"></h:commandButton>
+                            </h:panelGroup>
+
+
+                        </h:panelGroup>
+                    </h:panelGrid>
+                </h:form>
+            </p:panel>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

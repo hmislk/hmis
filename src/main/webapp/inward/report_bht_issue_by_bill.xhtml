@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="BHT Issue by Bill Item">
+
+
+                    <h:panelGrid columns="6" style="noPrintButton">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel  value="Department"  ></h:outputLabel>
+                        <p:autoComplete  value="#{commonReport.department}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept"
+                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                         forceSelection="true" rendered="true"
+                                         requiredMessage="You must select a department" >
+                        </p:autoComplete>
+                        
+                        <p:defaultCommand target="btnRefresh"/>
+
+                    </h:panelGrid>
+                    
+                    <h:panelGrid columns="3">
+                        <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
+                                         styleClass="noPrintButton" 
+                                         actionListener="#{commonReport.createBhtIssueTable()}"
+                                         style="float: right;" onclick="onSubmitButton();"  />  
+                        
+                        <p:commandButton actionListener="#{commonReport.createBhtIssueTable()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                <pe:exporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum" fileName="report_grn_detail"  />
+                        </p:commandButton>
+                        
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" 
+                                         style="float: right;" onclick="onSubmitButton();"  >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>  
+                        </h:panelGrid>
+
+
+
+                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
+
+                        <h:outputLabel value="BHT Issue by Bill"/>
+                        <h:outputLabel/>
+                        <h:outputLabel value="Institution "/>
+                        <h:outputLabel value="#{commonReport.department.institution.name}"/>
+                        <h:outputLabel value="Department "/>
+                        <h:outputLabel value="#{commonReport.department.name}"/>
+                        <h:outputLabel value="From" />
+                        <h:outputLabel  value="#{commonReport.fromDate}" >
+                            <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                        </h:outputLabel>                          
+                        <h:outputLabel value="To"/>
+                        <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
+                            <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+
+
+
+                    <p:dataTable id="billed"  value="#{commonReport.pharmacyBhtPreBilled.bills}" var="b" 
+                                 rendered="#{commonReport.pharmacyBhtPreBilled.bills.size()!=0}" sortBy="#{b.billType}">
+
+                        <f:facet name="header">  
+                            <h:outputLabel value="BHT Issue"/>
+                        </f:facet>
+
+                        <p:column headerText="BHT Issue No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="BHT Issue No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.deptId}"/>
+                        </p:column>
+
+                        <p:column headerText="Created At"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Created At"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.createdAt}" >
+                                <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Net Amount" style=" text-align: right"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Net Amount"/>
+                            </f:facet> 
+                            <h:outputLabel  value="#{b.netTotal}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>                          
+                        </p:column>
+                      
+                        <p:column headerText="Remark" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Remark"/>
+                            </f:facet> 
+                            <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                        </p:column>
+
+                        <p:columnGroup type="footer">  
+                            <p:row >  
+                                <p:column colspan="5" style="text-align:left" footerText="Totals:"/>
+
+                                <p:column style="text-align: right;" footerText="#{commonReport.pharmacyBhtPreBilled.cash}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{commonReport.pharmacyBhtPreBilled.cash}">
+                                            <f:convertNumber pattern="#,000.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>                             
+                            </p:row>  
+                        </p:columnGroup>  
+
+                    </p:dataTable>
+
+                  
+                  
+
+                    <p:spacer height="30"/>
+
+                    <p:dataTable id="sum" value="#{commonReport.grnTotal}"  var="i" >
+                        <f:facet name="header">
+                            Summery
+                        </f:facet>
+                        <p:column>
+                            <h:outputLabel value="#{i.string}"/>
+                        </p:column>
+                        <p:column style="font-weight: bold;text-align:right;" >
+                            <h:outputLabel value="#{i.value}">
+                                <f:convertNumber pattern="#,000.00" />
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+
+
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

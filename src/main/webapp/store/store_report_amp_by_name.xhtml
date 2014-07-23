@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <p:panel header="Items by Name" >
+
+                    <p:panel >
+
+                    <p:panel id="paItems">
+                        <p:dataTable id="tblItem" value="#{storeAmpController.items}" var="i" >
+                            <p:column headerText="Category" >
+                                    <p:outputLabel value="#{i.category.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Code" >
+                                <p:outputLabel value="#{i.code}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Name" >
+                                    <p:outputLabel value="#{i.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Generic" >
+                                    <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                </p:panel>
+
+                </p:panel>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

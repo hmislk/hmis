@@ -1,0 +1,250 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill">
+
+    <body>
+        <ui:composition template="./resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel  header="Edit">
+                        <p:autoComplete  forceSelection="true" value="#{labBillEditController.bill.collectingCentre}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.institutionCode}
+                            </p:column>
+                        </p:autoComplete>
+                        <h:commandButton value="Update" action="#{labBillEditController.updateBill()}" >
+                        </h:commandButton>                            
+                    </p:panel>
+                    <p:panelGrid columns="2" style="width: 100%;">
+                        <p:panel header="Patient Detail">
+                            <p:panelGrid columns="2">
+                                <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                <h:outputLabel value="#{labBillEditController.bill.patient.person.nameWithTitle }" ></h:outputLabel>
+                                <h:outputLabel value="Age" />
+                                <h:outputLabel value="#{labBillEditController.bill.patient.age}"  />
+                                <h:outputLabel value="Sex" >
+                                </h:outputLabel>
+                                <h:outputLabel value="#{labBillEditController.bill.patient.person.sex}" >
+                                </h:outputLabel>
+                                <h:outputLabel value="Phone" >
+                                </h:outputLabel>
+                                <h:outputLabel value="#{labBillEditController.bill.patient.person.phone}" >
+                                </h:outputLabel>
+                            </p:panelGrid>
+                        </p:panel>
+                        <p:panel header="Bill Detail">
+                            <p:panelGrid columns="2">
+                                <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                <h:outputLabel value="#{labBillEditController.bill.insId}" ></h:outputLabel>
+                                <h:outputLabel value="Total :" ></h:outputLabel>
+                                <h:outputLabel value="#{labBillEditController.bill.total}" ></h:outputLabel>
+                                <h:outputLabel value="Discount :" ></h:outputLabel>
+                                <h:outputLabel value="#{labBillEditController.bill.discount}" ></h:outputLabel>
+                                <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                <h:outputLabel value="#{labBillEditController.bill.netTotal}" ></h:outputLabel>
+                            </p:panelGrid>
+                        </p:panel>
+                    </p:panelGrid>
+                    <p:panel header="Bill Item Detail">
+                        <p:dataTable rowIndexVar="rowIndex" value="#{labBillEditController.bill.billItems}" var="bip" >
+                            <p:column>
+                                <f:facet name="header">No</f:facet>
+                                <h:outputLabel value="#{rowIndex+1}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">Item</f:facet>
+                                <h:outputLabel value="#{bip.item.name}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">Fee</f:facet>
+                                <h:outputLabel value="#{bip.netValue}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    <p:panel header="Comments">
+                        <h:inputTextarea value="#{billSearch.comment}"/>                            
+                    </p:panel>
+
+
+                    <h:panelGroup rendered="#{billSearch.printPreview}" >
+                        <div id="centrewrapper">
+                            <div id="centrecell">
+                                <div class="centrecontent">
+                                    <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+
+
+                                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+                                    <div style="border: 1px solid;" >
+                                        <h:panelGroup id="gpBillPreview" >
+
+                                            <div  class="fiveinchbill">
+
+
+                                                <div  class="receiptno">
+                                                    <h:outputLabel value="#{labBillEditController.bill.cancelledBill.insId} **Cancelled"  
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}"/> 
+
+                                                    <h:outputLabel value="#{labBillEditController.bill.refundedBill.insId} **Refunded" 
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}"/> 
+
+                                                    <h:outputLabel value="#{labBillEditController.bill.insId} **Duplicate" 
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and
+                                                                               labBillEditController.bill.cancelledBill.insId eq null }"/> 
+                                                </div>
+
+                                                <div  class="billdate">
+                                                    <h:outputLabel value="#{labBillEditController.bill.cancelledBill.billDate}"
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}"  >
+                                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="#{labBillEditController.bill.refundedBill.billDate}"
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}">
+                                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="#{labBillEditController.bill.billDate}"
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and 
+                                                                               labBillEditController.bill.cancelledBill.insId eq null }">
+                                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                                    </h:outputLabel>
+                                                </div>
+
+                                                <div class="payment">
+                                                    <h:outputLabel value="#{labBillEditController.bill.cancelledBill.paymentMethod}" 
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}" />
+                                                    <h:outputLabel value="#{labBillEditController.bill.refundedBill.paymentMethod}" 
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}"/>
+                                                    <h:outputLabel value="#{labBillEditController.bill.paymentMethod}" 
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and 
+                                                                               labBillEditController.bill.cancelledBill.insId eq null }"/>
+                                                </div>
+
+                                                <div class="billtime">
+                                                    <h:outputLabel value="#{labBillEditController.bill.cancelledBill.billTime}"  
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}">
+                                                        <f:convertDateTime pattern="hh mm a"/>
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="#{labBillEditController.bill.refundedBill.billTime}"  
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}">
+                                                        <f:convertDateTime pattern="hh mm a"/>
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="#{labBillEditController.bill.billTime}" 
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and 
+                                                                               labBillEditController.bill.cancelledBill.insId eq null }">
+                                                        <f:convertDateTime pattern="hh mm a"/>
+                                                    </h:outputLabel>
+                                                </div>
+
+                                                <h:outputLabel value="#{labBillEditController.bill.patient.person.nameWithTitle}" styleClass="ptname" />
+
+                                                <h:outputLabel value="#{labBillEditController.bill.patient.person.phone}" styleClass="phone" />
+
+
+
+                                                <h:dataTable value="#{labBillEditController.bill.billItems}" var="bip" styleClass="items"   >
+                                                    <h:column >
+                                                        <h:outputLabel value="#{bip.item.printName}" style="margin: 4px;" />
+                                                    </h:column>
+                                                </h:dataTable>
+
+                                                <div class="rates" >
+                                                    <h:dataTable value="#{labBillEditController.bill.billItems}" var="bip1"  >
+                                                        <h:column>
+                                                            <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px;" >
+                                                                <f:convertNumber pattern="#,000.00" />
+                                                            </h:outputLabel>
+                                                        </h:column>
+                                                    </h:dataTable>
+                                                </div>
+
+                                                <div class="totals">
+                                                    <table>
+                                                        <tr>
+                                                            <td>
+                                                                <br/>
+                                                                <br/>
+                                                            </td>
+                                                            <td>
+                                                                <br/>
+                                                                <br/>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="text-align: left; min-width: 3cm;">
+                                                                <h:outputLabel value="Total" style="  text-align: right!important;  font-size: 15px!important;   "/>
+                                                            </td>
+                                                            <td style="text-align: right!important; ">
+                                                                <h:outputLabel value="#{labBillEditController.bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                                    <f:convertNumber pattern="#,000.00" />
+                                                                </h:outputLabel>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="text-align: left;">
+                                                                <h:outputLabel  rendered="#{labBillEditController.bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
+                                                            </td>
+                                                            <td style="text-align: right!important; ">
+                                                                <h:outputLabel rendered="#{labBillEditController.bill.discount ne 0.0}"   value="#{labBillEditController.bill.discount}"  style=" text-align: right!important;  font-size: 15px!important;   ">
+                                                                    <f:convertNumber pattern="#,000.00" />
+                                                                </h:outputLabel>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="text-align: left;">
+                                                                <h:outputLabel  rendered="#{labBillEditController.bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                                            </td>
+                                                            <td style="text-align: right!important; ">
+                                                                <h:outputLabel  rendered="#{labBillEditController.bill.discount ne 0.0}"    value="#{labBillEditController.bill.netTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                                    <f:convertNumber pattern="#,000.00" />
+                                                                </h:outputLabel>
+                                                            </td>
+                                                        </tr>
+
+
+                                                    </table>
+                                                </div>
+
+                                                <div class="cashier" >
+                                                    <h:outputLabel value="Cashier : #{labBillEditController.bill.cancelledBill.creater.code}"  
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}" />
+                                                    <h:outputLabel value="Cashier : #{labBillEditController.bill.refundedBill.creater.code}"
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}"   />
+                                                    <h:outputLabel value="Cashier : #{labBillEditController.bill.creater.code}" 
+                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and
+                                                                               labBillEditController.bill.cancelledBill.insId eq null }"/>
+
+
+                                                </div>
+
+                                                <div class="consult">
+                                                    <h:outputLabel value="#{labBillEditController.bill.collectingCentre.name} #{labBillEditController.bill.creditCompany.name}" />
+                                                </div>
+
+                                            </div>
+
+
+
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+
+                </h:form>                
+            </ui:define>
+        </ui:composition>
+    </body>
+</html>

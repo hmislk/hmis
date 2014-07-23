@@ -1,0 +1,368 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://java.sun.com/jsf/composite/inward">
+
+
+
+    <ui:define name="content">
+
+
+        <h:panelGroup rendered="true" styleClass="opdPanel" >
+            <h:form id="form">     
+                <p:panel rendered="#{!billBhtController.printPreview}">
+                    <f:facet name="header">
+                        Surgery Service(Theatre)
+                    </f:facet>
+                    <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                    </p:commandButton>
+                    <p:defaultCommand target="btnSettle"/>
+
+                    <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
+
+
+                    <h:panelGrid columns="2" >
+                        <h:panelGrid columns="1" >
+
+                            <h:panelGroup id="panelPatient" >
+
+                                <p:panel header="Patient Details">
+                                    <h:outputLabel value="Type Surgery Name or BHT : "/>
+                                    <p:autoComplete forceSelection="true" 
+                                                    value="#{billBhtController.batchBill}" 
+                                                    completeMethod="#{billController.completeSurgeryBills}"
+                                                    var="apt2" itemLabel="#{amp2.bhtNo}"
+                                                    itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                        <p:ajax event="itemSelect" process="@this" update="panSearch1 panSearch2" 
+                                                listener="#{billBhtController.selectSurgeryBillListener()}"/>
+                                        <p:column headerText="Surgery Name">
+                                            <h:outputLabel value="#{apt2.procedure.item.name}"/> 
+                                        </p:column>
+                                        <p:column headerText="BHT NO">
+                                            <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/> 
+                                        </p:column>
+                                        <p:column headerText="Patient Name" >
+                                            <h:outputLabel value="#{apt2.patientEncounter.patient.person.name}">                                                
+                                            </h:outputLabel>
+                                        </p:column>                                      
+                                    </p:autoComplete>  
+
+                                    <br/>
+                                    <h:panelGroup id="panSearch1">
+                                        <in:bhtDetail admission="#{billBhtController.batchBill.patientEncounter}"/>
+                                    </h:panelGroup>    <br/>                                
+                                    <h:panelGroup id="panSearch2">
+                                        <in:surgeryDetail bill="#{billBhtController.batchBill}"/>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </h:panelGroup>
+
+
+
+
+                            <h:panelGroup id="panelIx" >
+
+
+                                <p:panel id='pIxAdd' header="Items Requests"   >
+                                    <p:focus  context="acIx"/>
+                                    <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
+                                                    value="#{billBhtController.currentBillItem.item}"
+                                                    completeMethod="#{itemController.completeInwardItems}"
+                                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
+                                                    size="30"  style="width: 400px;">
+                                        <p:column>
+                                            <h:outputLabel value="#{ix.name}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="#{ix.department.name}"/>
+                                        </p:column>  
+                                        <p:column>
+                                            <h:outputLabel value="#{ix.total}" 
+                                                           rendered="#{ix.chargesVisibleForInward}"/>
+                                        </p:column>  
+                                        <f:ajax event="itemSelect" execute="acIx" render="txtQty" ></f:ajax>
+                                    </p:autoComplete>
+
+                                    <p:inputText autocomplete="off" id="txtQty"
+                                                 rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
+                                                 value="#{billBhtController.currentBillItem.qty}" >
+                                    </p:inputText>
+
+
+                                    <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" ></p:inputTextarea>
+                                    <p:commandButton ajax="false" id="btnAddIx" value="Add" action="#{billBhtController.addToBillSurgery()}" onclick="onSubmitButton();">
+                                       
+                                    </p:commandButton> 
+
+
+                                    <p:watermark for="txtQty" value="Quentity" ></p:watermark>
+                                    <p:watermark for="txtDesc" value="Description" ></p:watermark>
+
+                                </p:panel>
+                            </h:panelGroup>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="1">
+                            <h:panelGroup id="panelBillItems" >
+                                <p:tabView id="tblBillItem" >
+                                    <p:tab id="tabBillItems" title="Bill Items" >
+                                        <p:dataTable id="tblRequests" rowIndexVar="rowIndex"
+                                                     value="#{billBhtController.lstBillEntries}" 
+                                                     var="bi" >
+                                            <p:column>
+                                                <f:facet name="header">No</f:facet>
+                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Item</f:facet>
+                                                <h:outputLabel value="#{bi.billItem.item.name}"/>
+                                            </p:column>                                       
+                                            <p:column>
+                                                <f:facet name="header">Department</f:facet>
+                                                <h:outputLabel value="#{bi.billItem.item.department.name}"/>
+                                            </p:column>
+
+                                            <p:column>
+                                                <f:facet name="header">Category</f:facet>
+                                                <h:outputLabel value="#{bi.billItem.item.category.name}"/>
+
+                                            </p:column>
+
+                                            <p:column>
+                                                <h:commandButton id="btnRemove" value="X" action="#{billBhtController.removeBillItem}" >
+                                                    <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
+                                                    <p:ajax  process="btnRemove" update="@form" />
+                                                </h:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:tab>
+                                    <p:tab id="tabBillIx" title="Tests" >
+                                        <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillComponents}" var="bix" >
+                                            <p:column>
+                                                <f:facet name="header">No</f:facet>
+                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Name</f:facet>
+                                                <h:outputLabel value="#{bix.item.name}"/>
+                                            </p:column>
+
+                                        </p:dataTable>
+                                    </p:tab>
+                                    <p:tab id="tabBillFee" title="Fees" >
+                                        <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillFees}" var="bif" 
+                                                     rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward) 
+                                                                      or (webUserController.hasPrivilege('ShowInwardFee'))
+                                                                      ? '':'noDisplayRow'}">
+                                            <p:column>
+                                                <f:facet name="header">No</f:facet>
+                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                            </p:column>
+
+                                            <p:column>
+                                                <f:facet name="header">Item Name</f:facet>  
+                                                <h:outputLabel value="#{bif.billItem.item.name}"/>
+                                            </p:column>
+
+                                            <p:column >
+                                                <f:facet name="header">Fee Gross Value</f:facet>
+                                                <h:inputText autocomplete="off" value="#{bif.feeGrossValue}" 
+                                                             disabled="#{!bif.billItem.item.userChangable
+                                                                         or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
+                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:ajax event="blur" execute="@this" 
+                                                            render=" :#{p:component('tblRequests')}  
+                                                            :#{p:component('pBillDetails')} matrix feeValue" 
+                                                            listener="#{billBhtController.feeChangedSurgery(bif)}" />
+                                                </h:inputText>
+                                            </p:column>
+
+                                            <p:column>
+                                                <f:facet name="header">Matrix Value</f:facet>  
+                                                <h:outputLabel id="matrix" value="#{bif.feeMargin}">
+                                                    <f:convertNumber pattern="#,000.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+
+                                            <p:column >
+                                                <f:facet name="header">Fee Value</f:facet>
+                                                <h:outputLabel id="feeValue"  value="#{bif.feeValue}"  >
+                                                    <f:convertNumber pattern="#,000.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+
+                                            <p:column >
+                                                <f:facet name="header">Speciality</f:facet>
+                                                <h:outputLabel value="#{bif.speciality.name}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Payee</f:facet>
+                                                <h:outputLabel value="#{bif.fee.name}" rendered="#{bif.staff eq null}" ></h:outputLabel>
+                                                <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
+                                                    <f:selectItem itemLabel="Select Staff" />
+                                                    <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" 
+                                                                    var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
+                                                </p:selectOneMenu>
+
+                                            </p:column>
+
+                                        </p:dataTable>
+                                    </p:tab>
+                                </p:tabView>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="panelBillTotals" rendered="false" >
+
+                                <p:panel header="Bill Details" id="pBillDetails" style="padding: 5px; margin: 10px;" >
+                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
+                                        <h:outputLabel value="Total" ></h:outputLabel>
+                                        <h:outputLabel id="tot" value="#{billBhtController.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </h:panelGroup>
+                        </h:panelGrid>
+                    </h:panelGrid>
+                </p:panel>
+
+                <h:panelGroup rendered="#{billBhtController.printPreview}" >
+                    <div class="nonPrintBlock" >
+                        <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.makeNull()}" onclick="onSubmitButton();" >
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Batch Cancel"  action="#{billBhtController.cancellAll}" style="float: right;"
+                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                     return false;"/>
+                    </div>
+                    <div >
+
+
+                        <h:panelGroup   id="gpBillPreview"   >
+
+                            <div>
+
+                                <ui:repeat value="#{billBhtController.bills}" var="bill" >
+
+                                    <div class="fiveinchbillBreak" >
+
+                                        <div >
+
+                                            <div class="receiptno" >
+                                                <h:outputLabel value="#{bill.insId}">
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="billdate" >
+                                                <h:outputLabel value="#{bill.billDate}">
+                                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="payment" >
+                                                <h:outputLabel value="#{bill.paymentMethod}">
+                                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="billtime" >
+                                                <h:outputLabel value="#{bill.billTime}"
+                                                               >
+                                                    <f:convertDateTime pattern="hh mm a"/>
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="ptname" >
+                                                <h:outputLabel value="#{bill.patient.person.nameWithTitle}"
+                                                               >
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="phone" >
+                                                <h:outputLabel value="#{bill.patient.person.phone}"
+                                                               >
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="cashier" >
+                                                <h:outputLabel value="Cashier : #{bill.creater.code}">
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="consult" >
+                                                <h:outputLabel value="#{bill.collectingCentre.name}" />
+                                                <h:outputLabel value="#{bill.creditCompany.name}" />
+                                            </div>
+
+
+
+                                            <div class="items" >
+                                                <h:dataTable value="#{billBhtController.lstBillEntries}" var="bip"   >
+                                                    <h:column >
+                                                        <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" 
+                                                                       value="#{bip.billItem.item.printName}" 
+                                                                       style="margin: 4px; font-size: 11px!important;" >
+                                                        </h:outputLabel>
+                                                        <h:panelGroup rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id and bip.billItem.billSession ne null }"  >
+                                                            <br/>
+                                                            <h:outputLabel value="Session No . " ></h:outputLabel>
+                                                            <h:outputLabel value="#{bip.billItem.billSession.serialNo}"
+                                                                           style="margin: 4px; font-size: 11px!important;" >
+                                                            </h:outputLabel>
+                                                        </h:panelGroup>
+                                                    </h:column>
+                                                    <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                                                       
+                                                        <h:outputLabel  value="#{bip.billItem.grossValue}"
+                                                                        rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
+                                                                        style="margin: 4px; font-size: 11px!important;" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </h:column>
+                                                    <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">                                                       
+                                                        <h:outputLabel  value="#{bip.billItem.marginValue}" 
+                                                                        rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
+                                                                        style="margin: 4px; font-size: 11px!important;" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </h:column>
+                                                    <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">                                                     
+                                                        <h:outputLabel  value="#{bip.billItem.netValue}"  
+                                                                        rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
+                                                                        style="margin: 4px; font-size: 11px!important;" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </h:column>
+                                                </h:dataTable>
+                                            </div>
+
+
+
+                                        </div>
+
+                                    </div>
+
+                                </ui:repeat>
+
+                            </div>
+
+
+                        </h:panelGroup>
+
+
+
+
+                    </div>
+                </h:panelGroup>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

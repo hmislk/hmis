@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Manage Holiday" >
+                <h:panelGrid id ="gpVeda" columns="2" >
+
+                    <h:panelGrid id="gpSelect" columns="1"  >
+                        <p:panel >
+                            <h:panelGrid id="gpSelectText" >
+                                <p:selectOneListbox converter="phDateCon"  id="lstSelect"   value="#{phDateController.current}" style="min-width: 223px;min-height: 300px;">
+                                    <f:selectItems  value="#{phDateController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:ajax render="gpDetail" execute="lstSelect" >
+                                    </f:ajax>
+                                </p:selectOneListbox>                               
+                            </h:panelGrid>
+                            <h:panelGrid id="gpSelectButtons" columns="3"  >
+                                <p:commandButton id="btnAdd" ajax="false" value="Add"  action="#{phDateController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+
+                                </p:commandButton>
+                                <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" action="#{phDateController.delete()}"  value="Delete"  >
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+                    </h:panelGrid  >
+
+
+                    <h:panelGrid id="gpDetail" columns="2">
+                        <p:panel>
+                            <h:panelGrid id="gpDetailText" columns="2">
+                                <h:outputText  value="Name" ></h:outputText>
+                                <p:inputText autocomplete="off"  value="#{phDateController.current.name}"  />
+                                <h:outputLabel value="Select Day Type"/>
+                                <p:selectOneMenu  value="#{phDateController.current.phType}">                                   
+                                    <f:selectItems value="#{phDateController.dayTypesForPh}"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Holiday"/>
+                                <p:calendar id="calS" mode="inline" value="#{phDateController.current.phDate}" pattern="dd MMMM yyyy" >                                   
+                                </p:calendar>
+                            </h:panelGrid>
+                        </p:panel>
+
+                        <h:panelGrid id="gpDetailButtons" columns="2">
+                            <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{phDateController.saveSelected}" styleClass="buttons" onclick="onSubmitButton();">
+                            </p:commandButton>
+                            <p:defaultCommand target="btnSave"/>
+                        </h:panelGrid>
+                    </h:panelGrid>
+
+                </h:panelGrid>
+            </p:panel>
+
+
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

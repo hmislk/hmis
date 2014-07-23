@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+        <h:form>
+
+            <p:panel id="panelPrint" header="Collecting Centre Sale Report">
+                <f:facet name="header" >
+                    <p:outputLabel value="Collecting Centre Sale Report"/>
+                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  />
+
+                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Excel"  
+                        styleClass="noPrintButton" 
+                        style="float: right;" onclick="onSubmitButton();"  >
+                        <pe:exporter 
+                            type="xlsx" 
+                            target="tbl" 
+                            fileName="Report By Referring Doctor"/>  
+                    </p:commandButton>
+
+                    <p:panelGrid columns="5" style="min-width: 100%;">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <p:autoComplete forceSelection="true" value="#{commonReport.collectingIns}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.institutionCode}
+                            </p:column>
+                        </p:autoComplete>
+
+                    </p:panelGrid>
+                </f:facet>
+                <br/><br/>
+                <p:dataTable id="tbl" value="#{commonReport.billsByCollecting}" var="d" style="font-size: 15px;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Collecting Center Sale Report"/>
+                    </f:facet>
+
+                    <p:column headerText="Collecting Center Name" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Collecting Center Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{d.collectingCentre.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Bill Code">
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill Code"/>
+                        </f:facet>
+                        <h:outputLabel value="#{d.insId}"/>
+                    </p:column>
+
+                    <p:column headerText="Canceled oR Not">
+                        <f:facet name="header">
+                            <h:outputLabel value="Canceled or Not"/>
+                        </f:facet>
+                        <h:outputLabel rendered="#{d.cancelled}" value="Cancelled"/>
+                    </p:column>
+
+                    <p:column headerText="Refunded OR Not">
+                        <f:facet name="header">
+                            <h:outputLabel value="Refunded or not"/>
+                        </f:facet>
+                        <h:outputLabel rendered="#{d.refunded}" value="Refunded"/>
+                    </p:column>
+
+                    <p:column headerText="Discount" style="text-align: right;" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Discount"/>
+                        </f:facet>
+                        <h:outputLabel value="#{d.discount}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column> 
+
+                    <p:column headerText="Net Total" style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Net Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{d.netTotal}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>   
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

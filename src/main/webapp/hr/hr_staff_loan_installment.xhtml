@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+
+                <h:panelGrid columns="2" >
+                    <h:outputLabel value="Loan Name"/>
+                    <p:selectOneMenu value="#{staffLoanController.current.paysheetComponent}">
+                        <f:selectItem itemLabel="Select Loan"/>
+                        <f:selectItems value="#{staffLoanController.loanCompnent}"
+                                       var="i"  itemLabel="#{i.name}" itemValue="#{i}"/>
+                    </p:selectOneMenu>
+                    <h:outputLabel value="From"/>
+                    <p:calendar  value="#{staffLoanController.current.fromDate}" pattern="dd MMMM yyyy">                            
+                    </p:calendar>
+                    <h:outputLabel value="To"/>
+                    <p:calendar   value="#{staffLoanController.current.toDate}" pattern="dd MMMM yyyy">                            
+                    </p:calendar>
+                    <p:outputLabel value="Bank"/>                                           
+                    <p:selectOneMenu  value="#{institutionController.current}">
+                        <f:selectItem itemLabel="Select Bank"/>
+                        <f:selectItems value="#{institutionController.banks}" var='i' itemValue="#{i}" itemLabel="#{i.name}"/>
+                        <f:ajax execute="@this" render="br" event="change"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel value="Bank Branch"/>                                           
+                    <p:selectOneMenu id='br' value="#{staffLoanController.current.bankBranch}">
+                        <f:selectItem itemLabel="Select Bank"/>
+                        <f:selectItems value="#{institutionController.current.branch}" var='i' itemValue="#{i}" itemLabel="#{i.name}"/>
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Loan No"/>
+                    <p:inputText autocomplete="off"  value="#{staffLoanController.current.loanNo}"/>
+                    <h:outputLabel value="Full Loan Amount"/>
+                    <p:inputText autocomplete="off"  value="#{staffLoanController.current.loanFullAmount}"/>
+                    <h:outputLabel value="Comments"/>
+                    <p:inputText autocomplete="off"  value="#{staffLoanController.current.comment}"/>
+                    <h:outputLabel value="Staff Name"/>
+                    <p:autoComplete forceSelection="true" value="#{staffLoanController.current.staff}"
+                                    completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                    converter="stfcon"   >                                    
+                    </p:autoComplete>
+                    <h:outputLabel value="Monthly Installment"/>
+                    <p:inputText autocomplete="off"  value="#{staffLoanController.current.staffPaySheetComponentValue}"/>
+                    <p:commandButton value="Add"  action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
+                    <p:commandButton value="Remove"  action="#{staffLoanController.remove}" ajax="false" onclick="onSubmitButton();"/>
+                </h:panelGrid>
+
+                <p:spacer height="30" />
+
+                <p:dataTable value="#{staffLoanController.items}" 
+                             filteredValue="#{staffLoanController.filteredStaff}"
+                             var="i" scrollHeight="200"  >
+                    <p:column headerText="From" filterBy="#{i.fromDate}"  filterMatchMode="contains" >
+                        <h:outputLabel value="#{i.fromDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="To" filterBy="#{i.toDate}"  filterMatchMode="contains">
+                        <h:outputLabel value="#{i.toDate}">
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
+                    </p:column>                    
+                    <p:column headerText="Loan Name" filterBy="#{i.paysheetComponent.name}"  filterMatchMode="contains">
+                        <h:outputLabel value="#{i.paysheetComponent.name}"/>
+                    </p:column>
+                    <p:column headerText="Staff" filterBy="#{i.staff.person.nameWithTitle}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
+                    </p:column>
+                     <p:column headerText="Bank" filterBy="#{i.bankBranch.institution.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.bankBranch.institution.name}"/>
+                    </p:column>
+                     <p:column headerText="Branch" filterBy="#{i.bankBranch.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.bankBranch.name}"/>
+                    </p:column>
+                     <p:column headerText="Loan No" filterBy="#{i.loanNo}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.loanNo}"/>
+                    </p:column>
+                     <p:column headerText="Loan Full Amount"  filterBy="#{i.loanFullAmount}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.loanFullAmount}"/>
+                    </p:column>    
+                      <p:column headerText="Monthly Installment"  filterBy="#{i.loanFullAmount}" filterMatchMode="contains">
+                          <h:outputLabel value="#{i.staffPaySheetComponentValue}"/>
+                    </p:column> 
+                    <p:column>
+                        <p:commandButton value="Edit" ajax="false" onclick="onSubmitButton();">
+                            <f:setPropertyActionListener target="#{staffLoanController.current}"  value="#{i}" />
+                        </p:commandButton>
+
+                    </p:column>
+
+                </p:dataTable>
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

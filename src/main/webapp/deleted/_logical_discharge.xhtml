@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://java.sun.com/jsf/composite/inward">
+
+
+
+    <ui:define name="content">
+
+
+        <h:panelGroup rendered="true" styleClass="opdPanel" >
+            <h:form id="form">     
+                <p:panel rendered="#{!billBhtController.printPreview}">
+                    <p:commandButton id="btnSettle" value="Discharge" action="#{billBhtController.logicalDischage()}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                    </p:commandButton>
+                    <p:defaultCommand target="btnSettle"/>
+
+                    <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill"/>
+
+
+                    <h:panelGrid columns="2" >
+                        <h:panelGrid columns="1" >
+
+                            <h:panelGroup id="panelPatient" >
+                                <p:panel header="Patient Details">
+                                    <h:outputLabel value="Type Patinet Name or BHT : "/>
+                                    <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" converter="admis"
+                                                    value="#{billBhtController.patientEncounter}" 
+                                                    completeMethod="#{admissionController.completePatient}"
+                                                    var="apt2" itemLabel="#{amp2.bhtNo}"
+                                                    itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                        <p:ajax event="itemSelect" process="acPt2" update="panSearch2"/>
+                                        <p:column >
+                                            <h:outputLabel value="#{apt2.bhtNo}"/> 
+                                        </p:column>
+                                        <p:column >
+                                            <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                        </p:column>
+                                    </p:autoComplete>  
+
+                                    <br/><br/>
+                                    <h:panelGroup id="panSearch2">
+                                        <in:bhtDetail admission="#{billBhtController.patientEncounter}"/>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </h:panelGroup>
+
+
+
+
+                           
+
+                        </h:panelGrid>
+
+                        
+                    </h:panelGrid>
+                </p:panel>
+
+                
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

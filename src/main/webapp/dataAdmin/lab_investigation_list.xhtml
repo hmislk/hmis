@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl autoUpdate="true" />
+                <p:panel id="panIx"  >
+
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Investigations"></h:outputLabel>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:printer target="panIx" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Excel" ajax="false" onclick="onSubmitButton();">
+                            <pe:exporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"
+                                         facetBackground="#008000" facetFontSize="15" 
+                                         facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
+                    </f:facet>
+
+
+
+                    <div id="printHeader" style="text-align: center; font-family: serif;">
+                        <h:outputLabel value="#{labels.company_name}" style="font-size: 20px;"></h:outputLabel>
+                        <br> </br>
+                        <h:outputLabel value="Lab Investigation List" style="font-family: serif;" ></h:outputLabel>
+                        <br> </br>
+                        <h:outputLabel value="2013 / 2014"></h:outputLabel>
+                    </div>
+
+
+                    <p:dataTable id="tbl" rowIndexVar="rowIndex" value="#{investigationController.items}" var="ix"  >
+                        <f:facet name="header">
+                            <h:outputLabel value="Investigation List 2013/2014"/>
+                        </f:facet>
+                        <p:column headerText="No." style="width: 10%;" >
+                            <f:facet name="header">
+                                <h:outputLabel value="No" style="font-weight: bold;"/>
+                            </f:facet>
+                            <h:outputLabel value="#{rowIndex + 1}" ></h:outputLabel>
+                        </p:column>  
+                        <p:column headerText="Investigation Name"  style="width: 45%;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Investigation Name"/>
+                            </f:facet>
+                            <h:outputLabel value="#{ix.name}" ></h:outputLabel>
+                        </p:column>
+                         <p:column headerText="Category"  style="width: 45%;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Investigation Category"/>
+                            </f:facet>
+                             <h:outputLabel value="#{ix.investigationCategory.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Institution Name"  style="width: 20%;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Institution Name"/>
+                            </f:facet>
+                            <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Department Name"  style="width: 20%;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Department Name"/>
+                            </f:facet>
+                            <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
+                        </p:column>
+
+                    </p:dataTable>
+
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

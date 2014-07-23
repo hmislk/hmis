@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form>
+                    <h:panelGrid columns="3"  >
+
+                        <p:panel header="Payment Method">
+                            <p:commandButton action="/memberShip/report_inward_cash_by_payment_method" value="Membership Scheme By Payment Method"  styleClass="linkButton" ajax="false"  />                              
+                            <p:commandButton action="/memberShip/report_inward_cash_by_payment_method_member_ship" value="Membership Scheme By Payment Method With Membership Scheme"  styleClass="linkButton" ajax="false"  />                              
+                        </p:panel>
+
+                        <p:panel header="Credit Institution">
+                            <p:commandButton action="/memberShip/report_inward_discount_scheme_by_credit_institution" value="Discount Scheme By Credit Institution"  styleClass="linkButton" ajax="false"  />                              
+                            <p:commandButton action="/memberShip/report_inward_member_scheme_by_credit_institution" value="Membership Scheme By Credit Institution"  styleClass="linkButton" ajax="false"  />                              
+                        </p:panel>
+
+                    </h:panelGrid>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

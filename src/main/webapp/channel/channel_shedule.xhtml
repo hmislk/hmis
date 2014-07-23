@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGrid columns="2">
+                <p:panel >
+                    <h:panelGrid columns="2">
+                        <h:outputLabel  value="Speciality" ></h:outputLabel>
+                        <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
+                                         completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                         converter="specilityCon"   >
+                            <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
+                        </p:autoComplete>
+
+                        <h:outputLabel  value="Doctor" ></h:outputLabel>
+                        <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
+                                          completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                          converter="stfcon"   >   
+                            <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail"  />
+                        </p:autoComplete>  
+                    </h:panelGrid>
+
+
+
+                    <h:panelGrid id="gpSelectText" >
+                        <p:selectOneListbox  id="lstSelect" converter="sscon"   value="#{sheduleController.current}" style="min-width: 100%;" >
+                            <f:selectItems  value="#{sheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                            <f:ajax render="gpDetail" execute="lstSelect" >
+                            </f:ajax>
+                        </p:selectOneListbox>
+                    </h:panelGrid>
+                    <h:panelGrid id="gpSelectButtons" columns="3"  >                     
+                        <p:commandButton ajax="false" id="btnAdd" value="Add"  action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                            <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail" execute="" >
+                            </f:ajax>
+                        </p:commandButton>
+                        <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                    return false;" action="#{sheduleController.delete()}"  value="Delete"  >
+                        </p:commandButton>
+
+                    </h:panelGrid>
+
+                </p:panel>
+
+                <p:panel id="gpDetail">                    
+                    <f:facet name="header">
+                        <p:commandButton ajax="false"  id="btnSave" value="Save"  action="#{sheduleController.saveSelected}" styleClass="buttons" onclick="onSubmitButton();">
+                            <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail "  execute="gpDetail" >
+                            </f:ajax>
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="New Shedule" actionListener="#{sheduleController.makeNull}" onclick="onSubmitButton();"/>
+
+                    </f:facet>
+                    <p:panelGrid columns="2">  
+                        <p:outputLabel value="Session Name"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
+                        <p:outputLabel value="Start Time"/>                        
+                        <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                        </p:calendar>
+                        <p:outputLabel value="Max Number"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.maxNo}"/>
+                        <p:outputLabel value="Duration in Minutes"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.duration}"/>
+                        <p:outputLabel value="Room Number"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.roomNo}"/>
+                        <p:outputLabel value="Before Session" rendered="false"/>
+                        <p:autoComplete rendered="false" forceSelection="true" value="#{sheduleController.current.beforeSession}" 
+                                         completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                         converter="sscon"   >                            
+                        </p:autoComplete>
+                        <p:outputLabel value="After Session" rendered="false"/>
+                        <p:autoComplete  rendered="false" forceSelection="true" value="#{sheduleController.current.afterSession}" 
+                                         completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                         converter="sscon"   >                            
+                        </p:autoComplete>
+                        <p:outputLabel value="Displaying Count"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.displayCount}"/>
+                        <p:outputLabel value="Displaying Percent"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.displayPercent}"/>
+                        <p:outputLabel value="Refundable"/>
+                        <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/> 
+                    </p:panelGrid>
+                    <br/>
+             
+                    <h:panelGrid columns="3" style="min-width: 100%;">
+                        <p:outputLabel value="Fee Name"/>
+                        <p:outputLabel value="Local Fee"/>
+                        <p:outputLabel value="Foriegn Fee"/>
+
+                        <p:outputLabel value="Hospital Fee"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.hospitalFee.fee}"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.hospitalFee.ffee}"/>
+
+                        <p:outputLabel value="Doctor Fee"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.doctorFee.fee}"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.doctorFee.ffee}"/>
+                        
+                        <p:outputLabel value="Tax"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.tax.fee}"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.tax.ffee}"/>
+
+                    </h:panelGrid>
+
+                    <p:tabView  >
+                        <p:tab title="WeekDay"> 
+                            <p:selectOneMenu id="wdate" value="#{sheduleController.current.sessionWeekday}">
+                                <f:selectItem itemLabel="Select Week Day"/>
+                                <f:selectItem itemValue="1" itemLabel="Sunday"/>
+                                <f:selectItem itemValue="2" itemLabel="Monday"/>
+                                <f:selectItem itemValue="3" itemLabel="Tuesday"/>
+                                <f:selectItem itemValue="4" itemLabel="Wednesday"/>
+                                <f:selectItem itemValue="5" itemLabel="Thursday"/>
+                                <f:selectItem itemValue="6" itemLabel="Friday"/>
+                                <f:selectItem itemValue="7" itemLabel="Sutarday"/>
+                            </p:selectOneMenu>
+                        </p:tab>
+                        <p:tab title="Other Day" >
+                            <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="dd MMMM yyyy" >                              
+                            </p:calendar>
+                        </p:tab>
+                    </p:tabView>                    
+
+                </p:panel>
+
+            </h:panelGrid>
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

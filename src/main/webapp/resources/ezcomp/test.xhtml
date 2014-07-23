@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+         <cc:attribute name="controller" />
+         <cc:attribute name="img" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:panel id="tx">
+            <p:outputLabel value="#{cc.attrs.controller.current.person.name}"/>
+            <p:outputLabel  value="#{cc.attrs.controller.signature.name}"/><br/>
+            <p:outputLabel  value="#{cc.attrs.controller.signature.stream}"/><br/>
+            <p:outputLabel  value="#{cc.attrs.controller.signature.toString()}"/>
+
+            <p:graphicImage value="#{cc.attrs.img}"/>
+        </p:panel>
+
+    </cc:implementation>
+</html>

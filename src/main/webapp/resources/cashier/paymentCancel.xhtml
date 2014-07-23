@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="data" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="paymentCancel" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
+            <f:facet name="header">  
+                <h:outputLabel value="PaymentsCancel" />
+            </f:facet> 
+            <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
+                <f:facet name="header">  
+                    <h:outputLabel value="PaymentsCancel" />
+                </f:facet>
+                <h:outputLabel value="#{b.createdAt}"  >
+                    <f:convertDateTime pattern="hh:mm a"/>
+                </h:outputLabel>
+            </p:column>
+
+            <p:column headerText="Id" >
+                <f:facet name="header">  
+                    <h:outputLabel value="Id" />
+                </f:facet>
+                <h:outputLabel value="#{b.insId}"/>
+            </p:column>
+
+            <p:column headerText="For Wich Staff"  >
+                <f:facet name="header">  
+                    <h:outputLabel value="For Wich Staff" />
+                </f:facet>
+                <h:outputLabel value="#{b.staff.person.nameWithTitle}"/>
+
+            </p:column>
+
+
+            <p:column headerText="Cash" style=" text-align: right" rendered="#{cc.attrs.data.cash!=0.0}"  >
+                <f:facet name="header">  
+                    <h:outputLabel value="Cash" />
+                </f:facet>
+                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
+            </p:column>
+
+            <p:column exportable="false">
+                <p:selectBooleanCheckbox style="border: black 2px solid;"/>
+            </p:column>
+
+            <p:columnGroup type="footer">  
+                <p:row>  
+                    <p:column colspan="3" style="text-align:left" footerText="Totals:"/>  
+                    <p:column footerText="#{cc.attrs.data.cash}" style=" text-align: right">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.data.cash}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>  
+            </p:columnGroup> 
+        </p:dataTable>
+    </cc:implementation>
+</html>

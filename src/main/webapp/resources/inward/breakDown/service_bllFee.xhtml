@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface >
+
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+
+    <cc:implementation>
+        <p:dataTable  value="#{bhtSummeryFinalizedController.billFees}" var="bi"
+                      sortBy="#{bi.billItem.id}"
+                      rowStyleClass="#{(bi.bill.billClass eq 'class com.divudi.entity.CancelledBill')? '':'noDisplayRow'}">                               
+            <p:column headerText="Item Name">
+                #{bi.billItem.item.name}
+            </p:column>
+            <p:column headerText="Inward Charge Type">
+                #{bi.billItem.item.inwardChargeType}
+            </p:column>
+             <p:column headerText="Bill Item Id">
+                #{bi.billItem.id}
+            </p:column>
+            <p:column headerText="BillItem Gross Value">
+                <h:outputLabel value="#{bi.billItem.grossValue}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="BillFee Gross Value">
+                <h:outputLabel value="#{bi.feeGrossValue}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="BillItem Discount Value">
+                <h:outputLabel value="#{bi.billItem.discount}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="BillFee Discount">
+                <h:outputLabel value="#{bi.feeDiscount}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="BillItem Net Value">
+                <h:outputLabel value="#{bi.billItem.netValue}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="BillFee Fee Value">
+                <h:outputLabel value="#{bi.feeValue}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+        </p:dataTable>
+    </cc:implementation>
+</html>

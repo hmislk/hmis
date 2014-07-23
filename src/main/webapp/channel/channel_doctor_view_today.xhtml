@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html">
+
+    <ui:define name="content">
+        <p:outputLabel value="Total Doctor Fees"/>
+        <p:panel>
+            <f:facet name="header">
+                <h:panelGrid columns="2">                    
+                    <p:outputLabel value="Date"/>
+                    <p:clock pattern="dd MMMM yyyy" mode="server"  />           
+                </h:panelGrid>
+            </f:facet>
+
+            <p:dataTable value="#{channelReportController.totalDoctor}" var="bs" sortBy="#{bs.common}" >
+                <p:column headerText="Consultant">#{bs.consultant.person.nameWithTitle}</p:column>              
+                <p:column headerText="Valid Patient">#{bs.billCount+bs.billCount_c}</p:column>
+                <p:column headerText="Total">#{bs.billFee+bs.billFee_c}</p:column>
+                <p:summaryRow>
+                    <p:column colspan="2">
+                        <h:outputLabel value="Total"/>
+                    </p:column>             
+                    <p:column >
+                        <h:outputLabel value="#{channelReportController.total}"/>
+                    </p:column>                  
+
+                </p:summaryRow>
+            </p:dataTable>
+
+        </p:panel>
+    </ui:define>
+
+
+
+</ui:composition>

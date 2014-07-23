@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Staff Stock Adjustment" >
+                        <p:panelGrid columns="2" >
+                            <h:outputLabel value="Item" ></h:outputLabel>
+                            <p:autoComplete   forceSelection="true"  id="acStock" value="#{storeAdjustmentController.stock}" converter="stockCon" completeMethod="#{storeAdjustmentController.completeStaffStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
+                                <p:column headerText="Staff">
+                                    <h:outputLabel value="#{i.staff.person.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Item">
+                                    <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Rate">
+                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Stocks">
+                                    <h:outputLabel value="#{i.stock}" >
+                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Expiary">
+                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
+                                        <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+                            <h:outputLabel value="New Quentity" ></h:outputLabel>
+                            <p:inputText autocomplete="off" value="#{storeAdjustmentController.qty}" ></p:inputText>
+                            <h:outputLabel value="Comment" ></h:outputLabel>
+                            <p:inputTextarea value="#{storeAdjustmentController.comment}" ></p:inputTextarea>
+                            <h:outputLabel value="" ></h:outputLabel>
+                            <p:commandButton value="Make Adjustment" ajax="false" action="#{storeAdjustmentController.adjustDepartmentStock()}" >
+                            </p:commandButton>
+                           
+                        </p:panelGrid>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

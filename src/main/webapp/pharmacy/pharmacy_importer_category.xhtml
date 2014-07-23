@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+
+            <h:form  enctype="multipart/form-data">
+                <h:outputLabel value="Upload Attendance" ></h:outputLabel>
+                <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+                <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importToExcelCategoriOnly()}"/>
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

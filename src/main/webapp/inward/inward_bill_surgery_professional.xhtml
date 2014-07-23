@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://java.sun.com/jsf/composite/inward">
+    <ui:define name="content">       
+
+        <h:panelGroup rendered="true" styleClass="opdPanel" >
+            <h:form id="form">
+
+                <p:panel style="min-height: 600px; position:relative;"  >
+                    <f:facet name="header" >              
+                        Surgery Professional(Theatre)              
+                        <p:commandButton value="New Bill" ajax="false" actionListener="#{inwardProfessionalBillController.makeNull()}" onclick="onSubmitButton();">
+                        </p:commandButton>
+                        
+                    </f:facet>
+
+                    <h:panelGrid columns="2" >
+                        <h:panelGrid columns="1" >
+                            <p:panel header="Patient Details">
+                                <h:outputLabel value="Type Surgery Name or BHT : "/>
+                                <p:autoComplete forceSelection="true" 
+                                                value="#{inwardProfessionalBillController.batchBill}" 
+                                                completeMethod="#{billController.completeSurgeryBills}"
+                                                var="apt2" itemLabel="#{amp2.bhtNo}"
+                                                itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                    <p:ajax event="itemSelect" process="@this" update="@all"
+                                            listener="#{inwardProfessionalBillController.selectBatchBillListener}"/>
+                                    <p:column headerText="Surgery Name">
+                                        <h:outputLabel value="#{apt2.procedure.item.name}"/> 
+                                    </p:column>
+                                    <p:column headerText="BHT NO">
+                                        <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/> 
+                                    </p:column>
+                                    <p:column headerText="Patient Name" >
+                                        <h:outputLabel value="#{apt2.patientEncounter.patient.person.name}">                                                
+                                        </h:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>  
+
+                                <br/>
+                                <h:panelGroup id="panSearch1">
+                                    <in:bhtDetail admission="#{inwardProfessionalBillController.batchBill.patientEncounter}"/>
+                                </h:panelGroup>    <br/>                                
+                                <h:panelGroup id="panSearch2">
+                                    <in:surgeryDetail procedure="#{inwardProfessionalBillController.batchBill.procedure}"/>
+                                </h:panelGroup>
+                            </p:panel>
+
+                            <h:panelGroup id="panelIx" >
+
+
+                                <p:panel id='pIxAdd' header="Professional Fee" style="min-height: 350px;"  >
+                                    <p:panelGrid columns="2" id="profPanel">
+                                        <h:outputLabel value="Perfomance"/>
+                                        <p:selectOneMenu  value="#{inwardProfessionalBillController.proEncounterComponent.patientEncounterComponentType}" >
+                                            <f:selectItem itemLabel="Please select Perfomance"/>
+                                            <f:selectItems value="#{enumController.patientEncounterComponentTypes}"/>
+                                        </p:selectOneMenu>
+                                        <h:outputLabel value="Discreption"/>
+                                        <p:inputText autocomplete="off" id="txtDes" value="#{inwardProfessionalBillController.proEncounterComponent.description}" ></p:inputText>
+
+                                        <h:outputText value="Speciality"/>
+                                        <p:autoComplete converter="specilityCon"  forceSelection="true" id="cmbSpe" 
+                                                        value="#{inwardProfessionalBillController.proEncounterComponent.billFee.speciality}" 
+                                                        completeMethod="#{specialityController.completeSpeciality}" var="sp" 
+                                                        itemLabel="#{sp.name}" 
+                                                        itemValue="#{sp}" size="30"  style="width: 400px;">
+                                            <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
+                                        </p:autoComplete>
+
+
+                                        <h:outputText value="Doctor/Staff"/>
+                                        <p:autoComplete converter="stfcon"  forceSelection="true" id="cmbDoc" 
+                                                        value="#{inwardProfessionalBillController.proEncounterComponent.billFee.staff}" 
+                                                        completeMethod="#{staffController.completeItems}" var="st" 
+                                                        itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30" 
+                                                        style="width: 400px;">
+                                            <f:ajax execute="cmbSpe" event="keypress"/>
+                                        </p:autoComplete>
+
+                                        <h:outputLabel value="Fee"/>
+                                        <p:inputText autocomplete="off" id="prof" value="#{inwardProfessionalBillController.proEncounterComponent.billFee.feeValue}"/>
+                                        <p:commandButton ajax="false" update="surgery"  
+                                                         value="Add Professional Fee"  
+                                                         action="#{inwardProfessionalBillController.addProfessionalFee()}"
+                                                         disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
+                                    </p:panelGrid>
+                                </p:panel>
+
+                            </h:panelGroup>
+
+                        </h:panelGrid>
+
+
+                        <h:panelGrid columns="1" >
+
+                            <h:panelGroup id="panelBillItems" >
+                                <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}"   var="c" >
+                                    <p:column>
+                                        <h:outputLabel value="#{c.patientEncounterComponentType}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText autocomplete="off" value="#{c.billFee.feeValue}" disabled="#{c.billFee.paidValue!=0}" />
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputLabel value="#{c.billFee.createdAt}">
+                                            <f:convertDateTime pattern="dd MM yyyy"/>
+                                        </h:outputLabel>                                                   
+                                        <br/>
+                                        <h:panelGroup rendered="#{c.billFee.retired}" >
+                                            <h:outputLabel style="color: red;" value="Deleted at " />
+                                            <h:outputLabel style="color: red;"  value="#{c.billFee.retiredAt}" >
+                                                <f:convertDateTime pattern="dd MMM yyyy"/>
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputLabel value="#{c.billFee.creater.webUserPerson.name}"/>     
+                                        <br/>
+                                        <h:panelGroup rendered="#{c.billFee.retired}" >
+                                            <h:outputLabel style="color: red;" value="Deleted By " />
+                                            <h:outputLabel style="color: red;"  value="#{c.billFee.retirer.webUserPerson.name}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>     
+                                    <p:column headerText="Update">
+                                        <p:commandButton ajax="false" value="Update"  
+                                                         action="#{inwardProfessionalBillController.updateProFee(c.billFee)}"
+                                                         disabled="#{c.billFee.id eq null or inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
+                                    </p:column>
+
+                                    <p:column headerText="Remove">
+                                        <p:commandButton ajax="false" value="Remove"  
+                                                         rendered="#{c.billFee.id eq null}"
+                                                         action="#{inwardProfessionalBillController.removeProEncFromList(c)}"
+                                                         disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
+                                        <p:commandButton ajax="false" value="Remove"  
+                                                         rendered="#{c.billFee.id ne null}"
+                                                         action="#{inwardProfessionalBillController.removeProEncFromDbase(c)}"
+                                                         disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="panelBillTotals" >
+
+                                <p:panel header="Bill Details" id="pBillDetails" style="padding: 5px; margin: 10px;" >
+                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
+                                        <h:outputLabel value="Total" ></h:outputLabel>
+                                        <h:outputLabel id="tot" value="#{inwardProfessionalBillController.current.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                       
+                                    </p:panelGrid>
+
+                                </p:panel>
+                            </h:panelGroup>
+
+
+
+
+                        </h:panelGrid>
+
+
+                    </h:panelGrid>
+
+                </p:panel>
+
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

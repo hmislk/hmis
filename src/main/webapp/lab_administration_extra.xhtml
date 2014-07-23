@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <body>
+
+        <ui:composition template="./resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form>
+
+                    <h:panelGrid columns="3" columnClasses="grid1 grid1"  >
+
+
+
+                        <p:panel header="Please do NOT click. Only for Developers."  >
+                            <h:panelGrid columns="1"  >
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Ix Cats to Cats Categories" action="#{investigationController.catToIxCat}" onclick="onSubmitButton();" />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Add Worksheet Items" action="#{investigationController.reportItemsToWorksheetItems}" onclick="onSubmitButton();" />
+                        
+
+                            </h:panelGrid>
+                        </p:panel>
+
+                    </h:panelGrid>
+
+
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -1,0 +1,681 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://java.sun.com/jsf/composite/inward"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
+
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:panel  >
+                    <f:facet name="header">
+                        <p:outputLabel value="Inward Payment Bill"/>                                      
+                        <p:commandButton ajax="false"  value="Clear" style="float:right;" action="#{bhtSummeryFinalizedController.makeNull()}" onclick="onSubmitButton();" />                                                                        
+                    </f:facet>
+                    <h:panelGrid columns="2">
+                        <p:panel header="BHT">
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientAll}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >
+                                <p:ajax event="itemSelect" 
+                                        process="@this" 
+                                        update="@all" 
+                                        listener="#{bhtSummeryFinalizedController.createTablesFinalized()}"/>
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
+                                </p:column>
+                            </p:autoComplete>   
+
+                        </p:panel>
+                        <in:finalTable bill="#{bhtSummeryFinalizedController.patientEncounter.finalBill}"/>
+
+                    </h:panelGrid>
+
+                    <p:tabView  id="tvPt" style="min-height: 75%;"  >                     
+                        <p:tab id="tabSer" title="Service Detail BillItem"  >
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             >
+                                <pe:exporter type="xlsx"
+                                             target="serv" fileName="Service"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculateService()}"/>
+                            <p:commandButton ajax="false" value="Update BillItems" action="#{bhtSummeryFinalizedController.updateAllBillItems()}"/>
+                            <p:commandButton ajax="false" value="Update BillFess" action="#{bhtSummeryFinalizedController.updateAllBillFees()}"/>
+
+                            <p:panelGrid columns="5" styleClass="Border normalFont">
+                                <h:outputLabel value=""/>
+                                <h:outputLabel value="Gross Value"/>
+                                <h:outputLabel value="Margin"/>
+                                <h:outputLabel value="Discount"/>
+                                <h:outputLabel value="Net Total"/>
+
+                                <h:outputLabel value="BillItem"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGross}"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMargin}"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemDiscount}"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemNetValue}"/>
+
+                                <h:outputLabel value="BillFee"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeGross}"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeMargin}"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeDiscount}"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeNetValue}"/>
+
+                            </p:panelGrid>
+
+
+
+                            <p:dataTable  value="#{bhtSummeryFinalizedController.billItems}"
+                                          filteredValue="#{bhtSummeryFinalizedController.filterItems}"
+                                          id="serv"
+                                          var="bi"
+                                          sortBy="#{bi.inwardChargeType}"
+                                          >                               
+
+                                <p:column headerText="Item Name"
+                                          filterBy="#{bi.item.name}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.item.name}"/>                                    
+                                </p:column>
+
+                                <p:column headerText="Category"
+                                          filterBy="#{bi.item.category.name}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.item.category.name}"/>                                    
+                                </p:column>
+
+
+                                <p:column headerText="Inward Charge Type"
+                                          filterBy="#{bi.item.inwardChargeType.label}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{bi.item.inwardChargeType.label}"/>                                    
+                                </p:column>
+
+                                <p:column headerText="Gross Value" filterBy="#{bi.grossValue}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Gross Value"/>
+                                    </f:facet>
+                                    <p:inputText value="#{bi.grossValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column exportable="false">
+                                    <p:dataTable value="#{bi.billFees}" var="bf">                                        
+                                        <p:column>
+                                            <p:inputText value="#{bf.feeGrossValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:inputText>    
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:column>
+                                <p:column headerText="Margin Value" filterBy="#{bi.marginValue}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="MArgin Value"/>
+                                    </f:facet>
+                                    <p:inputText value="#{bi.marginValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column exportable="false" >
+                                    <p:dataTable value="#{bi.billFees}" var="bf">                                      
+                                        <p:column>
+                                            <p:inputText value="#{bf.feeMargin}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:inputText>                                                
+                                        </p:column>                                      
+                                    </p:dataTable>
+                                </p:column>
+                                <p:column headerText="Discount" filterBy="#{bi.discount}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discount"/>
+                                    </f:facet>
+                                    <p:inputText value="#{bi.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>                                  
+                                </p:column>
+                                <p:column exportable="false" >
+                                    <p:dataTable value="#{bi.billFees}" var="bf">                                                                               
+                                        <p:column>
+                                            <p:inputText value="#{bf.feeDiscount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:inputText>    
+                                        </p:column>                                        
+                                    </p:dataTable>
+                                </p:column>
+                                <p:column headerText="Net Total" filterBy="#{bi.netValue}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Total"/>
+                                    </f:facet>
+                                    <p:inputText value="#{bi.netValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>                                    
+                                </p:column>
+                                <p:column exportable="false" >
+                                    <p:dataTable value="#{bi.billFees}" var="bf">                                     
+                                        <p:column>
+                                            <p:inputText value="#{bf.feeValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:inputText>                                                
+                                        </p:column>                                      
+                                    </p:dataTable>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton ajax="false" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(bi)}"/>
+                                </p:column>
+                                <p:column exportable="false" >
+                                    <p:dataTable value="#{bi.billFees}" var="bf">
+                                        <p:column>
+                                            <h:outputLabel value="#{bf.fee.feeType}">                                              
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="#{bf.staff.person.name}">                                              
+                                            </h:outputLabel>
+                                        </p:column>                                       
+                                        <p:column>
+                                            <p:commandButton ajax="false" value="Update Bill Fee" action="#{inwardReportControllerBht.updateBillFee(bf)}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:tab>
+
+
+
+                        <p:tab title="Madicine Issue">
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             >
+                                <pe:exporter type="xlsx"
+                                             target="pharmacy" fileName="Madicine_Issue"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculatePharmacy()}"/>
+
+                            <p:panelGrid columns="5" styleClass="Border normalFont">
+                                <h:outputLabel value=""/>
+                                <h:outputLabel value="Gross Value"/>
+                                <h:outputLabel value="Margin"/>
+                                <h:outputLabel value="Discount"/>
+                                <h:outputLabel value="Net Total"/>
+
+                                <h:outputLabel value="BillItem"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGrossPharmacy}"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy}"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemDiscountPharmacy}"/>
+                                <h:outputLabel value="#{(bhtSummeryFinalizedController.billItemGrossPharmacy
+                                                        +bhtSummeryFinalizedController.billItemMarginPharmacy)
+                                                        -bhtSummeryFinalizedController.billItemDiscountPharmacy}"/>
+
+
+                            </p:panelGrid>
+
+                            <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
+                                         sortBy="#{iss.bill.deptId}">
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="ID No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{iss.id}"/>                                    
+                                </p:column>                  
+                                <p:column headerText="Item Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{iss.item.name}">
+
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Total Value">
+                                    <h:outputLabel  value="#{iss.grossValue}">
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Margin Value">
+                                    <h:inputText  value="#{iss.marginValue}"/>
+                                </p:column>
+                                <p:column headerText="Gross Value" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Gross Value"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{iss.grossValue+iss.marginValue}">
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Discount Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discount Value"/>
+                                    </f:facet>
+                                    <h:inputText  value="#{iss.discount}"/>
+                                </p:column>
+                                <p:column headerText="Net Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Value"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{iss.netValue}">
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton ajax="false" process="@this" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(iss)}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </p:tab>
+
+                        <p:tab id="tabTimed" title="Timed Service Detail"  >           
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                <pe:exporter type="xlsx"
+                                             target="timed" fileName="Timed_Service"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+
+                            <p:dataTable id="timed"  value="#{bhtSummeryFinalizedController.patientItems}" var="pt">
+                                <p:column headerText="Service Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Service Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pt.item.name}"/>                                    
+                                </p:column>
+                                <p:column headerText="Start Time">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Start Time"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pt.fromTime}" >
+                                        <f:convertDateTime pattern="dd/MM/yy hh mm"/>
+                                    </h:outputLabel>                                         
+                                </p:column>
+                                <p:column headerText="Stopped Time">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Stopped Time"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pt.toTime}" >
+                                        <f:convertDateTime pattern="dd/MM/yy hh mm"/>
+                                    </h:outputLabel>                                                              
+                                </p:column>
+                                <p:column headerText="Total">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pt.serviceValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Discount">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discount"/>
+                                    </f:facet>
+                                    <h:inputText value="#{pt.discount}"/>
+                                </p:column>
+                                <p:column headerText="Net Total">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Total"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pt.serviceValue-pt.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>       
+                                </p:column>                                
+                                <p:column headerText="Added User" exportable="false" >
+                                    <h:outputLabel value="#{pt.creater.webUserPerson.name}"/>     
+                                    <br/>
+                                    <h:panelGroup rendered="#{pt.retired}" >
+                                        <h:outputLabel style="color: red;" value="Deleted By " />
+                                        <h:outputLabel style="color: red;"  value="#{pt.retirer.webUserPerson.name}" >                                       
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>     
+                                <p:column headerText="Inward Charge Type" exportable="false">
+                                    <h:outputLabel value="#{pt.item.inwardChargeType}"/>                                        
+                                </p:column>   
+                                 <p:column>
+                                     <p:commandButton ajax="false" process="@this" value="Update Bill Item" action="#{inwardReportControllerBht.updatePatientBillItem(pt)}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </p:tab>
+                        
+                        <p:tab id="tabAdd" title="Out Side Charge Detail"  >
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             >
+                                <pe:exporter type="xlsx"
+                                             target="outSide" fileName="Out_Side_Fee"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+                            <p:dataTable  id="outSide"   
+                                          scrollable="true" scrollHeight="300" 
+                                          value="#{bhtSummeryFinalizedController.outSideBills}" var="bil">
+                                <p:column headerText="Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{bil.comments}"/>
+                                </p:column>           
+                                <p:column headerText="Inward Charge Type" exportable="false">
+                                    <h:outputLabel  value="#{bil.singleBillItem.inwardChargeType}">                                     
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Total">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{bil.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Discount">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discount"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{bil.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Net Total">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Total"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{bil.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>         
+                            </p:dataTable>
+                        </p:tab>
+
+
+
+                        <p:tab id="tabPro" title="Professional Fee"  >
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             >
+                                <pe:exporter type="xlsx"
+                                             target="pro" fileName="Professional_Fee"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+                            <p:dataTable id="pro"  scrollable="true" scrollHeight="300"  
+                                         value="#{bhtSummeryFinalizedController.proBillFee}" var="pf"
+                                         filteredValue="#{bhtSummeryFinalizedController.fillteredFees}">
+                                <p:column headerText="Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pf.staff.person.nameWithTitle}"/>                                    
+                                </p:column>
+                                <p:column headerText="Speciality" filterBy="#{pf.staff.speciality.name}" filterMatchMode="contains" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Speciality"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pf.staff.speciality.name}"/>                                    
+                                </p:column> 
+                                <p:column headerText="Fee Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Fee Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pf.feeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:tab>
+
+
+                        <p:tab id="tabDoc" title="Assisting Fee"  >
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             >
+                                <pe:exporter type="xlsx"
+                                             target="ass" fileName="Assisting_Fee"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+                            <p:dataTable id="ass" 
+                                         value="#{bhtSummeryFinalizedController.assistBillFee}" var="pf"
+                                         filteredValue="#{bhtSummeryFinalizedController.fillteredFees}">
+                                <p:column headerText="Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pf.staff.person.nameWithTitle}"/>                                    
+                                </p:column>
+                                <p:column headerText="Speciality" filterBy="#{pf.staff.speciality.name}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Speciality"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pf.staff.speciality.name}"/>                                    
+                                </p:column>
+                                <p:column headerText="Fee Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Fee Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{pf.feeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:tab>
+
+                        <p:tab id="tabP" title="Payments"  >
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             >
+                                <pe:exporter type="xlsx"
+                                             target="pay" fileName="Payment"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+                            <p:dataTable id="pay" scrollable="true" scrollHeight="300"  
+                                         value="#{bhtSummeryFinalizedController.paymentBills}" 
+                                         var="p">
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{p.insId}"/>
+
+                                </p:column>
+                                <p:column headerText="Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{p.netTotal}"/>                                    
+                                </p:column>     
+
+                            </p:dataTable>
+                        </p:tab>
+                        <p:tab  title="Room Detail" >                              
+                            <p:dataTable id="room"    value="#{bhtSummeryFinalizedController.patientRooms}" var="rm">                                
+
+                                <p:column headerText="Room Charge">  
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="Total"/>
+                                        <h:outputLabel value="#{rm.calculatedRoomCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Added"/>
+                                        <h:inputText value="#{rm.addedRoomCharge}"/>
+
+                                        <h:outputLabel value="Discount"/>
+                                        <h:inputText value="#{rm.discountRoomCharge}"/>
+                                             
+                                        <h:outputLabel value="Net"/>
+                                        <h:outputLabel value="#{rm.calculatedRoomCharge-rm.discountRoomCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+
+                                    </h:panelGrid>
+                                </p:column>
+                                <p:column headerText="Maintain Charge">
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="Total"/>
+                                        <h:outputLabel value="#{rm.calculatedMaintainCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Added"/>
+                                        <h:inputText value="#{rm.addedMaintainCharge}"/>
+                                        <h:outputLabel value="Discount"/>
+                                        <p:inputText value="#{rm.discountMaintainCharge}"/>
+                                        <h:outputLabel value="Net"/>
+                                        <h:outputLabel value="#{rm.calculatedMaintainCharge-rm.discountMaintainCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+
+                                    </h:panelGrid>                                   
+                                </p:column>    
+                                <p:column headerText="MO Charge">
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="Total"/>
+                                        <h:outputLabel value="#{rm.calculatedMoCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Added"/>
+                                        <h:inputText value="#{rm.addedMoCharge}"/>
+                                        <h:outputLabel value="Discount"/>
+                                        <h:inputText value="#{rm.discountMoCharge}"/>
+                                            
+                                        <h:outputLabel value="Net"/>
+                                        <h:outputLabel value="#{rm.calculatedMoCharge-rm.discountMoCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                    </h:panelGrid>
+                                </p:column>                                        
+                                <p:column headerText="Nursing Charge">
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="Total"/>
+                                        <h:outputLabel value="#{rm.calculatedNursingCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Added"/>
+                                        <h:inputText value="#{rm.addedNursingCharge}"/>
+                                        <h:outputLabel value="Discount"/>
+                                        <h:outputLabel value="#{rm.discountNursingCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Net"/>
+                                        <h:outputLabel value="#{rm.calculatedNursingCharge-rm.discountNursingCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        
+                                    </h:panelGrid>                                   
+                                </p:column> 
+                                <p:column headerText="Linen Charge">
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="Total"/>
+                                        <h:outputLabel value="#{rm.calculatedLinenCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Added"/>
+                                        <h:inputText value="#{rm.addedLinenCharge}"/>
+                                        <h:outputLabel value="Discount"/>
+                                        <h:outputLabel value="#{rm.discountLinenCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Net"/>
+                                        <h:outputLabel value="#{rm.calculatedLinenCharge-rm.discountLinenCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        
+                                    </h:panelGrid> 
+                                </p:column> 
+                                <p:column headerText="Administration Charge">
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="Total"/>
+                                        <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Added"/>
+                                        <h:inputText value="#{rm.addedAdministrationCharge}"/>
+                                        <h:outputLabel value="Discount"/>
+                                        <h:outputLabel value="#{rm.discountAdministrationCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Net"/>
+                                        <h:outputLabel value="#{rm.calculatedAdministrationCharge-rm.discountAdministrationCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        
+                                    </h:panelGrid> 
+                                </p:column> 
+                                <p:column headerText="Madical Care Charge">
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="Total"/>
+                                        <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Added"/>
+                                        <h:inputText value="#{rm.addedMedicalCareCharge}"/>
+                                        <h:outputLabel value="Discount"/>
+                                        <h:outputLabel value="#{rm.discountMedicalCareCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        <h:outputLabel value="Net"/>
+                                        <h:outputLabel value="#{rm.calculatedMedicalCareCharge-rm.discountMedicalCareCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel> 
+                                        
+                                    </h:panelGrid>
+                                </p:column>   
+                                <p:column>
+                                    <p:commandButton ajax="false" value="Update" action="#{bhtSummeryFinalizedController.updateRoom(rm)}"></p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:tab>
+
+                    </p:tabView>
+
+
+
+                </p:panel>
+
+            </h:form>
+
+        </h:panelGroup>
+
+
+
+    </ui:define>
+
+</ui:composition>

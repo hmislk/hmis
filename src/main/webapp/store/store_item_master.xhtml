@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:panel header="Manage Store Items" styleClass="alignTop">
+                    <h:panelGrid id ="gpVeda" columns="2" >
+
+
+                        <h:panelGrid id="gpSelect" columns="1" styleClass="alignTop" >
+                            <p:panel  styleClass="alignTop" >
+                                <h:panelGrid columns="2" id="gpSelectText" >
+
+                                    <h:outputLabel value="Search "/>
+                                    <p:autoComplete  id="lstSelect1"   size="10" value="#{storeAmpController.current}" 
+                                                     forceSelection="true"
+                                                     style="min-width: 223px" completeMethod="#{itemController.completeStoreItem}" 
+                                                     var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                                        <p:column headerText="Item">
+                                            <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputLabel value="#{myItem.code}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Barcode">
+                                            <h:outputLabel value="#{myItem.barcode}" ></h:outputLabel>
+                                        </p:column>
+                                        <f:ajax event="itemSelect" render="gpDetail" execute="lstSelect1" >
+                                        </f:ajax>
+                                    </p:autoComplete>
+
+
+
+                                    <p:commandButton id="btnRefresh" value="Refresh" style="display:none;" ></p:commandButton>
+                                    <p:defaultCommand target="btnRefresh" ></p:defaultCommand>
+
+
+                                </h:panelGrid>
+                                <h:panelGrid id="gpSelectButtons" columns="3"  >
+                                    <h:commandButton id="btnAdd" value="Add"  action="#{storeAmpController.prepareAdd()}" styleClass="buttons" >
+                                        <f:ajax render="btnAdd  btnDelete btnSave gpDetail " execute="@this" >
+                                        </f:ajax>
+                                    </h:commandButton>
+                                    <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                return false;" action="#{storeAmpController.delete()}"  value="Delete"  >
+                                    </h:commandButton>
+                                </h:panelGrid>
+                            </p:panel>
+                        </h:panelGrid  >
+
+                        <p:panel>
+                            <h:panelGrid id="gpDetail" columns="1">
+                                <h:panelGrid id="gpDetailText">
+                                    <p:panel>
+                                        <p:panelGrid columns="2">
+                                            <h:outputText  value="Display Name" ></h:outputText>
+                                            <h:inputText autocomplete="off" id="txtName"  value="#{storeAmpController.current.name}"  />
+                                            <h:outputText  value="Item Code" ></h:outputText>
+                                            <h:inputText autocomplete="off"  value="#{storeAmpController.current.code}"  ></h:inputText>
+                                            <h:outputText  value="Bar Code" ></h:outputText>
+                                            <h:inputText autocomplete="off"  value="#{storeAmpController.current.barcode}"  ></h:inputText>
+                                            <h:outputText  value="Manufacturer" ></h:outputText>
+                                            <p:autoComplete  converter="ManuFacCon" completeMethod="#{manufacturerController.completeManu}"
+                                                             var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{storeAmpController.current.institution}" ></p:autoComplete>
+                                            <h:outputLabel value="Item Category"/>
+                                            <p:autoComplete  value="#{storeAmpController.current.category}" 
+                                                             forceSelection="true"
+                                                             completeMethod="#{storeItemCategoryController.completeCategory}" 
+                                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                            </p:autoComplete>                                           
+                                            <h:outputText value="#{storeAmpController.current.category.id}" ></h:outputText>
+                                            <p:selectBooleanCheckbox value="#{storeAmpController.current.discountAllowed}" itemLabel="Discount Allowed"/>                                          
+                                            <h:outputLabel value="Creator"/>
+                                            <h:outputLabel value="#{storeAmpController.current.creater.webUserPerson.nameWithTitle}"/>`
+                                        </p:panelGrid>
+                                    </p:panel>
+
+                                </h:panelGrid>
+                                <h:panelGrid id="gpDetailButtons" columns="2">
+                                    <h:commandButton id="btnSave" value="Save"  action="#{storeAmpController.saveSelected()}" styleClass="buttons">
+                                        <f:ajax render="btnAdd  btnDelete btnSave  gpDetail"  execute="gpDetail" >
+                                        </f:ajax>
+                                    </h:commandButton>
+
+                                </h:panelGrid>
+                            </h:panelGrid>
+                        </p:panel>
+                    </h:panelGrid>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

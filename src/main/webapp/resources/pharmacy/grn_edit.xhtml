@@ -1,0 +1,236 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+        <p:commandButton ajax="false" value="update" action="#{pharmacyBillSearch.editBill}"/>
+        <div >
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+            </div>
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="Tel : 0912234059 - 60 , "/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1} "/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="Fax : 0912234061 "/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.fax}"/>                                                 
+                </div>
+                <div >
+                    <h:outputLabel value="Email : ruhunuhos@sltnet.lk "/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.email}"/>                                                 
+                </div>
+            </div>
+
+            <div class="headingBill">
+                <h:outputLabel value="Good Recieve Note"   />                           
+            </div>
+
+
+            <div >
+                <h:panelGrid columns="2" class="poDetail" >  
+                    <h:panelGroup>
+                        <h:outputLabel value="G.R.N.No : "/>
+                        <p:inputText autocomplete="off" value="#{cc.attrs.bill.deptId}"/>
+                    </h:panelGroup>
+                    <h:outputLabel value="P.O.No : #{cc.attrs.bill.referenceBill.deptId}"/>
+                    <h:panelGroup>
+                        <h:outputLabel value="G.R.N.Date : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="dd MM yyyy"/>
+                        </h:outputLabel>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:outputLabel value="P.O.Date : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                            <f:convertDateTime pattern="dd MM yyyy"/>
+                        </h:outputLabel>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:outputLabel value="G.R.N.Time : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="hh mm a"/>
+                        </h:outputLabel>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:outputLabel value="P.O.Time : "/>
+                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                            <f:convertDateTime pattern="hh mm a"/>
+                        </h:outputLabel>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:outputLabel value="Invoice No : "/>
+                        <p:inputText autocomplete="off" value="#{cc.attrs.bill.invoiceNumber}"/>
+                    </h:panelGroup>
+                    <h:outputLabel value="P.O.Approve By : #{cc.attrs.bill.referenceBill.creater.staff.code}"/>
+                    <h:panelGroup>
+                        <h:outputLabel value="Supplier :"/>
+
+                        <p:autoComplete converter="deal"
+                                        value="#{cc.attrs.bill.fromInstitution}"
+                                        completeMethod="#{dealerController.completeDealor}"
+                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                    </h:panelGroup>
+                    <h:outputLabel value="Location : #{cc.attrs.bill.referenceBill.creater.department.name}"/>
+                </h:panelGrid>
+            </div>
+
+
+            <div >
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" >
+                    <p:column>
+                        <f:facet name="header">Item</f:facet>
+                            #{bip.item.name}
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Expiry</f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                            <f:convertDateTime pattern="dd MM yyyy"/>
+                        </h:outputLabel>
+                    </p:column>                                  
+                    <p:column>
+                        <f:facet name="header">Ord QTY</f:facet>
+                            #{bip.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Rcv QTY</f:facet>
+                        <p:inputText autocomplete="off" value="#{bip.pharmaceuticalBillItem.qtyInUnit}"/>
+                    </p:column>
+
+                    <p:column>
+                        <f:facet name="header">Fr QTY</f:facet>
+                        <p:inputText autocomplete="off" value="#{bip.pharmaceuticalBillItem.freeQtyInUnit}"/>
+
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Cur Price</f:facet>
+                        <p:inputText autocomplete="off" value="#{bip.pharmaceuticalBillItem.purchaseRateInUnit}">
+                            
+                        </p:inputText>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Last Price</f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.lastPurchaseRateInUnit}">
+                            
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Amount</f:facet>                       
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qtyInUnit*bip.pharmaceuticalBillItem.purchaseRateInUnit}">
+                            
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Sale Price</f:facet>
+                        <p:inputText autocomplete="off" value="#{bip.pharmaceuticalBillItem.retailRateInUnit}">
+                            
+                        </p:inputText>
+                    </p:column>
+                    <p:column>
+                        <p:commandButton ajax="false" value="Save Bill Item" action="#{pharmacyBillSearch.editBillItem(bip)}" 
+                                     />
+                    </p:column>
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column colspan="7" footerText="Total"/>
+                            <p:column >
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{cc.attrs.bill.total}">
+                                        
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:row>
+                        <p:row >
+                            <p:column colspan="9" footerText="Tax"/>
+                            <p:column footerText="#{cc.attrs.bill.tax}">
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{cc.attrs.bill.tax}">
+                                        
+                                    </p:outputLabel>                              
+                                </f:facet>
+                            </p:column>
+
+                        </p:row>
+                        <p:row >
+                            <p:column colspan="9" footerText="Discount"/>
+                            <p:column footerText="#{0-cc.attrs.bill.discount}">
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{0-cc.attrs.bill.discount}">
+                                        
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:row>
+                        <p:row >
+                            <p:column colspan="9" footerText="Net Total"/>
+                            <p:column footerText="#{0-cc.attrs.bill.netTotal}">
+                                <f:facet name="footer">                                 
+                                    <p:outputLabel value="#{cc.attrs.bill.netTotal}">
+<!--                                          -->
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:row>
+                    </p:columnGroup>
+                </p:dataTable>
+            </div>
+
+            <div class="preparedBy">
+                <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+
+            </div>
+
+            <div >
+                <h:outputLabel value="Received By : "/>
+            </div>
+
+            <hr/>
+            <div>
+
+                <h4 style="color: #000000; text-align: center " >
+                    Payment Voucher
+                </h4>
+
+                <h:panelGrid columns="2" styleClass="poDetail">
+                    <h:outputLabel value="Payee : "/>
+                    <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
+                    <h:outputLabel value="Prepaired By : "/>
+                    <!--<h:outputLabel value="........................."/>-->
+                    <h:outputLabel value="Approved By : "/>
+                    <!--<h:outputLabel value="........................."/>-->
+                    <h:outputLabel value="Authorized By : "/>
+                    <!--<h:outputLabel value="........................."/>-->
+                    <h:outputLabel value="Cheque No : "/>
+                    <!--<h:outputLabel value="........................."/>-->
+                    <h:outputLabel value="Received with thanks sum of Rupees  : "/>
+                    <br></br>
+                    <h:outputLabel value="................................................................................................................................................................................................................................................................."/>
+
+                </h:panelGrid>
+
+
+            </div>
+        </div>
+    </cc:implementation>
+</html>

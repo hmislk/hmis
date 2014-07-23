@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl autoUpdate="true" />
+                <p:panel id="panIx"  >
+
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Service"></h:outputLabel>
+                        
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:printer target="panIx" />
+                        </p:commandButton>
+                        
+                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" actionListener="#{serviceController.recreateModel}" onclick="onSubmitButton();">                            
+                        </p:commandButton>
+                        <p:defaultCommand target="btnRefresh"/>
+
+                        <p:commandButton value="Excel" ajax="false" onclick="onSubmitButton();">
+                            <pe:exporter type="xlsx" target="tblBills" fileName="DepartmentIncome"
+                                         facetBackground="#008000" facetFontSize="15" 
+                                         facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
+
+                    </f:facet>
+
+
+
+                    <!--                    <div id="printHeader" style="text-align: center; font-family: serif;">
+                                            <h:outputLabel value="Ruhunu Hospital (Pvt) Ltd" style="font-size: 20px;"></h:outputLabel>
+                                            <br> </br>
+                                            <h:outputLabel value="Service - Price List" style="font-family: serif;" ></h:outputLabel>
+                                            <br> </br>
+                                            <h:outputLabel value="2013 / 2014"></h:outputLabel>
+                                        </div>-->
+
+                    <p:panel >
+
+                        <p:dataTable id="tblBills" value="#{serviceController.serviceDep}" rowIndexVar="i" var="ix" filteredValue="#{serviceController.filterItem}"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Service List - (2013 / 2014)"/>
+                            </f:facet>
+
+                            <p:column headerText="No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/>
+                                </f:facet>
+                                #{i+1}
+                            </p:column>
+
+                            <p:column headerText="Department Name" filterBy="#{ix.department.name}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Department Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.department.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Inward Charge Type" filterBy="#{ix.inwardChargeType}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Inward Charge Type"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.inwardChargeType}"/>
+                            </p:column>
+
+                            <p:column headerText="Parent Category" filterBy="#{ix.category.parentCategory.name}" filterMatchMode="contains"> 
+                                <f:facet name="header">
+                                    <h:outputLabel value="Parent Category"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.category.parentCategory.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Sub Category" filterBy="#{ix.category.name}" filterMatchMode="contains"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Sub Category"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.category.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Service Code" filterBy="#{ix.code}" filterMatchMode="contains" >                                          
+                                <f:facet name="header">
+                                    <h:outputLabel value="Service Code"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.code}"/>
+                            </p:column>
+
+                            <p:column headerText="Service Name" filterBy="#{ix.name}" filterMatchMode="contains" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Service Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.name}"/>
+                            </p:column>                            
+
+                            <p:column headerText="Hospital Locals" >                                          
+                                <f:facet name="header">
+                                    <h:outputLabel value="Hospita Locals"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.hospitalFee}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Hospital Foriegners" >
+                                <f:facet name="header">
+                                <h:outputLabel value="Hospital Foreigners"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.hospitalFfee}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Professional Locals" >                                          
+                                <f:facet name="header">
+                                <h:outputLabel value="Professional Locals"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.professionalFee}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Professional Foriegners" >
+                                <f:facet name="header">
+                                <h:outputLabel value="Professional Foreigners"/>
+                                </f:facet>
+                                <h:outputLabel value="{ix.professionalFfee}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Service Date Created">
+                                <f:facet name="header">
+                                <h:outputLabel value="Service Date Created"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.createdAt}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Fee Date Creted">
+                                <f:facet name="header">
+                                <h:outputLabel value="Fee Date Creted"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.itemFee.createdAt}"/>
+                            </p:column>
+                            
+                            <p:column >
+                                <p:commandButton ajax="false" value="Remove" action="#{serviceController.delete}" onclick="onSubmitButton();" >
+                                    <f:setPropertyActionListener value="#{ix}" target="#{serviceController.current}"/>
+                                </p:commandButton>
+                            </p:column>
+                            
+                        </p:dataTable>
+                    </p:panel>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

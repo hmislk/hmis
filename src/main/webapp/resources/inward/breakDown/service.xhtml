@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface >
+
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+
+    <cc:implementation>
+        <p:dataTable  value="#{bhtSummeryFinalizedController.billItems}" var="bi"
+                      sortBy="#{bi.inwardChargeType}">                               
+            <p:column headerText="Item Name">
+                #{bi.item.name}
+            </p:column>
+            <p:column headerText="Inward Charge Type">
+                #{bi.item.inwardChargeType}
+            </p:column>
+            <p:column headerText="Gross Value">
+                <h:outputLabel value="#{bi.grossValue}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Discount">
+                <h:outputLabel value="#{bi.discount}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Net Total">
+                <h:outputLabel value="#{bi.netValue}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+        </p:dataTable>
+    </cc:implementation>
+</html>

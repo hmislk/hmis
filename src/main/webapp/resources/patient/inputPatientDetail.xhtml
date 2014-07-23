@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="patient" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGrid columns="2" >
+            <h:outputLabel value="Title"/>
+            <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}"  >
+                <f:selectItem itemLabel="Select Title" />
+                <f:selectItems value="#{enumController.title}"/>
+            </p:selectOneMenu>
+            <h:outputLabel value="Name"/>
+            <p:inputText autocomplete="off"  id="txtNewPtName" value="#{cc.attrs.patient.person.name}" style="width:300px;text-transform:uppercase;">
+            </p:inputText>
+            <p:outputLabel value="NIC"/>
+            <p:inputText autocomplete="off" value="#{cc.attrs.patient.person.nic}"/>
+            <h:outputLabel value="Sex"/>
+            <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.patient.person.sex}" style="width: 200px;">
+                <f:selectItem itemLabel="Select Sex"/>
+                <f:selectItems value="#{enumController.sex}"/>
+            </p:selectOneMenu>
+            
+            <p:watermark value="YEAR" for="year" />
+            <p:watermark value="MONTH" for="month" />
+            <p:watermark value="DAYS" for="day" />
+            <h:outputLabel/>
+            <h:outputLabel value="Age"/>
+            <h:panelGroup>
+                <p:inputText autocomplete="off"  id="year" style="width: 80px;"  value="#{admissionController.yearMonthDay.year}">
+                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}"  />
+                </p:inputText>
+
+                <p:inputText autocomplete="off" id="month"  style="width: 80px;"   value="#{admissionController.yearMonthDay.month}">
+                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}"  />
+                </p:inputText>
+
+                <p:inputText autocomplete="off" id="day"  style="width: 80px;"   value="#{admissionController.yearMonthDay.day}">
+                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}" />
+                </p:inputText>
+                <br/>
+                <p:outputLabel value="#{cc.attrs.patient.age}" id="lblAge" ></p:outputLabel>
+            </h:panelGroup>
+            <h:outputLabel value="Date of Birth"/>
+            <p:calendar  value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
+                <f:ajax event="dateSelect" execute="calNewPtDob" render="lblAge" />
+            </p:calendar>
+            
+            <h:outputLabel value="Address"/>
+            <p:inputTextarea  value="#{cc.attrs.patient.person.address}"/>                                  
+
+            <h:outputLabel value="Mobile Phone"/>
+            <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" 
+                         value="#{cc.attrs.patient.person.mobile}">
+            </p:inputMask>
+            <h:outputLabel value="Home Phone"/>
+            <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" 
+                         value="#{cc.attrs.patient.person.phone}">
+            </p:inputMask>
+        </h:panelGrid>
+    </cc:implementation>
+</html>

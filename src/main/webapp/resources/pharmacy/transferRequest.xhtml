@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+        <div class="posbill noBorder summeryBorder">
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+            </div>
+            <div class="institutionContact" >
+                <div >
+                    <h:outputLabel value="Telephone : #{cc.attrs.bill.institution.phone} / #{cc.attrs.bill.department.telephone1}"/>
+
+                </div>
+                <!--                <div >
+                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.department.telephone1} "/>
+                                </div>-->
+                <div >
+                    <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.institution.fax}"/>                                                 
+                </div>
+                <div >
+                    <h:outputLabel value="Email : "/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>                                                 
+                </div>
+            </div>
+
+            <div class="headingBill">
+                <h:outputLabel value="Transfer Reqeust" style="text-decoration: underline;"/>                           
+            </div>
+
+            <div  >
+
+
+                <h:outputLabel value="Request To : "/>
+                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"   /> 
+                <br></br>
+                <h:outputLabel value="Req No : #{cc.attrs.bill.deptId}"/>
+                <br></br>
+                <h:outputLabel value="Req Person : "/>
+                <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/>
+                <br></br>
+                <h:outputLabel value="Req Date : "/>
+                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                    <f:convertDateTime pattern="dd MM yyyy"/>
+                </h:outputLabel>
+                <br></br>
+                <h:outputLabel value="Req Time : "/>
+                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                    <f:convertDateTime pattern="hh mm a"/>
+                </h:outputLabel>
+
+                <!--</h:panelGrid>-->
+            </div>
+
+            <p:spacer height="30"/>
+            
+            <div >
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip"  >
+
+                    <p:column style="width: 50px!important; text-align: right!important; padding-right: 20px;">
+                        <f:facet name="header">
+                            <h:outputLabel value="No"/>
+                        </f:facet>
+                        <h:outputLabel value="#{rowIndex+1}"/>
+                    </p:column>
+
+                    <p:column style="text-align: left!important;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.item.name}"/>
+                    </p:column>
+
+                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 50px;">
+                        <f:facet name="header">
+                            <h:outputLabel value="QTY"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.qty}">
+                            <f:convertNumber integerOnly="true"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                </p:dataTable>
+            </div>
+
+           
+
+          
+        </div>
+    </cc:implementation>
+</html>

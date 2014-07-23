@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                >
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}" >
+            <h:outputLabel value="You are NOT authorized"/>
+        </h:panelGroup>
+
+        <h:panelGroup  >
+            <h:form  >
+                <p:panel header="Allow user to log on to Departments" >
+                    <h:panelGrid  columns="2" >                          
+                        <h:outputLabel value="Select User"/>
+                        <p:autoComplete id="user" forceSelection="true" converter="webUs"  completeMethod="#{webUserController.completeUser}" var="us" itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  value="#{userDepartmentController.selectedUser}" >
+                            <f:ajax event="itemSelect" execute="user" render="ins" />
+                        </p:autoComplete>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="ins">
+                        <p:panel header="Departments allowed for this user are">
+                            <p:dataTable  value="#{userDepartmentController.items}" var="i">
+                                <p:column headerText="Department Name">
+                                    <h:outputLabel value="#{i.department.name}"/>                              
+                                </p:column>
+                                 <p:column headerText="Institution Name">
+                                    <h:outputLabel value="#{i.department.institution.name}"/>                              
+                                </p:column>
+                                <p:column >
+                                    <p:commandButton ajax="false" value="Remove" action="#{userDepartmentController.delete()}" onclick="onSubmitButton();">
+                                        <f:setPropertyActionListener value="#{i}" target="#{userDepartmentController.current}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>                        
+                        </p:panel>
+
+                    </h:panelGrid>
+
+                    <p:panelGrid columns="2">
+                        <p:panel>
+                            <h:outputText value="Institution" ></h:outputText>
+                            <p:selectOneMenu  value="#{userDepartmentController.currentInstituion}" id="ins2"  >
+                                <f:selectItem itemLabel="Please select an institutie"/>
+                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                <f:ajax render="dept2" execute="ins2" event="change"/>
+                            </p:selectOneMenu>
+                        </p:panel>
+
+                        <p:panel id="dept2">
+                            <h:outputText value="Department" ></h:outputText>
+                            <p:selectOneMenu  value="#{userDepartmentController.currentDepartment}">
+                                <f:selectItem itemLabel="Please select a Department"/>
+                                <f:selectItems value="#{userDepartmentController.currentInsDepartments}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+                        </p:panel>
+                        <h:commandButton id="btnAddDepartments" value="Add Departments" action="#{userDepartmentController.addDepartmentForUser()}"/>
+                        <p:defaultCommand target="btnAddDepartments"/>
+                    </p:panelGrid>
+
+                </p:panel>
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

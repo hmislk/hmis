@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Manage Staff Roster" >
+                <h:panelGrid id ="gpVeda" columns="2" >
+                    
+                    <h:panelGrid id="gpDetail" columns="2">
+                        <p:panel>
+                            <h:panelGrid id="gpDetailText" columns="2">                               
+                                <h:outputText  value="Roster" ></h:outputText>
+                                <p:selectOneMenu  value="#{rosterStaffController.currentRoster}">
+                                    <f:selectItem itemLabel="Select Roster"/>
+                                    <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                    <f:ajax event="change" execute="@this" render="col"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel  value="Staff" ></h:outputLabel>
+                                <p:autoComplete   forceSelection="true" value="#{rosterStaffController.currentStaff}" id="scStaff"
+                                                  completeMethod="#{staffController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                  converter="stfcon"   >   
+                                    <p:column headerText="Name">
+                                        #{mys.person.name}
+                                    </p:column>
+                                     <p:column headerText="Name">
+                                        #{mys.code}
+                                    </p:column>
+                                </p:autoComplete> 
+
+                                <p:commandButton id="btnAddStaff" value="Add Staff" ajax="false"
+                                                  action="#{rosterStaffController.add}" onclick="onSubmitButton();" >                                      
+                                </p:commandButton>  
+                                <p:defaultCommand target="btnAddStaff"/>
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel id="col">                            
+                            <p:dataTable  value="#{rosterStaffController.currentRoster.staffList}" var="s">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Staff List"/>
+                                </f:facet>                               
+                                <p:column>
+                                    <h:outputLabel value="#{s.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column>
+                                    <p:commandLink ajax="false" value="Remove" action="#{rosterStaffController.remove}" >  
+                                        <f:setPropertyActionListener value="#{s}" target="#{rosterStaffController.currentStaff}"/>
+                                    </p:commandLink>  
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>                      
+                    </h:panelGrid>
+
+                </h:panelGrid>
+            </p:panel>
+
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

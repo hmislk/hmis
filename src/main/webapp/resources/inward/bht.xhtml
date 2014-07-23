@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="admission" />
+
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:form>
+
+            <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
+                <p:printer target="gpBillPreview" ></p:printer>
+            </p:commandButton>
+
+            <h:outputStylesheet library="css" name="printing_bht.css"></h:outputStylesheet>
+
+            <div>
+                <h:panelGroup id="gpBillPreview" >
+
+                    <div class="fiveinchbill" >
+                        
+                        <div class="headingTitle" >
+                            <p:outputLabel   value="INDOOR PATIENT DEPARTMENT" />
+                        </div>
+
+                        <div class="cel1R1L" style="margin-top: 6%;">
+                            <p:outputLabel   value="BHT NO: " />
+                            <p:outputLabel  value="#{cc.attrs.admission.bhtNo}" />
+                        </div>
+
+                        <div class="cel2R1L" style="margin-top: 6%;">
+                            <p:outputLabel   value="Room: " />
+                            <p:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
+                        </div>
+                        
+                        <div class="cel1R1L" style="margin-top: 10%;">
+                            <h:outputLabel value="Date of Admission: ">
+                            </h:outputLabel>
+                            
+                            <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel2R1L" style="margin-top: 10%;">
+                            <h:outputLabel value="Time of Admission: ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
+                                <f:convertDateTime pattern="hh mm a"/>
+                            </h:outputLabel>
+                        </div>
+
+                        <div class="cel1R1L" style="margin-top: 14%;">
+                            <p:outputLabel   value="Name:" />
+                            <p:outputLabel  value="#{cc.attrs.admission.patient.person.nameWithTitle}" />
+
+                        </div>
+
+                        <div class="cel1R1L" style="margin-top: 18%;">
+                            <h:outputLabel value="Address : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.patient.person.address}" >
+                                
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel1R1L" style="margin-top: 22%;">
+                            <h:outputLabel value="Age : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.patient.age}" >
+                                
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel2R1L" style="margin-top: 22%;">
+                            <h:outputLabel value="Sex : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.patient.person.sex}" >
+                                
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel1R1L" style="margin-top: 26%;">
+                            <h:outputLabel value="Tele No : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.patient.person.mobile}" >
+                                
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel2R1L" style="margin-top: 26%;">
+                            <h:outputLabel value="ID No : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.patient.person.nic}" >
+                                
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel1R1L" style="margin-top: 30%;">
+                            <h:outputLabel value="Name of Gurdian: ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.guardian.name}" >
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel1R1L" style="margin-top: 34%;">
+                            <h:outputLabel value="Tele No : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.guardian.mobile}" >
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel2R1L" style="margin-top: 34%;">
+                            <h:outputLabel value="ID No : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.guardian.nic}" >
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </h:outputLabel>
+                        </div>
+                        
+<!--                        <div class="BillDate">
+                            <h:outputLabel value="Payment Methord : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.paymentMethod}" >
+                                
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="BillDate">
+                            <h:outputLabel value="Referring Doctor : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.referringDoctor.person.nameWithTitle}" >
+                                
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="BillDate">
+                            <h:outputLabel value="OPD Doctor : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.opdDoctor.person.nameWithTitle}" >
+                                
+                            </h:outputLabel>
+                        </div>-->
+
+                    </div>
+                </h:panelGroup>
+            </div>
+
+        </h:form>
+
+    </cc:implementation>
+</html>

@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <p:dataTable value="#{cc.attrs.controller.inwardCollection}" var="inw" rendered="#{cc.attrs.controller.inwardTot!=0}" >
+            <f:facet name="header">
+                Inward Collection
+            </f:facet>
+            <p:columnGroup type="header">
+                <p:row>
+                    <p:column headerText="ID"/>                           \
+                    <p:column headerText="Patient Name"/>
+                    <p:column headerText="Payment"/>                       
+                </p:row>
+            </p:columnGroup>
+            <p:subTable value="#{inw.bills}" var="b"  rendered="#{inw.total!=0}">
+                <f:facet name="header">
+                    #{inw.admissionType.name}
+                </f:facet>
+                <p:column>
+                    #{b.patientEncounter.bhtNo}
+                </p:column>
+                <p:column>
+                    <h:outputLabel value="#{b.patientEncounter.patient.person.nameWithTitle}"/>                        
+                </p:column>
+                <p:column style="text-align: right;" >
+                    <h:outputLabel value="#{b.netTotal}" >
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </p:column>
+                <p:columnGroup type="footer">
+                    <p:row>
+                        <p:column colspan="2"  >
+                            <f:facet name="footer">
+                                Total
+                            </f:facet>
+                        </p:column>
+                        <p:column style="text-align: right;">
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{inw.total}" >
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+                </p:columnGroup>
+            </p:subTable>
+            <p:columnGroup type="footer" >
+                <p:row>
+                    <p:column colspan="2">
+                        <f:facet name="footer">
+                            Inward Collection
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.controller.inwardTot}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+        </p:dataTable>
+    </cc:implementation>
+</html>

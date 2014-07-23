@@ -1,0 +1,17 @@
+/* 
+    Document   : summery
+    Created on : Sep 5, 2013, 10:27:07 AM
+    Author     : safrin
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+
+.summeryFont{
+    font-size: 10px;
+    
+}

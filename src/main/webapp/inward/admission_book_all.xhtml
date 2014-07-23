@@ -1,0 +1,208 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Detailed BHT Issuing Bill Items" >
+
+                        <h:panelGrid columns="6" >
+
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+
+                            <p:outputLabel value="Admission Type"/>
+                            <p:selectOneMenu value="#{inwardReportController.admissionType}">
+                                <f:selectItem itemLabel="All Admission Type"/>
+                                <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                                itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Fill" action="#{inwardReportController.fillAdmissionBook()}" onclick="onSubmitButton();" ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{inwardReportController.patientEncounters}" var="i"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Inward Payment Bill Item "/>
+                                    <h:outputLabel value="#{i.department.institution.name}"/> 
+                                    <h:panelGrid columns="4">
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{inwardReportController.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{inwardReportController.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </f:facet>
+
+                                <p:column headerText="View">
+                                    <p:commandButton ajax="false" value="View Detail"
+                                                     action="/inward/inward_bill_intrim_finalized"
+                                                     actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}" onclick="onSubmitButton();" >
+                                        <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
+                                    </p:commandButton>
+                                </p:column>
+
+                                <p:column headerText="BHT No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="BHT No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Room">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Room"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.currentPatientRoom.roomFacilityCharge.room.name}" >
+                                    </h:outputLabel>
+                                </p:column>
+
+
+                                <p:column headerText="Patient Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Patient Name"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.patient.person.name}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Referring Consultant">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Referring Consultant"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.referringDoctor.person.nameWithTitle}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Admited By">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Admited By"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
+                                        <f:convertDateTime pattern="dd MM yyyy hh mm a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Admited Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Admited Date"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.dateOfAdmission}"  >
+                                        <f:convertDateTime pattern="dd MM yyyy hh mm a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Address">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Address"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.patient.person.address}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Phone">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Phone"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.patient.person.phone}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Gurdian Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Gurdian Name"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.guardian.nameWithTitle}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Gurdian Address">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Gurdian Address"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.guardian.address}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Gurdian Phone">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Gurdian Phone"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.guardian.phone}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Payment Method">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Payment Method"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.paymentMethod}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="MemberShip Scheme">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="MemberShip Scheme"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel  value="#{i.patient.person.membershipScheme.name}" >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Credit Company Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Company Name"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel  value="#{i.creditCompany.name}" >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Discharge Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discharge Date"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.dateOfDischarge}"  >
+                                        <f:convertDateTime pattern="dd MM yyyy hh mm a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

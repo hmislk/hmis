@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form  >
+            <p:growl autoUpdate="true" />
+            <p:panel header="Investigation Summary" >
+                <p:panelGrid columns="4">
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar id="fromDate" value="#{patientInvestigationController.fromDate}" navigator="true" pattern="dd MMMM yyyy" >
+                        <f:ajax event="dateSelect" execute="toDate fromDate"  render="investigation toDate fromDate"/>
+                    </p:calendar>
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar id="toDate" value="#{patientInvestigationController.toDate}" navigator="true" pattern="dd MMMM yyyy" >
+                        <f:ajax event="dateSelect" execute="toDate fromDate"  render="investigation toDate fromDate"/>
+                    </p:calendar>
+                </p:panelGrid>
+                <p:dataTable  id="investigation" value="#{patientInvestigationController.investSummery}" var="ins">
+                    <p:column headerText="Serial">
+                        #{ins.code}                           
+                    </p:column>
+                    <p:column headerText="Investigation Name">
+                        #{ins.name}
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

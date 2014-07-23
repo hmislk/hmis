@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Bht Issue Return Reprint" ></h:outputLabel>
+                            <hr/>
+                            <p:commandButton value="Reprint" ajax="false" onclick="onSubmitButton();"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Cancel" 
+                                             action="pharmacy_cancel_bill_return_bht" 
+                                             disabled="#{pharmacyBillSearch.bill.cancelled}" onclick="onSubmitButton();" >                           
+                            </p:commandButton>
+                            
+                        </f:facet>
+
+
+                    </p:panel>
+
+                    <p:panel>
+                        <p:commandButton ajax="false" value="Mark As Checked"
+                                         action="#{pharmacyBillSearch.markAsChecked()}"
+                                         rendered="#{webUserController.hasPrivilege('InwardCheck')}" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Mark As Un Check"
+                                         action="#{pharmacyBillSearch.markAsUnChecked()}"
+                                         rendered="#{webUserController.hasPrivilege('InwardUnCheck')}" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Back To Intrim"
+                                         action="/inward/inward_bill_intrim" onclick="onSubmitButton();" />
+                    </p:panel>
+
+
+                    <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}"  var="bip" rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
+
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputLabel value="No"/>
+                            </f:facet>
+                            <h:outputLabel value="#{rowIndex+1}"/>
+                        </p:column>
+
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputLabel value="Item Name"/>
+                            </f:facet>
+                            <h:outputLabel value="#{bip.item.name}"/>
+                        </p:column>
+
+
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputLabel value="QTY"/>
+                            </f:facet>
+                            <p:outputLabel value="#{bip.qty}"/>
+                        </p:column>
+
+                        <p:column style="text-align: right;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Gross Value"/>
+                            </f:facet>
+                            <h:outputLabel value="#{bip.grossValue}">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column style="text-align: right;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Matrix Value"/>
+                            </f:facet>
+                            <h:outputLabel value="#{bip.marginValue}">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column style="text-align: right;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Net Value"/>
+                            </f:facet>
+                            <h:outputLabel value="#{bip.netValue}">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>
+                        </p:column>
+
+
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column  style="text-align: right;" colspan="4">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column  style="text-align: right;" colspan="2">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                    </p:dataTable>
+
+
+                    <h:panelGroup id="gpBillPreview" >
+                        <ph:returnBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                    </h:panelGroup>
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

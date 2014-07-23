@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"                    
+                xmlns:bi="http://java.sun.com/jsf/composite/bill"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+
+    <ui:define name="content">
+        <h:panelGroup >
+            <h:form  >
+                <p:panel rendered="#{!cashRecieveBillController.printPreview}" >
+                    <f:facet name="header" >
+                        <h:panelGrid columns="15"  >
+                            <h:outputLabel value="OPD CREDIT BIll PAYMENT" />
+                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
+                            <p:selectOneMenu   id="cmbPs" value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
+                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                            </p:selectOneMenu>
+                            
+                            <p:inputText value="#{cashRecieveBillController.comment}" id="comment"/>
+                            <p:watermark value="Comment" for="comment"/>
+
+                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <p:commandButton id="btnSettle" value="Settle" action="#{cashRecieveBillController.settleBill}"
+                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                            </p:commandButton>
+                            <p:defaultCommand target="btnSettle"/>
+                            <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}" onclick="onSubmitButton();" >
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                    </f:facet>
+                    <p:panelGrid columns="2" style="min-width: 100%;">
+                        <h:panelGroup>
+                            <p:autoComplete widgetVar="aIx" id="acIx" 
+                                            forceSelection="true" 
+                                            value="#{cashRecieveBillController.institution}" 
+                                            completeMethod="#{institutionController.completeCreditCompany}" 
+                                            var="ix" itemLabel="#{ix.name}"
+                                            itemValue="#{ix}" size="30"  style="width: 400px;">
+                                <p:column>
+                                    <h:outputLabel value="#{ix.name}"/>
+                                </p:column>                                  
+                                <p:column>
+                                    <h:outputLabel value="#{ix.institutionCode}"/>
+                                </p:column>
+                                <f:ajax execute="@this" event="itemSelect" render="#{p:component('items')} tot" 
+                                        listener="#{cashRecieveBillController.selectInstitutionListener()}"/>
+                            </p:autoComplete>                           
+                        </h:panelGroup>
+                        <p:dataTable value="#{cashRecieveBillController.billItems}"
+                                     rowIndexVar="rowIndex"   var="b" id="items"
+                                     rowKey="#{b.searialNo}" selection="#{cashRecieveBillController.selectedBillItems}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Paying Institution : "/>
+                                <h:outputLabel value="#{cashRecieveBillController.institution.name}"/>
+                                <p:commandButton ajax="false" action="#{cashRecieveBillController.removeAll()}" value="Remove Selected" onclick="onSubmitButton();"/>
+                            </f:facet>       
+
+                            <p:column selectionMode="multiple" />                                        
+                            <f:facet name="header">
+                                <h:outputLabel value="Index No"/>                                  
+                            </f:facet>                              
+                                                      
+                            <p:column >  
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill No"/>                                    
+                                </f:facet>                               
+                                <p:outputLabel value="#{b.referenceBill.insId}"/>
+                            </p:column>
+                            <p:column headerText="Patient Name">
+                                <p:outputLabel value="#{b.referenceBill.patient.person.name}"/>                               
+                            </p:column>
+                            <p:column headerText="Value">
+                                <p:outputLabel value="#{b.referenceBill.netTotal}">  
+                                    <f:convertNumber pattern="#,000.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Paid">
+                                <p:outputLabel value="#{b.referenceBill.paidAmount}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Net Total">
+                                <p:inputText autocomplete="off" value="#{b.netValue}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:ajax event="blur" execute="@this" render="@all" 
+                                            listener="#{cashRecieveBillController.changeNetValueListener(b)}"/>
+                                </p:inputText>
+                            </p:column>
+                            <p:column headerText="Remove">
+                                <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" onclick="onSubmitButton();">
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+
+
+                    </p:panelGrid>
+                    <p:panelGrid columns="2" style="min-width: 100%;">
+
+                        <p:panelGrid  columns="2">
+                            <p:outputLabel value="Net Total" />
+                            <p:outputLabel id="tot" value="#{cashRecieveBillController.current.netTotal}">
+                                <f:convertNumber pattern="#,000.00" />
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Description"/>
+                            <p:inputTextarea value="#{cashRecieveBillController.current.comments}"/>                                                         
+                        </p:panelGrid>
+                    </p:panelGrid>
+                </p:panel>
+
+
+
+                <p:panel rendered="#{cashRecieveBillController.printPreview}" >
+                    <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}" onclick="onSubmitButton();" >
+                    </p:commandButton>
+                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

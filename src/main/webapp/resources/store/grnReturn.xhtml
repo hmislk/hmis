@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+         <cc:attribute name="bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+        <div class="posbill noBorder summeryBorder">
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+            </div>
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1} "/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.fax}"/>                                                 
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>                                                 
+                </div>
+            </div>
+
+            <div class="headingBill">
+                <h:outputLabel value="GRN Return Note"   />                           
+            </div>
+
+
+            <div >
+                <h:panelGrid columns="2" class="poDetail" >
+                    <h:outputLabel value="G.R.N Return No : #{cc.attrs.bill.deptId}"/>
+                    <h:outputLabel value="G.R.N.No : #{cc.attrs.bill.referenceBill.deptId}"/>
+                    <h:outputLabel value="G.R.N Return Date : #{cc.attrs.bill.createdAt}"/>
+                    <h:outputLabel value="G.R.N Date : #{cc.attrs.bill.referenceBill.createdAt}"/>
+                    <h:outputLabel value="Invoice No : #{cc.attrs.bill.invoiceNumber}"/>
+                    <h:outputLabel value="Return By : #{cc.attrs.bill.creater.staff.code}"/>
+                    <h:outputLabel value="Supplier : #{cc.attrs.bill.toInstitution.name}"/>
+                    <h:outputLabel value="Location : #{cc.attrs.bill.referenceBill.referenceBill.creater.department.name}"/>
+                </h:panelGrid>
+            </div>
+
+            <div >
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" >
+                    <p:column>
+                        <f:facet name="header">No</f:facet>
+                            #{rowIndex+1}
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Item</f:facet>
+                            #{bip.item.name}
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Batch No</f:facet>
+                            #{bip.referanceBillItem.pharmaceuticalBillItem.stringValue}
+                    </p:column>                                  
+                    <p:column>
+                        <f:facet name="header">Return QTY</f:facet>
+                            #{bip.pharmaceuticalBillItem.qty}
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Rate</f:facet>
+                            #{bip.pharmaceuticalBillItem.purchaseRate}
+                    </p:column>                                    
+                    <p:column>
+                        <f:facet name="header">Amount</f:facet>
+                            #{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Expiry</f:facet>
+                            #{bip.referanceBillItem.pharmaceuticalBillItem.doe}
+                    </p:column>
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column colspan="5" footerText="Total"/>
+                            <p:column footerText="#{0-cc.attrs.bill.total}"/>
+                        </p:row>
+                    </p:columnGroup>
+                </p:dataTable>
+            </div>
+
+            <div class="preparedBy">
+                <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+
+            </div>
+
+            <div >
+                <h:outputLabel value="Authorized By : "/>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

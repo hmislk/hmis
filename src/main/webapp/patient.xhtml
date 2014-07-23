@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="./resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form>
+
+
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="Title"/>
+                        <p:selectOneMenu  id="cmbTitle" value="#{patientController.current.person.title}"  >
+                            <f:selectItem itemLabel="Mr." itemValue="Mr"/>
+                            <f:selectItem itemLabel="Mrs." itemValue="Mrs"/>
+                            <f:selectItem itemLabel="Miss." itemValue="Miss"/>
+                            <f:selectItem itemLabel="Ms." itemValue="Ms"/>
+                            <f:selectItem itemLabel="Master." itemValue="Master"/>
+                            <f:selectItem itemLabel="Baby" itemValue="Baby"/>
+                            <f:selectItem itemLabel="Rev." itemValue="Rev"/>
+                            <f:selectItem itemLabel="Rt.Rev" itemValue="RtRev"/>
+                            <f:selectItem itemLabel="Hon" itemValue="Hon"/>
+                            <f:selectItem itemLabel="Rt.Hon" itemValue="RtHon"/>
+                            <f:selectItem itemLabel="Dr." itemValue="Dr"/>
+                            <f:selectItem itemLabel="Dr.(Mrs)" itemValue="DrMrs"/>
+                            <f:selectItem itemLabel="Dr.(Ms.)" itemValue="DrMs"/>
+                            <f:selectItem itemLabel="Dr.(Miss)" itemValue="DrMiss"/>
+                            <f:selectItem itemLabel="Prof." itemValue="Prof"/>
+                            <f:selectItem itemLabel="Other" itemValue="Other"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Name"/>
+                        <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:uppercase;">
+                        </p:inputText>
+                        <h:outputLabel value="Sex"/>
+                        <p:selectOneMenu id="txtNewSex"  value="#{patientController.current.person.sex}" style="width: 200px;">
+                            <f:selectItem itemLabel="Select Sex"/>
+                            <f:selectItem itemLabel="Male" itemValue="Male"/>
+                            <f:selectItem itemLabel="Female" itemValue="Female"/>
+                            <f:selectItem itemLabel="Unknown" itemValue="Unknown"/>
+                            <f:selectItem itemLabel="Other" itemValue="Other"/>
+                        </p:selectOneMenu>
+
+                        <h:outputLabel value="Address"/>
+                        <p:autoComplete id="acNewPtArea" converter="areaCon" completeMethod="#{areaController.completeArea}" 
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{patientController.current.person.area}" ></p:autoComplete>
+
+                        <h:outputLabel value="Phone"/>
+                        <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
+                        </p:inputMask>
+                        <h:outputLabel value="Date of Birth"/>
+                        <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
+                        </p:calendar>
+
+                        <p:commandButton value="Save" action="#{patientController.saveSelected()}" ajax="false" ></p:commandButton>
+                        
+                        <p:watermark value="Please enter the name of the Patient" for="txtNewPtName" />
+                        <p:watermark value="Please enter the Phone" for="txtNewPtPhone" />
+                        <p:watermark value="Please enter the Date of Birth" for="calNewPtDob" />
+
+                    </h:panelGrid>
+
+
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

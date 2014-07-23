@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:outputStylesheet library="css" name="maincss.css" />
+
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleReceiving')}" >
+            You are NOT authorized
+        </h:panelGroup>
+
+        <!--TODO:
+        rendered="# {webUserController.hasPrivilege('LabSampleReceiving')}" 
+        -->
+        <h:panelGroup  >
+
+            <h:form  >
+
+                <p:growl autoUpdate="true" />
+
+                <p:panelGrid columns="2" style="margin: auto; padding: 1px; border: 1px;" styleClass="alignTop" >
+
+
+                    <p:panel header="Manage Recieve" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Manage Receving Samples and Printing Worksheets" />
+                            <p:commandButton value="Mark Yet to Receive ones" ajax="false" action="#{patientInvestigationController.markYetToReceiveOnes}" onclick="onSubmitButton();"  >
+                            </p:commandButton>
+                            <p:commandButton value="Receive selected ones" ajax="false" action="#{patientInvestigationController.markSelectedAsReceived()}" onclick="onSubmitButton();"  >
+
+                            </p:commandButton>
+                            <p:commandButton value="Print worksheets for selected ones" ajax="false" onclick="onSubmitButton();"  >
+                                <p:printer target="pPrintWorksheet" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:panelGrid columns="2" >
+
+                            <h:panelGroup>
+
+                                <p:panelGrid columns="5">
+                                    <p:inputText autocomplete="off" id="txtSearch" value="#{patientInvestigationController.selectText}" >
+                                        <p:ajax event="keyup" 
+                                                update=":#{p:component('pPrintWorksheet')} :#{p:component('dtF')}" process=":#{p:component('txtSearch')} :#{p:component('dtF')}"      />  
+
+                                    </p:inputText>
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar  pattern="dd MMMM yyyy hh mm a"  id="fromDate" value="#{patientInvestigationController.fromDate}"  >
+                                        <f:ajax event="dateSelect" execute="toDate fromDate"  render="dtF toDate fromDate"/>
+                                    </p:calendar>
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar  pattern="dd MMMM yyyy hh mm a"  id="toDate" value="#{patientInvestigationController.toDate}"  >
+                                        <f:ajax event="dateSelect" execute="toDate fromDate"  render="dtF toDate fromDate"/>
+                                    </p:calendar>
+
+
+
+                                </p:panelGrid>
+
+
+                                <p:dataTable id="dtF" value="#{patientInvestigationController.lstToReceiveSearch}" var="smpIx" rowKey="#{smpIx.id}" selection="#{patientInvestigationController.selectedToReceive}" >
+
+
+                                    <p:ajax event="rowSelectCheckbox" 
+                                            update=":#{p:component('pPrintWorksheet')}" process="colSelect dtF"      />  
+                                    <p:ajax event="rowUnselectCheckbox" 
+                                            update=":#{p:component('pPrintWorksheet')}" process="colSelect dtF"      />  
+                                    <p:ajax event="toggleSelect" 
+                                            update=":#{p:component('pPrintWorksheet')}" process="colSelect dtF"      />  
+                                    <p:column id="colSelect"  selectionMode="multiple" >
+                                    </p:column>
+                                    <p:column headerText="Patient"  styleClass="alignTop" >
+                                        <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}" >
+                                        </h:outputLabel>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;
+                                        <br/>
+                                        <h:outputLabel value="#{smpIx.billItem.bill.patient.age}" >
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="#{smpIx.billItem.bill.patient.person.sex}" >
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="#{smpIx.billItem.bill.patient.person.phone}" >
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="#{smpIx.billItem.bill.insId}" >
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Investigation"  styleClass="alignTop" >
+                                        <h:outputLabel value="#{smpIx.billItem.item.name}" >
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="Billed at " />
+                                        <h:outputLabel value="#{smpIx.billItem.bill.createdAt}" >
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="Sampled at " />
+                                        <h:outputLabel id="lblSample" rendered="#{smpIx.collected}" value="#{smpIx.sampledAt}" >
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="Received at " />
+                                        <h:outputLabel rendered="#{smpIx.received}" value="#{smpIx.receivedAt}" >
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:panelGroup rendered="#{smpIx.billItem.bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" rendered="#{smpIx.billItem.bill.cancelled}" value="#{smpIx.billItem.bill.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        </h:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{smpIx.billItem.refunded}" >
+                                            <h:outputLabel style="color: red;" value="Refunded at " />
+                                            <h:outputLabel style="color: red;" rendered="#{smpIx.billItem.refunded}" value="#{smpIx.billItem.referanceBillItem.bill.createdAt}" >
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        </h:outputLabel>
+                                        </h:panelGroup>
+                                        <br/>
+                                    </p:column>
+
+                                </p:dataTable>
+
+                            </h:panelGroup>
+                            <h:panelGroup >
+
+                                <h:panelGroup id="pWorksheet">
+                                    <p:commandButton value="Print" ajax="false" onclick="onSubmitButton();"  >
+                                        <p:printer target="pPrintWorksheet" />
+                                    </p:commandButton>
+                                    <p:panel id="pPrintWorksheet"  style="margin: auto; border: 0px; padding: 0px; font-size:110%" >
+
+                                        <div >
+                                            <div>
+                                                <ui:repeat value="#{patientInvestigationController.selectedToReceive}" var="pip" >
+
+                                                    <div style="page-break-after: always; page-break-inside: avoid; min-width: 5cm; min-height: 5cm;">
+
+
+                                                        <h:outputLabel value="Name : " />
+                                                        <h:outputLabel value="#{pip.patient.person.nameWithTitle}" ></h:outputLabel>
+                                                        <h:outputLabel value="Age : " />
+                                                        <h:outputLabel value="#{pip.patient.age }" ></h:outputLabel>
+                                                        <h:outputLabel value="Sex : " />
+                                                        <h:outputLabel value="#{pip.patient.person.sex}" ></h:outputLabel>
+                                                        <h:outputLabel value="Doc : " />
+                                                        <h:outputLabel value="#{pip.billItem.bill.referredBy.person.nameWithTitle}" ></h:outputLabel>
+                                                        <h:outputLabel value="Id : " />
+                                                        <h:outputLabel value="#{pip.billItem.bill.insId}" ></h:outputLabel>
+                                                        <hr/>
+                                                        <h:outputLabel value="Investigation : " />
+                                                        <h:outputLabel value="#{pip.investigation.name}" ></h:outputLabel>
+                                                        <hr/>
+                                                        <ui:repeat value="#{pip.investigation.worksheetItems}" var="myix" >
+                                                            <h:outputLabel value="#{myix.name}" rendered="#{myix.retired==false}" ></h:outputLabel>
+                                                            <h:outputLabel value="_____________" rendered="#{myix.retired==false}" ></h:outputLabel>
+                                                            <h:panelGroup rendered="#{myix.retired==false}" >
+                                                                <br/>
+                                                            </h:panelGroup>
+                                                        </ui:repeat>
+                                                    </div>
+
+                                                </ui:repeat>
+                                            </div>
+                                        </div>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+                        </p:panelGrid>
+                    </p:panel>
+
+
+                </p:panelGrid>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

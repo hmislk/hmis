@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>        
+            <p:panel  >
+                <p:panel rendered="#{!variantAdjustment.printPreview}">
+                    <f:facet name="header">
+                        <h:panelGrid columns="4" style="min-width: 100%;">
+                            <p:outputLabel value="Purchase order Request Order"/>
+                            <p:commandButton action="#{variantAdjustment.onlyVariantItemBySystemStock()}" ajax="false" value="View Only Variant Item By System Stock"/>
+                            <p:commandButton ajax="false"  value="Approve" action="#{variantAdjustment.adjust}"/>
+                            <p:commandButton value="Print" ajax="false" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+                    </f:facet>
+                    <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
+                        <p:dataTable id="tbl" value="#{variantAdjustment.stockVarientBillItems}" var="i"  >
+                            <f:facet name="header">
+                                <h:panelGrid columns="2">
+                                    <h:outputLabel value="Department : #{variantAdjustment.adjustedBill.department.name} "/>   <br/>                               
+
+                                    <h:outputLabel value="Adjusted By : #{variantAdjustment.adjustedBill.creater.name}"/>
+                                    <h:outputLabel value="Adjusted Time : #{variantAdjustment.adjustedBill.createdAt}"/>
+                                </h:panelGrid>
+                                <h:outputLabel value="Report Id : #{variantAdjustment.adjustedBill.deptId}"/>                                   
+                            </f:facet> 
+
+                            <p:column headerText="Item">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Item"/>    
+                                </f:facet>
+                                <h:outputLabel value="#{i.item.name}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="System Stock" style="text-align: right;" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="System Stock"/>    
+                                </f:facet>
+                                <h:outputLabel value="#{i.systemStock}"  >
+                                    <f:convertNumber integerOnly="true" ></f:convertNumber>
+                                </h:outputLabel>                                  
+                            </p:column>
+
+                            <p:column headerText="Physical Stock" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Physical Stock"/>    
+                                </f:facet>
+                                <h:outputLabel  value="#{i.physicalStock}"  >
+                                    <f:convertNumber integerOnly="true" ></f:convertNumber>
+                                </h:outputLabel>                           
+                            </p:column>
+
+                            <p:column headerText="System - Physical" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="System - Physical"/>    
+                                </f:facet>
+                                <h:outputLabel value="#{i.systemStock-i.physicalStock}"  >
+                                    <f:convertNumber integerOnly="true" ></f:convertNumber>
+                                </h:outputLabel>                    
+                            </p:column>
+
+                            <p:column headerText="Calculated - Physical" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Calculated - Physical"/>    
+                                </f:facet>
+                                <h:outputLabel value="#{i.calCulatedStock-i.physicalStock}"  >
+                                    <f:convertNumber integerOnly="true" ></f:convertNumber>
+                                </h:outputLabel>                            
+                            </p:column>
+
+
+                        </p:dataTable>
+
+
+                    </h:panelGroup>
+                    <p:spacer height="50"/>
+
+                </p:panel>
+
+            </p:panel>            
+        </h:form>
+    </ui:define>  
+
+</ui:composition>

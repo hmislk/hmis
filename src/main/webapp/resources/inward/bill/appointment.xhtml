@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+
+        <cc:attribute name="bill" />
+        <cc:attribute name="dup" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+        <p:commandButton ajax="false" action="inward_appointment" actionListener="#{appointmentController.prepareNewBill()}" value="New Payment"/>
+        <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
+            <p:printer target="gpBillPreview" ></p:printer>
+        </p:commandButton>
+
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <div  >
+            <h:panelGroup id="gpBillPreview" >
+
+                <div class="fiveinchbill" >
+
+                    <div class="heading">
+                        <h:outputLabel value="APPOINTMENT BILL : "   />   
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="text-transform: capitalize; "  />
+                    </div>
+
+                    <div class="cel1R1L" >
+                        <h:outputLabel value="Bill No">
+                        </h:outputLabel>
+                        <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.dup eq true}"/>
+                    </div>
+
+                    <div class="cel1R1C" >
+                        <h:outputLabel value=":">
+                        </h:outputLabel>
+                    </div>
+
+                    <div class="cel1R1V" >
+                        <h:outputLabel value="#{cc.attrs.bill.insId}">
+                        </h:outputLabel>
+                    </div>
+
+                  
+
+                    <div class="cel1R2L" >
+                        <h:outputLabel value="Date">
+                        </h:outputLabel>
+                    </div>
+
+                    <div class="cel1R2C" >
+                        <h:outputLabel value=":">
+                        </h:outputLabel>
+                    </div>
+
+                    <div class="cel1R2V" >
+                        <h:outputLabel value="#{cc.attrs.bill.billDate}" >
+                            <f:convertDateTime pattern="dd/MM/yy"/>
+                        </h:outputLabel>
+                    </div>
+
+                    <div Class="billTimeLabel" >
+                        <h:outputLabel value="Payment" ></h:outputLabel>
+                    </div>
+                    <div Class="billTimeColon" >
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </div>
+                    <div Class="billTimeValue" >
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" >
+                        </h:outputLabel>
+                    </div>
+
+                    <div class="billEntryBlock">
+                        <h:outputText value="#{cc.attrs.bill.advancePaymentBillText}" >
+                        </h:outputText>
+                    </div>
+
+
+                    <div style="position: absolute;left: 5%;top: 50%;min-width: 85%;" >
+
+                        <table style="min-width:100%;padding-left: 30px;">
+                            <tr>
+                                <td style="min-width: 80%;text-align: left;font-size: 120%;">
+                                    <h:outputLabel value="Total"/>
+                                </td>
+                                <td style="min-width: 30%;text-align: right;font-size: 120%;">
+                                    <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </table>
+
+                        
+
+                    </div>
+
+                    <div class="cashierBlock" >
+                        <h:outputLabel value=".................."  /><br/>
+                        <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}"   />
+                    </div>
+
+
+                </div>
+
+            </h:panelGroup>
+        </div>
+
+    </cc:implementation>
+</html>

@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:breakDown="http://java.sun.com/jsf/composite/inward/breakDown"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+        <h:form>
+
+            <p:panel id="reportPrint"  >
+
+                <f:facet name="header" >
+                    <h:outputLabel value="Inward  Break Down -&nbsp;&nbsp; #{bhtSummeryFinalizedController.patientEncounter.patient.person.name}"/>
+                    <p:commandButton ajax="false" value="Refresh" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"/>  
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();">
+                        <p:printer target="reportPrint" />
+                    </p:commandButton>  
+
+                </f:facet>
+
+                <p:panelGrid columns="5" styleClass="noPrintButton"  >
+                    <p:autoComplete converter="dis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                    value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                    completeMethod="#{admissionController.completePatientPaymentFinalized}" 
+                                    var="myItem" itemValue="#{myItem}" 
+                                    itemLabel="#{myItem.bhtNo}" 
+                                    size="30"  >
+                        <p:ajax event="itemSelect" process="@this" update="data"
+                                listener="#{bhtSummeryFinalizedController.createTablesFinalized()}"/>
+                        <p:column>
+                            <h:outputLabel  value="#{myItem.bhtNo}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                        </p:column>
+                    </p:autoComplete>                    
+                </p:panelGrid>
+
+                <p:panel id="data">                   
+                    <breakDown:roomCharges/>
+                    <p:spacer height="30"/>
+                    <breakDown:moCharges/>
+                    <p:spacer height="30"/>
+                    <breakDown:timedService />
+                    <p:spacer height="30"/>
+                    <breakDown:outSideCharges />
+                    <p:spacer height="30"/>
+                    <breakDown:service/>
+                    <p:spacer height="30"/>
+                    <p:panel header="Pharmacy Issue">         
+                        <p:commandButton ajax="false" value="Print Pharmacy Issue" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();">
+                            <p:printer target="pharmacyIssue" />
+                        </p:commandButton>  
+                        <p:commandButton value="Export Excel" ajax="false" 
+                                         styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="pharmacyIssue" 
+                                         fileName="Pharmacy_Issue"/>
+                        </p:commandButton>
+                        <p:dataTable id="pharmacyIssue" value="#{bhtSummeryFinalizedController.pharmacyItems}" 
+                                     var="iss" 
+                                     sortBy="#{iss.bill.billClass}"
+                                     rowStyleClass="#{(iss.grossValue+iss.marginValue ne 0 )                                                                       
+                                                      and                                                                        
+                                                      ((iss.bill.billClass eq 'class com.divudi.entity.PreBill')
+                                                      or 
+                                                      (iss.bill.billedBill eq null and iss.bill.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}">
+                            <p:column headerText="Bill No">
+                                <h:outputLabel value="#{iss.bill.deptId}"/>                                
+                            </p:column>   
+                            <p:column headerText="Item Name">
+                                <h:outputLabel value="#{iss.item.name}"/>                                
+                            </p:column>   
+                            <p:column headerText="Qty" style="text-align: right;">
+                                <h:outputLabel value="#{iss.qty}"/>                                
+                            </p:column> 
+                            <p:column headerText="Total Value" style="text-align: right;">
+                                <h:outputLabel value="#{iss.grossValue+iss.marginValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="Discount Value" style="text-align: right;">
+                                <h:outputLabel value="#{iss.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="Net Value" style="text-align: right;">
+                                <h:outputLabel value="#{iss.netValue}">
+                                      <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column> 
+                              <p:column headerText="Adjusted Value" style="text-align: right;">
+                                  <h:outputLabel value="#{iss.adjustedValue}">
+                                      <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column> 
+                        </p:dataTable>
+                    </p:panel>
+                    <p:spacer height="30"/>
+                    <breakDown:professionalFee/>
+                </p:panel>
+
+            </p:panel>
+
+
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

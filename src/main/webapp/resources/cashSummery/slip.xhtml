@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="slip" value="#{cc.attrs.controller.slipBill}" var="ch" sortBy="#{ch.billClass}" rendered="#{cc.attrs.controller.slipBill.size()!=0}">
+            <f:facet name="header">
+
+                <p:outputLabel value="Slip Transactions"/>    
+            </f:facet>
+            <p:column headerText="Bill No"  style="width: 20%; text-align: right;" >
+                <f:facet name="header">
+                    <h:outputLabel value="Bill No"/>
+                </f:facet>
+                <h:outputLabel value="#{ch.insId}" />                            
+            </p:column>                        
+            <p:column headerText="Invoice No" style="width: 20%; "> 
+                <f:facet name="header">
+                    <h:outputLabel value="Invoice No"/>
+                </f:facet>
+                <h:outputLabel value="#{ch.comments}"/>                            
+            </p:column>
+            
+            <p:column headerText="Bank">
+                <f:facet name="header">
+                    <h:outputLabel value="Bank"/>
+                </f:facet>
+                <h:outputLabel value="#{ch.bank.name}"/>                            
+            </p:column>
+            <p:column headerText="Slip Date" style="width: 20%;"> 
+                <f:facet name="header">
+                    <h:outputLabel value="Slip Date"/>
+                </f:facet>
+                <h:outputLabel value="#{ch.chequeDate}">                                
+                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                </h:outputLabel>  
+            </p:column> 
+            <p:column headerText="Total" style="width: 20%; text-align: right;">
+                <f:facet name="header">
+                    <h:outputLabel value="Total"/>
+                </f:facet>
+                <h:outputLabel value="#{-ch.netTotal}">
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>      
+            </p:column>
+
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="4" footerText="Total"/>
+                    <p:column style="text-align: right;" footerText="#{-cc.attrs.controller.slipTot}">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{-cc.attrs.controller.slipTot}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>   
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+        </p:dataTable>
+    </cc:implementation>
+</html>

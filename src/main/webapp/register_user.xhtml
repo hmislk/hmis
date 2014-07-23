@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+        <p:growl autoUpdate="true"/>
+
+        <h:form>
+            <p:panel header="Creating a new user" rendered="#{sessionController.admin}">
+                <p:panelGrid columns="2" >
+                    <h:outputLabel value="Name" />
+                    <h:inputText autocomplete="off" value="#{sessionController.newPersonName}" />
+                    <h:outputLabel value="Telephone" />
+                    <h:inputText autocomplete="off" value="#{sessionController.telNo}" />
+                    <h:outputLabel value="Email" />
+                    <h:inputText autocomplete="off" value="#{sessionController.email}" />
+
+                    <h:outputLabel value="Role" />
+                    <h:selectOneListbox id="cmnSysAdminList" rendered="#{sessionController.admin}"  value="#{sessionController.role}" >
+                        <f:selectItems value="#{webUserRoleController.items}" var="adminRole" itemLabel="#{adminRole.name}" itemValue="#{adminRole}"  />
+                    </h:selectOneListbox>
+
+                    <h:outputLabel value="User name (Case Insensitive)" />
+                    <h:inputText autocomplete="off" value="#{sessionController.newUserName}" />
+
+                    <h:outputLabel value="Password (Case sensitive)" />
+                    <h:inputSecret value="#{sessionController.newPassword}" />
+
+                    <h:outputLabel value="Re-enter password" />
+                    <h:inputSecret value="#{sessionController.newPasswordConfirm}" />
+
+                </p:panelGrid>
+                <h:commandButton id="btnReg" class="pdButton" type="submit" value="Register" action="#{sessionController.registeUser}" />
+                <p:messages globalOnly="true"  ></p:messages>
+            </p:panel>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
+

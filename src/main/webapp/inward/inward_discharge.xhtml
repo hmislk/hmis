@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+                <h:panelGrid columns="2">
+                    <h:outputLabel  value="Name:" />
+                    <h:outputLabel  value="#{bhtSummeryController.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
+                    <h:outputLabel  value="Sex" />
+                    <h:outputLabel value="#{bhtSummeryController.patientEncounter.patient.age}" ></h:outputLabel>
+                    <h:outputLabel  value="DOB"  />
+                    <h:outputLabel value="#{bhtSummeryController.patientEncounter.patient.person.dob}"   >
+                        <f:convertDateTime pattern="dd/MM/yy" />
+                    </h:outputLabel>
+                    <h:outputLabel   value="Adress" />
+                    <h:outputLabel  value="#{bhtSummeryController.patientEncounter.patient.person.address}" ></h:outputLabel>
+                    <h:outputLabel  value="Date of Admission"  />
+                    <h:outputLabel  value="#{bhtSummeryController.patientEncounter.dateOfAdmission}"   >
+                        <f:convertDateTime pattern="dd/MM/yy" />
+                    </h:outputLabel>
+                    
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

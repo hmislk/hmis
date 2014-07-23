@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>    
+        <cc:attribute name="bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:form>
+            <h:panelGrid columns="5" id="panel">
+                <p:selectOneMenu   id="cmbPs" value="#{cc.attrs.bill.paymentMethod}">     
+                    <f:selectItem itemLabel="Select Payment Method"/>
+                    <f:selectItems value="#{enumController.paymentMethods}" />
+                    <f:ajax execute="@form" rendered="@form" event="change" />
+                </p:selectOneMenu>
+
+                <h:outputLabel id="lblCardRef" value="Card Ref. No" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Card')}" />                                
+                <p:inputText autocomplete="off" id="txtCardRef"  value="#{cc.attrs.bill.creditCardRefNo}" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Card')}" />                                
+                <p:selectOneMenu id="creditBank" value="#{cc.attrs.bill.bank}" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Card')}">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                </p:selectOneMenu>
+
+                <h:outputLabel id="lblCheqRef" value="Cheque No" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Cheque')}" />
+                <p:inputText autocomplete="off"  id="txtCheqRef" value="#{cc.attrs.bill.chequeRefNo}" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Cheque')}" />
+                <p:selectOneMenu id="bank" value="#{cc.attrs.bill.bank}" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Cheque')}">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                </p:selectOneMenu>
+                <p:calendar id="chequeDate"  value="#{cc.attrs.bill.chequeDate}" pattern="dd MMMM yyyy" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Cheque')}">                            
+                </p:calendar>
+
+                <h:outputLabel id="lblSlipRef" value="Slip Memo" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Slip')}" />
+                <p:inputText autocomplete="off"  id="txtSlipRef" value="#{cc.attrs.bill.comments}" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Slip')}" />
+                <p:selectOneMenu id="slipBank" value="#{cc.attrs.bill.bank}" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Slip')}">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                </p:selectOneMenu>
+                <p:calendar id="slipDate"  value="#{cc.attrs.bill.chequeDate}" pattern="dd MMMM yyyy" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Slip')}">                            
+                </p:calendar>
+
+            </h:panelGrid>
+        </h:form>
+    </cc:implementation>
+</html>

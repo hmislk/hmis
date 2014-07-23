@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing.css" ></h:outputStylesheet>
+                <h:form>
+                    <h:commandButton styleClass="noPrintButton" value="Print" onclick="window.print();" ></h:commandButton>
+
+                    <div class="patientCard" >
+                        <table>
+                            <tr>
+                                <td colspan="3" style="text-align: center; vertical-align: middle; padding: 10px; font-family: Arial" >
+
+                                    <h:outputLabel value="#{sessionController.institution.name}" ></h:outputLabel>
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" >
+                                    <h1><h:outputLabel value="#{sessionController.institution.address}" ></h:outputLabel></h1>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    Name
+                                </td>
+                                <td>
+                                    :
+                                </td>
+                                <td>
+                                    #{patientController.current.person.nameWithTitle}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Address
+                                </td>
+                                <td>
+                                    :
+                                </td>
+                                <td>
+                                    #{patientController.current.person.address}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Date of Issue
+                                </td>
+                                <td>
+                                    :
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{patientController.current.createdAt}" >
+                                        <f:convertDateTime parent="dd MMM yyyy" ></f:convertDateTime>
+                                    </h:outputLabel>
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Code
+                                </td>
+                                <td>
+                                    :
+                                </td>
+                                <td>
+                                    <h:outputLabel value="#{patientController.current.code}" >
+                                    </h:outputLabel>
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align: center; vertical-align: middle;" >
+                                    <p:graphicImage value="#{barcodeController.getCreateBarcode(patientController.current.code)}" style="max-width: 7.5cm; padding: 10px; margin: 10px;" ></p:graphicImage>
+                                </td>
+                            </tr>
+                        </table>
+
+
+                    </div>
+
+
+
+                </h:form>
+
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

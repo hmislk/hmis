@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:se="http://java.sun.com/jsf/composite/inward/search"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Inward BHT Final Bill" >
+
+                        <h:panelGrid columns="6" >
+
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.listBhtFinalBills}" onclick="onSubmitButton();"  ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Inward_Bht_Final_Bill"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable value="#{mdInwardReportController.bills}" var="b" id="tb1" styleClass="noPrintButton">
+                                <f:facet name="header">
+
+                                    <h:panelGrid columns="4">
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{mdInwardReportController.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{mdInwardReportController.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </f:facet>
+
+                                <p:column headerText="BHT No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="BHT No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.patientEncounter.bhtNo}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Final Bill  No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Final Bill  No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.insId}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Patient Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Patient Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Paid As">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Paid As"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.paymentMethod}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Credit Company">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Company"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.patientEncounter.creditCompany.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Inward Service Categogries">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Inward Service Categogries"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.insId}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText=" Categogries">
+                                    <f:facet name="header">
+                                        <h:outputLabel value=" Categogries"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.insId}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Sub  Categogries">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sub  Categogries"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.insId}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Amount">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Amount"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.insId}" ></h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

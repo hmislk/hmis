@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />        
+        <cc:attribute name="duplicate" />
+        <cc:attribute name="hosCopy" />   
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <div  >
+            <h:panelGroup id="gpBillPreview" style="margin: auto; padding: 0px; " >
+
+                <div class="a4bill"  >
+
+                    <table class="heading" >
+                        <tr>
+                            <td colspan="4">
+                                <h:outputLabel class="mark" value="**Final Bill Original**" 
+                                               rendered="#{cc.attrs.duplicate ne true and cc.attrs.hosCopy ne true}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4"><h:outputLabel class="mark" value="**DUPLICATE**" rendered="#{cc.attrs.duplicate eq true}"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4"><h:outputLabel class="mark" value="**HOSPITAL COPY**" rendered="#{cc.attrs.hosCopy eq true}"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">&nbsp;</td>
+                        </tr>
+                    </table>
+
+                    <table>
+                        <tr >
+                            <td >
+                                <h:outputLabel value="Patient Name : " />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
+                            </td>                           
+                        </tr>
+                        <tr>
+                            <td >
+                                <h:outputLabel value="Address : " />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}" />
+                            </td>                           
+                        </tr>
+                        <tr >
+                            <td >
+                                <h:outputLabel value="Gurdian : " />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" />
+                            </td>                           
+                        </tr>
+
+                        <tr>
+                            <td >
+                                <h:outputLabel value="Time of Admission : " />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingAdmissionTime}" >
+                                    <f:convertDateTime pattern="dd MM yyyy h:mm a" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td >
+                                <h:outputLabel value="Time of Discharged : " />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" >
+                                    <f:convertDateTime pattern="dd MM yyyy h:mm a" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>                        
+                        <tr >
+                            <td>
+                                <h:outputLabel value="Company : "  rendered="#{cc.attrs.bill.patientEncounter.creditCompany ne null}"/>
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.name}" />
+                            </td>                            
+                        </tr>      
+                        <tr >
+                            <td >
+                                <h:outputLabel value="BHT : " />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
+                            </td>    
+
+                        </tr>      
+                    </table>
+
+
+                    <ui:repeat  class="tbl"  value="#{cc.attrs.bill.billItems}" var="bip">
+                        <h:panelGroup rendered="#{bip.netValue!=0 and  bip.inwardChargeType eq 'ProfessionalCharge'}">
+                            <br></br>
+                            <p:dataTable style="noBorder" value="#{bip.proFees}" var="fe">
+
+                                <p:column headerText="Consultant Name" style="text-align: left!important; line-height: 2px;"> 
+                                    <h:panelGroup rendered="#{fe.feeValue ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                        <h:outputLabel value="#{fe.staff.person.nameWithTitle}"/> 
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Amount" style="text-align: right;">
+                                    <h:panelGroup rendered="#{fe.feeAdjusted ne 0 
+                                                              and fe.bill.cancelled eq false 
+                                                              and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                        <h:outputLabel value="#{fe.feeAdjusted}">
+                                            <f:convertNumber pattern="#,000.00" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total"/>
+                                        <p:column style="text-align: right;" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel  value="#{bip.netValue}">
+                                                    <f:convertNumber pattern="#,000.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:dataTable>                         
+                        </h:panelGroup>
+                    </ui:repeat>
+
+
+
+
+                    <p:spacer height="30px"></p:spacer>
+                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"
+                                     >
+                    </h:outputLabel>
+                    
+                    <h:outputLabel value="     Patient/Gurdian     " style="margin-left: 60%; text-decoration: overline;">
+                    </h:outputLabel>
+
+                </div>
+
+            </h:panelGroup>
+        </div>
+
+    </cc:implementation>
+</html>

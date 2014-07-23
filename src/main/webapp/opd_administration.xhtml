@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <body>
+
+        <ui:composition template="./resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form>
+
+                    <h:panelGrid columns="3" columnClasses="grid1 grid1"  >
+
+                        <p:panel header="Manage Institution" >
+
+                            <h:panelGrid columns="1" >
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Institution" action="lab_institution"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="lab_department"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="lab_collecting_centre"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="lab_credit_company"/>
+
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Doctor Specialities" action="doctor_speciality"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Doctors" action="doctor"/>
+
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="All Specialities" action="speciality"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Staff" action="staff"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="area"/>
+
+
+
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="New User" action="admin_add_new_user" actionListener="#{webUserController.prepairAddNewUser()}"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Manage User Privialges" action="user_privilages"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Add Department to User" action="user_department"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="staff_signature"/>
+
+                            </h:panelGrid>
+
+                        </p:panel>
+
+                        <p:panel header="Manage Service"  >
+                            <h:panelGrid columns="1"  >
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Service Categories" action="opd_service_category"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Service Subcategories" action="opd_service_subcategory"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Service" action="opd_service"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Inward Service" action="inward_service"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Service Fees" action="opd_service_fee"/>
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel header="Manage Financial Activities" >
+                            <h:panelGrid columns="1" >
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Payment Schemes" action="payment_scheme"/>
+                            </h:panelGrid>
+                        </p:panel>
+             
+                    </h:panelGrid>
+
+
+                    <p:panel rendered="false" header="Bulk Upload" >
+
+                        <h:commandButton value="Error correct for Ix" action="#{itemFeeController.correctIx()}" ></h:commandButton>
+
+                        <p:inputTextarea value="#{itemFeeController.bulkText}" >
+                        </p:inputTextarea>
+                        <p:commandButton value="Upload" action="#{itemFeeController.bulkUpload()}" ></p:commandButton>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

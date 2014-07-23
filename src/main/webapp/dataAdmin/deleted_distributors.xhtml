@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Deleted Distributors">
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Fill" action="#{dealerController.deletedDealorList()}" onclick="onSubmitButton();" ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="deleted_dealors"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{dealerController.dealor}" var="i"  >
+                                
+                                <p:column headerText="Dealor Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Company Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.name}" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Address">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Address"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.address}" ></h:outputLabel>
+                                </p:column>
+                                
+                             
+                                <p:column headerText="Tel">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Tel"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.mobile}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Fax">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Fax"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.fax}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Code">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Code"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.institutionCode}"  >
+                                    </h:outputLabel>
+                                </p:column>               
+                                
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

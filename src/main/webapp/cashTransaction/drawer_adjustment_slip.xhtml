@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ph="http://java.sun.com/jsf/composite/cashTransaction">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+
+
+
+                <h:form>
+
+                    <p:panel header="DRAWER Adjustment SLIP" 
+                             rendered="#{!drawerAdjustmentController.printPreview}">
+                        <h:panelGrid columns="2" >
+                            <h:panelGrid columns="2">                                
+                                <h:outputLabel value="New Slip Vale"/>
+                                <p:inputText autocomplete="off" value="#{drawerAdjustmentController.value}" >
+                                    <f:convertNumber pattern="#,##0.00"/> 
+                                </p:inputText>
+                                <h:outputLabel value="Comment" />
+                                <p:inputTextarea value="#{drawerAdjustmentController.comment}"  />
+
+                                <p:commandButton value="Make Adjustment" ajax="false" 
+                                                 action="#{drawerAdjustmentController.saveAdjustBillSlip()}"  onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" action="#{drawerAdjustmentController.makeNull()}"
+                                                 value="New Adjustment" onclick="onSubmitButton();"/>
+                            </h:panelGrid>
+
+                            <h:panelGrid columns="2" id="det">
+                                <f:facet name="header">
+                                    <h:outputLabel value="DRAWER DETAIL"/>
+                                </f:facet>
+
+                                <h:outputLabel value="Drawer Name"/>
+                                <h:outputLabel value="#{sessionController.loggedUser.drawer.name}" />
+                                <h:outputLabel value="Cash Vale"/>
+                                <h:outputLabel value="#{sessionController.loggedUser.drawer.runningBallance}" >
+                                    <f:convertNumber pattern="#,##0.00"/> 
+                                </h:outputLabel>
+                                <h:outputLabel value="Cheque Value"/>
+                                <h:outputLabel value="#{sessionController.loggedUser.drawer.chequeBallance}" >
+                                    <f:convertNumber pattern="#,###" />
+                                </h:outputLabel>
+                                <h:outputLabel value="Slip Value"/>                                
+                                <h:outputLabel value="#{sessionController.loggedUser.drawer.slipBallance}" >
+                                    <f:convertNumber pattern="#,###" />
+                                </h:outputLabel>
+                                <h:outputLabel value="Credit Card Value"/>                                
+                                <h:outputLabel value="#{sessionController.loggedUser.drawer.creditCardBallance}" >
+                                    <f:convertNumber pattern="#,###" />
+                                </h:outputLabel>
+
+
+                            </h:panelGrid>
+                        </h:panelGrid>
+                    </p:panel>
+
+                    <p:panel rendered="#{drawerAdjustmentController.printPreview}">
+                        <p:commandButton ajax="false" action="#{drawerAdjustmentController.makeNull()}" value="New Adjustment"/>
+                        <ph:adjustmentDrawer bill="#{drawerAdjustmentController.adjustmentBill}" str="SLIP" />
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

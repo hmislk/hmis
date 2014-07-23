@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGrid columns="2" id="spec">     
+                <p:panel header="Speciality">       
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{serviceSessionLeaveController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                            <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                            <f:ajax  event="change" execute="@this" render="scStaff"  /> 
+                        </p:selectOneListbox>
+
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:panel header="Consultant">       
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox converter="stfcon" id="scStaff" value="#{serviceSessionLeaveController.currentStaff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                            <f:selectItems value="#{serviceSessionLeaveController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
+                            <f:ajax  event="change" execute="@this" render="tbl"  /> 
+                        </p:selectOneListbox>
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:dataTable id="tbl" value="#{serviceSessionLeaveController.items}" var="d">
+                    <p:column>
+                        <h:outputLabel value="#{d.sessionDate}"/>
+                    </p:column>
+                    
+                    <p:column>
+                        <p:commandButton value="Remove" ajax="false" action="#{serviceSessionLeaveController.remove}" onclick="onSubmitButton();">
+                            <f:setPropertyActionListener value="#{d}" target="#{serviceSessionLeaveController.current}"/>
+                        </p:commandButton>
+                    </p:column>
+                    
+                </p:dataTable>
+
+
+                <p:calendar id="calS" mode="inline" value="#{serviceSessionLeaveController.current.sessionDate}" pattern="dd MMMM yyyy" >
+                    <f:ajax event="dateSelect" execute="@this"  />
+                </p:calendar>
+                <p:outputLabel/>
+                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.addLeave}" onclick="onSubmitButton();"/>
+            </h:panelGrid>
+
+        </h:form>
+
+    </ui:define>
+
+
+</ui:composition>

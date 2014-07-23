@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGrid columns="1" >
+            <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
+                            value="#{cc.attrs.controller.searchedPatient}" 
+                            completeMethod="#{patientController.completePatient}" 
+                            var="apt" itemLabel="#{apt.person.name}" 
+                            itemValue="#{apt}" size="30"  style="width: 400px;">
+                <p:ajax event="itemSelect" process="acPt" update="panSearch"/>
+            </p:autoComplete>   
+
+            <h:panelGrid id="panSearch" columns="2" >
+                <h:outputLabel  rendered="#{cc.attrs.controller.searchedPatient!=null}" value="Name" />
+                <h:outputLabel rendered="#{cc.attrs.controller.searchedPatient!=null}" value="#{cc.attrs.controller.searchedPatient.person.name}" ></h:outputLabel>
+                <h:outputLabel  rendered="#{cc.attrs.controller.searchedPatient!=null}" value="Sex" />
+                <h:outputLabel rendered="#{cc.attrs.controller.searchedPatient!=null}" value="#{cc.attrs.controller.searchedPatient.person.sex}" ></h:outputLabel>
+                <h:outputLabel  rendered="#{cc.attrs.controller.searchedPatient!=null}" value="DOB"  />
+
+                <h:outputLabel rendered="#{cc.attrs.controller.searchedPatient!=null}" value="#{cc.attrs.controller.searchedPatient.person.dob}"   >
+                    <f:convertDateTime pattern="dd/MM/yy" />
+                </h:outputLabel>
+
+                <h:outputLabel  rendered="#{cc.attrs.controller.searchedPatient!=null}" value="Adress" />
+                <h:outputLabel rendered="#{cc.attrs.controller.searchedPatient!=null}" value="#{cc.attrs.controller.searchedPatient.person.address}" ></h:outputLabel>
+            </h:panelGrid>
+        </h:panelGrid>
+    </cc:implementation>
+</html>

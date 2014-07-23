@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:hr="http://java.sun.com/jsf/composite/hr">
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGrid columns="2">
+                <p:commandButton ajax="false" value="Change" action="#{shiftAmendmentController.change}" />
+                <p:panel header="Staff 1">
+                    <h:panelGrid>
+                        <p:autoComplete  forceSelection="true" 
+                                         value="#{shiftAmendmentController.shiftAmendment1.staff}"
+                                         completeMethod="#{staffController.completeStaffCode}" 
+                                         var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                         converter="stfcon"   >   
+                            <p:ajax event="itemSelect" process="@this" update="stf1"/>
+                        </p:autoComplete>   
+
+                        <hr:staff id="stf1" staff="#{shiftAmendmentController.shiftAmendment1.staff}" />
+
+                    </h:panelGrid>
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{shiftAmendmentController.shiftAmendment1.fromDate}" 
+                                    pattern="dd MM yyyy" >                               
+                        </p:calendar>     
+                        <h:outputLabel value="From Shift"/>
+                        <p:autoComplete value="#{shiftAmendmentController.shiftAmendment1.fromShift}"
+                                        forceSelection="true"
+                                        completeMethod="#{shiftController.completeShift}"
+                                        var="mys" 
+                                        size="50"
+                                        itemLabel="#{mys.name}" 
+                                        itemValue="#{mys}">                                  
+                        </p:autoComplete>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{shiftAmendmentController.shiftAmendment1.toDate}" 
+                                    pattern="dd MM yyyy" >                               
+                        </p:calendar>     
+                        <h:outputLabel value="From Shift"/>
+                        <p:autoComplete value="#{shiftAmendmentController.shiftAmendment1.toShift}"
+                                        forceSelection="true"
+                                        completeMethod="#{shiftController.completeShift}"
+                                        var="mys" 
+                                        size="50"
+                                        itemLabel="#{mys.name}" 
+                                        itemValue="#{mys}">                                  
+                        </p:autoComplete>
+                        <h:outputLabel value="Reason"/>
+                        <p:inputTextarea value="#{shiftAmendmentController.shiftAmendment1.comments}"/>
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel header="Staff 2"></p:panel>
+            </h:panelGrid>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

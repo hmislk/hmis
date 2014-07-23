@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="./resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html">
+
+    <ui:define name="content">
+        <p:outputLabel value="Nurse View"/>
+        <p:panel>
+            <f:facet name="header">
+                <h:panelGrid columns="2">
+                    <p:outputLabel value="Consultant"/>
+                    <p:outputLabel value="#{channelReportController.serviceSession.staff.person.nameWithTitle}"/>
+                    <p:outputLabel value="Date"/>
+                    <h:outputLabel value="#{channelReportController.serviceSession.sessionAt}" >
+                        <f:convertDateTime pattern="dd MM yyyy"/>
+                    </h:outputLabel>
+                    <p:outputLabel value="Session Name"/>
+                    <h:outputLabel value="#{channelReportController.serviceSession.name}" />
+                </h:panelGrid>
+            </f:facet>
+
+            <p:dataTable value="#{channelReportController.billSessionsNurse}" var="bs">
+                
+                <p:column headerText="No">#{bs.serialNo}</p:column>
+                <p:column headerText="Booking Id">#{bs.bill.bookingId}</p:column>
+                <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                <p:column headerText="Phone No">#{bs.bill.patient.person.phone}</p:column>
+                <p:column headerText="Time">
+                    <h:outputLabel value="#{bs.sessionTime}">
+                        <f:convertDateTime pattern="hh:mm a"/>
+                    </h:outputLabel>
+                </p:column>
+                <p:column headerText="Paid or Not">
+                    <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+                    <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                </p:column>                
+                <p:column headerText="Agent Name">
+                    <p:outputLabel value="#{bs.bill.fromInstitution.name}"/>  
+                    <p:outputLabel value="(#{bs.bill.fromInstitution.institutionCode})" rendered="#{bs.bill.fromInstitution ne null}"/> 
+                </p:column>                
+                <p:column headerText="Agent Ref No">
+                    <p:outputLabel value="#{bs.bill.insId}"/>                          
+                </p:column> 
+                <p:column headerText="P/A">  
+                    <p:outputLabel value="Absent"  rendered="#{bs.present==false}"/>  
+                </p:column>
+
+            </p:dataTable>
+
+        </p:panel>
+    </ui:define>
+
+
+
+</ui:composition>

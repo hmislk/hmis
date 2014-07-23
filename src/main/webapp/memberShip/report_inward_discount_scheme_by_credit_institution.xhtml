@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+            <p:panel>
+                <f:facet name="header">
+
+                </f:facet>
+                <p:commandButton ajax="false" value="Process" 
+                                 action="#{reportMemberShip.createCreditInstitutionInwardPriceAdjustments()}"/>
+
+                <p:dataGrid columns="1" value="#{reportMemberShip.ipaCreditInstitutions}" var="tbl">
+                    <p:dataTable value="#{tbl.ipaPaymentMethods}" var="inw">
+                        <f:facet name="header">
+                            <h:outputLabel value="#{tbl.institution.name}"/>
+                        </f:facet>
+                        <p:subTable value="#{inw.priceMatrixs}" var="pI">
+                            <f:facet name="header">
+                                <h:outputLabel value="#{pI.paymentMethod}"/>
+                                <h:outputLabel value="|| #{tbl.institution.name}"/>
+                            </f:facet>
+                            <p:column >
+                                #{pI.inwardChargeType}
+                            </p:column>
+                            <p:column >
+                                #{pI.admissionType.name}
+                            </p:column>
+                            <p:column >
+                                #{pI.roomCategory.name}
+                            </p:column>
+                            <p:column>
+                                #{pI.discountPercent}
+                            </p:column>
+                        </p:subTable>
+                    </p:dataTable>
+                </p:dataGrid>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

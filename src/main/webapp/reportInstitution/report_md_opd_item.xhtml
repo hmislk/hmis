@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+
+                <h:panelGrid columns="7" style="min-width: 100%;">                    
+                    <h:outputLabel value="From"/>
+                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                        <f:ajax event="dateSelect"  listener="#{mdReportController.makeBillNull}"/>
+                    </p:calendar>
+
+                    <h:outputLabel value="To"/>
+                    <p:calendar id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                        <f:ajax event="dateSelect"   listener="#{mdReportController.makeBillNull}"/>
+                    </p:calendar>
+                    <p:selectOneMenu id="pm"   value="#{mdReportController.paymentMethod}">
+                        <f:selectItem itemLabel="Select Payment Method"/>
+                        <f:selectItems value="#{mdReportController.paymentMethods}"/>
+                        <f:ajax event="change"   listener="#{mdReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
+
+                    <p:commandButton id="btnRefresh" ajax="false" value="Refresh" style="float: right;"/>
+                    <p:defaultCommand target="btnRefresh"/>
+
+                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                        <pe:exporter type="xlsx" target="tbl" fileName="Report by Bill OPD From #{mdReportController.fromDate} To #{mdReportController.toDate}"
+                                     facetBackground="#008000" facetFontSize="15" 
+                                     facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                     fontName="Courier New"  />
+                    </p:commandButton>
+
+                </h:panelGrid>   
+
+                <p:dataTable id="tbl" value="#{mdReportController.itemWithFees}"
+                             rowIndexVar="i"
+                             var="iwf" filteredValue="#{mdReportController.fillterItemWithFees}" >
+
+                    <f:facet name="header">
+                        <h:outputLabel value="Report By Item (OPD) From &nbsp;&nbsp; : "/>
+                        <h:outputLabel  value="#{mdReportController.fromDate}">
+                            <f:convertDateTime pattern="dd MM yyyy"/>
+                        </h:outputLabel>
+                        <h:outputLabel value=" - " />
+                        <h:outputLabel  value="#{mdReportController.toDate}" >
+                            <f:convertDateTime pattern="dd MM yyyy"/>
+                        </h:outputLabel>
+                    </f:facet>  
+
+                    <p:column headerText="No">
+                        <h:outputLabel value="#{i+1}"/>
+                    </p:column>
+
+                    <p:column headerText="Institution" filterBy="#{iwf.item.institution.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{iwf.item.institution.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Department" filterBy="#{iwf.item.department.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{iwf.item.department.name}"/>
+                    </p:column>    
+
+                    <p:column headerText="Parent Categoy" filterBy="#{iwf.item.category.parentCategory.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{iwf.item.category.parentCategory.name}"/>
+                    </p:column>   
+
+                    <p:column headerText="Categoy" filterBy="#{iwf.item.category.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{iwf.item.category.name}"/>
+                    </p:column> 
+
+                    <p:column headerText="Name" filterBy="#{iwf.item.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{iwf.item.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Count">
+                        <h:outputLabel value="#{iwf.count}"/>
+                    </p:column>
+
+                    <p:column headerText="Hospital Fee" style="text-align: right;">
+                        <h:outputLabel value="#{iwf.hospitalFee}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Professional Fee" style="text-align: right;">
+                        <h:outputLabel value="#{iwf.proFee}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Total" style="text-align: right;">
+                        <h:outputLabel value="#{iwf.hospitalFee+iwf.proFee}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:columnGroup type="footer">
+                        <p:row>
+
+                            <p:column colspan="7" style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="Total"/>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{mdReportController.itemHospitalTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{mdReportController.itemProfessionalTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{mdReportController.itemHospitalTotal+mdReportController.itemProfessionalTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
+                </p:dataTable>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+
+                <p:panel header="Manage HRM Variable" >
+                    <h:panelGrid id ="gpVeda" columns="4" >
+                     
+                        <p:panel>
+                            <f:facet name="header">
+                                <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{hrmVariablesController.saveSelected()}" styleClass="buttons" style="float:right;" onclick="onSubmitButton();">
+                                   
+                                </p:commandButton>
+                            </f:facet>
+                            <h:panelGrid id="gpDetail" columns="1">
+
+                                <h:panelGrid id="gpDetailText" columns="2">
+                                    <h:outputText value="Epf Rate" ></h:outputText>
+                                    <p:inputText autocomplete="off" value="#{hrmVariablesController.current.epfRate}"  />
+                                    <h:outputText value="Epf Company Rate" ></h:outputText>
+                                    <p:inputText autocomplete="off" value="#{hrmVariablesController.current.epfCompanyRate}"  />
+                                    <h:outputText value="Etf Rate" ></h:outputText>
+                                    <p:inputText autocomplete="off" value="#{hrmVariablesController.current.etfRate}"  />
+                                    <h:outputText value="Etf Company Rate" ></h:outputText>
+                                    <p:inputText autocomplete="off" value="#{hrmVariablesController.current.etfCompanyRate}"  />
+
+
+                                </h:panelGrid>
+
+                            </h:panelGrid>
+                        </p:panel>
+                        
+                        <p:panel>
+                            <h:panelGrid columns="2">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Payee"/>
+                                </f:facet>
+                                <h:outputText value="From Salary" ></h:outputText>
+                                <p:inputText autocomplete="off" value="#{hrmVariablesController.currentPayeeTaxRange.fromSalary}"  />
+                                <h:outputText value="To Salary" ></h:outputText>
+                                <p:inputText autocomplete="off" value="#{hrmVariablesController.currentPayeeTaxRange.toSalary}"  />
+                                <h:outputText value="Tax Rate" ></h:outputText>
+                                <p:inputText autocomplete="off" value="#{hrmVariablesController.currentPayeeTaxRange.taxRate}"  />
+                                <p:commandButton ajax="false" value="Add" action="#{hrmVariablesController.addTaxRange}" onclick="onSubmitButton();"/>
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel id="gpDetail2">
+                            <p:dataTable value="#{hrmVariablesController.current.taxRanges}" var="tx">
+                                <p:column headerText="From" >
+                                    <h:outputLabel value="#{tx.fromSalary}"/>
+                                </p:column>
+                                <p:column headerText="To" >
+                                    <h:outputLabel value="#{tx.toSalary}"/>
+                                </p:column>
+                                <p:column headerText="Rate" >
+                                    <h:outputLabel value="#{tx.taxRate}"/>
+                                </p:column>
+                            </p:dataTable>                            
+                        </p:panel>
+                    </h:panelGrid>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

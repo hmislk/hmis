@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="panelPrint" >
+            <p:panel>
+              
+                <p:commandButton ajax="false" value="Process" 
+                                 action="#{reportMemberShip.createPaymentMethodInwardPriceAdjustments()}"/>
+
+                <p:dataTable value="#{reportMemberShip.ipaPaymentMethods}" var="pI">
+                    <p:subTable value="#{pI.priceMatrixs}" var="inw">
+                        <f:facet name="header">
+                            <h:outputLabel value="#{pI.paymentMethod}"/>
+                        </f:facet>
+                        <p:column >
+                            #{inw.inwardChargeType}
+                        </p:column>
+                        <p:column >
+                            #{inw.admissionType.name}
+                        </p:column>
+                         <p:column >
+                            #{inw.roomCategory.name}
+                        </p:column>
+                        <p:column>
+                            #{inw.discountPercent}
+                        </p:column>
+                    </p:subTable>
+                </p:dataTable>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

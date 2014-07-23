@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form  enctype="multipart/form-data">
+                    <h:outputLabel value="Upload Attendance" ></h:outputLabel>
+                    <p:fileUpload value="#{attendanceUploadController.file}" mode="simple"/>
+                    <h:commandButton value="Submit" action="#{attendanceUploadController.uploadAttendance}"/>
+                </h:form>
+                <p:dataTable value="#{attendanceUploadController.collectedRecords}" 
+                             var="ffr" sortBy="#{ffr.recordTimeStamp}">                  
+                    <p:column headerText="Code" >
+                        <h:outputLabel value="#{ffr.staff.code}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Name" >
+                        <h:outputLabel value="#{ffr.staff.person.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Day Type" >
+                        <h:outputLabel value="#{ffr.dayType}" />
+                    </p:column>                   
+                  
+                </p:dataTable>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

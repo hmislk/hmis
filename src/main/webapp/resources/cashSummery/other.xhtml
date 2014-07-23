@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>        
+        <p:dataTable id="other" value="#{cc.attrs.controller.otherInstitution}" var="th" rendered="#{cc.attrs.controller.otherInstitution.size()!=0}">
+            <p:column>
+                <h:outputLabel value="#{th.string}"/>
+            </p:column>
+            <p:column style="text-align: right;">
+                <f:facet name="header">
+                    <h:outputLabel value="Hospital Fee"/>
+                </f:facet>
+                <h:outputLabel value="#{th.value1}">
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column style="text-align: right;">
+                <f:facet name="header">
+                    <h:outputLabel value="Pathology Fee"/>
+                </f:facet>
+                <h:outputLabel value="#{th.value2}">
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:column style="text-align: right;">
+                <f:facet name="header">
+                    <h:outputLabel value="Total Fee"/>
+                </f:facet>                
+                <h:outputLabel value="#{th.value3}">
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+            </p:column>
+        </p:dataTable>
+    </cc:implementation>
+</html>

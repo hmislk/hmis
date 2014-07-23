@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Department Stock Adjustment : Retail Sale Rate" >
+                        <h:panelGrid columns="2">
+                            <p:panelGrid columns="2" >
+                                <h:outputLabel value="Item" ></h:outputLabel>
+                                <p:autoComplete  forceSelection="true"  id="acStock" value="#{storeAdjustmentController.stock}" converter="stockCon" completeMethod="#{storeAdjustmentController.completeAvailableStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
+                                    <p:column headerText="Item">
+                                        <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Retail Sale Rate">
+                                        <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Purchase Rate">
+                                        <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Stocks">
+                                        <h:outputLabel value="#{i.stock}" >
+                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Expiary">
+                                        <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
+                                            <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <f:ajax event="itemSelect" execute="@this" render="det"/>
+                                </p:autoComplete>
+                                <h:outputLabel value="New Sale Rate" ></h:outputLabel>
+                                <p:inputText autocomplete="off" value="#{storeAdjustmentController.rsr}" ></p:inputText>
+                                <h:outputLabel value="Comment" ></h:outputLabel>
+                                <p:inputTextarea value="#{storeAdjustmentController.comment}" ></p:inputTextarea>
+                                <h:outputLabel value="" ></h:outputLabel>
+                                <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false" action="#{storeAdjustmentController.adjustRetailRate()}" >
+                                </p:commandButton>
+                                <p:defaultCommand target="btnAdjust"/>
+                            </p:panelGrid>
+                            <h:panelGrid columns="2" id="det">
+                                <f:facet name="header">
+                                    <h:outputLabel value="DETAIL"/>
+                                </f:facet>
+                                <h:outputLabel value="Name"/>
+                                <h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.item.name}" ></h:outputLabel>
+                                <h:outputLabel value="Retail Sale Rate"/>
+
+                                <h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.retailsaleRate}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+
+                                <h:outputLabel value="Purchase Rate"/>
+                                <h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.purcahseRate}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+
+                                <h:outputLabel value="Stocks"/>
+                                <h:outputLabel value="#{storeAdjustmentController.stock.stock}" >
+                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                </h:outputLabel>
+
+                                <h:outputLabel value="Expiary"/>
+                                <h:outputLabel value="#{storeAdjustmentController.stock.itemBatch.dateOfExpire}" >
+                                    <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                </h:outputLabel>
+
+                            </h:panelGrid>
+                        </h:panelGrid>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>
