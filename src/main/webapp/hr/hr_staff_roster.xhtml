@@ -18,7 +18,7 @@
                                 <p:selectOneMenu  value="#{rosterStaffController.currentRoster}">
                                     <f:selectItem itemLabel="Select Roster"/>
                                     <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                    <f:ajax event="change" execute="@this" render="col"/>
+                                    <f:ajax event="change" execute="@this" render="col" listener="#{rosterStaffController}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel  value="Staff" ></h:outputLabel>
                                 <p:autoComplete   forceSelection="true" value="#{rosterStaffController.currentStaff}" id="scStaff"

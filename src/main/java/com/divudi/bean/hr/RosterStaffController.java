@@ -29,6 +29,10 @@ public class RosterStaffController implements Serializable {
     private RosterFacade rosterFacade;
     @EJB
     private StaffFacade staffFacade;
+    
+    public void createStaff(){
+        
+    }
 
     /**
      * Creates a new instance of RosterStaffController

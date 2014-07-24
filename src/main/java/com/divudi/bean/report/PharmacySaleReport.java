@@ -1077,7 +1077,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
         sql += " and b.paymentMethod=:pm ";
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and (type(b)=:class1 "
                 + " or type(b)=:class2)"
                 + " and b.createdAt between :fd and :td  ";
@@ -1098,7 +1098,7 @@ public class PharmacySaleReport implements Serializable {
                 + " from Bill b "
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and (type(b)=:class1 "
                 + " or type(b)=:class2)"
                 + " and b.createdAt between :fd and :td  ";
@@ -1121,7 +1121,7 @@ public class PharmacySaleReport implements Serializable {
 
         sql += " and b.paymentMethod=:pm ";
 
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and type(b)=:class1 "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
@@ -1141,7 +1141,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
 
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and type(b)=:class1 "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
@@ -1160,7 +1160,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
         sql += " and b.paymentMethod=:pm ";
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
         hm.put("btp", billType);
@@ -1178,7 +1178,7 @@ public class PharmacySaleReport implements Serializable {
                 + " from Bill b "
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
         hm.put("btp", billType);
@@ -1195,7 +1195,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
         sql += " and b.paymentMethod=:pm ";
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and (type(b)=:class1 "
                 + " or type(b)=:class2)"
                 + " and b.createdAt between :fd and :td  ";
@@ -1216,7 +1216,7 @@ public class PharmacySaleReport implements Serializable {
                 + " from Bill b "
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and (type(b)=:class1 "
                 + " or type(b)=:class2)"
                 + " and b.createdAt between :fd and :td  ";
@@ -1239,7 +1239,7 @@ public class PharmacySaleReport implements Serializable {
 
         sql += " and b.paymentMethod=:pm ";
 
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and type(b)=:class1 "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
@@ -1259,7 +1259,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
 
-        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+        sql += " and b.department=:dep "
                 + " and type(b)=:class1 "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();

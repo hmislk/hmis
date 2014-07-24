@@ -287,12 +287,12 @@ public class mdInwardReportController implements Serializable {
         
         String sql;
         Map temMap = new HashMap();
-        sql = "select b from BilledBill b where "
-                + " b.billType = :billType "
-                + " and b.institution=:ins "
+        sql = "select b from BillItem b where "
+                + " b.bill.billType = :billType "
+                + " and b.bill.institution=:ins "
                 + " and b.patientEncounter.paymentFinalized=true "
-                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.retired=false  ";
+                + " and b.bill.createdAt between :fromDate and :toDate "
+                + " and b.bill.retired=false  ";
         
         
         if (admissionType != null) {
@@ -307,10 +307,11 @@ public class mdInwardReportController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        billItem=getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         total=0.0;
-        for (Bill b : bills) {
-            total+=b.getNetTotal();
+        for (BillItem b : billItem) {
+            total+=b.getBill().getNetTotal();
         }
     }
 

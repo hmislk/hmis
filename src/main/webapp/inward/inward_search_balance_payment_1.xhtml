@@ -59,7 +59,7 @@
                                 </p:outputLabel>
                                 <p:outputLabel value=" All Balance Payment Bills" />
                             </f:facet>
-                            <p:dataTable id="tblBills" value="#{mdInwardReportController.bills}" var="bb" style="width: 100%">
+                            <p:dataTable id="tblBills" value="#{mdInwardReportController.billItem}" var="bb" style="width: 100%">
 
                                 <p:column headerText="Bht No" >
                                     <f:facet name="header">
@@ -90,10 +90,10 @@
                                         <f:convertDateTime pattern="dd MMM yy"/>
                                     </h:outputLabel>
                                     <br/>
-                                    <h:panelGroup rendered="#{bb.cancelled}" >
+                                    <h:panelGroup rendered="#{bb.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " >
                                         </h:outputLabel>
-                                        <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
+                                        <h:outputLabel style="color: red;" rendered="#{bb.bill.cancelled}" value="#{bb.bill.cancelledBill.createdAt}" >
                                             <f:convertDateTime pattern="dd MMM yy"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                             
@@ -103,21 +103,28 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{bb.insId}" />                                      
+                                    <h:outputLabel value="#{bb.bill.insId}" />                                      
+                                </p:column>
+                                
+                                <p:column headerText="Credit Company">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Company"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bb.bill.fromInstitution.name}" />                                      
                                 </p:column>
 
                                 <p:column headerText="Payment Method">
                                     <f:facet name="header">
                                         <h:outputLabel value="Payment Method"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>                                   
+                                    <h:outputLabel value="#{bb.bill.paymentMethod}" ></h:outputLabel>                                   
                                 </p:column>
 
                                 <p:column headerText="Payed Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Payed Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{bb.netTotal}" style="text-align: right;">
+                                    <h:outputLabel value="#{bb.bill.netTotal}" style="text-align: right;">
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
