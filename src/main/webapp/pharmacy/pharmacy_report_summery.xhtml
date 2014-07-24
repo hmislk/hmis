@@ -235,7 +235,7 @@
                     </p:column>           
                 </p:dataTable>
 
-                <p:dataTable value="#{pharmacySaleReport.bhtIssues}" var="i" >
+                <p:dataTable value="#{pharmacySaleReport.bhtIssues}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
                     <f:facet name="header">
                         <h:outputLabel value="Pharmacy Bht Issue"/>
                     </f:facet>
@@ -274,7 +274,7 @@
                     </p:column>           
                 </p:dataTable>
 
-                <p:dataTable value="#{pharmacySaleReport.unitIssues}" var="i" >
+                <p:dataTable value="#{pharmacySaleReport.unitIssues}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
                     <f:facet name="header">
                         <h:outputLabel value="Pharmacy Unit Issue"/>
                     </f:facet>

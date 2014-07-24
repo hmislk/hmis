@@ -1077,7 +1077,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
         sql += " and b.paymentMethod=:pm ";
-        sql += " and b.department=:dep "
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
                 + " and (type(b)=:class1 "
                 + " or type(b)=:class2)"
                 + " and b.createdAt between :fd and :td  ";
@@ -1098,7 +1098,7 @@ public class PharmacySaleReport implements Serializable {
                 + " from Bill b "
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
-        sql += " and b.department=:dep "
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
                 + " and (type(b)=:class1 "
                 + " or type(b)=:class2)"
                 + " and b.createdAt between :fd and :td  ";
@@ -1121,7 +1121,7 @@ public class PharmacySaleReport implements Serializable {
 
         sql += " and b.paymentMethod=:pm ";
 
-        sql += " and b.department=:dep "
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
                 + " and type(b)=:class1 "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
@@ -1141,7 +1141,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
 
-        sql += " and b.department=:dep "
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
                 + " and type(b)=:class1 "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
@@ -1160,7 +1160,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
         sql += " and b.paymentMethod=:pm ";
-        sql += " and b.department=:dep "
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
         hm.put("btp", billType);
@@ -1178,7 +1178,7 @@ public class PharmacySaleReport implements Serializable {
                 + " from Bill b "
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
-        sql += " and b.department=:dep "
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
         hm.put("btp", billType);
@@ -1195,7 +1195,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
         sql += " and b.paymentMethod=:pm ";
-        sql += " and b.department=:dep "
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
                 + " and (type(b)=:class1 "
                 + " or type(b)=:class2)"
                 + " and b.createdAt between :fd and :td  ";
@@ -1216,7 +1216,7 @@ public class PharmacySaleReport implements Serializable {
                 + " from Bill b "
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
-        sql += " and b.department=:dep "
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
                 + " and (type(b)=:class1 "
                 + " or type(b)=:class2)"
                 + " and b.createdAt between :fd and :td  ";
@@ -1239,7 +1239,7 @@ public class PharmacySaleReport implements Serializable {
 
         sql += " and b.paymentMethod=:pm ";
 
-        sql += " and b.department=:dep "
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
                 + " and type(b)=:class1 "
                 + " and b.createdAt between :fd and :td  ";
         HashMap hm = new HashMap();
@@ -1259,6 +1259,208 @@ public class PharmacySaleReport implements Serializable {
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
 
+        sql += " and (b.department=:dep or b.referenceBill.department=:dep) "
+                + " and type(b)=:class1 "
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("dep", department);
+        hm.put("class1", bill.getClass());
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+    
+    //Bht issue & Unit issue
+    public double calValue2(BillType billType, PaymentMethod paymentMethod, Department department, Bill bill1, Bill bill2) {
+        String sql = "Select sum(b.netTotal) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+        sql += " and b.paymentMethod=:pm ";
+        sql += " and b.department=:dep "
+                + " and (type(b)=:class1 "
+                + " or type(b)=:class2)"
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("dep", department);
+        hm.put("class1", bill1.getClass());
+        hm.put("class2", bill2.getClass());
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public double calValue2(BillType billType, Department department, Bill bill1, Bill bill2) {
+        String sql = "Select sum(b.netTotal) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+        sql += " and b.department=:dep "
+                + " and (type(b)=:class1 "
+                + " or type(b)=:class2)"
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("dep", department);
+        hm.put("class1", bill1.getClass());
+        hm.put("class2", bill2.getClass());
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public double calValue2(BillType billType, PaymentMethod paymentMethod, Department department, Bill bill) {
+        String sql = "Select sum(b.netTotal) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+
+        sql += " and b.paymentMethod=:pm ";
+
+        sql += " and b.department=:dep "
+                + " and type(b)=:class1 "
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("dep", department);
+        hm.put("class1", bill.getClass());
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public double calValue2(BillType billType, Department department, Bill bill) {
+        String sql = "Select sum(b.netTotal) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+
+        sql += " and b.department=:dep "
+                + " and type(b)=:class1 "
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("dep", department);
+        hm.put("class1", bill.getClass());
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public double calValue2(BillType billType, PaymentMethod paymentMethod, Department department) {
+        String sql = "Select sum(b.netTotal) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+        sql += " and b.paymentMethod=:pm ";
+        sql += " and b.department=:dep "
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("dep", department);
+
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public double calValue2(BillType billType, Department department) {
+        String sql = "Select sum(b.netTotal) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+        sql += " and b.department=:dep "
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("dep", department);
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public long calCount2(BillType billType, PaymentMethod paymentMethod, Department department, Bill bill1, Bill bill2) {
+        String sql = "Select count(b) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+        sql += " and b.paymentMethod=:pm ";
+        sql += " and b.department=:dep "
+                + " and (type(b)=:class1 "
+                + " or type(b)=:class2)"
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("dep", department);
+        hm.put("class1", bill1.getClass());
+        hm.put("class2", bill2.getClass());
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public long calCount2(BillType billType, Department department, Bill bill1, Bill bill2) {
+        String sql = "Select count(b) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+        sql += " and b.department=:dep "
+                + " and (type(b)=:class1 "
+                + " or type(b)=:class2)"
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("dep", department);
+        hm.put("class1", bill1.getClass());
+        hm.put("class2", bill2.getClass());
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public long calCount2(BillType billType, PaymentMethod paymentMethod, Department department, Bill bill) {
+        String sql = "Select count(b) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+
+        sql += " and b.paymentMethod=:pm ";
+
+        sql += " and b.department=:dep "
+                + " and type(b)=:class1 "
+                + " and b.createdAt between :fd and :td  ";
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("pm", paymentMethod);
+        hm.put("dep", department);
+        hm.put("class1", bill.getClass());
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return departmentFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public long calCount2(BillType billType, Department department, Bill bill) {
+        String sql = "Select count(b) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:btp ";
+
         sql += " and b.department=:dep "
                 + " and type(b)=:class1 "
                 + " and b.createdAt between :fd and :td  ";
@@ -1271,6 +1473,7 @@ public class PharmacySaleReport implements Serializable {
 
         return departmentFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
+    //
     @EJB
     DepartmentFacade departmentFacade;
 
@@ -1352,22 +1555,22 @@ public class PharmacySaleReport implements Serializable {
             ////////////
             newRow = new String1Value6();
             newRow.setString(dep.getName());
-            newRow.setValue1(calValue(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
-            newRow.setValue2(calValue(BillType.PharmacyBhtPre, dep, new RefundBill()));
-            newRow.setValue3(calValue(BillType.PharmacyBhtPre, dep));
-            newRow.setValue4(calCount(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
-            newRow.setValue5(calCount(BillType.PharmacyBhtPre, dep, new RefundBill()));
+            newRow.setValue1(calValue2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
+            newRow.setValue2(calValue2(BillType.PharmacyBhtPre, dep, new RefundBill()));
+            newRow.setValue3(calValue2(BillType.PharmacyBhtPre, dep));
+            newRow.setValue4(calCount2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
+            newRow.setValue5(calCount2(BillType.PharmacyBhtPre, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
             bhtIssues.add(newRow);
 
             ////////////
             newRow = new String1Value6();
             newRow.setString(dep.getName());
-            newRow.setValue1(calValue(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
-            newRow.setValue2(calValue(BillType.PharmacyIssue, dep, new RefundBill()));
-            newRow.setValue3(calValue(BillType.PharmacyIssue, dep));
-            newRow.setValue4(calCount(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
-            newRow.setValue5(calCount(BillType.PharmacyIssue, dep, new RefundBill()));
+            newRow.setValue1(calValue2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
+            newRow.setValue2(calValue2(BillType.PharmacyIssue, dep, new RefundBill()));
+            newRow.setValue3(calValue2(BillType.PharmacyIssue, dep));
+            newRow.setValue4(calCount2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
+            newRow.setValue5(calCount2(BillType.PharmacyIssue, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
             unitIssues.add(newRow);
         }
