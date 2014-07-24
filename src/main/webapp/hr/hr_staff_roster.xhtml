@@ -18,11 +18,12 @@
                                 <p:selectOneMenu  value="#{rosterStaffController.currentRoster}">
                                     <f:selectItem itemLabel="Select Roster"/>
                                     <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                    <f:ajax event="change" execute="@this" render="col" listener="#{rosterStaffController}"/>
+                                    <f:ajax event="change" execute="@this" render="col" listener="#{rosterStaffController.createStaff}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel  value="Staff" ></h:outputLabel>
                                 <p:autoComplete   forceSelection="true" value="#{rosterStaffController.currentStaff}" id="scStaff"
-                                                  completeMethod="#{staffController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                  completeMethod="#{staffController.completeStaff}" var="mys" 
+                                                  itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                   converter="stfcon"   >   
                                     <p:column headerText="Name">
                                         #{mys.person.name}
@@ -39,7 +40,7 @@
                             </h:panelGrid>
                         </p:panel>
                         <p:panel id="col">                            
-                            <p:dataTable  value="#{rosterStaffController.currentRoster.staffList}" var="s">
+                            <p:dataTable  value="#{rosterStaffController.staffList}" var="s">
                                 <f:facet name="header">
                                     <h:outputLabel value="Staff List"/>
                                 </f:facet>                               

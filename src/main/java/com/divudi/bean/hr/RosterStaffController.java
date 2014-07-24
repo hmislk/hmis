@@ -6,6 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.UtilityController;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
 import com.divudi.facade.RosterFacade;
@@ -13,6 +14,8 @@ import com.divudi.facade.StaffFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
 import javax.ejb.EJB;
 
 /**
@@ -25,13 +28,16 @@ public class RosterStaffController implements Serializable {
 
     private Roster currentRoster;
     private Staff currentStaff;
+    List<Staff> staffList;
     @EJB
     private RosterFacade rosterFacade;
     @EJB
     private StaffFacade staffFacade;
-    
-    public void createStaff(){
-        
+    @EJB
+    HumanResourceBean humanResourceBean;
+
+    public void createStaff() {
+        staffList = humanResourceBean.fetchStaff(getCurrentRoster());
     }
 
     /**
@@ -54,9 +60,8 @@ public class RosterStaffController implements Serializable {
 
         getCurrentStaff().setRoster(getCurrentRoster());
         getStaffFacade().edit(getCurrentStaff());
-        getCurrentRoster().getStaffList().add(getCurrentStaff());
-        getRosterFacade().edit(getCurrentRoster());
         currentStaff = null;
+        createStaff();
     }
 
     public void remove() {
@@ -64,9 +69,8 @@ public class RosterStaffController implements Serializable {
         getCurrentStaff().setRoster(null);
         getStaffFacade().edit(getCurrentStaff());
 
-        getCurrentRoster().getStaffList().remove(getCurrentStaff());
-        getRosterFacade().edit(getCurrentRoster());
         currentStaff = null;
+        createStaff();
     }
 
     public RosterStaffController() {
@@ -102,6 +106,15 @@ public class RosterStaffController implements Serializable {
 
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
+
+    }
+
+    public List<Staff> getStaffList() {
+        return staffList;
+    }
+
+    public void setStaffList(List<Staff> staffList) {
+        this.staffList = staffList;
     }
 
 }
