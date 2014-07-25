@@ -18,10 +18,10 @@
 
                         <h:panelGrid columns="5" >
                             <p:outputLabel value="Date"/>
-                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
                             <p:outputLabel value="From" ></p:outputLabel>
 
-                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
                         </h:panelGrid>
 
@@ -58,7 +58,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.disBhtPySummerries()}">
                                 <pe:exporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
                             </p:commandButton>  
                         </h:panelGrid>

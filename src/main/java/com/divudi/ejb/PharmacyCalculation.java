@@ -94,6 +94,7 @@ public class PharmacyCalculation {
         hm.put("ins", i);
         temSql = "SELECT i.item FROM ItemsDistributors i "
                 + " where i.retired=false "
+                + " and i.item.retired=false"
                 + " and i.institution=:ins "
                 + " order by i.item.name ";
         tmp = getItemFacade().findBySQL(temSql,hm);
