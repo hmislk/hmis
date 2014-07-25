@@ -102,6 +102,28 @@
                                           sortBy="#{bi.inwardChargeType}"
                                           >                               
 
+                                
+                                  <p:column headerText="Creted"
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name"/>
+                                    </f:facet>
+                                      <h:outputLabel value="#{bi.createdAt}"/>                                    
+                                </p:column>
+                                 <p:column headerText="Creted"
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name"/>
+                                    </f:facet>
+                                     <h:outputLabel value="#{bi.creater.webUserPerson.name}"/>                                    
+                                </p:column>
+                                  <p:column headerText="Creted"
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name"/>
+                                    </f:facet>
+                                      <h:outputLabel value="#{bi.bill.deptId}"/>                                    
+                                </p:column>
                                 <p:column headerText="Item Name"
                                           filterBy="#{bi.item.name}" filterMatchMode="contains">
                                     <f:facet name="header">

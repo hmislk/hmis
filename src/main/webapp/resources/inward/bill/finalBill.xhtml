@@ -193,8 +193,7 @@
                                             <h:panelGroup rendered="#{bip.inwardChargeType eq 'RoomCharges' }">
                                                 <table>                                               
                                                     <ui:repeat value="#{bip.billFees}" var="fe">
-                                                        <h:panelGroup 
-                                                            rendered="#{fe.referencePatientRoom.adjustedRoomCharge >0}">
+                                                        <h:panelGroup >
                                                             <tr>
                                                                 <td>
                                                                     <h:outputLabel value="#{fe.referencePatientRoom.printRoomFacilityCharge.room.name}"   style="text-align: center;font-size: 9px!important;"/>

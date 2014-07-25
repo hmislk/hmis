@@ -307,7 +307,7 @@ public class mdInwardReportController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        billItem=getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        billItem=getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 //        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         total=0.0;
         for (BillItem b : billItem) {
