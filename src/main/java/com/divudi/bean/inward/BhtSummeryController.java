@@ -1274,62 +1274,62 @@ public class BhtSummeryController implements Serializable {
     }
 
     public boolean checkBill() {
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new BilledBill(), BillType.InwardBill)) {
+        if (getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)) {
             UtilityController.addErrorMessage("Some Inward Service Bills Are Not Checked ");
             return true;
         }
 
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new RefundBill(), BillType.InwardBill)) {
+        if (getInwardBean().checkByBillFee(getPatientEncounter(), new RefundBill(), BillType.InwardBill)) {
             UtilityController.addErrorMessage("Some Inward Service Bills Are Not Checked ");
             return true;
         }
 
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new PreBill(), BillType.PharmacyBhtPre)) {
+        if (getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardProfessional)) {
+            UtilityController.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
+            return true;
+        }
+
+        if (getInwardBean().checkByBillFee(getPatientEncounter(), new RefundBill(), BillType.InwardProfessional)) {
+            UtilityController.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
+            return true;
+        }
+
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.PharmacyBhtPre)) {
             UtilityController.addErrorMessage("Some Pharmacy Issue Bills Are Not Checked 1 ");
             return true;
         }
 
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new RefundBill(), BillType.PharmacyBhtPre)) {
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.PharmacyBhtPre)) {
             UtilityController.addErrorMessage("Some Pharmacy Issue Bills Are Not Checked 2 ");
             return true;
         }
 
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new PreBill(), BillType.StoreBhtPre)) {
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.StoreBhtPre)) {
             UtilityController.addErrorMessage("Some Store Issue Bills Are Not Checked 1");
             return true;
         }
 
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new RefundBill(), BillType.StoreBhtPre)) {
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.StoreBhtPre)) {
             UtilityController.addErrorMessage("Some Store Issue Bills Are Not Checked 2");
             return true;
         }
 
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new BilledBill(), BillType.InwardOutSideBill)) {
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardOutSideBill)) {
             UtilityController.addErrorMessage("Some Inward Out Side Bills Are Not Checked ");
             return true;
         }
 
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new RefundBill(), BillType.InwardOutSideBill)) {
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.InwardOutSideBill)) {
             UtilityController.addErrorMessage("Some Inward Out Side Bills Are Not Checked ");
             return true;
         }
 
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new BilledBill(), BillType.InwardProfessional)) {
-            UtilityController.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
-            return true;
-        }
-
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new RefundBill(), BillType.InwardProfessional)) {
-            UtilityController.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
-            return true;
-        }
-
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new BilledBill(), BillType.InwardPaymentBill)) {
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardPaymentBill)) {
             UtilityController.addErrorMessage("Some Inward Payment Bills Are Not Checked ");
             return true;
         }
 
-        if (getInwardBean().checkBilledBill(getPatientEncounter(), new RefundBill(), BillType.InwardPaymentBill)) {
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.InwardPaymentBill)) {
             UtilityController.addErrorMessage("Some Inward Payment Bills Are Not Checked ");
             return true;
         }
