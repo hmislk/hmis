@@ -117,13 +117,14 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
-
+    
+    List<Item> itemList;
     public List<Item> completePharmacyItem(String query) {
-        List<Item> suggestions;
+        
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
-            suggestions = new ArrayList<>();
+            itemList = new ArrayList<>();
         } else {
 
             sql = "select c from Item c where c.retired=false and "
@@ -139,9 +140,9 @@ public class ItemController implements Serializable {
             tmpMap.put("vmpp", Vmpp.class);
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 10);
+            itemList = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 10);
         }
-        return suggestions;
+        return itemList;
 
     }
 
@@ -167,8 +168,11 @@ public class ItemController implements Serializable {
 
     }
 
+    
+    
+    List<Item> suggestions;
     public List<Item> completeAmpItem(String query) {
-        List<Item> suggestions;
+        
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
