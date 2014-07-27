@@ -296,7 +296,7 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
     
-     public List<T> findBySQL2(String temSQL, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
+    public List<T> findBySQLWithoutCache(String temSQL, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
