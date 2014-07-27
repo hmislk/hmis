@@ -162,9 +162,11 @@ public class StaffController implements Serializable {
 
         return d;
     }
-
+    
+    List<Staff> suggestions;
+    
     public List<Staff> completeStaff(String query) {
-        List<Staff> suggestions;
+        
         String sql;
         if (query == null) {
             suggestions = new ArrayList<>();

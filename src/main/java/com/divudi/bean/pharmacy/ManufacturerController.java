@@ -45,16 +45,17 @@ public class ManufacturerController implements Serializable {
     private Institution current;
     private List<Institution> items = null;
     String selectText = "";
+    List<Institution> institutionList = null;
 
     public List<Institution> completeManu(String qry) {
-        List<Institution> a = null;
+        
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Institution c where c.institutionType=com.divudi.data.InstitutionType.Manufacturer and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            institutionList = getFacade().findBySQL("select c from Institution c where c.institutionType=com.divudi.data.InstitutionType.Manufacturer and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
-        if (a == null) {
-            a = new ArrayList<Institution>();
+        if (institutionList == null) {
+            institutionList = new ArrayList<Institution>();
         }
-        return a;
+        return institutionList;
     }
 
     public void prepareAdd() {

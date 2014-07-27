@@ -79,7 +79,7 @@ public class InstitutionController implements Serializable {
 
         return getFacade().findBySQL(sql, hm);
     }
-
+    List<Institution> institution; 
     public List<Institution> completeCreditCompany(String qry) {
         String sql;
         HashMap hm = new HashMap();
@@ -88,7 +88,8 @@ public class InstitutionController implements Serializable {
                 + "c.institutionType=:type and upper(c.name) "
                 + "like '%" + qry.toUpperCase() + "%' order by c.name";
 
-        return getFacade().findBySQL(sql, hm);
+        institution = getFacade().findBySQL(sql, hm);
+        return institution;
     }
 
     public List<Institution> getCreditCompany() {

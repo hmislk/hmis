@@ -54,18 +54,19 @@ public  class VtmController implements Serializable {
     String bulkText = "";
     boolean billedAs;
     boolean reportedAs;
+    List<Vtm> vtmList;
 
     public List<Vtm> completeVtm(String query) {
-        List<Vtm> suggestions;
+        
         String sql;
         if (query == null) {
-            suggestions = new ArrayList<Vtm>();
+            vtmList = new ArrayList<Vtm>();
         } else {
             sql = "select c from Vtm c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            vtmList = getFacade().findBySQL(sql);
         }
-        return suggestions;
+        return vtmList;
     }
 
     public boolean isBilledAs() {

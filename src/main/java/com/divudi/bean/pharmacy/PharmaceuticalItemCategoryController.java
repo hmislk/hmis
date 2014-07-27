@@ -44,21 +44,22 @@ public class PharmaceuticalItemCategoryController implements Serializable {
     private PharmaceuticalItemCategoryFacade ejbFacade;
     private PharmaceuticalItemCategory current;
     private List<PharmaceuticalItemCategory> items = null;
+    List<PharmaceuticalItemCategory> pharmaceuticalItemCategoryList = null;
   
     public List<PharmaceuticalItemCategory> completeCategory(String qry) {
-        List<PharmaceuticalItemCategory> a = null;
+        
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         String sql = "select c from PharmaceuticalItemCategory c where "
                 + " c.retired=false and (upper(c.name) like :n) order by c.name";
 
-        a = getFacade().findBySQL(sql, m, 20);
+        pharmaceuticalItemCategoryList = getFacade().findBySQL(sql, m, 20);
         //System.out.println("a size is " + a.size());
 
-        if (a == null) {
-            a = new ArrayList<>();
+        if (pharmaceuticalItemCategoryList == null) {
+            pharmaceuticalItemCategoryList = new ArrayList<>();
         }
-        return a;
+        return pharmaceuticalItemCategoryList;
     }
 
     public void prepareAdd() {
