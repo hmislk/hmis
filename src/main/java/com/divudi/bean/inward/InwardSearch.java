@@ -1062,7 +1062,7 @@ public class InwardSearch implements Serializable {
         b.setCheckedBy(getSessionController().getLoggedUser());
 
         getBillFacade().edit(b);
-        b = null;
+        
 
         UtilityController.addErrorMessage("Successfully Cheked");
     }
@@ -1088,6 +1088,11 @@ public class InwardSearch implements Serializable {
         UtilityController.addErrorMessage("Successfully Cheked");
     }
 
+    public void selectBillItem(BillItem billItem){
+        BillItem tmp=billItemFacede.find(billItem.getId());
+        bill=tmp.getBill();
+    }
+    
     public void setBill(Bill bill) {
         recreateModel();
         if (bill == null) {
