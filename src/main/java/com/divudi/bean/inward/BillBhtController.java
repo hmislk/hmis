@@ -392,11 +392,11 @@ public class BillBhtController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
 
-        if (temp.getId() == null) {
+//        if (temp.getId() == null) {
             getFacade().create(temp);
-        } else {
-            getFacade().edit(temp);
-        }
+//        } else {
+//            getFacade().edit(temp);
+//        }
 
         return temp;
 
