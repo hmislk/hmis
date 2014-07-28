@@ -50,9 +50,11 @@ public class DealerController implements Serializable {
     private Institution current;
     private List<Institution> items = null;
     List<Institution> dealor = null;
+    
+    List<Institution> institutionList;
 
     public List<Institution> completeDealor(String query) {
-        List<Institution> suggestions;
+        
         String sql;
         Map m = new HashMap();
 
@@ -61,10 +63,10 @@ public class DealerController implements Serializable {
         //System.out.println(sql);
         m.put("t", InstitutionType.Dealer);
         m.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getEjbFacade().findBySQL(sql, m, 10);
+        institutionList = getEjbFacade().findBySQL(sql, m, 10);
         //System.out.println("suggestions = " + suggestions);
 
-        return suggestions;
+        return institutionList;
     }
 
     public void prepareAdd() {

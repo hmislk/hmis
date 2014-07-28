@@ -881,9 +881,10 @@ public class InwardBeanController implements Serializable {
         return getItemFacade().findBySQL(sql, hm, TemporalType.TIME);
     }
 
-    public boolean checkBilledBill(PatientEncounter patientEncounter, Bill billClass, BillType billType) {
+    public boolean checkByBillItem(PatientEncounter patientEncounter, Bill billClass, BillType billType) {
         String sql = "Select b.bill From BillItem b"
                 + " where b.bill.retired=false "
+                + " and b.retired=false"
                 + " and b.bill.cancelled=false "
                 + " and b.bill.billedBill is null"
                 + " and b.bill.checkedBy is null"
@@ -904,6 +905,32 @@ public class InwardBeanController implements Serializable {
         return false;
 
     }
+    
+     public boolean checkByBillFee(PatientEncounter patientEncounter, Bill billClass, BillType billType) {
+        String sql = "Select b.bill From BillFee b"
+                + " where b.bill.retired=false"
+                + " and b.retired=false "
+                + " and b.bill.cancelled=false "
+                + " and b.bill.billedBill is null"
+                + " and b.bill.checkedBy is null"
+                + " and b.bill.billType=:bt"
+                + " and b.bill.patientEncounter=:pe "
+                + " and b.bill.netTotal !=0 "
+                + " and type(b.bill)=:class";
+        HashMap hm = new HashMap();
+        hm.put("bt", billType);
+        hm.put("pe", patientEncounter);
+        hm.put("class", billClass.getClass());
+        Bill bill = getBillFacade().findFirstBySQL(sql, hm);
+
+        if (bill != null) {
+            return true;
+        }
+
+        return false;
+
+    }
+
 
 //    public boolean checkRefundedBill(PatientEncounter patientEncounter, BillType billType) {
 //        String sql = "Select b From RefundBill b"

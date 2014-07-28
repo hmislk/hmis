@@ -62,18 +62,20 @@ public class VmpController implements Serializable {
     @EJB
     VtmsVmpsFacade vivFacade;
     List<VtmsVmps> vivs;
+    
+    List<Vmp> vmpList;
 
     public List<Vmp> completeVmp(String query) {
-        List<Vmp> suggestions;
+        
         String sql;
         if (query == null) {
-            suggestions = new ArrayList<Vmp>();
+            vmpList = new ArrayList<Vmp>();
         } else {
             sql = "select c from Vmp c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            vmpList = getFacade().findBySQL(sql);
         }
-        return suggestions;
+        return vmpList;
     }
 
     public List<VtmsVmps> getVivs() {

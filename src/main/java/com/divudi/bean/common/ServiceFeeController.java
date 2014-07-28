@@ -15,6 +15,7 @@ import com.divudi.entity.Service;
 import com.divudi.entity.Staff;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
@@ -151,6 +152,7 @@ public class ServiceFeeController implements Serializable {
 
     private double calTot() {
         double tot = 0.0;
+        createCharges();
         for (ItemFee i : getCharges()) {
             tot += i.getFee();
         }
@@ -192,6 +194,8 @@ public class ServiceFeeController implements Serializable {
         itemFeeFacade.edit(itemFee);    
     }
     
+    @EJB
+    ItemFacade itemFacade;
     public void edit(ItemFee itemFee){
         
         itemFee.setEditer(getSessionController().getLoggedUser());
@@ -199,6 +203,9 @@ public class ServiceFeeController implements Serializable {
         
         
         itemFeeFacade.edit(itemFee);
+        
+        itemFee.getItem().setTotal(calTot());
+        itemFacade.edit(itemFee.getItem());
         
     }
 

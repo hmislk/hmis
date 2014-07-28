@@ -220,8 +220,10 @@ public class ItemsDistributorsController implements Serializable {
         String temSql;
         HashMap hm = new HashMap();
 
-        temSql = "SELECT i FROM ItemsDistributors i where i.retired=false and"
-                + " i.institution=:ins "
+        temSql = "SELECT i FROM ItemsDistributors i"
+                + " where i.retired=false "
+                + " and i.item.retired=false"
+                + " and i.institution=:ins "
                 + " order by i.item.name";
 
         hm.put("ins", getCurrentInstituion());

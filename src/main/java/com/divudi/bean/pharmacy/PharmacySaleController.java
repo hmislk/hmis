@@ -473,9 +473,11 @@ public class PharmacySaleController implements Serializable {
         items = getItemFacade().findBySQL(sql, m, 10);
         return items;
     }
-
+    
+    List<Stock> stockList;
+ 
     public List<Stock> completeAvailableStocks(String qry) {
-        List<Stock> items;
+        
         String sql;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
@@ -487,10 +489,10 @@ public class PharmacySaleController implements Serializable {
         } else {
             sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        items = getStockFacade().findBySQL(sql, m, 20);
+        stockList = getStockFacade().findBySQL(sql, m, 20);
 //        itemsWithoutStocks = completeRetailSaleItems(qry);
         //System.out.println("selectedSaleitems = " + itemsWithoutStocks);
-        return items;
+        return stockList;
     }
 
 //    Checked

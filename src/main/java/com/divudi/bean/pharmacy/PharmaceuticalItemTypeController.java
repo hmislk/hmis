@@ -140,19 +140,20 @@ public class PharmaceuticalItemTypeController implements Serializable {
         return items;
     }
     
+     List<PharmaceuticalItemType> pharmaceuticalItemTypeList = null;
      public List<PharmaceuticalItemType> completeCategory(String qry) {
-        List<PharmaceuticalItemType> a = null;
+        
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         if (qry != null) {
-            a = getFacade().findBySQL("select c from PharmaceuticalItemType c where "
+            pharmaceuticalItemTypeList = getFacade().findBySQL("select c from PharmaceuticalItemType c where "
                     + " c.retired=false and (upper(c.name) like :n) order by c.name",m,20);
             //System.out.println("a size is " + a.size());
         }
-        if (a == null) {
-            a = new ArrayList<>();
+        if (pharmaceuticalItemTypeList == null) {
+            pharmaceuticalItemTypeList = new ArrayList<>();
         }
-        return a;
+        return pharmaceuticalItemTypeList;
     }
 
     /**

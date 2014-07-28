@@ -80,7 +80,9 @@ public class DepartmentController implements Serializable {
         selectedItems = getFacade().findBySQL("select c from Department c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
-
+    
+    List<Department> departmentList;
+    
     public List<Department> completeDept(String qry) {
         String sql;
         HashMap hm = new HashMap();
@@ -89,7 +91,9 @@ public class DepartmentController implements Serializable {
                 + " and upper(c.name) like :q"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        return getFacade().findBySQL(sql, hm);
+        departmentList = getFacade().findBySQL(sql, hm);
+        
+        return departmentList;
     }
 
     

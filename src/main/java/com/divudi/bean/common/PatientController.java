@@ -224,6 +224,9 @@ public class PatientController implements Serializable {
         }
         return suggestions;
     }
+    
+    List<Patient> patientList;  
+ 
 
     public List<Patient> completePatientByNameOrCode(String query) {
         if (query == null) {
@@ -239,7 +242,9 @@ public class PatientController implements Serializable {
                 + "order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         //System.out.println(sql);
-        return getFacade().findBySQL(sql, hm, 50);
+        patientList = getFacade().findBySQL(sql, hm, 50);
+        
+        return patientList;
 
     }
 
