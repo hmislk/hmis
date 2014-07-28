@@ -60,7 +60,7 @@
                             <p:calendar  value="#{shiftController.current.endingTime}" navigator="true" pattern="hh:mm a" timeOnly="true">                            
                             </p:calendar>  
 
-                            <p:outputLabel value="Previous Shif"/>
+                            <p:outputLabel value="Previous Shift"/>
                             <p:autoComplete value="#{shiftController.current.previousShift}"
                                             forceSelection="true"
                                             completeMethod="#{shiftController.completeShift}"
@@ -69,7 +69,7 @@
                                             itemValue="#{mys}">                                  
                             </p:autoComplete>
 
-                            <p:outputLabel value="Next Shif"/>
+                            <p:outputLabel value="Next Shift"/>
                             <p:autoComplete value="#{shiftController.current.nextShift}"
                                             forceSelection="true"
                                             completeMethod="#{shiftController.completeShift}"
@@ -77,7 +77,8 @@
                                             itemLabel="#{mys.name}" 
                                             itemValue="#{mys}">                                  
                             </p:autoComplete>
-
+                            <p:outputLabel value="Hide Shift"/>
+                            <p:selectBooleanCheckbox value="#{shiftController.current.hideShift}" />
                             <p:commandButton ajax="false" value="Save"  
                                              action="#{shiftController.saveSelected}"  onclick="onSubmitButton();"/>
                         </h:panelGrid>

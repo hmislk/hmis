@@ -75,7 +75,58 @@
                         <h:outputLabel value="#{i.value6}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                    </p:column>           
+                    </p:column> 
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer" >
+                                    Total
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCashBV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCashRV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCashNV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCashBC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCashRC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCashNC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
                 </p:dataTable>
 
 
@@ -115,7 +166,58 @@
                         <h:outputLabel value="#{i.value6}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                    </p:column>           
+                    </p:column>   
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer" >
+                                    Total
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSChequeBV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSChequeRV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSChequeNV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSChequeBC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSChequeRC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSChequeNC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
                 </p:dataTable>
 
                 <p:dataTable value="#{pharmacySaleReport.saleValuesSlip}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
@@ -154,7 +256,58 @@
                         <h:outputLabel value="#{i.value6}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                    </p:column>           
+                    </p:column>
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer" >
+                                    Total
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSSlipBV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSSlipRV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSSlipNV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSSlipBC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSSlipRC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSSlipNC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
                 </p:dataTable>
 
                 <p:dataTable value="#{pharmacySaleReport.saleValuesCard}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
@@ -193,7 +346,58 @@
                         <h:outputLabel value="#{i.value6}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                    </p:column>           
+                    </p:column>  
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer" >
+                                    Total
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCardBV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCardRV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCardNV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCardBC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCardRC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCardNC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
                 </p:dataTable>
 
                 <p:dataTable value="#{pharmacySaleReport.saleValuesCredit}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
@@ -232,7 +436,58 @@
                         <h:outputLabel value="#{i.value6}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                    </p:column>           
+                    </p:column>   
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer" >
+                                    Total
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCreditBV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCreditRV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCreditNV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCreditBC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCreditRC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalPSCreditNC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
                 </p:dataTable>
 
                 <p:dataTable value="#{pharmacySaleReport.bhtIssues}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
@@ -271,7 +526,58 @@
                         <h:outputLabel value="#{i.value6}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                    </p:column>           
+                    </p:column>    
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer" >
+                                    Total
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalBHTIssueBV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalBHTIssueRV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalBHTIssueNV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalBHTIssueBC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalBHTIssueRC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalBHTIssueNC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
                 </p:dataTable>
 
                 <p:dataTable value="#{pharmacySaleReport.unitIssues}" var="i" rowStyleClass="#{(i.value3 ne 0.0 and i.value6 ne 0.0 )? '':'noDisplayRow'}">
@@ -310,7 +616,58 @@
                         <h:outputLabel value="#{i.value6}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                    </p:column>           
+                    </p:column>     
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer" >
+                                    Total
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalUnitIssueBV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalUnitIssueRV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalUnitIssueNV}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalUnitIssueBC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalUnitIssueRC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{pharmacySaleReport.totalUnitIssueNC}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
                 </p:dataTable>
 
             </p:panel>         
