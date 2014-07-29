@@ -78,6 +78,8 @@ public class Shift implements Serializable {
     Shift previousShift;
     @ManyToOne
     Shift nextShift;
+    
+    private boolean hideShift;
 
     public Shift getPreviousShift() {
         return previousShift;
@@ -330,4 +332,12 @@ public class Shift implements Serializable {
         this.shiftOrder = shiftOrder;
     }
 
+    public boolean isHideShift() {
+        return hideShift;
+    }
+
+    public void setHideShift(boolean hideShift) {
+        this.hideShift = hideShift;
+    }
+    
 }

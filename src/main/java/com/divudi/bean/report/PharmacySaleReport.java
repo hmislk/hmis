@@ -78,6 +78,57 @@ public class PharmacySaleReport implements Serializable {
     private PharmacyPaymetMethodSummery billedPaymentSummery;
   //  private List<DatedBills> billDetail;
 
+    ///pharmacy summery all///
+    double totalPSCashBV = 0.0;
+    double totalPSCashRV = 0.0;
+    double totalPSCashNV = 0.0;
+    double totalPSCashBC = 0.0;
+    double totalPSCashRC = 0.0;
+    double totalPSCashNC = 0.0;
+
+    double totalPSCreditBV = 0.0;
+    double totalPSCreditRV = 0.0;
+    double totalPSCreditNV = 0.0;
+    double totalPSCreditBC = 0.0;
+    double totalPSCreditRC = 0.0;
+    double totalPSCreditNC = 0.0;
+
+    double totalPSCardBV = 0.0;
+    double totalPSCardRV = 0.0;
+    double totalPSCardNV = 0.0;
+    double totalPSCardBC = 0.0;
+    double totalPSCardRC = 0.0;
+    double totalPSCardNC = 0.0;
+
+    double totalPSSlipBV = 0.0;
+    double totalPSSlipRV = 0.0;
+    double totalPSSlipNV = 0.0;
+    double totalPSSlipBC = 0.0;
+    double totalPSSlipRC = 0.0;
+    double totalPSSlipNC = 0.0;
+
+    double totalPSChequeBV = 0.0;
+    double totalPSChequeRV = 0.0;
+    double totalPSChequeNV = 0.0;
+    double totalPSChequeBC = 0.0;
+    double totalPSChequeRC = 0.0;
+    double totalPSChequeNC = 0.0;
+
+    double totalBHTIssueBV = 0.0;
+    double totalBHTIssueRV = 0.0;
+    double totalBHTIssueNV = 0.0;
+    double totalBHTIssueBC = 0.0;
+    double totalBHTIssueRC = 0.0;
+    double totalBHTIssueNC = 0.0;
+
+    double totalUnitIssueBV = 0.0;
+    double totalUnitIssueRV = 0.0;
+    double totalUnitIssueNV = 0.0;
+    double totalUnitIssueBC = 0.0;
+    double totalUnitIssueRC = 0.0;
+    double totalUnitIssueNC = 0.0;
+    /////
+
     /////
     @EJB
     private CommonFunctions commonFunctions;
@@ -1271,7 +1322,7 @@ public class PharmacySaleReport implements Serializable {
 
         return departmentFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
-    
+
     //Bht issue & Unit issue
     public double calValue2(BillType billType, PaymentMethod paymentMethod, Department department, Bill bill1, Bill bill2) {
         String sql = "Select sum(b.netTotal) "
@@ -1497,6 +1548,56 @@ public class PharmacySaleReport implements Serializable {
         saleValuesCredit = new ArrayList<>();
         bhtIssues = new ArrayList<>();
         unitIssues = new ArrayList<>();
+
+        totalPSCashBV = 0.0;
+        totalPSCashRV = 0.0;
+        totalPSCashNV = 0.0;
+        totalPSCashBC = 0.0;
+        totalPSCashRC = 0.0;
+        totalPSCashNC = 0.0;
+
+        totalPSCreditBV = 0.0;
+        totalPSCreditRV = 0.0;
+        totalPSCreditNV = 0.0;
+        totalPSCreditBC = 0.0;
+        totalPSCreditRC = 0.0;
+        totalPSCreditNC = 0.0;
+
+        totalPSCardBV = 0.0;
+        totalPSCardRV = 0.0;
+        totalPSCardNV = 0.0;
+        totalPSCardBC = 0.0;
+        totalPSCardRC = 0.0;
+        totalPSCardNC = 0.0;
+
+        totalPSSlipBV = 0.0;
+        totalPSSlipRV = 0.0;
+        totalPSSlipNV = 0.0;
+        totalPSSlipBC = 0.0;
+        totalPSSlipRC = 0.0;
+        totalPSSlipNC = 0.0;
+
+        totalPSChequeBV = 0.0;
+        totalPSChequeRV = 0.0;
+        totalPSChequeNV = 0.0;
+        totalPSChequeBC = 0.0;
+        totalPSChequeRC = 0.0;
+        totalPSChequeNC = 0.0;
+
+        totalBHTIssueBV = 0.0;
+        totalBHTIssueRV = 0.0;
+        totalBHTIssueNV = 0.0;
+        totalBHTIssueBC = 0.0;
+        totalBHTIssueRC = 0.0;
+        totalBHTIssueNC = 0.0;
+
+        totalUnitIssueBV = 0.0;
+        totalUnitIssueRV = 0.0;
+        totalUnitIssueNV = 0.0;
+        totalUnitIssueBC = 0.0;
+        totalUnitIssueRC = 0.0;
+        totalUnitIssueNC = 0.0;
+
         for (Department dep : departments) {
             String1Value6 newRow = new String1Value6();
             newRow.setString(dep.getName());
@@ -1506,6 +1607,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Cash, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Cash, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            totalPSCashBV += newRow.getValue1();
+            totalPSCashRV += newRow.getValue2();
+            totalPSCashNV += newRow.getValue3();
+            totalPSCashBC += newRow.getValue4();
+            totalPSCashRC += newRow.getValue5();
+            totalPSCashNC += newRow.getValue6();
             saleValuesCash.add(newRow);
 
             ////////////
@@ -1517,6 +1624,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Cheque, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Cheque, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            totalPSChequeBV += newRow.getValue1();
+            totalPSChequeRV += newRow.getValue2();
+            totalPSChequeNV += newRow.getValue3();
+            totalPSChequeBC += newRow.getValue4();
+            totalPSChequeRC += newRow.getValue5();
+            totalPSChequeNC += newRow.getValue6();
             saleValuesCheque.add(newRow);
 
             ////////////
@@ -1528,6 +1641,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Slip, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Slip, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            totalPSSlipBV += newRow.getValue1();
+            totalPSSlipRV += newRow.getValue2();
+            totalPSSlipNV += newRow.getValue3();
+            totalPSSlipBC += newRow.getValue4();
+            totalPSSlipRC += newRow.getValue5();
+            totalPSSlipNC += newRow.getValue6();
             saleValuesSlip.add(newRow);
 
             ////////////
@@ -1539,6 +1658,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Card, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Card, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            totalPSCardBV += newRow.getValue1();
+            totalPSCardRV += newRow.getValue2();
+            totalPSCardNV += newRow.getValue3();
+            totalPSCardBC += newRow.getValue4();
+            totalPSCardRC += newRow.getValue5();
+            totalPSCardNC += newRow.getValue6();
             saleValuesCard.add(newRow);
 
             ////////////
@@ -1550,6 +1675,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue4(calCount(BillType.PharmacySale, PaymentMethod.Credit, dep, new BilledBill(), new CancelledBill()));
             newRow.setValue5(calCount(BillType.PharmacySale, PaymentMethod.Credit, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            totalPSCreditBV += newRow.getValue1();
+            totalPSCreditRV += newRow.getValue2();
+            totalPSCreditNV += newRow.getValue3();
+            totalPSCreditBC += newRow.getValue4();
+            totalPSCreditRC += newRow.getValue5();
+            totalPSCreditNC += newRow.getValue6();
             saleValuesCredit.add(newRow);
 
             ////////////
@@ -1561,6 +1692,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue4(calCount2(BillType.PharmacyBhtPre, dep, new PreBill(), new CancelledBill()));
             newRow.setValue5(calCount2(BillType.PharmacyBhtPre, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            totalBHTIssueBV += newRow.getValue1();
+            totalBHTIssueRV += newRow.getValue2();
+            totalBHTIssueNV += newRow.getValue3();
+            totalBHTIssueBC += newRow.getValue4();
+            totalBHTIssueRC += newRow.getValue5();
+            totalBHTIssueNC += newRow.getValue6();
             bhtIssues.add(newRow);
 
             ////////////
@@ -1572,6 +1709,12 @@ public class PharmacySaleReport implements Serializable {
             newRow.setValue4(calCount2(BillType.PharmacyIssue, dep, new PreBill(), new CancelledBill()));
             newRow.setValue5(calCount2(BillType.PharmacyIssue, dep, new RefundBill()));
             newRow.setValue6(newRow.getValue4() - newRow.getValue5());
+            totalUnitIssueBV += newRow.getValue1();
+            totalUnitIssueRV += newRow.getValue2();
+            totalUnitIssueNV += newRow.getValue3();
+            totalUnitIssueBC += newRow.getValue4();
+            totalUnitIssueRC += newRow.getValue5();
+            totalUnitIssueNC += newRow.getValue6();
             unitIssues.add(newRow);
         }
 
@@ -2205,5 +2348,343 @@ public class PharmacySaleReport implements Serializable {
     public void setUnitIssues(List<String1Value6> unitIssues) {
         this.unitIssues = unitIssues;
     }
+
+    public double getTotalPSCashBV() {
+        return totalPSCashBV;
+    }
+
+    public void setTotalPSCashBV(double totalPSCashBV) {
+        this.totalPSCashBV = totalPSCashBV;
+    }
+
+    public double getTotalPSCashRV() {
+        return totalPSCashRV;
+    }
+
+    public void setTotalPSCashRV(double totalPSCashRV) {
+        this.totalPSCashRV = totalPSCashRV;
+    }
+
+    public double getTotalPSCashNV() {
+        return totalPSCashNV;
+    }
+
+    public void setTotalPSCashNV(double totalPSCashNV) {
+        this.totalPSCashNV = totalPSCashNV;
+    }
+
+    public double getTotalPSCashBC() {
+        return totalPSCashBC;
+    }
+
+    public void setTotalPSCashBC(double totalPSCashBC) {
+        this.totalPSCashBC = totalPSCashBC;
+    }
+
+    public double getTotalPSCashRC() {
+        return totalPSCashRC;
+    }
+
+    public void setTotalPSCashRC(double totalPSCashRC) {
+        this.totalPSCashRC = totalPSCashRC;
+    }
+
+    public double getTotalPSCashNC() {
+        return totalPSCashNC;
+    }
+
+    public void setTotalPSCashNC(double totalPSCashNC) {
+        this.totalPSCashNC = totalPSCashNC;
+    }
+
+    public double getTotalPSCreditBV() {
+        return totalPSCreditBV;
+    }
+
+    public void setTotalPSCreditBV(double totalPSCreditBV) {
+        this.totalPSCreditBV = totalPSCreditBV;
+    }
+
+    public double getTotalPSCreditRV() {
+        return totalPSCreditRV;
+    }
+
+    public void setTotalPSCreditRV(double totalPSCreditRV) {
+        this.totalPSCreditRV = totalPSCreditRV;
+    }
+
+    public double getTotalPSCreditNV() {
+        return totalPSCreditNV;
+    }
+
+    public void setTotalPSCreditNV(double totalPSCreditNV) {
+        this.totalPSCreditNV = totalPSCreditNV;
+    }
+
+    public double getTotalPSCreditBC() {
+        return totalPSCreditBC;
+    }
+
+    public void setTotalPSCreditBC(double totalPSCreditBC) {
+        this.totalPSCreditBC = totalPSCreditBC;
+    }
+
+    public double getTotalPSCreditRC() {
+        return totalPSCreditRC;
+    }
+
+    public void setTotalPSCreditRC(double totalPSCreditRC) {
+        this.totalPSCreditRC = totalPSCreditRC;
+    }
+
+    public double getTotalPSCreditNC() {
+        return totalPSCreditNC;
+    }
+
+    public void setTotalPSCreditNC(double totalPSCreditNC) {
+        this.totalPSCreditNC = totalPSCreditNC;
+    }
+
+    public double getTotalPSCardBV() {
+        return totalPSCardBV;
+    }
+
+    public void setTotalPSCardBV(double totalPSCardBV) {
+        this.totalPSCardBV = totalPSCardBV;
+    }
+
+    public double getTotalPSCardRV() {
+        return totalPSCardRV;
+    }
+
+    public void setTotalPSCardRV(double totalPSCardRV) {
+        this.totalPSCardRV = totalPSCardRV;
+    }
+
+    public double getTotalPSCardNV() {
+        return totalPSCardNV;
+    }
+
+    public void setTotalPSCardNV(double totalPSCardNV) {
+        this.totalPSCardNV = totalPSCardNV;
+    }
+
+    public double getTotalPSCardBC() {
+        return totalPSCardBC;
+    }
+
+    public void setTotalPSCardBC(double totalPSCardBC) {
+        this.totalPSCardBC = totalPSCardBC;
+    }
+
+    public double getTotalPSCardRC() {
+        return totalPSCardRC;
+    }
+
+    public void setTotalPSCardRC(double totalPSCardRC) {
+        this.totalPSCardRC = totalPSCardRC;
+    }
+
+    public double getTotalPSCardNC() {
+        return totalPSCardNC;
+    }
+
+    public void setTotalPSCardNC(double totalPSCardNC) {
+        this.totalPSCardNC = totalPSCardNC;
+    }
+
+    public double getTotalPSSlipBV() {
+        return totalPSSlipBV;
+    }
+
+    public void setTotalPSSlipBV(double totalPSSlipBV) {
+        this.totalPSSlipBV = totalPSSlipBV;
+    }
+
+    public double getTotalPSSlipRV() {
+        return totalPSSlipRV;
+    }
+
+    public void setTotalPSSlipRV(double totalPSSlipRV) {
+        this.totalPSSlipRV = totalPSSlipRV;
+    }
+
+    public double getTotalPSSlipNV() {
+        return totalPSSlipNV;
+    }
+
+    public void setTotalPSSlipNV(double totalPSSlipNV) {
+        this.totalPSSlipNV = totalPSSlipNV;
+    }
+
+    public double getTotalPSSlipBC() {
+        return totalPSSlipBC;
+    }
+
+    public void setTotalPSSlipBC(double totalPSSlipBC) {
+        this.totalPSSlipBC = totalPSSlipBC;
+    }
+
+    public double getTotalPSSlipRC() {
+        return totalPSSlipRC;
+    }
+
+    public void setTotalPSSlipRC(double totalPSSlipRC) {
+        this.totalPSSlipRC = totalPSSlipRC;
+    }
+
+    public double getTotalPSSlipNC() {
+        return totalPSSlipNC;
+    }
+
+    public void setTotalPSSlipNC(double totalPSSlipNC) {
+        this.totalPSSlipNC = totalPSSlipNC;
+    }
+
+    public double getTotalPSChequeBV() {
+        return totalPSChequeBV;
+    }
+
+    public void setTotalPSChequeBV(double totalPSChequeBV) {
+        this.totalPSChequeBV = totalPSChequeBV;
+    }
+
+    public double getTotalPSChequeRV() {
+        return totalPSChequeRV;
+    }
+
+    public void setTotalPSChequeRV(double totalPSChequeRV) {
+        this.totalPSChequeRV = totalPSChequeRV;
+    }
+
+    public double getTotalPSChequeNV() {
+        return totalPSChequeNV;
+    }
+
+    public void setTotalPSChequeNV(double totalPSChequeNV) {
+        this.totalPSChequeNV = totalPSChequeNV;
+    }
+
+    public double getTotalPSChequeBC() {
+        return totalPSChequeBC;
+    }
+
+    public void setTotalPSChequeBC(double totalPSChequeBC) {
+        this.totalPSChequeBC = totalPSChequeBC;
+    }
+
+    public double getTotalPSChequeRC() {
+        return totalPSChequeRC;
+    }
+
+    public void setTotalPSChequeRC(double totalPSChequeRC) {
+        this.totalPSChequeRC = totalPSChequeRC;
+    }
+
+    public double getTotalPSChequeNC() {
+        return totalPSChequeNC;
+    }
+
+    public void setTotalPSChequeNC(double totalPSChequeNC) {
+        this.totalPSChequeNC = totalPSChequeNC;
+    }
+
+    public double getTotalBHTIssueBV() {
+        return totalBHTIssueBV;
+    }
+
+    public void setTotalBHTIssueBV(double totalBHTIssueBV) {
+        this.totalBHTIssueBV = totalBHTIssueBV;
+    }
+
+    public double getTotalBHTIssueRV() {
+        return totalBHTIssueRV;
+    }
+
+    public void setTotalBHTIssueRV(double totalBHTIssueRV) {
+        this.totalBHTIssueRV = totalBHTIssueRV;
+    }
+
+    public double getTotalBHTIssueNV() {
+        return totalBHTIssueNV;
+    }
+
+    public void setTotalBHTIssueNV(double totalBHTIssueNV) {
+        this.totalBHTIssueNV = totalBHTIssueNV;
+    }
+
+    public double getTotalBHTIssueBC() {
+        return totalBHTIssueBC;
+    }
+
+    public void setTotalBHTIssueBC(double totalBHTIssueBC) {
+        this.totalBHTIssueBC = totalBHTIssueBC;
+    }
+
+    public double getTotalBHTIssueRC() {
+        return totalBHTIssueRC;
+    }
+
+    public void setTotalBHTIssueRC(double totalBHTIssueRC) {
+        this.totalBHTIssueRC = totalBHTIssueRC;
+    }
+
+    public double getTotalBHTIssueNC() {
+        return totalBHTIssueNC;
+    }
+
+    public void setTotalBHTIssueNC(double totalBHTIssueNC) {
+        this.totalBHTIssueNC = totalBHTIssueNC;
+    }
+
+    public double getTotalUnitIssueBV() {
+        return totalUnitIssueBV;
+    }
+
+    public void setTotalUnitIssueBV(double totalUnitIssueBV) {
+        this.totalUnitIssueBV = totalUnitIssueBV;
+    }
+
+    public double getTotalUnitIssueRV() {
+        return totalUnitIssueRV;
+    }
+
+    public void setTotalUnitIssueRV(double totalUnitIssueRV) {
+        this.totalUnitIssueRV = totalUnitIssueRV;
+    }
+
+    public double getTotalUnitIssueNV() {
+        return totalUnitIssueNV;
+    }
+
+    public void setTotalUnitIssueNV(double totalUnitIssueNV) {
+        this.totalUnitIssueNV = totalUnitIssueNV;
+    }
+
+    public double getTotalUnitIssueBC() {
+        return totalUnitIssueBC;
+    }
+
+    public void setTotalUnitIssueBC(double totalUnitIssueBC) {
+        this.totalUnitIssueBC = totalUnitIssueBC;
+    }
+
+    public double getTotalUnitIssueRC() {
+        return totalUnitIssueRC;
+    }
+
+    public void setTotalUnitIssueRC(double totalUnitIssueRC) {
+        this.totalUnitIssueRC = totalUnitIssueRC;
+    }
+
+    public double getTotalUnitIssueNC() {
+        return totalUnitIssueNC;
+    }
+
+    public void setTotalUnitIssueNC(double totalUnitIssueNC) {
+        this.totalUnitIssueNC = totalUnitIssueNC;
+    }
+    
+    
 
 }

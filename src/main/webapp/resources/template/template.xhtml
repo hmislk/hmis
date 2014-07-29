@@ -264,9 +264,9 @@
                                         <p:menuitem ajax="false" action="/store/store_issue"  value="Issue"
                                                     rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}" 
                                                     actionListener="#{pharmacySaleBhtController.resetAll()}"/>
-                                        <p:menuitem  ajax="false" action="/store/store_search_sale_bill_bht"
+                                        <p:menuitem  ajax="false" action="/store/store_search_sale_bill_issue"
                                                      actionListener="#{searchController.makeListNull}"  value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('StoreIssueSearchBill')}"/>
-                                        <p:menuitem  ajax="false" action="/store/store_search_sale_bill_item_bht" actionListener="#{searchController.makeListNull}"   
+                                        <p:menuitem  ajax="false" action="/store/store_search_sale_bill_item_issue" actionListener="#{searchController.makeListNull}"   
                                                      value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('StoreIssueBillItems')}"/>                                       
                                     </p:submenu>
                                     <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('StorePurchase')}">

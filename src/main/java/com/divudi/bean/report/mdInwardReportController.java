@@ -20,6 +20,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
@@ -289,6 +290,7 @@ public class mdInwardReportController implements Serializable {
         Map temMap = new HashMap();
         sql = "select b from BillItem b where "
                 + " b.bill.billType = :billType "
+//                + " and b.bill.cancelled=false "
                 + " and b.bill.institution=:ins "
                 + " and b.patientEncounter.paymentFinalized=true "
                 + " and b.bill.createdAt between :fromDate and :toDate "

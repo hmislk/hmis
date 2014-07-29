@@ -1045,22 +1045,24 @@ public class InwardSearch implements Serializable {
     }
 
     public void markAsChecked() {
-        if (bill == null) {
+        Bill b = bill;
+        if (b == null) {
             return;
         }
 
-        if (bill.getPatientEncounter() == null) {
+        if (b.getPatientEncounter() == null) {
             return;
         }
 
-        if (bill.getPatientEncounter().isPaymentFinalized()) {
+        if (b.getPatientEncounter().isPaymentFinalized()) {
             return;
         }
 
-        bill.setCheckeAt(new Date());
-        bill.setCheckedBy(getSessionController().getLoggedUser());
+        b.setCheckeAt(new Date());
+        b.setCheckedBy(getSessionController().getLoggedUser());
 
-        getBillFacade().edit(bill);
+        getBillFacade().edit(b);
+        
 
         UtilityController.addErrorMessage("Successfully Cheked");
     }
@@ -1086,10 +1088,18 @@ public class InwardSearch implements Serializable {
         UtilityController.addErrorMessage("Successfully Cheked");
     }
 
+    public void selectBillItem(BillItem billItem){
+        BillItem tmp=billItemFacede.find(billItem.getId());
+        bill=tmp.getBill();
+    }
+    
     public void setBill(Bill bill) {
         recreateModel();
-        System.err.println("Billed " + bill);
-        this.bill = bill;
+        if (bill == null) {
+            return;
+        }
+        this.bill = billFacade.find(bill.getId());
+
     }
 
     public void setBillActionListener(String id) {

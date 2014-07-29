@@ -172,6 +172,7 @@ public class BillBhtController implements Serializable {
         lstBillEntries = null;
         printPreview = false;
         batchBill = null;
+        bills=null;
     }
 
     public CommonFunctions getCommonFunctions() {
@@ -327,6 +328,7 @@ public class BillBhtController implements Serializable {
 
     public void settleBill() {
         //   bills = new ArrayList<>();
+        bills = null;
         if (errorCheck()) {
             return;
         }
@@ -392,11 +394,11 @@ public class BillBhtController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
 
-        if (temp.getId() == null) {
-            getFacade().create(temp);
-        } else {
-            getFacade().edit(temp);
-        }
+//        if (temp.getId() == null) {
+        getFacade().create(temp);
+//        } else {
+//            getFacade().edit(temp);
+//        }
 
         return temp;
 
