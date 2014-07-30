@@ -14,10 +14,13 @@ import com.divudi.data.table.String2Value4;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
@@ -1058,15 +1061,14 @@ public class InwardReportController1 implements Serializable {
 
     }
 
-    public void createOpdServiceWithoutPro() {
+    private List<Object[]> calFee() {
         String sql;
         Map m = new HashMap();
         sql = "select bf.billItem.item.category, "
                 + " sum(bf.feeDiscount),"
                 + " sum(bf.feeMargin),"
                 + " sum(bf.feeGrossValue),"
-                + " sum(bf.feeValue),"
-                + " count(bf) "
+                + " sum(bf.feeValue)"
                 + " from BillFee bf "
                 + " where"
                 + " bf.retired=false "
@@ -1098,8 +1100,53 @@ public class InwardReportController1 implements Serializable {
         }
 
         sql = sql + " group by bf.billItem.item.category order by bf.billItem.item.category.name";
-        List<Object[]> results = billFeeFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
+        return billFeeFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
+    }
 
+    private long calFee(Category category1, Bill bill) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select count(bf.billItem)"
+                + " from BillFee bf "
+                + " where "
+                + " bf.retired=false "
+                + " and type(bf.bill)=:class "
+                + " and bf.billItem.item.category=:cat"
+                + " and bf.billItem.retired=false "
+                + " and bf.bill.patientEncounter.paymentFinalized=true "
+                + " and bf.fee.feeType!=:ftp ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("class", bill.getClass());
+        m.put("cat", category1);
+        m.put("ftp", FeeType.Staff);
+        m.put("billType", BillType.InwardBill);
+        sql = sql + " and bf.bill.billType=:billType and"
+                + " bf.bill.patientEncounter.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql = sql + " and bf.bill.patientEncounter.admissionType=:at ";
+            m.put("at", admissionType);
+
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and bf.bill.patientEncounter.paymentMethod=:bt ";
+            m.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and bf.bill.patientEncounter.creditCompany=:cc ";
+            m.put("cc", institution);
+        }
+
+        return billFeeFacade.findLongByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void createOpdServiceWithoutPro() {
+
+        List<Object[]> results = calFee();
 //        PatientEncounter pe = new PatientEncounter();
 //        pe.getAdmissionType();
         if (results == null) {
@@ -1118,7 +1165,10 @@ public class InwardReportController1 implements Serializable {
             row.setNetValue((double) objs[4]);
             System.err.println("objs[5] = " + objs[5]);
             try {
-                row.setCount((Long) objs[5]);
+                long billed = calFee(row.getCategory(), new BilledBill());
+                long cancel = calFee(row.getCategory(), new CancelledBill());
+                long ret = calFee(row.getCategory(), new RefundBill());
+                row.setCount(billed - (cancel + ret));
             } catch (Exception e) {
                 row.setCount(0l);
             }
