@@ -569,7 +569,7 @@
 
 
 
-                                            <div class="items" >
+                                            <div class="itemsPrinting" >
                                                 <h:dataTable value="#{billController.lstBillEntries}" var="bip"   >
                                                     <h:column >
                                                         <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
@@ -586,7 +586,7 @@
                                                 </h:dataTable>
                                             </div>
 
-                                            <div class="rates"  >
+                                            <div class="ratesPrinting"  >
                                                 <h:dataTable value="#{billController.lstBillEntries}" var="bip1"  >
                                                     <h:column >
                                                         <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="margin: 4px; font-size: 11px!important;" >
@@ -596,7 +596,7 @@
                                                 </h:dataTable>
                                             </div>
 
-                                            <div class="totals" >
+                                            <div class="totalsPrinting" >
 
                                                 <table>
                                                     <tr>

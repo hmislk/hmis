@@ -414,21 +414,23 @@ root {
 }
 
 
-.items{
+.itemsPrinting{
+    
     position: absolute;
     left: 15%;
     top: 37%;
 
 }
 
-.rates{
+.ratesPrinting{
+    
     position: absolute;
     left: 70%;
     top: 37%;
 
 }
 
-.totals{
+.totalsPrinting{
     position: absolute;
     left: 30%;
     bottom: 25%;
