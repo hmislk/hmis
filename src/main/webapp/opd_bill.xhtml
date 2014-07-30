@@ -521,37 +521,37 @@
                                         <div >
 
 
-                                            <div class="receiptno" >
+                                            <div class="receiptnoPrinting" >
                                                 <h:outputLabel value="#{bill.insId}">
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="billdate" >
+                                            <div class="billdatePrinting" >
                                                 <h:outputLabel value="#{bill.billDate}">
                                                     <f:convertDateTime pattern="dd/MM/yy"/>
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="payment" >
+                                            <div class="paymentPrinting" >
                                                 <h:outputLabel value="#{bill.paymentMethod}">
 
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="billtime" >
+                                            <div class="billtimePrinting" >
                                                 <h:outputLabel value="#{bill.billTime}"
                                                                >
                                                     <f:convertDateTime pattern="hh mm a"/>
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="ptname" >
+                                            <div class="ptnamePrinting" >
                                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}"
                                                                >
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="phone" >
+                                            <div class="phonePrinting" >
                                                 <h:outputLabel value="#{bill.patient.person.phone}"
                                                                >
                                                 </h:outputLabel>
@@ -611,7 +611,7 @@
                                                     </tr>
                                                     <tr>
                                                         <td style="text-align: left; min-width: 3cm;">
-                                                            <h:outputLabel value="Total" style="  text-align: right!important;  font-size: 15px!important;   "/>
+                                                            <h:outputLabel value="TOTAL" style="  text-align: right!important; font-weight: bold; font-size: 15px!important;   "/>
                                                         </td>
                                                         <td style="text-align: right!important; ">
                                                             <h:outputLabel value="#{bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">

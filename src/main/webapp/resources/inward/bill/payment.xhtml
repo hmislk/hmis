@@ -30,32 +30,32 @@
                     </div>
 
                     
-                    <div class="receiptno" >
+                    <div class="receiptnoPrinting" >
 <!--                        <h:outputLabel value="Bill No"/><h:outputLabel value=":"/>-->
                         <h:outputLabel value="#{cc.attrs.bill.insId}"/>
                     </div>
                     
-                    <div Class="payment" >
+                    <div Class="paymentPrinting" >
                         <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" >
                         </h:outputLabel>
                     </div>
 
-                    <div class="cel2R1L" >
+                    <div class="bhtNoPrinting" >
                         <h:outputLabel value="BHT No"/><h:outputLabel value=":"/>
                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/>
                     </div>
 
-                    <div class="billdate" >
+                    <div class="billdatePrinting" >
                         <h:outputLabel value="#{cc.attrs.bill.billDate}" >
                             <f:convertDateTime pattern="dd/MM/yy"/>
                         </h:outputLabel>
                     </div>
                     
-                    <div class="ptname">
+                    <div class="ptnamePrinting">
                         
                     </div>
                     
-                    <div class="billtime">
+                    <div class="billtimePrinting">
                         <h:outputLabel value="#{cc.attrs.bill.billDate}" >
                             <f:convertDateTime pattern="h:mm a"/>
                         </h:outputLabel>

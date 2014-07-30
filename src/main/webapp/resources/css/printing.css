@@ -6,6 +6,12 @@
         Purpose of the stylesheet follows.
 */
 
+
+*{
+    margin:0px;
+    padding: 0px;
+}
+
 root { 
     display: block;
 }
@@ -303,37 +309,37 @@ root {
 
 }
 
-.receiptno{
+.receiptnoPrinting{
     position: absolute;
     left: 35%;
-    top: 15%;
+    top: 7%;
 }
 
-.billdate{
+.billdatePrinting{
     position: absolute;
-    left: 80%;
-    top: 15%;
+    left: 84%;
+    top: 7%;
 
 }
-.payment{
-    position: absolute;
-    left: 35%;
-    top: 18%;
-
-}
-
-.billtime{
-    position: absolute;
-    left:80%;
-    top: 18%;
-
-}
-
-
-.ptname{
+.paymentPrinting{
     position: absolute;
     left: 35%;
-    top: 22%;
+    top: 10.5%;
+
+}
+
+.billtimePrinting{
+    position: absolute;
+    left:84%;
+    top: 10.5%;
+
+}
+
+
+.ptnamePrinting{
+    position: absolute;
+    left: 35%;
+    top: 13.8%;
 
 }
 
@@ -353,10 +359,17 @@ root {
 
 }
 
-.phone{
+.phonePrinting{
     position: absolute;
     left: 35%;
-    top: 24%;
+    top: 16.3%;
+
+}
+
+.bhtNoPrinting{
+    position: absolute;
+    left: 23%;
+    top: 17.3%;
 
 }
 
