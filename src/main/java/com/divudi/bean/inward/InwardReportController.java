@@ -7,6 +7,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.ChargeItemTotal;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
@@ -14,6 +15,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.AdmissionTypeFacade;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -51,11 +53,13 @@ public class InwardReportController implements Serializable {
     double netTotals;
     List<IncomeByCategoryRecord> incomeByCategoryRecords;
     List<IndividualBhtIncomeByCategoryRecord> individualBhtIncomeByCategoryRecord;
-    
+
     List<AdmissionType> admissionty;
 
     @EJB
     PatientEncounterFacade peFacade;
+    @EJB
+    BillFacade billFacade;
     @EJB
     AdmissionTypeFacade admissionTypeFacade;
     List<PatientEncounter> patientEncounters;
@@ -67,62 +71,91 @@ public class InwardReportController implements Serializable {
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
         this.patientEncounters = patientEncounters;
     }
-    
-    
 
     public void fillAdmissionBook() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.dateOfAdmission between :fd and :td ";
-        
+
         if (admissionType != null) {
             sql += " and b.admissionType =:ad";
             m.put("ad", admissionType);
         }
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void fillAdmissionBookOnlyInward() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
-                + " and b.discharged=false "
+                //                + " and b.discharged=false "
                 + " and b.paymentFinalized=false "
                 + " and b.dateOfAdmission between :fd and :td ";
-        
+
         if (admissionType != null) {
             sql += " and b.admissionType =:ad";
             m.put("ad", admissionType);
         }
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
     
+    public void calculateBhts(){
+    
+    }
+
+    public double calFinalBalance(PatientEncounter pe) {
+        
+        Map m = new HashMap();
+        String sql = "select sum(b.netTotal) from Bill b "
+                + " where b.patientEncounter.retired=false "
+                + " and b.retired=false "
+                + " and b.billType!=bt1 "
+                + " and b.patientEncounter=pe "
+                + " and b.patientEncounter.paymentFinalized=false "
+                + " and b.patientEncounter.dateOfAdmission between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad";
+            m.put("ad", admissionType);
+        }
+
+        m.put("pe", pe);
+        m.put("bt1", BillType.InwardPaymentBill);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        double total=getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        
+        return total;
+
+    }
+
     public void fillAdmissionBookOnlyInwardDeleted() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=true "
                 + " and b.dateOfAdmission between :fd and :td ";
-        
+
         if (admissionType != null) {
             sql += " and b.admissionType =:ad";
             m.put("ad", admissionType);
         }
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void fillDischargeBook() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
@@ -130,14 +163,14 @@ public class InwardReportController implements Serializable {
                 + " and b.discharged=true "
                 + " and b.paymentFinalized=true "
                 + " and b.dateOfDischarge between :fd and :td ";
-        
+
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
         }
-        
+
         sql += " order by  b.dateOfDischarge";
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
@@ -224,13 +257,13 @@ public class InwardReportController implements Serializable {
                 + " from BillFee bf where"
                 + " bf.bill.patientEncounter is not null"
                 + " and bf.bill.patientEncounter.paymentFinalized=true ";
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("billType", BillType.InwardBill);
         sql = sql + " and bf.bill.billType=:billType and"
                 + " bf.bill.patientEncounter.dateOfDischarge between :fd and :td ";
-       
+
         if (admissionType != null) {
             sql = sql + " and bf.bill.patientEncounter.admissionType=:at ";
             m.put("at", admissionType);
@@ -274,8 +307,7 @@ public class InwardReportController implements Serializable {
         }
 
     }
-    
- 
+
     public Institution getInstitution() {
         return institution;
     }
@@ -308,10 +340,6 @@ public class InwardReportController implements Serializable {
     public void setAdmissionTypeFacade(AdmissionTypeFacade admissionTypeFacade) {
         this.admissionTypeFacade = admissionTypeFacade;
     }
-    
-    
-    
-    
 
     public Date getFromDate() {
         if (fromDate == null) {
@@ -425,8 +453,6 @@ public class InwardReportController implements Serializable {
         public void setMatrix(double matrix) {
             this.matrix = matrix;
         }
-        
-        
 
         public double getDiscount() {
             return discount;
@@ -531,5 +557,14 @@ public class InwardReportController implements Serializable {
         }
 
     }
+
+    public BillFacade getBillFacade() {
+        return billFacade;
+    }
+
+    public void setBillFacade(BillFacade billFacade) {
+        this.billFacade = billFacade;
+    }
+    
 
 }
