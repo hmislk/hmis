@@ -106,7 +106,8 @@
                         </p:commandButton>
                     </p:column>
                     <p:column>
-                        <p:commandButton ajax="false" action="inward_reprint_bill_service"  value="View Bill" onclick="onSubmitButton();" >                                              
+                        <p:commandButton ajax="false" action="inward_reprint_bill_service" 
+                                         value="View Bill" onclick="onSubmitButton();"  >  
                             <f:setPropertyActionListener value="#{ser.bill}" target="#{inwardSearch.bill}"/>
                         </p:commandButton>
                     </p:column>

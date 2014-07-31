@@ -433,6 +433,10 @@ public class SearchController implements Serializable {
     public void createPharmacyTableBht() {
         createTableBht(BillType.PharmacyBhtPre);
     }
+    
+    public void createStoreTableIssue() {
+        createTableBht(BillType.StoreIssue);
+    }
 
     public void createStoreTableBht() {
         createTableBht(BillType.StoreBhtPre);
@@ -919,6 +923,10 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
 
+    }
+    
+    public void createPharmacyBillItemTableIssue() {
+        createBillItemTableBht(BillType.StoreIssue);
     }
 
     public void createPharmacyBillItemTableBht() {
