@@ -193,6 +193,18 @@
                                     </h:outputLabel>
                                 </p:column>
 
+                                <p:column headerText="Total">
+                                    #{i.transTotal}
+                                </p:column>
+
+                                <p:column headerText="Paid">
+                                    #{i.transPaid}
+                                </p:column>
+
+                                <p:column headerText="Due">
+                                    #{i.transTotal-i.transPaid}
+                                </p:column>
+
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>
