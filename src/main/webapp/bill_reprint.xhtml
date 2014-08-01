@@ -181,7 +181,7 @@
 
                                                 <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle}" styleClass="ptnamePrinting" />
 
-                                                <h:outputLabel value="#{billSearch.bill.patient.person.phone}" styleClass="phone" />
+                                                <h:outputLabel value="#{billSearch.bill.patient.person.phone}" styleClass="phonePrinting" />
 
 
 
@@ -248,7 +248,7 @@
                                                     </table>
                                                 </div>
 
-                                                <div class="cashier" >
+                                                <div class="cashierPrinting" >
                                                     <h:outputLabel value="Cashier : #{billSearch.bill.cancelledBill.creater.code}"  
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}" />
                                                     <h:outputLabel value="Cashier : #{billSearch.bill.refundedBill.creater.code}"

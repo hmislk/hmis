@@ -557,7 +557,7 @@
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="cashier" >
+                                            <div class="cashierPrinting" >
                                                 <h:outputLabel value="Cashier : #{bill.creater.code}">
                                                 </h:outputLabel>
                                             </div>
@@ -589,7 +589,7 @@
                                             <div class="ratesPrinting"  >
                                                 <h:dataTable value="#{billController.lstBillEntries}" var="bip1"  >
                                                     <h:column >
-                                                        <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="margin: 4px; font-size: 11px!important;" >
+                                                        <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="font-size: 11px!important;" >
                                                             <f:convertNumber pattern="#,000.00" />
                                                         </h:outputLabel>
                                                     </h:column>
@@ -614,7 +614,7 @@
                                                             <h:outputLabel value="TOTAL" style="  text-align: right!important; font-weight: bold; font-size: 15px!important;   "/>
                                                         </td>
                                                         <td style="text-align: right!important; ">
-                                                            <h:outputLabel value="#{bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                            <h:outputLabel value="#{bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important; ">
                                                                 <f:convertNumber pattern="#,000.00" />
                                                             </h:outputLabel>
                                                         </td>
