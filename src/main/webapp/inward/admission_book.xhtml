@@ -188,9 +188,20 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Discharge Date"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.dateOfDischarge}"  >
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm a" ></f:convertDateTime>
-                                    </h:outputLabel>
+<!--                                    <h:outputLabel value="#{inwardReportController.calFinalBalance(i)}"  >
+                                    </h:outputLabel>-->
+                                </p:column>
+
+                                <p:column headerText="Total">
+                                    #{i.transTotal}
+                                </p:column>
+
+                                <p:column headerText="Paid">
+                                    #{i.transPaid}
+                                </p:column>
+
+                                <p:column headerText="Due">
+                                    #{i.transTotal-i.transPaid}
                                 </p:column>
 
                             </p:dataTable>

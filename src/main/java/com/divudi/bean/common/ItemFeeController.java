@@ -113,7 +113,7 @@ public class ItemFeeController implements Serializable {
 
     private double calTot() {
         double tot = 0.0;
-
+        createCharges();
         for (ItemFee i : getCharges()) {
             tot += i.getFee();
         }
@@ -152,6 +152,9 @@ public class ItemFeeController implements Serializable {
         itemFee.setEditer(getSessionController().getLoggedUser());
         itemFee.setEditedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         itemFeeFacade.edit(itemFee);
+
+        itemFee.getItem().setTotal(calTot());
+        ejbFacade.edit((Investigation) itemFee.getItem());
     }
 
     public void removeFee() {

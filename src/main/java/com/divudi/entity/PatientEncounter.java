@@ -121,8 +121,31 @@ public class PatientEncounter implements Serializable {
     double adjustedTotal;
     @Transient
     Date timePeriod;
+    @Transient
+    double transTotal;
+    @Transient
+    double transPaid;    
     @ManyToOne
     Bill finalBill;
+
+    public double getTransTotal() {
+        return transTotal;
+    }
+
+    public void setTransTotal(double transTotal) {
+        this.transTotal = transTotal;
+    }
+
+    public double getTransPaid() {
+        return transPaid;
+    }
+
+    public void setTransPaid(double transPaid) {
+        this.transPaid = transPaid;
+    }
+    
+    
+    
 
     public boolean getRetired() {
         return retired;
