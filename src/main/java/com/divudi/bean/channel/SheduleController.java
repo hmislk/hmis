@@ -9,7 +9,6 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Fee;
 import com.divudi.entity.ServiceSession;
-import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.FeeFacade;
@@ -29,7 +28,7 @@ import javax.inject.Inject;
  *
  * @author safrin
  */
-@Named
+@Named(value = "sheduleController")
 @SessionScoped
 public class SheduleController implements Serializable {
 
@@ -65,7 +64,7 @@ public class SheduleController implements Serializable {
         List<Staff> suggestions;
         String sql;
         if (query == null) {
-            suggestions = new ArrayList<Staff>();
+            suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
