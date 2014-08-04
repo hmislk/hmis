@@ -94,6 +94,11 @@
                     <p:column headerText="Description">
                         #{ser.descreption}
                     </p:column>
+                    <p:column headerText="Date">
+                        <p:outputLabel value="#{ser.billTime}" >
+                            <f:convertDateTime pattern="yyyy MM dd" />
+                        </p:outputLabel>
+                    </p:column>
                     <p:column headerText="Billed Id" rendered="false">
                         #{ser.bill.id}
                     </p:column>
