@@ -184,15 +184,45 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Discharge Date">
+                               <p:column headerText="BHT No">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Discharge Date"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.dateOfDischarge}"  >
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm a" ></f:convertDateTime>
+                                        <h:outputLabel value="BHT No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Total">
+                                    <h:outputLabel value="#{i.transTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
+                                <p:column headerText="Paid">
+                                    <h:outputLabel value="#{i.transPaid}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.netPaid}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Due">
+                                    <h:outputLabel value="#{i.transTotal-i.transPaid}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.netTotal-inwardReportController.netPaid}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

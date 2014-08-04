@@ -1746,6 +1746,10 @@ public class BhtSummeryController implements Serializable {
         if (dischargeAt == null) {
             dischargeAt = new Date();
         }
+        
+        if(getPatientEncounter().getCurrentPatientRoom()==null){
+            return 0;
+        }
 
         if (getPatientEncounter().getCurrentPatientRoom().equals(patientRoom)) {
             return value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt);

@@ -1089,6 +1089,7 @@ public class InwardSearch implements Serializable {
     }
 
     public void selectBillItem(BillItem billItem){
+        makeNull();
         BillItem tmp=billItemFacede.find(billItem.getId());
         bill=tmp.getBill();
     }

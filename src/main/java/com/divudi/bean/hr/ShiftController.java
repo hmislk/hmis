@@ -94,14 +94,15 @@ public class ShiftController implements Serializable {
             sql = "select c from Shift c "
                     + " where c.retired=false "
                     + " and upper(c.name) like :q "
-                    + " and c.hideShift=false "
+                    + " and (c.hideShift=false or c.hideShift is null) "
                     + " order by c.name";
         } else {
             sql = "select c from Shift c "
                     + " where c.retired=false "
+                    
                     + " and c.roster=:rs "
                     + " and upper(c.name) like :q "
-                    + " and c.hideShift=false "
+                    + " and (c.hideShift=false or c.hideShift is null) "
                     + " order by c.name";
             hm.put("rs", getCurrentRoster());
         }
@@ -218,6 +219,7 @@ public class ShiftController implements Serializable {
                 + " where s.retired=false "
                 + " and s.roster=:rs ";
              //   + " order by s.shiftOrder ";
+        System.out.println("sql = " + sql);
         HashMap hm = new HashMap();
         hm.put("rs", getCurrentRoster());
 
