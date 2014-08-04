@@ -103,6 +103,8 @@ public class BillItem implements Serializable {
     @Enumerated(EnumType.STRING)
     InwardChargeType inwardChargeType;
     String agentRefNo;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date billTime;
 
 //    @Transient
     int searialNo;
@@ -145,6 +147,8 @@ public class BillItem implements Serializable {
         agentRefNo = billItem.getAgentRefNo();
         item = billItem.getItem();
         qty = billItem.getQty();
+        descreption=billItem.getDescreption();
+        billTime=billItem.getBillTime();
         grossValue = billItem.getGrossValue();
         netValue = billItem.getNetValue();
         discount = billItem.getDiscount();
@@ -607,6 +611,14 @@ public class BillItem implements Serializable {
 
     public void setDescreption(String descreption) {
         this.descreption = descreption;
+    }
+
+    public Date getBillTime() {
+        return billTime;
+    }
+
+    public void setBillTime(Date billTime) {
+        this.billTime = billTime;
     }
 
 }

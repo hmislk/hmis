@@ -152,28 +152,28 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="B H T No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>
+                                    <h:outputLabel value="#{can.patientEncounter.bhtNo}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{can.insId}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Patient Name">
                                     <f:facet name="header">
                                         <h:outputLabel value="Patient Name"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.patient.person.nameWithTitle}" ></h:outputLabel>
+                                    <h:outputLabel value="#{can.patient.person.nameWithTitle}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Date">
                                     <f:facet name="header">
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.createdAt}"  >
+                                    <h:outputLabel value="#{can.createdAt}"  >
                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
@@ -183,7 +183,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Amount"/>
                                     </f:facet>                                    
-                                    <h:outputLabel  value="#{i.netTotal}">
+                                    <h:outputLabel  value="#{can.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -192,7 +192,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Comment"/>
                                     </f:facet>                                    
-                                    <h:outputLabel  value="#{i.comments}">
+                                    <h:outputLabel  value="#{can.comments}">
                                     </h:outputLabel>
                                 </p:column>
 
