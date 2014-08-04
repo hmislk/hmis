@@ -117,12 +117,13 @@
                                         <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" ></p:inputTextarea>
                                         <p:commandButton id="btnAddIx" ajax="false" value="Add" action="#{billBhtController.addToBill()}" onclick="onSubmitButton();"/>
 
-                                        <p:calendar value="#{billBhtController.date}" 
+                                        <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
                                                     id="billedTimeStamp"
                                                     pattern="dd MM yyyy hh mm a" >                               
                                         </p:calendar>
 
                                         <p:watermark for="acIx" value="Item"/>
+                                        <p:watermark for="billedTimeStamp" value="Time"/>
                                         <p:watermark for="txtDesc" value="Description"/>
                                         <p:watermark for="txtQty" value="QTY"/>
                                         <p:watermark for="ct" value="Category"/>

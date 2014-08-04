@@ -38,6 +38,12 @@
                 <p:column headerText="Guardian Addres">
                     #{pr.patientEncounter.guardian.address}
                 </p:column>
+                <p:column headerText="Credit Company Name">
+                    #{pr.patientEncounter.creditCompany.name}
+                </p:column>
+                <p:column headerText="Payment Method">
+                    #{pr.patientEncounter.paymentMethod}
+                </p:column>
                 <p:column headerText="Room No">
                     <h:outputLabel value="#{pr.roomFacilityCharge.room.name}"/>
                 </p:column>
