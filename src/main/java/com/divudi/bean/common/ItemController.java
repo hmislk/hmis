@@ -117,10 +117,11 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
-    
+
     List<Item> itemList;
+
     public List<Item> completePharmacyItem(String query) {
-        
+
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
@@ -168,11 +169,10 @@ public class ItemController implements Serializable {
 
     }
 
-    
-    
     List<Item> suggestions;
+
     public List<Item> completeAmpItem(String query) {
-        
+
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
@@ -195,7 +195,6 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeStoreItem(String query) {
-        List<Item> suggestions;
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
@@ -218,6 +217,27 @@ public class ItemController implements Serializable {
         }
         return suggestions;
 
+    }
+
+    public List<Item> completeExpenseItem(String query) {
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c from Item c "
+                    + "where c.retired=false and "
+                    + "(type(c)= :amp) "
+                    + "and (upper(c.name) like :str or "
+                    + "upper(c.code) like :str or "
+                    + "upper(c.barcode) like :str) "
+                    + "order by c.name";
+            //System.out.println(sql);
+            tmpMap.put("amp", BillExpense.class);
+            tmpMap.put("str", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
     }
 
     public List<Item> fetchStoreItem() {
@@ -398,7 +418,7 @@ public class ItemController implements Serializable {
         m.put("pac", Packege.class);
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
-         m.put("inward", InwardService.class);
+        m.put("inward", InwardService.class);
         m.put("q", "%" + query.toUpperCase() + "%");
 
         return getFacade().findBySQL(sql, m, 20);

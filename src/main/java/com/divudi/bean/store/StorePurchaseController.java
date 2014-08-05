@@ -5,7 +5,6 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
-import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
@@ -26,6 +25,7 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -37,7 +37,6 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import static org.apache.xmlbeans.impl.values.NamespaceContext.getCurrent;
 
 /**
  *
@@ -68,6 +67,7 @@ public class StorePurchaseController implements Serializable {
     ApplicationController applicationController;
     ////////////
     private BillItem currentBillItem;
+    BillItem currentExpense;
     //private PharmacyItemData currentPharmacyItemData;
     private boolean printPreview;
     ///////////
@@ -252,6 +252,7 @@ public class StorePurchaseController implements Serializable {
 //    }
 
     private List<BillItem> billItems;
+    List<BillItem> billExpenses;
 
     public void addItem() {
 
@@ -291,6 +292,31 @@ public class StorePurchaseController implements Serializable {
         calTotal();
     }
 
+    public void addExpense() {
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        }
+        if(getCurrentExpense().getItem()==null){
+            JsfUtil.addErrorMessage("Expense ?");
+            return;
+        }
+        if(currentExpense.getQty()==null || currentExpense.getQty().equals(0.0)){
+            currentExpense.setQty(1.0);
+        }
+        if(currentExpense.getNetRate()==0.0){
+            currentExpense.setNetRate(currentExpense.getRate());
+        }
+        
+        currentExpense.setNetValue(currentExpense.getNetRate()*currentExpense.getQty());
+        currentExpense.setGrossValue(currentExpense.getRate()*currentExpense.getQty());
+        
+        getCurrentExpense().setSearialNo(getBillExpenses().size());
+        getBillExpenses().add(currentExpense);
+        currentExpense = null;
+        calTotal();
+    }
+
+    
     public void saveBill() {
 
         getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.PharmacyPurchaseBill, BillNumberSuffix.PHPUR));
@@ -339,21 +365,24 @@ public class StorePurchaseController implements Serializable {
 
     public void calTotal() {
         double tot = 0.0;
+        double exp=0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
             p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             p.setSearialNo(serialNo++);
             double netValue = p.getQty() * p.getRate();
-
             p.setNetValue(0 - netValue);
-
             tot += p.getNetValue();
-
         }
 
+        for(BillItem e:getBillExpenses()){
+            exp+= e.getNetValue();
+        }
+        
+        getBill().setExpenseTotal(exp);
         getBill().setTotal(tot);
-        getBill().setNetTotal(tot);
+        getBill().setNetTotal(tot+exp);
 
     }
 
@@ -433,6 +462,20 @@ public class StorePurchaseController implements Serializable {
         this.printPreview = printPreview;
     }
 
+    public BillItem getCurrentExpense() {
+        if(currentExpense==null){
+            currentExpense = new BillItem();
+            currentExpense.setQty(1.0);
+        }
+        return currentExpense;
+    }
+
+    public void setCurrentExpense(BillItem currentExpense) {
+        this.currentExpense = currentExpense;
+    }
+
+    
+    
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
@@ -446,6 +489,19 @@ public class StorePurchaseController implements Serializable {
     public void setCurrentBillItem(BillItem currentBillItem) {
         this.currentBillItem = currentBillItem;
     }
+
+    public List<BillItem> getBillExpenses() {
+        if(billExpenses==null){
+            billExpenses = new ArrayList<>();
+        }
+        return billExpenses;
+    }
+
+    public void setBillExpenses(List<BillItem> billExpenses) {
+        this.billExpenses = billExpenses;
+    }
+    
+    
 
     public List<BillItem> getBillItems() {
         if (billItems == null) {
