@@ -94,11 +94,6 @@
                     <p:column headerText="Description">
                         #{ser.descreption}
                     </p:column>
-                    <p:column headerText="Date">
-                        <p:outputLabel value="#{ser.billTime}" >
-                            <f:convertDateTime pattern="yyyy MM dd" />
-                        </p:outputLabel>
-                    </p:column>
                     <p:column headerText="Billed Id" rendered="false">
                         #{ser.bill.id}
                     </p:column>
@@ -112,8 +107,8 @@
                     </p:column>
                     <p:column>
                         <p:commandButton ajax="false" action="inward_reprint_bill_service" 
-                                         value="View Bill" onclick="onSubmitButton();"  >  
-                            <f:setPropertyActionListener value="#{ser.bill}" target="#{inwardSearch.bill}"/>
+                                         value="View Bill" onclick="onSubmitButton();" 
+                                         actionListener="#{inwardSearch.selectBillItem(ser)}" >  
                         </p:commandButton>
                     </p:column>
                     

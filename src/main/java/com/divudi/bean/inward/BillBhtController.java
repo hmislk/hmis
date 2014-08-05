@@ -17,6 +17,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.data.FeeType;
 import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -172,7 +173,7 @@ public class BillBhtController implements Serializable {
         lstBillEntries = null;
         printPreview = false;
         batchBill = null;
-        bills=null;
+        bills = null;
     }
 
     public CommonFunctions getCommonFunctions() {
@@ -422,12 +423,31 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
+        //Check Staff
+        if (checkStaff()) {
+            UtilityController.addErrorMessage("Please select Staff");
+            return true;
+        }
+
         if (getPatientEncounter().getCurrentPatientRoom() == null) {
             return true;
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
             return true;
+        }
+
+        return false;
+    }
+
+    public boolean checkStaff() {
+        for (BillFee bf : lstBillFees) {
+            if (bf.getFee() != null && bf.getFee().getFeeType() != null
+                    && bf.getFee().getFeeType() == FeeType.Staff) {
+                if (bf.getFeeGrossValue() != 0 && bf.getStaff() == null) {
+                    return true;
+                }
+            }
         }
 
         return false;
