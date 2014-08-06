@@ -1055,6 +1055,7 @@ public class InwardReportController1 implements Serializable {
         string1Value3 = new String2Value4();
         string1Value3.setString("Out Side Charges : ");
         string1Value3.setValue1(fetchOutSideFee());
+        string1Value3.setValue4(string1Value3.getValue1());
         inwardGross += string1Value3.getValue1();
         inwardNetValue += string1Value3.getValue1();
         inwardCharges.add(string1Value3);
