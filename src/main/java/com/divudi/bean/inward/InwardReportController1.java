@@ -1163,7 +1163,7 @@ public class InwardReportController1 implements Serializable {
             row.setMargin((double) objs[2]);
             row.setGrossValue((double) objs[3]);
             row.setNetValue((double) objs[4]);
-            System.err.println("objs[5] = " + objs[5]);
+//            System.err.println("objs[5] = " + objs[5]);
             try {
                 long billed = calFee(row.getCategory(), new BilledBill());
                 long cancel = calFee(row.getCategory(), new CancelledBill());

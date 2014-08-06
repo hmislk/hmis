@@ -1,14 +1,16 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="./resources/template/template.xhtml"
+                template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core">
 
     <ui:define name="content">
         <h:form>
-            <h:panelGrid columns="2">
+            
+            
+            <h:panelGrid columns="2" class="alignTop">
                 <p:panel >
                     <h:panelGrid columns="2">
                         <h:outputLabel  value="Speciality" ></h:outputLabel>
@@ -18,6 +20,8 @@
                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
                         </p:autoComplete>
 
+                       
+                        
                         <h:outputLabel  value="Doctor" ></h:outputLabel>
                         <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
                                           completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
