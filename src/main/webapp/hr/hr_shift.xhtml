@@ -14,7 +14,7 @@
                     <h:panelGrid id="gpSelect" columns="1"  >
                         <h:panelGrid columns="2">
                             <h:outputText  value="Roster" ></h:outputText>
-                            <p:selectOneMenu  id='roster' value="#{shiftController.currentRoster}">
+                            <p:selectOneMenu id='roster' value="#{shiftController.currentRoster}">
                                 <f:selectItem itemLabel="Select Roster"/>
                                 <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                 <f:ajax event="change" execute="@this" render="gpSelectText gpDetail" listener="#{shiftController.createShiftList()}" />

@@ -42,9 +42,9 @@ public class Bill implements Serializable {
     @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
     private List<StockVarientBillItem> stockVarientBillItems = new ArrayList<>();
     @OneToMany(mappedBy = "backwardReferenceBill", fetch = FetchType.LAZY)
-    private List<Bill> forwardReferenceBills =new ArrayList<>();
+    private List<Bill> forwardReferenceBills = new ArrayList<>();
     @OneToMany(mappedBy = "forwardReferenceBill", fetch = FetchType.LAZY)
-    private List<Bill> backwardReferenceBills=new ArrayList<>();
+    private List<Bill> backwardReferenceBills = new ArrayList<>();
     @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
     private List<Bill> returnPreBills = new ArrayList<>();
     @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
@@ -72,6 +72,11 @@ public class Bill implements Serializable {
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("searialNo")
     List<BillItem> billItems;
+
+    @OneToMany(mappedBy = "expenseBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("searialNo")
+    List<BillItem> billExpenses;
+
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<BillComponent> billComponents = new ArrayList<>();
     ////////////////////////////////////////////////   
@@ -116,6 +121,7 @@ public class Bill implements Serializable {
     double staffFee;
     double billerFee;
     double grantTotal;
+    double expenseTotal;
 
     //Institution
     @ManyToOne
@@ -375,21 +381,40 @@ public class Bill implements Serializable {
     public void setTotal(double total) {
         this.total = total;
     }
-    
-    public double getDiscountPercentPharmacy(){
+
+    public List<BillItem> getBillExpenses() {
+        if (billExpenses == null) {
+            billExpenses = new ArrayList<>();
+        }
+        return billExpenses;
+    }
+
+    public void setBillExpenses(List<BillItem> billExpenses) {
+        this.billExpenses = billExpenses;
+    }
+
+    public double getExpenseTotal() {
+        return expenseTotal;
+    }
+
+    public void setExpenseTotal(double expenseTotal) {
+        this.expenseTotal = expenseTotal;
+    }
+
+    public double getDiscountPercentPharmacy() {
         System.out.println("getting discount percent");
 //        System.out.println("bill item"+getBillItems());
 //        System.out.println(getBillItems().get(0).getPriceMatrix());
-        if(!getBillItems().isEmpty() && getBillItems().get(0).getPriceMatrix() !=null){
+        if (!getBillItems().isEmpty() && getBillItems().get(0).getPriceMatrix() != null) {
             System.out.println("sys inside");
-            discountPercent=getBillItems().get(0).getPriceMatrix().getDiscountPercent();
-        } 
-        
+            discountPercent = getBillItems().get(0).getPriceMatrix().getDiscountPercent();
+        }
+
         return discountPercent;
     }
 
     public double getDiscount() {
-        
+
         return discount;
     }
 
@@ -1094,7 +1119,6 @@ public class Bill implements Serializable {
 //        }
 //        return transActiveBillItem;
 //    }call me internet is dead slow
-    
 //
 //    public void setTransActiveBillItem(List<BillItem> transActiveBillItem) {
 //        this.transActiveBillItem = transActiveBillItem;
@@ -1182,7 +1206,7 @@ public class Bill implements Serializable {
     public List<Bill> getReturnCashBills() {
         List<Bill> bills = new ArrayList<>();
         for (Bill b : returnCashBills) {
-            if (b instanceof RefundBill 
+            if (b instanceof RefundBill
                     && b.getBillType() == BillType.PharmacySale
                     && b.getBilledBill() == null) {
                 bills.add(b);

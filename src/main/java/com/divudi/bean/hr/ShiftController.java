@@ -72,6 +72,7 @@ public class ShiftController implements Serializable {
 //            UtilityController.addErrorMessage("Set Staff count correctly");
 //            return true;
 //        }
+
 //        if(getCurrentDayShift().getRepeatedDay()!=0 && getCurrentDayShift().isDayOff()){
 //            UtilityController.addErrorMessage("Repeated day & dayoff can't active at Same  time");
 //            return true;
@@ -93,14 +94,15 @@ public class ShiftController implements Serializable {
             sql = "select c from Shift c "
                     + " where c.retired=false "
                     + " and upper(c.name) like :q "
-                    + " and c.hideShift=false "
+                    + " and (c.hideShift=false or c.hideShift is null) "
                     + " order by c.name";
         } else {
             sql = "select c from Shift c "
                     + " where c.retired=false "
+                    
                     + " and c.roster=:rs "
                     + " and upper(c.name) like :q "
-                    + " and c.hideShift=false "
+                    + " and (c.hideShift=false or c.hideShift is null) "
                     + " order by c.name";
             hm.put("rs", getCurrentRoster());
         }
@@ -216,7 +218,8 @@ public class ShiftController implements Serializable {
         String sql = "Select s From Shift s "
                 + " where s.retired=false "
                 + " and s.roster=:rs ";
-        //   + " order by s.shiftOrder ";
+             //   + " order by s.shiftOrder ";
+        System.out.println("sql = " + sql);
         HashMap hm = new HashMap();
         hm.put("rs", getCurrentRoster());
 
@@ -245,75 +248,70 @@ public class ShiftController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key=0l;
-            try {
-                key = Long.valueOf(value);
-            } catch (Exception e) {
-                System.out.println("e = " + e);
-            }
+            java.lang.Long key;
+            key = Long.valueOf(value);
             return key;
         }
-    }
 
-    String getStringKey(java.lang.Long value) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(value);
-        return sb.toString();
-    }
-
-    @Override
-    public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-        if (object == null) {
-            return null;
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
         }
-        if (object instanceof Shift) {
-            Shift o = (Shift) object;
-            return getStringKey(o.getId());
-        } else {
-            throw new IllegalArgumentException("object " + object + " is of type "
-                    + object.getClass().getName() + "; expected type: " + ShiftController.class.getName());
-        }
-    }
-}
 
-@FacesConverter("shift")
-public static class ShiftControllerConverter implements Converter {
-
-    @Override
-    public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-        if (value == null || value.length() == 0) {
-            return null;
-        }
-        ShiftController controller = (ShiftController) facesContext.getApplication().getELResolver().
-                getValue(facesContext.getELContext(), null, "shiftController");
-        return controller.getFacade().find(getKey(value));
-    }
-
-    java.lang.Long getKey(String value) {
-        java.lang.Long key;
-        key = Long.valueOf(value);
-        return key;
-    }
-
-    String getStringKey(java.lang.Long value) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(value);
-        return sb.toString();
-    }
-
-    @Override
-    public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-        if (object == null) {
-            return null;
-        }
-        if (object instanceof Shift) {
-            Shift o = (Shift) object;
-            return getStringKey(o.getId());
-        } else {
-            throw new IllegalArgumentException("object " + object + " is of type "
-                    + object.getClass().getName() + "; expected type: " + ShiftController.class.getName());
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof Shift) {
+                Shift o = (Shift) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + ShiftController.class.getName());
+            }
         }
     }
-}
+
+    @FacesConverter("shift")
+    public static class ShiftControllerConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            ShiftController controller = (ShiftController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "shiftController");
+            return controller.getFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof Shift) {
+                Shift o = (Shift) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + ShiftController.class.getName());
+            }
+        }
+    }
 
 }
