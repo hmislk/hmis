@@ -1271,12 +1271,14 @@ public class InwardReportControllerBht implements Serializable {
         for (Object[] objs : results) {
 
             OpdService row = new OpdService();
+            
             row.setCategory((Category) objs[0]);
-            row.setDiscount((double) objs[1]);
-            row.setMargin((double) objs[2]);
-            row.setGrossValue((double) objs[3]);
-            row.setNetValue((double) objs[4]);
+            row.setDiscount((Double) objs[1]);
+            row.setMargin((Double) objs[2]);
+            row.setGrossValue((Double) objs[3]);
+            row.setNetValue((Double) objs[4]);
 
+            
             opdSrviceGross += row.getGrossValue();
             opdServiceMargin += row.getMargin();
             opdServiceDiscount += row.getDiscount();
