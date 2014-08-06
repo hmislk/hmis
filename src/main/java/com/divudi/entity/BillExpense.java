@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.divudi.bean.common;
+package com.divudi.entity;
 
 import com.divudi.entity.Item;
 import java.io.Serializable;

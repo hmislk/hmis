@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.entity.BillExpense;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Category;

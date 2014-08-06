@@ -234,6 +234,12 @@ public class StorePurchaseController implements Serializable {
             getBill().getBillItems().add(i);
         }
 
+        for (BillItem i : getBillExpenses()) {
+            i.setExpenseBill(getBill());
+            getBillItemFacade().create(i);
+            getBill().getBillExpenses().add(i);
+        }
+        
         getBillFacade().edit(getBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
@@ -241,15 +247,8 @@ public class StorePurchaseController implements Serializable {
 
         UtilityController.addSuccessMessage("Successfully Billed");
         printPreview = true;
-        //   recreate();
+        
     }
-//
-//    public void recreate() {
-//       
-////        cashPaid = 0.0;
-//        currentPharmacyItemData = null;
-//        pharmacyItemDatas = null;
-//    }
 
     private List<BillItem> billItems;
     List<BillItem> billExpenses;
@@ -377,6 +376,8 @@ public class StorePurchaseController implements Serializable {
         }
 
         for(BillItem e:getBillExpenses()){
+            double nv = e.getNetRate() * e.getQty();
+            e.setNetValue(0-nv);
             exp+= e.getNetValue();
         }
         

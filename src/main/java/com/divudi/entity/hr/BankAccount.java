@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.bean.hr;
+package com.divudi.entity.hr;
 
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
