@@ -45,7 +45,7 @@
                                     <f:selectItems value="#{paymentSchemeController.items}" 
                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                     <p:ajax process="@this pay" 
-                                            update=":#{p:component('pBillDetails')}   tblBillItem creditCard cheque slip" 
+                                            update=":#{p:component('pBillDetails')} :#{p:component('creditCompany')} :#{p:component('creditStaff')}  tblBillItem creditCard cheque slip" 
                                             event="change" 
                                             listener="#{billController.changeListener()}"/>
                                 </p:selectOneMenu>
@@ -344,10 +344,45 @@
                                             </p:autoComplete>
                                             <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
                                         </p:tab>
-                                        <p:tab title="Company" >
-                                            <p:autoComplete id="creditCom" forceSelection="true" value="#{billController.creditCompany}"  completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                                <f:ajax  event="itemSelect" listener="#{billController.calTotals()}" execute="@this" render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
-                                            </p:autoComplete>                                           
+                                        <p:tab title="Credit" >
+                                            <p:autoComplete id="creditCompany" 
+                                                            forceSelection="true" 
+                                                            value="#{billController.creditCompany}"  
+                                                            completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
+                                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                                <f:ajax  event="itemSelect" listener="#{billController.calTotals()}"
+                                                         execute="@this" 
+                                                         render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
+                                            </p:autoComplete>   
+                                            <p:autoComplete  style="width: 400px;" 
+                                                             forceSelection="true" 
+                                                             value="#{billController.toStaff}" 
+                                                             id="creditStaff"
+                                                             completeMethod="#{staffController.completeStaff}" 
+                                                             var="mys" 
+                                                             itemLabel="#{mys.person.nameWithTitle}" 
+                                                             itemValue="#{mys}"
+                                                             converter="stfcon" >
+                                                <p:column headerText="Name" >
+                                                    <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Annual Entitlement">
+                                                    <h:outputLabel value="#{mys.annualWelfareQualified}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column  headerText="Annual Utilized Value">
+                                                    <h:outputLabel value="#{mys.annualWelfareUtilized}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+
+                                                <p:ajax process="@this" 
+                                                        update="creditCompany :#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}"
+                                                        event="itemSelect"  listener="#{billController.calTotals()}" />
+
+                                            </p:autoComplete>
+                                            <p:watermark for="creditStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
                                         </p:tab>                                       
                                         <p:tab title="Staff">
                                             <p:autoComplete forceSelection="true" converter="stfcon" value="#{billController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">

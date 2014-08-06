@@ -22,6 +22,7 @@ import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.ServiceSessionBean;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -110,6 +111,7 @@ public class BillController implements Serializable {
     private Doctor referredBy;
     private Institution creditCompany;
     private Staff staff;
+    Staff toStaff;
     private double total;
     private double discount;
     private double netTotal;
@@ -301,8 +303,9 @@ public class BillController implements Serializable {
 
         String sql;
         Map temMap = new HashMap();
-        sql = "select b from Bill b "
+        sql = "select b from BilledBill b "
                 + " where b.billType = :billType "
+                + " and b.cancelled=false "
                 + " and b.retired=false "
                 + " and b.patientEncounter.paymentFinalized=false ";
 
@@ -507,10 +510,18 @@ public class BillController implements Serializable {
 
         saveBatchBill();
         saveBillItemSessions();
+        
+        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
+            staffBean.updateStaffCredit(toStaff, netTotal);
+            UtilityController.addSuccessMessage("User Credit Updated");
+        }
 
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
+    
+    @EJB
+    StaffBean staffBean;
 
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
@@ -597,6 +608,7 @@ public class BillController implements Serializable {
         temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
         temp.setStaff(staff);
+        temp.setToStaff(toStaff);
         temp.setReferredBy(referredBy);
         temp.setCreditCompany(creditCompany);
         temp.setComments(comment);
@@ -687,15 +699,24 @@ public class BillController implements Serializable {
         }
 
         if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
-            if (getCreditCompany() == null) {
-                UtilityController.addErrorMessage("Please Select Credit Company");
+            if (toStaff == null && creditCompany == null) {
+                UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
                 return true;
             }
-
+            if (toStaff != null && creditCompany != null) {
+                UtilityController.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
+                return true;
+            }
+            if (toStaff != null) {
+                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
+                    UtilityController.addErrorMessage("No enough walfare credit.");
+                    return true;
+                }
+            }
         }
 
-        if (getCreditCompany() != null && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque)) {
-            UtilityController.addErrorMessage("Please Select Payment Scheme with Credit or Cheque");
+        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque)) {
+            UtilityController.addErrorMessage("Check Payment method");
             return true;
         }
 
@@ -725,7 +746,7 @@ public class BillController implements Serializable {
 
     public void fillBillSessions(SelectEvent event) {
         System.out.println("event = " + event);
-        System.out.println("this = filling bill sessions" );
+        System.out.println("this = filling bill sessions");
         if (lastBillItem != null && lastBillItem.getItem() != null) {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             System.out.println("billSessions = " + billSessions);
@@ -829,6 +850,7 @@ public class BillController implements Serializable {
         setLstBillEntries(null);
         setLstBillFees(null);
         setStaff(null);
+        setToStaff(null);
         setComment(null);
         lstBillEntries = new ArrayList<>();
         setForeigner(false);
@@ -874,13 +896,19 @@ public class BillController implements Serializable {
             return;
         }
 
+        if (toStaff != null) {
+            paymentScheme = null;
+            creditCompany = null;
+
+        }
+
 //     //   System.out.println("calculating totals 222 " + paymentMethod);
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
         MembershipScheme membershipScheme = null;
 
-        if (getSearchedPatient() != null
+        if (toStaff != null && getSearchedPatient() != null
                 && getSearchedPatient().getPerson() != null) {
             membershipScheme = getSearchedPatient().getPerson().getMembershipScheme();
         }
@@ -1469,6 +1497,14 @@ public class BillController implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
     }
 
     /**
