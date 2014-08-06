@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -802,7 +803,7 @@ public class InwardReportControllerBht implements Serializable {
         }
 
     }
-    
+
     public void createTimedService() {
         HashMap hm = new HashMap();
         String sql = "SELECT i.item,"
@@ -857,16 +858,31 @@ public class InwardReportControllerBht implements Serializable {
 
     @EJB
     BillItemFacade billItemFacade;
-    
-   
+    @EJB
+    BillBeanController billBeanController;
+
     public void updateBillItem(BillItem billItem) {
         billItem.setNetValue((billItem.getGrossValue() + billItem.getMarginValue()) - billItem.getDiscount());
 
         billItemFacade.edit(billItem);
     }
-    
-    public void updatePatientBillItem(PatientItem patientItem){
-    
+
+    public void createBillFee(BillItem billItem) {
+        BillFee bf = new BillFee();
+        bf.setCreatedAt(billItem.getCreatedAt());
+        bf.setCreater(billItem.getCreater());
+        bf.setBill(billItem.getBill());
+        bf.setFeeGrossValue(billItem.getGrossValue());
+        bf.setFeeMargin(billItem.getMarginValue());
+        bf.setFeeDiscount(billItem.getDiscount());
+        bf.setFeeValue(billItem.getNetValue());
+        bf.setFee(billBeanController.getItemFee(billItem,FeeType.OwnInstitution));
+       
+        billFeeFacade.create(bf);
+    }
+
+    public void updatePatientBillItem(PatientItem patientItem) {
+
         patientItemFacade.edit(patientItem);
     }
 
@@ -1271,14 +1287,13 @@ public class InwardReportControllerBht implements Serializable {
         for (Object[] objs : results) {
 
             OpdService row = new OpdService();
-            
+
             row.setCategory((Category) objs[0]);
             row.setDiscount((Double) objs[1]);
             row.setMargin((Double) objs[2]);
             row.setGrossValue((Double) objs[3]);
             row.setNetValue((Double) objs[4]);
 
-            
             opdSrviceGross += row.getGrossValue();
             opdServiceMargin += row.getMargin();
             opdServiceDiscount += row.getDiscount();
@@ -1852,7 +1867,7 @@ public class InwardReportControllerBht implements Serializable {
     public void setPatientItemFacade(PatientItemFacade patientItemFacade) {
         this.patientItemFacade = patientItemFacade;
     }
-    
+
     public double getTotal() {
         return total;
     }
