@@ -897,9 +897,9 @@ public class BillController implements Serializable {
         }
 
         if (toStaff != null) {
+            System.err.println("Inside");
             paymentScheme = null;
             creditCompany = null;
-
         }
 
 //     //   System.out.println("calculating totals 222 " + paymentMethod);
