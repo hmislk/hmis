@@ -217,6 +217,9 @@
                                 <p:column>
                                     <p:commandButton ajax="false" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(bi)}"/>
                                 </p:column>
+                                <p:column>
+                                    <p:commandButton ajax="false" value="Create Bill Fee" action="#{inwardReportControllerBht.createBillFee(bi)}"/>
+                                </p:column>
                                 <p:column exportable="false" >
                                     <p:dataTable value="#{bi.billFees}" var="bf">
                                         <p:column>

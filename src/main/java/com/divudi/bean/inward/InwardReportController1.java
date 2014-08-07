@@ -1055,6 +1055,7 @@ public class InwardReportController1 implements Serializable {
         string1Value3 = new String2Value4();
         string1Value3.setString("Out Side Charges : ");
         string1Value3.setValue1(fetchOutSideFee());
+        string1Value3.setValue4(string1Value3.getValue1());
         inwardGross += string1Value3.getValue1();
         inwardNetValue += string1Value3.getValue1();
         inwardCharges.add(string1Value3);
@@ -1163,7 +1164,7 @@ public class InwardReportController1 implements Serializable {
             row.setMargin((double) objs[2]);
             row.setGrossValue((double) objs[3]);
             row.setNetValue((double) objs[4]);
-            System.err.println("objs[5] = " + objs[5]);
+//            System.err.println("objs[5] = " + objs[5]);
             try {
                 long billed = calFee(row.getCategory(), new BilledBill());
                 long cancel = calFee(row.getCategory(), new CancelledBill());

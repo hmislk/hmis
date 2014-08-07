@@ -15,6 +15,7 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -807,6 +808,19 @@ public class BillSearch implements Serializable {
 
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
+
+                if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+                    //   System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+                    //   System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+                    if (getBill().getToStaff() != null) {
+                        //   System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                        staffBean.updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
+                        UtilityController.addSuccessMessage("Staff Credit Updated");
+                        cb.setFromStaff(getBill().getToStaff());
+                        getBillFacade().edit(cb);
+                    }
+                }
+
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
@@ -819,6 +833,8 @@ public class BillSearch implements Serializable {
 
     }
 
+    @EJB
+    StaffBean staffBean;
     @EJB
     WebUserFacade webUserFacade;
 
