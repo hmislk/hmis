@@ -20,9 +20,9 @@
                     <p:panel  styleClass="tem nonPrintBlock" >
                         <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
                         <h:panelGrid columns="3" style="min-width: 100%;">
-                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.fromDate}" pattern="dd MMMM yyyy hh:mm a" >
+                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                             </p:calendar>
-                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.toDate}" pattern="dd MMMM yyyy hh:mm a" >
+                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                             </p:calendar>                          
                             <p:selectOneMenu styleClass="noPrintButton"  value="#{labReportSearchByInstitutionController.institution}"                                        
                                              requiredMessage="You must select a institution" >

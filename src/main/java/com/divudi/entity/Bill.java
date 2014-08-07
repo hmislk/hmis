@@ -310,6 +310,7 @@ public class Bill implements Serializable {
         creditCompany = bill.getCreditCompany();
         staff = bill.getStaff();
         toStaff = bill.getToStaff();
+        fromStaff=bill.getFromStaff();
         toDepartment = bill.getToDepartment();
         toInstitution = bill.getToInstitution();
         fromDepartment = bill.getFromDepartment();

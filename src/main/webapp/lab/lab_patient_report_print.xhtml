@@ -192,6 +192,7 @@
                                                     <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.transCssTop  lt 50 }" >
                                                         <tr >
                                                             <td style="min-width: 250px; vertical-align: top;">
+                                                                <br/>
                                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false"  />
                                                             </td>
                                                             <td>
@@ -241,7 +242,10 @@
                                             <table>
                                                 <tr>
                                                     <td colspan="2"  >
-                                                        <h:outputLabel value="Antibiotic Sensitivity Test" rendered="#{patientReportController.currentPatientReport.transHasAbst}" ></h:outputLabel>
+                                                        <h:outputLabel 
+                                                            value="Antibiotic Sensitivity Test"
+                                                            rendered="#{patientReportController.currentPatientReport.transHasAbst}"
+                                                            style="font-size: 120%!important;font-weight: bold;"></h:outputLabel>
                                                     </td>
                                                 </tr>
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
