@@ -80,18 +80,17 @@
                         <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"   />
                     </div>
 
-<!--                    <div class="consultPrinting">
+                    <div class="consultPrinting" style="position: absolute;bottom: 1%;left: 60%;">
                         
                         <h:outputLabel value="#{cc.attrs.bill.staff.person.name}"   />
-                    </div>-->
+                    </div>
 
                     <div class="itemsPrinting">
 
                         <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size: 100%!important;"     >
-                            <h:column>
-                                <h:outputLabel value="#{bip.paidForBillFee.bill.patientEncounter.bhtNo}"/>
+                            <h:column >
+                                <h:outputLabel value="#{bip.referanceBillItem.bill.insId}"/>
                             </h:column>
-                            
                             <h:column >
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  80%!important;"  />                                    
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}" style="margin: 4px;font-size:  80%!important;"   />                                                                                
@@ -103,25 +102,25 @@
                         <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip1" style="font-size:  11px!important;"  >
                             
                         </h:dataTable>
-                        
+                        <table>
+                            <tr>
+                                <td>
+                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}"  style="min-width: 30%;text-align: right;font-size: 100%!important;">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                     
                     <div class="totalsPrinting">
                         <table>
                             <tr>
-                                <td style="text-align: right!important; font-size: 15px!important; font-weight: bold;">
+                                <td style="min-width: 80%;text-align: left;font-size: 100%!important;">
                                     <h:outputLabel value="TOTAL"/>
                                 </td>
-                                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                                <td>
-                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;">
-                                        <f:convertNumber pattern="#,000.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>                      
-                            
+                            </tr>
                         </table>
-                            
                     </div>
                     
 

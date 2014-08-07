@@ -222,13 +222,14 @@ root {
 
 }
 
-.heading{
+.headingPrinting{
     text-align: center!important; 
     min-width: 90%!important; 
     /*padding: 5px!important;*/ 
     padding-top: 30%!important;
     margin: auto!important; 
     font-size: 13px!important;
+    font-weight: bold;
 }
 
 .headingBhtP{
@@ -350,7 +351,7 @@ root {
 
 }
 
-.billName{
+.billNamePrinting{
     position: absolute;
     left: 75%;
     top: 25%;
@@ -395,6 +396,7 @@ root {
 }
 
 .consultPrinting{
+    text-decoration: overline;
     position: absolute;
     left: 36%;
     top: 17.8%;
@@ -419,6 +421,7 @@ root {
 
 .itemsPrinting{
     
+    font-size: 11px;
     position: absolute;
     left: 12%;
     top: 37%;

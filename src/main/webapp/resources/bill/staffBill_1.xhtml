@@ -27,7 +27,7 @@
 
                 <div class="fiveinchbill" >
 
-                    <div class="billName" style=" position: absolute;left: 40%;top: 30%;">
+                    <div class="headingPrinting">
                         <h:outputLabel value="PAYMENT VOUCHER"   />                           
                     </div>
 
@@ -81,7 +81,7 @@
 
 
 
-                        <p:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size: 100%!important;border:none!important; padding: 10px!important;margin: 15px!important;" rowIndexVar="i" styleClass="borderless myTable"    >
+                        <p:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size: 100%!important;border:none!important; padding: 10px!important;margin: 15px!important;" rowIndexVar="i" styleClass="noBorder"    >
 
                             <p:column  >
 
@@ -146,7 +146,7 @@
                         <table style="min-width: 80%;padding-left: 30px;">
                             <tr>
                                 <td style="min-width: 80%;text-align: left;font-size: 120%;">
-                                    <h:outputLabel value="Total" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;"/>
+                                    <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;"/>
                                 </td>
                                 <td style="min-width: 30%;text-align: right;font-size: 120%;">
                                     <h:outputLabel value="#{-cc.attrs.bill.netTotal}"  style="text-align: right!important;  font-size: 15px!important; font-weight: bold;">
@@ -155,20 +155,22 @@
                                 </td>
                             </tr>
                         </table>
+                        
+                        <p:spacer height="30px;"></p:spacer>
 
                         <div>
                             <table style="padding-left: 30px;">
                                 <tr>
                                     <td style="min-width: 5cm;text-align: left;">
-                                        <h:outputLabel value=".................."  /><br/>
-                                        <h:outputLabel style="font-size: 80%;" value="Cashier : #{cc.attrs.bill.creater.code}"   />
+                                        
+                                        <h:outputLabel style="font-size: 11px; text-decoration: overline;" value="Cashier : #{cc.attrs.bill.creater.code}"   />
                                     </td>
                                     <td>
                                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                     </td>
                                     <td>
-                                        <h:outputLabel value="......................"  /><br/>
-                                        <h:outputLabel style="font-size: 80%;"  value="#{cc.attrs.bill.staff.person.name}"   />
+                                        
+                                        <h:outputLabel value="#{cc.attrs.bill.staff.person.name}"  style="font-size: 11px; text-decoration:overline;"/>
                                     </td>
                                 </tr>
                             </table>
