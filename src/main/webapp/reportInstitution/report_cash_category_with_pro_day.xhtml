@@ -55,6 +55,27 @@
             </p:panel>
             <!--            <p:spacer height="30" />-->
 
+            
+            
+            
+            <p:dataTable id="opd1" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" >
+                <p:column >
+                    #{sr.categoryName}
+                </p:column>
+                <p:column >
+                    #{sr.itemName}
+                </p:column>
+                <p:column >
+                    #{sr.hosFee}
+                </p:column>
+                <p:column >
+                    #{sr.proFee}
+                </p:column>
+                <p:column >
+                    #{sr.total}
+                </p:column>
+            </p:dataTable>
+            
             <p:dataTable id="opd"  value="#{bookKeepingSummery.opdList}" var="d" 
                          rendered="#{bookKeepingSummery.opdList.size()>0}">                   
                 <f:facet name="header">
