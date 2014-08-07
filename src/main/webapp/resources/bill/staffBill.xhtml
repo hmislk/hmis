@@ -88,10 +88,7 @@
                     <div class="itemsPrinting">
 
                         <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size: 100%!important;"     >
-                            <h:column>
-                                <h:outputLabel value="#{bip.paidForBillFee.bill.patientEncounter.bhtNo}"/>
-                            </h:column>
-                            
+                                                        
                             <h:column >
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  80%!important;"  />                                    
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}" style="margin: 4px;font-size:  80%!important;"   />                                                                                
@@ -99,10 +96,16 @@
 
                         </h:dataTable>
                     </div>
+
                     <div class="ratesPrinting" >
                         <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip1" style="font-size:  11px!important;"  >
-                            
+                            <h:column>
+                                <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px;" >
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                            </h:column>
                         </h:dataTable>
+                        
                         
                     </div>
                     
