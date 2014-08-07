@@ -385,9 +385,9 @@ root {
 
 }
 
-.pgsign{
+.pgsignPrinting{
     position: absolute;
-    bottom: 1%;
+    bottom: 3%;
     left: 10%;
     text-decoration: overline; 
     margin-left: 70%; 
