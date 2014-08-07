@@ -35,7 +35,7 @@ import javax.persistence.Transient;
 @Entity
 public class BillItem implements Serializable {
 
-    @OneToOne(mappedBy = "billItem", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY)
     BillSession billSession;
 
     @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)

@@ -611,7 +611,7 @@
                                                         </h:outputLabel>
                                                         <h:panelGroup rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id and bip.billItem.billSession ne null }"  >
                                                             <br/>
-                                                            <h:panelGroup rendered="#{bip.billItem.item.sessionNumberType eq null}">
+                                                            <h:panelGroup rendered="#{bip.billItem.item.sessionNumberType ne null}">
                                                                 <h:outputLabel value="Session No . " ></h:outputLabel>
                                                                 <h:outputLabel value="#{bip.billItem.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
                                                                 </h:outputLabel>
