@@ -305,6 +305,35 @@ public class SearchController implements Serializable {
 
     }
 
+    double netTotalValue;
+    
+    public void createPharmacyStaffBill() {
+
+        Map m = new HashMap();
+        m.put("bt", BillType.PharmacyPre);
+        //   m.put("class", PreBill.class);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("ins", getSessionController().getInstitution());
+        String sql;
+
+        sql = "Select b from PreBill b where "
+                + " b.createdAt between :fd and :td "
+                + " and b.billType=:bt"
+                + " and b.billedBill is null "
+                + " and b.institution=:ins "
+                + " and b.toStaff is not null "
+                + " order by b.createdAt ";
+//    
+        //     //System.out.println("sql = " + sql);
+        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        netTotalValue=0.0;
+        for(Bill b: bills){
+            netTotalValue+=b.getNetTotal();
+        }
+    }
+
     public void createPharmacyTableRe() {
 
         Map m = new HashMap();
@@ -433,7 +462,7 @@ public class SearchController implements Serializable {
     public void createPharmacyTableBht() {
         createTableBht(BillType.PharmacyBhtPre);
     }
-    
+
     public void createStoreTableIssue() {
         createTableBht(BillType.StoreIssue);
     }
@@ -924,7 +953,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createPharmacyBillItemTableIssue() {
         createBillItemTableBht(BillType.StoreIssue);
     }
@@ -2595,7 +2624,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createInwardFinalBillsCheck() {
 
         String sql;
@@ -2771,7 +2800,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createInwardRefundBills() {
 
         String sql;
@@ -3256,6 +3285,14 @@ public class SearchController implements Serializable {
 
     public void setCancellingIssueBill(Bill cancellingIssueBill) {
         this.cancellingIssueBill = cancellingIssueBill;
+    }
+
+    public double getNetTotalValue() {
+        return netTotalValue;
+    }
+
+    public void setNetTotalValue(double netTotalValue) {
+        this.netTotalValue = netTotalValue;
     }
 
 }
