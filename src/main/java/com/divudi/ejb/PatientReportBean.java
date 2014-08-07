@@ -273,12 +273,12 @@ public class PatientReportBean {
                     }
                 }
             }
-            if (val != null) {
-                if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
-                    ptReport.getPatientReportItemValues().add(val);
-                    //System.err.println("sss: " + val);
-                }
-            }
+//            if (val != null) {
+//                if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+//                    ptReport.getPatientReportItemValues().add(val);
+//                    //System.err.println("sss: " + val);
+//                }
+//            }
         }
 
         //Add Antibiotics
