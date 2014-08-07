@@ -19,9 +19,9 @@
                 <h:form>
                     <p:panel  styleClass="tem nonPrintBlock"  >
                         <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
-                        <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.fromDate}" pattern="dd MMMM yyyy hh:mm a" >
+                        <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                         </p:calendar>
-                        <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.toDate}" pattern="dd MMMM yyyy hh:mm a" >
+                        <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                         </p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="Department" style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
                         <p:autoComplete styleClass="noPrintButton"  value="#{labReportSearchByDepartmentController.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >

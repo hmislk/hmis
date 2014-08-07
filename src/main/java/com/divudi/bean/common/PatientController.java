@@ -242,7 +242,7 @@ public class PatientController implements Serializable {
                 + "order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         //System.out.println(sql);
-        patientList = getFacade().findBySQL(sql, hm, 50);
+        patientList = getFacade().findBySQL(sql, hm, 20);
         
         return patientList;
 

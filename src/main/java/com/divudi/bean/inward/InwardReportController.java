@@ -94,7 +94,7 @@ public class InwardReportController implements Serializable {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
-                + " and b.discharged=false "
+//                + " and b.discharged=false "
                 + " and b.paymentFinalized=false "
                 + " and b.dateOfAdmission between :fd and :td ";
 

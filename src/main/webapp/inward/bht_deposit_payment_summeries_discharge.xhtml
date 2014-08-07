@@ -109,7 +109,14 @@
                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-
+                                <p:column headerText="Date Of Discharge">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Discharge"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.patientEncounter.dateOfDischarge}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Amount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Amount"/>
@@ -177,7 +184,14 @@
                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-
+                                <p:column headerText="Date Of Discharge">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Discharge"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{can.patientEncounter.dateOfDischarge}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
 
                                 <p:column headerText="Amount">
                                     <f:facet name="header">
@@ -249,7 +263,14 @@
                                     </h:outputLabel>
                                 </p:column>
 
-
+                                <p:column headerText="Date Of Discharge">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Discharge"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{ref.patientEncounter.dateOfDischarge}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
 
                                 <p:column headerText="Amount">
                                     <f:facet name="header">

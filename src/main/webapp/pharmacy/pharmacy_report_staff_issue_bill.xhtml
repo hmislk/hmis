@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Detailed Transfer Listing (Do not consider receieve) - By Bills" >
+
+                        <h:panelGrid columns="8" >
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{searchController.fromDate}" pattern="dd MM yyyy HH:mm:ss" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{searchController.toDate}" pattern="dd MM yyyy HH:mm:ss" ></p:calendar>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Fill" action="#{searchController.createPharmacyStaffBill()}" ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{searchController.bills}" var="i"  >
+                                <f:facet name="header">
+                                    <h:panelGrid columns="4">
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{searchController.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{searchController.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </f:facet>
+
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.deptId}" ></h:outputLabel>                                    
+                                </p:column>
+
+                                <p:column headerText="Cancelled No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cancelled No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.cancelledBill.deptId}" ></h:outputLabel>                                    
+                                </p:column>
+
+                                <p:column headerText="Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.createdAt}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Staff Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff Name"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.toStaff.person.nameWithTitle}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Remarks"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column colspan="2" footerText="Totals">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Totals" ></h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;"  footerText="#{searchController.netTotalValue}" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{searchController.netTotalValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

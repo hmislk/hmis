@@ -868,66 +868,65 @@ public class BillBeanController implements Serializable {
         return tmp;
 
     }
-    
-    public List<Object[]> fetchBilledDepartmentItemCalTotal(Date fromDate, Date toDate,Department department) {
+
+    public List<Object[]> fetchBilledDepartmentItemCalTotal(Date fromDate, Date toDate, Department department) {
         String sql;
         Map temMap = new HashMap();
 
         sql = "select bf.toDepartment,sum(bf.netTotal) "
                 + " FROM Bill bf "
-                + " where bf.department=:ins "              
-                + " and  bf.billType= :bTp  "              
-                + " and  bf.createdAt between :fromDate and :toDate ";              
-                
+                + " where bf.department=:ins "
+                + " and  bf.billType= :bTp  "
+                + " and  bf.createdAt between :fromDate and :toDate ";
+
         temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);    
-        temMap.put("ins",department);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", department);
         temMap.put("bTp", BillType.PharmacyIssue);
-       
+
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    public List<Object[]> fetchBilledDepartmentItem(Date fromDate, Date toDate,Department department) {
+
+    public List<Object[]> fetchBilledDepartmentItem(Date fromDate, Date toDate, Department department) {
         String sql;
         Map temMap = new HashMap();
 
         sql = "select bf.toDepartment,sum(bf.netTotal) "
                 + " FROM Bill bf "
-                + " where bf.department=:ins "              
-                + " and  bf.billType= :bTp  "              
-                + " and  bf.createdAt between :fromDate and :toDate "              
+                + " where bf.department=:ins "
+                + " and  bf.billType= :bTp  "
+                + " and  bf.createdAt between :fromDate and :toDate "
                 + " group by bf.toDepartment"
                 + " order by bf.toDepartment.name  ";
         temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);    
-        temMap.put("ins",department);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", department);
         temMap.put("bTp", BillType.PharmacyIssue);
-       
+
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    public double calNetTotalBilledDepartmentItem(Date fromDate, Date toDate,Department department) {
+
+    public double calNetTotalBilledDepartmentItem(Date fromDate, Date toDate, Department department) {
         String sql;
         Map temMap = new HashMap();
 
         sql = "select bf.toDepartment,sum(bf.netTotal) "
                 + " FROM Bill bf "
-                + " where bf.department=:ins "              
-                + " and  bf.billType= :bTp  "              
-                + " and  bf.createdAt between :fromDate and :toDate "              
+                + " where bf.department=:ins "
+                + " and  bf.billType= :bTp  "
+                + " and  bf.createdAt between :fromDate and :toDate "
                 + " group by bf.toDepartment"
                 + " order by bf.toDepartment.name  ";
         temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);    
-        temMap.put("ins",department);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", department);
         temMap.put("bTp", BillType.PharmacyIssue);
-       
+
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
 
     public List<Object[]> fetchBilledOpdItem(Category d, FeeType feeType, Date fromDate, Date toDate, Institution institution) {
         String sql;
@@ -1319,6 +1318,19 @@ public class BillBeanController implements Serializable {
         return getItemFeeFacade().findBySQL(sql, hm);
     }
 
+    public ItemFee getItemFee(BillItem billItem, FeeType feeType) {
+
+        String sql;
+        sql = "Select f from ItemFee f"
+                + " where f.retired=false "
+                + " and f.item=:itm"
+                + " and f.feeType=:ftp";
+        HashMap hm = new HashMap();
+        hm.put("itm", billItem.getItem());
+        hm.put("ftp", feeType);
+        return getItemFeeFacade().findFirstBySQL(sql, hm);
+    }
+
 //    public Fee getFee(FeeType feeType) {
 //        HashMap hm = new HashMap();
 //        String sql = "Select f from Fee f where f.retired=false and f.FeeType=:nm";
@@ -1430,7 +1442,7 @@ public class BillBeanController implements Serializable {
         if (paymentMethod.equals(PaymentMethod.Slip)) {
             b.setBank(paymentMethodData.getSlip().getInstitution());
             b.setChequeDate(paymentMethodData.getSlip().getDate());
-         //   b.setComments(paymentMethodData.getSlip().getComment());
+            //   b.setComments(paymentMethodData.getSlip().getComment());
         }
 
         if (paymentMethod.equals(PaymentMethod.Card)) {
