@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.SessionNumberType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
@@ -251,10 +252,10 @@ public class ServiceSessionFunctions {
         String s;
         s = "select count(b.bill) "
                 + " from BillSession b "
-                + " where b.item=:item"
+                + " where b.item.sessionNumberType=:stp"
                 + " and b.sessionDate=:sd ";
         Map m = new HashMap();
-        m.put("item", i);
+        m.put("stp", SessionNumberType.ByBill);
         m.put("sd", d);
         return getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
     }
