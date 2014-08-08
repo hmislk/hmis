@@ -530,13 +530,14 @@ public class BookKeepingSummery implements Serializable {
         double hf = 0;
         bookKeepingSummeryRow sr = null;
 
-        
-        
         for (Object[] r : lobjs) {
-            System.out.println("Category = " + r[0].toString());
-            System.out.println("Name = " + r[1].toString());
-            System.out.println("Fee Type = " + r[4].toString());
-            
+            System.out.println("Category Name = " + r[0].toString());
+            System.out.println("Item Name  = " + r[1].toString());
+            System.out.println("Count  = " + r[2].toString());
+            System.out.println("Fee Value = " + r[3].toString());            
+            if (r[4] != null) {
+                System.out.println("Fee Type = " + r[4].toString());
+            }
 
             if (pre == null) {
                 //First Time in the Loop
@@ -547,13 +548,17 @@ public class BookKeepingSummery implements Serializable {
                 sr.setSerialNo(n);
                 t.add(sr);
                 System.out.println("First time cat row added.");
-                System.out.println("n = " + n); n++;
+                System.out.println("n = " + n);
+                n++;
 
                 sr = new bookKeepingSummeryRow();
                 sr.setSerialNo(n);
                 sr.setCategoryName(r[0].toString());
                 sr.setItemName(r[1].toString());
-                FeeType ft = (FeeType) r[4];
+                FeeType ft = null;
+                if (r[4] != null) {
+                    ft = (FeeType) r[4];
+                }
                 if (ft == FeeType.Staff) {
                     sr.setProFee(Double.valueOf(r[3].toString()));
                     sf += Double.valueOf(r[3].toString());
@@ -561,10 +566,10 @@ public class BookKeepingSummery implements Serializable {
                     sr.setHosFee(Double.valueOf(r[3].toString()));
                     hf += Double.valueOf(r[3].toString());
                 }
-                sr.setTotal(sf+hf);
+                sr.setTotal(sf + hf);
                 t.add(sr);
                 pre = sr;
-                
+
             } else if (!pre.getCategoryName().equals(r[0].toString())) {
                 //Create Total Row
                 System.out.println("different cat");
@@ -577,7 +582,8 @@ public class BookKeepingSummery implements Serializable {
                 sr.setTotal(hf + sf);
                 t.add(sr);
                 System.out.println("previous tot row added - " + sr.getCategoryName());
-                System.out.println("n = " + n); n++;
+                System.out.println("n = " + n);
+                n++;
 
                 hf = 0.0;
                 sf = 0.0;
@@ -588,7 +594,8 @@ public class BookKeepingSummery implements Serializable {
                 sr.setSerialNo(n);
                 t.add(sr);
                 System.out.println("cat title added - " + sr.getCategoryName());
-                System.out.println("n = " + n); n++;
+                System.out.println("n = " + n);
+                n++;
 
                 sr = new bookKeepingSummeryRow();
                 sr.setSerialNo(n);
@@ -640,7 +647,8 @@ public class BookKeepingSummery implements Serializable {
                 }
 
             }
-            System.out.println("n = " + n); n++;
+            System.out.println("n = " + n);
+            n++;
         }
         bookKeepingSummeryRows.addAll(t);
     }
@@ -1169,7 +1177,6 @@ public class BookKeepingSummery implements Serializable {
 //            UtilityController.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
-
         createOPdListWithProDayEndTable();
 //        createOPdListWithProDayEndTableOld();
         createOutSideFeeWithPro();
@@ -1179,7 +1186,7 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, fromDate, toDate, institution);
         createDoctorPaymentOpd();
         createDoctorPaymentInward();
-        ///////////////////
+        /////////////////
         opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution());
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);

@@ -80,11 +80,16 @@
                     <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
                 </p:column>
                 <p:column  headerText="Total Fee"  styleClass="numberCol" >
-                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
-                    <p:outputLabel value="#{sr.total}" rendered="#{!sr.catRow}" >
+                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" />
+                    <p:outputLabel value="#{sr.hosFee+sr.proFee}" rendered="#{!sr.catRow}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </p:outputLabel>
                     <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
+                            <f:convertNumber pattern="#,000.00"/>
+                        </h:outputLabel>
+                    </f:facet>
                 </p:column>
             </p:dataTable>
 
