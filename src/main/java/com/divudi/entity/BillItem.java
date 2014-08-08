@@ -63,6 +63,8 @@ public class BillItem implements Serializable {
     Item item;
     @ManyToOne
     Bill bill;
+    @ManyToOne
+    Bill expenseBill;
     Boolean refunded;
     //Created Properties
     @ManyToOne
@@ -147,8 +149,8 @@ public class BillItem implements Serializable {
         agentRefNo = billItem.getAgentRefNo();
         item = billItem.getItem();
         qty = billItem.getQty();
-        descreption=billItem.getDescreption();
-        billTime=billItem.getBillTime();
+        descreption = billItem.getDescreption();
+        billTime = billItem.getBillTime();
         grossValue = billItem.getGrossValue();
         netValue = billItem.getNetValue();
         discount = billItem.getDiscount();
@@ -160,7 +162,7 @@ public class BillItem implements Serializable {
         tmpQty = billItem.tmpQty;
         referenceBill = billItem.getReferenceBill();
         marginValue = billItem.getMarginValue();
-        priceMatrix=billItem.getPriceMatrix();
+        priceMatrix = billItem.getPriceMatrix();
         //  referanceBillItem=billItem.getReferanceBillItem();
     }
 
@@ -621,4 +623,14 @@ public class BillItem implements Serializable {
         this.billTime = billTime;
     }
 
+    public Bill getExpenseBill() {
+        return expenseBill;
+    }
+
+    public void setExpenseBill(Bill expenseBill) {
+        this.expenseBill = expenseBill;
+    }
+
+    
+    
 }

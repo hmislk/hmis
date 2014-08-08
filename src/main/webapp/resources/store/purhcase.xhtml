@@ -65,7 +65,7 @@
 
             <div >
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" >
-                   
+
                     <p:column>
                         <f:facet name="header">Item</f:facet>
                             #{bip.item.name}
@@ -76,12 +76,12 @@
                             <f:convertDateTime pattern="dd MM yyyy"/>
                         </h:outputLabel>
                     </p:column>                                 
-                 
+
                     <p:column>
                         <f:facet name="header">Rcv QTY</f:facet>
                             #{bip.pharmaceuticalBillItem.qty}
                     </p:column>
-           
+
                     <p:column>
                         <f:facet name="header">Fr QTY</f:facet>
                             #{bip.pharmaceuticalBillItem.freeQty}
@@ -111,6 +111,23 @@
                         </h:outputLabel>
                     </p:column>
                     <p:columnGroup type="footer">
+                        <p:row >
+                            <p:dataTable id="tblExpenses" 
+                                         value="#{cc.attrs.bill.billExpenses}" var="be"
+                                         emptyMessage="No Bill Expenses" >
+                                <p:column headerText="Expense" >
+                                    <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Value" >
+                                    <h:outputLabel value="#{be.netValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Descreption" >
+                                    <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </p:row>
                         <p:row>
                             <p:column colspan="7" footerText="Total"/>
                             <p:column footerText="#{0-cc.attrs.bill.total}">
