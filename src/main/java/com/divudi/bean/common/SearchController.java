@@ -310,19 +310,20 @@ public class SearchController implements Serializable {
     public void createPharmacyStaffBill() {
 
         Map m = new HashMap();
-        m.put("bt", BillType.PharmacyPre);
+        m.put("bt", BillType.PharmacySale);
         //   m.put("class", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
         String sql;
 
-        sql = "Select b from PreBill b where "
+        sql = "Select b from Bill b where "
                 + " b.createdAt between :fd and :td "
                 + " and b.billType=:bt"
-                + " and b.billedBill is null "
+//                + " and b.billedBill is null "
                 + " and b.institution=:ins "
-                + " and b.toStaff is not null "
+                + " and (b.toStaff is not null "
+                + " or b.fromStaff is not null) "
                 + " order by b.createdAt ";
 //    
         //     //System.out.println("sql = " + sql);

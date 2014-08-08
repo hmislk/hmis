@@ -12,10 +12,10 @@
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                 <h:panelGrid columns="8" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm a"  >
+                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a"  >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm a" >
+                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
                     </p:calendar>
                     <h:outputLabel value="Department"/>
                     <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
@@ -53,11 +53,11 @@
                     <h:outputLabel value=" DEPARTMENT SALE REPORT DETAIL"/>                   
                     <h:outputLabel value="From Date :  "/>
                     <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy hh mm a" />
+                        <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
                     </h:outputLabel>
                     <h:outputLabel value="To Date"/>
                     <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
-                        <f:convertDateTime pattern="dd MMMM hh mm a" />
+                        <f:convertDateTime pattern="dd MMMM hh mm ss a" />
                     </h:outputLabel>                       
                 </h:panelGrid>
 
@@ -67,11 +67,11 @@
                         <h:outputLabel value="BILLED"/><br/>
                         <h:outputLabel value=" From "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy hh mm a" />
+                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
                         </h:outputLabel>
                         <h:outputLabel value=" To "/>
                         <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy hh mm a" />
+                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
                         </h:outputLabel>
                     </f:facet>
 
@@ -123,7 +123,7 @@
                         </p:column>
                         <p:column>
                             <h:outputLabel value="#{b.createdAt}">
-                                <f:convertDateTime pattern="hh mm a" />
+                                <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>
 
@@ -255,7 +255,7 @@
                         </p:column>
                         <p:column>
                             <h:outputLabel value="#{b.createdAt}">
-                                <f:convertDateTime pattern="hh mm a" />
+                                <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>                        
                         <p:column>
@@ -386,7 +386,7 @@
                         </p:column>
                         <p:column>
                             <h:outputLabel value="#{b.createdAt}">
-                                <f:convertDateTime pattern="hh mm a" />
+                                <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>                        
                         <p:column>

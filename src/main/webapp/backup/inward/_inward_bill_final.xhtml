@@ -71,10 +71,10 @@
                         </h:panelGroup>
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Printing Admission Time"/>
-                            <p:calendar value="#{bhtSummeryController.patientEncounter.printingAdmissionTime}" pattern="dd MMMM yyyy hh mm a" >                               
+                            <p:calendar value="#{bhtSummeryController.patientEncounter.printingAdmissionTime}" pattern="dd MMMM yyyy hh mm ss a" >                               
                             </p:calendar>     
                             <h:outputLabel value="Printing Discharge Time"/>
-                            <p:calendar value="#{bhtSummeryController.patientEncounter.printingDischargeTime}" pattern="dd MMMM yyyy hh mm a" >                               
+                            <p:calendar value="#{bhtSummeryController.patientEncounter.printingDischargeTime}" pattern="dd MMMM yyyy hh mm ss a" >                               
                             </p:calendar>    
                         </h:panelGrid>
                     </h:panelGrid>
@@ -145,12 +145,12 @@
                                 <p:column headerText="AdmittedAt">
                                     <p:calendar navigator="true"  
                                                 value="#{b.printAdmittedAt}" 
-                                                pattern="dd MMMM yyyy hh mm a" />     
+                                                pattern="dd MMMM yyyy hh mm ss a" />     
                                 </p:column>
                                 <p:column headerText="DischargeAt" >                                      
                                     <p:calendar navigator="true"  
                                                 value="#{b.printDischargeAt}" 
-                                                pattern="dd MMMM yyyy hh mm a" /> 
+                                                pattern="dd MMMM yyyy hh mm ss a" /> 
                                 </p:column>                   
                             </p:dataTable>
                         </p:tab>
