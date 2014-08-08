@@ -497,7 +497,7 @@ public class BookKeepingSummery implements Serializable {
         Map temMap = new HashMap();
         bookKeepingSummeryRows = new ArrayList<>();
 
-        Set t = new HashSet();
+        List t = new ArrayList();
 
         String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
@@ -509,7 +509,7 @@ public class BookKeepingSummery implements Serializable {
                 + " or  bi.bill.paymentMethod = :pm2 "
                 + " or  bi.bill.paymentMethod = :pm3 "
                 + " or  bi.bill.paymentMethod = :pm4)"
-                + " group by i.name, c.name, bf.fee.feeType "
+                + " group by c.name, i.name,  bf.fee.feeType "
                 + " order by c.name, i.name, bf.fee.feeType";
 
         temMap.put("toDate", toDate);
@@ -525,14 +525,19 @@ public class BookKeepingSummery implements Serializable {
 
         bookKeepingSummeryRow pre = null;
         int n = 0;
+
+        double sf = 0;
+        double hf = 0;
+        bookKeepingSummeryRow sr = null;
+
         
-        double sf=0;
-        double hf=0;
-                    bookKeepingSummeryRow sr=null;
         
         for (Object[] r : lobjs) {
-            System.out.println("r = " + r);
+            System.out.println("Category = " + r[0].toString());
+            System.out.println("Name = " + r[1].toString());
+            System.out.println("Fee Type = " + r[4].toString());
             
+
             if (pre == null) {
                 //First Time in the Loop
                 System.out.println("first row  ");
@@ -541,8 +546,9 @@ public class BookKeepingSummery implements Serializable {
                 sr.setCategoryName(r[0].toString());
                 sr.setSerialNo(n);
                 t.add(sr);
-                n++;
-                
+                System.out.println("First time cat row added.");
+                System.out.println("n = " + n); n++;
+
                 sr = new bookKeepingSummeryRow();
                 sr.setSerialNo(n);
                 sr.setCategoryName(r[0].toString());
@@ -550,13 +556,15 @@ public class BookKeepingSummery implements Serializable {
                 FeeType ft = (FeeType) r[4];
                 if (ft == FeeType.Staff) {
                     sr.setProFee(Double.valueOf(r[3].toString()));
-                    sf+=Double.valueOf(r[3].toString());
+                    sf += Double.valueOf(r[3].toString());
                 } else {
                     sr.setHosFee(Double.valueOf(r[3].toString()));
-                    hf+=Double.valueOf(r[3].toString());
+                    hf += Double.valueOf(r[3].toString());
                 }
+                sr.setTotal(sf+hf);
                 t.add(sr);
-                pre=sr;
+                pre = sr;
+                
             } else if (!pre.getCategoryName().equals(r[0].toString())) {
                 //Create Total Row
                 System.out.println("different cat");
@@ -566,18 +574,22 @@ public class BookKeepingSummery implements Serializable {
                 sr.setSerialNo(n);
                 sr.setHosFee(hf);
                 sr.setProFee(sf);
-                sr.setTotal(hf+sf);
-                n++;
-                
-                hf=0.0;
-                sf=0.0;
-                
+                sr.setTotal(hf + sf);
+                t.add(sr);
+                System.out.println("previous tot row added - " + sr.getCategoryName());
+                System.out.println("n = " + n); n++;
+
+                hf = 0.0;
+                sf = 0.0;
+
                 sr = new bookKeepingSummeryRow();
                 sr.setCatRow(true);
                 sr.setCategoryName(r[0].toString());
                 sr.setSerialNo(n);
-                n++;
-                
+                t.add(sr);
+                System.out.println("cat title added - " + sr.getCategoryName());
+                System.out.println("n = " + n); n++;
+
                 sr = new bookKeepingSummeryRow();
                 sr.setSerialNo(n);
                 sr.setCategoryName(r[0].toString());
@@ -585,13 +597,15 @@ public class BookKeepingSummery implements Serializable {
                 FeeType ft = (FeeType) r[4];
                 if (ft == FeeType.Staff) {
                     sr.setProFee(Double.valueOf(r[3].toString()));
-                    sf+=Double.valueOf(r[3].toString());
+                    sf += Double.valueOf(r[3].toString());
                 } else {
                     sr.setHosFee(Double.valueOf(r[3].toString()));
-                    hf+=Double.valueOf(r[3].toString());
+                    hf += Double.valueOf(r[3].toString());
                 }
+                sr.setTotal(hf + sf);
                 t.add(sr);
-                pre=sr;
+                System.out.println("item row added - " + sr.getItemName());
+                pre = sr;
 
             } else {
                 System.out.println("same cat");
@@ -600,10 +614,10 @@ public class BookKeepingSummery implements Serializable {
                     FeeType ft = (FeeType) r[4];
                     if (ft == FeeType.Staff) {
                         pre.setProFee(pre.getProFee() + Double.valueOf(r[3].toString()));
-                        sf+=Double.valueOf(r[3].toString());
+                        sf += Double.valueOf(r[3].toString());
                     } else {
                         pre.setHosFee(pre.getHosFee() + Double.valueOf(r[3].toString()));
-                        hf+=Double.valueOf(r[3].toString());
+                        hf += Double.valueOf(r[3].toString());
                     }
 
                 } else {
@@ -615,17 +629,18 @@ public class BookKeepingSummery implements Serializable {
                     FeeType ft = (FeeType) r[4];
                     if (ft == FeeType.Staff) {
                         sr.setProFee(Double.valueOf(r[3].toString()));
-                        sf+=Double.valueOf(r[3].toString());
+                        sf += Double.valueOf(r[3].toString());
                     } else {
                         sr.setHosFee(Double.valueOf(r[3].toString()));
-                        hf+=Double.valueOf(r[3].toString());
+                        hf += Double.valueOf(r[3].toString());
                     }
+                    sr.setTotal(hf + sf);
                     t.add(sr);
-                    pre=sr;
+                    pre = sr;
                 }
 
             }
-            n++;
+            System.out.println("n = " + n); n++;
         }
         bookKeepingSummeryRows.addAll(t);
     }
