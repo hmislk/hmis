@@ -12,11 +12,13 @@
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCreation')}" >
                 You are NOT authorized
             </h:panelGroup>
+            <p:defaultCommand target="btnSupAdd" ></p:defaultCommand>
             <p:panel rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" >
                 <f:facet name="header">
 
                     <p:outputLabel value="Purchase order Request Order"/>
-                    <p:commandButton ajax="false" value="Request" action="#{storePurchaseOrderRequestController.request}"/>
+                    <p:commandButton ajax="false" value="Request" 
+                                     action="#{storePurchaseOrderRequestController.request}"/>
                     <p:commandButton ajax="false"  value="New Order"  action="#{storePurchaseOrderRequestController.recreate}"/>
                 </f:facet>
                 <h:panelGrid columns="4">
@@ -50,7 +52,11 @@
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem itemList tot" />
+                        <p:commandButton id="btnSupAdd"
+                            value="Add Item" 
+                            action="#{storePurchaseOrderRequestController.addItem}" 
+                            process="exDItem @this" 
+                            update="exDItem itemList tot" />
 
                     </p:panel>
 
@@ -69,7 +75,10 @@
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exItem @this" update="exItem itemList tot" />
+                        <p:commandButton value="Add Item" 
+                                         action="#{storePurchaseOrderRequestController.addItem}" 
+                                         process="exItem @this" 
+                                         update="exItem itemList tot" />
 
                     </p:panel>
                     <h:panelGrid columns="1" style="min-width: 100%;">
