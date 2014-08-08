@@ -388,7 +388,7 @@ root {
 .pgsignPrinting{
     position: absolute;
     bottom: 3%;
-    left: 10%;
+    left: 0%;
     text-decoration: overline; 
     margin-left: 70%; 
     font-size: 12px;
@@ -396,7 +396,6 @@ root {
 }
 
 .consultPrinting{
-    text-decoration: overline;
     position: absolute;
     left: 36%;
     top: 17.8%;

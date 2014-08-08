@@ -38,7 +38,7 @@
                                     <div class="fiveinchbill" style="font-size: 130%;">
                                         <div  >
 
-                                            <div class="billName" style=" position: absolute;left: 25%;top: 30%;font-weight: bold;">
+                                            <div class="billNamePrinting" style=" position: absolute;left: 25%;top: 30%;font-weight: bold;">
                                                 <h:outputLabel value="AGENT PAYMENT RECIEVE"   />                           
                                             </div>
                                             
@@ -47,7 +47,7 @@
                                                  <h:outputLabel value="(#{cc.attrs.bill.fromInstitution.institutionCode})"   />   
                                             </div>
 
-                                            <div class="receiptno" >                                                  
+                                            <div class="receiptnoPrinting" >                                                  
                                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
                                                                rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/> 
                                                 <h:outputLabel value="#{cc.attrs.bill.insId}" 
@@ -56,7 +56,7 @@
                                                                rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" />
                                             </div>
 
-                                            <div class="billdate">                   
+                                            <div class="billdatePrinting">                   
                                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                                                rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
                                                     <f:convertDateTime pattern="dd/MM/yy"/>
@@ -67,14 +67,14 @@
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="payment">                    
+                                            <div class="paymentPrinting">                    
                                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
                                                                rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />                        
                                                 <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
                                                                rendered="#{cc.attrs.bill.cancelledBill.insId eq null }"/>
                                             </div>
 
-                                            <div class="billtime">                                                  
+                                            <div class="billtimePrinting">                                                  
                                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                                                rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
                                                     <f:convertDateTime pattern="hh mm a"/>
@@ -91,27 +91,27 @@
                                             </h:outputLabel>
 
                                             <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"
-                                                           styleClass="phone" >
+                                                           styleClass="phonePrinting" >
                                             </h:outputLabel>
 
                                             <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"
-                                                           styleClass="cashier" >
+                                                           styleClass="cashierPrinting" >
                                             </h:outputLabel>
 
                                             <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"
-                                                           styleClass="consult" >
+                                                           styleClass="pgsignPrinting" >
                                             </h:outputLabel>
 
 
 
                                             <h:outputLabel value="#{cc.attrs.bill.collectingCentre.name} #{cc.attrs.bill.creditCompany.name}"
-                                                           styleClass="billName"  >
+                                                           styleClass="billNamePrinting"  >
                                             </h:outputLabel>
 
 
                                         
 
-                                            <div class="totals">
+                                            <div class="totalsPrinting">
                                                 <table>
                                                     <tr>
                                                         <td style="min-width: 3.5cm;text-align: left;">
