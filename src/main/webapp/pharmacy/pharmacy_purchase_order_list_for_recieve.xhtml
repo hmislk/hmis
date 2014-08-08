@@ -13,10 +13,10 @@
                     <h:outputLabel value="Purchase Order List"/>
                     <h:panelGrid columns="5" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
                         <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPoTablePharmacy}"/>
                         <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
@@ -41,7 +41,7 @@
                 <p:column headerText="Approve at"  >
                     <h:commandLink action="pharmacy_reprint_po" >
                         <h:outputLabel value="#{p.createdAt}" >
-                            <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                         </h:outputLabel>
                         <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                     </h:commandLink>
@@ -50,7 +50,7 @@
                         <h:outputLabel style="color: red;" value="Cancelled at " />
                         <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
                                        value="#{p.cancelledBill.createdAt}" >
-                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                         </h:outputLabel>
                     </h:panelGroup>                   
                 </p:column> 
@@ -105,7 +105,7 @@
                         <p:column >
                             <h:commandLink action="pharmacy_reprint_grn" >
                                 <h:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                                 </h:outputLabel>
                                 <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
                             </h:commandLink>
@@ -114,14 +114,14 @@
                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                 <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                value="#{b.cancelledBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{b.refunded}" >
                                 <h:outputLabel style="color: red;" value="Refunded at " />
                                 <h:outputLabel style="color: red;" rendered="#{b.refunded}" 
                                                value="#{b.refundedBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                    <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:column> 

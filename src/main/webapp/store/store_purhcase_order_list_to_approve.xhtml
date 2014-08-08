@@ -19,10 +19,10 @@
                     </h:panelGroup>
                     <h:panelGrid columns="6" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
                         <h:outputLabel /><h:outputLabel/>
                         <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
@@ -47,7 +47,7 @@
                     <p:column headerText="Requested at"  >
                         <h:commandLink action="store_reprint_order_request" >
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                             </h:outputLabel>
                             <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
                         </h:commandLink>
@@ -56,7 +56,7 @@
                             <h:outputLabel style="color: red;" value="Cancelled at " />
                             <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                            value="#{b.cancelledBill.createdAt}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                             </h:outputLabel>
                         </h:panelGroup>                       
                     </p:column> 

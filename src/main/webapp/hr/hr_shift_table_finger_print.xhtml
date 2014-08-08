@@ -99,7 +99,7 @@
                         <h:panelGroup rendered="#{sts.previousStaffShift eq null}">
                             <p:calendar id="strRc" 
                                         value="#{sts.startRecord.recordTimeStamp}" 
-                                        pattern="dd MM yy hh mm a"
+                                        pattern="dd MM yy hh mm ss a"
                                         disabled="#{sts.consideredForSalary or sts.consideredForOt}"  >                           
                             </p:calendar>
                         </h:panelGroup>
@@ -110,7 +110,7 @@
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
                             <p:calendar id="endRc"
                                         value="#{sts.endRecord.recordTimeStamp}" 
-                                        pattern="dd MM yy hh mm a" 
+                                        pattern="dd MM yy hh mm ss a" 
                                         disabled="#{sts.consideredForSalary or sts.consideredForOt}" >                            
                             </p:calendar>
                         </h:panelGroup>
