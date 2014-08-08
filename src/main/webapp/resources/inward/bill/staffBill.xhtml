@@ -27,41 +27,51 @@
 
                 <div class="fiveinchbill" >
 
-                    <div class="cel1R1L" >
-                        <h:outputLabel value="Bill No">
-                        </h:outputLabel>
+
+                    <div class="receiptnoPrinting" >
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/> 
+                        <h:outputLabel value="#{cc.attrs.bill.insId}" 
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null}"/>  
+                        <h:outputLabel value="  **Duplicate" 
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" />
                     </div>
 
-                    <div class="cel1R1C" >
-                        <h:outputLabel value=":">
-                        </h:outputLabel>
-                    </div>
 
-                    <div class="cel1R1V" >
-                        <h:outputLabel value="#{cc.attrs.bill.insId}">
-                        </h:outputLabel>
-                    </div>
-
-                    <div class="cel2R1L" >
-                        <h:outputLabel value="Date">
-                        </h:outputLabel>
-                    </div>
-
-                    <div class="cel2R1C" >
-                        <h:outputLabel value=":">
-                        </h:outputLabel>
-                    </div>
-
-                    <div class="cel2R1V" >
-                        <h:outputLabel value="#{cc.attrs.bill.billDate}" >
+                    <div class="billdatePrinting" >
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
                             <f:convertDateTime pattern="dd/MM/yy"/>
+                        </h:outputLabel>                      
+                        <h:outputLabel value="#{cc.attrs.bill.billDate}"
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                            <f:convertDateTime pattern="dd/MM/yy"/>
+                        </h:outputLabel>
+                    </div>
+                    
+                    <div class="paymentPrinting">                    
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />                        
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null }"/>
+                    </div>
+                    
+                    <div class="billtimePrinting">
+
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
+                            <f:convertDateTime pattern="hh mm a"/>
+                        </h:outputLabel>                        
+                        <h:outputLabel value="#{cc.attrs.bill.billTime}" 
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                            <f:convertDateTime pattern="hh mm a"/>
                         </h:outputLabel>
                     </div>
 
                    
 
-                    <div class="heading">
-                        <h:outputLabel value="PAYMENT VOUCHER : " style="font-size:  130%!important;"/>   
+                    <div class="headingPrinting">
+                        <h:outputLabel value="PAYMENT VOUCHER : " />   
                         <h:outputLabel value="#{cc.attrs.bill.staff.person.name}" style="text-transform: capitalize;"  />
                     </div>
 
@@ -73,7 +83,7 @@
 
                         <p:dataTable value="#{cc.attrs.bill.billItems}" var="bip" rowIndexVar="i" styleClass="noBorder">
 
-                            <p:column headerText="BHT NO" >
+                            <p:column headerText="BHT NO" style="text-align: right;">
 
                                 <h:panelGroup rendered="#{i mod 14 eq 0 and i ne 0}">
                                     <br/>
@@ -91,9 +101,9 @@
                                 </h:panelGroup>
 
 
-                                <h:outputLabel value="#{bip.paidForBillFee.bill.patientEncounter.bhtNo}" style="margin: 4px;font-size:  80%!important;" />
+                                <h:outputLabel value="#{bip.paidForBillFee.bill.patientEncounter.bhtNo}"/>
                             </p:column>
-                            <p:column  headerText="Patient Name" >
+                            <p:column  headerText="Patient Name" style="text-align: right;">
 
                                 <h:panelGroup rendered="#{i mod 14 eq 0 and i ne 0}" >
                                     <br/>
@@ -110,9 +120,9 @@
                                     <br/>
                                 </h:panelGroup>
 
-                                <h:outputLabel value="#{bip.paidForBillFee.bill.patient.person.nameWithTitle}"  style="margin: 4px;font-size:  80%!important;"  />
+                                <h:outputLabel value="#{bip.paidForBillFee.bill.patient.person.nameWithTitle}"/>
                                 <h:outputLabel value="#{bip.paidForBillFee.patienEncounter.item.name}" /><br/>
-                                <h:outputLabel value="#{bip.paidForBillFee.patienEncounter.dateTime}" style="margin: 4px;font-size:  80%!important;" >
+                                <h:outputLabel value="#{bip.paidForBillFee.patienEncounter.dateTime}">
                                     <f:convertDateTime pattern="dd/MM/yy"/>
                                 </h:outputLabel><br/>
 
@@ -120,7 +130,7 @@
                             </p:column>
                        
 
-                            <p:column headerText="Amount">
+                            <p:column headerText="Amount" style="text-align: right;">
 
                                 <h:panelGroup rendered="#{i mod 14 eq 0 and i ne 0}" >
                                     <br/>
@@ -145,7 +155,7 @@
                         <table style="min-width:100%;padding-left: 30px;">
                             <tr>
                                 <td style="min-width: 80%;text-align: left;font-size: 100%!important;">
-                                    <h:outputLabel value="Total"/>
+                                    <h:outputLabel value="TOTAL"/>
                                 </td>
                                 <td style="min-width: 30%;text-align: right;font-size: 100%!important;">
                                     <h:outputLabel value="#{-cc.attrs.bill.netTotal}" >
@@ -154,17 +164,20 @@
                                 </td>
                             </tr>
                         </table>
-
+                        <p:spacer height="30px;"></p:spacer>
                         <div>
-                            <table style="position: relative;bottom: 1%;padding-left: 5%; padding-top:  15%;min-width: 100%!important;">
+                            <table style="padding-left: 30px;">
                                 <tr>
-                                    <td style="min-width: 50%;text-align: left;font-size: 85%!important;">
-                                        <h:outputLabel value=".................."  /><br/>
-                                        <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}"/>
-                                    </td>                                  
-                                    <td style="min-width: 50%;text-align: right;font-size: 85%!important;">
-                                        <h:outputLabel value="......................"  /><br/>
-                                        <h:outputLabel  value="#{cc.attrs.bill.staff.person.name}"/>
+                                    <td style="min-width: 5cm;text-align: left;">
+                                        
+                                        <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}" style="font-size: 11px; text-decoration: overline;"/>
+                                    </td>
+                                    <td>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    </td>
+                                    <td>
+                                        
+                                        <h:outputLabel  value="#{cc.attrs.bill.staff.person.name}" style="font-size: 11px; text-decoration: overline;"/>
                                     </td>
                                 </tr>
                             </table>

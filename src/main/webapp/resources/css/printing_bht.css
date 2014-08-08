@@ -289,7 +289,7 @@ root {
 
 }
 
-.receiptno{
+.receiptnoBht{
     position: absolute;
     left: 35%;
     top: 15%;
@@ -379,6 +379,7 @@ root {
     position: absolute;
     left: 70%;
     top: 37%;
+    font-size: 11px!important;
 
 }
 

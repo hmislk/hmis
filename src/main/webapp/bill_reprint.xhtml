@@ -8,7 +8,7 @@
       xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
     <body>
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="./resources/template/template.xhtml">
 
             <ui:define name="content">
                 <h:form>
@@ -125,7 +125,7 @@
                                             <div  class="fiveinchbill">
 
 
-                                                <div  class="receiptno">
+                                                <div  class="receiptnoPrinting">
                                                     <h:outputLabel value="#{billSearch.bill.cancelledBill.insId} **Cancelled"  
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}"/> 
 
@@ -137,7 +137,7 @@
                                                                                billSearch.bill.cancelledBill.insId eq null }"/> 
                                                 </div>
 
-                                                <div  class="billdate">
+                                                <div  class="billdatePrinting">
                                                     <h:outputLabel value="#{billSearch.bill.cancelledBill.billDate}"
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}"  >
                                                         <f:convertDateTime pattern="dd/MM/yy"/>
@@ -153,7 +153,7 @@
                                                     </h:outputLabel>
                                                 </div>
 
-                                                <div class="payment">
+                                                <div class="paymentPrinting">
                                                     <h:outputLabel value="#{billSearch.bill.cancelledBill.paymentMethod}" 
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}" />
                                                     <h:outputLabel value="#{billSearch.bill.refundedBill.paymentMethod}" 
@@ -163,7 +163,7 @@
                                                                                billSearch.bill.cancelledBill.insId eq null }"/>
                                                 </div>
 
-                                                <div class="billtime">
+                                                <div class="billtimePrinting">
                                                     <h:outputLabel value="#{billSearch.bill.cancelledBill.billTime}"  
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}">
                                                         <f:convertDateTime pattern="hh mm ss a"/>
@@ -179,19 +179,19 @@
                                                     </h:outputLabel>
                                                 </div>
 
-                                                <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle}" styleClass="ptname" />
+                                                <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle}" styleClass="ptnamePrinting" />
 
-                                                <h:outputLabel value="#{billSearch.bill.patient.person.phone}" styleClass="phone" />
+                                                <h:outputLabel value="#{billSearch.bill.patient.person.phone}" styleClass="phonePrinting" />
 
 
 
-                                                <h:dataTable value="#{billSearch.billItems}" var="bip" styleClass="items"   >
+                                                <h:dataTable value="#{billSearch.billItems}" var="bip" styleClass="itemsPrinting"   >
                                                     <h:column >
-                                                        <h:outputLabel value="#{bip.item.printName}" style="margin: 4px;" />
+                                                        <h:outputLabel value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" />
                                                     </h:column>
                                                 </h:dataTable>
 
-                                                <div class="rates" >
+                                                <div class="ratesPrinting" >
                                                     <h:dataTable value="#{billSearch.billItems}" var="bip1"  >
                                                         <h:column>
                                                             <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px;" >
@@ -201,7 +201,7 @@
                                                     </h:dataTable>
                                                 </div>
 
-                                                <div class="totals">
+                                                <div class="totalsPrinting">
                                                     <table>
                                                         <tr>
                                                             <td>
@@ -248,7 +248,7 @@
                                                     </table>
                                                 </div>
 
-                                                <div class="cashier" >
+                                                <div class="cashierPrinting" >
                                                     <h:outputLabel value="Cashier : #{billSearch.bill.cancelledBill.creater.code}"  
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}" />
                                                     <h:outputLabel value="Cashier : #{billSearch.bill.refundedBill.creater.code}"

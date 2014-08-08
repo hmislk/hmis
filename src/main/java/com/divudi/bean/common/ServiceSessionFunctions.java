@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.SessionNumberType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
@@ -40,7 +41,7 @@ public class ServiceSessionFunctions {
     BillSessionFacade billSessionFacade;
 
     List<BillSession> billSessions;
-    
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public List<BillSession> getBillSessions(Item i, Date d) {
@@ -64,6 +65,37 @@ public class ServiceSessionFunctions {
             case ByItem:
                 //   System.out.println("by items 3");
                 return getBillSessionsByItem(i, d);
+            case ByBill:
+                return getBillSessionsByItem(i, d);
+            default:
+                return null;
+
+        }
+    }
+
+    public Long calBillSessions(Item i, Date d) {
+        //   System.out.println("getting bill sessions");
+        if (i == null || i.getSessionNumberType() == null) {
+            return null;
+        }
+        switch (i.getSessionNumberType()) {
+            case ByCategory:
+                //   System.out.println("by cat");
+                if (i.getCategory().getParentCategory() == null) {
+                    //   System.out.println("by cat 2");
+                    return calBillSessionsByCat(i.getCategory(), d);
+                } else {
+                    //   System.out.println("by cat 3");
+                    return calBillSessionsByCat(i.getCategory().getParentCategory(), d);
+                }
+            case BySubCategory:
+                //   System.out.println("by sc");
+                return calBillSessionsByCat(i.getCategory(), d);
+            case ByItem:
+                //   System.out.println("by items 3");
+                return calBillSessionsByItem(i, d);
+            case ByBill:
+                return calBillSessionsByBill(i, d);
             default:
                 return null;
 
@@ -96,6 +128,7 @@ public class ServiceSessionFunctions {
         BillSession bs = new BillSession();
 //        bs.setBill(bi.getBill());
         bs.setBillItem(bi);
+        bs.setBill(bi.getBill());
         bs.setItem(i);
         bs.setCreatedAt(Calendar.getInstance().getTime());
 //        bs.setCreater(bi.getCreater());
@@ -112,9 +145,13 @@ public class ServiceSessionFunctions {
         bs.setSessionDate(sessDate);
 //        bs.setSessionDate(CommonFunctions.removeTime(bi.getSessionDate()));
         // //System.out.println("bill item session switch - pre");
-        int count = getBillSessions(i, bi.getSessionDate()).size() + 1;
+        Long count = calBillSessions(i, bi.getSessionDate());
         System.err.println("COUNT " + count);
-        bs.setSerialNo(count);
+        if (count != null) {
+            bs.setSerialNo(count.intValue() + 1);
+        }else{
+            bs.setSerialNo(1);
+        }
         switch (i.getSessionNumberType()) {
             case ByCategory:
                 //   System.out.println("by cat");
@@ -137,6 +174,9 @@ public class ServiceSessionFunctions {
                 System.err.println("By Item");
 //                bs.setSerialNo(getIdByItem(i, bi.getSessionDate()) + 1);
                 break;
+            case ByBill:
+                System.err.println("Bill");
+                break;
             default:
                 bs = null;
         }
@@ -151,11 +191,28 @@ public class ServiceSessionFunctions {
             return null;
         }
         String s;
-        s = "select b from BillSession b where b.category.id =:catId and b.sessionDate =:sd order by b.serialNo";
+        s = "select b from BillSession b "
+                + " where b.category.id =:catId "
+                + "and b.sessionDate =:sd "
+                + " order by b.serialNo";
         Map m = new HashMap();
         m.put("catId", c.getId());
         m.put("sd", d);
         return getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+    }
+
+    public Long calBillSessionsByCat(Category c, Date d) {
+        if (c == null || c.getId() == null) {
+            return null;
+        }
+        String s;
+        s = "select count(b) from BillSession b "
+                + " where b.category.id =:catId "
+                + " and b.sessionDate =:sd ";
+        Map m = new HashMap();
+        m.put("catId", c.getId());
+        m.put("sd", d);
+        return getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
     }
 
     public List<BillSession> getBillSessionsByItem(Item i, Date d) {
@@ -163,13 +220,44 @@ public class ServiceSessionFunctions {
             return null;
         }
         String s;
-        s = "select b from BillSession b where b.item=:item"
+        s = "select b from BillSession b "
+                + " where b.item=:item"
                 + " and b.sessionDate=:sd "
                 + " order by b.serialNo";
         Map m = new HashMap();
         m.put("item", i);
         m.put("sd", d);
-        return getBillSessionFacade().findBySQL(s, m, TemporalType.TIMESTAMP);
+        return getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+    }
+
+    public Long calBillSessionsByItem(Item i, Date d) {
+        if (i == null || i.getId() == null) {
+            return null;
+        }
+        String s;
+        s = "select count(b) from BillSession b "
+                + " where b.item=:item"
+                + " and b.sessionDate=:sd "
+                + " order by b.serialNo";
+        Map m = new HashMap();
+        m.put("item", i);
+        m.put("sd", d);
+        return getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
+    }
+
+    public Long calBillSessionsByBill(Item i, Date d) {
+        if (i == null || i.getId() == null) {
+            return null;
+        }
+        String s;
+        s = "select count(b.bill) "
+                + " from BillSession b "
+                + " where b.item.sessionNumberType=:stp"
+                + " and b.sessionDate=:sd ";
+        Map m = new HashMap();
+        m.put("stp", SessionNumberType.ByBill);
+        m.put("sd", d);
+        return getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
     }
 
 //    public int getIdByItem(Item i, Date d) {
@@ -237,6 +325,4 @@ public class ServiceSessionFunctions {
         this.billSessions = billSessions;
     }
 
-    
-    
 }

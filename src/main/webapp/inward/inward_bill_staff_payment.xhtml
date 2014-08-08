@@ -128,7 +128,7 @@
                     <h:panelGroup rendered="#{inwardStaffPaymentBillController.printPreview}" styleClass="alignTop" >
                         <p:commandButton ajax="false" value="New Bill" action="#{inwardStaffPaymentBillController.recreateModel}" onclick="onSubmitButton();"/>
 
-                        <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="true" />
+                        <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
                     </h:panelGroup>
 
                 </h:form>

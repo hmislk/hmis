@@ -1072,7 +1072,7 @@ public class InwardReportController1 implements Serializable {
                 + " sum(bf.feeGrossValue),"
                 + " sum(bf.feeValue)"
                 + " from BillFee bf "
-                + " where"
+                + " where "
                 + " bf.retired=false "
                 + " and bf.billItem.retired=false "
                 + " and bf.bill.patientEncounter.paymentFinalized=true "
