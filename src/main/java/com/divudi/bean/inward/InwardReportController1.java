@@ -800,24 +800,24 @@ public class InwardReportController1 implements Serializable {
 
         List<PatientEncounter> list = patientEncounterFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
         System.out.println("list = " + list.size());
-//        for (PatientEncounter patientEncounter : list) {
-//            Bill finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
-//            if (finalBill == null) {
-//                continue;
-//            }
-//            hm.clear();
-//            hm.put("inwTp", InwardChargeType.AdmissionFee);
-//            hm.put("b", finalBill);
-//            sql = "SELECT  i "
-//                    + " FROM BillItem i "
-//                    + " where i.retired=false"
-//                    + " and i.inwardChargeType=:inwTp"
-//                    + " and i.bill=:b ";
-//            BillItem billItem = BillItemFacade.findFirstBySQL(sql, hm);
-//            admissionGross += billItem.getGrossValue();
-//            admissionDiscount += billItem.getDiscount();
-//            admissionNetValue += billItem.getNetValue();
-//        }
+        for (PatientEncounter patientEncounter : list) {
+            Bill finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
+            if (finalBill == null) {
+                continue;
+            }
+            hm.clear();
+            hm.put("inwTp", InwardChargeType.AdmissionFee);
+            hm.put("b", finalBill);
+            sql = "SELECT  i "
+                    + " FROM BillItem i "
+                    + " where i.retired=false"
+                    + " and i.inwardChargeType=:inwTp"
+                    + " and i.bill=:b ";
+            BillItem billItem = BillItemFacade.findFirstBySQL(sql, hm);
+            admissionGross += billItem.getGrossValue();
+            admissionDiscount += billItem.getDiscount();
+            admissionNetValue += billItem.getNetValue();
+        }
 
     }
 
@@ -1266,10 +1266,10 @@ public class InwardReportController1 implements Serializable {
     public void process() {
         makeNull();
 
-//        createOpdServiceWithoutPro();
-//        createRoomTable();
-//        createDoctorPaymentInward();
-//        createTimedService();
+        createOpdServiceWithoutPro();
+        createRoomTable();
+        createDoctorPaymentInward();
+        createTimedService();
         createInwardService();
 
     }
