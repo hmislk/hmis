@@ -31,30 +31,35 @@ public class ServiceSessionBean {
 
     @EJB
     BillSessionFacade billSessionFacade;
+    BillSession billSession;
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public List<BillSession> getBillSessions(Item i, Date d) {
-     //   System.out.println("getting bill sessions");
+        //   System.out.println("getting bill sessions");
         if (i == null || i.getSessionNumberType() == null) {
             return null;
         }
         switch (i.getSessionNumberType()) {
             case ByCategory:
-             //   System.out.println("by cat");
+                //   System.out.println("by cat");
                 if (i.getCategory().getParentCategory() == null) {
-                 //   System.out.println("by cat 2");
-                    return getBillSessionsByCat(i.getCategory(), d);
+                    //   System.out.println("by cat 2");
+                    billSessions = getBillSessionsByCat(i.getCategory(), d);
+                    return billSessions;
                 } else {
-                 //   System.out.println("by cat 3");
-                    return getBillSessionsByCat(i.getCategory().getParentCategory(), d);
+                    //   System.out.println("by cat 3");
+                    billSessions = getBillSessionsByCat(i.getCategory().getParentCategory(), d);
+                    return billSessions;
                 }
             case BySubCategory:
-             //   System.out.println("by sc");
-                return getBillSessionsByCat(i.getCategory(), d);
+                //   System.out.println("by sc");
+                billSessions = getBillSessionsByCat(i.getCategory(), d);
+                return billSessions;
             case ByItem:
-             //   System.out.println("by items 3");
-                return getBillSessionsByItem(i, d);
+                //   System.out.println("by items 3");
+                billSessions = getBillSessionsByItem(i, d);
+                return billSessions;
             default:
                 return null;
 
@@ -78,9 +83,9 @@ public class ServiceSessionBean {
 //        }
 //    }
     public BillSession createBillSession(BillItem bi) {
-     //   System.out.println("Going to saving bill item sessions");
+        //   System.out.println("Going to saving bill item sessions");
         if (bi == null || bi.getItem() == null || bi.getItem().getSessionNumberType() == null) {
-         //   System.out.println("Bil items sessions not save because of null values");
+            //   System.out.println("Bil items sessions not save because of null values");
             return null;
         }
         Item i = bi.getItem();
@@ -96,7 +101,7 @@ public class ServiceSessionBean {
             //sessDate = new Date();
         } else {
             sessDate = CommonFunctions.removeTime(bi.getSessionDate());
-          //  sessDate = bi.getSessionDate();
+            //  sessDate = bi.getSessionDate();
         }
         System.err.println("Date " + sessDate);
         bi.setSessionDate(sessDate);
@@ -108,13 +113,13 @@ public class ServiceSessionBean {
         bs.setSerialNo(count);
         switch (i.getSessionNumberType()) {
             case ByCategory:
-             //   System.out.println("by cat");
+                //   System.out.println("by cat");
                 if (i.getCategory().getParentCategory() == null) {
-                 //   System.out.println("by cat only ");
+                    //   System.out.println("by cat only ");
                     bs.setCategory(i.getCategory());
 //                    bs.setSerialNo(getIdByCat(i.getCategory(), bi.getSessionDate()) + 1);
                 } else {
-                 //   System.out.println("by parent cat");
+                    //   System.out.println("by parent cat");
                     bs.setCategory(i.getCategory().getParentCategory());
 //                    bs.setSerialNo(getIdByCat(i.getCategory().getParentCategory(), bi.getSessionDate()) + 1);
                 }
@@ -137,6 +142,9 @@ public class ServiceSessionBean {
         return bs;
     }
 
+    List<BillSession> billSessions;
+    Long countLong;
+
     public List<BillSession> getBillSessionsByCat(Category c, Date d) {
         if (c == null || c.getId() == null) {
             return null;
@@ -146,7 +154,8 @@ public class ServiceSessionBean {
         Map m = new HashMap();
         m.put("catId", c.getId());
         m.put("sd", d);
-        return getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        return billSessions;
     }
 
     public List<BillSession> getBillSessionsByItem(Item i, Date d) {
@@ -159,8 +168,9 @@ public class ServiceSessionBean {
                 + " order by b.serialNo";
         Map m = new HashMap();
         m.put("item", i);
-        m.put("sd", d);
-        return getBillSessionFacade().findBySQL(s, m, TemporalType.TIMESTAMP);
+        m.put("sd", d);        
+        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        return billSessions;
     }
 
 //    public int getIdByItem(Item i, Date d) {

@@ -41,6 +41,7 @@ public class ServiceSessionFunctions {
     BillSessionFacade billSessionFacade;
 
     List<BillSession> billSessions;
+    Long countLong;
 
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
@@ -54,19 +55,24 @@ public class ServiceSessionFunctions {
                 //   System.out.println("by cat");
                 if (i.getCategory().getParentCategory() == null) {
                     //   System.out.println("by cat 2");
-                    return getBillSessionsByCat(i.getCategory(), d);
+                    billSessions = getBillSessionsByCat(i.getCategory(), d);
+                    return billSessions;
                 } else {
                     //   System.out.println("by cat 3");
-                    return getBillSessionsByCat(i.getCategory().getParentCategory(), d);
+                    billSessions = getBillSessionsByCat(i.getCategory().getParentCategory(), d);
+                    return billSessions;
                 }
             case BySubCategory:
                 //   System.out.println("by sc");
-                return getBillSessionsByCat(i.getCategory(), d);
+                billSessions = getBillSessionsByCat(i.getCategory(), d);
+                return billSessions;
             case ByItem:
                 //   System.out.println("by items 3");
-                return getBillSessionsByItem(i, d);
+                billSessions = getBillSessionsByItem(i, d);
+                return billSessions;
             case ByBill:
-                return getBillSessionsByItem(i, d);
+                billSessions = getBillSessionsByItem(i, d);
+                return billSessions;
             default:
                 return null;
 
@@ -83,19 +89,24 @@ public class ServiceSessionFunctions {
                 //   System.out.println("by cat");
                 if (i.getCategory().getParentCategory() == null) {
                     //   System.out.println("by cat 2");
-                    return calBillSessionsByCat(i.getCategory(), d);
+                    countLong = calBillSessionsByCat(i.getCategory(), d);
+                    return countLong;
                 } else {
                     //   System.out.println("by cat 3");
-                    return calBillSessionsByCat(i.getCategory().getParentCategory(), d);
+                    countLong = calBillSessionsByCat(i.getCategory().getParentCategory(), d);
+                    return countLong;
                 }
             case BySubCategory:
                 //   System.out.println("by sc");
-                return calBillSessionsByCat(i.getCategory(), d);
+                countLong = calBillSessionsByCat(i.getCategory(), d);
+                return countLong;
             case ByItem:
                 //   System.out.println("by items 3");
-                return calBillSessionsByItem(i, d);
+                countLong = calBillSessionsByItem(i, d);
+                return countLong;
             case ByBill:
-                return calBillSessionsByBill(i, d);
+                countLong = calBillSessionsByBill(i, d);
+                return countLong;
             default:
                 return null;
 
@@ -149,7 +160,7 @@ public class ServiceSessionFunctions {
         System.err.println("COUNT " + count);
         if (count != null) {
             bs.setSerialNo(count.intValue() + 1);
-        }else{
+        } else {
             bs.setSerialNo(1);
         }
         switch (i.getSessionNumberType()) {
@@ -198,7 +209,8 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("catId", c.getId());
         m.put("sd", d);
-        return getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        return billSessions;
     }
 
     public Long calBillSessionsByCat(Category c, Date d) {
@@ -212,7 +224,8 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("catId", c.getId());
         m.put("sd", d);
-        return getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
+        countLong = getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
+        return countLong;
     }
 
     public List<BillSession> getBillSessionsByItem(Item i, Date d) {
@@ -227,7 +240,8 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("item", i);
         m.put("sd", d);
-        return getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        return billSessions;
     }
 
     public Long calBillSessionsByItem(Item i, Date d) {
@@ -242,7 +256,8 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("item", i);
         m.put("sd", d);
-        return getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
+        countLong = getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
+        return countLong;
     }
 
     public Long calBillSessionsByBill(Item i, Date d) {
@@ -257,7 +272,8 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("stp", SessionNumberType.ByBill);
         m.put("sd", d);
-        return getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
+         countLong = getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
+        return countLong;
     }
 
 //    public int getIdByItem(Item i, Date d) {
