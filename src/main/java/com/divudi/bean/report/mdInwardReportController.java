@@ -876,7 +876,7 @@ public class mdInwardReportController implements Serializable {
                 + " and type(b)=:class"
                 + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
 //                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.createdAt <= :toDate"
+//                + " and b.createdAt <= :toDate"
                 + " and b.retired = false"
                 + " and b.patientEncounter.discharged = true"
                 + " and b.patientEncounter.paymentFinalized = true";
@@ -914,7 +914,7 @@ public class mdInwardReportController implements Serializable {
                 + " and type(b)=:class"
                 + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
 //                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.createdAt <= :toDate"
+//                + " and b.createdAt <= :toDate"
                 + " and b.retired = false  "
                 + " and b.patientEncounter.discharged = true"
                 + " and b.patientEncounter.paymentFinalized = true";

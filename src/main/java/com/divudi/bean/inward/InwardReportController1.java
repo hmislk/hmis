@@ -1075,18 +1075,17 @@ public class InwardReportController1 implements Serializable {
                 + " sum(bf.feeGrossValue),"
                 + " sum(bf.feeValue)"
                 + " from BillFee bf "
-                + " where "
-                + " bf.retired=false "
-                + " and bf.billItem.retired=false "
+                + " where bf.retired=false "
                 + " and bf.bill.patientEncounter.paymentFinalized=true "
+                + " and bf.billItem.retired=false "                
                 + " and bf.fee.feeType!=:ftp ";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("ftp", FeeType.Staff);
         m.put("billType", BillType.InwardBill);
-        sql = sql + " and bf.bill.billType=:billType and"
-                + " bf.bill.patientEncounter.dateOfDischarge between :fd and :td ";
+        sql = sql + " and bf.bill.billType=:billType "
+                + " and bf.bill.patientEncounter.dateOfDischarge between :fd and :td ";
 
         if (admissionType != null) {
             sql = sql + " and bf.bill.patientEncounter.admissionType=:at ";
