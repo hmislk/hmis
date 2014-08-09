@@ -75,7 +75,7 @@
 
                                 <p:outputLabel value="StartTime:"/>
                                 <p:calendar id="startTime" value="#{inwardTimedItemController.current.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm a" >
+                                            pattern="dd MMMM yyyy hh mm ss a" >
                                 </p:calendar>   
 
                                 <p:commandButton value="Add Service"  ajax="false"
@@ -95,12 +95,12 @@
                             <p:column headerText="Start Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm a" />                                      
+                                            pattern="dd MMMM yyyy hh mm ss a" />                                      
                             </p:column>                               
                             <p:column headerText="Stopped Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.toTime}" 
-                                            pattern="dd MMMM yyyy hh mm a" />  
+                                            pattern="dd MMMM yyyy hh mm ss a" />  
                             </p:column>
                             <p:column headerText="Total">
                                 <h:outputLabel  value="#{ti.serviceValue}">

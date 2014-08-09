@@ -130,16 +130,16 @@
                                                 <div class="billtimePrinting">
                                                     <h:outputLabel value="#{billSearch.bill.cancelledBill.billTime}"  
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}">
-                                                        <f:convertDateTime pattern="hh mm a"/>
+                                                        <f:convertDateTime pattern="hh mm ss a"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{billSearch.bill.refundedBill.billTime}"  
                                                                    rendered="#{billSearch.bill.refundedBill.insId ne null}">
-                                                        <f:convertDateTime pattern="hh mm a"/>
+                                                        <f:convertDateTime pattern="hh mm ss a"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{billSearch.bill.billTime}" 
                                                                    rendered="#{billSearch.bill.refundedBill.insId eq null and 
                                                                                billSearch.bill.cancelledBill.insId eq null }">
-                                                        <f:convertDateTime pattern="hh mm a"/>
+                                                        <f:convertDateTime pattern="hh mm ss a"/>
                                                     </h:outputLabel>
                                                 </div>
 

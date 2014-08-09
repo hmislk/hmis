@@ -46,12 +46,12 @@
                             <p:spacer width="20" height="0"/>
                             <h:outputLabel value="From" />
                             <h:outputLabel  value="#{cashierReportController.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
                             </h:outputLabel>
                             <p:spacer width="10" height="0"/>
                             <h:outputLabel value="To"/>
                             <h:outputLabel  value="#{cashierReportController.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
                             </h:outputLabel>
                         </h:panelGrid>
 

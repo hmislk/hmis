@@ -82,7 +82,7 @@
                             <h:outputLabel value="Change at"/>
                             <p:calendar id="changeAt"
                                         value="#{roomChangeController.changeAt}" 
-                                        navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                                        navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                 <f:ajax event="dateSelect"  render="changeAt"/>
                             </p:calendar>
 
@@ -96,7 +96,7 @@
                             <p:column headerText="Admitted At">                                          
                                 <p:calendar navigator="true"  
                                             value="#{rm.admittedAt}" 
-                                            pattern="dd MMMM yyyy hh mm a" />     
+                                            pattern="dd MMMM yyyy hh mm ss a" />     
                             </p:column>
                             <p:column headerText="Admitted By">
                                 <h:outputLabel value="#{rm.addmittedBy.webUserPerson.name}"  /><br/>
@@ -105,7 +105,7 @@
                             <p:column headerText="Discahrged At">                                            
                                 <p:calendar navigator="true"  
                                             value="#{rm.dischargedAt}" 
-                                            pattern="dd MMMM yyyy hh mm a" />   
+                                            pattern="dd MMMM yyyy hh mm ss a" />   
                             </p:column>
                             <p:column headerText="Discharge By">
                                 #{rm.dischargedBy.webUserPerson.name}

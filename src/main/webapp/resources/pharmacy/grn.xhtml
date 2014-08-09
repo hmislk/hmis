@@ -43,31 +43,31 @@
             </div>
 
             <h:panelGrid columns="4" style="min-width: 100%;">
-                
-                 
-               
-                
+
+
+
+
                 <h:outputLabel value="P.O.No "/>
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" />
-                
+
                 <h:outputLabel value="G.R.N.No "/>
                 <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
-                
+
                 <h:outputLabel value="P.O.Date  " />
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.referenceBill.createdAt}">
                     <f:convertDateTime pattern="dd MM yyyy"/>
                 </h:outputLabel>
-                
+
                 <h:outputLabel value="G.R.N.Date  "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                     <f:convertDateTime pattern="dd MM yyyy"/>
                 </h:outputLabel >
-                
+
                 <h:outputLabel value="P.O.Time  " />
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" >
                     <f:convertDateTime pattern="hh mm a"/>
                 </h:outputLabel>
-                
+
                 <h:outputLabel value="G.R.N.Time  "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                     <f:convertDateTime pattern="hh mm a"/>
@@ -85,7 +85,7 @@
 
             </h:panelGrid>
 
-          
+
             <div >
                 <p:spacer height="15px"/>
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">                                     
@@ -175,6 +175,7 @@
                     </p:column>
 
                     <p:columnGroup type="footer">
+
                         <p:row>
                             <p:column colspan="7" footerText="Total" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
@@ -186,6 +187,19 @@
                                 </f:facet>
                             </p:column>
                         </p:row>
+
+                        <p:row>
+                            <p:column colspan="7" footerText="Expenses" style="font-weight: bold!important;"/>
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
+                                <f:facet name="footer">
+                                    <br></br>
+                                    <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+
                         <p:row >
                             <p:column colspan="7" footerText="Tax"/>
                             <p:column style="text-align: right;" footerText="#{cc.attrs.bill.tax}">
@@ -220,6 +234,23 @@
 
                         </p:row>
                     </p:columnGroup>
+                </p:dataTable>
+            </div>
+
+            <div>
+                <p:dataTable id="tblExpenses" value="#{cc.attrs.bill.billExpenses}" var="be"
+                             emptyMessage="No Bill Expenses" >
+                    <p:column headerText="Expense" >
+                        <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Value" >
+                        <h:outputLabel value="#{be.netValue}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Descreption" >
+                        <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                    </p:column>
                 </p:dataTable>
             </div>
 

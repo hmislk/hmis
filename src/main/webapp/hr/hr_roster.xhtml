@@ -45,7 +45,7 @@
                                     <f:selectItems value="#{departmentController.logedDepartments}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                 </p:selectOneMenu>
                                 <p:outputLabel value="Start Time"/>                        
-                                <p:calendar  value="#{rosterController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                <p:calendar  value="#{rosterController.current.startingTime}" navigator="true" pattern="HH:mm:ss" timeOnly="true">                            
                                 </p:calendar>    
                                 <h:outputLabel value="Shift Per Day"/>  
                                 <p:inputText autocomplete="off" value="#{rosterController.current.shiftPerDay}"/>
