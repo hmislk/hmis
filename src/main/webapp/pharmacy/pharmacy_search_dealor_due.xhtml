@@ -13,11 +13,11 @@
                     <h:panelGrid columns="6">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="fromDate" value="#{dealorDueController.fromDate}" navigator="false"
-                                    pattern="dd MMMM yyyy hh mm a" >
+                                    pattern="dd MMMM yyyy hh mm ss a" >
 
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{dealorDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                        <p:calendar id="toDate" value="#{dealorDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                         </p:calendar>
                         <p:commandButton value="Process" action="#{dealorDueController.fillItems()}" ajax="false"  />

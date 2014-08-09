@@ -41,7 +41,7 @@
                         <p:column headerText="Date" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
                             <h:commandLink action="payment_bill_reprint" >
                                 <h:outputLabel value="#{b.createdAt}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm a"/>
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <f:setPropertyActionListener value="#{b}" target="#{staffPaymentBillController.current}"/>
                                 <f:setPropertyActionListener value="#{b.staff}" target="#{staffPaymentBillController.currentStaff}"/>

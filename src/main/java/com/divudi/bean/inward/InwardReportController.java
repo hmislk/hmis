@@ -160,6 +160,11 @@ public class InwardReportController implements Serializable {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
         }
+        
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
 
         sql += " order by  b.dateOfDischarge";
 

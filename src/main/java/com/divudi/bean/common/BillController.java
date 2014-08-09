@@ -526,12 +526,10 @@ public class BillController implements Serializable {
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
             be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
-
             if (be.getBillItem().getBillSession() != null) {
+                System.err.println("IN");
                 getBillSessionFacade().create(be.getBillItem().getBillSession());
-
             }
-
         }
     }
     @EJB

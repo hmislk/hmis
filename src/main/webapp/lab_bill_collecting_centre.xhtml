@@ -280,55 +280,55 @@
                             <div >
 
 
-                                <div class="receiptno" >
+                                <div class="receiptnoPrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.insId}">
                                     </h:outputLabel>
                                 </div>
 
-                                <div class="billdate" >
+                                <div class="billdatePrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.billDate}">
                                         <f:convertDateTime pattern="dd/MM/yy"/>
                                     </h:outputLabel>
                                 </div>
 
-                                <div class="payment" >
+                                <div class="paymentPrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.paymentMethod}">
                                         
                                     </h:outputLabel>
                                 </div>
 
-                                <div class="billtime" >
+                                <div class="billtimePrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.billTime}"
                                                    >
-                                        <f:convertDateTime pattern="hh mm a"/>
+                                        <f:convertDateTime pattern="hh mm ss a"/>
                                     </h:outputLabel>
                                 </div>
 
-                                <div class="ptname" >
+                                <div class="ptnamePrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.patient.person.nameWithTitle}"
                                                    >
                                     </h:outputLabel>
                                 </div>
 
-                                <div class="phone" >
+                                <div class="phonePrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.patient.person.phone}"
                                                    >
                                     </h:outputLabel>
                                 </div>
 
-                                <div class="cashier" >
+                                <div class="cashierPrinting" >
                                     <h:outputLabel value="Cashier : #{labBillCollectingController.current.creater.code}">
                                     </h:outputLabel>
                                 </div>
 
-                                <div class="consult" >
+                                <div class="consultPrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.collectingCentre.name}" />
                                     <h:outputLabel value="#{labBillCollectingController.current.creditCompany.name}" />
                                 </div>
 
 
 
-                                <div class="items" >
+                                <div class="itemsPrinting" >
                                     <h:dataTable value="#{labBillCollectingController.lstBillEntries}" var="bip"   >
                                         <h:column >
                                             <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
@@ -343,7 +343,7 @@
                                     </h:dataTable>
                                 </div>
 
-                                <div class="rates"  >
+                                <div class="ratesPrinting"  >
                                     <h:dataTable value="#{labBillCollectingController.lstBillEntries}" var="bip1"  >
                                         <h:column >
                                             <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="margin: 4px; font-size: 11px!important;" >
@@ -353,7 +353,7 @@
                                     </h:dataTable>
                                 </div>
 
-                                <div class="totals" >
+                                <div class="totalsPrinting" >
 
                                     <table>
                                         <tr>
@@ -368,7 +368,7 @@
                                         </tr>
                                         <tr>
                                             <td style="text-align: left; min-width: 3cm;">
-                                                <h:outputLabel value="Total" style="  text-align: right!important;  font-size: 15px!important;   "/>
+                                                <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold; "/>
                                             </td>
                                             <td style="text-align: right!important; ">
                                                 <h:outputLabel value="#{labBillCollectingController.current.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">

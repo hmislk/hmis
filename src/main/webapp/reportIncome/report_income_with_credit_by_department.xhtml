@@ -56,12 +56,12 @@
                             <br/>
                             <h:outputLabel value="From : " />
                             <h:outputLabel value="#{labReportSearchByDepartmentController.fromDate}"  >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
                             </h:outputLabel>
                             &nbsp;&nbsp;&nbsp;&nbsp;
                             <h:outputLabel value="To : "  ></h:outputLabel>
                             <h:outputLabel value="#{labReportSearchByDepartmentController.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
                             </h:outputLabel>
 
                         </p:panel>
@@ -96,7 +96,7 @@
                                     <h:outputLabel value="Date and Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 

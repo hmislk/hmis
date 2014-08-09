@@ -72,7 +72,9 @@ public class StorePurchaseController implements Serializable {
     private boolean printPreview;
     ///////////
     //  private List<PharmacyItemData> pharmacyItemDatas;
-
+List<BillItem> billExpenses;
+    
+    
     public void makeNull() {
         //  currentPharmacyItemData = null;
         printPreview = false;
@@ -251,7 +253,7 @@ public class StorePurchaseController implements Serializable {
     }
 
     private List<BillItem> billItems;
-    List<BillItem> billExpenses;
+    
 
     public void addItem() {
 
