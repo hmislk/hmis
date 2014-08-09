@@ -32,14 +32,14 @@
 
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                         <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
                                     </p:calendar>
                                 </h:panelGrid>
 
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="To Date"/>                                
-                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                         <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
                                     </p:calendar>
                                 </h:panelGrid>
@@ -117,7 +117,7 @@
                                 </f:facet>
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{bill.billTime}" >
-                                        <f:convertDateTime pattern="hh:mm a"/>
+                                        <f:convertDateTime pattern="hh:mm:ss a"/>
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -206,7 +206,7 @@
                                 </f:facet>
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="hh:mm a"/>
+                                        <f:convertDateTime pattern="hh:mm:ss a"/>
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -243,7 +243,7 @@
                                 </f:facet>
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime pattern="hh:mm a"/>
+                                        <f:convertDateTime pattern="hh:mm:ss a"/>
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>

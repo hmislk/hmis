@@ -4,7 +4,7 @@
  */
 package com.divudi.entity;
 
-import com.divudi.bean.hr.BankAccount;
+import com.divudi.entity.hr.BankAccount;
 import com.divudi.data.hr.EmployeeLeavingStatus;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.SalaryPaymentFrequency;

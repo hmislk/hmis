@@ -38,11 +38,11 @@
                                         <div class="fiveinchbill" style="font-size: 130%;">
                                             <div  >
 
-                                                <div class="billName" style=" position: absolute;left: 40%;top: 30%;font-weight: bold;">
+                                                <div class="headingPrinting">
                                                     <h:outputLabel value="PETTY PAYMENT"   />                           
                                                 </div>
 
-                                                <div class="receiptno" >                                                  
+                                                <div class="receiptnoPrinting" >                                                  
                                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
                                                                    rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/> 
                                                     <h:outputLabel value="#{cc.attrs.bill.insId}" 
@@ -51,7 +51,7 @@
                                                                    rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" />
                                                 </div>
 
-                                                <div class="billdate">                   
+                                                <div class="billdatePrinting">                   
                                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                                                    rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
                                                         <f:convertDateTime pattern="dd/MM/yy"/>
@@ -62,14 +62,14 @@
                                                     </h:outputLabel>
                                                 </div>
 
-                                                <div class="payment">                    
+                                                <div class="paymentPrinting">                    
                                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
                                                                    rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />                        
                                                     <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
                                                                    rendered="#{cc.attrs.bill.cancelledBill.insId eq null }"/>
                                                 </div>
 
-                                                <div class="billtime">                                                  
+                                                <div class="billtimePrinting">                                                  
                                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                                                    rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
                                                         <f:convertDateTime pattern="hh mm a"/>
@@ -82,40 +82,40 @@
 
 
                                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"
-                                                               styleClass="name"  >
+                                                               styleClass="ptnamePrinting"  >
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"
-                                                               styleClass="phone" >
+                                                               styleClass="phonePrinting" >
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"
-                                                               styleClass="cashier" >
+                                                               styleClass="cashierPrinting" >
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="#{cc.attrs.bill.collectingCentre.name} #{cc.attrs.bill.creditCompany.name}"
-                                                               styleClass="billName"  >
+                                                               styleClass="billNamePrinting"  >
                                                 </h:outputLabel>
 
 
 
-                                                <div class="items">
+                                                <div class="itemsPrinting">
 
                                                     <table>
                                                         <tr>
                                                         
                                                             <td style="min-width: 4.5cm;text-align: left;">
-                                                                <h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionType}" rendered="#{cc.attrs.bill.fromInstitution ne null}" style="font-size: 90%;  text-align: right!important;  font-size: 11px!important;   "/>
-                                                                <h:outputLabel value="#{cc.attrs.bill.staff.person.name}" rendered="#{cc.attrs.bill.staff ne null}" style="font-size: 90%;  text-align: right!important;  font-size: 11px!important;   "/>
-                                                                <h:outputLabel value="#{cc.attrs.bill.person.name}" rendered="#{cc.attrs.bill.person ne null}" style="font-size: 90%;  text-align: right!important;  font-size: 11px!important;   "/>
+                                                                <h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionType}" rendered="#{cc.attrs.bill.fromInstitution ne null}" style="text-align: right!important;  font-size: 11px!important;   "/>
+                                                                <h:outputLabel value="#{cc.attrs.bill.staff.person.name}" rendered="#{cc.attrs.bill.staff ne null}" style="text-align: right!important;  font-size: 11px!important;   "/>
+                                                                <h:outputLabel value="#{cc.attrs.bill.person.name}" rendered="#{cc.attrs.bill.person ne null}" style="text-align: right!important;  font-size: 11px!important;   "/>
                                                             </td>
                                                             <td style="text-align: right!important; ">
-                                                                <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"  style="font-size: 110%; font-weight: bold ; text-align: right!important; font-size: 11px!important;    ">
+                                                                <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"  style="font-weight: bold ; text-align: right!important; font-size: 11px!important;">
                                                                     <f:convertNumber pattern="#,000.00" />
                                                                 </h:outputLabel>
                                                             </td>
                                                              <td>
-                                                                 <h:outputLabel value="invoice No :#{cc.attrs.bill.intInvoiceNumber}"/>
+                                                                 <h:outputLabel value="INVOICE NO :#{cc.attrs.bill.intInvoiceNumber}" style="text-align: right!important; font-size: 11px!important;"/>
                                                             </td>
                                                         </tr>
                                                         <tr>
@@ -130,10 +130,10 @@
                                                         </tr>
                                                         <tr>
                                                             <td style="min-width: 4.5cm;text-align: left;">
-                                                                <h:outputLabel value="Total" style="font-size: 90%;  text-align: right!important;  font-size: 11px!important;   "/>
+                                                                <h:outputLabel value="TOTAL" style="min-width: 80%;text-align: left;font-size: 100%!important; font-weight: bold;"/>
                                                             </td>
                                                             <td style="text-align: right!important; ">
-                                                                <h:outputLabel value="#{-cc.attrs.bill.total}"  style="font-size: 110%; font-weight: bold ; text-align: right!important; font-size: 11px!important;    ">
+                                                                <h:outputLabel value="#{-cc.attrs.bill.total}"  style="min-width: 80%;text-align: left;font-size: 100%!important; font-weight: bold;">
                                                                     <f:convertNumber pattern="#,000.00" />
                                                                 </h:outputLabel>
                                                             </td>

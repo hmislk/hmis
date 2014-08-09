@@ -38,7 +38,7 @@
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="AFTER STOCK ADJUSTMENT"/> <br/>                   
                                         <h:panelGroup>
-                                            <p:clock pattern="HH:mm a - dd MMMM yyyy" mode="server"  rendered="#{reportsStockVariant.recordedBillAfter.id eq null}"/>  
+                                            <p:clock pattern="HH:mm:ss a - dd MMMM yyyy" mode="server"  rendered="#{reportsStockVariant.recordedBillAfter.id eq null}"/>  
                                             <h:outputLabel value="#{reportsStockVariant.recordedBillAfter.createdAt}" rendered="#{reportsStockVariant.recordedBillAfter.id ne null}"/>
                                         </h:panelGroup><br/>
 
