@@ -772,6 +772,7 @@ public class InwardReportController1 implements Serializable {
         sql = "SELECT pe "
                 + " FROM PatientEncounter pe"
                 + " where pe.retired=false "
+                + " and pe.discharged=true "
                 + " and pe.paymentFinalized=true "
                 + " and pe.dateOfDischarge between :fd and :td  ";
 
@@ -797,26 +798,26 @@ public class InwardReportController1 implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        List<PatientEncounter> list = patientEncounterFacade.findBySQL(sql, hm, TemporalType.DATE);
-
-        for (PatientEncounter patientEncounter : list) {
-            Bill finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
-            if (finalBill == null) {
-                continue;
-            }
-            hm.clear();
-            hm.put("inwTp", InwardChargeType.AdmissionFee);
-            hm.put("b", finalBill);
-            sql = "SELECT  i "
-                    + " FROM BillItem i "
-                    + " where i.retired=false"
-                    + " and i.inwardChargeType=:inwTp"
-                    + " and i.bill=:b ";
-            BillItem billItem = BillItemFacade.findFirstBySQL(sql, hm);
-            admissionGross += billItem.getGrossValue();
-            admissionDiscount += billItem.getDiscount();
-            admissionNetValue += billItem.getNetValue();
-        }
+        List<PatientEncounter> list = patientEncounterFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("list = " + list.size());
+//        for (PatientEncounter patientEncounter : list) {
+//            Bill finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
+//            if (finalBill == null) {
+//                continue;
+//            }
+//            hm.clear();
+//            hm.put("inwTp", InwardChargeType.AdmissionFee);
+//            hm.put("b", finalBill);
+//            sql = "SELECT  i "
+//                    + " FROM BillItem i "
+//                    + " where i.retired=false"
+//                    + " and i.inwardChargeType=:inwTp"
+//                    + " and i.bill=:b ";
+//            BillItem billItem = BillItemFacade.findFirstBySQL(sql, hm);
+//            admissionGross += billItem.getGrossValue();
+//            admissionDiscount += billItem.getDiscount();
+//            admissionNetValue += billItem.getNetValue();
+//        }
 
     }
 
@@ -877,7 +878,7 @@ public class InwardReportController1 implements Serializable {
             hm.put("cc", institution);
         }
 
-        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1265,10 +1266,10 @@ public class InwardReportController1 implements Serializable {
     public void process() {
         makeNull();
 
-        createOpdServiceWithoutPro();
-        createRoomTable();
-        createDoctorPaymentInward();
-        createTimedService();
+//        createOpdServiceWithoutPro();
+//        createRoomTable();
+//        createDoctorPaymentInward();
+//        createTimedService();
         createInwardService();
 
     }
