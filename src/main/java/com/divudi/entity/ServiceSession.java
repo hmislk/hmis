@@ -29,15 +29,15 @@ import javax.persistence.Transient;
 public class ServiceSession implements Serializable {
 
     @OneToMany(mappedBy = "serviceSession")
-     List<Fee> fees;
-     static final long serialVersionUID = 1L;
+    List<Fee> fees;
+    static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-     Long id;
-     String name;
-     String description;
+    Long id;
+    String name;
+    String description;
     @Transient
-     String dayString;
+    String dayString;
     int sessionWeekday;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date sessionDate;
@@ -45,14 +45,14 @@ public class ServiceSession implements Serializable {
     Date sessionTime;
     @Temporal(javax.persistence.TemporalType.TIME)
     Date sessionAt;
-     double hospitalFee;
-     double staffFee;
-     double tax;
-     double totalFee;
-     double hospitalFfee;
-     double staffFfee;
-     double taxf;
-     double totalFfee;
+    double hospitalFee;
+    double staffFee;
+    double tax;
+    double totalFee;
+    double hospitalFfee;
+    double staffFfee;
+    double taxf;
+    double totalFfee;
     int startingNo;
     int numberIncrement;
     int maxNo;
@@ -73,21 +73,21 @@ public class ServiceSession implements Serializable {
     ServiceSession beforeSession;
     /////Newly Added
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     Date startingTime;
-     boolean refundable=false;
-     int displayCount;
-     double displayPercent;
-     double duration;
-     int roomNo;
+    Date startingTime;
+    boolean refundable = false;
+    int displayCount;
+    double displayPercent;
+    double duration;
+    int roomNo;
     //Created Properties
     @ManyToOne
-     WebUser creater;
+    WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
     boolean retired;
     @ManyToOne
-     WebUser retirer;
+    WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
@@ -234,7 +234,7 @@ public class ServiceSession implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
-      
+
     }
 
     public Speciality getSpeciality() {
@@ -294,7 +294,7 @@ public class ServiceSession implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof ServiceSession)) {
             return false;
         }
@@ -402,12 +402,10 @@ public class ServiceSession implements Serializable {
         this.staffFee = staffFee;
     }
 
-    public double getTotalFee() {       
+    public double getTotalFee() {
         return totalFee;
     }
 
-    
-    
     public void setTotalFee(double totalFee) {
         this.totalFee = totalFee;
     }

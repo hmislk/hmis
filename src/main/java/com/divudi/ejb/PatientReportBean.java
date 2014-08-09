@@ -231,9 +231,9 @@ public class PatientReportBean {
             }
 
             if (val != null) {
-                
+
                 getPtRivFacade().create(val);
-                
+
                 ptReport.getPatientReportItemValues().add(val);
                 System.err.println("sss: " + val);
             }
@@ -269,16 +269,22 @@ public class PatientReportBean {
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
+                        
+                        //added by safrin
+                        getPtRivFacade().create(val);
+                        ptReport.getPatientReportItemValues().add(val);
+
                         //System.out.println("value added to pr teport" + ptReport);
                     }
+
                 }
             }
-            if (val != null) {
-                if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
-                    ptReport.getPatientReportItemValues().add(val);
-                    //System.err.println("sss: " + val);
-                }
-            }
+//            if (val != null) {
+//                if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+//                    ptReport.getPatientReportItemValues().add(val);
+//                    //System.err.println("sss: " + val);
+//                }
+//            }
         }
 
         //Add Antibiotics
@@ -301,10 +307,15 @@ public class PatientReportBean {
                 val.setPatient(ptReport.getPatientInvestigation().getPatient());
                 val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                 val.setPatientReport(ptReport);
+                
+                //Added by Safrin
+                getPtRivFacade().create(val);
                 ptReport.getPatientReportItemValues().add(val);
             }
+
         }
         //System.err.println("items :" + ptReport.getPatientReportItemValues());
+
     }
 
     @EJB

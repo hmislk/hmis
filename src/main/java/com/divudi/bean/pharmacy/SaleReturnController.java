@@ -14,6 +14,7 @@ import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.RefundBill;
@@ -138,8 +139,6 @@ public class SaleReturnController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
-    
 
     private void savePreReturnBill() {
         //   getReturnBill().setReferenceBill(getBill());
@@ -176,7 +175,7 @@ public class SaleReturnController implements Serializable {
         refundBill.copy(getReturnBill());
         refundBill.setBillType(BillType.PharmacySale);
         refundBill.setReferenceBill(getReturnBill());
-        
+
         refundBill.setTotal(getReturnBill().getTotal());
         refundBill.setNetTotal(getReturnBill().getTotal());
 
@@ -301,6 +300,8 @@ public class SaleReturnController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+
+
     public void settle() {
         savePreReturnBill();
         savePreComponent();
@@ -316,6 +317,8 @@ public class SaleReturnController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getReturnBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
+
+     
         printPreview = true;
         UtilityController.addSuccessMessage("Successfully Returned");
 

@@ -16,11 +16,11 @@
                             <h:panelGroup>
                                 <h:panelGrid columns="5">
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
                                     <p:commandButton ajax="false" action="#{searchController.createInwardIntrimBills()}" value="Search" onclick="onSubmitButton();" />
@@ -65,7 +65,7 @@
                                 <h:panelGroup rendered="#{bb.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>                             
                             </p:column>

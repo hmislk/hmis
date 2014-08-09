@@ -789,7 +789,8 @@ public class mdInwardReportController implements Serializable {
         sql = "select sum(b.netTotal) from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.createdAt between :fromDate and :toDate "
+//                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.createdAt <= :toDate "
                 + " and b.retired=false  "
                 + " and b.patientEncounter.discharged =false";
 
@@ -812,7 +813,7 @@ public class mdInwardReportController implements Serializable {
         temMap.put("billType", BillType.InwardPaymentBill);
         temMap.put("class", bill.getClass());
         temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
+//        temMap.put("fromDate", fromDate);
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -824,7 +825,8 @@ public class mdInwardReportController implements Serializable {
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.createdAt between :fromDate and :toDate "
+//                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.createdAt <= :toDate "
                 + " and b.retired=false  "
                 + " and b.patientEncounter.discharged =false";
 
@@ -847,7 +849,7 @@ public class mdInwardReportController implements Serializable {
         temMap.put("billType", BillType.InwardPaymentBill);
         temMap.put("class", bill.getClass());
         temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
+//        temMap.put("fromDate", fromDate);
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -872,7 +874,9 @@ public class mdInwardReportController implements Serializable {
                 + " from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+//                + " and b.createdAt between :fromDate and :toDate "
+//                + " and b.createdAt <= :toDate"
                 + " and b.retired = false"
                 + " and b.patientEncounter.discharged = true"
                 + " and b.patientEncounter.paymentFinalized = true";
@@ -908,7 +912,9 @@ public class mdInwardReportController implements Serializable {
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+//                + " and b.createdAt between :fromDate and :toDate "
+//                + " and b.createdAt <= :toDate"
                 + " and b.retired = false  "
                 + " and b.patientEncounter.discharged = true"
                 + " and b.patientEncounter.paymentFinalized = true";

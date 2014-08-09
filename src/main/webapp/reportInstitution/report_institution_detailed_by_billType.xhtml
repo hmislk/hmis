@@ -53,12 +53,12 @@
                             <p:spacer width="20" height="0"/>
                             <h:outputLabel value="From" />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
                             </h:outputLabel>
                             <p:spacer width="10" height="0"/>
                             <h:outputLabel value="To"/>
                             <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
                             </h:outputLabel>
                         </h:panelGrid>
                     </f:facet>
@@ -260,7 +260,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b1.createdAt}" >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -418,7 +418,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -739,7 +739,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b1.createdAt}" >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Cashier"  >
@@ -889,7 +889,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1044,7 +1044,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.createdAt}"  >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>   
 
@@ -1113,7 +1113,7 @@
                                     <h:outputLabel value="PaymentsCancel" />
                                 </f:facet>
                                 <h:outputLabel value="#{b.createdAt}"  >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1184,7 +1184,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b4.createdAt}" >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1287,7 +1287,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b4.createdAt}" >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1353,7 +1353,7 @@
                                     <h:outputLabel value="Billed Date/Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b4.billedBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1392,7 +1392,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b7.createdAt}" >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1498,7 +1498,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b7.createdAt}" >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1572,7 +1572,7 @@
                                     <h:outputLabel value="Billed Date/Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b7.billedBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column exportable="false">
@@ -1813,7 +1813,7 @@
                                     <h:outputLabel value="Billed Date/Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.billedBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yy hh:mm a"/>
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1870,7 +1870,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b.createdAt}"  >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>     
                             <p:column headerText="Cashier"  >
@@ -1934,7 +1934,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b.createdAt}"  >
-                                    <f:convertDateTime pattern="hh:mm a"/>
+                                    <f:convertDateTime pattern="HH:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 

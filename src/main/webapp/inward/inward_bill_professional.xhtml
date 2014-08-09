@@ -76,7 +76,7 @@
                                         <h:outputLabel value="Professional Fee"/>
                                         <p:inputText autocomplete="off" id="prof" value="#{inwardProfessionalBillController.currentBillFee.feeValue}"/>
                                         <h:outputLabel value="Fee At"/>
-                                        <p:calendar styleClass="dateTimePicker" id="feeAt" value="#{inwardProfessionalBillController.currentBillFee.feeAt}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                                        <p:calendar styleClass="dateTimePicker" id="feeAt" value="#{inwardProfessionalBillController.currentBillFee.feeAt}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                             <f:ajax event="dateSelect"  render="feeAt"/>
                                         </p:calendar>
                                         <h:outputLabel/>

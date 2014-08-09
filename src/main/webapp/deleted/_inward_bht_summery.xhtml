@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="./resources/template/template.xhtml"
+                template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -71,7 +71,7 @@
                         <p:panel header="Discharge">
                             <h:panelGrid columns="2">
                                 <p:outputLabel value="Discharge Time"/>
-                                <p:calendar value="#{bhtSummeryController.patientEncounter.dateOfDischarge}" pattern="dd MMMM yyyy hh mm a" >                               
+                                <p:calendar value="#{bhtSummeryController.patientEncounter.dateOfDischarge}" pattern="dd MMMM yyyy hh mm ss a" >                               
                                     <f:ajax execute="@this" render="sum tvPt ss" event="dateSelect" listener="#{bhtSummeryController.checkDate}" />
                                 </p:calendar> 
                                 <p:commandButton ajax="false" style="float: right;" value="Disharge" action="#{bhtSummeryController.discharge}" />
@@ -98,12 +98,12 @@
                                     </p:column>                                                                          
                                     <p:column headerText="Admitted At">
                                         <h:outputLabel value="#{rm.patientRoom.admittedAt}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Discharged At">
                                         <h:outputLabel value="#{rm.patientRoom.dischargedAt}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                     </p:column>
 
@@ -135,17 +135,17 @@
                                     </p:column>
                                     <p:column headerText="Added Date">
                                         <h:outputLabel value="#{ser.createdAt}">
-                                            <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Added Time">
                                         <h:outputLabel value="#{ser.createdAt}">
-                                            <f:convertDateTime pattern="hh mm a"/>
+                                            <f:convertDateTime pattern="hh mm ss a"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Added User">
                                         <h:outputLabel value="#{ser.creater.webUserPerson.name}">
-                                            <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
@@ -159,7 +159,7 @@
                             </p:tab>
 
                             <p:tab id="tabTimed" title="Timed Service Detail"  >
-                                <p:calendar value="#{bhtSummeryController.toTime}" pattern="dd MMMM yyyy hh mm a" >    
+                                <p:calendar value="#{bhtSummeryController.toTime}" pattern="dd MMMM yyyy hh mm ss a" >    
                                 </p:calendar> 
                                 <p:dataTable value="#{bhtSummeryController.patientItems}" var="ti">
                                     <p:column headerText="Service Name">
@@ -167,7 +167,7 @@
                                     </p:column>
                                     <p:column headerText="Start Time">
                                         <h:outputLabel value="#{ti.fromTime}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Total">
@@ -175,7 +175,7 @@
                                     </p:column>
                                     <p:column headerText="Stopped Time">
                                         <h:outputLabel value="#{ti.toTime}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column >

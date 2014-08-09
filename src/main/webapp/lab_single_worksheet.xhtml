@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="./resources/template/template.xhtml"
+                template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -66,7 +66,7 @@
 
                                             <h:outputLabel style="font-size: 11px!important;" value="Billed At : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.createdAt}" >
-                                                <f:convertDateTime pattern="dd MM yyyy HH:mm a "/>
+                                                <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
                                             </h:outputLabel>
                                         </h:panelGrid>
                                         

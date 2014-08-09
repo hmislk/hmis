@@ -12,10 +12,10 @@
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                 <h:panelGrid columns="6" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{storeSaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm a"  >
+                    <p:calendar value="#{storeSaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a"  >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{storeSaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm a" >
+                    <p:calendar value="#{storeSaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a" >
                     </p:calendar>
                     <h:outputLabel value="Department"/>
                     <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
@@ -100,7 +100,7 @@
                         </p:column>
                         <p:column>
                             <h:outputLabel value="#{b.createdAt}">
-                                <f:convertDateTime pattern="hh mm a" />
+                                <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>
 
@@ -232,7 +232,7 @@
                         </p:column>
                         <p:column>
                             <h:outputLabel value="#{b.createdAt}">
-                                <f:convertDateTime pattern="hh mm a" />
+                                <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>                        
                         <p:column>
@@ -363,7 +363,7 @@
                         </p:column>
                         <p:column>
                             <h:outputLabel value="#{b.createdAt}">
-                                <f:convertDateTime pattern="hh mm a" />
+                                <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>                        
                         <p:column>

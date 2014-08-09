@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="./resources/template/template.xhtml"
+                template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -52,11 +52,11 @@
 
                                     </p:inputText>
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar  pattern="dd MMMM yyyy hh mm a"  id="fromDate" value="#{patientInvestigationController.fromDate}"  >
+                                    <p:calendar  pattern="dd MMMM yyyy hh mm ss a"  id="fromDate" value="#{patientInvestigationController.fromDate}"  >
                                         <f:ajax event="dateSelect" execute="toDate fromDate"  render="dtF toDate fromDate"/>
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar  pattern="dd MMMM yyyy hh mm a"  id="toDate" value="#{patientInvestigationController.toDate}"  >
+                                    <p:calendar  pattern="dd MMMM yyyy hh mm ss a"  id="toDate" value="#{patientInvestigationController.toDate}"  >
                                         <f:ajax event="dateSelect" execute="toDate fromDate"  render="dtF toDate fromDate"/>
                                     </p:calendar>
 
@@ -100,29 +100,29 @@
                                         <br/>
                                         <h:outputLabel value="Billed at " />
                                         <h:outputLabel value="#{smpIx.billItem.bill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                         <br/>
                                         <h:outputLabel value="Sampled at " />
                                         <h:outputLabel id="lblSample" rendered="#{smpIx.collected}" value="#{smpIx.sampledAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                         <br/>
                                         <h:outputLabel value="Received at " />
                                         <h:outputLabel rendered="#{smpIx.received}" value="#{smpIx.receivedAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{smpIx.billItem.bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
                                             <h:outputLabel style="color: red;" rendered="#{smpIx.billItem.bill.cancelled}" value="#{smpIx.billItem.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{smpIx.billItem.refunded}" >
                                             <h:outputLabel style="color: red;" value="Refunded at " />
                                             <h:outputLabel style="color: red;" rendered="#{smpIx.billItem.refunded}" value="#{smpIx.billItem.referanceBillItem.bill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                         </h:panelGroup>
                                         <br/>

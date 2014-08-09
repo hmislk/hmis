@@ -35,7 +35,7 @@ import javax.persistence.Transient;
 @Entity
 public class PatientReport implements Serializable {
 
-    @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PatientReportItemValue> patientReportItemValues;
 
 //    @Transient

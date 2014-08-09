@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="./resources/template/template.xhtml"
+                template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -45,7 +45,7 @@
                                     <f:selectItems value="#{paymentSchemeController.items}" 
                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                     <p:ajax process="@this pay" 
-                                            update=":#{p:component('pBillDetails')}   tblBillItem creditCard cheque slip" 
+                                            update=":#{p:component('pBillDetails')} :#{p:component('creditCompany')} :#{p:component('creditStaff')}  tblBillItem creditCard cheque slip" 
                                             event="change" 
                                             listener="#{billController.changeListener()}"/>
                                 </p:selectOneMenu>
@@ -344,10 +344,45 @@
                                             </p:autoComplete>
                                             <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
                                         </p:tab>
-                                        <p:tab title="Company" >
-                                            <p:autoComplete id="creditCom" forceSelection="true" value="#{billController.creditCompany}"  completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                                <f:ajax  event="itemSelect" listener="#{billController.calTotals()}" execute="@this" render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
-                                            </p:autoComplete>                                           
+                                        <p:tab title="Credit" >
+                                            <p:autoComplete id="creditCompany" 
+                                                            forceSelection="true" 
+                                                            value="#{billController.creditCompany}"  
+                                                            completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
+                                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                                <f:ajax  event="itemSelect" listener="#{billController.calTotals()}"
+                                                         execute="@this" 
+                                                         render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
+                                            </p:autoComplete>   
+                                            <p:autoComplete  style="width: 400px;" 
+                                                             forceSelection="true" 
+                                                             value="#{billController.toStaff}" 
+                                                             id="creditStaff"
+                                                             completeMethod="#{staffController.completeStaff}" 
+                                                             var="mys" 
+                                                             itemLabel="#{mys.person.nameWithTitle}" 
+                                                             itemValue="#{mys}"
+                                                             converter="stfcon" >
+                                                <p:column headerText="Name" >
+                                                    <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Annual Entitlement">
+                                                    <h:outputLabel value="#{mys.annualWelfareQualified}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column  headerText="Annual Utilized Value">
+                                                    <h:outputLabel value="#{mys.annualWelfareUtilized}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+
+                                                <p:ajax process="@this" 
+                                                        update="creditCompany :#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}"
+                                                        event="itemSelect"  listener="#{billController.calTotals()}" />
+
+                                            </p:autoComplete>
+                                            <p:watermark for="creditStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
                                         </p:tab>                                       
                                         <p:tab title="Staff">
                                             <p:autoComplete forceSelection="true" converter="stfcon" value="#{billController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
@@ -521,62 +556,62 @@
                                         <div >
 
 
-                                            <div class="receiptno" >
+                                            <div class="receiptnoPrinting" >
                                                 <h:outputLabel value="#{bill.insId}">
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="billdate" >
+                                            <div class="billdatePrinting" >
                                                 <h:outputLabel value="#{bill.billDate}">
                                                     <f:convertDateTime pattern="dd/MM/yy"/>
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="payment" >
+                                            <div class="paymentPrinting" >
                                                 <h:outputLabel value="#{bill.paymentMethod}">
 
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="billtime" >
+                                            <div class="billtimePrinting" >
                                                 <h:outputLabel value="#{bill.billTime}"
                                                                >
-                                                    <f:convertDateTime pattern="hh mm a"/>
+                                                    <f:convertDateTime pattern="hh mm ss a"/>
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="ptname" >
+                                            <div class="ptnamePrinting" >
                                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}"
                                                                >
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="phone" >
+                                            <div class="phonePrinting" >
                                                 <h:outputLabel value="#{bill.patient.person.phone}"
                                                                >
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="cashier" >
+                                            <div class="cashierPrinting" >
                                                 <h:outputLabel value="Cashier : #{bill.creater.code}">
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="consult" >
+                                            <div class="consultPrinting" >
                                                 <h:outputLabel value="#{bill.collectingCentre.name}" />
                                                 <h:outputLabel value="#{bill.creditCompany.name}" />
                                             </div>
 
 
 
-                                            <div class="items" >
+                                            <div class="itemsPrinting" >
                                                 <h:dataTable value="#{billController.lstBillEntries}" var="bip"   >
                                                     <h:column >
                                                         <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
                                                         </h:outputLabel>
                                                         <h:panelGroup rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id and bip.billItem.billSession ne null }"  >
                                                             <br/>
-                                                            <h:panelGroup rendered="#{bip.billItem.item.sessionNumberType eq null}">
+                                                            <h:panelGroup rendered="#{bip.billItem.item.sessionNumberType ne null}">
                                                                 <h:outputLabel value="Session No . " ></h:outputLabel>
                                                                 <h:outputLabel value="#{bip.billItem.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
                                                                 </h:outputLabel>
@@ -586,17 +621,17 @@
                                                 </h:dataTable>
                                             </div>
 
-                                            <div class="rates"  >
+                                            <div class="ratesPrinting"  >
                                                 <h:dataTable value="#{billController.lstBillEntries}" var="bip1"  >
                                                     <h:column >
-                                                        <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="margin: 4px; font-size: 11px!important;" >
+                                                        <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="font-size: 11px!important;" >
                                                             <f:convertNumber pattern="#,000.00" />
                                                         </h:outputLabel>
                                                     </h:column>
                                                 </h:dataTable>
                                             </div>
 
-                                            <div class="totals" >
+                                            <div class="totalsPrinting">
 
                                                 <table>
                                                     <tr>
@@ -611,10 +646,10 @@
                                                     </tr>
                                                     <tr>
                                                         <td style="text-align: left; min-width: 3cm;">
-                                                            <h:outputLabel value="Total" style="  text-align: right!important;  font-size: 15px!important;   "/>
+                                                            <h:outputLabel value="TOTAL" style="  text-align: right!important; font-weight: bold; font-size: 15px!important;   "/>
                                                         </td>
                                                         <td style="text-align: right!important; ">
-                                                            <h:outputLabel value="#{bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                            <h:outputLabel value="#{bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important; ">
                                                                 <f:convertNumber pattern="#,000.00" />
                                                             </h:outputLabel>
                                                         </td>

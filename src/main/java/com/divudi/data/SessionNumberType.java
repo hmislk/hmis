@@ -14,4 +14,5 @@ public enum SessionNumberType {
     ByCategory,
     BySubCategory,
     ByDoctorSession,
+    ByBill,
 }

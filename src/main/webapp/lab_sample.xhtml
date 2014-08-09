@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="./resources/template/template.xhtml"
+                template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -28,11 +28,11 @@
 
                         <p:panelGrid columns="5">
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="fromDate" value="#{patientInvestigationController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm a" >
+                            <p:calendar id="fromDate" value="#{patientInvestigationController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
                                 <f:ajax event="dateSelect" execute="sample"  render="sample toDate fromDate"/>
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{patientInvestigationController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm a" >
+                            <p:calendar id="toDate" value="#{patientInvestigationController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
                                 <f:ajax event="dateSelect" execute="sample"  render="sample toDate fromDate"/>
                             </p:calendar>
                             
@@ -57,9 +57,9 @@
                                 </p:selectBooleanCheckbox>
                             </p:column>
                             <p:column >
-                                <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="dd MM yyyy hh mm a" value="#{patientInvestigationController.sampledOutsideDate}" ></p:calendar>
+                                <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="dd MM yyyy hh mm ss a" value="#{patientInvestigationController.sampledOutsideDate}" ></p:calendar>
                                 <h:outputLabel rendered="#{smpIx.collected}"  id="lblSampledDate" value="#{smpIx.sampledAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"  />
+                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a"  />
                                 </h:outputLabel>
                             </p:column>
                             <p:column >

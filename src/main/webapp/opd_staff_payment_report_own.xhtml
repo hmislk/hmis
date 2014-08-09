@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="./resources/template/template.xhtml"
+                template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -41,7 +41,7 @@
                         <p:column headerText="Date" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
                             <h:commandLink action="payment_bill_reprint" >
                                 <h:outputLabel value="#{b.createdAt}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm a"/>
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <f:setPropertyActionListener value="#{b}" target="#{staffPaymentBillController.current}"/>
                                 <f:setPropertyActionListener value="#{b.staff}" target="#{staffPaymentBillController.currentStaff}"/>

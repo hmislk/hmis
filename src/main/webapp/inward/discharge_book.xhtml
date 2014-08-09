@@ -19,15 +19,21 @@
                         <h:panelGrid columns="6" >
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
                                 <f:selectItem itemLabel="All Admission Type"/>
                                 <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="BHT Type : " ></h:outputLabel>
+                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController.paymentMethod}"  >
+                                <f:selectItem itemLabel="All BHT Types" />                           
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
 
                         </h:panelGrid>
@@ -46,28 +52,32 @@
 
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{inwardReportController.patientEncounters}" var="i"  >
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" 
+                                         value="#{inwardReportController.patientEncounters}" var="i" rowIndexVar="in"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="Inward Discharge Details "/>
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{inwardReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{inwardReportController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
 
-<!--                                <p:column headerText="View">
-                                    <p:commandButton ajax="false" value="View Detail"
-                                                     action="/inward/inward_bill_intrim_finalized"
-                                                     actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}" >
-                                        <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
-                                    </p:commandButton>
-                                </p:column>-->
+                                <!--                                <p:column headerText="View">
+                                                                    <p:commandButton ajax="false" value="View Detail"
+                                                                                     action="/inward/inward_bill_intrim_finalized"
+                                                                                     actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}" >
+                                                                        <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
+                                                                    </p:commandButton>
+                                                                </p:column>-->
+                                <p:column>
+                                    #{in+1}
+                                </p:column>
                                 <p:column headerText="Discharge Date">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discharge Date"/>
@@ -169,6 +179,11 @@
                                     <h:outputLabel value="#{i.finalBill.netTotal}"  >
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                         <h:outputLabel value="#{inwardReportController.total}"  >
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Paid Amount">
@@ -178,6 +193,11 @@
                                     <h:outputLabel value="#{i.finalBill.paidAmount}"  >
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.paid}"  >
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Due Amount">

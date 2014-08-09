@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="./resources/template/template.xhtml"
+                template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html">
@@ -29,7 +29,7 @@
                 <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                 <p:column headerText="Time">
                     <h:outputLabel value="#{bs.sessionTime}">
-                        <f:convertDateTime pattern="hh:mm a"/>
+                        <f:convertDateTime pattern="hh:mm:ss a"/>
                     </h:outputLabel>
 
                 </p:column>
