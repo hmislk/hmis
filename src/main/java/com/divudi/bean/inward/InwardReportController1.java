@@ -59,6 +59,7 @@ public class InwardReportController1 implements Serializable {
     List<RoomChargeInward> roomChargeInwards;
     List<String1Value2> professionals;
     List<String2Value4> inwardCharges;
+    List<String1Value2> finalValues;
     List<BillFee> billFees;
     @EJB
     BillFeeFacade billFeeFacade;
@@ -772,6 +773,7 @@ public class InwardReportController1 implements Serializable {
         sql = "SELECT pe "
                 + " FROM PatientEncounter pe"
                 + " where pe.retired=false "
+                + " and pe.discharged=true "
                 + " and pe.paymentFinalized=true "
                 + " and pe.dateOfDischarge between :fd and :td  ";
 
@@ -797,8 +799,8 @@ public class InwardReportController1 implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        List<PatientEncounter> list = patientEncounterFacade.findBySQL(sql, hm, TemporalType.DATE);
-
+        List<PatientEncounter> list = patientEncounterFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("list = " + list.size());
         for (PatientEncounter patientEncounter : list) {
             Bill finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
             if (finalBill == null) {
@@ -877,7 +879,7 @@ public class InwardReportController1 implements Serializable {
             hm.put("cc", institution);
         }
 
-        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1270,6 +1272,37 @@ public class InwardReportController1 implements Serializable {
         createDoctorPaymentInward();
         createTimedService();
         createInwardService();
+        createFinalSummeryMonth();
+
+    }
+    
+    private void createFinalSummeryMonth() {
+        System.err.println("createFinalSummery");
+        finalValues = new ArrayList<>();
+        String1Value2 dd;
+        ////////       
+        dd = new String1Value2();
+        dd.setString("Total Gross ");
+        dd.setValue1(inwardGross+opdSrviceGross+roomGross+professionalGross+timedGross);
+        finalValues.add(dd);
+        ///////////
+        dd = new String1Value2();
+        dd.setString("Total Margin ");
+        dd.setValue1(inwardMargin + opdServiceMargin);
+        finalValues.add(dd);
+        ///////////
+        dd = new String1Value2();
+        dd.setString("Total Discount ");
+        dd.setValue1(inwardDiscount+timedDiscount+roomDiscount+opdServiceDiscount);
+        finalValues.add(dd);
+        ///////////
+
+        dd = new String1Value2();
+        dd.setString("Total Net ");
+        Double tmp = inwardNetValue+opdServiceNetValue+(roomGross-roomDiscount)+professionalGross+(timedGross-timedDiscount);
+        dd.setValue1(tmp);
+        finalValues.add(dd);
+
 
     }
 
@@ -1700,6 +1733,14 @@ public class InwardReportController1 implements Serializable {
 
     public void setBillFeeNet(double billFeeNet) {
         this.billFeeNet = billFeeNet;
+    }
+
+    public List<String1Value2> getFinalValues() {
+        return finalValues;
+    }
+
+    public void setFinalValues(List<String1Value2> finalValues) {
+        this.finalValues = finalValues;
     }
 
 }

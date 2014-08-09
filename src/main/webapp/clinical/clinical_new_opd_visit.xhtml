@@ -167,7 +167,7 @@
                                             </p:column>
                                             <p:column headerText="Date/Time" >
                                                 <h:outputLabel value="#{bill.createdAt}" >
-                                                    <f:convertDateTime parent="dd-MMM-yyyy hh:mm a" ></f:convertDateTime>
+                                                    <f:convertDateTime parent="dd-MMM-yyyy hh:mm:ss a" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Bill Type" >
@@ -195,24 +195,24 @@
                                                     <br/>
                                                     <h:outputLabel value="Sampled : " />
                                                     <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
-                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                                     </h:outputLabel>
                                                     <br/>
                                                     <h:outputLabel value="Received : " />
                                                     <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
-                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                                     </h:outputLabel>
                                                     <br/>
                                                     <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
                                                         <h:outputLabel style="color: red;" value="Cancelled : " />
                                                         <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
-                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                                         </h:outputLabel>
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{pi.billItem.refunded}" >
                                                         <h:outputLabel style="color: red;" value="Refunded : " />
                                                         <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
-                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                                         </h:outputLabel>
                                                     </h:panelGroup>
 
@@ -253,7 +253,7 @@
                                                     <h:outputLabel value="Receive Sample" rendered="#{!pi.received}" ></h:outputLabel>
                                                     <h:outputLabel value="Sample received at " rendered="#{pi.received}" ></h:outputLabel>
                                                     <h:outputLabel value="#{pi.receivedAt}" rendered="#{pi.received}" >
-                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                                     </h:outputLabel>
                                                 </p:tooltip>
 
@@ -261,7 +261,7 @@
                                                     <h:outputLabel value="Collect Sample" rendered="#{!pi.collected }" ></h:outputLabel>
                                                     <h:outputLabel value="Sampled at " rendered="#{pi.collected}" ></h:outputLabel>
                                                     <h:outputLabel value="#{pi.sampledAt}" rendered="#{pi.collected}" >
-                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                                     </h:outputLabel>
                                                 </p:tooltip>
 
@@ -331,17 +331,17 @@
                                                             <br/>
                                                             <h:outputLabel value="Data enterd at " ></h:outputLabel>
                                                             <h:outputLabel value="#{dpr.dataEntryAt}" >
-                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                                             </h:outputLabel>
                                                             <br/>
                                                             <h:outputLabel value="Approved at " rendered="#{dpr.approved}" ></h:outputLabel>
                                                             <h:outputLabel value="#{dpr.approveAt}"  rendered="#{dpr.approved}" >
-                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                                             </h:outputLabel>
                                                             <br/>
                                                             <h:outputLabel value="Printed at "  rendered="#{dpr.printed}" ></h:outputLabel>
                                                             <h:outputLabel value="#{dpr.printingAt}"  rendered="#{dpr.printed}" >
-                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                                             </h:outputLabel>
                                                         </p:tooltip>
 
