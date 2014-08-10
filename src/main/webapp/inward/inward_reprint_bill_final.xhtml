@@ -17,9 +17,9 @@
                     <p:panel header="Reprint" styleClass="alignTop" >
                         <h:panelGrid columns="1">
                             <p:panel>
-                                <p:commandButton ajax="false" value="Cancel" action="inward_cancel_bill_final" disabled="#{inwardSearch.bill.cancelled}" onclick="onSubmitButton();" />
-                                <p:commandButton rendered="false" ajax="false" value="Update" action="#{inwardSearch.update()}" onclick="onSubmitButton();" />
-                                <p:commandButton rendered="false" ajax="false" value="Replace" action="#{inwardSearch.replace()}" onclick="onSubmitButton();" />
+                                <p:commandButton ajax="false" value="Cancel" action="inward_cancel_bill_final" disabled="#{inwardSearch.bill.cancelled}"  />
+                                <p:commandButton rendered="false" ajax="false" value="Update" action="#{inwardSearch.update()}"  />
+                                <p:commandButton rendered="false" ajax="false" value="Replace" action="#{inwardSearch.replace()}"  />
                             </p:panel>
 
                             <h:panelGrid columns="2">
@@ -35,30 +35,30 @@
                                 </p:panel>
                                 <p:panel header="Not Claimable" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">
                                     <h:panelGrid columns="1">
-                                        <p:commandButton value="Patient Copy without Professional" ajax="false" onclick="onSubmitButton();"  >
+                                        <p:commandButton value="Patient Copy without Professional" ajax="false"   >
                                             <p:printer target="notClaimablePatientCopy" ></p:printer>
                                         </p:commandButton>                              
-                                        <p:commandButton value="Duplicate wihout Professional" ajax="false" onclick="onSubmitButton();"  >
+                                        <p:commandButton value="Duplicate wihout Professional" ajax="false"   >
                                             <p:printer target="notClaimableDuplicate" ></p:printer>
                                         </p:commandButton>  
-                                        <p:commandButton value="Professional Fees" ajax="false" onclick="onSubmitButton();"  >
+                                        <p:commandButton value="Professional Fees" ajax="false"   >
                                             <p:printer target="professional" ></p:printer>
                                         </p:commandButton>
                                     </h:panelGrid>
                                 </p:panel>
                                 <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
                                     <h:panelGrid columns="1">
-                                        <p:commandButton ajax="false" value="Green Sheet Print" onclick="onSubmitButton();"  >
+                                        <p:commandButton ajax="false" value="Green Sheet Print"   >
                                             <p:printer target="finalBillGreenSheet" ></p:printer>
                                         </p:commandButton>
                                     </h:panelGrid>
                                 </p:panel>
                                 <p:panel header="Not Claimable" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
                                     <h:panelGrid columns="1">
-                                        <p:commandButton ajax="false" value="Green Sheet Print Without Professional" onclick="onSubmitButton();"  >
+                                        <p:commandButton ajax="false" value="Green Sheet Print Without Professional"   >
                                             <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
                                         </p:commandButton>
-                                        <p:commandButton value="Professional Fees" ajax="false" onclick="onSubmitButton();"  >
+                                        <p:commandButton value="Professional Fees" ajax="false"   >
                                             <p:printer target="professional" ></p:printer>
                                         </p:commandButton>
                                     </h:panelGrid>
@@ -116,7 +116,7 @@
                                                  rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}" />
                                     <p:commandButton ajax="false" value="SET CREDIT LIMIT"
                                                      action="#{inwardSearch.edit()}"
-                                                     rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}" onclick="onSubmitButton();"   />
+                                                     rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}"    />
                                 </p:panelGrid>
                             </p:panel>
                         </p:panelGrid>
