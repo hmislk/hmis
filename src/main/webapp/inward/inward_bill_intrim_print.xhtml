@@ -22,7 +22,7 @@
                             <p:commandButton  value="Save Intrim" action="#{intrimPrintController.saveIntrimBill}" ajax="false"
                                               style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
                             </p:commandButton>
-                            <p:commandButton value="Print Intrim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}" onclick="onSubmitButton();" >
+                            <p:commandButton value="Print Intrim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}" >
                                 <p:printer target="intrim" ></p:printer>
                             </p:commandButton>
                         </h:panelGrid>
