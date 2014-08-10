@@ -1228,8 +1228,8 @@ public class InwardReportControllerBht implements Serializable {
                 + " sum(bf.feeGrossValue),"
                 + " sum(bf.feeValue)"
                 + " from BillFee bf "
-                + " where bf.bill.patientEncounter.paymentFinalized=true "
-                + " and bf.retired=false"
+                + " where bf.retired=false "
+                + " and bf.bill.patientEncounter.paymentFinalized=true "                
                 + " and bf.billItem.retired=false "
                 + " and bf.fee.feeType!=:ftp "
                 + " and bf.bill.patientEncounter=:bhtno ";
