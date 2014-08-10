@@ -181,10 +181,21 @@ public class InwardReportController implements Serializable {
         total = 0;
         paid = 0;
         for (PatientEncounter p : patientEncounters) {
+            inwardReportControllerBht.setPatientEncounter(p);
+            inwardReportControllerBht.process();
+            
+            if (Math.abs((inwardReportControllerBht.getNetTotal() - inwardReportControllerBht.getFinalBill().getNetTotal()))>0.1) {
+                System.err.println("Calculated "+inwardReportControllerBht.getNetTotal());
+                System.err.println("Final "+inwardReportControllerBht.getFinalBill().getNetTotal());
+                System.err.println("ERRORNUOES BHT " + p.getBhtNo());
+            }
             total += p.getFinalBill().getNetTotal();
             paid += p.getFinalBill().getPaidAmount();
         }
     }
+
+    @Inject
+    InwardReportControllerBht inwardReportControllerBht;
 
     public BhtSummeryController getBhtSummeryController() {
         return bhtSummeryController;
@@ -209,8 +220,6 @@ public class InwardReportController implements Serializable {
     public void setPaid(double paid) {
         this.paid = paid;
     }
-    
-    
 
     public List<IncomeByCategoryRecord> getIncomeByCategoryRecords() {
         return incomeByCategoryRecords;
