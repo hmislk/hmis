@@ -86,15 +86,15 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     double netTotal;
     double netPaid;
-    
+
     public void fillAdmissionBookOnlyInward() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
-//                + " and b.discharged=false "
+                //                + " and b.discharged=false "
                 + " and b.paymentFinalized=false "
                 + " and b.dateOfAdmission between :fd and :td ";
 
@@ -107,11 +107,11 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         calTtoal();
-        for(PatientEncounter p: patientEncounters){
-            netTotal+=p.getTransTotal();
+        for (PatientEncounter p : patientEncounters) {
+            netTotal += p.getTransTotal();
             System.out.println("p.getTransPaid() = " + p.getTransPaid());
             System.out.println("Bht No = " + p.getBhtNo());
-            netPaid+=p.getTransPaid();
+            netPaid += p.getTransPaid();
         }
     }
 
@@ -148,6 +148,9 @@ public class InwardReportController implements Serializable {
 
     }
 
+    double total;
+    double paid;
+
     public void fillDischargeBook() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
@@ -161,13 +164,53 @@ public class InwardReportController implements Serializable {
             m.put("ad", admissionType);
         }
 
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
+
         sql += " order by  b.dateOfDischarge";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
+        if (patientEncounters == null) {
+            return;
+        }
+        total = 0;
+        paid = 0;
+        for (PatientEncounter p : patientEncounters) {
+            total += p.getFinalBill().getNetTotal();
+            paid += p.getFinalBill().getPaidAmount();
+        }
     }
+
+    public BhtSummeryController getBhtSummeryController() {
+        return bhtSummeryController;
+    }
+
+    public void setBhtSummeryController(BhtSummeryController bhtSummeryController) {
+        this.bhtSummeryController = bhtSummeryController;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public double getPaid() {
+        return paid;
+    }
+
+    public void setPaid(double paid) {
+        this.paid = paid;
+    }
+    
+    
 
     public List<IncomeByCategoryRecord> getIncomeByCategoryRecords() {
         return incomeByCategoryRecords;
