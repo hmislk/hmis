@@ -266,24 +266,24 @@
                                     </p:row>
                                 </p:columnGroup>
 
-                                <p:subTable value="#{dep.items}" var="ser" >
+                                <p:subTable value="#{dep.items}" var="ser">
                                     <f:facet name="header">
                                         <h:outputLabel value="#{dep.department.name}"/>
                                     </f:facet>
                                     <p:column>
-                                        <h:outputLabel value="#{ser.name}"/>                                        
+                                        <h:outputLabel value="#{ser.name}" rendered="#{ser.transBillItemCount ne 0}"/>                                        
                                     </p:column>
                                     <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{ser.transBillItemCount}"/>
+                                        <h:outputLabel value="#{ser.transBillItemCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                     </p:column>    
                                      <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{ser.transCheckedCount}"/>
+                                        <h:outputLabel value="#{ser.transCheckedCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                     </p:column>    
                                     <p:column>
-                                        <h:outputLabel value="#{ser.inwardChargeType}"/>                                        
+                                        <h:outputLabel value="#{ser.inwardChargeType}" rendered="#{ser.transBillItemCount ne 0}"/>                                        
                                     </p:column>
                                     <p:column>
-                                        <p:commandButton ajax="false" 
+                                        <p:commandButton ajax="false" rendered="#{ser.transBillItemCount ne 0}"
                                                          action="inward_edit_bill_item_view"   
                                                          value="View Bill Items" onclick="onSubmitButton();" > 
                                             <f:setPropertyActionListener value="#{ser}" target="#{bhtSummeryController.item}"/>

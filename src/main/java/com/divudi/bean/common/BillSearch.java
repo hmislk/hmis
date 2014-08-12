@@ -426,6 +426,14 @@ public class BillSearch implements Serializable {
                 UtilityController.addErrorMessage("Already Cancelled. Can not Refund again");
                 return "";
             }
+
+            if (getBill().getBillType() == BillType.InwardBill) {
+                if (getBill().getCheckedBy() != null) {
+                    UtilityController.addErrorMessage("Please Uncheck Bill");
+                    return "";
+                }
+            }
+            
             if (!calculateRefundTotal()) {
                 return "";
             }
@@ -597,14 +605,18 @@ public class BillSearch implements Serializable {
             rbi.setCreater(getSessionController().getLoggedUser());
             rbi.setItem(bi.getItem());
             rbi.setNetValue(0 - bi.getNetValue());
-            rbi.setRefunded(Boolean.TRUE);
+            rbi.setGrossValue(0 - bi.getGrossValue());
+            rbi.setDiscount(0 - bi.getDiscount());
+            rbi.setMarginValue(0 - bi.getMarginValue());
+//            rbi.setRefunded(Boolean.TRUE);
             rbi.setReferanceBillItem(bi);
             getBillItemFacede().create(rbi);
 
             bi.setRefunded(Boolean.TRUE);
             getBillItemFacede().edit(bi);
 
-            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
+            String sql = "Select bf From BillFee bf where "
+                    + " bf.retired=false and bf.billItem.id=" + bi.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
 
             returnBillFee(rb, rbi, tmp);
