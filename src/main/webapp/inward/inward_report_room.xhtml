@@ -50,7 +50,7 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable value="#{inwardReportController1.categoryTimes}" var="rm">
+                            <p:dataTable id="tb1" value="#{inwardReportController1.categoryTimes}" var="rm">
                                 <p:column>
                                     <p:commandButton ajax="false" value="view Detail" action="inward_report_room_detail" actionListener="#{inwardReportController1.createRoomTime(rm.roomCategory)}" />
                                 </p:column>
