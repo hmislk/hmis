@@ -531,7 +531,9 @@ public class InwardReportController1 implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT pr "
                 + " FROM PatientRoom pr "
-                + " where pr.retired=false"
+                + " where pr.retired=false "
+                + " and pr.admittedAt is not null "
+                + " and pr.dischargedAt is not null "
                 + " and pr.roomFacilityCharge.roomCategory=:cat "
                 + " and pr.patientEncounter.dateOfAdmission between :fromDate and :toDate ";
 
@@ -1292,24 +1294,29 @@ public class InwardReportController1 implements Serializable {
         categoryTimes = new ArrayList<>();
 
         for (RoomCategory rm : roomCategoryController.getItems()) {
-            long dbl = 0;
+            long time = 0;
+            double calculated = 0;
+            double added = 0;
             Calendar frm = Calendar.getInstance();
             Calendar to = Calendar.getInstance();
             Calendar ans = Calendar.getInstance();
             List<PatientRoom> list = fetchPatientRoomTime(rm);
             System.err.println("SIZE " + list.size());
             for (PatientRoom pt : list) {
-                if (pt.getAdmittedAt() != null && pt.getDischargedAt() != null) {
-                    frm.setTime(pt.getAdmittedAt());
-                    to.setTime(pt.getDischargedAt());
-                    dbl += (to.getTimeInMillis() - frm.getTimeInMillis());
-                }
+                frm.setTime(pt.getAdmittedAt());
+                to.setTime(pt.getDischargedAt());
+                time += (to.getTimeInMillis() - frm.getTimeInMillis());
+
+                added += pt.getAddedRoomCharge();
+                calculated += (pt.getCalculatedRoomCharge() - pt.getAddedRoomCharge());
 
             }
 
             CategoryTime row = new CategoryTime();
             row.setRoomCategory((RoomCategory) rm);
-            row.setValue(dbl / (1000 * 60 * 60));
+            row.setTime(time / (1000 * 60 * 60));
+            row.setCalculated(calculated);
+            row.setAdded(added);
             categoryTimes.add(row);
         }
     }
@@ -1908,7 +1915,9 @@ public class InwardReportController1 implements Serializable {
     public class CategoryTime {
 
         Category roomCategory;
-        double value;
+        private double time;
+        private double calculated;
+        private double added;
 
         public Category getRoomCategory() {
             return roomCategory;
@@ -1918,12 +1927,28 @@ public class InwardReportController1 implements Serializable {
             this.roomCategory = roomCategory;
         }
 
-        public double getValue() {
-            return value;
+        public double getTime() {
+            return time;
         }
 
-        public void setValue(double value) {
-            this.value = value;
+        public void setTime(double time) {
+            this.time = time;
+        }
+
+        public double getCalculated() {
+            return calculated;
+        }
+
+        public void setCalculated(double calculated) {
+            this.calculated = calculated;
+        }
+
+        public double getAdded() {
+            return added;
+        }
+
+        public void setAdded(double added) {
+            this.added = added;
         }
 
     }
