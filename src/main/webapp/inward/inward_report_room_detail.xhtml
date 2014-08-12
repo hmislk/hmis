@@ -59,7 +59,17 @@
                                 <p:column >
                                     #{rm.dischargedAt}
                                 </p:column>
-                                <p:column headerText="Value" style="text-align: right;">
+                                 <p:column headerText="Calculated" style="text-align: right;">
+                                     <h:outputLabel value="#{rm.calculatedRoomCharge-rm.addedRoomCharge}">
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>                                    
+                                </p:column>
+                                 <p:column headerText="Added" style="text-align: right;">
+                                     <h:outputLabel value="#{rm.addedRoomCharge}">
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>                                    
+                                </p:column>
+                                <p:column headerText="Hours" style="text-align: right;">
                                     <h:outputLabel value="#{rm.tmpStayedTime}">
                                         <f:convertNumber pattern="#0.0"/>
                                     </h:outputLabel>
