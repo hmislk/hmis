@@ -265,6 +265,22 @@ root {
 
 }
 
+.cashierGSPrinting{
+    text-decoration: overline;
+    position:absolute!important;
+    left:15%!important;
+    bottom:3%!important;
+
+}
+
+.guardianGSPrinting{
+    text-decoration: overline;
+    position:absolute!important;
+    right: 15%!important;
+    bottom:3%!important;
+
+}
+
 .guardian{
     text-decoration: overline;
     position:absolute!important;
@@ -341,6 +357,13 @@ root {
     position: absolute;
     left: 36%;
     top: 13.3%;
+
+}
+
+.bhtNoGSPrinting{
+    position: absolute;
+    left: 36%;
+    top: 16.8%;
 
 }
 
@@ -424,6 +447,15 @@ root {
     position: absolute;
     left: 12%;
     top: 37%;
+
+}
+
+.itemsGSPrinting{
+    
+    font-size: 11px;
+    position: absolute;
+    left: 7%;
+    top: 26.5%;
 
 }
 
