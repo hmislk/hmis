@@ -173,14 +173,14 @@
 
 
 
-                                                    <h:dataTable value="#{billSearch.billItems}" var="bip" styleClass="itemsPrinting"   >
+                                                    <h:dataTable value="#{billSearch.refundingItems}" var="bip" styleClass="itemsPrinting"   >
                                                         <h:column >
                                                             <h:outputLabel value="#{bip.item.printName}" style="margin: 4px; font-size: 11px;" />
                                                         </h:column>
                                                     </h:dataTable>
 
                                                     <div class="ratesPrinting" >
-                                                        <h:dataTable value="#{billSearch.billItems}" var="bip1"  >
+                                                        <h:dataTable value="#{billSearch.refundingItems}" var="bip1"  >
                                                             <h:column>
                                                                 <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px; font-size: 11px;" >
                                                                     <f:convertNumber pattern="#,000.00" />

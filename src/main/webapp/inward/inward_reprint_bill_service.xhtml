@@ -20,7 +20,7 @@
                                                  action="inward_cancel_bill_service"
                                                  disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }" onclick="onSubmitButton();" >                           
                                 </p:commandButton>
-                                <p:commandButton ajax="false" value="Return" rendered="false"
+                                <p:commandButton ajax="false" value="Return" 
                                                  action="inward_bill_service_refund"
                                                  disabled="#{inwardSearch.bill.cancelled}" onclick="onSubmitButton();" >    
                                     <f:setPropertyActionListener value="#{inwardSearch.bill}" target="#{billSearch.bill}" />
