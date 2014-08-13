@@ -50,25 +50,39 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable value="#{inwardReportController1.categoryTimes}" var="rm">
-                                <p:column>
+                            <p:dataTable id="tb1" value="#{inwardReportController1.categoryTimes}" var="rm">
+                                <p:column exportable="false">
                                     <p:commandButton ajax="false" value="view Detail" 
                                                      action="inward_report_room_detail" 
                                                      actionListener="#{inwardReportController1.createRoomTime(rm.roomCategory)}" />
                                 </p:column>
-                                <p:column headerText="Category">#{rm.roomCategory.name}</p:column>
+                                <p:column headerText="Category">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{rm.roomCategory.name}" />
+                                </p:column>
                                 <p:column headerText="Calculated" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Calculated" />
+                                    </f:facet>
                                     <h:outputLabel value="#{rm.calculated}">
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>                                 
                                 </p:column>
                                  <p:column headerText="Added" style="text-align: right;">
+                                     <f:facet name="header">
+                                        <h:outputLabel value="Added" />
+                                    </f:facet>
                                      <h:outputLabel value="#{rm.added}">
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>                                   
                                 </p:column>
                                 <p:column headerText="Hours" style="text-align: right;">
-                                    <h:outputLabel value="#{rm.value}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Hours" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{rm.time}">
                                         <f:convertNumber pattern="#0.0"/>
                                     </h:outputLabel>
                                     <h:outputLabel value=" H "/>
