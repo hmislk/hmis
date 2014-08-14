@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core" >
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Income Room" ></h:outputLabel>
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss" ></p:calendar>
+                            <h:outputLabel value="To : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss" ></p:calendar>
+                            <h:outputLabel value="Admission Type : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
+                                <f:selectItem itemLabel="All Admission Types"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="BHT Type : " ></h:outputLabel>
+                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
+                                <f:selectItem itemLabel="All BHT Types" />                           
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                                <f:selectItem itemLabel="All Credit Companies"/>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.processPatientRooms()}" onclick="onSubmitButton();"  ></p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" >
+                            <p:dataExporter target="tbl" type="xls" fileName="BHT_Category_Report" ></p:dataExporter>
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
+
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                            <f:facet name="header">
+                                Room Charge
+                            </f:facet>
+                            <p:column>
+                                #{rm.patientEncounter.bhtNo}
+                            </p:column>
+                            <p:column>
+                                #{rm.calculatedRoomCharge-rm.addedRoomCharge}
+                            </p:column>
+                            <p:column>
+                                #{rm.addedRoomCharge}
+                            </p:column>
+                            <p:column>
+                                #{rm.discountRoomCharge}
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                            <f:facet name="header">
+                                Maintain Charge
+                            </f:facet>
+                            <p:column>
+                                #{rm.patientEncounter.bhtNo}
+                            </p:column>
+                            <p:column>
+                                #{rm.calculatedMaintainCharge-rm.addedMaintainCharge}
+                            </p:column>
+                            <p:column>
+                                #{rm.addedMaintainCharge}
+                            </p:column>
+                            <p:column>
+                                #{rm.discountMaintainCharge}
+                            </p:column>
+                        </p:dataTable>
+                        
+                        
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

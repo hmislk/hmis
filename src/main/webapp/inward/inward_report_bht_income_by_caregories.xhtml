@@ -50,17 +50,7 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
-                            <!--                            <f:facet name="header">
-                                                            <h:outputLabel value="From - "/>
-                                                            <p:outputLabel value="#{inwardReportController1.fromDate}">
-                                                                <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
-                                                            </p:outputLabel>
-                                                            <h:outputLabel value=" - To - "/>
-                                                            <h:outputLabel value="#{inwardReportController1.toDate}">
-                                                                <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
-                                                            </h:outputLabel>
-                                                            <h:outputLabel value=" - BHT Income by Categories Report."/>
-                                                        </f:facet>-->
+                          
                             <p:dataTable id="tb1" value="#{inwardReportController1.opdServices}" var="rec" >
                                 <f:facet name="header">
                                     <h:outputLabel value="From - "/>
@@ -78,8 +68,9 @@
                                     <h:outputLabel value="Inward Service"/>
                                 </f:facet>
                                 <p:column headerText="Category" >
-                                    <h:commandLink value="#{rec.category.name}" action="#{inwardReportController1.processCategoryBillItems}" >
-                                        <f:setPropertyActionListener value="#{rec.category}" target="#{inwardReportController1.category}" ></f:setPropertyActionListener>
+                                    <h:commandLink value="#{rec.category.name}"
+                                                   action="#{inwardReportController1.processCategoryBillItems}" >
+                                        <f:setPropertyActionListener value="#{rec.category}" target="#{inwardReportController1.category}" />
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Count" >
@@ -133,10 +124,13 @@
 
                             <p:dataTable id="tb2" value="#{inwardReportController1.roomChargeInwards}" var="rm">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Room Charges"/>
+                                    <h:outputLabel value="Room Chargess"/>
+                                    <p:commandButton ajax="false" value="View"
+                                                     action="report_income_room" 
+                                                     actionListener="#{inwardReportController1.processPatientRooms()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">
-                                    <h:outputLabel value="#{rm.inwardChargeType}" />
+                                    <h:outputLabel value="#{rm.inwardChargeType}"/>
                                 </p:column>
                                 <p:column headerText="Calculated" style="text-align: right; padding: 5px;">
                                     <h:outputLabel value="#{rm.calculated}"/>
