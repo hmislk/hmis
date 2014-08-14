@@ -14,11 +14,7 @@
 
                     <h:form>
                         <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
-                            <p:panel  header="Cancellation">
-                                <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}" required="true"  >
-                                    <f:selectItem itemLabel="Select Payment Method"/>
-                                    <f:selectItems value="#{enumController.paymentMethods}"  />
-                                </p:selectOneMenu>
+                            <p:panel  header="Refund">                              
                                 <p:commandButton ajax="false" value="Refund" action="#{billSearch.refundBill()}"
                                                  onclick="if (!confirm('Are you sure you want to Refund This Bill ?'))
                                                              return false;">
@@ -27,6 +23,8 @@
                             <p:panelGrid columns="2" style="width: 100%;">
                                 <p:panel header="Patient Detail">
                                     <p:panelGrid columns="2">
+                                        <h:outputLabel value="BHT :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.patientEncounter.bhtNo}" ></h:outputLabel>
                                         <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
                                         <h:outputLabel value="Age" />
@@ -75,10 +73,6 @@
                                     </p:column>
 
                                     <p:column >
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}" />
-                                    </p:column>
-                                    <p:column >
                                         <f:facet name="header">Item Name</f:facet>
                                         <h:outputLabel value="#{b.item.name}"/>
                                     </p:column>
@@ -114,62 +108,34 @@
 
 
                                                     <div  class="receiptnoPrinting">
-                                                        <h:outputLabel value="#{billSearch.bill.cancelledBill.insId} **Cancelled"  
-                                                                       rendered="#{billSearch.bill.cancelledBill.insId ne null}"/> 
+                                                     
+                                                        <h:outputLabel value="#{billSearch.bill.refundedBill.insId} **Refunded" /> 
 
-                                                        <h:outputLabel value="#{billSearch.bill.refundedBill.insId} **Refunded" 
-                                                                       rendered="#{billSearch.bill.refundedBill.insId ne null}"/> 
-
-                                                        <h:outputLabel value="#{billSearch.bill.insId} **Duplicate" 
-                                                                       rendered="#{billSearch.bill.refundedBill.insId eq null and
-                                                                                   billSearch.bill.cancelledBill.insId eq null }"/> 
                                                     </div>
 
                                                     <div  class="billdatePrinting">
-                                                        <h:outputLabel value="#{billSearch.bill.cancelledBill.billDate}"
-                                                                       rendered="#{billSearch.bill.cancelledBill.insId ne null}"  >
+                                                        
+                                                        <h:outputLabel value="#{billSearch.bill.refundedBill.billDate}">
                                                             <f:convertDateTime pattern="dd/MM/yy"/>
                                                         </h:outputLabel>
-                                                        <h:outputLabel value="#{billSearch.bill.refundedBill.billDate}"
-                                                                       rendered="#{billSearch.bill.refundedBill.insId ne null}">
-                                                            <f:convertDateTime pattern="dd/MM/yy"/>
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="#{billSearch.bill.billDate}"
-                                                                       rendered="#{billSearch.bill.refundedBill.insId eq null and 
-                                                                                   billSearch.bill.cancelledBill.insId eq null }">
-                                                            <f:convertDateTime pattern="dd/MM/yy"/>
-                                                        </h:outputLabel>
+                                                      
                                                     </div>
 
-                                                    <div class="paymentPrinting">
-                                                        <h:outputLabel value="#{billSearch.bill.cancelledBill.paymentMethod}" 
-                                                                       rendered="#{billSearch.bill.cancelledBill.insId ne null}" />
-                                                        <h:outputLabel value="#{billSearch.bill.refundedBill.paymentMethod}" 
-                                                                       rendered="#{billSearch.bill.refundedBill.insId ne null}"/>
-                                                        <h:outputLabel value="#{billSearch.bill.paymentMethod}" 
-                                                                       rendered="#{billSearch.bill.refundedBill.insId eq null and 
-                                                                                   billSearch.bill.cancelledBill.insId eq null }"/>
+                                                    <div class="paymentPrinting">                                                     
+                                                        <h:outputLabel value="#{billSearch.bill.refundedBill.paymentMethod}" />
+                                                        
                                                     </div>
 
-                                                    <div class="billtimePrinting">
-                                                        <h:outputLabel value="#{billSearch.bill.cancelledBill.billTime}"  
-                                                                       rendered="#{billSearch.bill.cancelledBill.insId ne null}">
+                                                    <div class="billtimePrinting">                                                      
+                                                        <h:outputLabel value="#{billSearch.bill.refundedBill.billTime}" >
                                                             <f:convertDateTime pattern="hh mm ss a"/>
                                                         </h:outputLabel>
-                                                        <h:outputLabel value="#{billSearch.bill.refundedBill.billTime}"  
-                                                                       rendered="#{billSearch.bill.refundedBill.insId ne null}">
-                                                            <f:convertDateTime pattern="hh mm ss a"/>
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="#{billSearch.bill.billTime}" 
-                                                                       rendered="#{billSearch.bill.refundedBill.insId eq null and 
-                                                                                   billSearch.bill.cancelledBill.insId eq null }">
-                                                            <f:convertDateTime pattern="hh mm ss a"/>
-                                                        </h:outputLabel>
+                                                      
                                                     </div>
 
-                                                    <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle}" styleClass="ptnamePrinting" />
+                                                    <h:outputLabel value="#{billSearch.bill.refundedBill.patient.person.nameWithTitle}" styleClass="ptnamePrinting" />
 
-                                                    <h:outputLabel value="#{billSearch.bill.patient.person.phone}" styleClass="phonePrinting" />
+                                                    <h:outputLabel value="#{billSearch.bill.refundedBill.patient.person.phone}" styleClass="phonePrinting" />
 
 
 
@@ -206,27 +172,29 @@
                                                                     <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;   "/>
                                                                 </td>
                                                                 <td style="text-align: right!important; ">
-                                                                    <h:outputLabel value="#{billSearch.bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                                    <h:outputLabel value="#{billSearch.bill.refundedBill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
                                                                         <f:convertNumber pattern="#,000.00" />
                                                                     </h:outputLabel>
                                                                 </td>
                                                             </tr>
                                                             <tr>
                                                                 <td style="text-align: left;">
-                                                                    <h:outputLabel  rendered="#{billSearch.bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
+                                                                    <h:outputLabel  style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
                                                                 </td>
                                                                 <td style="text-align: right!important; ">
-                                                                    <h:outputLabel rendered="#{billSearch.bill.discount ne 0.0}"   value="#{billSearch.bill.discount}"  style=" text-align: right!important;  font-size: 15px!important;   ">
+                                                                    <h:outputLabel value="#{billSearch.bill.refundedBill.discount}" 
+                                                                                   style=" text-align: right!important;  font-size: 15px!important;   ">
                                                                         <f:convertNumber pattern="#,000.00" />
                                                                     </h:outputLabel>
                                                                 </td>
                                                             </tr>
                                                             <tr>
                                                                 <td style="text-align: left;">
-                                                                    <h:outputLabel  rendered="#{billSearch.bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                                                    <h:outputLabel  value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
                                                                 </td>
                                                                 <td style="text-align: right!important; ">
-                                                                    <h:outputLabel  rendered="#{billSearch.bill.discount ne 0.0}"    value="#{billSearch.bill.netTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                                    <h:outputLabel  value="#{billSearch.bill.refundedBill.netTotal}"  
+                                                                                    style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
                                                                         <f:convertNumber pattern="#,000.00" />
                                                                     </h:outputLabel>
                                                                 </td>
@@ -236,21 +204,14 @@
                                                         </table>
                                                     </div>
 
-                                                    <div class="cashierPrinting" >
-                                                        <h:outputLabel value="Cashier : #{billSearch.bill.cancelledBill.creater.code}"  
-                                                                       rendered="#{billSearch.bill.cancelledBill.insId ne null}" />
-                                                        <h:outputLabel value="Cashier : #{billSearch.bill.refundedBill.creater.code}"
-                                                                       rendered="#{billSearch.bill.refundedBill.insId ne null}"   />
-                                                        <h:outputLabel value="Cashier : #{billSearch.bill.creater.code}" 
-                                                                       rendered="#{billSearch.bill.refundedBill.insId eq null and
-                                                                                   billSearch.bill.cancelledBill.insId eq null }"/>
+                                                    <div class="cashierPrinting" >                                                        
+                                                        <h:outputLabel value="Cashier : #{billSearch.bill.refundedBill.creater.code}" />
+                                                      
 
 
                                                     </div>
 
-                                                    <div class="consultPrinting">
-                                                        <h:outputLabel value="#{billSearch.bill.collectingCentre.name} #{billSearch.bill.creditCompany.name}" />
-                                                    </div>
+                                              
 
                                                 </div>
 

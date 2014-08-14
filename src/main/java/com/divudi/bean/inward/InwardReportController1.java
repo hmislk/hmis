@@ -24,12 +24,15 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.entity.inward.PatientRoom;
+import com.divudi.entity.inward.RoomCategory;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -521,6 +524,38 @@ public class InwardReportController1 implements Serializable {
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
         return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<PatientRoom> fetchPatientRoomTime(Category roomCategory) {
+        HashMap hm = new HashMap();
+        String sql = "SELECT pr "
+                + " FROM PatientRoom pr "
+                + " where pr.retired=false "
+                + " and pr.admittedAt is not null "
+                + " and pr.dischargedAt is not null "
+                + " and pr.roomFacilityCharge.roomCategory=:cat "
+                + " and pr.patientEncounter.dateOfAdmission between :fromDate and :toDate ";
+
+        if (admissionType != null) {
+            sql = sql + " and pr.patientEncounter.admissionType=:at ";
+            hm.put("at", admissionType);
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
+            hm.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
+            hm.put("cc", institution);
+        }
+
+        hm.put("cat", roomCategory);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        return patientRoomFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1077,7 +1112,7 @@ public class InwardReportController1 implements Serializable {
                 + " from BillFee bf "
                 + " where bf.retired=false "
                 + " and bf.bill.patientEncounter.paymentFinalized=true "
-                + " and bf.billItem.retired=false "                
+                + " and bf.billItem.retired=false "
                 + " and bf.fee.feeType!=:ftp ";
 
         m.put("fd", fromDate);
@@ -1186,6 +1221,12 @@ public class InwardReportController1 implements Serializable {
 
     }
 
+    List<String1Value2> roomTimes;
+    List<CategoryTime> categoryTimes;
+    List<PatientRoom> patientRooms;
+    @Inject
+    RoomCategoryController roomCategoryController;
+
     public void createRoomTable() {
         roomChargeInwards = new ArrayList<>();
 
@@ -1249,6 +1290,81 @@ public class InwardReportController1 implements Serializable {
 
     }
 
+    public void createRoomTime() {
+        categoryTimes = new ArrayList<>();
+
+        for (RoomCategory rm : roomCategoryController.getItems()) {
+            long time = 0;
+            double calculated = 0;
+            double added = 0;
+            Calendar frm = Calendar.getInstance();
+            Calendar to = Calendar.getInstance();
+            Calendar ans = Calendar.getInstance();
+            List<PatientRoom> list = fetchPatientRoomTime(rm);
+            System.err.println("SIZE " + list.size());
+            for (PatientRoom pt : list) {
+                frm.setTime(pt.getAdmittedAt());
+                to.setTime(pt.getDischargedAt());
+                time += (to.getTimeInMillis() - frm.getTimeInMillis());
+
+                added += pt.getAddedRoomCharge();
+                calculated += (pt.getCalculatedRoomCharge() - pt.getAddedRoomCharge());
+
+            }
+
+            CategoryTime row = new CategoryTime();
+            row.setRoomCategory((RoomCategory) rm);
+            row.setTime(time / (1000 * 60 * 60));
+            row.setCalculated(calculated);
+            row.setAdded(added);
+            categoryTimes.add(row);
+        }
+    }
+
+    public void createRoomTime(Category cat) {
+
+        long dbl = 0;
+        Calendar frm = Calendar.getInstance();
+        Calendar to = Calendar.getInstance();
+        Calendar ans = Calendar.getInstance();
+        patientRooms = fetchPatientRoomTime(cat);
+        System.err.println("SIZE " + patientRooms.size());
+        for (PatientRoom pt : patientRooms) {
+            if (pt.getAdmittedAt() != null && pt.getDischargedAt() != null) {
+                frm.setTime(pt.getAdmittedAt());
+                to.setTime(pt.getDischargedAt());
+                long val = (to.getTimeInMillis() - frm.getTimeInMillis());
+                pt.setTmpStayedTime(val / (1000 * 60 * 60));
+            }
+
+        }
+
+    }
+
+    public List<CategoryTime> getCategoryTimes() {
+        return categoryTimes;
+    }
+
+    public void setCategoryTimes(List<CategoryTime> categoryTimes) {
+        this.categoryTimes = categoryTimes;
+    }
+
+    public List<PatientRoom> getPatientRooms() {
+        return patientRooms;
+    }
+
+    public void setPatientRooms(List<PatientRoom> patientRooms) {
+        this.patientRooms = patientRooms;
+    }
+
+    public RoomCategoryController getRoomCategoryController() {
+        return roomCategoryController;
+    }
+
+    public void setRoomCategoryController(RoomCategoryController roomCategoryController) {
+        this.roomCategoryController = roomCategoryController;
+    }
+
     public void makeNull() {
         opdSrviceGross = 0;
         opdServiceMargin = 0;
@@ -1275,6 +1391,59 @@ public class InwardReportController1 implements Serializable {
         createInwardService();
         createFinalSummeryMonth();
 
+    }
+
+    public void processRoomTime() {
+        makeNull();
+        createRoomTime();
+    }
+
+    public PatientEncounterFacade getPatientEncounterFacade() {
+        return patientEncounterFacade;
+    }
+
+    public void setPatientEncounterFacade(PatientEncounterFacade patientEncounterFacade) {
+        this.patientEncounterFacade = patientEncounterFacade;
+    }
+
+    public InwardBeanController getInwardBeanController() {
+        return inwardBeanController;
+    }
+
+    public void setInwardBeanController(InwardBeanController inwardBeanController) {
+        this.inwardBeanController = inwardBeanController;
+    }
+
+    public double getAdmissionGross() {
+        return admissionGross;
+    }
+
+    public void setAdmissionGross(double admissionGross) {
+        this.admissionGross = admissionGross;
+    }
+
+    public double getAdmissionDiscount() {
+        return admissionDiscount;
+    }
+
+    public void setAdmissionDiscount(double admissionDiscount) {
+        this.admissionDiscount = admissionDiscount;
+    }
+
+    public double getAdmissionNetValue() {
+        return admissionNetValue;
+    }
+
+    public void setAdmissionNetValue(double admissionNetValue) {
+        this.admissionNetValue = admissionNetValue;
+    }
+
+    public List<String1Value2> getRoomTimes() {
+        return roomTimes;
+    }
+
+    public void setRoomTimes(List<String1Value2> roomTimes) {
+        this.roomTimes = roomTimes;
     }
 
     private void createFinalSummeryMonth() {
@@ -1741,6 +1910,47 @@ public class InwardReportController1 implements Serializable {
 
     public void setFinalValues(List<String1Value2> finalValues) {
         this.finalValues = finalValues;
+    }
+
+    public class CategoryTime {
+
+        Category roomCategory;
+        private double time;
+        private double calculated;
+        private double added;
+
+        public Category getRoomCategory() {
+            return roomCategory;
+        }
+
+        public void setRoomCategory(Category roomCategory) {
+            this.roomCategory = roomCategory;
+        }
+
+        public double getTime() {
+            return time;
+        }
+
+        public void setTime(double time) {
+            this.time = time;
+        }
+
+        public double getCalculated() {
+            return calculated;
+        }
+
+        public void setCalculated(double calculated) {
+            this.calculated = calculated;
+        }
+
+        public double getAdded() {
+            return added;
+        }
+
+        public void setAdded(double added) {
+            this.added = added;
+        }
+
     }
 
 }

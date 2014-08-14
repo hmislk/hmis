@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:st="http://java.sun.com/jsf/composite/store">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel  >
+                        <f:facet name="header" >
+                            <h:outputLabel value="GRN Return Reprint" ></h:outputLabel>
+                            <hr/>
+                            <p:commandButton value="Reprint" ajax="false" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Cancel" action="store_cancel_grn_return" disabled="#{storeBillSearch.bill.cancelled}">                           
+                            </p:commandButton>                          
+                        </f:facet>
+
+                        
+                    </p:panel>
+
+
+
+
+                    <h:panelGroup >
+
+                        <h:panelGroup id="gpBillPreview" >
+                            <st:grnReturn bill="#{storeBillSearch.bill}" />
+
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -5,64 +5,64 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:st="http://java.sun.com/jsf/composite/store">
 
 
     <ui:define name="content">
         <h:form>
             <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-            <h:panelGroup rendered="#{!goodsReturnController.printPreview}" styleClass="alignTop" >
+            <h:panelGroup rendered="#{!storeGoodsReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
 
                     <f:facet name="header" >      
 
                         <h:panelGrid columns="15"  >
                             <h:outputLabel value="Dealor : "/>
-                            <p:autoComplete converter="deal" value="#{goodsReturnController.returnBill.toInstitution}"  
+                            <p:autoComplete converter="deal" value="#{storeGoodsReturnController.returnBill.toInstitution}"  
                                             forceSelection="true"
                                             completeMethod="#{dealerController.completeDealor}"
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >                               
                             </p:autoComplete>
                                                           
-                            <p:selectOneMenu   id="cmbPs" value="#{goodsReturnController.returnBill.paymentMethod}">                                                                     
+                            <p:selectOneMenu   id="cmbPs" value="#{storeGoodsReturnController.returnBill.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                                 <p:ajax process="cmbPs" update="lblCardRef txtCardRef lblCheqRef txtCheqRef 
                                         bank lblSlipRef txtSlipRef slipBank" event="change" />
                             </p:selectOneMenu>
-                            <h:outputLabel id="lblCardRef" value="Card Ref. No" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />
-                            <p:inputText autocomplete="off"  id="txtCardRef" value="#{goodsReturnController.returnBill.creditCardRefNo}" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />
+                            <h:outputLabel id="lblCardRef" value="Card Ref. No" style="display: #{storeGoodsReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />
+                            <p:inputText autocomplete="off"  id="txtCardRef" value="#{storeGoodsReturnController.returnBill.creditCardRefNo}" style="display: #{storeGoodsReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />
 
-                            <h:outputLabel id="lblCheqRef" value="Cheque No" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
-                            <p:inputText autocomplete="off"  id="txtCheqRef" value="#{goodsReturnController.returnBill.chequeRefNo}" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
-                            <h:selectOneMenu id="bank" value="#{goodsReturnController.returnBill.bank}" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; ">
+                            <h:outputLabel id="lblCheqRef" value="Cheque No" style="display: #{storeGoodsReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
+                            <p:inputText autocomplete="off"  id="txtCheqRef" value="#{storeGoodsReturnController.returnBill.chequeRefNo}" style="display: #{storeGoodsReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
+                            <h:selectOneMenu id="bank" value="#{storeGoodsReturnController.returnBill.bank}" style="display: #{storeGoodsReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; ">
                                 <f:selectItem itemLabel="Select Bank"/>
                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                             </h:selectOneMenu>
 
-                            <h:outputLabel id="lblSlipRef" value="Slip Memo" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; " />
-                            <p:inputText autocomplete="off"  id="txtSlipRef" value="#{goodsReturnController.returnBill.comments}" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; " />
-                            <h:selectOneMenu id="slipBank" value="#{goodsReturnController.returnBill.bank}" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; ">
+                            <h:outputLabel id="lblSlipRef" value="Slip Memo" style="display: #{storeGoodsReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; " />
+                            <p:inputText autocomplete="off"  id="txtSlipRef" value="#{storeGoodsReturnController.returnBill.comments}" style="display: #{storeGoodsReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; " />
+                            <h:selectOneMenu id="slipBank" value="#{storeGoodsReturnController.returnBill.bank}" style="display: #{storeGoodsReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; ">
                                 <f:selectItem itemLabel="Select Bank"/>
                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                             </h:selectOneMenu>
 
-                            <p:commandButton  value="Return" action="#{goodsReturnController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                            <p:commandButton  value="Return" action="#{storeGoodsReturnController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                             </p:commandButton>
                             <p:outputLabel  value="Recievable Amount" /> 
-                            <p:outputLabel id="total"  value="#{goodsReturnController.returnBill.total}" style="float: right;">
+                            <p:outputLabel id="total"  value="#{storeGoodsReturnController.returnBill.total}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
                         </h:panelGrid>
                     </f:facet>
                 </p:panel>
 
-                <p:dataTable var="ph" value="#{goodsReturnController.billItems}"
+                <p:dataTable var="ph" value="#{storeGoodsReturnController.billItems}"
                              scrollable="true" scrollHeight="250"
                              id="itemList" editable="true">  
 
-                    <p:ajax event="rowEdit" listener="#{goodsReturnController.onEdit(ph)}" 
+                    <p:ajax event="rowEdit" listener="#{storeGoodsReturnController.onEdit(ph)}" 
                             update=":#{p:component('total')} :#{p:component('tab')}" />  
-                    <p:ajax event="rowEditCancel" listener="#{goodsReturnController.onEdit(ph)}" 
+                    <p:ajax event="rowEditCancel" listener="#{storeGoodsReturnController.onEdit(ph)}" 
                             update=":#{p:component('total')} :#{p:component('tab')}" /> 
 
 
@@ -117,17 +117,17 @@
 
                 </p:dataTable>  
                 <p:spacer height="50"/>
-                <ph:history/>
+                <st:history/>
             </h:panelGroup>
 
-            <p:panel rendered="#{goodsReturnController.printPreview}">
-                <p:commandButton ajax="false" action="/pharmacy/pharmacy_grn_list_for_return" value="GRN List"/>                    
+            <p:panel rendered="#{storeGoodsReturnController.printPreview}">
+                <p:commandButton ajax="false" action="store_grn_list_for_return" value="GRN List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   >
 
-                    <ph:grnReturn bill="#{goodsReturnController.returnBill}"/>
+                    <st:grnReturn bill="#{storeGoodsReturnController.returnBill}"/>
 
                 </p:panel>
             </p:panel>

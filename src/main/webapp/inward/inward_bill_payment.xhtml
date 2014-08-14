@@ -104,7 +104,7 @@
 
                 <h:panelGroup rendered="#{inwardPaymentController.printPreview}">
                     <p:commandButton value="New Payment" ajax="false" action="#{inwardPaymentController.makeNull}" onclick="onSubmitButton();"/>
-                    <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                    <p:commandButton value="Print" ajax="false" action="#"  >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
                     <h:panelGroup id="gpBillPreview">

@@ -46,7 +46,7 @@
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tb6" fileName="bht_income_by_categories"  />
                         </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                        <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
