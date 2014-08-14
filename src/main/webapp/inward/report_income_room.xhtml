@@ -50,38 +50,127 @@
                             <f:facet name="header">
                                 Room Charge
                             </f:facet>
-                            <p:column>
+                            <p:column headerText="BHT">
                                 #{rm.patientEncounter.bhtNo}
                             </p:column>
-                            <p:column>
+                            <p:column headerText="Calculated">
                                 #{rm.calculatedRoomCharge-rm.addedRoomCharge}
                             </p:column>
-                            <p:column>
+                            <p:column headerText="Added">
                                 #{rm.addedRoomCharge}
                             </p:column>
-                            <p:column>
+                            <p:column headerText="Discount">
                                 #{rm.discountRoomCharge}
                             </p:column>
                         </p:dataTable>
-
+                        <p:spacer height="30"/>
                         <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
                             <f:facet name="header">
                                 Maintain Charge
                             </f:facet>
-                            <p:column>
+                            <p:column headerText="BHT">
                                 #{rm.patientEncounter.bhtNo}
                             </p:column>
-                            <p:column>
+                            <p:column headerText="Calculated">
                                 #{rm.calculatedMaintainCharge-rm.addedMaintainCharge}
                             </p:column>
-                            <p:column>
+                            <p:column headerText="Added">
                                 #{rm.addedMaintainCharge}
                             </p:column>
-                            <p:column>
+                            <p:column headerText="Discount">
                                 #{rm.discountMaintainCharge}
                             </p:column>
                         </p:dataTable>
-                        
+                        <p:spacer height="30"/>
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                            <f:facet name="header">
+                                Administration Charge
+                            </f:facet>
+                            <p:column headerText="BHT">
+                                #{rm.patientEncounter.bhtNo}
+                            </p:column>
+                            <p:column headerText="Calculated">
+                                #{rm.calculatedAdministrationCharge-rm.addedAdministrationCharge}
+                            </p:column>
+                            <p:column headerText="Added">
+                                #{rm.addedAdministrationCharge}
+                            </p:column>
+                            <p:column headerText="Discount">
+                                #{rm.discountAdministrationCharge}
+                            </p:column>
+                        </p:dataTable>
+                        <p:spacer height="30"/>
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                            <f:facet name="header">
+                                Linen Charge
+                            </f:facet>
+                            <p:column headerText="BHT">
+                                #{rm.patientEncounter.bhtNo}
+                            </p:column>
+                            <p:column headerText="Calculated">
+                                #{rm.calculatedLinenCharge-rm.addedLinenCharge}
+                            </p:column>
+                            <p:column headerText="Added">
+                                #{rm.addedLinenCharge}
+                            </p:column>
+                            <p:column headerText="Discount">
+                                #{rm.discountLinenCharge}
+                            </p:column>
+                        </p:dataTable>
+                        <p:spacer height="30"/>
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                            <f:facet name="header">
+                                Medical Care Charge
+                            </f:facet>
+                            <p:column headerText="BHT">
+                                #{rm.patientEncounter.bhtNo}
+                            </p:column>
+                            <p:column headerText="Calculated">
+                                #{rm.calculatedMedicalCareCharge-rm.addedMedicalCareCharge}
+                            </p:column>
+                            <p:column headerText="Added">
+                                #{rm.addedMedicalCareCharge}
+                            </p:column>
+                            <p:column headerText="Discount">
+                                #{rm.discountMedicalCareCharge}
+                            </p:column>
+                        </p:dataTable>
+                        <p:spacer height="30"/>
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                            <f:facet name="header">
+                                MO Charge
+                            </f:facet>
+                            <p:column headerText="BHT">
+                                #{rm.patientEncounter.bhtNo}
+                            </p:column>
+                            <p:column headerText="Calculated">
+                                #{rm.calculatedMoCharge-rm.addedMoCharge}
+                            </p:column>
+                            <p:column headerText="Added">
+                                #{rm.addedMoCharge}
+                            </p:column>
+                            <p:column headerText="Discount">
+                                #{rm.discountMoCharge}
+                            </p:column>
+                        </p:dataTable>
+                        <p:spacer height="30"/>
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                            <f:facet name="header">
+                                Nursing Charge
+                            </f:facet>
+                            <p:column headerText="BHT">
+                                #{rm.patientEncounter.bhtNo}
+                            </p:column>
+                            <p:column headerText="Calculated">
+                                #{rm.calculatedNursingCharge-rm.addedNursingCharge}
+                            </p:column>
+                            <p:column headerText="Added">
+                                #{rm.addedNursingCharge}
+                            </p:column>
+                            <p:column headerText="Discount">
+                                #{rm.discountNursingCharge}
+                            </p:column>
+                        </p:dataTable>
                         
                     </p:panel>
 
