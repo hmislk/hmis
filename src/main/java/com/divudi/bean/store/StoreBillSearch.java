@@ -1379,6 +1379,84 @@ public class StoreBillSearch implements Serializable {
 
         return false;
     }
+    
+    public void markAsChecked() {
+        if (bill == null) {
+            return;
+        }
+
+        if (bill.getPatientEncounter() == null) {
+            return;
+        }
+
+        if (bill.getPatientEncounter().isPaymentFinalized()) {
+            return;
+        }
+
+        bill.setCheckeAt(new Date());
+        bill.setCheckedBy(getSessionController().getLoggedUser());
+
+        getBillFacade().edit(bill);
+    }
+    
+    public void pharmacyReturnBhtCancel() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            if (checkDepartment(getBill())) {
+                return;
+            }
+
+            if (getBill().getCheckedBy() != null) {
+                UtilityController.addErrorMessage("Checked Bill. Can not cancel");
+                return;
+            }
+
+            RefundBill cb = pharmacyCreateRefundCancelBill();
+            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb, cb.getBillType(), BillNumberSuffix.RETCAN));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb, cb.getBillType(), BillNumberSuffix.RETCAN));
+
+            if (cb.getId() == null) {
+                getBillFacade().create(cb);
+            }
+
+            pharmacyCancelReturnBillItemsWithReducingStock(cb);
+
+            // cancelPreBillFees(cb.getBillItems());
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+            getBillFacade().edit(getBill());
+            UtilityController.addSuccessMessage("Cancelled");
+
+            printPreview = true;
+
+        } else {
+            UtilityController.addErrorMessage("No Bill to cancel");
+        }
+    }
+    
+    private RefundBill pharmacyCreateRefundCancelBill() {
+        RefundBill cb = new RefundBill();
+
+        cb.copy(getBill());
+        cb.invertValue(getBill());
+        cb.setRefundedBill(getBill());
+        cb.setReferenceBill(getBill().getReferenceBill());
+        cb.setForwardReferenceBill(getBill().getForwardReferenceBill());
+
+        cb.setPaymentMethod(paymentMethod);
+        cb.setPaymentScheme(getBill().getPaymentScheme());
+        cb.setBalance(0.0);
+        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setCreater(getSessionController().getLoggedUser());
+
+        cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        cb.setInstitution(getSessionController().getInstitution());
+
+        cb.setComments(getBill().getComments());
+        cb.setPaymentMethod(getPaymentMethod());
+
+        return cb;
+    }
 
     public void pharmacyGrnCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
@@ -1396,6 +1474,8 @@ public class StoreBillSearch implements Serializable {
                 return;
             }
 
+            
+            
             CancelledBill cb = pharmacyCreateCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb, cb.getBillType(), BillNumberSuffix.GRNCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb, cb.getBillType(), BillNumberSuffix.GRNCAN));

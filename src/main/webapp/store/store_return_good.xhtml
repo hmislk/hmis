@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:st="http://java.sun.com/jsf/composite/store">
 
 
     <ui:define name="content">
@@ -117,7 +117,7 @@
 
                 </p:dataTable>  
                 <p:spacer height="50"/>
-                <ph:history/>
+                <st:history/>
             </h:panelGroup>
 
             <p:panel rendered="#{storeGoodsReturnController.printPreview}">
@@ -127,7 +127,7 @@
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   >
 
-                    <ph:grnReturn bill="#{storeGoodsReturnController.returnBill}"/>
+                    <st:grnReturn bill="#{storeGoodsReturnController.returnBill}"/>
 
                 </p:panel>
             </p:panel>
