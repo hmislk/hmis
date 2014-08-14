@@ -23,7 +23,7 @@
                                             forceSelection="true" value="#{storeReportsStock.department}" converter="dep"/>
                             
                             <h:outputLabel value="Category" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
+                            <p:autoComplete completeMethod="#{storeItemCategoryController.completeCategory}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.category}" >
                             </p:autoComplete>
                             <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillCategoryStocks()}" ></p:commandButton>
