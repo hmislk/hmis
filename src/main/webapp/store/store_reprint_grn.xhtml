@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:st="http://java.sun.com/jsf/composite/store">
 
     <body>
 
@@ -34,13 +34,13 @@
                     <h:panelGroup >
 
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:grn bill="#{pharmacyBillSearch.bill}" />
+                            <st:grn bill="#{storeBillSearch.bill}" />
 
                         </h:panelGroup>
 
                         <h:panelGroup  rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveEdit')}" >
                             
-                            <ph:grn_edit bill="#{pharmacyBillSearch.bill}" />
+                            <st:grn_edit bill="#{storeBillSearch.bill}" />
                         </h:panelGroup>
                     </h:panelGroup>
 
