@@ -1193,7 +1193,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         opdServices = new ArrayList<>();
-
+        System.err.println("Call");
         for (Object[] objs : results) {
 
             OpdService row = new OpdService();
@@ -1202,10 +1202,12 @@ public class InwardReportController1 implements Serializable {
             row.setMargin((double) objs[2]);
             row.setGrossValue((double) objs[3]);
             row.setNetValue((double) objs[4]);
-//            System.err.println("objs[5] = " + objs[5]);
-            try {
+            System.err.println("objs 1 = ");
+            try {                
                 long billed = calFee(row.getCategory(), new BilledBill());
+                System.err.println("objs 2 = ");
                 long cancel = calFee(row.getCategory(), new CancelledBill());
+                System.err.println("objs 3 = ");
                 long ret = calFee(row.getCategory(), new RefundBill());
                 row.setCount(billed - (cancel + ret));
             } catch (Exception e) {
@@ -1535,6 +1537,45 @@ public class InwardReportController1 implements Serializable {
         }
 
         return "report_income_by_caregories_and_bht";
+    }
+
+    public void processPatientRooms() {
+        String sql;
+        Map m = new HashMap();
+        sql = "select bf "
+                + " from PatientRoom bf "
+                + " where bf.patientEncounter.paymentFinalized=true "
+                + " and bf.retired=false"
+                + " and bf.patientEncounter.dateOfDischarge between :fd and :td ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        if (admissionType != null) {
+            sql = sql + " and bf.patientEncounter.admissionType=:at ";
+            m.put("at", admissionType);
+
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and bf.patientEncounter.paymentMethod=:bt ";
+            m.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and bf.patientEncounter.creditCompany=:cc ";
+            m.put("cc", institution);
+        }
+
+        sql += " order by bf.patientEncounter.bhtNo";
+        patientRooms = patientRoomFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+//        PatientEncounter pe = new PatientEncounter();
+//        pe.getBhtNo();
+        if (billFees == null) {
+            billFees = new ArrayList<>();
+        }
+
+      
     }
 
     ////////////GETTERS AND SETTERS

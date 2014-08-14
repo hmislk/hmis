@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:st="http://java.sun.com/jsf/composite/store">
 
     <body>
 
@@ -13,26 +13,31 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Reprint" >
+
+                    <p:panel  >
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint Issue Bill" ></h:outputLabel>
+                            <h:outputLabel value="GRN Return Reprint" ></h:outputLabel>
                             <hr/>
                             <p:commandButton value="Reprint" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <hr/>
-                            <p:commandButton value="Cancel" ajax="false" action="#{searchController.cancelIssueToUnitBills()}" >
-                            </p:commandButton>
-                           
+                            <p:commandButton ajax="false" value="Cancel" action="store_cancel_grn_return" disabled="#{storeBillSearch.bill.cancelled}">                           
+                            </p:commandButton>                          
                         </f:facet>
 
+                        
                     </p:panel>
 
 
 
 
-                    <h:panelGroup id="gpBillPreview" >
-                        <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                    <h:panelGroup >
+
+                        <h:panelGroup id="gpBillPreview" >
+                            <st:grnReturn bill="#{storeBillSearch.bill}" />
+
+                        </h:panelGroup>
+
                     </h:panelGroup>
 
 
