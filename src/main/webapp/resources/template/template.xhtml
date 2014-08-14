@@ -20,24 +20,7 @@
             <p:growl id="publicGrowl" autoUpdate="true"  life="1600"/>
             <h:panelGroup >
                 <h:form>
-                    <script type="text/javascript" language="JavaScript">
-                        var $ = jQuery;
-                        $(document).ready(function() {
-                            $("input[id*='TimeStamp']").mask('99 99 9999 99 99 aa');
-                            $("input[id*='DateOnly']").mask('99 99 9999');
-                            $("input[id*='DateOnlyShort']").mask('99 99 99');
-                        });
-
-                        var formSubmitted = false;
-                        function onSubmitButton() {
-                            if (!formSubmitted) {
-                                formSubmitted = true;
-                            } else {
-                                // disable event propagation if form is already submitted
-                                event.preventDefault();
-                            }
-                        }
-                    </script>
+                    
 
                     <h:panelGroup >
                         <p:ajaxStatus style="width:64px;height:64px;position:fixed;right:5px;top:5px">  
