@@ -18,7 +18,12 @@
                             <p:panel>
                                 <p:commandButton ajax="false" value="Cancel" 
                                                  action="inward_cancel_bill_service"
-                                                 disabled="#{inwardSearch.bill.cancelled}" onclick="onSubmitButton();" >                           
+                                                 disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }" onclick="onSubmitButton();" >                           
+                                </p:commandButton>
+                                <p:commandButton ajax="false" value="Return" 
+                                                 action="inward_bill_service_refund"
+                                                 disabled="#{inwardSearch.bill.cancelled}" onclick="onSubmitButton();" >    
+                                    <f:setPropertyActionListener value="#{inwardSearch.bill}" target="#{billSearch.bill}" />
                                 </p:commandButton>
                             </p:panel>
                             <p:panel>
@@ -68,10 +73,10 @@
                             </p:panelGrid>
 
                             <p:dataTable rowIndexVar="rowIndex"
-                                          editable="true"
+                                         editable="true"
                                          value="#{inwardSearch.billFees}" var="bip" >    
-                                 <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
-                                    <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" /> 
+                                <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
+                                <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" /> 
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
                                     <h:outputLabel value="#{rowIndex+1}"/>
@@ -80,6 +85,9 @@
                                     <f:facet name="header">Item</f:facet>
                                     <h:outputLabel value="#{bip.billItem.item.name}"/>
                                 </p:column>
+                                <p:column headerText="Returned">
+                                    <h:outputLabel  rendered="#{bip.billItem.refunded}" value="Returned" style="color: red;"/>
+                                </p:column>  
                                 <p:column>
                                     <f:facet name="header">Fee</f:facet>
                                     <h:outputLabel value="#{bip.feeValue}"/>
