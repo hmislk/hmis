@@ -542,8 +542,11 @@
                 </p:panel>
 
 
+                
+                <div style="bottom: 0px; left: 10px; opacity: 0.4; z-index: 0; min-height: 25px;"></div>
+                
                 <p:panel styleClass="nonPrintBlock" 
-                         style="position: fixed; bottom: 10px; left: 10px; opacity: 0.4;"
+                         style="position: fixed; bottom: 0px; left: 10px; opacity: 0.4; z-index: 0;"
                          rendered="#{sessionController.logged}" >
                     <h:form>
                         <h:commandLink value="Logout" style="text-decoration: underline; "  action="#{sessionController.logout}"  rendered ="#{sessionController.logged}" ></h:commandLink>
