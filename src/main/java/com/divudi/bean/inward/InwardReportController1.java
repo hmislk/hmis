@@ -11,6 +11,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.table.String1Value2;
 import com.divudi.data.table.String2Value4;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -30,10 +31,12 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -61,6 +64,8 @@ public class InwardReportController1 implements Serializable {
     List<String2Value4> inwardCharges;
     List<String1Value2> finalValues;
     List<BillFee> billFees;
+    @EJB
+    private CommonFunctions commonFunctions;
     @EJB
     BillFeeFacade billFeeFacade;
     @EJB
@@ -1387,6 +1392,9 @@ public class InwardReportController1 implements Serializable {
     }
 
     public Date getFromDate() {
+        if(fromDate == null){
+        fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
         return fromDate;
     }
 
@@ -1395,6 +1403,9 @@ public class InwardReportController1 implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
         return toDate;
     }
 
@@ -1441,6 +1452,16 @@ public class InwardReportController1 implements Serializable {
     public void setProfessionals(List<String1Value2> professionals) {
         this.professionals = professionals;
     }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+    
+    
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
