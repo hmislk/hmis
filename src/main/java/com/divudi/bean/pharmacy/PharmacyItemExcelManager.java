@@ -17,12 +17,15 @@ import com.divudi.data.dataStructure.PharmacyImportCol;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.PreBill;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Service;
 import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TimedItem;
@@ -783,6 +786,48 @@ public class PharmacyItemExcelManager implements Serializable {
             b.setNetTotal(totalBySql);
             getBillFacade().edit(b);
 //            }
+        }
+
+    }
+
+    public void correctIssueToUnit() {
+        Map m = new HashMap();
+        String sql;
+        m.put("bt", BillType.PharmacyIssue);
+
+        sql = "select b "
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bt ";
+
+        List<BillItem> list = billItemFacade.findBySQL(sql, m);
+        if (list == null) {
+            return;
+        }
+
+        for (BillItem obj : list) {
+            obj.setMarginValue(0 - obj.getDiscount());
+            obj.setDiscount(0);
+            billItemFacade.edit(obj);
+        }
+
+        m = new HashMap();
+        m.put("bt", BillType.PharmacyIssue);
+
+        sql = "select b "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bt ";
+
+        List<Bill> listB = billFacade.findBySQL(sql, m);
+        if (listB == null) {
+            return;
+        }
+
+        for (Bill obj : listB) {
+            obj.setMargin(0 - obj.getDiscount());
+            obj.setDiscount(0);
+            billFacade.edit(obj);
         }
 
     }

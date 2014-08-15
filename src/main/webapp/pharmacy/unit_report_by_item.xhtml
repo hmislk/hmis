@@ -44,8 +44,8 @@
                         </p:column>
                         <p:column headerText="Count">
                             #{i.count}
-                        </p:column>
-                        <p:column headerText="Gross" style="text-align: right;">
+                        </p:column>            
+                        <p:column headerText="Cost Value" style="text-align: right;">
                             <h:outputLabel value="#{i.gross}">
                                 <f:convertNumber  pattern="#0.00"/>
                             </h:outputLabel>  
@@ -55,21 +55,16 @@
                                 </h:outputLabel>  
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Margin" style="text-align: right;">
+                        <p:column headerText="Margin Value" style="text-align: right;">
                             <h:outputLabel value="#{i.margin}">
                                 <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>  
-                        </p:column>
-                        <p:column headerText="Discount" style="text-align: right;">
-                            <h:outputLabel value="#{i.discount}">
-                                <f:convertNumber pattern="#0.00" />
                             </h:outputLabel> 
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsTransfer.discountsValue}">
+                             <f:facet name="footer">
+                                 <h:outputLabel value="#{reportsTransfer.marginValue}">
                                     <f:convertNumber  pattern="#0.00"/>
                                 </h:outputLabel>  
                             </f:facet>
-                        </p:column>
+                        </p:column>                      
                         <p:column headerText="Net Value" style="text-align: right;">
                             <h:outputLabel value="#{i.net}">
                                 <f:convertNumber pattern="#0.00" />

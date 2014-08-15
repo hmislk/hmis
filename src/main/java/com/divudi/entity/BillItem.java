@@ -52,6 +52,7 @@ public class BillItem implements Serializable {
     double remainingQty;
     double Rate;
     double discountRate;
+    double marginRate;
     double netRate;
     double grossValue;
     double discount;
@@ -629,6 +630,14 @@ public class BillItem implements Serializable {
 
     public void setExpenseBill(Bill expenseBill) {
         this.expenseBill = expenseBill;
+    }
+
+    public double getMarginRate() {
+        return marginRate;
+    }
+
+    public void setMarginRate(double marginRate) {
+        this.marginRate = marginRate;
     }
 
     
