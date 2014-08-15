@@ -41,7 +41,7 @@
                         <h:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Fill" action="#{inwardReportController.fillDischargeBook()}" onclick="onSubmitButton();" ></p:commandButton>
 
-                            <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                            <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
@@ -179,6 +179,11 @@
                                     <h:outputLabel value="#{i.finalBill.netTotal}"  >
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                         <h:outputLabel value="#{inwardReportController.total}"  >
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Paid Amount">
@@ -188,6 +193,11 @@
                                     <h:outputLabel value="#{i.finalBill.paidAmount}"  >
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.paid}"  >
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Due Amount">

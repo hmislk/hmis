@@ -74,10 +74,10 @@
 
             <p:panel rendered="#{bhtIssueReturnController.printPreview}">
                 <p:commandButton ajax="false" action="pharmacy_search_sale_bill" value="Pharmacy Sale Search" actionListener="#{bhtIssueReturnController.makeNull}" onclick="onSubmitButton();" />                    
-                <p:commandButton value="Print Return Bill" ajax="false" action="#" onclick="onSubmitButton();"  >
+                <p:commandButton value="Print Return Bill" ajax="false" action="#"  >
                     <p:printer target="gpBillPreview1" ></p:printer>
                 </p:commandButton>
-                <p:commandButton value="Print Sale Bill" ajax="false" action="#" onclick="onSubmitButton();"  >
+                <p:commandButton value="Print Sale Bill" ajax="false" action="#"   >
                     <p:printer target="gpBillPreview2" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview1"   >

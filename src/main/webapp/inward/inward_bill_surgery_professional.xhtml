@@ -103,6 +103,12 @@
                             <h:panelGroup id="panelBillItems" >
                                 <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}"   var="c" >
                                     <p:column>
+                                        <h:outputLabel value="#{c.id}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{c.billFee.id}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column>
                                         <h:outputLabel value="#{c.patientEncounterComponentType}"></h:outputLabel>
                                     </p:column>
                                     <p:column>

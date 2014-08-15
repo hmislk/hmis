@@ -22,7 +22,7 @@
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                         <pe:exporter type="xlsx" target="
-                                     opd,outSide,
+                                     opd,heder,outSide,
                                      pharmacy,inward,
                                      agent,creditCompany,col,inwPro,
                                      card,
@@ -53,29 +53,23 @@
                 </f:facet>
             </p:panel>
             <!--            <p:spacer height="30" />-->
-
+            
             <p:dataTable id="opd"  value="#{bookKeepingSummery.opdList}" var="d" 
                          rendered="#{bookKeepingSummery.opdList.size()>0}">                   
                 <f:facet name="header">
-                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
-                        <p:outputLabel value="#{sessionController.institution.name}"/><h:outputLabel/>
-                        <p:outputLabel value="Book Keeping Summary"/><h:outputLabel/>   
-                        <h:outputLabel/><h:outputLabel/>
-                        <h:panelGroup>
-                            <h:outputLabel value="From : "  />
-                            <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                            </h:outputLabel>
-                        </h:panelGroup>
-                        <h:panelGroup>
-                            <h:outputLabel value="To : "/> 
-                            <h:outputLabel  value="#{bookKeepingSummery.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                            </h:outputLabel>
-                        </h:panelGroup>
-                    </h:panelGrid>
+                    <p:outputLabel value="#{sessionController.institution.name}"/><h:outputLabel/>
+                    <p:outputLabel value="Book Keeping Summary "/><h:outputLabel/>   
+                    <h:outputLabel/><h:outputLabel/>
+                    <h:outputLabel value="  From : "  />
+                    <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                    </h:outputLabel>
+                    <h:outputLabel value="  To : "/> 
+                    <h:outputLabel  value="#{bookKeepingSummery.toDate}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                    </h:outputLabel>
+                    <br></br>
                     <h:outputLabel value="OPD Service"/>     
-
                 </f:facet>  
 
                 <p:column headerText="Item Name" style="text-align: left;">
@@ -251,7 +245,7 @@
                     <h:panelGroup rendered="#{a.cancelled}">
                         <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
                         <h:outputLabel style="color: red;" rendered="#{a.cancelled}" value="#{a.cancelledBill.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{a.cancelled}" value="&nbsp;&nbsp;#{a.cancelledBill.insId}"/>
                     </h:panelGroup>
@@ -262,11 +256,11 @@
                 <p:column headerText="Agent Code">
                     <h:outputLabel value="#{a.fromInstitution.institutionCode}"/>
                 </p:column>
-                
+
                 <p:column headerText="Comment">
                     <h:outputLabel value="#{a.comments}"/>
                 </p:column>
-                
+
                 <p:column/>
                 <p:column style="text-align: right;" headerText="Total">
                     <h:outputLabel value="#{a.netTotal}">
@@ -403,7 +397,7 @@
                     <h:panelGroup rendered="#{ch.cancelled}">
                         <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="#{ch.cancelledBill.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
                     </h:panelGroup>
@@ -420,14 +414,14 @@
                     </f:facet>
                     <h:outputLabel value="#{ch.bank.name}" style="width: 20%" />                            
                 </p:column>
-                
+
                 <p:column headerText="Memo" style="width: 20%">
                     <f:facet name="header">              
                         <p:outputLabel value="Memo"/>    
                     </f:facet>
                     <h:outputLabel value="#{ch.comments}" style="width: 20%" />                            
                 </p:column>
-                
+
                 <p:column/>
 
                 <p:column headerText="Total" style="width: 20%; text-align: right;">
@@ -438,7 +432,7 @@
                         <f:convertNumber pattern="#,000.00"/>
                     </h:outputLabel>      
                 </p:column>
-                
+
                 <p:column headerText="" style="width: 10%!important; text-align: right;">
                     <f:facet name="header">
                         <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"/>
@@ -457,7 +451,7 @@
                                 </h:outputLabel>   
                             </f:facet>
                         </p:column>
-                        
+
                         <p:column style="text-align: right; width: 50px; vertical-align: bottom; padding-bottom: 0px;margin-bottom: 0px;">
                             <f:facet name="footer">
                                 <h:outputLabel value="------------">
@@ -486,7 +480,7 @@
                     <h:panelGroup rendered="#{ch.cancelled}">
                         <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="#{ch.cancelledBill.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
                     </h:panelGroup>
@@ -497,7 +491,7 @@
                     </f:facet>
                     <h:outputLabel value="#{ch.comments}"/>                            
                 </p:column>
-                
+
                 <p:column headerText="Agent Name/Code" style="width: 20%; "> 
                     <f:facet name="header">
                         <h:outputLabel value="Agent Name/Code"/>
@@ -527,7 +521,7 @@
                         <f:convertNumber pattern="#,000.00"/>
                     </h:outputLabel>      
                 </p:column>
-                
+
 
                 <p:columnGroup type="footer">
                     <p:row>
@@ -539,7 +533,7 @@
                                 </h:outputLabel>   
                             </f:facet>
                         </p:column>
-                         
+
                     </p:row>
                 </p:columnGroup>
             </p:dataTable>
@@ -562,7 +556,7 @@
                     <h:panelGroup rendered="#{ch.cancelled}">
                         <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="#{ch.cancelledBill.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
                     </h:panelGroup>
@@ -618,115 +612,115 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}" var="s">
-                
-        <p:columnGroup type="header">
-            
-            <p:row>
-                <p:column headerText="Net Cash" style="text-align: left;">
-                    <f:facet name="header">
-                        <p:outputLabel value="Net Cash" style="text-align: left;"/>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="#{s.value1}" style="text-align: left; vertical-align: bottom;" >
-                    <f:facet name="header">
-                        <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}" style="text-align: left; vertical-align: bottom;"> 
-                        <f:convertNumber pattern="#,000.00"/>
-                    </h:outputLabel>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-            
-            <p:row>
-                <p:column rowspan="3" headerText="Lab Handover Total" style="vertical-align: top; text-align: left;">
-                    <f:facet name="header">
-                        <p:outputLabel value="Lab Handover Total" style="vertical-align: top; text-align: left;"/>
-                    </f:facet>                    
-                </p:column>
-                <p:column headerText="................" style="text-align: left; vertical-align: bottom;" >
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                
-                
-            </p:row>
-            <p:row>
-                <p:column headerText="................" style="text-align: left; vertical-align: bottom;" >
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-            <p:row>
-                <p:column headerText="................" style="text-align: left; vertical-align: bottom;" >
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-            
-            <p:row>
-                <p:column headerText="Final Cash" style="text-align: left">
-                    <f:facet name="header">
-                        <p:outputLabel value="Final Cash" style="text-align: left"/>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="&nbsp;&nbsp;&nbsp;"  style="text-align: right; vertical-align: top;">
-                    <f:facet name="header">
-                        <p:outputLabel value="&nbsp;&nbsp;&nbsp;" style="text-align: right; vertical-align: top;"/>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-            
-        </p:columnGroup>
-                
-                
-<!--                <p:column>
-                    <h:outputLabel value="#{s.string}"/>
-                </p:column>
-                <p:column/>
-                <p:column/>
-                <p:column />
-                <p:column style="text-align: right;">
-                    <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}"> 
-                        <f:convertNumber pattern="#,000.00"/>
-                    </h:outputLabel>
-                </p:column>
-                <p:column style="text-align: right; vertical-align: bottom;">
-                    <h:outputLabel value="................" rendered="#{s.value1!=0}"> 
-                    </h:outputLabel>
-                    <h:outputLabel value="................" rendered="#{s.value1 eq 0}"/>
-                </p:column>-->
-                
+
+                <p:columnGroup type="header">
+
+                    <p:row>
+                        <p:column headerText="Net Cash" style="text-align: left;">
+                            <f:facet name="header">
+                                <p:outputLabel value="Net Cash" style="text-align: left;"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="#{s.value1}" style="text-align: left; vertical-align: bottom;" >
+                            <f:facet name="header">
+                                <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}" style="text-align: left; vertical-align: bottom;"> 
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column rowspan="3" headerText="Lab Handover Total" style="vertical-align: top; text-align: left;">
+                            <f:facet name="header">
+                                <p:outputLabel value="Lab Handover Total" style="vertical-align: top; text-align: left;"/>
+                            </f:facet>                    
+                        </p:column>
+                        <p:column headerText="................" style="text-align: left; vertical-align: bottom;" >
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+
+
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="................" style="text-align: left; vertical-align: bottom;" >
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="................" style="text-align: left; vertical-align: bottom;" >
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column headerText="Final Cash" style="text-align: left">
+                            <f:facet name="header">
+                                <p:outputLabel value="Final Cash" style="text-align: left"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="&nbsp;&nbsp;&nbsp;"  style="text-align: right; vertical-align: top;">
+                            <f:facet name="header">
+                                <p:outputLabel value="&nbsp;&nbsp;&nbsp;" style="text-align: right; vertical-align: top;"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
+                </p:columnGroup>
+
+
+                <!--                <p:column>
+                                    <h:outputLabel value="#{s.string}"/>
+                                </p:column>
+                                <p:column/>
+                                <p:column/>
+                                <p:column />
+                                <p:column style="text-align: right;">
+                                    <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}"> 
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right; vertical-align: bottom;">
+                                    <h:outputLabel value="................" rendered="#{s.value1!=0}"> 
+                                    </h:outputLabel>
+                                    <h:outputLabel value="................" rendered="#{s.value1 eq 0}"/>
+                                </p:column>-->
+
             </p:dataTable>
 
             <p:spacer height="30"/>
@@ -736,162 +730,162 @@
                 <f:facet name="header">
                     <h:outputLabel value="Bank Deposit" />
                 </f:facet>
-                
-                
+
+
                 <p:columnGroup type="header">
-            
-            <p:row>
-                <p:column rowspan="3" headerText="People's Bank" style="vertical-align: top; text-align: left;">
-                    <f:facet name="header">
-                        <p:outputLabel value="People's Bank" style="vertical-align: top; text-align: left;"/>
-                    </f:facet>                    
-                </p:column>
-                <p:column headerText="Cash" style="text-align: right; vertical-align: bottom;" >
-                    <f:facet name="header">
-                        <p:outputLabel value="Cash" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="................" style="text-align: left; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>            
-                
-            </p:row>
-            <p:row>
-                <p:column headerText="Cheque" style="text-align: right; vertical-align: bottom;" >
-                    <f:facet name="header">
-                        <p:outputLabel value="Cheque" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="................" style="text-align: left; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-             
-            <p:row>
-                <p:column headerText="&nbsp;&nbsp;&nbsp;" style="text-align: right; vertical-align: bottom;" >
-                    <f:facet name="header">
-                        <p:outputLabel value="&nbsp;&nbsp;&nbsp;" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="................" style="text-align: left; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-                
-                <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-            
-            <p:row>
-                <p:column headerText="HNB 1" style="text-align: left">
-                    <f:facet name="header">
-                        <p:outputLabel value="HNB 1" style="text-align: left"/>
-                    </f:facet>
-                </p:column>
-                <p:column/>
-                        <p:column/>
-                <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-                    
+
                     <p:row>
-                <p:column headerText="HNB 2" style="text-align: left">
-                    <f:facet name="header">
-                        <p:outputLabel value="HNB 2" style="text-align: left"/>
-                    </f:facet>
-                </p:column>
-                        <p:column/>
-                        <p:column/>
-                <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-                    
+                        <p:column rowspan="3" headerText="People's Bank" style="vertical-align: top; text-align: left;">
+                            <f:facet name="header">
+                                <p:outputLabel value="People's Bank" style="vertical-align: top; text-align: left;"/>
+                            </f:facet>                    
+                        </p:column>
+                        <p:column headerText="Cash" style="text-align: right; vertical-align: bottom;" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Cash" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="................" style="text-align: left; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>            
+
+                    </p:row>
                     <p:row>
-                <p:column headerText="BOC" style="text-align: left">
-                    <f:facet name="header">
-                        <p:outputLabel value="BOC" style="text-align: left"/>
-                    </f:facet>
-                </p:column>
-                        <p:column/>
-                        <p:column/>
-                <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-                    
+                        <p:column headerText="Cheque" style="text-align: right; vertical-align: bottom;" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Cheque" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="................" style="text-align: left; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
                     <p:row>
-                <p:column headerText="NSB" style="text-align: left">
-                    <f:facet name="header">
-                        <p:outputLabel value="NSB" style="text-align: left"/>
-                    </f:facet>
-                </p:column>
-                        <p:column/>
-                        <p:column/>
-                <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-                    
+                        <p:column headerText="&nbsp;&nbsp;&nbsp;" style="text-align: right; vertical-align: bottom;" >
+                            <f:facet name="header">
+                                <p:outputLabel value="&nbsp;&nbsp;&nbsp;" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="................" style="text-align: left; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
                     <p:row>
-                <p:column headerText="B/F Cash Balance" style="text-align: left">
-                    <f:facet name="header">
-                        <p:outputLabel value="B/F Cash Balance" style="text-align: left"/>
-                    </f:facet>
-                </p:column>
+                        <p:column headerText="HNB 1" style="text-align: left">
+                            <f:facet name="header">
+                                <p:outputLabel value="HNB 1" style="text-align: left"/>
+                            </f:facet>
+                        </p:column>
                         <p:column/>
                         <p:column/>
-                <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                    <f:facet name="header">
-                        <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                    </f:facet>
-                </p:column>
-            </p:row>
-            
-        </p:columnGroup>
-                
-<!--                <p:column >
-                    <h:outputLabel value="#{b.string}"/>
-                </p:column>         
-                <p:column/>
-                <p:column/>
-                <p:column />
-                <p:column/>
-                <p:column style="text-align: right;" >
-                    <h:outputLabel value="......................." />
-                </p:column>-->
+                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column headerText="HNB 2" style="text-align: left">
+                            <f:facet name="header">
+                                <p:outputLabel value="HNB 2" style="text-align: left"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column/>
+                        <p:column/>
+                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column headerText="BOC" style="text-align: left">
+                            <f:facet name="header">
+                                <p:outputLabel value="BOC" style="text-align: left"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column/>
+                        <p:column/>
+                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column headerText="NSB" style="text-align: left">
+                            <f:facet name="header">
+                                <p:outputLabel value="NSB" style="text-align: left"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column/>
+                        <p:column/>
+                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
+                    <p:row>
+                        <p:column headerText="B/F Cash Balance" style="text-align: left">
+                            <f:facet name="header">
+                                <p:outputLabel value="B/F Cash Balance" style="text-align: left"/>
+                            </f:facet>
+                        </p:column>
+                        <p:column/>
+                        <p:column/>
+                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+
+                </p:columnGroup>
+
+                <!--                <p:column >
+                                    <h:outputLabel value="#{b.string}"/>
+                                </p:column>         
+                                <p:column/>
+                                <p:column/>
+                                <p:column />
+                                <p:column/>
+                                <p:column style="text-align: right;" >
+                                    <h:outputLabel value="......................." />
+                                </p:column>-->
             </p:dataTable>
 
         </h:form>

@@ -17,12 +17,17 @@
                     <f:facet name="header" >      
 
                         <h:panelGrid columns="15"  >
-                            <h:outputLabel value="Dealor :#{goodsReturnController.returnBill.fromInstitution.name} GRN" />
-                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
+                            <h:outputLabel value="Dealor : "/>
+                            <p:autoComplete converter="deal" value="#{goodsReturnController.returnBill.toInstitution}"  
+                                            forceSelection="true"
+                                            completeMethod="#{dealerController.completeDealor}"
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >                               
+                            </p:autoComplete>
+                                                          
                             <p:selectOneMenu   id="cmbPs" value="#{goodsReturnController.returnBill.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
-                                <p:ajax process="cmbPs" update="lblCardRef txtCardRef lblCheqRef txtCheqRef bank lblSlipRef txtSlipRef slipBank" event="change" />
-
+                                <p:ajax process="cmbPs" update="lblCardRef txtCardRef lblCheqRef txtCheqRef 
+                                        bank lblSlipRef txtSlipRef slipBank" event="change" />
                             </p:selectOneMenu>
                             <h:outputLabel id="lblCardRef" value="Card Ref. No" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />
                             <p:inputText autocomplete="off"  id="txtCardRef" value="#{goodsReturnController.returnBill.creditCardRefNo}" style="display: #{goodsReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />
@@ -101,7 +106,7 @@
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:outputLabel value="#{ph.tmpQty}" />
-                               
+
                             </f:facet>
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" value="#{ph.tmpQty}" >

@@ -58,23 +58,19 @@
             <p:dataTable id="opd"  value="#{bookKeepingSummery.opdList}" var="d" 
                          rendered="#{bookKeepingSummery.opdList.size()>0}">                   
                 <f:facet name="header">
-                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
-                        <p:outputLabel value="#{sessionController.institution.name}"/><h:outputLabel/>
-                        <p:outputLabel value="Book Keeping Summary"/><h:outputLabel/>   
-                        <h:outputLabel/><h:outputLabel/>
-                        <h:panelGroup>
-                            <h:outputLabel value="From : "  />
-                            <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                            </h:outputLabel>
-                        </h:panelGroup>
-                        <h:panelGroup>
-                            <h:outputLabel value="To : "/> 
-                            <h:outputLabel  value="#{bookKeepingSummery.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                            </h:outputLabel>
-                        </h:panelGroup>
-                    </h:panelGrid>
+                    <p:outputLabel value="#{sessionController.institution.name}"/><h:outputLabel/>
+                    <p:outputLabel value="Book Keeping Summary "/><h:outputLabel/>   
+                    <h:outputLabel/><h:outputLabel/>
+                    <h:outputLabel value=" From : "  />
+                    <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value=" To : "/> 
+                    <h:outputLabel  value="#{bookKeepingSummery.toDate}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                    </h:outputLabel>
+                    <br></br>
                     <h:outputLabel value="OPD Service"/>     
 
                 </f:facet>       
