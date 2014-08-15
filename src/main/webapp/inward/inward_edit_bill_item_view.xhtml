@@ -15,13 +15,13 @@
                 <p:commandButton ajax="false" value="Back to Intrim"
                                  action="/inward/inward_bill_intrim" onclick="onSubmitButton();"/>
                 <p:dataTable value="#{bhtSummeryController.billItems}" var="ser"
-                             rowStyleClass="#{((ser.bill.billClass eq 'class com.divudi.entity.BilledBill')
-                                              or 
-                                              (ser.bill.billedBill eq null 
-                                              and ser.bill.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}">
+                             rowStyleClass="#{(ser.bill.billClass eq 'class com.divudi.entity.BilledBill')? '':'noDisplayRow'}">
                     <p:column headerText="Services Name">
                         #{ser.item.name}
-                    </p:column>                   
+                    </p:column>          
+                    <p:column headerText="Returned">
+                        <h:outputLabel  rendered="#{ser.refunded}" value="Returned" style="color: red;"/>
+                    </p:column>          
                     <p:column headerText="Gross Value">
                         <h:outputLabel value="#{ser.grossValue}">
                             <f:convertNumber pattern="#,##0.00"/>
@@ -111,7 +111,7 @@
                                          actionListener="#{inwardSearch.selectBillItem(ser)}" >  
                         </p:commandButton>
                     </p:column>
-                    
+
                 </p:dataTable>
             </h:form>
 

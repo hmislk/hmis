@@ -74,7 +74,7 @@ public class mdInwardReportController implements Serializable {
     AdmissionType admissionType;
     Admission current;
     Institution institution;
-    double total=0.0;
+    double total = 0.0;
 
     ////////////////////////////////////
     @EJB
@@ -254,69 +254,89 @@ public class mdInwardReportController implements Serializable {
 
         return bills;
     }
-    
+
     public void createInwardBalancePaymentBills() {
 
         String sql;
         Map temMap = new HashMap();
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
-                + " and b.patientEncounter.paymentFinalized=true "
+                //                + " and b.patientEncounter.paymentFinalized=true "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false  ";
-                
-        
+
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad ";
             temMap.put("ad", admissionType);
         }
-        
-        sql+= " order by b.createdAt ";
+
+        sql += " order by b.createdAt ";
 
         temMap.put("billType", BillType.InwardPaymentBill);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        total=0.0;
+        total = 0.0;
         for (Bill b : bills) {
-            total+=b.getNetTotal();
+            total += b.getNetTotal();
         }
-    }
-    
-    public void createInwardBalancePaymentBills1() {
-        
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from BillItem b where "
-                + " b.bill.billType = :billType "
-//                + " and b.bill.cancelled=false "
-                + " and b.bill.institution=:ins "
-                + " and b.patientEncounter.paymentFinalized=true "
-                + " and b.bill.createdAt between :fromDate and :toDate "
-                + " and b.bill.retired=false  ";
-        
-        
+
+        temMap = new HashMap();
+        sql = "select count(distinct(b.patientEncounter)) from Bill b where"
+                + " b.billType = :billType "
+                //                + " and b.patientEncounter.paymentFinalized=true "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  ";
+
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad ";
             temMap.put("ad", admissionType);
         }
-        
-        sql+= " order by b.createdAt ";
+
+        sql += " order by b.createdAt ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        count = getBillFacade().findLongByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    private long count;
+    
+
+    public void createInwardBalancePaymentBills1() {
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BillItem b where "
+                + " b.bill.billType = :billType "
+                //                + " and b.bill.cancelled=false "
+                + " and b.bill.institution=:ins "
+                + " and b.patientEncounter.paymentFinalized=true "
+                + " and b.bill.createdAt between :fromDate and :toDate "
+                + " and b.bill.retired=false  ";
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad ";
+            temMap.put("ad", admissionType);
+        }
+
+        sql += " order by b.createdAt ";
 
         temMap.put("billType", BillType.CashRecieveBill);
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        billItem=getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        billItem = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 //        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        total=0.0;
+        total = 0.0;
         for (BillItem b : billItem) {
-            total+=b.getBill().getNetTotal();
+            total += b.getBill().getNetTotal();
         }
     }
-
 
     public List<Bill> getBillsDischarged() {
 
@@ -789,7 +809,7 @@ public class mdInwardReportController implements Serializable {
         sql = "select sum(b.netTotal) from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-//                + " and b.createdAt between :fromDate and :toDate "
+                //                + " and b.createdAt between :fromDate and :toDate "
                 + " and b.createdAt <= :toDate "
                 + " and b.retired=false  "
                 + " and b.patientEncounter.discharged =false";
@@ -825,7 +845,7 @@ public class mdInwardReportController implements Serializable {
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-//                + " and b.createdAt between :fromDate and :toDate "
+                //                + " and b.createdAt between :fromDate and :toDate "
                 + " and b.createdAt <= :toDate "
                 + " and b.retired=false  "
                 + " and b.patientEncounter.discharged =false";
@@ -875,8 +895,8 @@ public class mdInwardReportController implements Serializable {
                 + " b.billType = :billType "
                 + " and type(b)=:class"
                 + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-//                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.createdAt <= :toDate"
+                //                + " and b.createdAt between :fromDate and :toDate "
+                //                + " and b.createdAt <= :toDate"
                 + " and b.retired = false"
                 + " and b.patientEncounter.discharged = true"
                 + " and b.patientEncounter.paymentFinalized = true";
@@ -913,8 +933,8 @@ public class mdInwardReportController implements Serializable {
                 + " b.billType = :billType "
                 + " and type(b)=:class"
                 + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-//                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.createdAt <= :toDate"
+                //                + " and b.createdAt between :fromDate and :toDate "
+                //                + " and b.createdAt <= :toDate"
                 + " and b.retired = false  "
                 + " and b.patientEncounter.discharged = true"
                 + " and b.patientEncounter.paymentFinalized = true";
@@ -1404,5 +1424,13 @@ public class mdInwardReportController implements Serializable {
     public void setTotal(double total) {
         this.total = total;
     }
-    
+
+    public long getCount() {
+        return count;
+    }
+
+    public void setCount(long count) {
+        this.count = count;
+    }
+
 }

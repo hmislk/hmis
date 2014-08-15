@@ -67,6 +67,7 @@ public class GoodsReturnController implements Serializable {
         makeNull();
         System.err.println("Bill " + bill);
         this.bill = bill;
+        getReturnBill().setToInstitution(getBill().getFromInstitution());
         generateBillComponent();
     }
 
@@ -117,7 +118,7 @@ public class GoodsReturnController implements Serializable {
     private void saveReturnBill() {
         getReturnBill().setInvoiceDate(getBill().getInvoiceDate());
         getReturnBill().setReferenceBill(getBill());
-        getReturnBill().setToInstitution(getBill().getFromInstitution());
+//        getReturnBill().setToInstitution(getBill().getFromInstitution());
         getReturnBill().setToDepartment(getBill().getFromDepartment());
         getReturnBill().setFromInstitution(getBill().getToInstitution());
         getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReturnBill(), BillType.PharmacyGrnReturn, BillNumberSuffix.GRNRET));
@@ -202,6 +203,11 @@ public class GoodsReturnController implements Serializable {
 
     public void settle() {
         System.err.println("1");
+
+        if (getReturnBill().getToInstitution() == null) {
+            UtilityController.addErrorMessage("Select Dealor");
+            return;
+        }
         if (checkGrnItems()) {
             UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't Return ");
             return;
