@@ -106,6 +106,7 @@ public class Bill implements Serializable {
     BillItem singleBillItem;
     //Values
     double total;
+    double margin;
     double discount;
     double discountPercent;
     double netTotal;
@@ -1345,5 +1346,15 @@ public class Bill implements Serializable {
     public void setToWebUser(WebUser toWebUser) {
         this.toWebUser = toWebUser;
     }
+
+    public double getMargin() {
+        return margin;
+    }
+
+    public void setMargin(double margin) {
+        this.margin = margin;
+    }
+    
+    
 
 }
