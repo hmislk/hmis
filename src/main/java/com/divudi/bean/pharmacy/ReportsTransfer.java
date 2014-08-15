@@ -421,7 +421,7 @@ public class ReportsTransfer implements Serializable {
         }
     }
 
-    public void fillItemCounts() {
+    private List<Object[]> fetchBillItem() {
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -447,7 +447,39 @@ public class ReportsTransfer implements Serializable {
                 + " group by b.item "
                 + " order by b.item.name";
 
-        List<Object[]> list = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    private Object[] fetchBill() {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", BillType.PharmacyIssue);
+        m.put("fdept", fromDepartment);
+
+        sql = "select sum(b.total),"
+                + " sum(b.margin),"
+                + " sum(b.discount),"
+                + " sum(b.netTotal)"
+                + " from Bill b "
+                + " where b.fromDepartment=:fdept ";
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.createdAt between :fd and :td"
+                + " and b.billType=:bt";
+
+        return getBillFacade().findAggregate(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void fillItemCounts() {
+
+        List<Object[]> list = fetchBillItem();
+
         if (list == null) {
             return;
         }
@@ -476,12 +508,25 @@ public class ReportsTransfer implements Serializable {
 
             totalsValue += row.getGross();
             marginValue += row.getMargin();
+            discountsValue += row.getDiscount();
             netTotalValues += row.getNet();
 
             itemCounts.add(row);
         }
 
+        Object[] listBill = fetchBill();
+
+        billTotal = (Double) listBill[0];
+        billMargin = (Double) listBill[1];
+        billDiscount = (Double) listBill[2];
+        billNetTotal = (Double) listBill[3];
+
     }
+
+    double billTotal;
+    double billMargin;
+    double billDiscount;
+    double billNetTotal;
 
     private Double calCount(Item item, Bill bill) {
 
@@ -823,7 +868,6 @@ public class ReportsTransfer implements Serializable {
             this.count = count;
         }
 
-      
         public double getGross() {
             return gross;
         }
@@ -873,7 +917,37 @@ public class ReportsTransfer implements Serializable {
     public void setMarginValue(double marginValue) {
         this.marginValue = marginValue;
     }
-    
-    
+
+    public double getBillTotal() {
+        return billTotal;
+    }
+
+    public void setBillTotal(double billTotal) {
+        this.billTotal = billTotal;
+    }
+
+    public double getBillMargin() {
+        return billMargin;
+    }
+
+    public void setBillMargin(double billMargin) {
+        this.billMargin = billMargin;
+    }
+
+    public double getBillDiscount() {
+        return billDiscount;
+    }
+
+    public void setBillDiscount(double billDiscount) {
+        this.billDiscount = billDiscount;
+    }
+
+    public double getBillNetTotal() {
+        return billNetTotal;
+    }
+
+    public void setBillNetTotal(double billNetTotal) {
+        this.billNetTotal = billNetTotal;
+    }
 
 }
