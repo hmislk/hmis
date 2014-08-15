@@ -63,6 +63,7 @@ public class ReportsTransfer implements Serializable {
     double purchaseValue;
     double totalsValue;
     double discountsValue;
+    double marginValue;
     double netTotalValues;
 
     List<BillItem> transferItems;
@@ -453,7 +454,7 @@ public class ReportsTransfer implements Serializable {
 
         itemCounts = new ArrayList<>();
         totalsValue = 0;
-        discountsValue = 0;
+        marginValue = 0;
         netTotalValues = 0;
         for (Object[] obj : list) {
             ItemCount row = new ItemCount();
@@ -463,15 +464,18 @@ public class ReportsTransfer implements Serializable {
             row.setDiscount((Double) obj[3]);
             row.setNet((Double) obj[4]);
 
-            long pre = calCount(row.getItem(), new PreBill());
-            long preCancel = calCountCan(row.getItem(), new PreBill());
-            long returned = calCount(row.getItem(), new RefundBill());
-            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
+            Double pre = calCount(row.getItem(), new PreBill());
+            Double preCancel = calCountCan(row.getItem(), new PreBill());
+            Double returned = calCountReturn(row.getItem(), new RefundBill());
+            System.err.println("PRE " + pre);
+            System.err.println("PRE CAN " + preCancel);
+            System.err.println("Return " + returned);
+//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
-            row.setCount(pre - (preCancel + (returned - retturnedCancel)));
+            row.setCount(pre - (preCancel + returned));
 
             totalsValue += row.getGross();
-            discountsValue += row.getDiscount();
+            marginValue += row.getMargin();
             netTotalValues += row.getNet();
 
             itemCounts.add(row);
@@ -479,7 +483,7 @@ public class ReportsTransfer implements Serializable {
 
     }
 
-    private long calCount(Item item, Bill bill) {
+    private Double calCount(Item item, Bill bill) {
 
         Map m = new HashMap();
         String sql;
@@ -490,7 +494,7 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", BillType.PharmacyIssue);
         m.put("fdept", fromDepartment);
 
-        sql = "select count(b)"
+        sql = "select sum(b.qty)"
                 + " from BillItem b "
                 + " where b.bill.fromDepartment=:fdept "
                 + " and b.bill.billedBill is null "
@@ -505,11 +509,11 @@ public class ReportsTransfer implements Serializable {
         sql += " and b.bill.createdAt between :fd and :td"
                 + " and b.bill.billType=:bt";
 
-        return getBillFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
-    private long calCountCan(Item item, Bill bill) {
+    private Double calCountReturn(Item item, Bill bill) {
 
         Map m = new HashMap();
         String sql;
@@ -520,7 +524,7 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", BillType.PharmacyIssue);
         m.put("fdept", fromDepartment);
 
-        sql = "select count(b)"
+        sql = "select sum(b.qty)"
                 + " from BillItem b "
                 + " where b.bill.fromDepartment=:fdept "
                 + " and b.bill.billedBill is not null "
@@ -535,7 +539,37 @@ public class ReportsTransfer implements Serializable {
         sql += " and b.bill.createdAt between :fd and :td"
                 + " and b.bill.billType=:bt";
 
-        return getBillFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    private Double calCountCan(Item item, Bill bill) {
+
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("class", bill.getClass());
+        m.put("itm", item);
+        m.put("bt", BillType.PharmacyIssue);
+        m.put("fdept", fromDepartment);
+
+        sql = "select sum(b.qty)"
+                + " from BillItem b "
+                + " where b.bill.fromDepartment=:fdept "
+                + " and b.bill.billedBill is not null "
+                + " and type(b.bill)=:class "
+                + " and b.item=:itm ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -767,7 +801,7 @@ public class ReportsTransfer implements Serializable {
     public class ItemCount {
 
         Item item;
-        long count;
+        double count;
         double gross;
         double margin;
         double discount;
@@ -781,14 +815,15 @@ public class ReportsTransfer implements Serializable {
             this.item = item;
         }
 
-        public long getCount() {
+        public double getCount() {
             return count;
         }
 
-        public void setCount(long count) {
+        public void setCount(double count) {
             this.count = count;
         }
 
+      
         public double getGross() {
             return gross;
         }
@@ -830,5 +865,15 @@ public class ReportsTransfer implements Serializable {
     public void setItemCounts(List<ItemCount> itemCounts) {
         this.itemCounts = itemCounts;
     }
+
+    public double getMarginValue() {
+        return marginValue;
+    }
+
+    public void setMarginValue(double marginValue) {
+        this.marginValue = marginValue;
+    }
+    
+    
 
 }
