@@ -65,6 +65,7 @@ public class ReportsTransfer implements Serializable {
     double discountsValue;
     double marginValue;
     double netTotalValues;
+    double retailValue;
 
     List<BillItem> transferItems;
     List<Bill> transferBills;
@@ -433,7 +434,9 @@ public class ReportsTransfer implements Serializable {
                 + " sum(b.grossValue),"
                 + " sum(b.marginValue),"
                 + " sum(b.discount),"
-                + " sum(b.netValue)"
+                + " sum(b.netValue),"
+                + " sum(b.qty*b.pharmaceuticalBillItem.itemBatch.purcahseRate),"
+                + " sum(b.qty*b.pharmaceuticalBillItem.itemBatch.retailsaleRate)"
                 + " from BillItem b "
                 + " where b.bill.fromDepartment=:fdept ";
 
@@ -554,6 +557,8 @@ public class ReportsTransfer implements Serializable {
         totalsValue = 0;
         marginValue = 0;
         netTotalValues = 0;
+        purchaseValue = 0;
+        retailValue = 0;
         for (Object[] obj : list) {
             ItemCount row = new ItemCount();
             row.setItem((Item) obj[0]);
@@ -561,6 +566,8 @@ public class ReportsTransfer implements Serializable {
             row.setMargin((Double) obj[2]);
             row.setDiscount((Double) obj[3]);
             row.setNet((Double) obj[4]);
+            row.setPurchase((Double) obj[5]);
+            row.setRetail((Double) obj[6]);
 
             Double pre = calCount(row.getItem(), new PreBill());
             Double preCancel = calCountCan(row.getItem(), new PreBill());
@@ -576,6 +583,8 @@ public class ReportsTransfer implements Serializable {
             marginValue += row.getMargin();
             discountsValue += row.getDiscount();
             netTotalValues += row.getNet();
+            purchaseValue += row.getPurchase();
+            retailValue += row.getRetail();
 
             itemCounts.add(row);
         }
@@ -915,6 +924,8 @@ public class ReportsTransfer implements Serializable {
         double margin;
         double discount;
         double net;
+        private double purchase;
+        private double retail;
 
         public Item getItem() {
             return item;
@@ -962,6 +973,22 @@ public class ReportsTransfer implements Serializable {
 
         public void setDiscount(double discount) {
             this.discount = discount;
+        }
+
+        public double getPurchase() {
+            return purchase;
+        }
+
+        public void setPurchase(double purchase) {
+            this.purchase = purchase;
+        }
+
+        public double getRetail() {
+            return retail;
+        }
+
+        public void setRetail(double retail) {
+            this.retail = retail;
         }
 
     }
@@ -1013,5 +1040,15 @@ public class ReportsTransfer implements Serializable {
     public void setBillNetTotal(double billNetTotal) {
         this.billNetTotal = billNetTotal;
     }
+
+    public double getRetailValue() {
+        return retailValue;
+    }
+
+    public void setRetailValue(double retailValue) {
+        this.retailValue = retailValue;
+    }
+    
+    
 
 }

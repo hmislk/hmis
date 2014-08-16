@@ -52,7 +52,9 @@ public enum BillType {
     PurchaseReturn,// Purchase Return
     PharmacyTransferRequest,
     PharmacyTransferIssue,
+    PharmacyDirectIssue,
     PharmacyTransferReceive,
+    PharmacyDirectReceive,
     PharmacyAdjustment,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
