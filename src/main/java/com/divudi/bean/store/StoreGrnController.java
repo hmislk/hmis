@@ -498,12 +498,12 @@ public class StoreGrnController implements Serializable {
     
     public void removeItemEx(BillItem bi) {
         
-        if(bi.getId()==null){
+        if(bi==null){
             JsfUtil.addErrorMessage("No Item to Remove");
             return;
         }
         
-        getBillItems().remove(bi);
+        getBillExpenses().remove(bi.getSearialNo());
 
         calGrossTotal();
 

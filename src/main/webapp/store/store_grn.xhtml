@@ -198,7 +198,7 @@
 
                             <p:dataTable id="tblExpenses" 
                                          value="#{storeGrnController.billExpenses}" var="be"
-                                         emptyMessage="No Bill Expenses" >
+                                         emptyMessage="No Bill Expenses">
                                 <p:column headerText="Expense" >
                                     <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
                                 </p:column>
@@ -211,7 +211,7 @@
                                     <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Remove" >
-                                    <p:commandButton value="Remove" ajax="false" action="#{storeGrnController.removeItemEx(bi)}"/>
+                                    <p:commandButton value="Remove" ajax="false" action="#{storeGrnController.removeItemEx(be)}"/>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
