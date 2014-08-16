@@ -138,6 +138,10 @@ public class StoreGrnController implements Serializable {
         filteredValue = null;
         //  billItems = null;
         grns = null;
+        currentExpense=null;
+        billExpenses=null;
+        System.out.println("clear");
+        
     }
 
     public void setBatch(BillItem pid) {
@@ -304,6 +308,7 @@ public class StoreGrnController implements Serializable {
 
     public String viewPoList() {
         clearList();
+        
         return "store_purchase_order_list_for_recieve";
     }
 
@@ -362,11 +367,11 @@ public class StoreGrnController implements Serializable {
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            //System.err.println("Qty Unit : " + i.getQtyInUnit());
-//            //System.err.println("Remaining Qty : " + i.getRemainingQty());
+            System.err.println("Qty Unit : " + i.getQtyInUnit());
+//            System.err.println("Remaining Qty : " + i.getRemainingQty());
             double remains = getPharmacyBillBean().calQtyInTwoSql(i);
-            //System.err.println("Tot GRN Qty : " + remains);
-            //System.err.println("QTY : " + i.getQtyInUnit());
+            System.err.println("Tot GRN Qty : " + remains);
+//            System.err.println("QTY : " + i.getQtyInUnit());
             if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
                 BillItem bi = new BillItem();
                 bi.setSearialNo(getBillItems().size());
@@ -389,6 +394,7 @@ public class StoreGrnController implements Serializable {
 
                 getBillItems().add(bi);
                 //  getBillItems().r
+                System.out.println("getBillItems() = " + getBillItems());
             }
 
         }
@@ -397,8 +403,10 @@ public class StoreGrnController implements Serializable {
     public void createGrn() {
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
+        System.out.println("in");
         generateBillComponent();
         calGrossTotal();
+        System.out.println("out");
     }
 
     private double getRetailPrice(BillItem billItem) {
@@ -487,6 +495,19 @@ public class StoreGrnController implements Serializable {
         currentExpense = null;
         calGrossTotal();
     }
+    
+    public void removeItemEx(BillItem bi) {
+        
+        if(bi.getId()==null){
+            JsfUtil.addErrorMessage("No Item to Remove");
+            return;
+        }
+        
+        getBillItems().remove(bi);
+
+        calGrossTotal();
+
+    }
 
     private void calGrossTotal() {
         double tmp = 0.0;
@@ -536,6 +557,7 @@ public class StoreGrnController implements Serializable {
         printPreview = false;
         billItems = null;
         createGrn();
+        System.out.println("set Approvebill.");
     }
 
     public Bill getGrnBill() {

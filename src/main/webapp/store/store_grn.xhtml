@@ -6,7 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:bi="http://java.sun.com/jsf/composite/bill"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:st="http://java.sun.com/jsf/composite/store">
 
     <ui:define name="content">
         <h:form>
@@ -195,7 +195,7 @@
                                                  process="billExpenseGrid" 
                                                  update="tblExpenses billExpenseGrid tot focusExpense "/>
                             </h:panelGrid>
-                            
+
                             <p:dataTable id="tblExpenses" 
                                          value="#{storeGrnController.billExpenses}" var="be"
                                          emptyMessage="No Bill Expenses" >
@@ -210,6 +210,9 @@
                                 <p:column headerText="Descreption" >
                                     <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
                                 </p:column>
+                                <p:column headerText="Remove" >
+                                    <p:commandButton value="Remove" ajax="false" action="#{storeGrnController.removeItemEx(bi)}"/>
+                                </p:column>
                             </p:dataTable>
                         </p:panel>
 
@@ -223,7 +226,7 @@
                             <p:outputLabel id="lblExpenses"  value="#{0-storeGrnController.grnBill.expenseTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
-                            
+
                             <p:outputLabel value="Discount"/>
                             <p:inputText autocomplete="off" id="dis" value="#{storeGrnController.grnBill.discount}" >
                                 <p:ajax process="gro @this" update="net" event="blur"
@@ -243,13 +246,13 @@
 
             </h:panelGroup>
             <p:panel rendered="#{storeGrnController.printPreview}">
-                <p:commandButton ajax="false" action="#{storeGrnController.viewPoList()}" value="PO List"/>                    
+                <p:commandButton ajax="false" action="#{storeGrnController.viewPoList()}" actionListener="#{searchController.createPoTableStore}" value="PO List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   >
 
-                    <ph:grn bill="#{storeGrnController.grnBill}"/>
+                    <st:grn bill="#{storeGrnController.grnBill}"/>
 
                 </p:panel>
             </p:panel>
