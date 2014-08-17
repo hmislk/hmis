@@ -40,9 +40,22 @@
 
                     <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >
                         <p:column headerText="Item">
-                            #{i.item.name}
+                            #{i.itemBatch.item.name}
                         </p:column>
-                        <p:column headerText="Count">
+                        <p:column headerText="Batch No">
+                            #{i.itemBatch.batchNo}
+                        </p:column>
+                        <p:column headerText="Purchase Rate" style="text-align: right;">
+                            <h:outputLabel value="#{i.itemBatch.purcahseRate}">
+                                 <f:convertNumber  pattern="#0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Retail Rate" style="text-align: right;">
+                             <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
+                                 <f:convertNumber  pattern="#0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Count" style="text-align: right;">
                             #{i.count}
                         </p:column>   
                         <p:column headerText="Gross Value" style="text-align: right;">
