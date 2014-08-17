@@ -44,27 +44,7 @@
                         </p:column>
                         <p:column headerText="Count">
                             #{i.count}
-                        </p:column>    
-                        <p:column headerText="Purchase Value" style="text-align: right;">
-                            <h:outputLabel value="#{i.purchase}">
-                                <f:convertNumber  pattern="#0.00"/>
-                            </h:outputLabel>  
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsTransfer.purchaseValue}">
-                                    <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel>  
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="Retail Value" style="text-align: right;">
-                            <h:outputLabel value="#{i.retail}">
-                                <f:convertNumber  pattern="#0.00"/>
-                            </h:outputLabel>  
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsTransfer.retailValue}">
-                                    <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel> 
-                            </f:facet>
-                        </p:column>
+                        </p:column>   
                         <p:column headerText="Gross Value" style="text-align: right;">
                             <h:outputLabel value="#{i.gross}">
                                 <f:convertNumber  pattern="#0.00"/>
@@ -72,10 +52,7 @@
                             <f:facet name="footer">
                                 <h:outputLabel value="#{reportsTransfer.totalsValue}">
                                     <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel>  <br/>
-                                <h:outputLabel value="#{reportsTransfer.billTotal}">
-                                    <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel> 
+                                </h:outputLabel>
                             </f:facet>
                         </p:column>
                         <p:column headerText="Margin Value" style="text-align: right;">
@@ -85,25 +62,9 @@
                             <f:facet name="footer">
                                 <h:outputLabel value="#{reportsTransfer.marginValue}">
                                     <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel>   <br/>
-                                <h:outputLabel value="#{reportsTransfer.billMargin}">
-                                    <f:convertNumber  pattern="#0.00"/>
                                 </h:outputLabel> 
                             </f:facet>
-                        </p:column>  
-                        <p:column headerText="Discount Value" style="text-align: right;">
-                            <h:outputLabel value="#{i.discount}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel> 
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsTransfer.discountsValue}">
-                                    <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel>   <br/>
-                                <h:outputLabel value="#{reportsTransfer.billDiscount}">
-                                    <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel> 
-                            </f:facet>
-                        </p:column>  
+                        </p:column>
                         <p:column headerText="Net Value" style="text-align: right;">
                             <h:outputLabel value="#{i.net}">
                                 <f:convertNumber pattern="#0.00" />
@@ -111,10 +72,7 @@
                             <f:facet name="footer">
                                 <h:outputLabel value="#{reportsTransfer.netTotalValues}">
                                     <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel>   <br/>
-                                <h:outputLabel value="#{reportsTransfer.billNetTotal}">
-                                    <f:convertNumber  pattern="#0.00"/>
-                                </h:outputLabel> 
+                                </h:outputLabel>
                             </f:facet>
                         </p:column>
 
