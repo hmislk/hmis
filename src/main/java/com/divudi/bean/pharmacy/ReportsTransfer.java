@@ -612,7 +612,7 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", billType);
         m.put("fdept", fromDepartment);
 
-        sql = "select abs(sum(b.qty))"
+        sql = "select abs(sum(b.pharmaceuticalBillItem.qty))"
                 + " from BillItem b "
                 + " where b.bill.department=:fdept "
                 + " and b.bill.billedBill is null "
@@ -642,7 +642,7 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", billType);
         m.put("fdept", fromDepartment);
 
-        sql = "select abs(sum(b.qty))"
+        sql = "select abs(sum(b.pharmaceuticalBillItem.qty))"
                 + " from BillItem b "
                 + " where b.bill.department=:fdept "
                 + " and b.bill.billedBill is not null "
@@ -672,7 +672,7 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", billType);
         m.put("fdept", fromDepartment);
 
-        sql = "select abs(sum(b.qty))"
+        sql = "select abs(sum(b.pharmaceuticalBillItem.qty))"
                 + " from BillItem b "
                 + " where b.bill.department=:fdept "
                 + " and b.bill.billedBill is not null "
