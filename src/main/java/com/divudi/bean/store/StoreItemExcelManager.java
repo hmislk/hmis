@@ -107,7 +107,7 @@ public class StoreItemExcelManager implements Serializable {
     MeasurementUnitFacade muFacade;
     @EJB
     PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
             StoreItemCategoryFacade storeItemCategoryFacade;

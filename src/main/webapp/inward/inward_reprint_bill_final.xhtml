@@ -23,7 +23,7 @@
                             </p:panel>
 
                             <h:panelGrid columns="2">
-                                <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
+                                <p:panel header="CLAIMABLE" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="Patient Copy" ajax="false"   >
                                             <p:printer target="claimablePatientCopy" ></p:printer>
@@ -33,7 +33,7 @@
                                         </p:commandButton> 
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="Not Claimable" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">
+                                <p:panel header="Not Claimable" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="Patient Copy without Professional" ajax="false"   >
                                             <p:printer target="notClaimablePatientCopy" ></p:printer>
@@ -46,14 +46,14 @@
                                         </p:commandButton>
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
+                                <p:panel header="CLAIMABLE" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
                                     <h:panelGrid columns="1">
-                                        <p:commandButton ajax="false" value="Green Sheet Print"   >
+                                        <p:commandButton ajax="false" value="Green Sheet Print"  >
                                             <p:printer target="finalBillGreenSheet" ></p:printer>
                                         </p:commandButton>
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="Not Claimable" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
+                                <p:panel header="Not Claimable" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton ajax="false" value="Green Sheet Print Without Professional"   >
                                             <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
@@ -160,11 +160,11 @@
                                       bill="#{inwardSearch.bill}" />
                     </h:panelGroup>
                     <h:panelGroup id="finalBillGreenSheet" styleClass="noBorder" >                  
-                        <bi:finalBillGreenSheet  bill="#{bhtSummeryController.current}" showProfessional="true"/>
+                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="true"/>
                     </h:panelGroup>
 
                     <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder" >                  
-                        <bi:finalBillGreenSheet  bill="#{bhtSummeryController.current}" />
+                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="false"/>
                     </h:panelGroup>
 
                 </h:form>

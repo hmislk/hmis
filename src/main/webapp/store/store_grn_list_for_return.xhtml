@@ -48,32 +48,32 @@
                 <p:dataTable value="#{searchController.bills}" var="p" >
 
                     <p:column headerText="GRN No"  >                   
-                        <h:commandLink action="/pharmacy/pharmacy_reprint_grn"  >    
+                        <h:commandLink action="store_reprint_grn"  >    
                             <h:outputLabel  value="#{p.deptId}"/>
                             <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{p}"/>
                         </h:commandLink>
                     </p:column> 
                     <p:column headerText="Invoice No"  >                   
-                        <h:commandLink action="/pharmacy/pharmacy_reprint_grn"  >    
+                        <h:commandLink action="store_reprint_grn"  >    
                             <h:outputLabel  value="#{p.invoiceNumber}"/>
                             <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{p}"/>
                         </h:commandLink>
                     </p:column> 
                     <p:column headerText="PO No"   >                   
-                        <h:commandLink action="/pharmacy/pharmacy_reprint_grn"  >    
+                        <h:commandLink action="store_reprint_grn"  >    
                             <h:outputLabel  value="#{p.referenceBill.deptId}"/>
                             <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{p}"/>
                         </h:commandLink>
                     </p:column> 
                     <p:column headerText="Distributor" >
-                        <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
+                        <h:commandLink action="store_reprint_grn" >
                             <h:outputLabel  value="#{p.fromInstitution.name}"/>
                             <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{p}"/>
                         </h:commandLink>
                     </p:column>
 
                     <p:column headerText="Billed at"  >
-                        <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
+                        <h:commandLink action="store_reprint_grn" >
                             <h:outputLabel value="#{p.createdAt}" >
                                 <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                             </h:outputLabel>
@@ -97,7 +97,7 @@
                     </p:column> 
 
                     <p:column headerText="Billed by" >
-                        <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
+                        <h:commandLink action="store_reprint_grn" >
                             <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
                             </h:outputLabel>
                             <f:setPropertyActionListener value="#{p}" target="#{storeBillSearch.bill}"/>
@@ -117,7 +117,7 @@
                     </p:column>    
 
                     <p:column headerText="PO Value" >
-                        <h:commandLink action="/pharmacy/pharmacy_reprint_grn"  >    
+                        <h:commandLink action="store_reprint_grn"  >    
                             <h:outputLabel value="#{p.referenceBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -127,7 +127,7 @@
                     </p:column>
 
                     <p:column headerText="Grn Value" >
-                        <h:commandLink action="/pharmacy/pharmacy_reprint_grn"  >    
+                        <h:commandLink action="store_reprint_grn"  >    
                             <h:outputLabel value="#{p.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -135,7 +135,7 @@
                         </h:commandLink>
                     </p:column>
                     <p:column>
-                        <p:commandButton ajax="false" value="Return" action="/pharmacy/pharmacy_return_good" disabled="#{p.cancelled}">
+                        <p:commandButton ajax="false" value="Return" action="store_return_good" disabled="#{p.cancelled}">
                             <f:setPropertyActionListener target="#{storeGoodsReturnController.bill}" value="#{p}"/>
                         </p:commandButton>
                     </p:column>
@@ -143,13 +143,13 @@
                     <p:column headerText="Return Bill">                   
                         <p:dataTable var="b" value="#{p.listOfBill}">
                             <p:column  >
-                                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return"  >                                
+                                <h:commandLink action="store_reprint_grn_return"  >                                
                                     <h:outputLabel  value="#{b.deptId}"/>
                                     <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column >
-                                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return" >
+                                <h:commandLink action="store_reprint_grn_return" >
                                     <h:outputLabel value="#{b.createdAt}" >
                                         <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                                     </h:outputLabel>
@@ -173,7 +173,7 @@
                             </p:column> 
 
                             <p:column >
-                                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return" >
+                                <h:commandLink action="store_reprint_grn_return" >
                                     <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
@@ -192,7 +192,7 @@
                                 </h:panelGroup>
                             </p:column>                       
                             <p:column  >
-                                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return"  >  
+                                <h:commandLink action="store_reprint_grn_return"  >  
                                     <h:outputLabel value="#{b.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>

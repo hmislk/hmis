@@ -8,6 +8,7 @@ package com.divudi.bean.inward;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
@@ -385,11 +386,12 @@ public class InwardReportController implements Serializable {
         this.admissionTypeFacade = admissionTypeFacade;
     }
 
+    @EJB
+    CommonFunctions commonFunctions;
+
     public Date getFromDate() {
         if (fromDate == null) {
-            Calendar c = Calendar.getInstance();
-            c.set(Calendar.MONTH, 0);
-            fromDate = c.getTime();
+            fromDate = commonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }

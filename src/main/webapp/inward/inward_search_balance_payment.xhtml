@@ -37,7 +37,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid columns="3">
                                     <p:commandButton ajax="false" action="#{mdInwardReportController.createInwardBalancePaymentBills()}" value="Search" onclick="onSubmitButton();" />
-                                    <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                                    <p:commandButton value="Print" ajax="false" action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
@@ -110,7 +110,12 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Payment Method"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>                                   
+                                    <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value=" Count : #{mdInwardReportController.count}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Payed Value" style="text-align: right;">

@@ -32,41 +32,41 @@
             </f:facet>
 
             <p:column headerText="PO NO"  >
-                <h:commandLink action="pharmacy_reprint_po" value="#{bill.deptId}">
+                <h:commandLink action="store_reprint_po" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
             <p:column headerText="Requested NO"  >
-                <h:commandLink action="pharmacy_reprint_po" value="#{bill.referenceBill.deptId}">
+                <h:commandLink action="store_reprint_po" value="#{bill.referenceBill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>            
             <p:column headerText="Requested From" >
-                <h:commandLink action="pharmacy_reprint_po" value="#{bill.department.name}">
+                <h:commandLink action="store_reprint_po" value="#{bill.department.name}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>   
             <p:column headerText="Requested Person" >
-                <h:commandLink action="pharmacy_reprint_po" value="#{bill.referenceBill.creater.webUserPerson.name}">
+                <h:commandLink action="store_reprint_po" value="#{bill.referenceBill.creater.webUserPerson.name}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
             <p:column headerText="Delaor Name" >
-                <h:commandLink action="pharmacy_reprint_po" value="#{bill.toInstitution.name}">
+                <h:commandLink action="store_reprint_po" value="#{bill.toInstitution.name}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
             <p:column headerText="Billed at"  >
-                <h:commandLink action="pharmacy_reprint_grn_return" >
+                <h:commandLink action="store_reprint_grn_return" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -83,10 +83,10 @@
                 </h:panelGroup>
             </p:column>                 
             <p:column headerText="Approved by" >
-                <h:commandLink action="pharmacy_reprint_grn_return" >
+                <h:commandLink action="store_reprint_grn_return" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -102,17 +102,17 @@
                 </h:panelGroup>
             </p:column>        
             <p:column headerText="Paymentmethod"   >
-                <h:commandLink action="pharmacy_reprint_po" >
+                <h:commandLink action="store_reprint_po" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               
             <p:column headerText="Net Value" >
-                <h:commandLink action="pharmacy_reprint_po" >
+                <h:commandLink action="store_reprint_po" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,000.00"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
 

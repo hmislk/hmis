@@ -17,6 +17,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
@@ -63,7 +64,7 @@ public class PharmacyAdjustmentController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
@@ -298,7 +299,9 @@ public class PharmacyAdjustmentController implements Serializable {
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
 
         ph.setBillItem(null);
-        ph.setPurchaseRate(pr);
+        ItemBatch ib = itemBatchFacade.find(getStock().getItemBatch().getId());  
+        ph.setPurchaseRate(ib.getPurcahseRate());
+        ph.setRetailRate(ib.getRetailsaleRate());
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setRate(pr);
         //pharmaceutical Bill Item
@@ -326,7 +329,7 @@ public class PharmacyAdjustmentController implements Serializable {
         ph.setBillItem(tbi);
         getPharmaceuticalBillItemFacade().edit(ph);
 //        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
-        getDeptAdjustmentPreBill().getBillItems().add(tbi);
+//        getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
 
@@ -391,7 +394,7 @@ public class PharmacyAdjustmentController implements Serializable {
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
         getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
         getBillFacade().edit(getDeptAdjustmentPreBill());
-           setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
+        setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
         getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
         printPreview = true;
@@ -402,6 +405,8 @@ public class PharmacyAdjustmentController implements Serializable {
         savePrAdjustmentBillItems();
         getStock().getItemBatch().setPurcahseRate(pr);
         getItemBatchFacade().edit(getStock().getItemBatch());
+        deptAdjustmentPreBill = billFacade.find(getDeptAdjustmentPreBill().getId());
+
 //        clearBill();
 //        clearBillItem();
         printPreview = true;
@@ -412,6 +417,7 @@ public class PharmacyAdjustmentController implements Serializable {
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
+        bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 //        clearBill();
 //        clearBillItem();
         printPreview = true;

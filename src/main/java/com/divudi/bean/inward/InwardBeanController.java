@@ -124,6 +124,17 @@ public class InwardBeanController implements Serializable {
         return getBillItemFacade().findBySQL(sql, hm);
     }
 
+    public List<BillItem> fetchEagerBillItems(PatientEncounter patientEncounter) {
+        String sql = "SELECT  b FROM BillItem b "
+                + " WHERE b.retired=false "
+                + " and b.bill.billType=:btp "
+                + " and b.bill.patientEncounter=:pe ";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        return getBillItemFacade().findBySQLWithoutCache(sql, hm);
+    }
+
     public List<BillItem> fetchBillItems(BillType billType, Bill bill) {
         String sql = "SELECT  b FROM BillItem b "
                 + " WHERE b.retired=false "
@@ -886,6 +897,8 @@ public class InwardBeanController implements Serializable {
                 + " where b.bill.retired=false "
                 + " and b.retired=false"
                 + " and b.bill.cancelled=false "
+                + " and (b.refunded is null "
+                + " or b.refunded=false) "
                 + " and b.bill.billedBill is null"
                 + " and b.bill.checkedBy is null"
                 + " and b.bill.billType=:bt"
@@ -905,12 +918,14 @@ public class InwardBeanController implements Serializable {
         return false;
 
     }
-    
-     public boolean checkByBillFee(PatientEncounter patientEncounter, Bill billClass, BillType billType) {
+
+    public boolean checkByBillFee(PatientEncounter patientEncounter, Bill billClass, BillType billType) {
         String sql = "Select b.bill From BillFee b"
                 + " where b.bill.retired=false"
                 + " and b.retired=false "
                 + " and b.bill.cancelled=false "
+                + " and (b.billItem.refunded is null "
+                + " or b.billItem.refunded=false) "
                 + " and b.bill.billedBill is null"
                 + " and b.bill.checkedBy is null"
                 + " and b.bill.billType=:bt"
@@ -930,7 +945,6 @@ public class InwardBeanController implements Serializable {
         return false;
 
     }
-
 
 //    public boolean checkRefundedBill(PatientEncounter patientEncounter, BillType billType) {
 //        String sql = "Select b From RefundBill b"
@@ -953,7 +967,6 @@ public class InwardBeanController implements Serializable {
 //        return false;
 //
 //    }
-
     private double calBillItemCount(Bill bill, Item item, PatientEncounter patientEncounter, Bill forwardBill) {
         HashMap hm = new HashMap();
         String sql = "SELECT  count(b) FROM BillItem b "
