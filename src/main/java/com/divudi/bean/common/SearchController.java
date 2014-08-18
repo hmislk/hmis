@@ -74,7 +74,7 @@ public class SearchController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     //////////
     @Inject
@@ -306,7 +306,7 @@ public class SearchController implements Serializable {
     }
 
     double netTotalValue;
-    
+
     public void createPharmacyStaffBill() {
 
         Map m = new HashMap();
@@ -327,10 +327,10 @@ public class SearchController implements Serializable {
 //    
         //     //System.out.println("sql = " + sql);
         bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
-        netTotalValue=0.0;
-        for(Bill b: bills){
-            netTotalValue+=b.getNetTotal();
+
+        netTotalValue = 0.0;
+        for (Bill b : bills) {
+            netTotalValue += b.getNetTotal();
         }
     }
 

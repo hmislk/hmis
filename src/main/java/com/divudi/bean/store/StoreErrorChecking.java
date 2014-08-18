@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.pharmacy.*;
 import com.divudi.data.BillType;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyErrorCheckingEjb;
@@ -24,6 +23,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 
 /**
  *
@@ -81,7 +81,7 @@ public class StoreErrorChecking implements Serializable {
 
     @EJB
     private BillFacade billFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
 
     public double getItemStock() {

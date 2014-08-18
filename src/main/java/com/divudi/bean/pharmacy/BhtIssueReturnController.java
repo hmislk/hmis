@@ -59,7 +59,7 @@ public class BhtIssueReturnController implements Serializable {
     private BillNumberController billNumberBean;
     @EJB
     private BillFacade billFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -110,7 +110,7 @@ public class BhtIssueReturnController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    @EJB
+    @Inject
     private PharmacyCalculation pharmacyRecieveBean;
 
     public void onEdit(BillItem tmp) {
@@ -246,7 +246,6 @@ public class BhtIssueReturnController implements Serializable {
 //            UtilityController.addErrorMessage("Checked Bill. Can not Return");
 //            return;
 //        }
-
         saveReturnBill();
         saveComponent();
 

@@ -57,19 +57,26 @@ import javax.enterprise.context.SessionScoped;
 ;
 import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
@@ -103,7 +110,7 @@ public class PharmacySaleBhtController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;

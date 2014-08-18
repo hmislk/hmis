@@ -44,7 +44,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-
 /**
  *
  * @author safrin
@@ -74,10 +73,10 @@ public class SurgeryBillController implements Serializable {
     @EJB
     private PatientItemFacade patientItemFacade;
     @Inject
-    private BillNumberController billNumberBean;   
+    private BillNumberController billNumberBean;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     //////
     @Inject
