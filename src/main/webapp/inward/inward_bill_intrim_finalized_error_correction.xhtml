@@ -223,7 +223,7 @@
                                     <p:commandButton ajax="false" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(bi)}"/>
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton rendered="false" ajax="false" value="Create Bill Fee" action="#{inwardReportControllerBht.createBillFee(bi)}"/>
+                                    <p:commandButton ajax="false" value="Create Bill Fee" action="#{inwardReportControllerBht.createBillFee(bi)}"/>
                                 </p:column>
                                 <p:column exportable="false" >
                                     <p:dataTable value="#{bi.billFees}" var="bf">
@@ -351,7 +351,7 @@
                                         <h:outputLabel value="Start Time"/>
                                     </f:facet>
                                     <h:outputLabel value="#{pt.fromTime}" >
-                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss"/>
+                                        <f:convertDateTime pattern="dd/MM/yy hh mm"/>
                                     </h:outputLabel>                                         
                                 </p:column>
                                 <p:column headerText="Stopped Time">
@@ -359,7 +359,7 @@
                                         <h:outputLabel value="Stopped Time"/>
                                     </f:facet>
                                     <h:outputLabel value="#{pt.toTime}" >
-                                        <f:convertDateTime pattern="dd/MM/yy hh mm ss"/>
+                                        <f:convertDateTime pattern="dd/MM/yy hh mm"/>
                                     </h:outputLabel>                                                              
                                 </p:column>
                                 <p:column headerText="Total">

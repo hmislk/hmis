@@ -295,7 +295,7 @@ public abstract class AbstractFacade<T> {
 //        qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
         return qry.getResultList();
     }
-    
+
     public List<T> findBySQLWithoutCache(String temSQL, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
@@ -316,7 +316,7 @@ public abstract class AbstractFacade<T> {
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
         return qry.getResultList();
     }
-    
+
     public List<T> findBySQLWithoutCache(String temSQL, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
@@ -332,7 +332,7 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
 //            //System.out.println("Parameter " + pPara + "\tVal" + pVal);
-        }        
+        }
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
         return qry.getResultList();
     }
@@ -681,6 +681,47 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void setParameterObjectList(TypedQuery<Object[]> qry, Map<String, Object> parameters, TemporalType temporalType) {
+        if (parameters == null) {
+            return;
+        }
+
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            String pPara = (String) m.getKey();
+            if (m.getValue() instanceof Date) {
+                Date pVal = (Date) m.getValue();
+                qry.setParameter(pPara, pVal, temporalType);
+            } else {
+                Object pVal = (Object) m.getValue();
+                qry.setParameter(pPara, pVal);
+            }
+        }
+    }
+
+    public Object[] findAggregat(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<Object[]> qry = getEntityManager().createQuery(temSQL, Object[].class);
+        setParameterObjectList(qry, parameters, tt);
+
+        try {
+            Object[] obj = qry.getSingleResult();
+
+            for (Object o : obj) {
+                if (o == null) {
+                    return null;
+                }
+            }
+
+            return obj;
+        } catch (Exception e) {
+            System.err.println("Aggregate " + e.getMessage());
             return null;
         }
     }

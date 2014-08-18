@@ -20,7 +20,7 @@
             <p:growl id="publicGrowl" autoUpdate="true"  life="1600"/>
             <h:panelGroup >
                 <h:form>
-                   
+
 
                     <h:panelGroup >
                         <p:ajaxStatus style="width:64px;height:64px;position:fixed;right:5px;top:5px">  
@@ -34,7 +34,7 @@
                         </p:ajaxStatus>
 
                         <h:panelGroup rendered="#{sessionController.logged}" style="border: 1px solid;border-radius: 6px;" 
-                                 styleClass="nonPrintBlock" >
+                                      styleClass="nonPrintBlock" >
                             <f:facet name="header" >
                                 <h:outputLabel value="#{labels.topic}" />
                             </f:facet>
@@ -161,6 +161,8 @@
                                                      value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_item" actionListener="#{searchController.makeListNull}"   
                                                      value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                        <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager"    
+                                                     value="Unit Issue Margin" />
                                     </p:submenu>
 
                                     <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}">
@@ -542,8 +544,11 @@
                 </p:panel>
 
 
+
+                <div style="bottom: 0px; left: 10px; opacity: 0.4; z-index: 0; min-height: 25px;"></div>
+
                 <p:panel styleClass="nonPrintBlock" 
-                         style="position: fixed; bottom: 10px; left: 10px; opacity: 0.4;"
+                         style="position: fixed; bottom: 0px; left: 10px; opacity: 0.4; z-index: 0;"
                          rendered="#{sessionController.logged}" >
                     <h:form>
                         <h:commandLink value="Logout" style="text-decoration: underline; "  action="#{sessionController.logout}"  rendered ="#{sessionController.logged}" ></h:commandLink>

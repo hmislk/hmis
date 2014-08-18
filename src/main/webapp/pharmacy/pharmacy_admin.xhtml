@@ -69,10 +69,20 @@
                                         <p:commandButton ajax="false" value="Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}" />
                                         <p:commandButton ajax="false" value="Remove Duplicates" action="#{pharmacyItemExcelManager.removeDuplicateAmpps()}" />
                                     </h:panelGroup>
-
+                                   
 
                                 </h:panelGrid>
 
+                            </p:panel>
+                            
+                            <p:panel header="Issue To Unit">
+                                <h:panelGrid columns="1">
+                                     <p:commandButton ajax="false" value="1) Correction of Issue To Unit (Discount To Margin)" 
+                                                     action="#{pharmacyItemExcelManager.correctIssueToUnit1()}" />
+                                     <p:commandButton ajax="false" value="2) Correction of Issue To Unit (Reset Gross Net Value )" 
+                                                     action="#{pharmacyItemExcelManager.correctIssueToUnit2()}" />
+                                       
+                                </h:panelGrid>
                             </p:panel>
 
                             <p:panel header="Set up" >
@@ -86,13 +96,13 @@
                                 </h:panelGrid>
                             </p:panel>
 
-                            <p:panel header="Major Stock Adjustment">
+                            <p:panel header="Major Stock Adjustment"> 
                                 <p:commandButton ajax="false" value="1)Stock Variant Report (Before)" 
                                                  action="pharmacy_variant_category_stock_by_item" />
                                 <p:commandButton ajax="false" value="2)Stock Variant Adjustment(After)" 
                                                  action="pharmacy_variant_ajustment_pre_list" />
                             </p:panel>
-
+                          
                         </h:panelGrid>
 
                     </p:panel>
