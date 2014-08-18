@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <body>
 
@@ -36,14 +37,21 @@
 
                     <p:commandButton ajax="false" value="Fill" 
                                      action="#{reportsTransfer.fillItemCounts}" />
+                    
+                    <p:commandButton value="Excel" ajax="false">
+                                <pe:exporter type="xlsx" target="tbl" fileName="Total Stock"
+                                             facetBackground="#008000" facetFontSize="15" 
+                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
+                                             fontName="Courier New" />
+                            </p:commandButton>
 
 
                     <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >
                         <p:column headerText="Item">
-                            #{i.item.name}
+                            <h:outputLabel value="#{i.item.name}" />
                         </p:column>
                         <p:column headerText="Count">
-                            #{i.count}
+                            <h:outputLabel value="#{i.count}" />
                         </p:column>    
                         <p:column headerText="Purchase Value" style="text-align: right;">
                             <h:outputLabel value="#{i.purchase}">
