@@ -71,7 +71,7 @@ public class PharmacyIssueControllerOld implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
@@ -115,8 +115,6 @@ public class PharmacyIssueControllerOld implements Serializable {
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-    
-    
 
     public Double getEditingQty() {
         return editingQty;
@@ -331,7 +329,6 @@ public class PharmacyIssueControllerOld implements Serializable {
 //        if (getPaymentSchemeController().checkPaid(paymentScheme.getPaymentMethod(), getCashPaid(), getNetTotal())) {
 //            return true;
 //        }
-
         return false;
     }
 
@@ -386,7 +383,6 @@ public class PharmacyIssueControllerOld implements Serializable {
         getSaleBill().setDeptId(getPreBill().getDeptId());
 
 //        getBillBean().setPaymentMethodData(getSaleBill(), getPaymentScheme().getPaymentMethod(), paymentMethodData);
-
         if (getSaleBill().getId() == null) {
             getBillFacade().create(getSaleBill());
         }
@@ -443,12 +439,10 @@ public class PharmacyIssueControllerOld implements Serializable {
             getBillItemFacade().create(tbi);
         }
 
-        
         if (tmpPharmacyItem.getId() == null) {
             getPharmaceuticalBillItemFacade().create(tmpPharmacyItem);
         }
-        
-        
+
         tbi.setPharmaceuticalBillItem(tmpPharmacyItem);
 
         tbi.setSearialNo(getPreBill().getBillItems().size() + 1);

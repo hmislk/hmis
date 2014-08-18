@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 
 /**
  *
@@ -80,7 +81,7 @@ public class PharmacyErrorChecking implements Serializable {
 
     @EJB
     private BillFacade billFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
 
     public double getItemStock() {

@@ -60,15 +60,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
  *
  * @author Buddhika
  */
-@Stateless
+
+@Named
+@ApplicationScoped
 public class PharmacyBean {
 
     @EJB
