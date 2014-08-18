@@ -22,12 +22,12 @@
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                         <pe:exporter type="xlsx" target="
-                                     opd,heder,outSide,
+                                     opd,outSide,
                                      pharmacy,inward,
                                      agent,creditCompany,col,inwPro,
                                      card,
                                      slip,cheque,
-                                     finalSum" 
+                                     finalSum,bankDeposit" 
                                      fileName="Book_Keeping_Summery_without_pro_day"
                                      facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                      fontName="Courier New"  />
@@ -68,7 +68,8 @@
                     <h:outputLabel  value="#{bookKeepingSummery.toDate}">
                         <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
                     </h:outputLabel>
-                    <br></br>
+                    <h:outputLabel value=""><br/>
+                    </h:outputLabel>
                     <h:outputLabel value="OPD Service"/>     
                 </f:facet>  
 
@@ -620,7 +621,29 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Net Cash" style="text-align: left;"/>
                             </f:facet>
+                        </p:column>                 
+
+                        <p:column headerText="#{s.value1}" style="text-align: left; vertical-align: bottom;" >
+                            <f:facet name="header">
+                                <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}" style="text-align: left; vertical-align: bottom;"> 
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
+
+                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+                    
+                    <p:row>
+                        <p:column headerText="C/F Balance" style="text-align: left;">
+                            <f:facet name="header">
+                                <p:outputLabel value="C/F Balance" style="text-align: left;"/>
+                            </f:facet>
+                        </p:column>                 
 
                         <p:column headerText="#{s.value1}" style="text-align: left; vertical-align: bottom;" >
                             <f:facet name="header">
@@ -726,7 +749,7 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b">
+            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b" id="bankDeposit">
                 <f:facet name="header">
                     <h:outputLabel value="Bank Deposit" />
                 </f:facet>
