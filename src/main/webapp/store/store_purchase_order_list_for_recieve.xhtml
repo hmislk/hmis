@@ -80,7 +80,7 @@
                     </h:outputLabel>
                 </p:column>
                 <p:column>
-                    <p:commandButton ajax="false" value="Recieve" action="store_grn" disabled="#{p.cancelled}">
+                    <p:commandButton ajax="false" value="Recieve" action="store_grn" disabled="#{p.cancelled}" actionListener="#{storeGrnController.clearList()}">
                         <f:setPropertyActionListener target="#{storeGrnController.approveBill}" value="#{p}"/>
                     </p:commandButton>
                 </p:column>

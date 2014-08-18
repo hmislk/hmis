@@ -65,13 +65,13 @@
                     </p:column>
 
                     <p:column>
-                        <p:commandButton ajax="false" value="View Issue Bill" action="/pharmacy/pharmacy_reprint_transfer_isssue">
-                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
+                        <p:commandButton ajax="false" value="View Issue Bill" action="store_reprint_transfer_isssue">
+                            <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{p}"/>
                         </p:commandButton>
                     </p:column>
 
                     <p:column>
-                        <p:commandButton ajax="false" value="Recieve" action="/pharmacy/pharmacy_transfer_receive"
+                        <p:commandButton ajax="false" value="Recieve" action="store_transfer_receive"
                                          disabled="#{p.checkActiveForwardReference()or p.cancelled eq true}">
                             <f:setPropertyActionListener target="#{transferReceiveController.issuedBill}" value="#{p}"/>
                         </p:commandButton>
@@ -113,9 +113,9 @@
                                 </h:outputLabel>                                  
                             </p:column>
                             <p:column>
-                                <p:commandButton ajax="false" value="View Recieve Note" action="/pharmacy/pharmacy_reprint_transfer_receive" 
+                                <p:commandButton ajax="false" value="View Recieve Note" action="store_reprint_transfer_receive" 
                                                  disabled="#{b.creater eq null}">
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                    <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b}"/>
                                 </p:commandButton>
                             </p:column>
 

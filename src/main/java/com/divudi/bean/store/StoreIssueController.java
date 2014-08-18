@@ -312,7 +312,7 @@ public class StoreIssueController implements Serializable {
         clearBill();
         clearBillItem();
         billPreview = false;
-        return "/pharmacy/pharmacy_issue";
+        return "store_issue";
     }
 
     public void resetAll() {
@@ -799,6 +799,7 @@ public class StoreIssueController implements Serializable {
         netTotal = 0;
         balance = 0;
         userStockContainer = null;
+        toDepartment=null;
     }
 
     private void clearBillItem() {

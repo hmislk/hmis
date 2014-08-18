@@ -1231,6 +1231,16 @@ public class StoreBillSearch implements Serializable {
 
     public void storeRetailCancelBillWithStockBht() {
         if (getBill().getBillType() != BillType.StoreBhtPre) {
+            System.out.println("Bill Type incorrect");
+            return;
+        }
+
+        CancelBillWithStockBht(BillNumberSuffix.STTISSUECAN);
+    }
+    
+    public void storeRetailCancelBillWithStockBhtIssue() {
+        if (getBill().getBillType() != BillType.StoreIssue) {
+            System.out.println("Bill Type incorrect");
             return;
         }
 
