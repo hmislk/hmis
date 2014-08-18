@@ -492,7 +492,7 @@
                                             <table>
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                     <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.transCssTop gt 50 }" >
-
+                                                        <br/>    
                                                         <tr>
                                                             <td style="min-width: 250px;padding: 5px;padding-left: 1px; padding-right: 1px;">
                                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
