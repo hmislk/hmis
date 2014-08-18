@@ -71,6 +71,7 @@ public class StoreGoodsReturnController implements Serializable {
         System.err.println("Bill " + bill);
         this.bill = bill;
         generateBillComponent();
+        getReturnBill().setToInstitution(bill.getFromInstitution());
     }
 
     public Bill getReturnBill() {
