@@ -4,7 +4,6 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.ItemBatchQty;
@@ -13,8 +12,8 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.IssueRateMargins;
 import com.divudi.entity.Item;
-import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -38,6 +37,7 @@ import com.divudi.facade.AmppFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CategoryFacade;
+import com.divudi.facade.IssueRateMarginsFacade;
 import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
@@ -245,6 +245,21 @@ public class PharmacyBean {
 
         }
 
+    }
+    
+    @EJB
+    IssueRateMarginsFacade issueRateMarginsFacade;
+    
+     public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select m from IssueRateMargins m "
+                + " where m.retired=false "
+                + " and m.fromDepartment=:frm "
+                + " and m.toDepartment=:to";
+        hm.put("frm", fromDepartment);
+        hm.put("to", toDepartment);
+        return issueRateMarginsFacade.findFirstBySQL(sql, hm);
     }
 
     private Bill createPreBill(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {

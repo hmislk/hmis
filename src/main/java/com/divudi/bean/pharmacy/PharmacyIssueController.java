@@ -21,6 +21,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.IssueRateMargins;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
@@ -32,6 +33,7 @@ import com.divudi.entity.pharmacy.UserStock;
 import com.divudi.entity.pharmacy.UserStockContainer;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.IssueRateMarginsFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
@@ -549,6 +551,11 @@ public class PharmacyIssueController implements Serializable {
         return false;
     }
 
+    @EJB
+    IssueRateMarginsFacade issueRateMarginsFacade;
+
+   
+
     public void addBillItem() {
         errorMessage = null;
 
@@ -563,6 +570,13 @@ public class PharmacyIssueController implements Serializable {
 
         if (getToDepartment() == null) {
             UtilityController.addErrorMessage("Please Select To Department");
+            return;
+        }
+
+        IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(sessionController.getDepartment(), getToDepartment());
+
+        if (issueRateMargins == null) {
+            UtilityController.addErrorMessage("Set Issue Margin");
             return;
         }
 
@@ -748,21 +762,26 @@ public class PharmacyIssueController implements Serializable {
             //System.out.println("stock is null");
             return;
         }
-        getBillItem();
-        System.err.println("bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate() = " + bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate());
-        System.err.println("bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() = " + bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
-        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate());
-        bi.setMarginRate(calculateBillItemAdditionToPurchaseRate(bi));
 
-        System.err.println("Rate " + bi.getRate());
-        System.err.println("Margin " + bi.getMarginRate());
+        IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(sessionController.getDepartment(), getToDepartment());
+
+        if (issueRateMargins == null) {
+            UtilityController.addErrorMessage("Please select to department");
+            return;
+        }
+
+        if (issueRateMargins.isAtPurchaseRate()) {
+            bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate());
+        } else {
+            bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        }
+
+        bi.setMarginRate(calculateBillItemAdditionToPurchaseRate(bi, issueRateMargins));
         bi.setDiscount(0.0);
-        System.err.println("Discount " + bi.getDiscount());
         bi.setNetRate(bi.getRate() + bi.getMarginRate());
-        System.err.println("Net " + bi.getNetRate());
     }
 
-    public double calculateBillItemAdditionToPurchaseRate(BillItem bi) {
+    public double calculateBillItemAdditionToPurchaseRate(BillItem bi, IssueRateMargins issueRateMargins) {
         //System.out.println("bill item discount rate");
         //System.out.println("getPaymentScheme() = " + getPaymentScheme());
         if (bi == null) {
@@ -782,11 +801,11 @@ public class PharmacyIssueController implements Serializable {
             return 0.0;
         }
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
-        double tr = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate();
+        double tr = bi.getRate();
         //  //System.err.println("tr = " + tr);
         double tdp;
         if (getToDepartment() != null) {
-            tdp = toDepartment.getPharmacyMarginFromPurchaseRate();
+            tdp = issueRateMargins.getRateForPharmaceuticals();
         } else {
             tdp = 0;
         }
