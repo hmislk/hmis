@@ -5,42 +5,42 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pharmacy="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:st="http://java.sun.com/jsf/composite/store">
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
+                    <h:panelGroup rendered="#{!storeBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true"  >
+                            <p:selectOneMenu   id="cmbPs" value="#{storeBillSearch.bill.paymentMethod}" required="true"  >
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                             </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyPoCancel()}" >
+                            <h:commandButton value="Cancel" action="#{storeBillSearch.pharmacyPoCancel()}" >
                             </h:commandButton>                            
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Dealor Detail">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Dealor ​Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name }" ></h:outputLabel>                                        
+                                    <h:outputLabel value="#{storeBillSearch.bill.toInstitution.name }" ></h:outputLabel>                                        
                                 </p:panelGrid>
                             </p:panel>
                             <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{storeBillSearch.bill.insId}" ></h:outputLabel>
                                     <h:outputLabel value="Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
+                                    <h:outputLabel value="#{storeBillSearch.bill.total}" ></h:outputLabel>
                                     <h:outputLabel value="Discount :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ></h:outputLabel>
+                                    <h:outputLabel value="#{storeBillSearch.bill.discount}" ></h:outputLabel>
                                     <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel>
+                                    <h:outputLabel value="#{storeBillSearch.bill.netTotal}" ></h:outputLabel>
                                 </p:panelGrid>
                             </p:panel>
                         </p:panelGrid>
                         <p:panel header="Bill Item Detail">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.billItems}" var="bip" >
+                            <p:dataTable rowIndexVar="rowIndex" value="#{storeBillSearch.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
                                         #{rowIndex+1}
@@ -56,13 +56,13 @@
                             </p:dataTable>
                         </p:panel>
                         <p:panel header="Comments">
-                            <h:inputTextarea value="#{pharmacyBillSearch.bill.comments}"/>                            
+                            <h:inputTextarea value="#{storeBillSearch.bill.comments}"/>                            
                         </p:panel>
                     </h:panelGroup>
 
 
-                    <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <pharmacy:po bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                    <h:panelGroup rendered="#{storeBillSearch.printPreview}" >
+                        <st:po bill="#{storeBillSearch.bill.cancelledBill}"/>
                     </h:panelGroup>
 
 

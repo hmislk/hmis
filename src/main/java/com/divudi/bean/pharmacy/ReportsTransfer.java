@@ -6,18 +6,20 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Bill;
-import com.divudi.entity.Category;
+import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.PreBill;
+import com.divudi.entity.RefundBill;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 
@@ -56,19 +59,21 @@ public class ReportsTransfer implements Serializable {
 
     Institution institution;
     List<Stock> stocks;
+    List<ItemCount> itemCounts;
     double saleValue;
     double purchaseValue;
     double totalsValue;
     double discountsValue;
+    double marginValue;
     double netTotalValues;
-    
+    double retailValue;
 
     List<BillItem> transferItems;
     List<Bill> transferBills;
 
     List<StockReportRecord> movementRecords;
     List<StockReportRecord> movementRecordsQty;
-    @Inject            
+    @Inject
     BillBeanController billBeanController;
 
     /**
@@ -103,8 +108,6 @@ public class ReportsTransfer implements Serializable {
     public void setBillBeanController(BillBeanController billBeanController) {
         this.billBeanController = billBeanController;
     }
-    
-    
 
     public void fillMovingWithStock() {
         String sql;
@@ -147,7 +150,7 @@ public class ReportsTransfer implements Serializable {
 //        m.put("t2", BillType.PharmacyPre);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        List<BillType> bts=Arrays.asList(billTypes);
+        List<BillType> bts = Arrays.asList(billTypes);
         m.put("bt", bts);
         BillItem bi = new BillItem();
 
@@ -189,16 +192,16 @@ public class ReportsTransfer implements Serializable {
     public void fillMovingQty(boolean fast) {
         String sql;
         Map m = new HashMap();
-        
-        List<BillType> bts=Arrays.asList(billTypes);
-        
+
+        List<BillType> bts = Arrays.asList(billTypes);
+
         m.put("d", department);
 //        m.put("t1", BillType.PharmacyTransferIssue);
 //        m.put("t2", BillType.PharmacyPre);
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", bts);
-        
+
         BillItem bi = new BillItem();
         if (!fast) {
             sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
@@ -254,7 +257,7 @@ public class ReportsTransfer implements Serializable {
             sql = "select bi from BillItem bi where bi.bill.createdAt "
                     + " between :fd and :td and bi.bill.billType=:bt order by bi.id";
         }
-        transferItems = getBillItemFacade().findBySQL(sql, m);
+        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         purchaseValue = 0.0;
         saleValue = 0.0;
         for (BillItem ts : transferItems) {
@@ -287,7 +290,7 @@ public class ReportsTransfer implements Serializable {
             sql = "select bi from BillItem bi where bi.bill.createdAt "
                     + " between :fd and :td and bi.bill.billType=:bt order by bi.id";
         }
-        transferItems = getBillItemFacade().findBySQL(sql, m);
+        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         purchaseValue = 0.0;
         saleValue = 0.0;
         for (BillItem ts : transferItems) {
@@ -326,7 +329,7 @@ public class ReportsTransfer implements Serializable {
             sql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m);
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -358,49 +361,43 @@ public class ReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
     }
-    
+
     List<String1Value3> listz;
 
     public List<String1Value3> getListz() {
-        
+
         return listz;
     }
 
     public void setListz(List<String1Value3> listz) {
         this.listz = listz;
     }
-    
-    
+
     public void createDepartmentIssue() {
         listz = new ArrayList<>();
-      
 
-            List<Object[]> list = getBillBeanController().fetchBilledDepartmentItem(getFromDate(), getToDate(), getFromDepartment());
-if(list==null)return;
+        List<Object[]> list = getBillBeanController().fetchBilledDepartmentItem(getFromDate(), getToDate(), getFromDepartment());
+        if (list == null) {
+            return;
+        }
 
-            for (Object[] obj : list) {
-                Department item = (Department) obj[0];
-                Double dbl = (Double) obj[1];
-                //double count = 0;
+        for (Object[] obj : list) {
+            Department item = (Department) obj[0];
+            Double dbl = (Double) obj[1];
+            //double count = 0;
 
+            String1Value3 newD = new String1Value3();
+            newD.setString(item.getName());
+            newD.setValue1(dbl);
+            newD.setSummery(false);
+            listz.add(newD);
 
-                String1Value3 newD = new String1Value3();
-                newD.setString(item.getName());              
-                newD.setValue1(dbl);
-                newD.setSummery(false);
-                listz.add(newD);
+        }
 
-            }
-            
-            netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItem(fromDate, toDate, department);
-
+        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItem(fromDate, toDate, department);
 
     }
-    
-    
-    
-    
-    
+
     public void fillDepartmentUnitIssueByBill() {
         Map m = new HashMap();
         String sql;
@@ -415,7 +412,7 @@ if(list==null)return;
                 + " b.createdAt "
                 + " between :fd and :td and "
                 + " b.billType=:bt order by b.id";
-        transferBills = getBillFacade().findBySQL(sql, m);
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -424,6 +421,266 @@ if(list==null)return;
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+    }
+
+    private List<Object[]> fetchBillItem(BillType billType) {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select b.pharmaceuticalBillItem.itemBatch,"
+                + " sum(b.grossValue),"
+                + " sum(b.marginValue),"
+                + " sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt"
+                + " group by b.pharmaceuticalBillItem.itemBatch "
+                + " order by b.item.name";
+
+        return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    private Double fetchBillTotal(BillType billType) {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select sum(b.total)"
+                + " from Bill b "
+                + " where b.department=:fdept ";
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.createdAt between :fd and :td"
+                + " and b.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    private Double fetchBillMargin(BillType billType) {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select sum(b.margin)"
+                + " from Bill b "
+                + " where b.department=:fdept ";
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.createdAt between :fd and :td"
+                + " and b.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    private Double fetchBillDiscount(BillType billType) {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select sum(b.discount)"
+                + " from Bill b "
+                + " where b.department=:fdept ";
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.createdAt between :fd and :td"
+                + " and b.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    private Double fetchBillNetTotal(BillType billType) {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select sum(b.netTotal)"
+                + " from Bill b "
+                + " where b.department=:fdept ";
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.createdAt between :fd and :td"
+                + " and b.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void fillItemCounts() {
+
+        List<Object[]> list = fetchBillItem(BillType.PharmacyIssue);
+
+        if (list == null) {
+            return;
+        }
+
+        itemCounts = new ArrayList<>();
+        totalsValue = 0;
+        marginValue = 0;
+        netTotalValues = 0;
+        purchaseValue = 0;
+        retailValue = 0;
+        for (Object[] obj : list) {
+            ItemCount row = new ItemCount();
+            row.setItemBatch((ItemBatch) obj[0]);
+            row.setGross((Double) obj[1]);
+            row.setMargin((Double) obj[2]);           
+            row.setNet((Double) obj[3]);
+
+            Double pre = calCount(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
+            Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
+            Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyIssue, new RefundBill());
+            System.err.println("PRE " + pre);
+            System.err.println("PRE CAN " + preCancel);
+            System.err.println("Return " + returned);
+//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
+
+            row.setCount(pre - (preCancel + returned));
+
+            totalsValue += row.getGross();
+            marginValue += row.getMargin();
+            netTotalValues += row.getNet();
+
+            itemCounts.add(row);
+        }
+
+        billTotal = fetchBillTotal(BillType.PharmacyIssue);
+        billMargin = fetchBillMargin(BillType.PharmacyIssue);
+        billDiscount = fetchBillDiscount(BillType.PharmacyIssue);
+        billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
+
+    }
+
+    double billTotal;
+    double billMargin;
+    double billDiscount;
+    double billNetTotal;
+
+    private Double calCount(ItemBatch item, BillType billType, Bill bill) {
+
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("class", bill.getClass());
+        m.put("itm", item);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select abs(sum(b.pharmaceuticalBillItem.qty))"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept "
+                + " and b.bill.billedBill is null "
+                + " and type(b.bill)=:class "
+                + " and b.pharmaceuticalBillItem.itemBatch=:itm ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    private Double calCountReturn(ItemBatch item, BillType billType, Bill bill) {
+
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("class", bill.getClass());
+        m.put("itm", item);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select abs(sum(b.pharmaceuticalBillItem.qty))"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept "
+                + " and b.bill.billedBill is not null "
+                + " and type(b.bill)=:class "
+                + " and b.pharmaceuticalBillItem.itemBatch=:itm ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    private Double calCountCan(ItemBatch item, BillType billType, Bill bill) {
+
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("class", bill.getClass());
+        m.put("itm", item);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select abs(sum(b.pharmaceuticalBillItem.qty))"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept "
+                + " and b.bill.billedBill is not null "
+                + " and type(b.bill)=:class "
+                + " and b.pharmaceuticalBillItem.itemBatch=:itm ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt";
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
@@ -450,7 +707,7 @@ if(list==null)return;
             sql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m);
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -649,6 +906,115 @@ if(list==null)return;
 
     public void setBillTypes(BillType[] billTypes) {
         this.billTypes = billTypes;
+    }
+
+    public class ItemCount {
+
+        ItemBatch itemBatch;
+        double count;
+        double gross;
+        double margin;
+        double net;
+
+        public ItemBatch getItemBatch() {
+            return itemBatch;
+        }
+
+        public void setItemBatch(ItemBatch itemBatch) {
+            this.itemBatch = itemBatch;
+        }
+        
+        
+
+      
+        public double getCount() {
+            return count;
+        }
+
+        public void setCount(double count) {
+            this.count = count;
+        }
+
+        public double getGross() {
+            return gross;
+        }
+
+        public void setGross(double gross) {
+            this.gross = gross;
+        }
+
+        public double getMargin() {
+            return margin;
+        }
+
+        public void setMargin(double margin) {
+            this.margin = margin;
+        }
+
+        public double getNet() {
+            return net;
+        }
+
+        public void setNet(double net) {
+            this.net = net;
+        }
+
+    }
+
+    public List<ItemCount> getItemCounts() {
+        return itemCounts;
+    }
+
+    public void setItemCounts(List<ItemCount> itemCounts) {
+        this.itemCounts = itemCounts;
+    }
+
+    public double getMarginValue() {
+        return marginValue;
+    }
+
+    public void setMarginValue(double marginValue) {
+        this.marginValue = marginValue;
+    }
+
+    public double getBillTotal() {
+        return billTotal;
+    }
+
+    public void setBillTotal(double billTotal) {
+        this.billTotal = billTotal;
+    }
+
+    public double getBillMargin() {
+        return billMargin;
+    }
+
+    public void setBillMargin(double billMargin) {
+        this.billMargin = billMargin;
+    }
+
+    public double getBillDiscount() {
+        return billDiscount;
+    }
+
+    public void setBillDiscount(double billDiscount) {
+        this.billDiscount = billDiscount;
+    }
+
+    public double getBillNetTotal() {
+        return billNetTotal;
+    }
+
+    public void setBillNetTotal(double billNetTotal) {
+        this.billNetTotal = billNetTotal;
+    }
+
+    public double getRetailValue() {
+        return retailValue;
+    }
+
+    public void setRetailValue(double retailValue) {
+        this.retailValue = retailValue;
     }
 
 }

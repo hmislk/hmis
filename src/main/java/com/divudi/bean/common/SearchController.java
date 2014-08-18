@@ -11,6 +11,7 @@ import com.divudi.data.InstitutionType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.entity.BatchBill;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -19,6 +20,7 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -37,7 +39,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-
 
 /**
  *
@@ -136,7 +137,7 @@ public class SearchController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
 
         //System.err.println("Sql " + sql);
-        bills = getBillFacade().findBySQLWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
 
@@ -309,20 +310,19 @@ public class SearchController implements Serializable {
     public void createPharmacyStaffBill() {
 
         Map m = new HashMap();
-        m.put("bt", BillType.PharmacySale);
+        m.put("bt", BillType.PharmacyPre);
         //   m.put("class", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
         String sql;
 
-        sql = "Select b from Bill b where "
+        sql = "Select b from PreBill b where "
                 + " b.createdAt between :fd and :td "
                 + " and b.billType=:bt"
-//                + " and b.billedBill is null "
+                + " and b.billedBill is null "
                 + " and b.institution=:ins "
-                + " and (b.toStaff is not null "
-                + " or b.fromStaff is not null) "
+                + " and b.toStaff is not null "
                 + " order by b.createdAt ";
 //    
         //     //System.out.println("sql = " + sql);

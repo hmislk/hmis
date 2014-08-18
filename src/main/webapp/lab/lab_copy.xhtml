@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl autoUpdate="true" />
+
+
+                <h:panelGrid columns="2" >
+                    <p:outputLabel value="From" ></p:outputLabel>
+                    <p:autoComplete widgetVar="aPtFrom" id="acPtFrom" forceSelection="true" converter="ixcon"
+                                    value="#{investigationItemController.copyingFromInvestigation}" 
+                                    completeMethod="#{investigationController.completeInvest}" 
+                                    var="apt" itemLabel="#{apt.name}" 
+                                    itemValue="#{apt}" size="30"  style="width: 400px;">
+                        <p:column>
+                            #{apt.name}
+                        </p:column>
+                        <p:column>
+                            #{apt.fullName}
+                        </p:column>
+                        <p:column>
+                            #{apt.department.name}
+                        </p:column>
+                    </p:autoComplete> 
+                    <p:outputLabel value="To" ></p:outputLabel>
+                    <p:autoComplete widgetVar="aPtTo" id="acPtTo" forceSelection="true" converter="ixcon"
+                                    value="#{investigationItemController.copyingToInvestigation}" 
+                                    completeMethod="#{investigationController.completeInvest}" 
+                                    var="apt" itemLabel="#{apt.name}" 
+                                    itemValue="#{apt}" size="30"  style="width: 400px;">
+                        <p:column>
+                            #{apt.name}
+                        </p:column>
+                        <p:column>
+                            #{apt.fullName}
+                        </p:column>
+                        <p:column>
+                            #{apt.department.name}
+                        </p:column>
+                    </p:autoComplete> 
+
+                    <p:commandButton ajax="false" value="XML" action="#{investigationItemController.convertToXml()}" ></p:commandButton>
+                    <p:inputTextarea value="#{investigationItemController.ixXml}" ></p:inputTextarea>
+                    
+                    <p:commandButton ajax="false" value="COPY" action="#{investigationItemController.copyInvestigation()}" ></p:commandButton>
+
+                </h:panelGrid>
+
+            </h:form>
+        </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

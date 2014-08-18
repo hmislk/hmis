@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:st="http://java.sun.com/jsf/composite/store">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Reprint" rendered="#{storeBillSearch.printPreview}">
+                        <f:facet name="header" >
+                            <h:outputLabel value="BHT Issue Return Cancel" ></h:outputLabel>
+                               
+                            <hr/>
+                            <p:commandButton value="Print" ajax="false"   >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            
+                        </f:facet>
+
+
+                    </p:panel>
+                    <h:panelGroup rendered="#{!storeBillSearch.printPreview}" styleClass="alignTop" >
+                        <p:panel  header="Cancellation">                          
+                            <h:commandButton value="Cancel" action="#{storeBillSearch.pharmacyReturnBhtCancel()}" >
+                            </h:commandButton>                            
+                        </p:panel>
+                        <p:panelGrid columns="2" style="width: 100%;">
+                            
+                            <p:panel header="Bill Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:outputLabel value="#{storeBillSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{storeBillSearch.bill.total}" ></h:outputLabel>
+                                    <h:outputLabel value="Discount :" ></h:outputLabel>
+                                    <h:outputLabel value="#{storeBillSearch.bill.discount}" ></h:outputLabel>
+                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                    <h:outputLabel value="#{storeBillSearch.bill.netTotal}" ></h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:panelGrid>
+                        <p:panel header="Bill Item Detail">
+                            <p:dataTable rowIndexVar="rowIndex" value="#{storeBillSearch.bill.billItems}" var="bip" >
+                                <p:column>
+                                    <f:facet name="header">No</f:facet>
+                                        #{rowIndex+1}
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">Item</f:facet>
+                                        #{bip.item.name}
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">Qty</f:facet>
+                                    #{bip.qty}
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">Value</f:facet>
+                                        #{bip.netValue}
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                        <p:panel header="Comments">
+                            <h:inputTextarea value="#{storeBillSearch.bill.comments}"/>                            
+                        </p:panel>
+                    </h:panelGroup>
+
+
+                    <h:panelGroup id="gpBillPreview" rendered="#{storeBillSearch.printPreview}" >
+                        <st:returnBill  bill="#{storeBillSearch.bill.cancelledBill}" />
+                 
+                    </h:panelGroup>
+
+
+                </h:form>                
+            </ui:define>
+        </ui:composition>
+    </body>
+</html>

@@ -21,6 +21,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.IssueRateMargins;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
@@ -32,6 +33,7 @@ import com.divudi.entity.pharmacy.UserStock;
 import com.divudi.entity.pharmacy.UserStockContainer;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.IssueRateMarginsFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
@@ -66,7 +68,7 @@ import org.primefaces.event.SelectEvent;
 public class PharmacyIssueController implements Serializable {
 
     String errorMessage = null;
-    
+
     /**
      * Creates a new instance of PharmacySaleController
      */
@@ -220,9 +222,8 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private void onEditCalculation(BillItem tmp) {
-        tmp.setGrossValue(tmp.getQty() * tmp.getRate());
-        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
 
+        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
         calculateBillItemForEditing(tmp);
 
         calTotal();
@@ -336,10 +337,11 @@ public class PharmacyIssueController implements Serializable {
         items = getItemFacade().findBySQL(sql, m, 10);
         return items;
     }
-    
+
     List<Stock> stockList;
+
     public List<Stock> completeAvailableStocks(String qry) {
-        
+
         String sql;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
@@ -383,7 +385,7 @@ public class PharmacyIssueController implements Serializable {
 
     private boolean errorCheckForSaleBill() {
         if (toDepartment == null) {
-            errorMessage="Please select a department to issue items. Bill can NOT be settled until you select the department";
+            errorMessage = "Please select a department to issue items. Bill can NOT be settled until you select the department";
             JsfUtil.addErrorMessage("Department");
             return true;
         }
@@ -507,23 +509,23 @@ public class PharmacyIssueController implements Serializable {
     private CashTransactionBean cashTransactionBean;
 
     public void settleBill() {
-        
+
         editingQty = null;
-     //   System.out.println("editingQty = " + editingQty);
-        errorMessage=null;
-     //   System.out.println("errorMessage = " + errorMessage);
+        //   System.out.println("editingQty = " + editingQty);
+        errorMessage = null;
+        //   System.out.println("errorMessage = " + errorMessage);
         if (checkAllBillItem()) {
-         //   System.out.println("Check all bill Ietems");
+            //   System.out.println("Check all bill Ietems");
             return;
         }
 
         if (errorCheckForSaleBill()) {
-         //   System.out.println("Error for sale bill");
+            //   System.out.println("Error for sale bill");
             return;
         }
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
-     //   System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
+        //   System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
@@ -549,9 +551,14 @@ public class PharmacyIssueController implements Serializable {
         return false;
     }
 
+    @EJB
+    IssueRateMarginsFacade issueRateMarginsFacade;
+
+   
+
     public void addBillItem() {
-        errorMessage=null;
-        
+        errorMessage = null;
+
         editingQty = null;
 
         if (billItem == null) {
@@ -560,13 +567,26 @@ public class PharmacyIssueController implements Serializable {
         if (billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
+
+        if (getToDepartment() == null) {
+            UtilityController.addErrorMessage("Please Select To Department");
+            return;
+        }
+
+        IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(sessionController.getDepartment(), getToDepartment());
+
+        if (issueRateMargins == null) {
+            UtilityController.addErrorMessage("Set Issue Margin");
+            return;
+        }
+
         if (getStock() == null) {
-            errorMessage="Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
+            errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
             UtilityController.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
-            errorMessage="Please enter a quentity";
+            errorMessage = "Please enter a quentity";
             UtilityController.addErrorMessage("Quentity?");
             return;
         }
@@ -574,7 +594,7 @@ public class PharmacyIssueController implements Serializable {
         Stock fetchStock = getStockFacade().find(getStock().getId());
 
         if (getQty() > fetchStock.getStock()) {
-            errorMessage="No sufficient stocks. Please enter a quentity which is qeual or less thatn the available stock quentity.";
+            errorMessage = "No sufficient stocks. Please enter a quentity which is qeual or less thatn the available stock quentity.";
             UtilityController.addErrorMessage("No Sufficient Stocks?");
             return;
         }
@@ -585,7 +605,7 @@ public class PharmacyIssueController implements Serializable {
         }
         //Checking User Stock Entity
         if (!getPharmacyBean().isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            errorMessage="Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
+            errorMessage = "Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
             UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
@@ -621,6 +641,7 @@ public class PharmacyIssueController implements Serializable {
         double netTot = 0.0;
         double discount = 0.0;
         double grossTot = 0.0;
+        double margin = 0;
         int index = 0;
         for (BillItem b : getPreBill().getBillItems()) {
             if (b.isRetired()) {
@@ -631,14 +652,15 @@ public class PharmacyIssueController implements Serializable {
             netTot = netTot + b.getNetValue();
             grossTot = grossTot + b.getGrossValue();
             discount = discount + b.getDiscount();
-            getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
+            margin += b.getMarginValue();
+
         }
 
         netTot = netTot + getPreBill().getServiceCharge();
 
         getPreBill().setNetTotal(netTot);
         getPreBill().setTotal(grossTot);
-        getPreBill().setGrantTotal(grossTot);
+        getPreBill().setMargin(margin);
         getPreBill().setDiscount(discount);
         setNetTotal(getPreBill().getNetTotal());
 
@@ -691,9 +713,10 @@ public class PharmacyIssueController implements Serializable {
 
         //Rates
         //Values
-        billItem.setGrossValue(getStock().getItemBatch().getPurcahseRate() * qty);
-        billItem.setNetValue(qty * billItem.getNetRate());
-        billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
+        billItem.setGrossValue(billItem.getRate() * qty);
+        billItem.setDiscount(0);
+        billItem.setMarginValue(billItem.getMarginRate() * qty);
+        billItem.setNetValue(billItem.getNetRate() * qty);
 
     }
 
@@ -704,12 +727,10 @@ public class PharmacyIssueController implements Serializable {
             //System.out.println("calculateItemForEditingFailedBecause of null");
             return;
         }
-        //System.out.println("bi.getQty() = " + bi.getQty());
-        //System.out.println("bi.getRate() = " + bi.getRate());
-        bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate() * bi.getQty());
+
+        bi.setGrossValue(bi.getQty() * bi.getRate());
+        bi.setMarginValue(bi.getQty() * bi.getMarginRate());
         bi.setNetValue(bi.getQty() * bi.getNetRate());
-        bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
-        //System.out.println("bi.getNetValue() = " + bi.getNetValue());
 
     }
 
@@ -736,23 +757,31 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
-     //   System.out.println("calculating rates");
+        //   System.out.println("calculating rates");
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
             //System.out.println("stock is null");
             return;
         }
-        getBillItem();
-        System.err.println("bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate() = " + bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate());
-        System.err.println("bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() = " + bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
-        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate() + calculateBillItemAdditionToPurchaseRate(bi));
-        System.err.println("Rate " + bi.getRate());
+
+        IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(sessionController.getDepartment(), getToDepartment());
+
+        if (issueRateMargins == null) {
+            UtilityController.addErrorMessage("Please select to department");
+            return;
+        }
+
+        if (issueRateMargins.isAtPurchaseRate()) {
+            bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate());
+        } else {
+            bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        }
+
+        bi.setMarginRate(calculateBillItemAdditionToPurchaseRate(bi, issueRateMargins));
         bi.setDiscount(0.0);
-        System.err.println("Discount " + bi.getDiscount());
-        bi.setNetRate(bi.getRate() - bi.getDiscount());
-        System.err.println("Net " + bi.getNetRate());
+        bi.setNetRate(bi.getRate() + bi.getMarginRate());
     }
 
-    public double calculateBillItemAdditionToPurchaseRate(BillItem bi) {
+    public double calculateBillItemAdditionToPurchaseRate(BillItem bi, IssueRateMargins issueRateMargins) {
         //System.out.println("bill item discount rate");
         //System.out.println("getPaymentScheme() = " + getPaymentScheme());
         if (bi == null) {
@@ -772,11 +801,11 @@ public class PharmacyIssueController implements Serializable {
             return 0.0;
         }
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
-        double tr = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate();
+        double tr = bi.getRate();
         //  //System.err.println("tr = " + tr);
         double tdp;
         if (getToDepartment() != null) {
-            tdp = toDepartment.getPharmacyMarginFromPurchaseRate();
+            tdp = issueRateMargins.getRateForPharmaceuticals();
         } else {
             tdp = 0;
         }
@@ -785,11 +814,11 @@ public class PharmacyIssueController implements Serializable {
         dr = (tr * tdp) / 100;
         System.err.println("dr = " + dr);
 
-        if (bi.getItem().isDiscountAllowed()) {
-            return dr;
-        } else {
-            return 0;
-        }
+//        if (bi.getItem().isDiscountAllowed()) {
+        return dr;
+//        } else {
+//            return 0;
+//        }
     }
 
     private void clearBill() {
@@ -800,6 +829,7 @@ public class PharmacyIssueController implements Serializable {
         netTotal = 0;
         balance = 0;
         userStockContainer = null;
+        toDepartment = null;
     }
 
     private void clearBillItem() {
@@ -811,8 +841,6 @@ public class PharmacyIssueController implements Serializable {
         editingQty = null;
 
     }
-    
-   
 
     public SessionController getSessionController() {
         return sessionController;
@@ -907,7 +935,7 @@ public class PharmacyIssueController implements Serializable {
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.PharmacyIssue);
-         //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
+            //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
     }
@@ -1064,6 +1092,4 @@ public class PharmacyIssueController implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
-    
-    
 }

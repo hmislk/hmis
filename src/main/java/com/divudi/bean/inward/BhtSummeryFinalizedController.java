@@ -425,7 +425,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     public void createTablesFinalized() {
         makeNullList();
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
-        billItems = getInwardBean().fetchBillItems(getPatientEncounter());
+        billItems = getInwardBean().fetchEagerBillItems(getPatientEncounter());
         billFees = getInwardBean().fetchBillFees(getPatientEncounter());
         patientItems = getInwardBean().fetchPatientItem(getPatientEncounter());
         outSideBills = getInwardBean().fetchOutSideBill2(getPatientEncounter());
