@@ -22,12 +22,12 @@
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                         <pe:exporter type="xlsx" target="
-                                     opd,heder,outSide,
+                                     opd,outSide,
                                      pharmacy,inward,
                                      agent,creditCompany,col,inwPro,
                                      card,
                                      slip,cheque,
-                                     finalSum" 
+                                     finalSum,bankDeposit" 
                                      fileName="Book_Keeping_Summery_without_pro_day"
                                      facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                      fontName="Courier New"  />
@@ -68,7 +68,8 @@
                     <h:outputLabel  value="#{bookKeepingSummery.toDate}">
                         <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
                     </h:outputLabel>
-                    <br></br>
+                    <h:outputLabel value=""><br/>
+                    </h:outputLabel>
                     <h:outputLabel value="OPD Service"/>     
                 </f:facet>  
 
@@ -240,15 +241,16 @@
                     <p:outputLabel value="Agent Collection"/>                 
                 </f:facet>
                 <p:column headerText="Bill Id">
-                    <h:outputLabel value="#{a.insId}"/>
-                    <br/>
-                    <h:panelGroup rendered="#{a.cancelled}">
-                        <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
+                    <h:outputLabel value="#{a.insId}&nbsp;&nbsp;&nbsp;&nbsp;"/>
+                    <h:outputLabel value="">
+                        <br/>
+                    </h:outputLabel>
+                    
+                    <h:outputLabel style="color: red;" value="Cancelled at &nbsp;" rendered="#{a.cancelled}"/>
                         <h:outputLabel style="color: red;" rendered="#{a.cancelled}" value="#{a.cancelledBill.createdAt}">
                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{a.cancelled}" value="&nbsp;&nbsp;#{a.cancelledBill.insId}"/>
-                    </h:panelGroup>
                 </p:column>
                 <p:column headerText="Agent Name">
                     <h:outputLabel value="#{a.fromInstitution.name}" />
@@ -392,15 +394,17 @@
                     <f:facet name="header">              
                         <p:outputLabel value="Bill No"/>    
                     </f:facet>
-                    <h:outputLabel value="#{ch.insId}"/>
-                    <br/>
-                    <h:panelGroup rendered="#{ch.cancelled}">
-                        <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
+                    <h:outputLabel value="#{ch.insId}&nbsp;&nbsp;&nbsp;&nbsp;"/>
+                    <h:outputLabel value="">
+                    <br/>   
+                    </h:outputLabel>
+                    
+                    <h:outputLabel style="color: red;" value="Cancelled at &nbsp;" rendered="#{ch.cancelled}"/>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="#{ch.cancelledBill.createdAt}">
                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
-                    </h:panelGroup>
+                    
                 </p:column>                            
                 <p:column headerText="Credit Card No" >
                     <f:facet name="header">              
@@ -475,15 +479,16 @@
                     <f:facet name="header">
                         <h:outputLabel value="Bill No"/>
                     </f:facet>
-                    <h:outputLabel value="#{ch.insId}" />
-                    <br/>
-                    <h:panelGroup rendered="#{ch.cancelled}">
-                        <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
+                    <h:outputLabel value="#{ch.insId}&nbsp;&nbsp;&nbsp;&nbsp;" />
+                    <h:outputLabel value="">
+                        <br/>
+                    </h:outputLabel>
+                    
+                        <h:outputLabel style="color: red;" value="Cancelled at &nbsp;" rendered="#{ch.cancelled}"/>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="#{ch.cancelledBill.createdAt}">
                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
-                    </h:panelGroup>
                 </p:column>                        
                 <p:column headerText="Invoice No" style="width: 20%; "> 
                     <f:facet name="header">
@@ -551,15 +556,13 @@
                     <f:facet name="header">              
                         <p:outputLabel value="Bill No"/>    
                     </f:facet>
-                    <h:outputLabel value="#{ch.insId}" />
-                    <br/>
-                    <h:panelGroup rendered="#{ch.cancelled}">
-                        <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
+                    <h:outputLabel value="#{ch.insId}&nbsp;&nbsp;&nbsp;&nbsp;" /><h:outputLabel value=""><br/></h:outputLabel>
+                    
+                        <h:outputLabel style="color: red;" value="Cancelled at &nbsp;" rendered="#{ch.cancelled}"/>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="#{ch.cancelledBill.createdAt}">
                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
-                    </h:panelGroup>
                 </p:column>                        
                 <p:column headerText="Cheque No" style="width: 20%;">
                     <f:facet name="header">              
@@ -620,7 +623,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Net Cash" style="text-align: left;"/>
                             </f:facet>
-                        </p:column>
+                        </p:column>                 
 
                         <p:column headerText="#{s.value1}" style="text-align: left; vertical-align: bottom;" >
                             <f:facet name="header">
@@ -629,6 +632,36 @@
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
+                        
+                        <p:column></p:column>
+                        <p:column></p:column>
+                        <p:column></p:column>
+
+                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
+                            <f:facet name="header">
+                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
+                            </f:facet>
+                        </p:column>
+                    </p:row>
+                    
+                    <p:row>
+                        <p:column headerText="C/F Balance" style="text-align: left;">
+                            <f:facet name="header">
+                                <p:outputLabel value="C/F Balance" style="text-align: left;"/>
+                            </f:facet>
+                        </p:column>                 
+
+                        <p:column headerText="#{s.value1}" style="text-align: left; vertical-align: bottom;" >
+                            <f:facet name="header">
+                                <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}" style="text-align: left; vertical-align: bottom;"> 
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        
+                        <p:column></p:column>
+                        <p:column></p:column>
+                        <p:column></p:column>
 
                         <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
                             <f:facet name="header">
@@ -648,6 +681,9 @@
                                 <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
                             </f:facet>
                         </p:column>
+                        <p:column></p:column>
+                        <p:column></p:column>
+                        <p:column></p:column>
                         <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
                             <f:facet name="header">
                                 <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
@@ -662,6 +698,9 @@
                                 <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
                             </f:facet>
                         </p:column>
+                        <p:column></p:column>
+                        <p:column></p:column>
+                        <p:column></p:column>
                         <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
                             <f:facet name="header">
                                 <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
@@ -674,6 +713,9 @@
                                 <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
                             </f:facet>
                         </p:column>
+                        <p:column></p:column>
+                        <p:column></p:column>
+                        <p:column></p:column>
                         <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
                             <f:facet name="header">
                                 <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
@@ -693,6 +735,10 @@
                                 <p:outputLabel value="&nbsp;&nbsp;&nbsp;" style="text-align: right; vertical-align: top;"/>
                             </f:facet>
                         </p:column>
+                        
+                        <p:column></p:column>
+                        <p:column></p:column>
+                        <p:column></p:column>
 
                         <p:column headerText="................"  style="text-align: right; vertical-align: top;">
                             <f:facet name="header">
@@ -726,7 +772,7 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b">
+            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b" id="bankDeposit">
                 <f:facet name="header">
                     <h:outputLabel value="Bank Deposit" />
                 </f:facet>
@@ -751,6 +797,9 @@
                                 <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
                             </f:facet>
                         </p:column>
+                        
+                        <p:column></p:column>
+                        <p:column></p:column>
 
                         <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
                             <f:facet name="header">
@@ -771,6 +820,9 @@
                                 <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
                             </f:facet>
                         </p:column>
+                        
+                        <p:column></p:column>
+                        <p:column></p:column>
 
                         <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
                             <f:facet name="header">
@@ -791,6 +843,9 @@
                                 <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
                             </f:facet>
                         </p:column>
+                        
+                        <p:column></p:column>
+                        <p:column></p:column>
 
                         <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
                             <f:facet name="header">
@@ -807,6 +862,8 @@
                         </p:column>
                         <p:column/>
                         <p:column/>
+                        <p:column></p:column>
+                        <p:column></p:column>
                         <p:column headerText="................"  style="text-align: right; vertical-align: top;">
                             <f:facet name="header">
                                 <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
@@ -822,6 +879,8 @@
                         </p:column>
                         <p:column/>
                         <p:column/>
+                        <p:column></p:column>
+                        <p:column></p:column>
                         <p:column headerText="................"  style="text-align: right; vertical-align: top;">
                             <f:facet name="header">
                                 <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
@@ -837,6 +896,8 @@
                         </p:column>
                         <p:column/>
                         <p:column/>
+                        <p:column></p:column>
+                        <p:column></p:column>
                         <p:column headerText="................"  style="text-align: right; vertical-align: top;">
                             <f:facet name="header">
                                 <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
@@ -852,6 +913,8 @@
                         </p:column>
                         <p:column/>
                         <p:column/>
+                        <p:column></p:column>
+                        <p:column></p:column>
                         <p:column headerText="................"  style="text-align: right; vertical-align: top;">
                             <f:facet name="header">
                                 <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
@@ -867,6 +930,8 @@
                         </p:column>
                         <p:column/>
                         <p:column/>
+                        <p:column></p:column>
+                        <p:column></p:column>
                         <p:column headerText="................"  style="text-align: right; vertical-align: top;">
                             <f:facet name="header">
                                 <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
