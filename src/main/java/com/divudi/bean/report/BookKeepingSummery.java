@@ -531,9 +531,9 @@ public class BookKeepingSummery implements Serializable {
         bookKeepingSummeryRow sr = null;
 
         for (Object[] r : lobjs) {
-            System.out.println("Category = " + r[0].toString());
-            System.out.println("Name = " + r[1].toString());
-            System.out.println("Fee Type = " + r[4].toString());
+//            System.out.println("Category = " + r[0].toString());
+//            System.out.println("Name = " + r[1].toString());
+//            System.out.println("Fee Type = " + r[4].toString());
 
             if (pre == null) {
                 //First Time in the Loop
@@ -648,7 +648,9 @@ public class BookKeepingSummery implements Serializable {
         System.out.println("Last cat");
         sr = new bookKeepingSummeryRow();
         sr.setTotalRow(true);
-        sr.setCategoryName(pre.getCategoryName());
+        if (pre != null) {
+            sr.setCategoryName(pre.getCategoryName());
+        }
         sr.setSerialNo(n);
         sr.setHosFee(hf);
         sr.setProFee(sf);
@@ -1181,13 +1183,13 @@ public class BookKeepingSummery implements Serializable {
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
-        if (Math.abs(lng) > 2) {
-            UtilityController.addErrorMessage("Date Range is too Long");
-            return;
-        }
+//        if (Math.abs(lng) > 2) {
+//            UtilityController.addErrorMessage("Date Range is too Long");
+//            return;
+//        }
 
         createOPdListWithProDayEndTable();
-        createOPdListWithProDayEndTableOld();
+//        createOPdListWithProDayEndTableOld();
         createOutSideFeeWithPro();
         createPharmacySale();
         createInwardCollection();
