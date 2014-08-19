@@ -113,6 +113,26 @@ public class PharmacyPreSettleController implements Serializable {
     double netTotal;
     double balance;
     Double editingQty;
+    
+     public String toSettleReturn(Bill args) {
+        String sql = "Select b from RefundBill b"
+                + " where b.referenceBill=:bil"
+                + " and b.retired=false "
+                + " and b.refundedBill is null "
+                + " and b.cancelled=false ";
+        HashMap hm = new HashMap();
+        hm.put("bil", args);
+        Bill b = getBillFacade().findFirstBySQL(sql, hm);
+
+        if (b != null) {
+            UtilityController.addErrorMessage("Allready Paid");
+            return "";
+        } else {
+            setPreBill(args);
+            return "/pharmacy/pharmacy_bill_return_pre_cash";
+        }
+    }
+    
 
     public void makeNull() {
         selectedAlternative = null;
