@@ -434,6 +434,7 @@ public class ReportsTransfer implements Serializable {
         sql = "select b.pharmaceuticalBillItem.itemBatch,"
                 + " sum(b.grossValue),"
                 + " sum(b.marginValue),"
+                + " sum(b.discount),"
                 + " sum(b.netValue)"
                 + " from BillItem b "
                 + " where b.bill.department=:fdept ";
@@ -561,8 +562,8 @@ public class ReportsTransfer implements Serializable {
             ItemCount row = new ItemCount();
             row.setItemBatch((ItemBatch) obj[0]);
             row.setGross((Double) obj[1]);
-            row.setMargin((Double) obj[2]);           
-            row.setNet((Double) obj[3]);
+            row.setMargin((Double) obj[2]);
+            row.setNet((Double) obj[4]);
 
             Double pre = calCount(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
             Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
@@ -585,6 +586,54 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyIssue);
         billDiscount = fetchBillDiscount(BillType.PharmacyIssue);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
+
+    }
+
+    public void fillItemCountsBht() {
+
+        List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre);
+
+        if (list == null) {
+            return;
+        }
+
+        itemCounts = new ArrayList<>();
+        totalsValue = 0;
+        marginValue = 0;
+        discountsValue = 0;
+        netTotalValues = 0;
+        purchaseValue = 0;
+        retailValue = 0;
+        for (Object[] obj : list) {
+            ItemCount row = new ItemCount();
+            row.setItemBatch((ItemBatch) obj[0]);
+            row.setGross((Double) obj[1]);
+            row.setMargin((Double) obj[2]);
+            row.setDiscount((Double) obj[3]);
+            row.setNet((Double) obj[4]);
+
+            Double pre = calCount(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
+            Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
+            Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
+            System.err.println("PRE " + pre);
+            System.err.println("PRE CAN " + preCancel);
+            System.err.println("Return " + returned);
+//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
+
+            row.setCount(pre - (preCancel + returned));
+
+            totalsValue += row.getGross();
+            marginValue += row.getMargin();
+            discountsValue += row.getDiscount();
+            netTotalValues += row.getNet();
+
+            itemCounts.add(row);
+        }
+
+        billTotal = fetchBillTotal(BillType.PharmacyBhtPre);
+        billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
+        billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
+        billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
 
     }
 
@@ -914,6 +963,7 @@ public class ReportsTransfer implements Serializable {
         double count;
         double gross;
         double margin;
+        double discount;
         double net;
 
         public ItemBatch getItemBatch() {
@@ -923,10 +973,15 @@ public class ReportsTransfer implements Serializable {
         public void setItemBatch(ItemBatch itemBatch) {
             this.itemBatch = itemBatch;
         }
-        
-        
 
-      
+        public double getDiscount() {
+            return discount;
+        }
+
+        public void setDiscount(double discount) {
+            this.discount = discount;
+        }
+
         public double getCount() {
             return count;
         }

@@ -2057,6 +2057,7 @@ public class PharmacyBillSearch implements Serializable {
         //recreateModel();
         return bill;
     }
+      
 
     public void setBill(Bill bb) {
         recreateModel();
