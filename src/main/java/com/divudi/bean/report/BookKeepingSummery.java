@@ -499,7 +499,7 @@ public class BookKeepingSummery implements Serializable {
 
         List t = new ArrayList();
 
-        String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType "
+        String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
                 + " where bi.bill.institution=:ins "
                 + " and bi.item.department.institution=:ins "
@@ -509,7 +509,7 @@ public class BookKeepingSummery implements Serializable {
                 + " or  bi.bill.paymentMethod = :pm2 "
                 + " or  bi.bill.paymentMethod = :pm3 "
                 + " or  bi.bill.paymentMethod = :pm4)"
-                + " group by c.name, i.name,  bf.fee.feeType "
+                + " group by c.name, i.name,  bf.fee.feeType,  bi.bill.billClassType "
                 + " order by c.name, i.name, bf.fee.feeType";
 
         temMap.put("toDate", toDate);
@@ -530,13 +530,10 @@ public class BookKeepingSummery implements Serializable {
         double hf = 0;
         bookKeepingSummeryRow sr = null;
 
-        
-        
         for (Object[] r : lobjs) {
             System.out.println("Category = " + r[0].toString());
             System.out.println("Name = " + r[1].toString());
             System.out.println("Fee Type = " + r[4].toString());
-            
 
             if (pre == null) {
                 //First Time in the Loop
@@ -547,7 +544,8 @@ public class BookKeepingSummery implements Serializable {
                 sr.setSerialNo(n);
                 t.add(sr);
                 System.out.println("First time cat row added.");
-                System.out.println("n = " + n); n++;
+                System.out.println("n = " + n);
+                n++;
 
                 sr = new bookKeepingSummeryRow();
                 sr.setSerialNo(n);
@@ -561,10 +559,10 @@ public class BookKeepingSummery implements Serializable {
                     sr.setHosFee(Double.valueOf(r[3].toString()));
                     hf += Double.valueOf(r[3].toString());
                 }
-                sr.setTotal(sf+hf);
+                sr.setTotal(sf + hf);
                 t.add(sr);
                 pre = sr;
-                
+
             } else if (!pre.getCategoryName().equals(r[0].toString())) {
                 //Create Total Row
                 System.out.println("different cat");
@@ -577,7 +575,8 @@ public class BookKeepingSummery implements Serializable {
                 sr.setTotal(hf + sf);
                 t.add(sr);
                 System.out.println("previous tot row added - " + sr.getCategoryName());
-                System.out.println("n = " + n); n++;
+                System.out.println("n = " + n);
+                n++;
 
                 hf = 0.0;
                 sf = 0.0;
@@ -588,7 +587,8 @@ public class BookKeepingSummery implements Serializable {
                 sr.setSerialNo(n);
                 t.add(sr);
                 System.out.println("cat title added - " + sr.getCategoryName());
-                System.out.println("n = " + n); n++;
+                System.out.println("n = " + n);
+                n++;
 
                 sr = new bookKeepingSummeryRow();
                 sr.setSerialNo(n);
@@ -640,8 +640,24 @@ public class BookKeepingSummery implements Serializable {
                 }
 
             }
-            System.out.println("n = " + n); n++;
+            System.out.println("n = " + n);
+            n++;
         }
+
+        //Create Total Row
+        System.out.println("Last cat");
+        sr = new bookKeepingSummeryRow();
+        sr.setTotalRow(true);
+        sr.setCategoryName(pre.getCategoryName());
+        sr.setSerialNo(n);
+        sr.setHosFee(hf);
+        sr.setProFee(sf);
+        sr.setTotal(hf + sf);
+        t.add(sr);
+        System.out.println("previous tot row added - " + sr.getCategoryName());
+        System.out.println("n = " + n);
+        n++;
+
         bookKeepingSummeryRows.addAll(t);
     }
 

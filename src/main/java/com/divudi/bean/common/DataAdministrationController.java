@@ -64,23 +64,6 @@ public class DataAdministrationController {
     public DataAdministrationController() {
     }
     
-    public void billClassToBillEnum(){
-        List<Bill> bills = getBillFacade().findAll();
-        for(Bill b:bills){
-            if(b instanceof BilledBill){
-                b.setBillClassType(BillClassType.BilledBill);
-            }else if(b instanceof CancelledBill){
-                b.setBillClassType(BillClassType.CancelledBill);
-            }else if(b instanceof RefundBill){
-                b.setBillClassType(BillClassType.RefundBill);
-            }if (b instanceof PreBill){
-                b.setBillClassType(BillClassType.PreBill);
-            }else{
-                b.setBillClassType(BillClassType.OtherBill);
-            }
-            getBillFacade().edit(b);
-        }
-    }
     
     public void removeAllBillsAndBillItems(){
         for(PatientReportItemValue v:getPatientReportItemValueFacade().findAll()){
