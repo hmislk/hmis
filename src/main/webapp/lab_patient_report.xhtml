@@ -102,7 +102,7 @@
                                                                      rendered="#{pvv.investigationItem.ixItemValueType eq 'Double'}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputText>
-                                                        <p:inputTextarea  value="#{pvv.lobValue}" 
+                                                        <p:inputTextarea  value="#{pvv.lobValue}" queryDelay="0"
                                                                           rendered="#{pvv.investigationItem.ixItemValueType eq 'Memo'}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputTextarea>
@@ -206,7 +206,7 @@
                                                         <td >
 
                                                             <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                <p:inputTextarea id="txtMicMemoVal"   minQueryLength="1"  style="min-width: 200px; "  
+                                                                <p:inputTextarea id="txtMicMemoVal" queryDelay="0"   minQueryLength="1"  style="min-width: 200px; "  
                                                                                  completeMethod="#{investigationItemValueController.completeValues}" 
                                                                                  value="#{pvm.lobValue}" >
                                                                     <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
@@ -409,12 +409,19 @@
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
 
                                                     <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.transCssTop  lt 50 }" >
+
+
                                                         <tr >
-                                                            <td style="min-width: 245px;vertical-align: top;padding: 2px; margin: 2px;">
+                                                            <td style="min-width: 250px;vertical-align: top;padding: 2px; margin: 2px;">
                                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false"  style="padding: 2px; margin: 2px;" />
                                                             </td>
                                                             <td style="vertical-align: top;padding: 2px; margin: 2px;">
                                                                 <h:outputLabel value="#{prv.lobValue}"  escape="false" style="white-space: pre-wrap;padding: 2px; margin: 0px;" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                &nbsp;
                                                             </td>
                                                         </tr>
                                                     </h:panelGroup>
@@ -428,6 +435,12 @@
 
                                                             </td>
                                                         </tr>
+                                                        <tr>
+                                                            <td>
+                                                                &nbsp;
+                                                            </td>
+                                                        </tr>
+
                                                     </h:panelGroup>
 
 
@@ -437,10 +450,6 @@
                                         </td>
                                     </tr>
                                     <br/><br/>
-
-
-
-
                                     <tr>
                                         <td id="micLabelsBeforeAbst">
 
@@ -494,7 +503,7 @@
                                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
                                                             </td>
                                                             <td>
-                                                                <h:outputLabel value="#{prv.lobValue}"  escape="false" />
+                                                                <h:outputLabel value="#{prv.lobValue}"    escape="false" style="white-space: pre-wrap;padding: 2px; margin: 0px;"  />
                                                             </td>
                                                         </tr>
 
