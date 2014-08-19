@@ -530,6 +530,19 @@
                         </p:row>
                     </p:columnGroup>
                 </p:dataTable>
+                <p:panelGrid columns="2">
+                    <p:outputLabel value="Final Cash Total"/>
+                    <p:outputLabel value="#{pharmacySaleReport.grantCashTotal}"/>
+                    
+                    <p:outputLabel value="Final Card Total"/>
+                    <p:outputLabel value="#{pharmacySaleReport.grantCardTotal}"/>
+                    
+                    <p:outputLabel value="Final Credit Total"/>
+                    <p:outputLabel value="#{pharmacySaleReport.grantCreditTotal}"/>
+                    
+                    <p:outputLabel value="Final Discount Total"/>
+                    <p:outputLabel value="#{pharmacySaleReport.grantDiscount}"/>
+                </p:panelGrid>
               
 
 
