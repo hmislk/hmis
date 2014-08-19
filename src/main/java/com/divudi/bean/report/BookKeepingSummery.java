@@ -32,8 +32,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -497,7 +499,7 @@ public class BookKeepingSummery implements Serializable {
 
         List t = new ArrayList();
 
-        String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType "
+        String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
                 + " where bi.bill.institution=:ins "
                 + " and bi.item.department.institution=:ins "
@@ -507,7 +509,7 @@ public class BookKeepingSummery implements Serializable {
                 + " or  bi.bill.paymentMethod = :pm2 "
                 + " or  bi.bill.paymentMethod = :pm3 "
                 + " or  bi.bill.paymentMethod = :pm4)"
-                + " group by c.name, i.name,  bf.fee.feeType "
+                + " group by c.name, i.name,  bf.fee.feeType,  bi.bill.billClassType "
                 + " order by c.name, i.name, bf.fee.feeType";
 
         temMap.put("toDate", toDate);
@@ -529,13 +531,9 @@ public class BookKeepingSummery implements Serializable {
         bookKeepingSummeryRow sr = null;
 
         for (Object[] r : lobjs) {
-            System.out.println("Category Name = " + r[0].toString());
-            System.out.println("Item Name  = " + r[1].toString());
-            System.out.println("Count  = " + r[2].toString());
-            System.out.println("Fee Value = " + r[3].toString());            
-            if (r[4] != null) {
-                System.out.println("Fee Type = " + r[4].toString());
-            }
+            System.out.println("Category = " + r[0].toString());
+            System.out.println("Name = " + r[1].toString());
+            System.out.println("Fee Type = " + r[4].toString());
 
             if (pre == null) {
                 //First Time in the Loop
@@ -553,10 +551,7 @@ public class BookKeepingSummery implements Serializable {
                 sr.setSerialNo(n);
                 sr.setCategoryName(r[0].toString());
                 sr.setItemName(r[1].toString());
-                FeeType ft = null;
-                if (r[4] != null) {
-                    ft = (FeeType) r[4];
-                }
+                FeeType ft = (FeeType) r[4];
                 if (ft == FeeType.Staff) {
                     sr.setProFee(Double.valueOf(r[3].toString()));
                     sf += Double.valueOf(r[3].toString());
@@ -648,6 +643,21 @@ public class BookKeepingSummery implements Serializable {
             System.out.println("n = " + n);
             n++;
         }
+
+        //Create Total Row
+        System.out.println("Last cat");
+        sr = new bookKeepingSummeryRow();
+        sr.setTotalRow(true);
+        sr.setCategoryName(pre.getCategoryName());
+        sr.setSerialNo(n);
+        sr.setHosFee(hf);
+        sr.setProFee(sf);
+        sr.setTotal(hf + sf);
+        t.add(sr);
+        System.out.println("previous tot row added - " + sr.getCategoryName());
+        System.out.println("n = " + n);
+        n++;
+
         bookKeepingSummeryRows.addAll(t);
     }
 
@@ -1171,12 +1181,13 @@ public class BookKeepingSummery implements Serializable {
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
-//        if (Math.abs(lng) > 2) {
-//            UtilityController.addErrorMessage("Date Range is too Long");
-//            return;
-//        }
+        if (Math.abs(lng) > 2) {
+            UtilityController.addErrorMessage("Date Range is too Long");
+            return;
+        }
+
         createOPdListWithProDayEndTable();
-//        createOPdListWithProDayEndTableOld();
+        createOPdListWithProDayEndTableOld();
         createOutSideFeeWithPro();
         createPharmacySale();
         createInwardCollection();
@@ -1184,7 +1195,7 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, fromDate, toDate, institution);
         createDoctorPaymentOpd();
         createDoctorPaymentInward();
-        /////////////////
+        ///////////////////
         opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution());
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);

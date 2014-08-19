@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.BillClassType;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
@@ -17,6 +18,11 @@ import javax.persistence.OneToOne;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class CancelledBill extends Bill implements Serializable {
+
+    public CancelledBill() {
+        billClassType=BillClassType.CancelledBill;
+    }
   
+    
   
 }
