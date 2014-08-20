@@ -326,6 +326,7 @@ public class Bill implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
+       chequeDate = bill.getChequeDate();
 
         //      referenceBill=bill.getReferenceBill();
     }
