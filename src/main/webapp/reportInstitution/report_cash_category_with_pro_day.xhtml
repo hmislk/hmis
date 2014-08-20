@@ -65,6 +65,9 @@
                 <p:column headerText="Item/Service" >
                     #{sr.itemName}
                 </p:column>
+                <p:column headerText="Count" >
+                    #{sr.catCount}
+                </p:column>
                 <p:column headerText="Hospital Fee" styleClass="numberCol" >
                     <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
                     <p:outputLabel value="#{sr.hosFee}" rendered="#{!sr.catRow}" >
@@ -80,11 +83,16 @@
                     <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
                 </p:column>
                 <p:column  headerText="Total Fee"  styleClass="numberCol" >
-                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
-                    <p:outputLabel value="#{sr.total}" rendered="#{!sr.catRow}" >
+                    <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" />
+                    <p:outputLabel value="#{sr.hosFee+sr.proFee}" rendered="#{!sr.catRow}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </p:outputLabel>
                     <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
+                            <f:convertNumber pattern="#,000.00"/>
+                        </h:outputLabel>
+                    </f:facet>
                 </p:column>
             </p:dataTable>
 
@@ -116,7 +124,7 @@
                     <h:outputLabel value="#{d.string}" rendered="#{d.summery eq true}" style="font-weight: bold;" />
                 </p:column>                   
                 <p:column headerText="Count">
-                    <h:outputLabel value="#{d.value1}" rendered="#{d.summery eq false}" />
+                    <h:outputLabel value="#{d.value1}" />
                 </p:column>
                 <p:column style="text-align: right;"  headerText="Hospital Fee">                               
                     <h:outputLabel value="#{d.value2}" rendered="#{d.summery eq false}" >
