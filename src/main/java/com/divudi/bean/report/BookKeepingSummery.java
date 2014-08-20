@@ -9,6 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.inward.AdmissionTypeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -528,7 +529,10 @@ public class BookKeepingSummery implements Serializable {
 
         double sf = 0;
         double hf = 0;
+        long itemCount = 0l;
         bookKeepingSummeryRow sr = null;
+
+        long temCount =0l;
 
         for (Object[] r : lobjs) {
             System.err.println("********************************");
@@ -541,6 +545,18 @@ public class BookKeepingSummery implements Serializable {
             }
             System.err.println("Bill Class Type = " + r[5].toString());
             System.err.println("********************************");
+            BillClassType bct = (BillClassType) r[5];
+            try {
+                temCount = Long.valueOf(r[2].toString());
+            } catch (Exception e) {
+                temCount = 0l;
+            }
+            if (bct == BillClassType.BilledBill) {
+                temCount = temCount;
+            } else {
+                temCount = 0 - temCount;
+            }
+
             if (pre == null) {
                 //First Time in the Loop
 //                System.out.println("first row  ");
@@ -557,8 +573,10 @@ public class BookKeepingSummery implements Serializable {
                 sr.setSerialNo(n);
                 sr.setCategoryName(r[0].toString());
                 sr.setItemName(r[1].toString());
+                sr.setBillClassType(bct);
                 sr.setCatCount((Long) r[2]);
                 FeeType ft = (FeeType) r[4];
+
                 if (ft == FeeType.Staff) {
                     sr.setProFee(Double.valueOf(r[3].toString()));
                     sf += Double.valueOf(r[3].toString());
@@ -566,7 +584,10 @@ public class BookKeepingSummery implements Serializable {
                     sr.setHosFee(Double.valueOf(r[3].toString()));
                     hf += Double.valueOf(r[3].toString());
                 }
+
                 sr.setTotal(sf + hf);
+                sr.setCatCount(temCount);
+
                 t.add(sr);
                 pre = sr;
 
@@ -601,7 +622,10 @@ public class BookKeepingSummery implements Serializable {
                 sr.setSerialNo(n);
                 sr.setCategoryName(r[0].toString());
                 sr.setItemName(r[1].toString());
-                sr.setCatCount((Long) r[2]);
+
+                sr.setCatCount(temCount);
+                sr.setBillClassType(bct);
+
                 FeeType ft = (FeeType) r[4];
                 if (ft == FeeType.Staff) {
                     sr.setProFee(Double.valueOf(r[3].toString()));
@@ -627,6 +651,7 @@ public class BookKeepingSummery implements Serializable {
                         pre.setHosFee(pre.getHosFee() + Double.valueOf(r[3].toString()));
                         hf += Double.valueOf(r[3].toString());
                     }
+                    pre.setCatCount(pre.getCatCount() + temCount);
 
                 } else {
 //                    System.out.println("different name");
@@ -634,7 +659,7 @@ public class BookKeepingSummery implements Serializable {
                     sr.setSerialNo(n);
                     sr.setCategoryName(r[0].toString());
                     sr.setItemName(r[1].toString());
-                    sr.setCatCount((Long) r[2]);
+                    sr.setCatCount(temCount);
                     FeeType ft = (FeeType) r[4];
                     if (ft == FeeType.Staff) {
                         sr.setProFee(Double.valueOf(r[3].toString()));
@@ -663,6 +688,7 @@ public class BookKeepingSummery implements Serializable {
         sr.setSerialNo(n);
         sr.setHosFee(hf);
         sr.setProFee(sf);
+        sr.setCatCount(sr.getCatCount() + temCount);
         sr.setTotal(hf + sf);
         t.add(sr);
 //        System.out.println("previous tot row added - " + sr.getCategoryName());
@@ -1515,8 +1541,17 @@ public class BookKeepingSummery implements Serializable {
         double proFee;
         double total;
         double subTotal;
+        BillClassType billClassType;
 
         int serialNo;
+
+        public BillClassType getBillClassType() {
+            return billClassType;
+        }
+
+        public void setBillClassType(BillClassType billClassType) {
+            this.billClassType = billClassType;
+        }
 
         public int getSerialNo() {
             return serialNo;
