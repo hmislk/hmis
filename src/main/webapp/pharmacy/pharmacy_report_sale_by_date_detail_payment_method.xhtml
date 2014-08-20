@@ -27,7 +27,7 @@
                     
                     <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSalePaymentMethodDetail()}"/>
                     <p:commandButton  actionListener="#{pharmacySaleReport.createSalePaymentMethodDetail()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                        <pe:exporter subTable="true" type="xlsx" target="sum1,sum2,sum3" fileName="report_grn_detail_by_supplier"  />
+                        <pe:exporter subTable="true" type="xlsx" target="sum1,sum2,sum3,fin" fileName="report_grn_detail_by_supplier"  />
                             </p:commandButton>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                         <p:printer target="panelPrint" />
@@ -530,7 +530,7 @@
                         </p:row>
                     </p:columnGroup>
                 </p:dataTable>
-                <p:panelGrid columns="2">
+                <p:panelGrid columns="2" id="fin">
                     <p:outputLabel value="Final Cash Total"/>
                     <p:outputLabel value="#{pharmacySaleReport.grantCashTotal}"/>
                     
