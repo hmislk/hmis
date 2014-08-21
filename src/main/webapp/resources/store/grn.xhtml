@@ -211,6 +211,19 @@
                             </p:column>
 
                         </p:row>
+                        
+                        <p:row >
+                            <p:column colspan="7" footerText="GRN NETTOTAL"/>
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.discount}">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{cc.attrs.bill.grnNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:row>
+                        
                         <p:row>
                             <p:column colspan="7" footerText="Expenses" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">

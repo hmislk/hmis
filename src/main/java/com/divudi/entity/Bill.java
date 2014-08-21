@@ -123,6 +123,9 @@ public class Bill implements Serializable {
     double billerFee;
     double grantTotal;
     double expenseTotal;
+    //with minus tax and discount
+    double grnNetTotal;
+    
 
     //Institution
     @ManyToOne
@@ -301,6 +304,7 @@ public class Bill implements Serializable {
         saleValue = 0 - bill.getSaleValue();
         freeValue = 0 - bill.getFreeValue();
         grantTotal = 0 - bill.getGrantTotal();
+        
 
     }
 
@@ -797,6 +801,22 @@ public class Bill implements Serializable {
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
     }
+
+    public double getGrnNetTotal() {
+        return grnNetTotal;
+    }
+
+    public void setGrnNetTotal(double grnNetTotal) {
+        this.grnNetTotal =grnNetTotal;
+        
+        
+    }
+    public void calGrnNetTotal(){
+       this.grnNetTotal = total + tax + discount;
+        
+    }
+    
+    
 
     public double getPaidAmount() {
         return paidAmount;
