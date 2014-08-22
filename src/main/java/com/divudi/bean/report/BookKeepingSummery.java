@@ -549,12 +549,17 @@ public class BookKeepingSummery implements Serializable {
             try {
                 temCount = Long.valueOf(r[2].toString());
             } catch (Exception e) {
+                System.out.println("e = " + e);
                 temCount = 0l;
             }
             if (bct == BillClassType.BilledBill) {
-                temCount = temCount;
+                System.out.println("Billed Bill");
+                System.out.println("temCount = " + temCount);
             } else {
+
                 temCount = 0 - temCount;
+                System.out.println("Other Bills");
+                System.out.println("temCount = " + temCount);                
             }
 
             if (pre == null) {
@@ -574,7 +579,7 @@ public class BookKeepingSummery implements Serializable {
                 sr.setCategoryName(r[0].toString());
                 sr.setItemName(r[1].toString());
                 sr.setBillClassType(bct);
-                sr.setCatCount((Long) r[2]);
+                
                 FeeType ft = (FeeType) r[4];
 
                 if (ft == FeeType.Staff) {
