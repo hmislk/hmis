@@ -127,6 +127,7 @@ public class PatientEncounter implements Serializable {
     double transPaid;    
     @ManyToOne
     Bill finalBill;
+    
 
     public double getTransTotal() {
         return transTotal;

@@ -151,6 +151,10 @@ public class InwardReportController implements Serializable {
 
     double total;
     double paid;
+    double calTotal;
+    
+    @Inject
+    InwardReportControllerBht inwardReportControllerBht;
 
     public void fillDischargeBook() {
         Map m = new HashMap();
@@ -181,22 +185,17 @@ public class InwardReportController implements Serializable {
         }
         total = 0;
         paid = 0;
+        calTotal=0;
         for (PatientEncounter p : patientEncounters) {
             inwardReportControllerBht.setPatientEncounter(p);
             inwardReportControllerBht.process();
+            p.setTransTotal(inwardReportControllerBht.getNetTotal());
             
-            if (Math.abs((inwardReportControllerBht.getNetTotal() - inwardReportControllerBht.getFinalBill().getNetTotal()))>0.1) {
-                System.err.println("Calculated "+inwardReportControllerBht.getNetTotal());
-                System.err.println("Final "+inwardReportControllerBht.getFinalBill().getNetTotal());
-                System.err.println("ERRORNUOES BHT " + p.getBhtNo());
-            }
             total += p.getFinalBill().getNetTotal();
             paid += p.getFinalBill().getPaidAmount();
+            calTotal+=p.getTransTotal();
         }
     }
-
-    @Inject
-    InwardReportControllerBht inwardReportControllerBht;
 
     public BhtSummeryController getBhtSummeryController() {
         return bhtSummeryController;
@@ -619,5 +618,15 @@ public class InwardReportController implements Serializable {
     public void setNetPaid(double netPaid) {
         this.netPaid = netPaid;
     }
+
+    public double getCalTotal() {
+        return calTotal;
+    }
+
+    public void setCalTotal(double calTotal) {
+        this.calTotal = calTotal;
+    }
+    
+    
 
 }
