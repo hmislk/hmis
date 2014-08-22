@@ -207,8 +207,46 @@
                                     <h:outputLabel value="#{i.finalBill.netTotal-i.finalBill.paidAmount}"  >
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                         <h:outputLabel value="#{inwardReportController.total-inwardReportController.paid}"  >
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-
+                                
+                                <p:column headerText="Calculated Amount">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Calculated Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.transTotal}"  >
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.calTotal}"  >
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
+                                <p:column headerText="Differance Amount">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Differance Amount"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.finalBill.netTotal-i.transTotal}"  >
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+<!--                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.total-inwardReportController.calTotal}"  >
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>-->
+                                    <!--</f:facet>-->
+                                </p:column>
+                                <p:column headerText="BHT No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="BHT No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
+                                </p:column>
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

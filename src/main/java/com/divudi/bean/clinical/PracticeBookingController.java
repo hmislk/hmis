@@ -415,9 +415,9 @@ public class PracticeBookingController implements Serializable {
         bi.setStaff(getDoctor());
         bi.setBillType(BillType.ClinicalOpdBooking);
         if (foreigner) {
-            bi.setTotal(getSelectedServiceSession().getTotalFfee());
+            bi.setTotal(getSelectedServiceSession().getTotal());
         } else {
-            bi.setTotal(getSelectedServiceSession().getTotalFee());
+            bi.setTotal(getSelectedServiceSession().getTotal());
         }
         bi.setPatient(getPatientController().getCurrent());
         //   System.out.println("pt = " + getPatientController().getCurrent().getPerson().getName());
