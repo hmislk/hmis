@@ -142,7 +142,7 @@ public class ChannelBean {
                         newSs.setStartingTime(ss.getStartingTime());
                         newSs.setSessionWeekday(ss.getSessionWeekday());
                         newSs.setHospitalFee(ss.getHospitalFee());
-                        newSs.setStaffFee(ss.getStaffFee());
+                        newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
                         newSs.setSessionAt(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(newSs));
@@ -170,7 +170,7 @@ public class ChannelBean {
                         newSs.setStartingTime(ss.getStartingTime());
                         newSs.setSessionWeekday(ss.getSessionWeekday());
                         newSs.setHospitalFee(ss.getHospitalFee());
-                        newSs.setStaffFee(ss.getStaffFee());
+                        newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
                         newSs.setSessionAt(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(newSs));
