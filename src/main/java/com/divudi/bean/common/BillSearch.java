@@ -1122,6 +1122,7 @@ public class BillSearch implements Serializable {
             getBillFeeFacade().create(bf);
         }
     }
+    
     @Inject
     private BillBeanController billBean;
 
