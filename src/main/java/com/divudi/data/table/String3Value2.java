@@ -5,6 +5,9 @@
  */
 package com.divudi.data.table;
 
+import com.divudi.entity.Bill;
+import java.util.List;
+
 /**
  *
  * @author safrin
@@ -14,9 +17,20 @@ public class String3Value2 {
     private String string1;
     private String string2;
     String string3;
+    List<Bill> bills;
     private double value1;
     private double value2;
     private boolean summery;
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+    
+    
 
     public String getString3() {
         return string3;
@@ -69,4 +83,6 @@ public class String3Value2 {
     public void setSummery(boolean summery) {
         this.summery = summery;
     }
+    
+    
 }

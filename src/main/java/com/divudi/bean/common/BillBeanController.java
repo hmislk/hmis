@@ -316,10 +316,10 @@ public class BillBeanController implements Serializable {
     }
 
     public double calOutSideInstitutionFeesWithPro(Date fromDate, Date toDate, Institution institution) {
-        String sql = "SELECT sum(bf.netTotal) "
+        String sql = "SELECT sum(bf.performInstitutionFee+bf.staffFee) "
                 + " FROM Bill bf"
                 + " WHERE bf.institution=:ins "
-                + " and bf.toInstitution!=:ins "
+                + " and bf.toDepartment.institution!=:ins "
                 //     + " and ( bf.fee.feeType=:ftp1 "
                 //    + " or bf.fee.feeType=:ftp2 )"
                 + " and bf.createdAt between :fromDate and :toDate "
@@ -465,7 +465,7 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public double calInwardPaymentTotal(AdmissionType admissionType, Date fromDate, Date toDate, Institution institution) {
+    public double calInwardPaymentTotal1(AdmissionType admissionType, Date fromDate, Date toDate, Institution institution) {
         String sql;
         sql = "SELECT sum(b.netTotal)"
                 + " FROM Bill b "
@@ -482,6 +482,25 @@ public class BillBeanController implements Serializable {
         temMap.put("adm", admissionType);
         temMap.put("ins", institution);
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public List<Object[]> calInwardPaymentTotal(AdmissionType admissionType, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        sql = "SELECT b.patientEncounter.admissionType,"
+                + " sum(b.netTotal) "
+                + " FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType = :bTp "
+                + " and b.institution=:ins"
+                + " and b.createdAt between :fromDate and :toDate"
+                + " group by b.patientEncounter.admissionType"
+                + " order by b.patientEncounter.admissionType.name ";
+        Map temMap = new HashMap();
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("bTp", BillType.InwardPaymentBill);
+        temMap.put("ins", institution);
+        return getBillFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public double calInwardPaymentTotal(Date fromDate, Date toDate, Institution institution) {
@@ -519,22 +538,29 @@ public class BillBeanController implements Serializable {
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
-    public List<BillItem> fetchBillItems(BillType billType, Date fromDate, Date toDate, Institution institution) {
+    public List<BillItem> fetchBillItems(BillType billType, boolean isOpd, Date fromDate, Date toDate, Institution institution) {
         String sql;
         HashMap temMap = new HashMap();
 
         sql = "SELECT b FROM BillItem b"
                 + " WHERE b.bill.institution=:ins"
-                + " and b.bill.billType=:btp "
+                + " and b.bill.billType=:btp"
                 + " and b.retired=false "
-                + " and b.createdAt between :fromDate and :toDate "
-                + " order by b.id";
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (isOpd) {
+            sql += " and b.referenceBill.billType=:refTp";
+            temMap.put("refTp", BillType.OpdBill);
+        } else {
+            sql += " and b.patientEncounter is not null ";
+        }
+
+        sql += " order by b.id";
 
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
         temMap.put("btp", billType);
         temMap.put("ins", institution);
-        temMap.put("btp", billType);
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -756,6 +782,33 @@ public class BillBeanController implements Serializable {
                 + " order by b.id";
 
         Map temMap = new HashMap();
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("bTp", billType);
+        temMap.put("ins", institution);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public double calBillTotal(BillType billType, boolean isOpd, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = " SELECT sum(b.netTotal) "
+                + " FROM Bill b"
+                + " WHERE b.retired=false "
+                + " and b.billType = :bTp "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (isOpd) {
+            sql += " and b.referenceBill.billType=:refTp";
+            temMap.put("refTp", BillType.OpdBill);
+        } else {
+            sql += " and b.patientEncounter is not null ";
+        }
+
+        sql += " order by b.id";
+
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
         temMap.put("bTp", billType);
