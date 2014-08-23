@@ -12,4 +12,5 @@
     </jdbc-connection-pool>
     <jdbc-resource enabled="true" jndi-name="sureshww" object-type="user" pool-name="mysql_hr_rootPool"/>
     <jdbc-resource enabled="true" jndi-name="qqwewdw" object-type="user" pool-name="mysql_hr_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="qwwewe" object-type="user" pool-name="mysql_hr_rootPool"/>
 </resources>
