@@ -204,37 +204,7 @@ public class SheduleController implements Serializable {
         getCurrent();
     }
 
-    private void saveFee() {
-
-        if (getHospitalFee().getId() == null) {
-            getHospitalFee().setServiceSession(getCurrent());
-            getHospitalFee().setStaff(getCurrentStaff());
-            getHospitalFee().setSpeciality(getSpeciality());
-            getFeeFacade().create(getHospitalFee());
-        } else {
-            getFeeFacade().edit(getHospitalFee());
-        }
-
-        if (getDoctorFee().getId() == null) {
-            getDoctorFee().setServiceSession(getCurrent());
-            getDoctorFee().setStaff(getCurrentStaff());
-            getDoctorFee().setSpeciality(getSpeciality());
-            getFeeFacade().create(getDoctorFee());
-        } else {
-            getFeeFacade().edit(getDoctorFee());
-        }
-
-        if (getTax().getId() == null) {
-            getTax().setServiceSession(getCurrent());
-            getTax().setStaff(getCurrentStaff());
-            getTax().setSpeciality(getSpeciality());
-            getFeeFacade().create(getTax());
-        } else {
-            getFeeFacade().edit(getTax());
-        }
-
-    }
-
+    
     private boolean checkError() {
         if (getCurrent().getStartingTime() == null) {
             UtilityController.addErrorMessage("Starting time Must be Filled");
@@ -253,18 +223,7 @@ public class SheduleController implements Serializable {
         if (checkError()) {
             return;
         }
-
         current.setStaff(currentStaff);
-
-        getCurrent().setStaffFee(getDoctorFee().getFee());
-        getCurrent().setStaffFfee(getDoctorFee().getFfee());
-
-        getCurrent().setHospitalFee(getHospitalFee().getFee());
-        getCurrent().setHospitalFfee(getHospitalFee().getFfee());
-
-        getCurrent().setTax(getTax().getFee());
-        getCurrent().setTaxf(getTax().getFfee());
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("savedOldSuccessfully");
@@ -274,15 +233,6 @@ public class SheduleController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
-
-        saveFee();
-
-        //System.out.println("After saving");
-        //System.out.println("df :" + getCurrent().getStaffFee());
-        //System.out.println("dff :" + getCurrent().getStaffForiegnFee());
-        //System.out.println("hf :" + getCurrent().getHospitalFee());
-        //System.out.println("hff :" + getCurrent().getHospitalForiegnFee());
-
         prepareAdd();
         getItems();
     }

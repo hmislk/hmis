@@ -507,9 +507,9 @@ public class ChannelBillController implements Serializable {
         double tmp = 0.0;
         if (agentFee.getFee() != null) {
             if (!foriegn) {
-                tmp = getSs().getHospitalFee() + getSs().getStaffFee() + getSs().getTax();
+                tmp = getSs().getHospitalFee() + getSs().getProfessionalFee();
             } else {
-                tmp = getSs().getHospitalForiegnFee() + getSs().getStaffForiegnFee() + getSs().getTaxForiegn();
+                tmp = getSs().getHospitalFfee()+ getSs().getProfessionalFfee();
             }
         }
 
@@ -554,14 +554,14 @@ public class ChannelBillController implements Serializable {
         AgentsFees agentFee = getAgentFee();
 
         if (!foriegn) {
-            amount = getSs().getHospitalFee() + getSs().getStaffFee() + getSs().getTax();
+            amount = getSs().getHospitalFee() + getSs().getProfessionalFee();
             if (agentFee.getFee() != null && agentFee.getFee().getFee() != 0.0) {
                 amount += agentFee.getFee().getFee();
             } else {
                 UtilityController.addErrorMessage("Please Set This Agent to Fee");
             }
         } else {
-            amount = getSs().getHospitalForiegnFee() + getSs().getStaffForiegnFee() + getSs().getTaxForiegn();
+            amount = getSs().getHospitalFfee()+ getSs().getProfessionalFfee();
             if (agentFee.getFee() != null && agentFee.getFee().getFfee() != 0.0) {
                 amount += agentFee.getFee().getFfee();
             } else {
