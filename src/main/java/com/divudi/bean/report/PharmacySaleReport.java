@@ -1861,7 +1861,7 @@ public class PharmacySaleReport implements Serializable {
         grantDiscount = calGrantDiscountByDepartment();
 
     }
-
+    
     public void createSaleReportByDateDetailPaymentScheme() {
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
