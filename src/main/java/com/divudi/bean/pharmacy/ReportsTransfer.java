@@ -154,25 +154,20 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", bts);
         BillItem bi = new BillItem();
 
+        sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
+                + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
+                + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty))  "
+                + "FROM BillItem bi where "
+                + " bi.retired=false "
+                + " and bi.bill.department=:d "
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType in :bt "
+                + " group by bi.item ";
+        
         if (!fast) {
-            sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty))  "
-                    + "FROM BillItem bi where bi.retired=false and bi.bill.department=:d and "
-                    + "bi.bill.billDate between :fd and :td "
-                    + "and bi.bill.billType in :bt "
-                    + "group by bi.item "
-                    + "order by "
-                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate  * bi.pharmaceuticalBillItem.qty) "
-                    + "desc";
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) desc";
         } else {
-            sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)) "
-                    + "FROM BillItem bi where bi.retired=false and bi.bill.department=:d and "
-                    + "bi.bill.billType in :bt and "
-                    + "bi.bill.billDate between :fd and :td group by bi.item "
-                    + "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) ";
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
         }
         //System.out.println("sql = " + sql);
         //System.out.println("m = " + m);
@@ -203,24 +198,24 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", bts);
 
         BillItem bi = new BillItem();
+
+        sql = "select bi.item, "
+                + " abs(SUM(bi.pharmaceuticalBillItem.qty)), "
+                + " abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
+                + " SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)"
+                + " FROM BillItem bi "
+                + " where bi.retired=false "
+                + " and  bi.bill.department=:d "
+                + " and bi.bill.billType in :bt "
+                + " and bi.bill.billDate between :fd and :td "
+                + " group by bi.item ";
+
         if (!fast) {
-            sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)"
-                    + "FROM BillItem bi where bi.retired=false and  bi.bill.department=:d and "
-                    + "bi.billType in :bt"
-                    + "bi.bill.billDate between :fd and :td group by bi.item "
-                    + "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
         } else {
-            sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty) "
-                    + "FROM BillItem bi where bi.retired=false and bi.bill.department=:d and "
-                    + "(bi.bill.billType in :bt) "
-                    + "and bi.bill.billDate between :fd and :td group by bi.item "
-                    + "order by  SUM(bi.pharmaceuticalBillItem.qty) ";
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) asc";
         }
-        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m);
+        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
         movementRecordsQty = new ArrayList<>();
         for (Object[] obj : objs) {
             StockReportRecord r = new StockReportRecord();
@@ -351,7 +346,7 @@ public class ReportsTransfer implements Serializable {
                 + " b.department=:fdept and b.createdAt "
                 + " between :fd and :td and"
                 + "  b.billType=:bt order by b.id";
-        transferBills = getBillFacade().findBySQL(sql, m,TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
