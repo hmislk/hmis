@@ -206,7 +206,7 @@ public class ReportsTransfer implements Serializable {
         if (!fast) {
             sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
                     + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)) "
+                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)"
                     + "FROM BillItem bi where bi.retired=false and  bi.bill.department=:d and "
                     + "bi.billType in :bt"
                     + "bi.bill.billDate between :fd and :td group by bi.item "
