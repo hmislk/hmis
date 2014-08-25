@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.agentCollections}" var="a" 
+                     rendered="#{bookKeepingSummery.agentCollections.size()>0}" 
+                     sortBy="#{a.institution.id}" >
+            <f:facet name="header">               
+                <p:outputLabel value="Agent Collection"/>                 
+            </f:facet>
+            <p:column headerText="Bill Id">
+                <h:outputLabel value="#{a.insId}"/>
+                <br/>
+                <h:panelGroup rendered="#{a.cancelled}">
+                    <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
+                    <h:outputLabel style="color: red;" rendered="#{a.cancelled}" value="#{a.cancelledBill.createdAt}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel style="color: red;" rendered="#{a.cancelled}" value="&nbsp;&nbsp;#{a.cancelledBill.insId}"/>
+                </h:panelGroup>
+            </p:column>
+            <p:column headerText="Agent Name">
+                <h:outputLabel value="#{a.fromInstitution.name}" />
+            </p:column>
+            <p:column headerText="Agent Code">
+                <h:outputLabel value="#{a.fromInstitution.institutionCode}"/>
+            </p:column>
+
+            <p:column headerText="Comment">
+                <h:outputLabel value="#{a.comments}"/>
+            </p:column>
+
+            <p:column/>
+            <p:column style="text-align: right;" headerText="Total">
+                <h:outputLabel value="#{a.netTotal}">
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="5" footerText="Agent Collection Total"/>
+                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.agentPaymentTotal}" >
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{bookKeepingSummery.agentPaymentTotal}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+
+        </p:dataTable>
+    </cc:implementation>
+</html>

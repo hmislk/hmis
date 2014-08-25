@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
@@ -54,6 +55,9 @@ public class Bill implements Serializable {
     @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
     private List<Bill> cashBillsPre = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    BillClassType billClassType;
+    
     @ManyToOne
     BatchBill batchBill;
 
@@ -106,6 +110,7 @@ public class Bill implements Serializable {
     BillItem singleBillItem;
     //Values
     double total;
+    double margin;
     double discount;
     double discountPercent;
     double netTotal;
@@ -122,6 +127,9 @@ public class Bill implements Serializable {
     double billerFee;
     double grantTotal;
     double expenseTotal;
+    //with minus tax and discount
+    double grnNetTotal;
+    
 
     //Institution
     @ManyToOne
@@ -245,6 +253,14 @@ public class Bill implements Serializable {
     private WebUser fromWebUser;
     double claimableTotal;
 
+    public BillClassType getBillClassType() {
+        return billClassType;
+    }
+
+    public void setBillClassType(BillClassType billClassType) {
+        this.billClassType = billClassType;
+    }
+
     public WebUser getCheckedBy() {
         return checkedBy;
     }
@@ -300,6 +316,7 @@ public class Bill implements Serializable {
         saleValue = 0 - bill.getSaleValue();
         freeValue = 0 - bill.getFreeValue();
         grantTotal = 0 - bill.getGrantTotal();
+        
 
     }
 
@@ -325,6 +342,7 @@ public class Bill implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
+       chequeDate = bill.getChequeDate();
 
         //      referenceBill=bill.getReferenceBill();
     }
@@ -795,6 +813,22 @@ public class Bill implements Serializable {
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
     }
+
+    public double getGrnNetTotal() {
+        return grnNetTotal;
+    }
+
+    public void setGrnNetTotal(double grnNetTotal) {
+        this.grnNetTotal =grnNetTotal;
+        
+        
+    }
+    public void calGrnNetTotal(){
+       this.grnNetTotal = total + tax + discount;
+        
+    }
+    
+    
 
     public double getPaidAmount() {
         return paidAmount;
@@ -1345,5 +1379,15 @@ public class Bill implements Serializable {
     public void setToWebUser(WebUser toWebUser) {
         this.toWebUser = toWebUser;
     }
+
+    public double getMargin() {
+        return margin;
+    }
+
+    public void setMargin(double margin) {
+        this.margin = margin;
+    }
+    
+    
 
 }

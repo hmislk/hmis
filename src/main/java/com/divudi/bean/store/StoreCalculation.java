@@ -38,18 +38,20 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
  *
  * @author safrin
  */
-@Stateless
+@Named
+@ApplicationScoped
 public class StoreCalculation {
 
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;

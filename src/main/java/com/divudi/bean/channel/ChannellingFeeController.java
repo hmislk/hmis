@@ -6,8 +6,10 @@
  * and
  * a Set of Related Tools
  */
-package com.divudi.bean.common;
+package com.divudi.bean.channel;
 
+import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
 import com.divudi.entity.ItemFee;
@@ -15,7 +17,6 @@ import com.divudi.entity.Service;
 import com.divudi.entity.Staff;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
@@ -23,7 +24,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 import javax.inject.Named;
 import javax.ejb.EJB;
@@ -41,7 +41,7 @@ import javax.faces.convert.FacesConverter;
  */
 @Named
 @SessionScoped
-public class ServiceFeeController implements Serializable {
+public class ChannellingFeeController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -152,7 +152,6 @@ public class ServiceFeeController implements Serializable {
 
     private double calTot() {
         double tot = 0.0;
-        createCharges();
         for (ItemFee i : getCharges()) {
             tot += i.getFee();
         }
@@ -175,7 +174,7 @@ public class ServiceFeeController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public ServiceFeeController() {
+    public ChannellingFeeController() {
     }
 
     public Service getCurrentIx() {
@@ -194,8 +193,6 @@ public class ServiceFeeController implements Serializable {
         itemFeeFacade.edit(itemFee);    
     }
     
-    @EJB
-    ItemFacade itemFacade;
     public void edit(ItemFee itemFee){
         
         itemFee.setEditer(getSessionController().getLoggedUser());
@@ -203,9 +200,6 @@ public class ServiceFeeController implements Serializable {
         
         
         itemFeeFacade.edit(itemFee);
-        
-        itemFee.getItem().setTotal(calTot());
-        itemFacade.edit(itemFee.getItem());
         
     }
 
@@ -360,7 +354,7 @@ public class ServiceFeeController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            ServiceFeeController controller = (ServiceFeeController) facesContext.getApplication().getELResolver().
+            ChannellingFeeController controller = (ChannellingFeeController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "itemFeeController");
             return controller.getItemFeeFacade().find(getKey(value));
         }
@@ -387,7 +381,7 @@ public class ServiceFeeController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ServiceFeeController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + ChannellingFeeController.class.getName());
             }
         }
     }

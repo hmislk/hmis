@@ -54,7 +54,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
@@ -63,7 +63,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
-    @EJB
+    @Inject
     PharmacyCalculation pharmacyBillBean;
 
     public void removeSelected() {

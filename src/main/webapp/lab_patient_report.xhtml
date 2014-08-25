@@ -12,7 +12,7 @@
     </head>
 
     <body>
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="./resources/template/template.xhtml">
             <ui:define name="content">
 
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true)}" >
@@ -102,7 +102,7 @@
                                                                      rendered="#{pvv.investigationItem.ixItemValueType eq 'Double'}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputText>
-                                                        <p:inputTextarea  value="#{pvv.lobValue}" 
+                                                        <p:inputTextarea  value="#{pvv.lobValue}" queryDelay="0"
                                                                           rendered="#{pvv.investigationItem.ixItemValueType eq 'Memo'}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputTextarea>
@@ -206,7 +206,7 @@
                                                         <td >
 
                                                             <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                <p:inputTextarea id="txtMicMemoVal"   minQueryLength="1"  style="min-width: 200px; text-align: center; "  
+                                                                <p:inputTextarea id="txtMicMemoVal" queryDelay="0"   minQueryLength="1"  style="min-width: 200px; "  
                                                                                  completeMethod="#{investigationItemValueController.completeValues}" 
                                                                                  value="#{pvm.lobValue}" >
                                                                     <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
@@ -266,14 +266,14 @@
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Speciman' and  myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.sample.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
 
-                                            <f:convertDateTime pattern="hh mm ss a"/>
+                                            <f:convertDateTime pattern="hh mm a"/>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectingCenter' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.collectingCentre}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
                                             <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                            <f:convertDateTime pattern="hh mm ss a"/>
+                                            <f:convertDateTime pattern="hh mm a"/>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
                                             <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
@@ -284,7 +284,7 @@
                                             <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                            <f:convertDateTime pattern="hh mm ss a"/>
+                                            <f:convertDateTime pattern="hh mm a"/>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
 
@@ -358,13 +358,13 @@
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'InvestigationName' and  myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Speciman' and  myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.sample.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                            <f:convertDateTime pattern="hh mm ss a"/>
+                                            <f:convertDateTime pattern="hh mm a"/>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
                                             <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                            <f:convertDateTime pattern="hh mm ss a"/>
+                                            <f:convertDateTime pattern="hh mm a"/>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
                                             <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
@@ -375,7 +375,7 @@
                                             <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                            <f:convertDateTime pattern="hh mm ss a"/>
+                                            <f:convertDateTime pattern="hh mm a"/>
                                         </h:outputText>
                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
 
@@ -409,13 +409,19 @@
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
 
                                                     <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.transCssTop  lt 50 }" >
+
+
                                                         <tr >
-                                                            <td style="min-width: 245px;vertical-align: top;padding: 2px; margin: 2px;">
-                                                                
+                                                            <td style="min-width: 250px;vertical-align: top;padding: 2px; margin: 2px;">
                                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false"  style="padding: 2px; margin: 2px;" />
                                                             </td>
-                                                            <td style="vertical-align: top;padding: 2px; margin: 2px; min-width: 400px;">
+                                                            <td style="vertical-align: top;padding: 2px; margin: 2px;">
                                                                 <h:outputLabel value="#{prv.lobValue}"  escape="false" style="white-space: pre-wrap;padding: 2px; margin: 0px;" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                &nbsp;
                                                             </td>
                                                         </tr>
                                                     </h:panelGroup>
@@ -429,6 +435,12 @@
 
                                                             </td>
                                                         </tr>
+                                                        <tr>
+                                                            <td>
+                                                                &nbsp;
+                                                            </td>
+                                                        </tr>
+
                                                     </h:panelGroup>
 
 
@@ -438,10 +450,6 @@
                                         </td>
                                     </tr>
                                     <br/><br/>
-
-
-
-
                                     <tr>
                                         <td id="micLabelsBeforeAbst">
 
@@ -461,10 +469,7 @@
                                             <table>
                                                 <tr>
                                                     <td colspan="2"  >
-                                                        <h:outputLabel 
-                                                            value="Antibiotic Sensitivity Test" 
-                                                            rendered="#{patientReportController.currentPatientReport.transHasAbst}" 
-                                                            style="font-size: 120%!important;font-weight: bold;"></h:outputLabel>
+                                                        <h:outputLabel value="Antibiotic Sensitivity Test" rendered="#{patientReportController.currentPatientReport.transHasAbst}" ></h:outputLabel>
                                                     </td>
                                                 </tr>
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
@@ -498,7 +503,7 @@
                                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
                                                             </td>
                                                             <td>
-                                                                <h:outputLabel value="#{prv.lobValue}"  escape="false" />
+                                                                <h:outputLabel value="#{prv.lobValue}"    escape="false" style="white-space: pre-wrap;padding: 2px; margin: 0px;"  />
                                                             </td>
                                                         </tr>
 

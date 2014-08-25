@@ -17,6 +17,8 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 
+
+
 /**
  *
  * @author Buddhika

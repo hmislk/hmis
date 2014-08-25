@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:st="http://java.sun.com/jsf/composite/store">
 
     <ui:define name="content">
         <h:form>
@@ -75,7 +75,7 @@
                 </p:dataTable>  
 
                 <p:spacer height="50"/>
-                <ph:history/>
+                <st:history/>
  
 
             </p:panel>   
@@ -86,7 +86,7 @@
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <h:panelGroup id="gpBillPreview">
-                    <ph:transferRequest  bill="#{storeTransferRequestController.bill}" />    
+                    <st:transferRequest  bill="#{storeTransferRequestController.bill}" />    
                 </h:panelGroup>
             </p:panel>
 

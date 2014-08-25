@@ -14,7 +14,7 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="Pharmacy Staff Issue Report" >
+                    <p:panel header="Detailed Transfer Listing (Do not consider receieve) - By Bills" >
 
                         <h:panelGrid columns="8" >
                             <h:outputLabel value="From" ></h:outputLabel>
@@ -37,23 +37,18 @@
 
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{searchController.bills}" var="i"  
-                                         rowStyleClass=" 
-                                     #{((i.billClass eq 'class com.divudi.entity.CancelledBill' )
-                                       )? 'redText' : ''}
-                                     ">
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{searchController.bills}" var="i"  >
                                 <f:facet name="header">
-                                    
+                                    <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                        <h:outputLabel value="Pharmacy Staff Welfair Issue Report. " />
-                                    
+                                    </h:panelGrid>
                                 </f:facet>
 
                                 <p:column headerText="Bill No">
@@ -67,7 +62,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Cancelled No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.cancelledBill.deptId}" style="color: red;" ></h:outputLabel>                                    
+                                    <h:outputLabel value="#{i.cancelledBill.deptId}" ></h:outputLabel>                                    
                                 </p:column>
 
                                 <p:column headerText="Date">
@@ -100,7 +95,7 @@
 
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="4" footerText="Totals">
+                                        <p:column colspan="2" footerText="Totals">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="Totals" ></h:outputLabel>
                                             </f:facet>

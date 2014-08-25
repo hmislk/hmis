@@ -43,45 +43,49 @@
             </div>
 
             <h:panelGrid columns="4" style="min-width: 100%;">
-                
-                <h:outputLabel value="G.R.N.No "/>
-                <h:outputLabel value="#{cc.attrs.bill.deptId}"/> 
-               
-                
+
+
+
+
                 <h:outputLabel value="P.O.No "/>
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" />
-                
+
+                <h:outputLabel value="G.R.N.No "/>
+                <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+
+                <h:outputLabel value="P.O.Date  " />
+                <h:outputLabel value="#{cc.attrs.bill.referenceBill.referenceBill.createdAt}">
+                    <f:convertDateTime pattern="dd MM yyyy"/>
+                </h:outputLabel>
+
                 <h:outputLabel value="G.R.N.Date  "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                     <f:convertDateTime pattern="dd MM yyyy"/>
                 </h:outputLabel >
-                <h:outputLabel value="P.O.Date  " />
-                <h:outputLabel value="#{cc.attrs.bill.referenceBill.referenceBill.createdAt}">
-                    <f:convertDateTime pattern="dd MM yyyy"/>
+
+                <h:outputLabel value="P.O.Time  " />
+                <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" >
+                    <f:convertDateTime pattern="hh mm a"/>
                 </h:outputLabel>
 
                 <h:outputLabel value="G.R.N.Time  "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                     <f:convertDateTime pattern="hh mm a"/>
                 </h:outputLabel>
-                <h:outputLabel value="P.O.Time  " />
-                <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" >
-                    <f:convertDateTime pattern="hh mm a"/>
-                </h:outputLabel>
 
-                <h:outputLabel value="Invoice No "/>
-                <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}"/>
                 <h:outputLabel value="P.O.Approve By "/>
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.staff.code}" />
+                <h:outputLabel value="Invoice No "/>
+                <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}"/>
 
-                <h:outputLabel value="Supplier "/>
-                <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
                 <h:outputLabel value="Location "/>
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.department.name}" />
+                <h:outputLabel value="Supplier "/>
+                <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
 
             </h:panelGrid>
 
-          
+
             <div >
                 <p:spacer height="15px"/>
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">                                     
@@ -172,7 +176,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="7" footerText="Total" style="font-weight: bold!important;"/>
+                            <p:column colspan="7" footerText="GRN Total" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer">
                                     <br></br>
@@ -182,6 +186,9 @@
                                 </f:facet>
                             </p:column>
                         </p:row>
+
+                        
+
                         <p:row >
                             <p:column colspan="7" footerText="Tax"/>
                             <p:column style="text-align: right;" footerText="#{cc.attrs.bill.tax}">
@@ -204,6 +211,30 @@
                             </p:column>
 
                         </p:row>
+                        
+                        <p:row >
+                            <p:column colspan="7" footerText="GRN NETTOTAL"/>
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.discount}">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{cc.attrs.bill.grnNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:row>
+                        
+                        <p:row>
+                            <p:column colspan="7" footerText="Expenses" style="font-weight: bold!important;"/>
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
+                                <f:facet name="footer">
+                                    <br></br>
+                                    <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
                         <p:row >
                             <p:column colspan="7" footerText="Net Total" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{cc.attrs.bill.netTotal}">
@@ -216,6 +247,23 @@
 
                         </p:row>
                     </p:columnGroup>
+                </p:dataTable>
+            </div>
+
+            <div>
+                <p:dataTable id="tblExpenses" value="#{cc.attrs.bill.billExpenses}" var="be"
+                             emptyMessage="No Bill Expenses" >
+                    <p:column headerText="Expense" style="text-align: left;" >
+                        <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Value" style="text-align: left;" >
+                        <h:outputLabel value="#{be.netValue}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Descreption" style="text-align: left;" >
+                        <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                    </p:column>
                 </p:dataTable>
             </div>
 
@@ -243,7 +291,7 @@
                 </div>
                 <div>
                     <br></br>
-                    <h:outputLabel value="Prepaired By :" /> 
+                    <h:outputLabel value="Prepared By :" /> 
                     <h:outputLabel value="................................................................."/>
                     <br></br>                
                     <br></br>         

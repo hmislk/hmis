@@ -243,12 +243,13 @@ public class PatientReportBean {
 
     public void addMicrobiologyReportItemValuesForReport(PatientReport ptReport) {
         String sql = "";
-        //System.out.println("going to add microbiology report item values for report");
+//        System.out.println("going to add microbiology report item values for report");
         Investigation temIx = (Investigation) ptReport.getItem();
-        //System.out.println("Items getting for ix is - " + temIx.getName());
+//        System.out.println("Items getting for ix is - " + temIx.getName());
         for (ReportItem ii : temIx.getReportItems()) {
-            //System.out.println("report items is " + ii.getName());
+//            System.out.println("report items is " + ii.getName());
             if (ii.isRetired()) {
+//                System.out.println("retired = " + ii.isRetired());
                 continue;
             }
             PatientReportItemValue val = null;
@@ -294,7 +295,7 @@ public class PatientReportBean {
             InvestigationItem ii = investigationItemForAntibiotic(a, ptReport.getPatientInvestigation().getInvestigation());
             PatientReportItemValue val;
             sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
-                    + " and i.investigationItem=:inv ";
+                    + " and i.investigationItem=:inv";
             HashMap hm = new HashMap();
             hm.put("ptRp", ptReport);
             hm.put("inv", ii);
@@ -326,12 +327,12 @@ public class PatientReportBean {
     public InvestigationItem investigationItemForAntibiotic(Antibiotic a, Investigation i) {
         Map m = new HashMap();
         String sql;
-        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a";
+        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a and ii.retired=false";
         m.put("i", i);
         m.put("a", a.getName());
         InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
         if (ii == null) {
-            //System.out.println("ii is null");
+//            System.out.println("ii is null");
             ii = new InvestigationItem();
             ii.setName(a.getName());
             ii.setItem(i);
