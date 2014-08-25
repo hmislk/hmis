@@ -193,8 +193,6 @@ public class ReportsTransfer implements Serializable {
         List<BillType> bts=Arrays.asList(billTypes);
         
         m.put("d", department);
-//        m.put("t1", BillType.PharmacyTransferIssue);
-//        m.put("t2", BillType.PharmacyPre);
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", bts);
@@ -203,7 +201,7 @@ public class ReportsTransfer implements Serializable {
         if (!fast) {
             sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
                     + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)) "
+                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty) "
                     + "FROM BillItem bi where bi.retired=false and  bi.bill.department=:d and "
                     + "bi.billType in :bt"
                     + "bi.bill.billDate between :fd and :td group by bi.item "
@@ -217,6 +215,7 @@ public class ReportsTransfer implements Serializable {
                     + "and bi.bill.billDate between :fd and :td group by bi.item "
                     + "order by  SUM(bi.pharmaceuticalBillItem.qty) ";
         }
+        System.out.println("sql = " + sql);
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m);
         movementRecordsQty = new ArrayList<>();
         for (Object[] obj : objs) {
