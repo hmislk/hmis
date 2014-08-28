@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Search Bills" >
+                        <f:facet name="header">
+                            <h:panelGrid columns="6" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAndPaidFeeTable()}"/>
+                                <h:outputLabel/>
+
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
+
+                                <h:outputLabel value="Speciality"/> 
+                                <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
+                                                completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                converter="specilityCon"   >
+                                </p:autoComplete>
+
+                                <h:outputLabel value="Doctor Name"/>      
+                                <p:autoComplete style="width: 400px;" forceSelection="true" value="#{searchController.staff}" id="scStaff"
+                                                completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                converter="stfcon"   >
+                                </p:autoComplete>
+
+                                <h:outputLabel value="Service Name"/>
+                                <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
+                                                value="#{searchController.item}" 
+                                                completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
+                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                                size="30"  style="width: 400px;" >
+                                    <p:column>
+                                        #{ix.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{ix.fullName}
+                                    </p:column>
+                                    <p:column>
+                                        #{ix.department.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{ix.total}
+                                    </p:column>
+                                </p:autoComplete>
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                    <pe:exporter type="xlsx" target="tblFee,tblFee" fileName="opd_pro_pay_due"  />
+                                </p:commandButton>
+                                <p:commandButton value="Print" ajax="false" action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                <p:watermark for="acIx" value="Service" />
+                                <p:watermark for="acSpeciality" value="Speciality" />
+                                <p:watermark for="scStaff" value="Staff / Doctor" />
+
+                            </h:panelGrid>
+
+                        </f:facet>
+                        <br/><br/>
+
+                        <p:defaultCommand target="btnSearch" />
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
+
+
+                            <p:panel header="OPD Professional Payment Details">
+
+                                <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="From - "/>
+                                        <p:outputLabel value="#{searchController.fromDate}">
+                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        </p:outputLabel>
+                                        <h:outputLabel value=" - To - "/>
+                                        <h:outputLabel value="#{searchController.toDate}">
+                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        </h:outputLabel>
+                                        <p:outputLabel value=" - Due Payments" />
+                                    </f:facet>
+                                    <p:column headerText="No" styleClass="alignTop">
+                                        <f:facet name="No">
+                                            <h:outputLabel value="Speciality"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i+1}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Speciality">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Speciality"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.staff.speciality.name}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Doctor" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Doctor"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.staff.person.name}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Patient" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Patient"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
+                                    </p:column>
+
+                                    <p:column headerText="Bill No">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Bill No"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.bill.insId}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="BilledAt" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="BilledAt"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.bill.createdAt}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+
+                                    <p:column headerText="Test" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Test"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.billItem.item.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Charge" style="text-align: right;">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Charge"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.feeValue}" style="text-align: right;" >
+                                            <f:convertNumber pattern="#,000.00" />
+                                        </h:outputLabel>
+
+                                        <f:facet name="footer" >
+                                            <h:outputLabel value="#{searchController.dueTotal}" style="text-align: right;">
+                                                <f:convertNumber pattern="#,000.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:panel>
+
+                            <p:panel>
+
+                                <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{searchController.billFeesDone}" var="bf"   >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="#{searchController.fromDate}">
+                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        </p:outputLabel>
+                                        <h:outputLabel value=" - To - "/>
+                                        <h:outputLabel value="#{searchController.toDate}">
+                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        </h:outputLabel>
+                                        <p:outputLabel value=" - Done Payments" />
+                                    </f:facet>
+                                    <p:column headerText="No" styleClass="alignTop">
+                                        <f:facet name="No">
+                                            <h:outputLabel value="Speciality"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i+1}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Speciality">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Speciality"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.staff.speciality.name}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Doctor" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Doctor"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.staff.person.name}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Patient" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Patient"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
+                                    </p:column>
+
+                                    <p:column headerText="Bill No">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Bill No"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.bill.insId}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="BilledAt" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="BilledAt"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.bill.createdAt}">
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="BilledAt" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="BilledAt"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.createdAt}">
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Test" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Test"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.billItem.item.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Charge" style="text-align: right;">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Charge"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{bf.feeValue}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,000.00" />
+                                        </h:outputLabel>
+
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{searchController.doneTotal}">
+                                                <f:convertNumber pattern="#,000.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:panel>
+                        </p:panel>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

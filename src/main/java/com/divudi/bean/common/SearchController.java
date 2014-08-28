@@ -17,8 +17,11 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.Speciality;
+import com.divudi.entity.Staff;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillFacade;
@@ -57,10 +60,17 @@ public class SearchController implements Serializable {
     private List<Bill> bills;
     private List<Bill> selectedBills;
     private List<BillFee> billFees;
+    private List<BillFee> billFeesDone;
     private List<BillItem> billItems;
     private List<PatientInvestigation> patientInvestigations;
     private List<PatientInvestigation> patientInvestigationsSigle;
     Bill cancellingIssueBill;
+    ////////////
+    Speciality speciality;
+    Staff staff;
+    Item item;
+    double dueTotal;
+    double doneTotal;
     ////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -89,6 +99,15 @@ public class SearchController implements Serializable {
         billFees = null;
         billItems = null;
         patientInvestigations = null;
+    }
+
+    public void makeListNull2() {
+        billFeesDone = null;
+        searchKeyword = null;
+        speciality = null;
+        staff = null;
+        item = null;
+        makeListNull();
     }
 
     public void createPreRefundTable() {
@@ -1362,7 +1381,7 @@ public class SearchController implements Serializable {
                 + " b.bill.billType=:btp "
                 + " and b.bill.cancelled=false "
                 + " and (b.feeValue - b.paidValue) > 0 and"
-                + "  b.bill.billDate between :fromDate"
+                + "  b.bill.createdAt between :fromDate"
                 + " and :toDate ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -1402,6 +1421,100 @@ public class SearchController implements Serializable {
         temMap.put("btp", BillType.OpdBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+    }
+
+    public void createDueFeeTableAndPaidFeeTable() {
+        
+        dueTotal=0.0;
+        doneTotal=0.0;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from BillFee b where b.retired=false and "
+                + " b.bill.billType=:btp "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 and"
+                + " b.bill.createdAt between :fromDate"
+                + " and :toDate ";
+
+        if (speciality != null) {
+            sql += " and b.staff.speciality=:special ";
+            temMap.put("special", speciality);
+            System.out.println(speciality);
+        }
+
+        if (staff != null) {
+            sql += " and b.staff=:staff ";
+            temMap.put("staff", staff);
+            System.out.println(staff);
+        }
+
+        if (item != null) {
+            sql += " and b.billItem.item=:item ";
+            temMap.put("item", item);
+            System.out.println(item);
+        }
+
+        sql += "  order by b.staff.id    ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("btp", BillType.OpdBill);
+
+        billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        
+        for (BillFee bf : billFees) {
+            dueTotal += bf.getFeeValue();
+        }
+        
+        temMap.clear();
+//        BillFee bf=new BillFee();
+//        bf.getBillItem().getCreatedAt();
+        sql = "select b.paidForBillFee from BillItem b where b.retired=false and "
+                + " b.bill.billType=:btp "
+                + " and b.referenceBill.billType=:refType "
+                + " and b.paidForBillFee.bill.cancelled=false "
+//                + " and b.feeValue > 0 "
+                + " and b.createdAt between :fromDate"
+                + " and :toDate ";
+        
+//        sql = "Select b FROM BillItem b "
+//                + " where b.retired=false "
+//                + " and b.bill.billType=:bType "
+//                + " and b.referenceBill.billType=:refType "
+//                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (speciality != null) {
+            sql += " and b.paidForBillFee.staff.speciality=:special ";
+            temMap.put("special", speciality);
+            System.out.println(speciality);
+        }
+
+        if (staff != null) {
+            sql += " and b.paidForBillFee.staff=:staff ";
+            temMap.put("staff", staff);
+            System.out.println(staff);
+        }
+
+        if (item != null) {
+            sql += " and b.paidForBillFee.billItem.item=:item ";
+            temMap.put("item", item);
+            System.out.println(item);
+        }
+
+        sql += "  order by b.paidForBillFee.staff.id    ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("btp", BillType.PaymentBill);
+        temMap.put("refType", BillType.OpdBill);
+
+        billFeesDone = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        for (BillFee bf2 : billFeesDone) {
+            doneTotal += bf2.getFeeValue();
+        }
 
     }
 
@@ -3293,6 +3406,54 @@ public class SearchController implements Serializable {
 
     public void setNetTotalValue(double netTotalValue) {
         this.netTotalValue = netTotalValue;
+    }
+
+    public List<BillFee> getBillFeesDone() {
+        return billFeesDone;
+    }
+
+    public void setBillFeesDone(List<BillFee> billFeesDone) {
+        this.billFeesDone = billFeesDone;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public double getDueTotal() {
+        return dueTotal;
+    }
+
+    public void setDueTotal(double dueTotal) {
+        this.dueTotal = dueTotal;
+    }
+
+    public double getDoneTotal() {
+        return doneTotal;
+    }
+
+    public void setDoneTotal(double doneTotal) {
+        this.doneTotal = doneTotal;
     }
 
 }

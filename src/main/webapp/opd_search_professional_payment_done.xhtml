@@ -41,7 +41,7 @@
 
                         <p:defaultCommand target="btnSearch" />
 
-                        <p:dataTable id="tblBills" value="#{searchController.billItems}" var="bi"  >
+                        <p:dataTable id="tblBills" value="#{searchController.billItems}" var="bi" rowIndexVar="i" >
                             <p:column>
                                 <p:commandButton ajax="false" value="View Bill" action="payment_bill_reprint">
                                     <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
