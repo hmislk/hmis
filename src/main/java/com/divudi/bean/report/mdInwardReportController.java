@@ -304,7 +304,6 @@ public class mdInwardReportController implements Serializable {
     }
 
     private long count;
-    
 
     public void createInwardBalancePaymentBills1() {
 
@@ -761,9 +760,16 @@ public class mdInwardReportController implements Serializable {
 
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
-                + " and type(b)=:class"
-                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.retired=false  ";
+                + " and type(b)=:class "
+                + " and b.retired=false ";
+
+        sql += " and ((b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                + " and b.patientEncounter.discharged = true "
+                + " and b.patientEncounter.paymentFinalized = true )";
+
+        sql += " or (b.createdAt <= :toDate "
+                + " and b.patientEncounter.discharged = false"
+                + " and b.patientEncounter.paymentFinalized = false  ))";
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
@@ -809,7 +815,6 @@ public class mdInwardReportController implements Serializable {
         sql = "select sum(b.netTotal) from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                //                + " and b.createdAt between :fromDate and :toDate "
                 + " and b.createdAt <= :toDate "
                 + " and b.retired=false  "
                 + " and b.patientEncounter.discharged =false";
@@ -845,7 +850,6 @@ public class mdInwardReportController implements Serializable {
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                //                + " and b.createdAt between :fromDate and :toDate "
                 + " and b.createdAt <= :toDate "
                 + " and b.retired=false  "
                 + " and b.patientEncounter.discharged =false";
