@@ -350,7 +350,7 @@
                                     </table>
                                 </td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
-                                    <h:outputLabel  value="#{cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.creditPaidAmount}" rendered="#{cc.attrs.bill.paidAmount !=0}" >
+                                    <h:outputLabel  value="#{cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany}" rendered="#{cc.attrs.bill.paidAmount !=0}" >
                                         <f:convertNumber pattern="#,000.00" />
                                     </h:outputLabel>
                                 </td>
@@ -369,7 +369,7 @@
                                     &nbsp;
                                 </td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
-                                    <h:outputLabel  value="#{cc.attrs.bill.netTotal-cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.creditPaidAmount}"  >
+                                    <h:outputLabel  value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany)}"  >
                                         <f:convertNumber pattern="#,000.00" />
                                     </h:outputLabel>
                                 </td>
