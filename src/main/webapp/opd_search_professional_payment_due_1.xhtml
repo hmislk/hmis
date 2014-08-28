@@ -133,6 +133,7 @@
                                             <h:outputLabel value="BilledAt"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
 
@@ -218,17 +219,10 @@
                                             <h:outputLabel value="BilledAt"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
                                     
-                                    <p:column headerText="BilledAt" >
-                                        <f:facet name="header">
-                                            <h:outputLabel value="BilledAt"/>
-                                        </f:facet>
-                                        <h:outputLabel value="#{bf.createdAt}">
-                                        </h:outputLabel>
-                                    </p:column>
-
                                     <p:column headerText="Test" >
                                         <f:facet name="header">
                                             <h:outputLabel value="Test"/>
