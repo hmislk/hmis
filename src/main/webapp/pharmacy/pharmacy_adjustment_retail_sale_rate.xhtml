@@ -86,7 +86,10 @@
                     
                     <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
                         <p:commandButton ajax="false" action="#{pharmacyAdjustmentController.makeNull()}" value="New Adjustment"/>
-                        <ph:adjustmentBill_sale_price bill="#{pharmacyAdjustmentController.bill}" />
+                         <p:commandButton ajax="false" value="Print">
+                            <p:printer target="print"/>
+                        </p:commandButton>
+                        <ph:adjustmentBill_sale_price id="print" bill="#{pharmacyAdjustmentController.bill}" />
                     </p:panel>
 
                 </h:form>

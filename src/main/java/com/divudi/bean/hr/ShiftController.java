@@ -262,7 +262,11 @@ public class ShiftController implements Serializable {
 
         java.lang.Long getKey(String value) {
             java.lang.Long key;
-            key = Long.valueOf(value);
+            try {
+                key = Long.valueOf(value);
+            } catch (NumberFormatException exception) {
+                key = 0l;
+            }
             return key;
         }
 

@@ -60,7 +60,7 @@ public class SaleReturnController implements Serializable {
     private BillNumberController billNumberBean;
     @EJB
     private BillFacade billFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -109,7 +109,7 @@ public class SaleReturnController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    @EJB
+    @Inject
     private PharmacyCalculation pharmacyRecieveBean;
 
     public void onEdit(BillItem tmp) {

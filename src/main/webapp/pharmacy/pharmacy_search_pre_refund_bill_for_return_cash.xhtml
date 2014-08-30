@@ -62,7 +62,7 @@
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" value="Cancelled By "  />
                                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
                                     </h:outputLabel>
                                 </h:panelGroup>                               
@@ -74,25 +74,25 @@
                             </p:column>
 
                             <p:column>
-                                <p:commandButton ajax="false" value="Return Payment" action="pharmacy_bill_return_pre_cash" 
-                                                 disabled="#{bill.cancelled eq true}" >                                
-                                    <f:setPropertyActionListener target="#{pharmacyPreSettleController.preBill}" value="#{bill}" />
+                                <p:commandButton ajax="false" value="Return Payment" 
+                                                 action="#{pharmacyPreSettleController.toSettleReturn(bill)}" 
+                                                 disabled="#{bill.cancelled eq true}" >                                                                    
                                 </p:commandButton>
                             </p:column>
 
                             <p:column>
                                 <p:dataTable value="#{bill.returnCashBills}" var="rb">
                                     <p:column  >                                                               
-                                        <h:outputLabel  value="#{rb.deptId}"/>                                   
+                                        <h:outputLabel  value="#{rb.deptId}" rendered="#{rb.refundedBill eq null}"/>                                   
                                     </p:column>
                                     <p:column >
-                                        <h:outputLabel value="#{rb.createdAt}" >
+                                        <h:outputLabel value="#{rb.createdAt}" rendered="#{rb.refundedBill eq null}" >
                                             <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                                         </h:outputLabel>
                                         <br/>
-                                        <h:panelGroup rendered="#{rb.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
+                                        <h:panelGroup rendered="#{rb.cancelled}">
+                                            <h:outputLabel style="color: red;" value="Cancelled at " rendered="#{rb.refundedBill eq null}" />
+                                            <h:outputLabel style="color: red;" rendered="#{rb.cancelled and rb.refundedBill eq null}"
                                                            value="#{rb.cancelledBill.createdAt}" >
                                                 <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                             </h:outputLabel>
@@ -100,23 +100,23 @@
                                     </p:column> 
                                  
                                     <p:column >                               
-                                        <h:outputLabel value="#{rb.creater.webUserPerson.name}" >                                      
+                                        <h:outputLabel value="#{rb.creater.webUserPerson.name}" rendered="#{rb.refundedBill eq null}">                                      
                                         </h:outputLabel>                                
                                         <br/>
                                         <h:panelGroup rendered="#{rb.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled by " />
-                                            <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
+                                            <h:outputLabel style="color: red;" value="Cancelled by " rendered="#{rb.refundedBill eq null}" />
+                                            <h:outputLabel style="color: red;" rendered="#{rb.cancelled and rb.refundedBill eq null}"
                                                            value="#{rb.cancelledBill.creater.webUserPerson.name}" >                                       
                                             </h:outputLabel>
                                         </h:panelGroup> 
                                     </p:column>                                                     
                                     <p:column >
-                                        <h:outputLabel value="#{rb.netTotal}">
+                                        <h:outputLabel value="#{rb.netTotal}" rendered="#{rb.refundedBill eq null}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                  
                                     </p:column>
                                     <p:column>
-                                        <p:commandButton ajax="false" value="View Return Payment Bill" 
+                                        <p:commandButton ajax="false" value="View Return Payment Bill"  rendered="#{rb.refundedBill eq null}"
                                                          action="pharmacy_reprint_bill_return_cash"  >                                
                                             <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
                                         </p:commandButton>

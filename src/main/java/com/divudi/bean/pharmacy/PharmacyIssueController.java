@@ -89,7 +89,7 @@ public class PharmacyIssueController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
@@ -553,8 +553,6 @@ public class PharmacyIssueController implements Serializable {
 
     @EJB
     IssueRateMarginsFacade issueRateMarginsFacade;
-
-   
 
     public void addBillItem() {
         errorMessage = null;

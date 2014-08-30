@@ -85,7 +85,7 @@ public class ReportsTransfer implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFacade BillFacade;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
 
     /**
@@ -154,25 +154,20 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", bts);
         BillItem bi = new BillItem();
 
+        sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
+                + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
+                + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty))  "
+                + "FROM BillItem bi where "
+                + " bi.retired=false "
+                + " and bi.bill.department=:d "
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType in :bt "
+                + " group by bi.item ";
+        
         if (!fast) {
-            sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty))  "
-                    + "FROM BillItem bi where bi.retired=false and bi.bill.department=:d and "
-                    + "bi.bill.billDate between :fd and :td "
-                    + "and bi.bill.billType in :bt "
-                    + "group by bi.item "
-                    + "order by "
-                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate  * bi.pharmaceuticalBillItem.qty) "
-                    + "desc";
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) desc";
         } else {
-            sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)) "
-                    + "FROM BillItem bi where bi.retired=false and bi.bill.department=:d and "
-                    + "bi.bill.billType in :bt and "
-                    + "bi.bill.billDate between :fd and :td group by bi.item "
-                    + "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) ";
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
         }
         //System.out.println("sql = " + sql);
         //System.out.println("m = " + m);
@@ -203,24 +198,24 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", bts);
 
         BillItem bi = new BillItem();
+
+        sql = "select bi.item, "
+                + " abs(SUM(bi.pharmaceuticalBillItem.qty)), "
+                + " abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
+                + " SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)"
+                + " FROM BillItem bi "
+                + " where bi.retired=false "
+                + " and  bi.bill.department=:d "
+                + " and bi.bill.billType in :bt "
+                + " and bi.bill.billDate between :fd and :td "
+                + " group by bi.item ";
+
         if (!fast) {
-            sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty)) "
-                    + "FROM BillItem bi where bi.retired=false and  bi.bill.department=:d and "
-                    + "bi.billType in :bt"
-                    + "bi.bill.billDate between :fd and :td group by bi.item "
-                    + "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
         } else {
-            sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
-                    + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
-                    + "SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty) "
-                    + "FROM BillItem bi where bi.retired=false and bi.bill.department=:d and "
-                    + "(bi.bill.billType in :bt) "
-                    + "and bi.bill.billDate between :fd and :td group by bi.item "
-                    + "order by  SUM(bi.pharmaceuticalBillItem.qty) ";
+            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) asc";
         }
-        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m);
+        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
         movementRecordsQty = new ArrayList<>();
         for (Object[] obj : objs) {
             StockReportRecord r = new StockReportRecord();
@@ -351,7 +346,7 @@ public class ReportsTransfer implements Serializable {
                 + " b.department=:fdept and b.createdAt "
                 + " between :fd and :td and"
                 + "  b.billType=:bt order by b.id";
-        transferBills = getBillFacade().findBySQL(sql, m);
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -434,6 +429,7 @@ public class ReportsTransfer implements Serializable {
         sql = "select b.pharmaceuticalBillItem.itemBatch,"
                 + " sum(b.grossValue),"
                 + " sum(b.marginValue),"
+                + " sum(b.discount),"
                 + " sum(b.netValue)"
                 + " from BillItem b "
                 + " where b.bill.department=:fdept ";
@@ -561,8 +557,8 @@ public class ReportsTransfer implements Serializable {
             ItemCount row = new ItemCount();
             row.setItemBatch((ItemBatch) obj[0]);
             row.setGross((Double) obj[1]);
-            row.setMargin((Double) obj[2]);           
-            row.setNet((Double) obj[3]);
+            row.setMargin((Double) obj[2]);
+            row.setNet((Double) obj[4]);
 
             Double pre = calCount(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
             Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
@@ -585,6 +581,54 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyIssue);
         billDiscount = fetchBillDiscount(BillType.PharmacyIssue);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
+
+    }
+
+    public void fillItemCountsBht() {
+
+        List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre);
+
+        if (list == null) {
+            return;
+        }
+
+        itemCounts = new ArrayList<>();
+        totalsValue = 0;
+        marginValue = 0;
+        discountsValue = 0;
+        netTotalValues = 0;
+        purchaseValue = 0;
+        retailValue = 0;
+        for (Object[] obj : list) {
+            ItemCount row = new ItemCount();
+            row.setItemBatch((ItemBatch) obj[0]);
+            row.setGross((Double) obj[1]);
+            row.setMargin((Double) obj[2]);
+            row.setDiscount((Double) obj[3]);
+            row.setNet((Double) obj[4]);
+
+            Double pre = calCount(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
+            Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
+            Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
+            System.err.println("PRE " + pre);
+            System.err.println("PRE CAN " + preCancel);
+            System.err.println("Return " + returned);
+//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
+
+            row.setCount(pre - (preCancel + returned));
+
+            totalsValue += row.getGross();
+            marginValue += row.getMargin();
+            discountsValue += row.getDiscount();
+            netTotalValues += row.getNet();
+
+            itemCounts.add(row);
+        }
+
+        billTotal = fetchBillTotal(BillType.PharmacyBhtPre);
+        billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
+        billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
+        billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
 
     }
 
@@ -914,6 +958,7 @@ public class ReportsTransfer implements Serializable {
         double count;
         double gross;
         double margin;
+        double discount;
         double net;
 
         public ItemBatch getItemBatch() {
@@ -923,10 +968,15 @@ public class ReportsTransfer implements Serializable {
         public void setItemBatch(ItemBatch itemBatch) {
             this.itemBatch = itemBatch;
         }
-        
-        
 
-      
+        public double getDiscount() {
+            return discount;
+        }
+
+        public void setDiscount(double discount) {
+            this.discount = discount;
+        }
+
         public double getCount() {
             return count;
         }
