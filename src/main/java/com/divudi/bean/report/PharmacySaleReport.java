@@ -1079,6 +1079,8 @@ public class PharmacySaleReport implements Serializable {
         grantNetTotal = calGrantNetTotalIssue();
 
     }
+    
+    
 
     public void createLabHadnOverReportByDate() {
         billedSummery = new PharmacySummery();

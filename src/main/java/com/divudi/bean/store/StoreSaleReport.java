@@ -67,6 +67,8 @@ public class StoreSaleReport implements Serializable {
     private PharmacyDetail refundedDetail;
     private PharmacyPaymetMethodSummery billedPaymentSummery;
   //  private List<DatedBills> billDetail;
+    
+    Department toDepartment;
 
     /////
     @EJB
@@ -877,6 +879,97 @@ public class StoreSaleReport implements Serializable {
         grantDiscount = calGrantDiscountByDepartment();
 
     }
+    
+    public void createIssueReportByDateStore() {
+        billedSummery = new PharmacySummery();
+
+        billedSummery.setBills(new ArrayList<String1Value3>());
+
+        Date nowDate = getFromDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowDate);
+
+        while (nowDate.before(getToDate())) {
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(nowDate);
+
+            String1Value3 newRow = new String1Value3();
+            newRow.setString(formattedDate);
+            newRow.setValue1(getTransIssueValueByDate(nowDate, new BilledBill()));
+            newRow.setValue2(getTransIssueValueByDate(nowDate, new CancelledBill()));
+            newRow.setValue3(getTransIssueValueByDate(nowDate, new RefundBill()));
+
+            billedSummery.getBills().add(newRow);
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+
+        billedSummery.setBilledTotal(calGrantNetTotalIssue(new BilledBill()));
+        billedSummery.setCancelledTotal(calGrantNetTotalIssue(new CancelledBill()));
+        billedSummery.setRefundedTotal(calGrantNetTotalIssue(new RefundBill()));
+
+        grantNetTotal = calGrantNetTotalIssue();
+
+    }
+    
+    private double getTransIssueValueByDate(Date date, Bill bill) {
+
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("cl", bill.getClass());
+        m.put("btp", BillType.StoreTransferIssue);
+        m.put("tde", getToDepartment());
+        sql = "select sum(i.netTotal) from Bill i where i.department=:d and i.toDepartment=:tde"
+                + " and i.billType=:btp and type(i)=:cl and i.createdAt between :fd and :td order by i.deptId ";
+        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return saleValue;
+
+    }
+    
+    private double calGrantNetTotalIssue(Bill bill) {
+        //   List<Stock> billedSummery;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("class", bill.getClass());
+        m.put("tde", getToDepartment());
+        // m.put("btp", BillType.PharmacyPre);
+        m.put("btp", BillType.StoreTransferIssue);
+        sql = "select sum(i.netTotal) from Bill i where i.department=:d and i.toDepartment=:tde and"
+                + " i.billType=:btp and type(i)=:class "
+                + " and i.createdAt between :fromDate and :toDate ";
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+     private double calGrantNetTotalIssue() {
+        //   List<Stock> billedSummery;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", BillType.PharmacyTransferIssue);
+
+        sql = "select sum(i.netTotal) from Bill i where i.department=:d "
+                + " and i.billType=:btp and type(i)!=:cl and i.createdAt between :fd and :td ";
+        return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     /**
      * Creates a new instance of PharmacySaleReport
@@ -1048,6 +1141,14 @@ public class StoreSaleReport implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
+    }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
     }
 
 }

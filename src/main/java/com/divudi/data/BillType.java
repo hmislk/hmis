@@ -42,6 +42,8 @@ public enum BillType {
     StoreBhtIssue,
     StoreBhtPre,
     StoreIssue,
+    @Deprecated
+    StoreTransferIssue,
     PharmacyPre,
     PharmacyOrder,
     PharmacyOrderApprove,
