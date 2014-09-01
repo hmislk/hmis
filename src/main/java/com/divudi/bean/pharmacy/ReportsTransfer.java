@@ -392,6 +392,31 @@ public class ReportsTransfer implements Serializable {
         netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItem(fromDate, toDate, department);
 
     }
+    
+    public void createDepartmentIssueStore() {
+        listz = new ArrayList<>();
+
+        List<Object[]> list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(), getFromDepartment());
+        if (list == null) {
+            return;
+        }
+
+        for (Object[] obj : list) {
+            Department item = (Department) obj[0];
+            Double dbl = (Double) obj[1];
+            //double count = 0;
+
+            String1Value3 newD = new String1Value3();
+            newD.setString(item.getName());
+            newD.setValue1(dbl);
+            newD.setSummery(false);
+            listz.add(newD);
+
+        }
+
+        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
+
+    }
 
     public void fillDepartmentUnitIssueByBill() {
         Map m = new HashMap();
@@ -399,6 +424,31 @@ public class ReportsTransfer implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", BillType.PharmacyIssue);
+        m.put("fdept", fromDepartment);
+        m.put("tdept", toDepartment);
+        sql = "select b from Bill b where "
+                + " b.fromDepartment=:fdept and "
+                + " b.toDepartment=:tdept and "
+                + " b.createdAt "
+                + " between :fd and :td and "
+                + " b.billType=:bt order by b.id";
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        totalsValue = 0.0;
+        discountsValue = 0.0;
+        netTotalValues = 0.0;
+        for (Bill b : transferBills) {
+            totalsValue = totalsValue + (b.getTotal());
+            discountsValue = discountsValue + b.getDiscount();
+            netTotalValues = netTotalValues + b.getNetTotal();
+        }
+    }
+    
+    public void fillDepartmentUnitIssueByBillStore() {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", BillType.StoreIssue);
         m.put("fdept", fromDepartment);
         m.put("tdept", toDepartment);
         sql = "select b from Bill b where "
@@ -583,6 +633,51 @@ public class ReportsTransfer implements Serializable {
         billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
 
     }
+    
+    public void fillItemCountsStore() {
+
+        List<Object[]> list = fetchBillItem(BillType.StoreIssue);
+
+        if (list == null) {
+            return;
+        }
+
+        itemCounts = new ArrayList<>();
+        totalsValue = 0;
+        marginValue = 0;
+        netTotalValues = 0;
+        purchaseValue = 0;
+        retailValue = 0;
+        for (Object[] obj : list) {
+            ItemCount row = new ItemCount();
+            row.setItemBatch((ItemBatch) obj[0]);
+            row.setGross((Double) obj[1]);
+            row.setMargin((Double) obj[2]);
+            row.setNet((Double) obj[4]);
+
+            Double pre = calCount(row.getItemBatch(), BillType.StoreIssue, new PreBill());
+            Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreIssue, new PreBill());
+            Double returned = calCountReturn(row.getItemBatch(), BillType.StoreIssue, new RefundBill());
+            System.err.println("PRE " + pre);
+            System.err.println("PRE CAN " + preCancel);
+            System.err.println("Return " + returned);
+//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
+
+            row.setCount(pre - (preCancel + returned));
+
+            totalsValue += row.getGross();
+            marginValue += row.getMargin();
+            netTotalValues += row.getNet();
+
+            itemCounts.add(row);
+        }
+
+        billTotal = fetchBillTotal(BillType.StoreIssue);
+        billMargin = fetchBillMargin(BillType.StoreIssue);
+        billDiscount = fetchBillDiscount(BillType.StoreIssue);
+        billNetTotal = fetchBillNetTotal(BillType.StoreIssue);
+
+    }
 
     public void fillItemCountsBht() {
 
@@ -629,6 +724,54 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
         billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
+
+    }
+    
+    public void fillItemCountsBhtStore() {
+
+        List<Object[]> list = fetchBillItem(BillType.StoreBhtIssue);
+
+        if (list == null) {
+            return;
+        }
+
+        itemCounts = new ArrayList<>();
+        totalsValue = 0;
+        marginValue = 0;
+        discountsValue = 0;
+        netTotalValues = 0;
+        purchaseValue = 0;
+        retailValue = 0;
+        for (Object[] obj : list) {
+            ItemCount row = new ItemCount();
+            row.setItemBatch((ItemBatch) obj[0]);
+            row.setGross((Double) obj[1]);
+            row.setMargin((Double) obj[2]);
+            row.setDiscount((Double) obj[3]);
+            row.setNet((Double) obj[4]);
+
+            Double pre = calCount(row.getItemBatch(), BillType.StoreBhtIssue, new PreBill());
+            Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreBhtIssue, new PreBill());
+            Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtIssue, new RefundBill());
+            System.err.println("PRE " + pre);
+            System.err.println("PRE CAN " + preCancel);
+            System.err.println("Return " + returned);
+//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
+
+            row.setCount(pre - (preCancel + returned));
+
+            totalsValue += row.getGross();
+            marginValue += row.getMargin();
+            discountsValue += row.getDiscount();
+            netTotalValues += row.getNet();
+
+            itemCounts.add(row);
+        }
+
+        billTotal = fetchBillTotal(BillType.StoreBhtIssue);
+        billMargin = fetchBillMargin(BillType.StoreBhtIssue);
+        billDiscount = fetchBillDiscount(BillType.StoreBhtIssue);
+        billNetTotal = fetchBillNetTotal(BillType.StoreBhtIssue);
 
     }
 
