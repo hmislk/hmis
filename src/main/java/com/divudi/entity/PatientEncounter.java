@@ -30,8 +30,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
-
-
 /**
  *
  * @author buddhika
@@ -124,10 +122,9 @@ public class PatientEncounter implements Serializable {
     @Transient
     double transTotal;
     @Transient
-    double transPaid;    
+    double transPaid;
     @ManyToOne
     Bill finalBill;
-    
 
     public double getTransTotal() {
         return transTotal;
@@ -144,9 +141,6 @@ public class PatientEncounter implements Serializable {
     public void setTransPaid(double transPaid) {
         this.transPaid = transPaid;
     }
-    
-    
-    
 
     public boolean getRetired() {
         return retired;
@@ -711,6 +705,10 @@ public class PatientEncounter implements Serializable {
 
     public double getCreditPaidAmount() {
         return creditPaidAmount;
+    }
+
+    public double getPaidByCreditCompany() {
+        return 0 - creditPaidAmount;
     }
 
     public void setCreditPaidAmount(double creditPaidAmount) {

@@ -30,6 +30,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     @EJB
     private CashTransactionBean cashTransactionBean;
 
+    
+    public Date getCurrentDate(){
+        return new Date();
+    }
+    
     public void update() {
         getFacede().edit(getLoggedUser());
         getCashTransactionBean().updateDrawers();
