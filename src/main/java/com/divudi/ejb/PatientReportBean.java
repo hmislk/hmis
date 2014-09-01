@@ -327,23 +327,23 @@ public class PatientReportBean {
     public InvestigationItem investigationItemForAntibiotic(Antibiotic a, Investigation i) {
         Map m = new HashMap();
         String sql;
-        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a and ii.retired=false";
+        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a ";
         m.put("i", i);
         m.put("a", a.getName());
         InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
         if (ii == null) {
-//            System.out.println("ii is null");
+            System.out.println("ii is null");
             ii = new InvestigationItem();
             ii.setName(a.getName());
             ii.setItem(i);
             ii.setIxItemType(InvestigationItemType.Value);
             ii.setIxItemValueType(InvestigationItemValueType.Varchar);
             ii.setCssTop("90%");
-            getIiFacade().edit(ii);
-//            i.getReportItems().add(ii);
-//            getIxFacade().edit(i);
+            getIiFacade().create(ii);
+            i.getReportItems().add(ii);
+            getIxFacade().edit(i);
         } else {
-            //System.out.println("ii was found and it is " + ii.getItem().getName() + " and " + ii.getName());
+            System.out.println("ii was found and it is " + ii.getItem().getName() + " and " + ii.getName());
         }
         return ii;
     }

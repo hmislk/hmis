@@ -16,7 +16,6 @@
     </properties>
     
     <dependencies>
-      
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa</artifactId>
