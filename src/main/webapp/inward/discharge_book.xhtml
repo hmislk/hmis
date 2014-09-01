@@ -191,9 +191,9 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Paid Amount">
+                                <p:column headerText="Paid BY PATIENT">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Paid Amount"/>
+                                        <h:outputLabel value="Paid BY PATIENT"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.finalBill.paidAmount}"  >
                                         <f:convertNumber pattern="#,000.00"/>
@@ -205,9 +205,9 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Credit Used Amount">
+                                <p:column headerText="Credit Used Amount" rendered="false">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Paid Amount"/>
+                                        <h:outputLabel value="Credit Used Amount"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creditUsedAmount}"  >
                                         <f:convertNumber pattern="#,000.00"/>
@@ -221,7 +221,7 @@
 
                                 <p:column headerText="Credit Paid Amount">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Paid Amount"/>
+                                        <h:outputLabel value="Credit Paid Amount"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creditPaidAmount}"  >
                                         <f:convertNumber pattern="#,000.00"/>
@@ -237,7 +237,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Due Amount"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.finalBill.netTotal-(i.finalBill.paidAmount+i.creditPaidAmount)}"  >
+                                    <h:outputLabel value="#{i.finalBill.netTotal-(i.finalBill.paidAmount+i.paidByCreditCompany)}"  >
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">

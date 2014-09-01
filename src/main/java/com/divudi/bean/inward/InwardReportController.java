@@ -196,7 +196,7 @@ public class InwardReportController implements Serializable {
             total += p.getFinalBill().getNetTotal();
             paid += p.getFinalBill().getPaidAmount();
             creditUsed += p.getCreditUsedAmount();
-            creditPaid += p.getCreditPaidAmount();
+            creditPaid += p.getPaidByCreditCompany();
             calTotal += p.getTransTotal();
         }
     }
