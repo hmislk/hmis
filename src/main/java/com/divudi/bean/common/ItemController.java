@@ -69,7 +69,9 @@ public class ItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c.item from ItemsDistributors c where c.retired=false "
+            sql = "select c.item from ItemsDistributors c"
+                    + " where c.retired=false "
+                    + " and c.item.retired=false "
                     + " and c.institution=:ins and (upper(c.item.name) like :q or "
                     + " upper(c.item.barcode) like :q or upper(c.item.code) like :q )order by c.item.name";
             hm.put("ins", getInstituion());
