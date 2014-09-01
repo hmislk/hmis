@@ -68,7 +68,7 @@ public class PatientReportController implements Serializable {
     TransferController transferController;
     @EJB
     private PatientReportFacade ejbFacade;
-    @EJB
+    @Inject
     private PatientReportBean prBean;
     @EJB
     PatientInvestigationItemValueFacade piivFacade;

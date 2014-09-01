@@ -12,7 +12,6 @@ import javax.persistence.FetchType;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
-import org.eclipse.persistence.annotations.CascadeOnDelete;
 
 /**
  *
@@ -25,7 +24,7 @@ public class InvestigationItem extends ReportItem implements Serializable {
     private static final long serialVersionUID = 1L;
     
     
-    @OneToMany(mappedBy = "investigationItem", fetch= FetchType.LAZY, cascade = {CascadeType.MERGE,CascadeType.PERSIST,CascadeType.PERSIST,CascadeType.REFRESH})
+    @OneToMany(mappedBy = "investigationItem", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     List<InvestigationItemValue> investigationItemValues;
 
     public List<InvestigationItemValue> getInvestigationItemValues() {

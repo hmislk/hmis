@@ -351,6 +351,7 @@
                                             </p:submenu>     
                                         </p:submenu>
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search" actionListener="#{searchController.makeListNull}"  value="Payment done Search"  />
+                                        <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search_billItems" actionListener="#{searchController.makeListNull}"  value="Payment done Search BillItem"  />
                                     </p:submenu>
 
                                     <p:submenu label="Agent"  rendered="#{webUserController.hasPrivilege('Payment')}">
