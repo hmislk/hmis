@@ -58,7 +58,7 @@ public class ReportItem implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
-    @ManyToOne(cascade = {CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Item item;
     @Enumerated(EnumType.STRING)
     InvestigationItemType ixItemType;
