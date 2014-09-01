@@ -24,42 +24,42 @@
                         </p:calendar>
                         <p:commandButton ajax="false" value="Process DUE" action="#{creditCompanyDueController.createInwardCreditDue()}" onclick="onSubmitButton();"/>
                     </h:panelGrid>
-                    
+
                     <p:panelGrid columns="2">
                         <p:outputLabel value="BHT"/>
                         <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
                                         value="#{creditCompanyDueController.patientEncounter}"
-                                            completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
-                                            var="myItem" itemValue="#{myItem}" 
-                                            itemLabel="#{myItem.bhtNo}" 
-                                            size="30"  >
-                                <p:ajax event="itemSelect" 
-                                        process="@this" 
-                                        update="@all" 
-                                        listener="#{bhtSummeryController.createTables()}"/>
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
-                            </p:autoComplete>
-                        
+                                        completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                        var="myItem" itemValue="#{myItem}" 
+                                        itemLabel="#{myItem.bhtNo}" 
+                                        size="30"  >
+                            <p:ajax event="itemSelect" 
+                                    process="@this" 
+                                    update="@all" 
+                                    listener="#{bhtSummeryController.createTables()}"/>
+                            <p:column>
+                                #{myItem.bhtNo}
+                            </p:column>
+                            <p:column>
+                                #{myItem.patient.person.nameWithTitle}
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                            </p:column>
+                        </p:autoComplete>
+
                         <h:outputLabel value="Company Name : " style="min-width: 100px;"  />  
-            <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
-                            value="#{creditCompanyDueController.institution}"  
-                            completeMethod="#{creditCompanyController.completeCredit}" 
-                            var="ix" itemLabel="#{ix.name}" 
-                            itemValue="#{ix}" size="30" >  
-                <f:ajax event="itemSelect" execute="@this"  ></f:ajax>
-            </p:autoComplete>
-                        
+                        <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
+                                        value="#{creditCompanyDueController.institution}"  
+                                        completeMethod="#{creditCompanyController.completeCredit}" 
+                                        var="ix" itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" size="30" >  
+                            <f:ajax event="itemSelect" execute="@this"  ></f:ajax>
+                        </p:autoComplete>
+
                     </p:panelGrid>
 
                     <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
@@ -73,7 +73,7 @@
                                 </p:column>
                                 <p:column headerText="Paid Amount">                                    
                                 </p:column>
-                                 <p:column headerText="Net Amount">                                    
+                                <p:column headerText="Net Amount">                                    
                                 </p:column>
                             </p:row>
                         </p:columnGroup>
@@ -119,7 +119,7 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                     <p:column style="text-align: right;" >
+                                    <p:column style="text-align: right;" >
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{i.total+i.paidTotal}">
                                                 <f:convertNumber pattern="#,000.00" />

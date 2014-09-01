@@ -58,7 +58,7 @@
                                     </p:column>
                                 </p:autoComplete>
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                    <pe:exporter type="xlsx" target="tblFee,tblFee" fileName="opd_pro_pay_due"  />
+                                    <pe:exporter type="xlsx" target="tblFee,tblFee2" fileName="opd_pro_pay_due"  />
                                 </p:commandButton>
                                 <p:commandButton value="Print" ajax="false" action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
@@ -133,6 +133,7 @@
                                             <h:outputLabel value="BilledAt"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
 
@@ -218,17 +219,10 @@
                                             <h:outputLabel value="BilledAt"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
                                     
-                                    <p:column headerText="BilledAt" >
-                                        <f:facet name="header">
-                                            <h:outputLabel value="BilledAt"/>
-                                        </f:facet>
-                                        <h:outputLabel value="#{bf.createdAt}">
-                                        </h:outputLabel>
-                                    </p:column>
-
                                     <p:column headerText="Test" >
                                         <f:facet name="header">
                                             <h:outputLabel value="Test"/>
