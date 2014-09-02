@@ -424,7 +424,7 @@ public class CreditCompanyDueController implements Serializable {
             for (PatientEncounter b : lst) {
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
                 newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getPaidAmount());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
+                newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidByCreditCompany());
             }
 
             institutionEncounters.add(newIns);
