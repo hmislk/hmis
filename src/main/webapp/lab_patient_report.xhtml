@@ -12,7 +12,7 @@
     </head>
 
     <body>
-        <ui:composition template="./resources/template/template.xhtml">
+        <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true)}" >
