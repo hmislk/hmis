@@ -20,6 +20,7 @@ public class InstitutionEncounters {
     private double returned;
     private double total;
     private double paidTotal;
+    double paidTotalPatient;
 
     public Institution getInstitution() {
         return institution;
@@ -62,4 +63,14 @@ public class InstitutionEncounters {
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
         this.patientEncounters = patientEncounters;
     }
+
+    public double getPaidTotalPatient() {
+        return paidTotalPatient;
+    }
+
+    public void setPaidTotalPatient(double paidTotalPatient) {
+        this.paidTotalPatient = paidTotalPatient;
+    }
+    
+    
 }
