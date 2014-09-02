@@ -16,13 +16,10 @@
 
                     <p:panel header="B.H.T. DEPOSIT PAYMENT  SUMMERIES (Not Discharge B.H.T. only)" >
 
-                        <h:panelGrid columns="5" >
-                            <p:outputLabel value="Date"/>
-<!--                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
-                            <p:outputLabel value="From" ></p:outputLabel>-->
-
+                        <h:panelGrid columns="2" >
+                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
                             <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
+
                         </h:panelGrid>
 
                         <h:panelGrid columns="2">    
