@@ -41,8 +41,7 @@ public class CreditCompanyDueController implements Serializable {
     private Date fromDate;
     private Date toDate;
     Admission patientEncounter;
-    
-    
+
     ////////////
     private List<InstitutionBills> items;
     private List<InstitutionEncounters> institutionEncounters;
@@ -210,7 +209,7 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
-      public void createInwardCashAgeTableAccess() {
+    public void createInwardCashAgeTableAccess() {
         makeNull();
         Set<Institution> setIns = new HashSet<>();
 
@@ -237,7 +236,7 @@ public class CreditCompanyDueController implements Serializable {
         }
 
     }
-    
+
     private void setValues(Institution inst, String1Value5 dataTable5Value) {
 
         List<Bill> lst = getCreditBean().getCreditBills(inst, true);
@@ -412,18 +411,18 @@ public class CreditCompanyDueController implements Serializable {
 
     public void createInwardCreditDue() {
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Credit, true);
-        System.err.println("SIze  Ins " + setIns.size());
+        System.err.println("Size  Ins " + setIns.size());
         institutionEncounters = new ArrayList<>();
         for (Institution ins : setIns) {
             List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(), PaymentMethod.Credit, true);
 
-            System.err.println("SIze  Pe " + lst.size());
+            System.err.println("Size  Pe " + lst.size());
             InstitutionEncounters newIns = new InstitutionEncounters();
             newIns.setInstitution(ins);
             newIns.setPatientEncounters(lst);
 
             for (PatientEncounter b : lst) {
-                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
+                newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
             }
 
@@ -434,12 +433,12 @@ public class CreditCompanyDueController implements Serializable {
 
     public void createInwardCashDue() {
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Cash, true);
-        System.err.println("SIze  Ins " + setIns.size());
+        System.err.println("Size  Ins " + setIns.size());
         institutionEncounters = new ArrayList<>();
         for (Institution ins : setIns) {
             List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(), PaymentMethod.Cash, true);
 
-            System.err.println("SIze  Pe " + lst.size());
+            System.err.println("Size  Pe " + lst.size());
             InstitutionEncounters newIns = new InstitutionEncounters();
             newIns.setInstitution(ins);
             newIns.setPatientEncounters(lst);
@@ -533,7 +532,7 @@ public class CreditCompanyDueController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
+
 //    public List<Admission> completePatientDishcargedNotFinalized(String query) {
 //        List<Admission> suggestions;
 //        String sql;
@@ -552,7 +551,6 @@ public class CreditCompanyDueController implements Serializable {
 //        }
 //        //return suggestions;
 //    }
-
     public void setItems(List<InstitutionBills> items) {
         this.items = items;
     }
@@ -636,8 +634,5 @@ public class CreditCompanyDueController implements Serializable {
     public void setAdmissionFacade(AdmissionFacade admissionFacade) {
         this.admissionFacade = admissionFacade;
     }
-    
 
-    
-    
 }
