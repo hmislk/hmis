@@ -364,11 +364,11 @@
 
 
                         <p:tab title="Search">
-                            <p:calendar id="cal"  value="#{channelsearch.date}" pattern="dd MMMM yyyy" >   
+                            <p:calendar id="cal"  value="#{channelSearchController.date}" pattern="dd MMMM yyyy" >   
                                 <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                             </p:calendar>
-                            <p:dataTable id="bSessionSearch" value="#{channelsearch.billSessions}" var='bs'
-                                         filteredValue="#{channelsearch.filteredbillSessions}">
+                            <p:dataTable id="bSessionSearch" value="#{channelSearchController.billSessions}" var='bs'
+                                         filteredValue="#{channelSearchController.filteredbillSessions}">
 
 
                                 <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">

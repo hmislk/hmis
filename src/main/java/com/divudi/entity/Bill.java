@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
@@ -54,6 +55,9 @@ public class Bill implements Serializable {
     @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
     private List<Bill> cashBillsPre = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    BillClassType billClassType;
+    
     @ManyToOne
     BatchBill batchBill;
 
@@ -245,6 +249,14 @@ public class Bill implements Serializable {
     @ManyToOne
     private WebUser fromWebUser;
     double claimableTotal;
+
+    public BillClassType getBillClassType() {
+        return billClassType;
+    }
+
+    public void setBillClassType(BillClassType billClassType) {
+        this.billClassType = billClassType;
+    }
 
     public WebUser getCheckedBy() {
         return checkedBy;

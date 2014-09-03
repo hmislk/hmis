@@ -123,7 +123,9 @@ public class Item implements Serializable {
 
     @Lob
     String descreption;
-
+    @Lob
+    String comments;
+    
     @Enumerated(EnumType.STRING)
     SymanticType symanticType;
     @Enumerated(EnumType.STRING)
@@ -140,8 +142,6 @@ public class Item implements Serializable {
     public void setTransCheckedCount(double transCheckedCount) {
         this.transCheckedCount = transCheckedCount;
     }
-    
-    
 
     public boolean isMarginNotAllowed() {
         return marginNotAllowed;
@@ -150,8 +150,6 @@ public class Item implements Serializable {
     public void setMarginNotAllowed(boolean marginNotAllowed) {
         this.marginNotAllowed = marginNotAllowed;
     }
-    
-    
 
     public List<WorksheetItem> getWorksheetItems() {
         if (worksheetItems != null) {
@@ -214,6 +212,8 @@ public class Item implements Serializable {
     double professionalFfee;
     @Transient
     ItemFee itemFee;
+    
+    
 
     public Long getId() {
         return id;
@@ -643,6 +643,17 @@ public class Item implements Serializable {
         this.importer = importer;
     }
 
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+
+    
+    
+    
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override

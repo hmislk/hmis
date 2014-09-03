@@ -465,7 +465,7 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public double calInwardPaymentTotal(AdmissionType admissionType, Date fromDate, Date toDate, Institution institution) {
+    public double calInwardPaymentTotal1(AdmissionType admissionType, Date fromDate, Date toDate, Institution institution) {
         String sql;
         sql = "SELECT sum(b.netTotal)"
                 + " FROM Bill b "
@@ -482,6 +482,26 @@ public class BillBeanController implements Serializable {
         temMap.put("adm", admissionType);
         temMap.put("ins", institution);
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public List<Object[]> calInwardPaymentTotal(AdmissionType admissionType, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        sql = "SELECT b.patientEncounter.admissionType,"
+                + " sum(b.netTotal),"
+                + " b"
+                + " FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType = :bTp "
+                + " and b.institution=:ins"
+                + " and b.createdAt between :fromDate and :toDate"
+                + " group by b.patientEncounter.admissionType"
+                + " order by b.patientEncounter.admissionType.name ";
+        Map temMap = new HashMap();
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("bTp", BillType.InwardPaymentBill);
+        temMap.put("ins", institution);
+        return getBillFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public double calInwardPaymentTotal(Date fromDate, Date toDate, Institution institution) {
