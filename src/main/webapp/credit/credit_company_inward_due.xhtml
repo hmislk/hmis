@@ -32,11 +32,7 @@
                                         completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
                                         var="myItem" itemValue="#{myItem}" 
                                         itemLabel="#{myItem.bhtNo}" 
-                                        size="30"  >
-                            <p:ajax event="itemSelect" 
-                                    process="@this" 
-                                    update="@all" 
-                                    listener="#{bhtSummeryController.createTables()}"/>
+                                        size="30"  >                        
                             <p:column>
                                 #{myItem.bhtNo}
                             </p:column>
@@ -69,9 +65,11 @@
                                 </p:column>
                                 <p:column headerText="Patient Name">                                    
                                 </p:column>
-                                <p:column headerText="Used Amount">                                    
+                                <p:column headerText="Billed Amount">                                    
                                 </p:column>
-                                <p:column headerText="Paid Amount">                                    
+                                <p:column headerText="Paid By Patient">                                    
+                                </p:column>
+                                <p:column headerText="Paid By Company">                                    
                                 </p:column>
                                 <p:column headerText="Net Amount">                                    
                                 </p:column>
@@ -88,17 +86,22 @@
                                 <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
                             </p:column>
                             <p:column style="text-align: right;">                                
-                                <h:outputLabel value="#{b.creditUsedAmount}" >
+                                <h:outputLabel value="#{b.finalBill.netTotal}" >
                                     <f:convertNumber pattern="#,000.00" />
                                 </h:outputLabel>                                 
+                            </p:column>
+                            <p:column style="text-align: right;">                              
+                                <h:outputLabel value="#{b.finalBill.paidAmount}" >
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;">                              
                                 <h:outputLabel value="#{b.creditPaidAmount}" >
                                     <f:convertNumber pattern="#,000.00" />
                                 </h:outputLabel>
-                            </p:column>
+                            </p:column>                           
                             <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{b.creditUsedAmount+b.creditPaidAmount}" >
+                                <h:outputLabel value="#{b.finalBill.netTotal-(b.finalBill.paidAmount+b.paidByCreditCompany)}" >
                                     <f:convertNumber pattern="#,000.00" />
                                 </h:outputLabel>
                             </p:column>
@@ -112,6 +115,13 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
+                                     <p:column style="text-align: right;" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{i.paidTotalPatient}">
+                                                <f:convertNumber pattern="#,000.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
                                     <p:column style="text-align: right;" >
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{i.paidTotal}">
@@ -121,7 +131,7 @@
                                     </p:column>
                                     <p:column style="text-align: right;" >
                                         <f:facet name="footer">
-                                            <h:outputLabel value="#{i.total+i.paidTotal}">
+                                            <h:outputLabel value="#{i.total-(i.paidTotal+i.paidTotalPatient)}">
                                                 <f:convertNumber pattern="#,000.00" />
                                             </h:outputLabel>
                                         </f:facet>
