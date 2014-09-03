@@ -12,266 +12,377 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
-import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Service;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceFacade;
-import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
+import javax.inject.Named;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import javax.inject.Inject;
-import javax.inject.Named;
 
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ Informatics)
  */
 @Named
 @SessionScoped
 public class ChannellingFeeController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     @Inject
     SessionController sessionController;
-
     @EJB
-    private ItemFacade itemFacade;
+    private ServiceFacade ejbFacade;
     @EJB
     private ItemFeeFacade itemFeeFacade;
+    private List<ItemFee> fees;
+    private Service currentIx;
+    private ItemFee currentFee;
+    private ItemFee removingItemFee;    
+    @EJB
+    FeeFacade feeFacade;
     @EJB
     private DepartmentFacade departmentFacade;
     @EJB
     private StaffFacade staffFacade;
-    @EJB
-    ServiceSessionFacade serviceSessionFacade;
 
-    private Speciality speciality;
-    private Staff doctor;
-    private Item session;
-    private ItemFee fee;
-    private ItemFee removingFee;
-
-    List<ServiceSession> sessions;
-    private List<Staff> doctors;
-    private List<ItemFee> fees;
-
-    public List<Staff> completeDoctors(String query) {
+    public List<Staff> completeStaff(String query) {
+        List<Staff> suggestions;
         String sql;
-        Map m = new HashMap();
         if (query == null) {
-            doctors = new ArrayList<>();
+            suggestions = new ArrayList<Staff>();
         } else {
-            m.put("qry", "%" + query.toUpperCase() + "%");
-            if (speciality == null) {
-                sql = "select p from Staff p "
-                        + " where p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or upper(p.code) like :qry ) "
-                        + " order by p.person.name";
+            if (getCurrentFee().getSpeciality() == null) {
+                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             } else {
-                sql = "select p from Staff p "
-                        + " where p.speciality=:spe "
-                        + " and p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or  upper(p.code) like :qry "
-                        + " order by p.person.name";
-                m.put("spe", speciality);
+                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            doctors = getStaffFacade().findBySQL(sql, m);
+            //System.out.println(sql);
+            suggestions = getStaffFacade().findBySQL(sql);
         }
-        return doctors;
+        return suggestions;
     }
 
-    public void fillSessions() {
-        String sql;
-        Map m = new HashMap();
-        sql = "Select s From ServiceSession s "
-                + " where s.retired=false "
-                + " and s.staff=:doc "
-                + " order by s.sessionWeekday, sessionAt";
-        m.put("doc", doctor);
-        sessions = getServiceSessionFacade().findBySQL(sql, m);
-    }
-
-    public void fillFees() {
-        String sql;
-        Map m = new HashMap();
-        sql = "Select f from ItemFee f "
-                + " where f.retired=false and "
-                + " f.item=:ses "
-                + " order by f.id";
-        m.put("ses", session);
-        fees = getItemFeeFacade().findBySQL(sql, m);
-    }
-
-    public void saveCharge() {
-        if (session == null) {
-            UtilityController.addErrorMessage("Please select a session");
-            return;
-        }
-        if (fee == null) {
-            UtilityController.addErrorMessage("Please select a fee");
-            return;
-        }
-        fee.setItem(session);
-        if (fee.getId() == null || fee.getId() == 0) {
-            fee.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            fee.setCreater(getSessionController().getLoggedUser());
-            getItemFeeFacade().create(fee);
-            UtilityController.addSuccessMessage("Fee Added");
+    public List<Department> getInstitutionDepatrments() {
+        List<Department> d;
+        //System.out.println("gettin ins dep ");
+        if (getCurrentFee().getInstitution() == null) {
+            return new ArrayList<Department>();
         } else {
-            getItemFeeFacade().edit(fee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrentFee().getInstitution().getId();
+            d = getDepartmentFacade().findBySQL(sql);
         }
-        session.setTotal(calTot());
-        getItemFacade().edit(session);
+
+        return d;
     }
 
-    private double calTot() {
-        double tot = 0.0;
-        for (ItemFee i : getFees()) {
-            tot += i.getFee();
+    public void makeAllNullForeignCharges() {
+        for (Fee f : getFeeFacade().findBySQL("select f from Fee")) {
+            if (f.getFfee() == 0.0) {
+                f.setFfee(f.getFee());
+                getFeeFacade().edit(f);
+            }
         }
-        return tot;
-    }
-
-    public ChannellingFeeController() {
-    }
-
-    public void delete() {
-        if (removingFee != null) {
-            removingFee.setRetired(true);
-            removingFee.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            removingFee.setRetirer(getSessionController().getLoggedUser());
-            getItemFeeFacade().edit(removingFee);
-            UtilityController.addSuccessMessage("Deleted Successfull");
-        } else {
-            UtilityController.addSuccessMessage("Nothing To Delete");
-        }
-        setRemovingFee(null);
-        setFee(null);
-    }
-
-    public Speciality getSpeciality() {
-        return speciality;
-    }
-
-    public void setSpeciality(Speciality speciality) {
-        this.speciality = speciality;
-        setDoctors(null);
-    }
-
-    public Staff getDoctor() {
-        return doctor;
-    }
-
-    public void setDoctor(Staff doctor) {
-        this.doctor = doctor;
-        setSessions(null);
-    }
-
-    public List<Staff> getDoctors() {
-        return doctors;
-    }
-
-    public void setDoctors(List<Staff> doctors) {
-        this.doctors = doctors;
-        setDoctor(null);
-    }
-
-    public List<ServiceSession> getSessions() {
-        return sessions;
-    }
-
-    public void setSessions(List<ServiceSession> sessions) {
-        this.sessions = sessions;
-        setSession(null);
-    }
-
-    public Item getSession() {
-        if (sessions == null) {
-            fillSessions();
-        }
-        return session;
-    }
-
-    public void setSession(Item session) {
-        this.session = session;
-        setFees(null);
-    }
-
-    public ItemFee getFee() {
-        return fee;
-    }
-
-    public void setFee(ItemFee fee) {
-        this.fee = fee;
-    }
-
-    public ItemFee getRemovingFee() {
-        return removingFee;
-    }
-
-    public void setRemovingFee(ItemFee removingFee) {
-        this.removingFee = removingFee;
     }
 
     public List<ItemFee> getFees() {
-        if (fees == null) {
-            fillFees();
-        }
         return fees;
     }
 
     public void setFees(List<ItemFee> fees) {
         this.fees = fees;
-        setFee(null);
-        setRemovingFee(null);
+    }
+
+    public ItemFee getRemovingItemFee() {
+        return removingItemFee;
+    }
+
+    public void setRemovingItemFee(ItemFee removingItemFee) {
+        this.removingItemFee = removingItemFee;
+    }
+
+    public FeeFacade getFeeFacade() {
+        return feeFacade;
+    }
+
+    public void setFeeFacade(FeeFacade feeFacade) {
+        this.feeFacade = feeFacade;
+    }
+
+    public void saveCharge() {
+        if (currentIx == null) {
+            UtilityController.addErrorMessage("Please select a charge");
+            return;
+        }
+        if (currentFee == null) {
+            UtilityController.addErrorMessage("Please select a charge");
+            return;
+        }
+        currentFee.setItem(currentIx);
+        if (currentFee.getId() == null || currentFee.getId() == 0) {
+            currentFee.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            currentFee.setCreater(getSessionController().getLoggedUser());
+            getItemFeeFacade().create(currentFee);
+            UtilityController.addSuccessMessage("Fee Added");
+        } else {
+            getItemFeeFacade().edit(currentFee);
+            UtilityController.addSuccessMessage("Fee Saved");
+        }
+        currentIx.setTotal(calTot());
+
+        getEjbFacade().edit(currentIx);
+        setCharges(null);
+        currentFee = null;
+    }
+
+    private double calTot() {
+        double tot = 0.0;
+        for (ItemFee i : getCharges()) {
+            tot += i.getFee();
+        }
+        return tot;
+    }
+
+    public ServiceFacade getEjbFacade() {
+        return ejbFacade;
+    }
+
+    public void setEjbFacade(ServiceFacade ejbFacade) {
+        this.ejbFacade = ejbFacade;
     }
 
     public SessionController getSessionController() {
         return sessionController;
     }
 
-    public ItemFacade getItemFacade() {
-        return itemFacade;
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public ChannellingFeeController() {
+    }
+
+    public Service getCurrentIx() {
+        return currentIx;
+    }
+
+    public void setCurrentIx(Service ix) {
+        this.currentIx = ix;
+
+    }
+    
+    public void makeNullst(ItemFee itemFee){
+        itemFee.setSpeciality(null);
+        itemFee.setStaff(null);
+        itemFee.setFeeType(null);
+        itemFeeFacade.edit(itemFee);    
+    }
+    
+    public void edit(ItemFee itemFee){
+        
+        itemFee.setEditer(getSessionController().getLoggedUser());
+        itemFee.setEditedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        
+        
+        itemFeeFacade.edit(itemFee);
+        
+    }
+
+    public void removeFee() {
+        if (currentIx == null) {
+            UtilityController.addErrorMessage("Please select a investigation");
+            return;
+        }
+        if (getRemovedItemFee() == null) {
+            UtilityController.addErrorMessage("Please select one to remove");
+            return;
+        }
+
+        if (getRemovedItemFee().getId() == null || getRemovedItemFee().getId() == 0) {
+            UtilityController.addErrorMessage("Nothing to remove");
+            return;
+        } else {
+            getRemovedItemFee().setRetired(true);
+            getRemovedItemFee().setRetirer(getSessionController().getLoggedUser());
+            getRemovedItemFee().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getItemFeeFacade().edit(getRemovedItemFee()); // Flag as retired, so that will never appearing when calling from database
+
+            currentIx.setTotal(calTot());
+            getEjbFacade().edit(currentIx);
+
+//            setCharges(null);
+//            getCharges();
+//            getCurrentIx().setTotal(calTot());
+
+        }
+    }
+
+    public void delete() {
+
+        if (currentIx != null) {
+            currentIx.setRetired(true);
+            currentIx.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            currentIx.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(currentIx);
+            UtilityController.addSuccessMessage("DeleteSuccessfull");
+        } else {
+            UtilityController.addSuccessMessage("NothingToDelete");
+        }
+
+        currentIx = null;
+        setCharges(null);
+    }
+
+    private ServiceFacade getFacade() {
+        return ejbFacade;
+    }
+    
+    public void createCharges() {
+        String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
+        fees = itemFeeFacade.findBySQL(sql);
+    }
+
+//    public List<ItemFee> getCharges() {
+//        if (currentIx != null && currentIx.getId() != null) {
+//            setCharges(getItemFeeFacade().findBySQL("select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId()));
+//        } else {
+//            setCharges(new ArrayList<ItemFee>());
+//        }
+//        if (fees == null) {
+//            fees = new ArrayList<ItemFee>();
+//        }
+//        return fees;
+//    }
+
+    public void updateCharges() {
+        //System.out.println("updating service charges");
+        for (ItemFee f : fees) {
+            //System.out.println("fe is " + f.getFee());
+            if (f.getId() == null || f.getId() == 0) {
+                getItemFeeFacade().create(f);
+                //System.out.println("fee created");
+            } else {
+                getItemFeeFacade().edit(f);
+                //System.out.println("fee saved");
+            }
+        }
+        currentIx.setTotal(calTot());
+        //System.out.println("item saved. " + currentIx.getTotal());
+        getEjbFacade().edit(currentIx);
+    }
+
+    
+    public List<ItemFee> getCharges() {
+        return fees;
+    }
+
+    public void setCharges(List<ItemFee> charges) {
+        this.fees = charges;
+    }
+//    public void setCharges(List<ItemFee> charges) {
+//        this.fees = charges;
+//    }
+
+    public ItemFee getCurrentFee() {
+        if (currentFee == null) {
+            currentFee = new ItemFee();
+        }
+        return currentFee;
+    }
+
+    public void setCurrentFee(ItemFee currentFee) {
+        this.currentFee = currentFee;
     }
 
     public ItemFeeFacade getItemFeeFacade() {
         return itemFeeFacade;
     }
 
+    public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
+        this.itemFeeFacade = itemFeeFacade;
+
+
+    }
+
+    public ItemFee getRemovedItemFee() {
+        return removingItemFee;
+    }
+
+    public void setRemovedItemFee(ItemFee removedItemFee) {
+        this.removingItemFee = removedItemFee;
+    }
+
     public DepartmentFacade getDepartmentFacade() {
         return departmentFacade;
+    }
+
+    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
+        this.departmentFacade = departmentFacade;
     }
 
     public StaffFacade getStaffFacade() {
         return staffFacade;
     }
 
-    public ServiceSessionFacade getServiceSessionFacade() {
-        return serviceSessionFacade;
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
     }
 
+    /**
+     *
+     */
+    @FacesConverter("conSerFee")
+    public static class ItemFeeControllerConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            ChannellingFeeController controller = (ChannellingFeeController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "itemFeeController");
+            return controller.getItemFeeFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof ItemFee) {
+                ItemFee o = (ItemFee) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + ChannellingFeeController.class.getName());
+            }
+        }
+    }
 }

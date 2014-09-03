@@ -626,7 +626,7 @@
                                           var="p"
                                           rowStyleClass="#{((p.billClass eq 'class com.divudi.entity.BilledBill')
                                                            or 
-                                                           (p.billedBill eq null and p.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}" >
+                                                           (p.refundedBill eq null and p.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}" >
                                 <p:column headerText="Bill No">
                                     #{p.insId}
                                 </p:column>

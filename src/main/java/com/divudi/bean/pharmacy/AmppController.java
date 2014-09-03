@@ -51,7 +51,7 @@ public class AmppController implements Serializable {
     @EJB
     private VmppFacade vmppFacade;
     double dblValue;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
     MeasurementUnit packUnit;
     private String selectText = "";

@@ -31,23 +31,26 @@ import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
  *
  * @author safrin
  */
-@Stateless
-public class PharmacyCalculation {
+@Named
+@ApplicationScoped
+public class PharmacyCalculation implements Serializable{
 
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;

@@ -18,7 +18,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import java.math.BigDecimal;
 
-
 /**
  *
  * @author Buddhika
@@ -54,26 +53,26 @@ public class PharmaceuticalBillItem implements Serializable {
     public void copy(PharmaceuticalBillItem ph) {
         qty = ph.qty;
         freeQty = ph.freeQty;
-        purchaseRate = ph.purchaseRate;        
+        purchaseRate = ph.purchaseRate;
         doe = ph.getDoe();
         stringValue = ph.getStringValue();
         itemBatch = ph.getItemBatch();
         retailRate = ph.getRetailRate();
         stock = ph.getStock();
-        staffStock=ph.getStaffStock();
+        staffStock = ph.getStaffStock();
         stringValue = ph.getStringValue();
         //  remainingQty=ph.getRemainingQty();
 
     }
-    
-    public void invertValue(PharmaceuticalBillItem ph){
-        qty=0-ph.qty;
-       // //System.err.println("QTY "+qty);
-        freeQty=0-ph.freeQty;
+
+    public void invertValue(PharmaceuticalBillItem ph) {
+        qty = 0 - ph.qty;
+        // //System.err.println("QTY "+qty);
+        freeQty = 0 - ph.freeQty;
       //  purchaseRate=0-ph.purchaseRate;
-      //  lastPurchaseRate=0-ph.lastPurchaseRate;
-       // retailRate=0-ph.retailRate;
-      //  wholesaleRate=0-ph.wholesaleRate;
+        //  lastPurchaseRate=0-ph.lastPurchaseRate;
+        // retailRate=0-ph.retailRate;
+        //  wholesaleRate=0-ph.wholesaleRate;
     }
 
     public Stock getStock() {
@@ -122,6 +121,11 @@ public class PharmaceuticalBillItem implements Serializable {
 
     public void setItemBatch(ItemBatch itemBatch) {
         this.itemBatch = itemBatch;
+        if (itemBatch != null) {
+            retailRate = itemBatch.getRetailsaleRate();
+            purchaseRate = itemBatch.getPurcahseRate();
+            
+        }
     }
 
     public double getQty() {

@@ -247,7 +247,7 @@
                                     <p:submenu label="Unit Issue" rendered="#{webUserController.hasPrivilege('StoreIssue')}">
                                         <p:menuitem ajax="false" action="/store/store_issue"  value="Issue"
                                                     rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}" 
-                                                    actionListener="#{pharmacySaleBhtController.resetAll()}"/>
+                                                    actionListener="#{storeIssueController.resetAll()}" />
                                         <p:menuitem  ajax="false" action="/store/store_search_sale_bill_issue"
                                                      actionListener="#{searchController.makeListNull}"  value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('StoreIssueSearchBill')}"/>
                                         <p:menuitem  ajax="false" action="/store/store_search_sale_bill_item_issue" actionListener="#{searchController.makeListNull}"   
@@ -351,6 +351,7 @@
                                             </p:submenu>     
                                         </p:submenu>
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search" actionListener="#{searchController.makeListNull}"  value="Payment done Search"  />
+                                        <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search_billItems" actionListener="#{searchController.makeListNull}"  value="Payment done Search BillItem"  />
                                     </p:submenu>
 
                                     <p:submenu label="Agent"  rendered="#{webUserController.hasPrivilege('Payment')}">

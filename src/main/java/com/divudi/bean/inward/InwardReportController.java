@@ -151,6 +151,12 @@ public class InwardReportController implements Serializable {
 
     double total;
     double paid;
+    double creditPaid;
+    double creditUsed;
+    double calTotal;
+
+    @Inject
+    InwardReportControllerBht inwardReportControllerBht;
 
     public void fillDischargeBook() {
         Map m = new HashMap();
@@ -163,6 +169,11 @@ public class InwardReportController implements Serializable {
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
+        }
+        
+        if (institution != null) {
+            sql += " and b.creditCompany =:ins ";
+            m.put("ins", institution);
         }
 
         if (paymentMethod != null) {
@@ -181,9 +192,17 @@ public class InwardReportController implements Serializable {
         }
         total = 0;
         paid = 0;
+        calTotal = 0;
         for (PatientEncounter p : patientEncounters) {
+            inwardReportControllerBht.setPatientEncounter(p);
+            inwardReportControllerBht.process();
+            p.setTransTotal(inwardReportControllerBht.getNetTotal());
+
             total += p.getFinalBill().getNetTotal();
             paid += p.getFinalBill().getPaidAmount();
+            creditUsed += p.getCreditUsedAmount();
+            creditPaid += p.getPaidByCreditCompany();
+            calTotal += p.getTransTotal();
         }
     }
 
@@ -608,5 +627,47 @@ public class InwardReportController implements Serializable {
     public void setNetPaid(double netPaid) {
         this.netPaid = netPaid;
     }
+
+    public double getCalTotal() {
+        return calTotal;
+    }
+
+    public void setCalTotal(double calTotal) {
+        this.calTotal = calTotal;
+    }
+
+    public double getCreditPaid() {
+        return creditPaid;
+    }
+
+    public void setCreditPaid(double creditPaid) {
+        this.creditPaid = creditPaid;
+    }
+
+    public double getCreditUsed() {
+        return creditUsed;
+    }
+
+    public void setCreditUsed(double creditUsed) {
+        this.creditUsed = creditUsed;
+    }
+
+    public InwardReportControllerBht getInwardReportControllerBht() {
+        return inwardReportControllerBht;
+    }
+
+    public void setInwardReportControllerBht(InwardReportControllerBht inwardReportControllerBht) {
+        this.inwardReportControllerBht = inwardReportControllerBht;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+    
+    
 
 }

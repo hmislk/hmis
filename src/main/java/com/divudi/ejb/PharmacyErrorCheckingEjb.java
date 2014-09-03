@@ -268,7 +268,7 @@ public class PharmacyErrorCheckingEjb {
         //System.out.println("m = " + m);
         //System.out.println("sql = " + sql);
         List<Bill> pbs = getBillFacade().findBySQL(sql, m);
-        List<Bill> epbs = new ArrayList<Bill>();
+        List<Bill> epbs = new ArrayList<>();
         epbs = new ArrayList<Bill>();
         for (Bill pb : pbs) {
 
