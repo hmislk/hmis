@@ -39,6 +39,8 @@
                             </f:ajax>
                         </p:selectOneListbox>
                     </h:panelGrid>
+                    
+                    
                     <h:panelGrid id="gpSelectButtons" columns="3"  >                     
                         <p:commandButton ajax="false" id="btnAdd" value="Add"  action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
                             <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail" execute="" >
