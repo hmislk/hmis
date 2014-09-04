@@ -173,6 +173,7 @@
                         <p:column headerText="Doctor Fee">
                             <h:outputLabel value="#{i.ffee}"/>
                         </p:column>
+                        
                         <p:column headerText="Remove">
                             <p:commandButton value="Remove" action="#{channellingFeeController.delete()}" process="tbl" update=":#{p:component('gpList')}" >
                                 <f:setPropertyActionListener value="#{i}" target="#{channellingFeeController.removingFee}" ></f:setPropertyActionListener>
