@@ -39,6 +39,8 @@
                             </f:ajax>
                         </p:selectOneListbox>
                     </h:panelGrid>
+                    
+                    
                     <h:panelGrid id="gpSelectButtons" columns="3"  >                     
                         <p:commandButton ajax="false" id="btnAdd" value="Add"  action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
                             <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail" execute="" >
@@ -66,7 +68,7 @@
                         <p:outputLabel value="Session Name"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
                         <p:outputLabel value="Start Time"/>                        
-                        <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm:ss" timeOnly="true">                            
+                        <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
                         </p:calendar>
                         <p:outputLabel value="Max Number"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.maxNo}"/>
