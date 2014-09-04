@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -36,7 +37,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.TemporalType;
+
+
 
 /**
  *
@@ -93,6 +98,29 @@ public class ReportsStock implements Serializable {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
+    }
+    
+    public void fillDepartmentInventryStocks() {
+        if (department == null) {
+            UtilityController.addErrorMessage("Please select a department");
+            return;
+        }
+        Map m = new HashMap();
+        String sql;
+        sql = "select s from Stock s"
+                + " where s.department=:d"
+                + " and s.itemBatch.item.departmentType=:depty "
+                + " order by s.itemBatch.item.name";
+        
+        m.put("depty", DepartmentType.Inventry);
+        m.put("d", department);
+        stocks = getStockFacade().findBySQL(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+//        for (Stock ts : stocks) {
+//            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+//            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+//        }
     }
 
     public void fillDepartmentStocksMinus() {
