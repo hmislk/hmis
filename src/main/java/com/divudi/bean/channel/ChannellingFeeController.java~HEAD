@@ -11,14 +11,18 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.Department;
+import com.divudi.entity.Fee;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
+import com.divudi.entity.Service;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
+import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
@@ -30,6 +34,10 @@ import java.util.Map;
 import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -67,40 +75,6 @@ public class ChannellingFeeController implements Serializable {
     List<ServiceSession> sessions;
     private List<Staff> doctors;
     private List<ItemFee> fees;
-    List<Department> departments = new ArrayList<>();
-    List<Staff> staffSuggestions;
-
-    public List<Department> getInstitutionDepatrments() {
-        if (getFee().getInstitution() == null) {
-            departments = new ArrayList<>();
-            return departments;
-        } else {
-            String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
-            Map m = new HashMap();
-            m.put("ins", getFee().getInstitution());
-            departments = getDepartmentFacade().findBySQL(sql, m);
-        }
-        return departments;
-    }
-
-    public List<Staff> completeStaff(String query) {
-        String sql;
-        if (query == null) {
-            staffSuggestions = new ArrayList<>();
-        } else {
-            Map m = new HashMap();
-            m.put("qry", "%" + query.toUpperCase() + "%");
-            if (getFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like :qry or upper(p.code) like :qry ) order by p.person.name";
-            } else {
-                sql = "select p from Staff p where p.speciality=:spe and p.retired=false and (upper(p.person.name) like :qry or  upper(p.code) like :qry) order by p.person.name";
-                m.put("spe", getFee().getSpeciality());
-            }
-            staffSuggestions = getStaffFacade().findBySQL(sql, m);
-
-        }
-        return staffSuggestions;
-    }
 
     public List<Staff> completeDoctors(String query) {
         String sql;
@@ -120,7 +94,7 @@ public class ChannellingFeeController implements Serializable {
                         + " where p.speciality=:spe "
                         + " and p.retired=false "
                         + " and (upper(p.person.name) like :qry "
-                        + " or  upper(p.code) like :qry) "
+                        + " or  upper(p.code) like :qry "
                         + " order by p.person.name";
                 m.put("spe", speciality);
             }
@@ -129,17 +103,13 @@ public class ChannellingFeeController implements Serializable {
         return doctors;
     }
 
-    public void prepareAdd() {
-        fee = new ItemFee();
-    }
-
     public void fillSessions() {
         String sql;
         Map m = new HashMap();
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
                 + " and s.staff=:doc "
-                + " order by s.sessionWeekday, s.sessionAt";
+                + " order by s.sessionWeekday, sessionAt";
         m.put("doc", doctor);
         sessions = getServiceSessionFacade().findBySQL(sql, m);
     }
@@ -174,10 +144,8 @@ public class ChannellingFeeController implements Serializable {
             getItemFeeFacade().edit(fee);
             UtilityController.addSuccessMessage("Fee Saved");
         }
-        fillFees();
         session.setTotal(calTot());
         getItemFacade().edit(session);
-        
     }
 
     private double calTot() {
@@ -201,8 +169,6 @@ public class ChannellingFeeController implements Serializable {
         } else {
             UtilityController.addSuccessMessage("Nothing To Delete");
         }
-        fillFees();
-        session.setTotal(calTot());
         setRemovingFee(null);
         setFee(null);
     }
@@ -256,9 +222,6 @@ public class ChannellingFeeController implements Serializable {
     }
 
     public ItemFee getFee() {
-        if(fee==null){
-            fee=new ItemFee();
-        }
         return fee;
     }
 
@@ -309,14 +272,6 @@ public class ChannellingFeeController implements Serializable {
 
     public ServiceSessionFacade getServiceSessionFacade() {
         return serviceSessionFacade;
-    }
-
-    public List<Department> getDepartments() {
-        return departments;
-    }
-
-    public void setDepartments(List<Department> departments) {
-        this.departments = departments;
     }
 
 }

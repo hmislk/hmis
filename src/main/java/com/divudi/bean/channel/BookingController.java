@@ -24,15 +24,15 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -122,9 +122,6 @@ public class BookingController implements Serializable {
         }
     }
 
-
-
-  
     public void updatePatient() {
         getBillSessionFacade().edit(getSelectedBillSession());
 
@@ -204,22 +201,21 @@ public class BookingController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    public List<ServiceSession> getServiceSessions() {
+    public void generateSessions() {
         serviceSessions = new ArrayList<>();
         String sql;
-
+        Map m = new HashMap();
+        m.put("staff", getStaff());
         if (staff != null) {
-            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " order by s.sessionWeekday";
-            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql);
-
-            serviceSessions=getChannelBean().setSessionAt(tmp);
-
+            sql = "Select s From ServiceSession s where s.retired=false and s.staff=:staff order by s.sessionWeekday";
+            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
+            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
         }
-
-        return serviceSessions;
     }
 
-    
+    public List<ServiceSession> getServiceSessions() {
+        return serviceSessions;
+    }
 
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
 
@@ -234,8 +230,6 @@ public class BookingController implements Serializable {
         this.serviceSessionFacade = serviceSessionFacade;
     }
 
-   
-
     public List<BillSession> getBillSessions() {
 
         if (getSelectedServiceSession() != null) {
@@ -248,8 +242,6 @@ public class BookingController implements Serializable {
 
         return billSessions;
     }
-
-   
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
