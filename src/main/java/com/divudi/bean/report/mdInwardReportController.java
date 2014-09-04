@@ -218,40 +218,53 @@ public class mdInwardReportController implements Serializable {
 
     }
 
-    public List<Bill> getBills() {
+    public void createServiceBillsByAddedDate() {
+        makeListNull();
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from Bill b"
+                + " where b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate"
+                + "  and b.retired=false "
+                + " order by b.insId desc";
+
+        temMap.put("billType", BillType.InwardBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         if (bills == null) {
-            String sql;
-            Map temMap = new HashMap();
-            sql = "select b from Bill b where b.createdAt is not null and b.billType = :billType and b.id in"
-                    + "(select bi.bill.id from BillItem bi where bi.item is not null)"
-                    + " and b.institution=:ins and b.createdAt between :fromDate and :toDate and b.retired=false order by b.insId desc";
+            bills = new ArrayList<>();
 
-            temMap.put("billType", BillType.InwardBill);
-            temMap.put("toDate", toDate);
-            temMap.put("fromDate", fromDate);
-            temMap.put("ins", getSessionController().getInstitution());
-
-            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
-            if (bills == null) {
-                bills = new ArrayList<Bill>();
-
-            }
-
-            for (Bill b : bills) {
-                sql = "Select b From BillFee b where b.retired=false and b.bill.id=" + b.getId();
-                List<BillFee> bflist = getBillFeeFacade().findBySQL(sql);
-                for (BillFee bf : bflist) {
-                    if (bf.getFee().getFeeType() == FeeType.OwnInstitution) {
-                        b.setHospitalFee(b.getHospitalFee() + bf.getFeeValue());
-                    } else if (bf.getFee().getFeeType() == FeeType.Staff) {
-                        b.setProfessionalFee(b.getProfessionalFee() + bf.getFeeValue());
-                    }
-                }
-            }
         }
 
+    }
+
+    public void createServiceBillsByDischargeDate() {
+        makeListNull();
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from Bill b"
+                + " where b.billType = :billType "
+                + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate"
+                + "  and b.retired=false "
+                + " order by b.insId desc";
+
+        temMap.put("billType", BillType.InwardBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        if (bills == null) {
+            bills = new ArrayList<>();
+
+        }
+
+    }
+
+    public List<Bill> getBills() {
         return bills;
     }
 
@@ -1069,44 +1082,102 @@ public class mdInwardReportController implements Serializable {
 
     }
 
-    public List<ItemWithFee> getItemWithFees() {
+    public void makeListNull() {
+        bills = null;
+        fillterBill = null;
+        itemWithFees = null;
+        fillterItemWithFees = null;
+    }
 
+    public void createItemWithFeeByAddedDate() {
+        makeListNull();
         String sql;
         List<Item> tmp;
         Map temMap = new HashMap();
 
-        if (itemWithFees == null) {
+        itemWithFees = new ArrayList<>();
 
-            itemWithFees = new ArrayList<>();
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bTp", BillType.InwardBill);
 
-            temMap.put("toDate", getToDate());
-            temMap.put("fromDate", getFromDate());
-            temMap.put("bTp", BillType.InwardBill);
-            temMap.put("ins", getSessionController().getInstitution());
+        if (getPaymentMethod() == null) {
+            sql = "select distinct(bi.item) "
+                    + " FROM BillItem bi "
+                    + " where bi.retired=false "
+                    + " and bi.item.retired=false "
+                    //                    + " and  bi.bill.institution=:ins "
+                    + " and  bi.bill.billType= :bTp  "
+                    + " and  bi.bill.createdAt between :fromDate and :toDate ";
+        } else {
+            sql = "select distinct(bi.item) "
+                    + " FROM BillItem bi"
+                    + " where bi.bill.billType= :bTp  "
+                    + " and  bi.bill.createdAt between :fromDate and :toDate "
+                    + " and bi.bill.paymentMethod=:p ";
 
-            if (getPaymentMethod() == null) {
-                sql = "select distinct(bi.item) FROM BillItem bi where bi.retired=false and bi.item.retired=false and  bi.bill.institution=:ins and  bi.bill.billType= :bTp  "
-                        + " and  bi.bill.createdAt between :fromDate and :toDate ";
-            } else {
-                sql = "select distinct(bi.item) FROM BillItem bi where  bi.bill.institution=:ins and  bi.bill.billType= :bTp  "
-                        + " and  bi.bill.createdAt between :fromDate and :toDate and bi.bill.paymentMethod=:p ";
-
-                temMap.put("p", getPaymentMethod());
-            }
-
-            tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
-            for (Item i : tmp) {
-                ItemWithFee iwf = new ItemWithFee();
-                iwf.setItem(i);
-                setCount(iwf);
-                setFee(iwf);
-                //   //System.out.println("ss " + itemWithFees.size());
-                //      //System.out.println("ss " + iwf.getItem());
-                itemWithFees.add(iwf);
-            }
-
+            temMap.put("p", getPaymentMethod());
         }
+
+        tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        for (Item i : tmp) {
+            ItemWithFee iwf = new ItemWithFee();
+            iwf.setItem(i);
+            setCount(iwf);
+            setFee(iwf);
+            //   //System.out.println("ss " + itemWithFees.size());
+            //      //System.out.println("ss " + iwf.getItem());
+            itemWithFees.add(iwf);
+        }
+
+    }
+
+    public void createItemWithFeeByDischargeDate() {
+        makeListNull();
+        String sql;
+        List<Item> tmp;
+        Map temMap = new HashMap();
+
+        itemWithFees = new ArrayList<>();
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bTp", BillType.InwardBill);
+
+        if (getPaymentMethod() == null) {
+            sql = "select distinct(bi.item) "
+                    + " FROM BillItem bi "
+                    + " where bi.retired=false "
+                    + " and bi.item.retired=false "
+                    //                    + " and  bi.bill.institution=:ins "
+                    + " and  bi.bill.billType= :bTp  "
+                    + " and  bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        } else {
+            sql = "select distinct(bi.item) "
+                    + " FROM BillItem bi"
+                    + " where bi.bill.billType= :bTp  "
+                    + " and  bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                    + " and bi.bill.paymentMethod=:p ";
+
+            temMap.put("p", getPaymentMethod());
+        }
+
+        tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        for (Item i : tmp) {
+            ItemWithFee iwf = new ItemWithFee();
+            iwf.setItem(i);
+            setCount(iwf);
+            setFee(iwf);
+            //   //System.out.println("ss " + itemWithFees.size());
+            //      //System.out.println("ss " + iwf.getItem());
+            itemWithFees.add(iwf);
+        }
+
+    }
+
+    public List<ItemWithFee> getItemWithFees() {
 
         return itemWithFees;
     }
@@ -1566,7 +1637,5 @@ public class mdInwardReportController implements Serializable {
     public void setGrantTotal(double grantTotal) {
         this.grantTotal = grantTotal;
     }
-    
-    
 
 }
