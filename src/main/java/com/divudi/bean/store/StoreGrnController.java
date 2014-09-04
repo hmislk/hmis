@@ -143,27 +143,15 @@ public class StoreGrnController implements Serializable {
     }
 
     public void setBatch(BillItem pid) {
-//        if (pid.getPharmaceuticalBillItem().getDoe() == null) {
-//            return;
-//        }
-//
-//        if (pid.getPharmaceuticalBillItem().getDoe() != null) {
-//            if (pid.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
-//                pid.getPharmaceuticalBillItem().setStringValue(null);
-//                return;
-//                //    return;
-//            }
-//        }
+
         if (pid.getPharmaceuticalBillItem().getDoe() == null) {
             pid.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
         }
+
         Date date = pid.getPharmaceuticalBillItem().getDoe();
         DateFormat df = new SimpleDateFormat("ddMMyyyy");
         String reportDate = df.format(date);
-// Print what date is today!
-        //       //System.err.println("Report Date: " + reportDate);
         pid.getPharmaceuticalBillItem().setStringValue(reportDate);
-
         onEdit(pid);
     }
 
@@ -419,8 +407,8 @@ public class StoreGrnController implements Serializable {
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
         onEdit(tmp);
-        //    onEditPurchaseRate(tmp);
-        setBatch(tmp);
+        //   onEditPurchaseRate(tmp);
+       // setBatch(tmp);
     }
 
     public void onEdit(BillItem tmp) {

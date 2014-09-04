@@ -15,4 +15,5 @@ public enum DepartmentType {
     Theatre,
     Kitchen,
     Opd,
+    Inventry,
 }

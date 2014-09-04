@@ -91,6 +91,25 @@ public class StaffController implements Serializable {
         this.staffWithCode = staffWithCode;
     }
 
+    public void createStaffListWithOutSpecility() {
+
+        String sql="select s from Staff s where "
+                + " s.retired=false "
+                + " and s.speciality is null "
+                + " order by s.person.name ";
+        
+        staffWithCode=getEjbFacade().findBySQL(sql);
+    }
+    
+    public void createStaffListWithOutSpecilityAll() {
+
+        String sql="select s from Staff s where "
+                + " s.retired=false "
+                + " order by s.person.name ";
+        
+        staffWithCode=getEjbFacade().findBySQL(sql);
+    }
+
     public void createStaffWithCode() {
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
@@ -127,12 +146,12 @@ public class StaffController implements Serializable {
         items = null;
         selectedStaff = null;
         filteredStaff = null;
-        current=null;
-        selectedItems=null;
-        selectedList=null;
-        selectedStaff=null;
-        staffWithCode=null;
-      
+        current = null;
+        selectedItems = null;
+        selectedList = null;
+        selectedStaff = null;
+        staffWithCode = null;
+
     }
 
     public EmployeeStatus[] getEmployeeStatuses() {
@@ -162,11 +181,11 @@ public class StaffController implements Serializable {
 
         return d;
     }
-    
+
     List<Staff> suggestions;
-    
+
     public List<Staff> completeStaff(String query) {
-        
+
         String sql;
         if (query == null) {
             suggestions = new ArrayList<>();
@@ -417,6 +436,10 @@ public class StaffController implements Serializable {
         }
         if (current.getPerson() == null) {
             UtilityController.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (current.getSpeciality()==null) {
+            UtilityController.addErrorMessage("Plaese Select Speciality.");
             return;
         }
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
