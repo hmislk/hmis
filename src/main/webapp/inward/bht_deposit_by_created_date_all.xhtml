@@ -58,8 +58,8 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.allBhtPySummerriesByCreatedDate}">
+                                <pe:exporter type="xlsx" target="tbl,tbl2" fileName="Inward_Payment_Bill"  />
                             </p:commandButton>  
                         </h:panelGrid>
 
