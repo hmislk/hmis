@@ -6,7 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:bi="http://java.sun.com/jsf/composite/bill"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:st="http://java.sun.com/jsf/composite/store">
 
     <ui:define name="content">
         <h:form>
@@ -164,20 +164,69 @@
                 </p:dataTable>  
 
                 <p:panel>
-                    <p:panelGrid columns="2" style="min-width: 100%">
+                    <p:panelGrid columns="3" style="min-width: 100%">
 
                         <p:panelGrid columns="2">
                             <p:outputLabel value="Invoice No : "/>
                             <p:inputText autocomplete="off" value="#{storeGrnController.grnBill.invoiceNumber}" />
                             <p:outputLabel value="Invoice Date"/>
                             <p:calendar  value="#{storeGrnController.grnBill.invoiceDate}"   navigator="true" pattern="dd/MM/yy" /> 
-                        </p:panelGrid>                    
+                        </p:panelGrid>   
+
+
+                        <p:panel header="Bill Expenses" >
+                            <p:focus id="focusExpense" for="acExpense" ></p:focus>
+                            <h:panelGrid id="billExpenseGrid" columns="4" style="min-width: 100%;">
+                                <h:outputLabel value="Select Expense"/>
+                                <h:outputLabel value="Value"/>
+                                <h:outputLabel value="Descreption"/>
+                                <h:outputLabel ></h:outputLabel>
+                                <p:autoComplete id="acExpense"   value="#{storeGrnController.currentExpense.item}" 
+                                                forceSelection="true"
+                                                completeMethod="#{itemController.completeExpenseItem}" 
+                                                var="ex" itemLabel="#{ex.name}" itemValue="#{ex}" >
+                                </p:autoComplete>
+                                <p:inputText autocomplete="off" id="txtExpense"
+                                             styleClass="numericTxt" 
+                                             value="#{storeGrnController.currentExpense.rate}" style="width:100%" />  
+                                <p:inputText maxlength="250" value="#{storeGrnController.currentExpense.descreption}" ></p:inputText>
+                                <p:commandButton id="btnAddExpense" value="Add Expense" 
+                                                 action="#{storeGrnController.addExpense()}" 
+                                                 process="billExpenseGrid" 
+                                                 update="tblExpenses billExpenseGrid tot focusExpense "/>
+                            </h:panelGrid>
+
+                            <p:dataTable id="tblExpenses" 
+                                         value="#{storeGrnController.billExpenses}" var="be"
+                                         emptyMessage="No Bill Expenses">
+                                <p:column headerText="Expense" >
+                                    <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Value" >
+                                    <h:outputLabel value="#{be.netValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Descreption" >
+                                    <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Remove" >
+                                    <p:commandButton value="Remove" ajax="false" action="#{storeGrnController.removeItemEx(be)}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
 
                         <p:panelGrid columns="2" id="tot">
                             <p:outputLabel value="Gross Total"/>
                             <p:outputLabel id="gro"  value="#{0-storeGrnController.grnBill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
+                            <p:outputLabel value="Expenses"/>
+                            <p:outputLabel id="lblExpenses"  value="#{0-storeGrnController.grnBill.expenseTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+
                             <p:outputLabel value="Discount"/>
                             <p:inputText autocomplete="off" id="dis" value="#{storeGrnController.grnBill.discount}" >
                                 <p:ajax process="gro @this" update="net" event="blur"
@@ -197,13 +246,13 @@
 
             </h:panelGroup>
             <p:panel rendered="#{storeGrnController.printPreview}">
-                <p:commandButton ajax="false" action="#{storeGrnController.viewPoList()}" value="PO List"/>                    
+                <p:commandButton ajax="false" action="#{storeGrnController.viewPoList()}" actionListener="#{searchController.createPoTableStore}" value="PO List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   >
 
-                    <ph:grn bill="#{storeGrnController.grnBill}"/>
+                    <st:grn bill="#{storeGrnController.grnBill}"/>
 
                 </p:panel>
             </p:panel>

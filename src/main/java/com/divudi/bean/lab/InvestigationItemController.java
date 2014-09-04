@@ -10,36 +10,39 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import java.util.TimeZone;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.entity.Category;
 import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValue;
 import com.divudi.facade.InvestigationFacade;
+import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
+import com.divudi.facade.util.JsfUtil;
+import com.thoughtworks.xstream.XStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import javax.inject.Inject;
-import javax.inject.Named; import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
+import java.util.TimeZone;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class InvestigationItemController implements Serializable {
+public class InvestigationItemController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -56,6 +59,132 @@ public  class InvestigationItemController implements Serializable {
     InvestigationItemValue removingItem;
     InvestigationItemValue addingItem;
     String addingString;
+
+    Investigation copyingFromInvestigation;
+    Investigation copyingToInvestigation;
+    String ixXml;
+
+    public void convertToXml() {
+        System.out.println("convertingto xml");
+        JsfUtil.addErrorMessage("Converting started");
+        XStream xstream = new XStream();
+        xstream.alias("investigation", Investigation.class);
+        xstream.alias("investigation_item", InvestigationItem.class);
+        xstream.alias("investigation_item_value", InvestigationItemValue.class);
+        xstream.alias("investigation_category", Category.class);
+        xstream.omitField(null, ixXml);
+        System.out.println("copyingFromInvestigation = " + copyingFromInvestigation);
+        String ixString = xstream.toXML(copyingFromInvestigation);
+        JsfUtil.addSuccessMessage(ixXml);
+        System.out.println("ixString = " + ixString);
+    }
+
+    public String copyInvestigation() {
+        if (copyingFromInvestigation == null) {
+            JsfUtil.addErrorMessage("Please select an iinvestigation to copy from");
+            return "";
+        }
+        if (copyingToInvestigation == null) {
+            JsfUtil.addErrorMessage("Please select an iinvestigation to copy from");
+            return "";
+        }
+
+        System.out.println("copyingFromInvestigation = " + copyingFromInvestigation);
+        System.out.println("copyingToInvestigation = " + copyingToInvestigation);
+
+        for (InvestigationItem ii : copyingFromInvestigation.getReportItems()) {
+
+            System.out.println("ii = " + ii);
+
+            if (!ii.isRetired()) {
+
+                InvestigationItem nii = new InvestigationItem();
+                nii.setCategory(ii.getCategory());
+                nii.setCreatedAt(new Date());
+                nii.setCreater(getSessionController().getLoggedUser());
+                nii.setCssBackColor(ii.getCssBackColor());
+                nii.setCssBorder(ii.getCssBorder());
+                nii.setCssBorderRadius(ii.getCssBorderRadius());
+                nii.setCssClip(ii.getCssClip());
+                nii.setCssColor(ii.getCssColor());
+                nii.setCssFontFamily(ii.getCssFontFamily());
+                nii.setCssFontSize(ii.getCssFontSize());
+                nii.setCssFontStyle(ii.getCssFontStyle());
+                nii.setCssFontVariant(ii.getCssFontVariant());
+                nii.setCssFontWeight(ii.getCssFontWeight());
+                nii.setCssHeight(ii.getCssHeight());
+                nii.setCssLeft(ii.getCssLeft());
+                nii.setCssLineHeight(ii.getCssLineHeight());
+                nii.setCssMargin(ii.getCssMargin());
+                nii.setCssOverflow(ii.getCssOverflow());
+                nii.setCssPadding(ii.getCssPadding());
+                nii.setCssPosition(ii.getCssPosition());
+                nii.setCssStyle(ii.getCssStyle());
+                nii.setCssTextAlign(ii.getCssTextAlign());
+                nii.setCssTop(ii.getCssTop());
+                nii.setCssVerticalAlign(ii.getCssVerticalAlign());
+                nii.setCssWidth(ii.getCssWidth());
+                nii.setCssZorder(ii.getCssZorder());
+
+                nii.setIxItemType(ii.getIxItemType());
+                nii.setIxItemValueType(ii.getIxItemValueType());
+                nii.setItem(copyingToInvestigation);
+
+                nii.setName(ii.getName());
+                nii.setReportItemType(ii.getReportItemType());
+
+                List<InvestigationItemValue> niivs = new ArrayList<>();
+                for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
+
+                    System.out.println("iiv = " + iiv);
+
+                    InvestigationItemValue niiv = new InvestigationItemValue();
+                    niiv.setCode(iiv.getCode());
+                    niiv.setCreatedAt(new Date());
+                    niiv.setCreater(getSessionController().getLoggedUser());
+                    niiv.setInvestigationItem(nii);
+                    niiv.setName(iiv.getName());
+                    niiv.setOrderNo(iiv.getOrderNo());
+                    niivs.add(niiv);
+                }
+
+                nii.setInvestigationItemValues(niivs);
+
+                getEjbFacade().create(nii);
+                
+            }
+
+        }
+        
+        setCurrentInvestigation(copyingToInvestigation);
+
+        return "/lab_investigation_format";
+
+    }
+
+    public String getIxXml() {
+        return ixXml;
+    }
+
+    public void setIxXml(String ixXml) {
+        this.ixXml = ixXml;
+    }
+
+    public Investigation getCopyingFromInvestigation() {
+        return copyingFromInvestigation;
+    }
+
+    public void setCopyingFromInvestigation(Investigation copyingFromInvestigation) {
+        this.copyingFromInvestigation = copyingFromInvestigation;
+    }
+
+    public Investigation getCopyingToInvestigation() {
+        return copyingToInvestigation;
+    }
+
+    public void setCopyingToInvestigation(Investigation copyingToInvestigation) {
+        this.copyingToInvestigation = copyingToInvestigation;
+    }
 
     public InvestigationItemValueFacade getIivFacade() {
         return iivFacade;
@@ -87,8 +216,8 @@ public  class InvestigationItemController implements Serializable {
         }
         return iivs;
     }
-    
-     public List<InvestigationItem> getCurrentIxItems() {
+
+    public List<InvestigationItem> getCurrentIxItems() {
         List<InvestigationItem> iivs;
         if (currentInvestigation == null || currentInvestigation.getId() == null) {
             return new ArrayList<InvestigationItem>();
@@ -155,7 +284,7 @@ public  class InvestigationItemController implements Serializable {
     }
 
     public void addNewLabel() {
-        if(currentInvestigation==null){
+        if (currentInvestigation == null) {
             UtilityController.addErrorMessage("Please select an investigation");
             return;
         }
@@ -201,7 +330,7 @@ public  class InvestigationItemController implements Serializable {
     }
 
     public void addNewValue() {
-        if(currentInvestigation==null){
+        if (currentInvestigation == null) {
             UtilityController.addErrorMessage("Please select an investigation");
             return;
         }
@@ -216,7 +345,7 @@ public  class InvestigationItemController implements Serializable {
     }
 
     public void addNewCalculation() {
-        if(currentInvestigation==null){
+        if (currentInvestigation == null) {
             UtilityController.addErrorMessage("Please select an investigation");
             return;
         }
@@ -232,7 +361,7 @@ public  class InvestigationItemController implements Serializable {
     }
 
     public void addNewFlag() {
-        if(currentInvestigation==null){
+        if (currentInvestigation == null) {
             UtilityController.addErrorMessage("Please select an investigation");
             return;
         }
@@ -264,7 +393,6 @@ public  class InvestigationItemController implements Serializable {
         current = null;
         currentInvestigation = null;
 
-
     }
 
     public void saveSelected() {
@@ -280,8 +408,6 @@ public  class InvestigationItemController implements Serializable {
             getCurrentInvestigation().getReportItems().add(current);
             getIxFacade().edit(currentInvestigation);
         }
-
-
 
 //        recreateModel();
 //        getItems();

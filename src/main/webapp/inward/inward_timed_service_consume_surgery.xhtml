@@ -67,7 +67,7 @@
 
                                 <p:outputLabel value="StartTime:"/>
                                 <p:calendar id="startTime"  value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm a" >                             
+                                            pattern="dd MMMM yyyy hh mm ss a" >                             
                                 </p:calendar>                                                                      
 
 
@@ -90,12 +90,12 @@
                             <p:column headerText="Start Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm a" />                                      
+                                            pattern="dd MMMM yyyy hh mm ss a" />                                      
                             </p:column>                               
                             <p:column headerText="Stopped Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.toTime}" 
-                                            pattern="dd MMMM yyyy hh mm a" />  
+                                            pattern="dd MMMM yyyy hh mm ss a" />  
                             </p:column>
                             <p:column headerText="Total">
                                 #{ti.billFee.patientItem.serviceValue}

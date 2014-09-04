@@ -14,11 +14,11 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="ALL B.H.T. TOTAL PAYMENT  SUMMERIES (Discharge B.H.T. only)" >
+                    <p:panel header="B.H.T. DEPOSIT PAYMENT  SUMMERIES (Not Discharge B.H.T. only)" >
 
                         <h:panelGrid columns="5" >
                             <p:outputLabel value="Date"/>
-                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                           <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
                             <p:outputLabel value="From" ></p:outputLabel>
 
                             <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
@@ -52,30 +52,30 @@
                         </h:panelGroup>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.disBhtPySummerries()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.allBhtPySummerriesByCreatedDate()}" onclick="onSubmitButton();" ></p:commandButton>
 
-                            <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                            <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.disBhtPySummerries()}">
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
                                 <pe:exporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
                             </p:commandButton>  
                         </h:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{mdInwardReportController.bil}" var="i"  >
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{mdInwardReportController.deposits}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Total Payment Summery (Discharge B.H.T. only) - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
+                                    <h:outputLabel value="Deposits (By Created Date) - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{mdInwardReportController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
@@ -85,6 +85,27 @@
                                         <h:outputLabel value="B H T No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date Of Admission">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Admission"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.patientEncounter.dateOfAdmission}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date Of Discharge">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Discharge"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.patientEncounter.dateOfDischarge}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date Of Payment">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Payment"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.createdAt}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Bill No">
@@ -115,8 +136,10 @@
                                         <h:outputLabel value="Amount"/>
                                     </f:facet>                                    
                                     <h:outputLabel  value="#{i.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{mdInwardReportController.depositsTotal}"/>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Comment">
@@ -127,187 +150,105 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:columnGroup type="footer">
-
-                                    <p:row>
-
-                                        <p:column colspan="4" footerText="Total"></p:column>
-                                        <p:column footerText="#{mdInwardReportController.totalValue}" style="text-align: right">
-                                            <f:facet name="footer">
-                                                <p:outputLabel value="#{mdInwardReportController.totalValue}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-
-                                    </p:row>
-
-                                </p:columnGroup>
-
                             </p:dataTable>
 
-                            <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.cancel}" 
-                                         var="can">
+                            <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.completePayments}" var="i"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Complete Payments (By Created Date) - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
+                                    <h:panelGrid columns="4">
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{mdInwardReportController.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{mdInwardReportController.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </f:facet>
 
                                 <p:column headerText="B H T No">
                                     <f:facet name="header">
                                         <h:outputLabel value="B H T No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{can.patientEncounter.bhtNo}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date Of Admission">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Admission"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.patientEncounter.dateOfAdmission}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date Of Discharge">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Discharge"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.patientEncounter.dateOfDischarge}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date Of Payment">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Payment"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.createdAt}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{can.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.insId}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Patient Name">
                                     <f:facet name="header">
                                         <h:outputLabel value="Patient Name"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{can.patient.person.nameWithTitle}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.patient.person.nameWithTitle} - #{i.patientEncounter.creditCompany.name}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Date">
                                     <f:facet name="header">
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{can.createdAt}"  >
+                                    <h:outputLabel value="#{i.createdAt}"  >
                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-
 
                                 <p:column headerText="Amount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Amount"/>
                                     </f:facet>                                    
-                                    <h:outputLabel  value="#{can.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel  value="#{i.netTotal}">
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{mdInwardReportController.completePaymentsTotal}"/>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Comment">
                                     <f:facet name="header">
                                         <h:outputLabel value="Comment"/>
                                     </f:facet>                                    
-                                    <h:outputLabel  value="#{can.comments}">
+                                    <h:outputLabel  value="#{i.comments}">
                                     </h:outputLabel>
                                 </p:column>
-
-                                <p:columnGroup type="footer">
-
-                                    <p:row>
-
-                                        <p:column colspan="4" footerText="Total"></p:column>
-                                        <p:column footerText="#{mdInwardReportController.cancelledTotal}" style="text-align: right">
-                                            <f:facet name="footer">
-                                                <p:outputLabel value="#{mdInwardReportController.cancelledTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
-                                                </p:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-
-                                    </p:row>
-
-                                </p:columnGroup>
-
-
-                            </p:dataTable>
-
-                            <p:dataTable id="tbl3" styleClass="noBorder normalFont" value="#{mdInwardReportController.refund}" 
-                                         var="ref">
-
-                                <p:column headerText="B H T No">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="B H T No"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{ref.patientEncounter.bhtNo}" ></h:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Bill No">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Bill No"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{ref.insId}" ></h:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Patient Name">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Patient Name"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{ref.patient.person.nameWithTitle}" ></h:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Date">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Date"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{ref.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                </p:column>
-
-
-
-                                <p:column headerText="Amount">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Amount"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel  value="#{ref.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Comment">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Comment"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel  value="#{ref.comments}">
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:columnGroup type="footer">
-
-                                    <p:row>
-
-                                        <p:column colspan="4" footerText="Total"></p:column>
-                                        <p:column footerText="#{mdInwardReportController.refundTotal}" style="text-align: right">
-                                            <f:facet name="footer">
-                                                <p:outputLabel value="#{mdInwardReportController.refundTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
-                                                </p:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-
-                                    </p:row>
-
-                                </p:columnGroup>
-
 
                             </p:dataTable>
 
                             <p:panelGrid columns="2" styleClass="noBorder normalFont">
-                                <p:outputLabel value="Billed Total"/>
-                                <p:outputLabel value="#{mdInwardReportController.totalValue}">
-                                    <f:convertNumber pattern="#000.00"></f:convertNumber></p:outputLabel>
-
-                                <p:outputLabel value="Cancel Bill Total"/>
-                                <p:outputLabel value="#{mdInwardReportController.cancelledTotal}">
-                                    <f:convertNumber pattern="#000.00"></f:convertNumber></p:outputLabel>
-
-                                <p:outputLabel value="Refund Bill Total"/>
-                                <p:outputLabel value="#{mdInwardReportController.refundTotal}">
-                                    <f:convertNumber pattern="#000.00"></f:convertNumber></p:outputLabel>
-
-                                <p:outputLabel value="Net  Total"/>
-                                <p:outputLabel value="#{mdInwardReportController.totalValue
-                                                        +mdInwardReportController.cancelledTotal
-                                                        +mdInwardReportController.refundTotal}">
-                                    <f:convertNumber pattern="#000.00"/>
+                                <p:outputLabel value="Net Bill Total"/>
+                                <p:outputLabel value="#{mdInwardReportController.grantTotal}">
+                                    <f:convertNumber pattern="#000.00"></f:convertNumber>
                                 </p:outputLabel>
+
                             </p:panelGrid>
+
+
+
 
 
 

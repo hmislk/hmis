@@ -30,9 +30,9 @@
 
                                 <h:outputLabel value="From" ></h:outputLabel>
 
-                                <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                                <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
                                 <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MM yyyy hh mm a" ></p:calendar>
+                                <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton ajax="false" value="Process" actionListener="#{reportsTransfer.fillSlowMoving()}" ></p:commandButton>
 
@@ -41,9 +41,9 @@
 
                             <h:panelGrid columns="2" style="width: 300px;height: 200px;" >
                                 <h:outputLabel value="Movement Type" ></h:outputLabel>
-                                <h:selectManyMenu value="#{reportsTransfer.billTypes}"   >
-                                    <f:selectItems value="#{enumController.pharmacyBillTypes}" var="pbt" ></f:selectItems>
-                                </h:selectManyMenu>
+                                <p:selectManyButton value="#{reportsTransfer.billTypes}"   >
+                                    <f:selectItems value="#{enumController.pharmacyBillTypes2}" var="pbt" ></f:selectItems>
+                                </p:selectManyButton>
                             </h:panelGrid>
 
 

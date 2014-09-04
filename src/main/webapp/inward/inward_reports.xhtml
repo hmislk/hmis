@@ -27,12 +27,12 @@
                         </p:panel>
                         <p:panel header="Reports By Bht">
                             <h:panelGrid columns="1">
-                                
-                                 <p:commandButton styleClass="linkButton" ajax="false" value="Intrim Detail" action="inward_bill_intrim_finalized" /> 
+
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Intrim Detail" action="inward_bill_intrim_finalized" /> 
                                 <p:commandButton styleClass="linkButton" ajax="false" value="BHT Break Down" action="inward_bill_final_break_down" /> 
                                 <p:commandButton styleClass="linkButton" ajax="false" value="BHT Sevice Errror Diduction" action="inward_bill_final_break_down_error" rendered="false" /> 
                                 <p:commandButton styleClass="linkButton" ajax="false" value="BHT Intrim Errror Diduction" action="inward_bill_intrim_finalized_error_correction" /> 
-                                
+
                                 <p:commandButton ajax="false" value="Error" action="#{bhtSummeryFinalizedController.errorCheck}" rendered="false"/>
                                 <p:commandButton ajax="false" value="Reset Nurse Speciality" action="#{bhtSummeryFinalizedController.errorCheck2}" rendered="false" />
                                 <p:commandButton ajax="false" value="Reset Gross Pharmacy" action="#{bhtSummeryFinalizedController.errorCorrectionPharmacy()}" rendered="false"/>
@@ -77,28 +77,31 @@
                             </h:panelGrid>
                         </p:panel>
                         <p:panel header="Surgery Reports">
-
+                            <p:commandButton value="Surgery Details" action="inward_search_surgery_1" actionListener="#{searchController.makeNull()}" styleClass="linkButton" ajax="false" />
                         </p:panel>
 
                         <p:panel header="All Summerries">
                             <h:panelGrid columns="1">
-                                
+
                                 <p:commandButton value="NEWLY ADDED REPORT" action="inward_report_bht_bil"  styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="BHT Income By Categories Individual BHT" action="inward_report_bht_income_by_caregories_bht"  styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="(1)Inward Report by Income Categories" action="inward_report_bht_income_by_caregories"  styleClass="linkButton" ajax="false" />
-                                <p:commandButton value="(2)All BHT Total Payment Summeries" action="all_bht_total_payment_summeries" actionListener="#{mdInwardReportController.makeNull}" styleClass="linkButton" ajax="false" /> 
-                                <p:commandButton value="(3)ALL B.H.T. TOTAL PAYMENT  SUMMERIES (Discharge B.H.T. only)" action="bht_deposit_payment_summeries_discharge" actionListener="#{mdInwardReportController.makeNull}" styleClass="linkButton" ajax="false" />
-                                <p:commandButton value="(4)B.H.T. DEPOSIT PAYMENT  SUMMERIES (Not Discharge B.H.T. only)" action="bht_deposit_payment_summeries_not_discharge " actionListener="#{mdInwardReportController.makeNull}" styleClass="linkButton" ajax="false" />
-
                                 <p:commandButton value="(11)B.H.T. Vice Income by Catgories" action="inward_report_bht_vice_income_by_caregories" actionListener="#{mdInwardReportController.makeNull}" styleClass="linkButton" ajax="false" />
-
-
+                                <p:commandButton value="(12) Room Time Report" action="inward_report_room"/>
+                                <p:commandButton value="(13) BHT Issue By Item" action="pharmacy_report_bht_issue_by_item"/>
 
                             </h:panelGrid>
-                            
+
                         </p:panel>
 
-                     
+                        <p:panel header="Inward Payment">
+                            <p:commandButton value="(1)Deposits of Undischarged Patient and Complete Payments of Discharged Patients" action="bht_deposit_by_discharge_date_and_created_date" actionListener="#{mdInwardReportController.makeNull}" styleClass="linkButton" ajax="false" /> 
+                            <p:commandButton value="(2)Complete Payments of Discharged Patient" action="bht_deposit_by_discharge_date" actionListener="#{mdInwardReportController.makeNull}" styleClass="linkButton" ajax="false" />
+                            <p:commandButton value="(3)Deposite of Undischarged Patient" action="bht_deposit_by_created_date_not_discharge  " actionListener="#{mdInwardReportController.makeNull}" styleClass="linkButton" ajax="false" />
+                            <p:commandButton value="(4)All Payment By Created Date Date" action="bht_deposit_by_created_date_all" actionListener="#{mdInwardReportController.makeNull}" styleClass="linkButton" ajax="false" />
+                        </p:panel>
+
+
                     </h:panelGrid>
                 </h:form>
             </ui:define>

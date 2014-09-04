@@ -20,9 +20,9 @@
                     <p:panel id="panelReport" styleClass="noBorder summeryBorder" >
                         <p:panel  styleClass="tem nonPrintBlock" >
                             <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
-                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.fromDate}" pattern="dd MMMM yyyy hh:mm a" >
+                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                             </p:calendar>
-                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.toDate}" pattern="dd MMMM yyyy hh:mm a" >
+                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByInstitutionController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                             </p:calendar>
                             <h:outputLabel styleClass="noPrintButton" value="Institution" style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
                             <p:selectOneMenu styleClass="noPrintButton"  value="#{labReportSearchByInstitutionController.institution}"                                        
@@ -56,12 +56,12 @@
                             <br/>
                             <h:outputLabel value="From : " />
                             <h:outputLabel value="#{labReportSearchByInstitutionController.fromDate}"  >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
                             </h:outputLabel>
                             &nbsp;&nbsp;&nbsp;&nbsp;
                             <h:outputLabel value="To : "  ></h:outputLabel>
                             <h:outputLabel value="#{labReportSearchByInstitutionController.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
                             </h:outputLabel>
 
                         </p:panel>

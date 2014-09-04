@@ -48,6 +48,7 @@ public class ShiftTableController implements Serializable {
     SessionController sessionController;
     @Inject
     ShiftController shiftController;
+    boolean all;
 
     //FUNTIONS
     public void makeNull() {
@@ -277,6 +278,30 @@ public class ShiftTableController implements Serializable {
 
     public void setStaffShiftFacade(StaffShiftFacade staffShiftFacade) {
         this.staffShiftFacade = staffShiftFacade;
+    }
+
+    public void visible() {
+        all = true;
+    }
+
+    public void hide() {
+        all = false;
+    }
+
+    public boolean isAll() {
+        return all;
+    }
+
+    public void setAll(boolean all) {
+        this.all = all;
+    }
+
+    public StaffShiftHistoryFacade getStaffShiftHistoryFacade() {
+        return staffShiftHistoryFacade;
+    }
+
+    public void setStaffShiftHistoryFacade(StaffShiftHistoryFacade staffShiftHistoryFacade) {
+        this.staffShiftHistoryFacade = staffShiftHistoryFacade;
     }
 
 }

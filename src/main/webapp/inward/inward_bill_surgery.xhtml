@@ -118,12 +118,12 @@
                             <p:column headerText="Start Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm a" />                                      
+                                            pattern="dd MMMM yyyy hh mm ss a" />                                      
                             </p:column>                               
                             <p:column headerText="Stopped Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.toTime}" 
-                                            pattern="dd MMMM yyyy hh mm a" />  
+                                            pattern="dd MMMM yyyy hh mm ss a" />  
                             </p:column>
                             <p:column headerText="Total">
                                 #{ti.billFee.patientItem.serviceValue}
@@ -212,14 +212,14 @@
                             </p:column>
                             <p:column headerText="Billed Time"  >
                                 <h:outputLabel value="#{iss.createdAt}">
-                                    <f:convertDateTime pattern="hh mm a"/>
+                                    <f:convertDateTime pattern="hh mm ss a"/>
                                 </h:outputLabel>                                                   
                                 <br/>
                                 <h:panelGroup rendered="#{iss.bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
                                                    value="#{iss.bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="hh mm a"/>
+                                        <f:convertDateTime pattern="hh mm ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>

@@ -35,7 +35,7 @@ import javax.persistence.Transient;
 @Entity
 public class BillItem implements Serializable {
 
-    @OneToOne(mappedBy = "billItem", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY)
     BillSession billSession;
 
     @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
@@ -52,6 +52,7 @@ public class BillItem implements Serializable {
     double remainingQty;
     double Rate;
     double discountRate;
+    double marginRate;
     double netRate;
     double grossValue;
     double discount;
@@ -63,6 +64,8 @@ public class BillItem implements Serializable {
     Item item;
     @ManyToOne
     Bill bill;
+    @ManyToOne
+    Bill expenseBill;
     Boolean refunded;
     //Created Properties
     @ManyToOne
@@ -147,8 +150,8 @@ public class BillItem implements Serializable {
         agentRefNo = billItem.getAgentRefNo();
         item = billItem.getItem();
         qty = billItem.getQty();
-        descreption=billItem.getDescreption();
-        billTime=billItem.getBillTime();
+        descreption = billItem.getDescreption();
+        billTime = billItem.getBillTime();
         grossValue = billItem.getGrossValue();
         netValue = billItem.getNetValue();
         discount = billItem.getDiscount();
@@ -160,7 +163,7 @@ public class BillItem implements Serializable {
         tmpQty = billItem.tmpQty;
         referenceBill = billItem.getReferenceBill();
         marginValue = billItem.getMarginValue();
-        priceMatrix=billItem.getPriceMatrix();
+        priceMatrix = billItem.getPriceMatrix();
         //  referanceBillItem=billItem.getReferanceBillItem();
     }
 
@@ -621,4 +624,22 @@ public class BillItem implements Serializable {
         this.billTime = billTime;
     }
 
+    public Bill getExpenseBill() {
+        return expenseBill;
+    }
+
+    public void setExpenseBill(Bill expenseBill) {
+        this.expenseBill = expenseBill;
+    }
+
+    public double getMarginRate() {
+        return marginRate;
+    }
+
+    public void setMarginRate(double marginRate) {
+        this.marginRate = marginRate;
+    }
+
+    
+    
 }

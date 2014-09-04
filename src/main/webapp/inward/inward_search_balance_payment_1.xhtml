@@ -20,11 +20,11 @@
                                 </h:panelGrid>
                                 <h:panelGrid columns="6">
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                                    <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
                                     <p:outputLabel value="Admission Type"/>
@@ -37,7 +37,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid columns="3">
                                     <p:commandButton ajax="false" action="#{mdInwardReportController.createInwardBalancePaymentBills1()}" value="Search" onclick="onSubmitButton();" />
-                                    <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                                    <p:commandButton value="Print" ajax="false" action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
@@ -120,9 +120,9 @@
                                     <h:outputLabel value="#{bb.bill.paymentMethod}" ></h:outputLabel>                                   
                                 </p:column>
 
-                                <p:column headerText="Payed Value" style="text-align: right;">
+                                <p:column headerText="Payed Value " style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Payed Value"/>
+                                        <h:outputLabel value="Payed Value "/>
                                     </f:facet>
                                     <h:outputLabel value="#{bb.bill.netTotal}" style="text-align: right;">
                                         <f:convertNumber pattern="#,000.00"/>

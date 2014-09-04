@@ -20,13 +20,13 @@
                     <h:panelGrid columns="2">
                         <h:panelGroup>
                             <h:outputLabel value="From Date"/>                             
-                            <p:calendar value="#{pharmacyErrorChecking.fromDate}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar value="#{storeErrorChecking.fromDate}" pattern="dd MM yyyy" ></p:calendar>
                         </h:panelGroup>
                         <h:panelGroup>
                             <h:outputLabel value="To Daate " ></h:outputLabel>
-                            <p:calendar value="#{pharmacyErrorChecking.toDate}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar value="#{storeErrorChecking.toDate}" pattern="dd MM yyyy" ></p:calendar>
                         </h:panelGroup>
-                        <p:autoComplete value="#{pharmacyErrorChecking.department}"  
+                        <p:autoComplete value="#{storeErrorChecking.department}"  
                                         style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
                                         forceSelection="true" rendered="true" 
                                         requiredMessage="You must select a department" >
@@ -38,7 +38,7 @@
                             </p:column>
 
                         </p:autoComplete>
-                        <p:autoComplete value="#{pharmacyErrorChecking.item}"  
+                        <p:autoComplete value="#{storeErrorChecking.item}"  
                                         style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  
                                         completeMethod="#{itemController.completeStoreItem}" 
                                         var="item" itemValue="#{item}" itemLabel="#{item.name}" 
@@ -59,15 +59,15 @@
 
 
                     <p:panel header="All Bills" >
-                        <p:commandButton ajax="false" value="List All Bill Items" action="#{pharmacyErrorChecking.listPharmacyMovementByDateRangeOnlyStockChange() }" >
+                        <p:commandButton ajax="false" value="List All Bill Items" action="#{storeErrorChecking.listPharmacyMovementByDateRangeOnlyStockChange() }" >
                         </p:commandButton>
                         <h:outputLabel value="Calculated Stock" ></h:outputLabel>
-                        <h:outputLabel value="#{pharmacyErrorChecking.calculatedStock}" ></h:outputLabel>
+                        <h:outputLabel value="#{storeErrorChecking.calculatedStock}" ></h:outputLabel>
                         <br/>
 
 
                         <p:dataTable styleClass="noBorder summeryBorder" 
-                                     value="#{pharmacyErrorChecking.billItems}" var="pb"  rowIndexVar="i"
+                                     value="#{storeErrorChecking.billItems}" var="pb"  rowIndexVar="i"
                                      rowStyleClass="#{(pb.retired eq true or pb.bill.retired eq true) ?'greenText' : ''} 
                                      #{((pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'PharmacyPurchaseBill' )or
                                        (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'PharmacyGrnBill' )or
@@ -90,7 +90,7 @@
                             <p:column >
                                 <h:outputLabel value="#{i+1}"/>
                                 <h:commandButton action="/pharmacy/pharmacy_reprint_bill" value="View Bill">                                    
-                                    <f:setPropertyActionListener value="#{pb.bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{pb.bill}" target="#{storeBillSearch.bill}"/>
                                 </h:commandButton>
                             </p:column>
 
@@ -157,7 +157,7 @@
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Billed Date"/>
                                     <h:outputLabel value="#{pb.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
                                     <h:outputLabel value="Retired"/>
                                     <h:outputLabel value="#{pb.retired}" >

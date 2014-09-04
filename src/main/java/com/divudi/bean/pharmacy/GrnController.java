@@ -72,15 +72,13 @@ public class GrnController implements Serializable {
     private CategoryFacade categoryFacade;
     @EJB
     private ItemBatchFacade itemBatchFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private AmpFacade ampFacade;
     @EJB
-    private PharmacyCalculation pharmacyBillBean;
-    @EJB
     private CommonFunctions commonFunctions;
-    @EJB
+    @Inject
     private PharmacyCalculation pharmacyCalculation;
     /////////////////
     private Institution dealor;
@@ -169,12 +167,12 @@ public class GrnController implements Serializable {
     }
 
     public void settle() {
-        String msg = getPharmacyBillBean().errorCheck(getGrnBill(), billItems);
+        String msg = pharmacyCalculation.errorCheck(getGrnBill(), billItems);
         if (!msg.isEmpty()) {
             UtilityController.addErrorMessage(msg);
             return;
         }
-        getPharmacyBillBean().calSaleFreeValue(getGrnBill());
+        pharmacyCalculation.calSaleFreeValue(getGrnBill());
         if (getGrnBill().getInvoiceDate() == null) {
             getGrnBill().setInvoiceDate(getApproveBill().getCreatedAt());
         }
@@ -205,7 +203,7 @@ public class GrnController implements Serializable {
 
             //     updatePoItemQty(i);
             //System.err.println("1 " + i);
-            ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
+            ItemBatch itemBatch = getPharmacyCalculation().saveItemBatch(i);
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
 
             double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
@@ -220,7 +218,7 @@ public class GrnController implements Serializable {
             i.getPharmaceuticalBillItem().setStock(stock);
 
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            getPharmacyBillBean().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
 
             getGrnBill().getBillItems().add(i);
         }
@@ -307,7 +305,7 @@ public class GrnController implements Serializable {
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
             //System.err.println("Qty Unit : " + i.getQtyInUnit());
 //            //System.err.println("Remaining Qty : " + i.getRemainingQty());
-            double remains = getPharmacyBillBean().calQtyInTwoSql(i);
+            double remains = getPharmacyCalculation().calQtyInTwoSql(i);
             //System.err.println("Tot GRN Qty : " + remains);
             //System.err.println("QTY : " + i.getQtyInUnit());
             if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
@@ -360,7 +358,7 @@ public class GrnController implements Serializable {
     }
 
     public void onEdit(BillItem tmp) {
-        double remains = getPharmacyBillBean().getRemainingQty(tmp.getPharmaceuticalBillItem());
+        double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
 
 //        System.err.println("1 " + tmp.getTmpQty());
 //        System.err.println("2 " + tmp.getQty());
@@ -524,14 +522,6 @@ public class GrnController implements Serializable {
 
     public void setAmpFacade(AmpFacade ampFacade) {
         this.ampFacade = ampFacade;
-    }
-
-    public PharmacyCalculation getPharmacyBillBean() {
-        return pharmacyBillBean;
-    }
-
-    public void setPharmacyBillBean(PharmacyCalculation pharmacyBillBean) {
-        this.pharmacyBillBean = pharmacyBillBean;
     }
 
     public void setFromDate(Date fromDate) {

@@ -15,51 +15,47 @@
                     </f:facet>
                     <h:panelGrid columns="5" style="min-width: 100%;" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                        <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                             <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >
+                        <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                             <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                         </p:calendar>
                         <p:commandButton ajax="false" value="Process DUE" action="#{creditCompanyDueController.createInwardCreditDue()}" onclick="onSubmitButton();"/>
                     </h:panelGrid>
-                    
+
                     <p:panelGrid columns="2">
                         <p:outputLabel value="BHT"/>
                         <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
                                         value="#{creditCompanyDueController.patientEncounter}"
-                                            completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
-                                            var="myItem" itemValue="#{myItem}" 
-                                            itemLabel="#{myItem.bhtNo}" 
-                                            size="30"  >
-                                <p:ajax event="itemSelect" 
-                                        process="@this" 
-                                        update="@all" 
-                                        listener="#{bhtSummeryController.createTables()}"/>
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
-                            </p:autoComplete>
-                        
+                                        completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                        var="myItem" itemValue="#{myItem}" 
+                                        itemLabel="#{myItem.bhtNo}" 
+                                        size="30"  >                        
+                            <p:column>
+                                #{myItem.bhtNo}
+                            </p:column>
+                            <p:column>
+                                #{myItem.patient.person.nameWithTitle}
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                            </p:column>
+                        </p:autoComplete>
+
                         <h:outputLabel value="Company Name : " style="min-width: 100px;"  />  
-            <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
-                            value="#{creditCompanyDueController.institution}"  
-                            completeMethod="#{creditCompanyController.completeCredit}" 
-                            var="ix" itemLabel="#{ix.name}" 
-                            itemValue="#{ix}" size="30" >  
-                <f:ajax event="itemSelect" execute="@this"  ></f:ajax>
-            </p:autoComplete>
-                        
+                        <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
+                                        value="#{creditCompanyDueController.institution}"  
+                                        completeMethod="#{creditCompanyController.completeCredit}" 
+                                        var="ix" itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" size="30" >  
+                            <f:ajax event="itemSelect" execute="@this"  ></f:ajax>
+                        </p:autoComplete>
+
                     </p:panelGrid>
 
                     <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
@@ -69,11 +65,13 @@
                                 </p:column>
                                 <p:column headerText="Patient Name">                                    
                                 </p:column>
-                                <p:column headerText="Used Amount">                                    
+                                <p:column headerText="Billed Amount">                                    
                                 </p:column>
-                                <p:column headerText="Paid Amount">                                    
+                                <p:column headerText="Paid By Patient">                                    
                                 </p:column>
-                                 <p:column headerText="Net Amount">                                    
+                                <p:column headerText="Paid By Company">                                    
+                                </p:column>
+                                <p:column headerText="Net Amount">                                    
                                 </p:column>
                             </p:row>
                         </p:columnGroup>
@@ -88,17 +86,22 @@
                                 <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
                             </p:column>
                             <p:column style="text-align: right;">                                
-                                <h:outputLabel value="#{b.creditUsedAmount}" >
+                                <h:outputLabel value="#{b.finalBill.netTotal}" >
                                     <f:convertNumber pattern="#,000.00" />
                                 </h:outputLabel>                                 
+                            </p:column>
+                            <p:column style="text-align: right;">                              
+                                <h:outputLabel value="#{b.finalBill.paidAmount}" >
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;">                              
                                 <h:outputLabel value="#{b.creditPaidAmount}" >
                                     <f:convertNumber pattern="#,000.00" />
                                 </h:outputLabel>
-                            </p:column>
+                            </p:column>                           
                             <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{b.creditUsedAmount+b.creditPaidAmount}" >
+                                <h:outputLabel value="#{b.finalBill.netTotal-(b.finalBill.paidAmount+b.paidByCreditCompany)}" >
                                     <f:convertNumber pattern="#,000.00" />
                                 </h:outputLabel>
                             </p:column>
@@ -112,6 +115,13 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
+                                     <p:column style="text-align: right;" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{i.paidTotalPatient}">
+                                                <f:convertNumber pattern="#,000.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
                                     <p:column style="text-align: right;" >
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{i.paidTotal}">
@@ -119,9 +129,9 @@
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                     <p:column style="text-align: right;" >
+                                    <p:column style="text-align: right;" >
                                         <f:facet name="footer">
-                                            <h:outputLabel value="#{i.total+i.paidTotal}">
+                                            <h:outputLabel value="#{i.total-(i.paidTotal+i.paidTotalPatient)}">
                                                 <f:convertNumber pattern="#,000.00" />
                                             </h:outputLabel>
                                         </f:facet>

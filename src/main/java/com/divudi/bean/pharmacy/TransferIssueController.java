@@ -61,16 +61,14 @@ public class TransferIssueController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     ////
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
-    @EJB
+    @Inject
     private PharmacyCalculation pharmacyCalculation;
     @Inject
     private BillNumberController billNumberBean;
     @EJB
-    private CommonFunctions commonFunctions;
-    @EJB
-    private PharmacyCalculation pharmacyRecieveBean;
+    private CommonFunctions commonFunctions;   
     private List<BillItem> billItems;
     UserStockContainer userStockContainer;
 
@@ -462,13 +460,7 @@ public class TransferIssueController implements Serializable {
         this.pharmacyController = pharmacyController;
     }
 
-    public PharmacyCalculation getPharmacyRecieveBean() {
-        return pharmacyRecieveBean;
-    }
-
-    public void setPharmacyRecieveBean(PharmacyCalculation pharmacyRecieveBean) {
-        this.pharmacyRecieveBean = pharmacyRecieveBean;
-    }
+   
 
     public List<BillItem> getBillItems() {
         if (billItems == null) {

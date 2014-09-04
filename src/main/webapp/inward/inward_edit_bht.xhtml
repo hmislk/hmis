@@ -48,7 +48,7 @@
                             <p:panel header="Admission">
 
                                 <p:outputLabel  value="Date of Admission"  />
-                                <p:calendar  value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm a" >
+                                <p:calendar  value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
                                     <f:ajax event="dateSelect" execute="@this" />
                                 </p:calendar>
                                 <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}"

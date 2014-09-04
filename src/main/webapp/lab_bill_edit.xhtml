@@ -79,7 +79,7 @@
                         <div id="centrewrapper">
                             <div id="centrecell">
                                 <div class="centrecontent">
-                                    <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                                    <p:commandButton value="Print" ajax="false" action="#"  >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
@@ -133,16 +133,16 @@
                                                 <div class="billtime">
                                                     <h:outputLabel value="#{labBillEditController.bill.cancelledBill.billTime}"  
                                                                    rendered="#{labBillEditController.bill.cancelledBill.insId ne null}">
-                                                        <f:convertDateTime pattern="hh mm a"/>
+                                                        <f:convertDateTime pattern="hh mm ss a"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{labBillEditController.bill.refundedBill.billTime}"  
                                                                    rendered="#{labBillEditController.bill.refundedBill.insId ne null}">
-                                                        <f:convertDateTime pattern="hh mm a"/>
+                                                        <f:convertDateTime pattern="hh mm ss a"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{labBillEditController.bill.billTime}" 
                                                                    rendered="#{labBillEditController.bill.refundedBill.insId eq null and 
                                                                                labBillEditController.bill.cancelledBill.insId eq null }">
-                                                        <f:convertDateTime pattern="hh mm a"/>
+                                                        <f:convertDateTime pattern="hh mm ss a"/>
                                                     </h:outputLabel>
                                                 </div>
 

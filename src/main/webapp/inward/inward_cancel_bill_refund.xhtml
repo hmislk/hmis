@@ -13,7 +13,7 @@
                 <h:form>
                     <h:panelGroup rendered="#{!inwardSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Payment Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{inwardSearch.bill.paymentMethod}" required="true"  >
+                            <p:selectOneMenu   id="cmbPs" value="#{inwardSearch.paymentMethod}" required="true"  >
                                 <f:selectItem itemLabel="Select Payment Method" />
                                 <f:selectItems value="#{inwardPaymentController.paymentMethods}"  />
                             </p:selectOneMenu>
@@ -75,7 +75,7 @@
 
 
                     <h:panelGroup rendered="#{inwardSearch.printPreview}" >
-                        <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                        <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <h:panelGroup id="gpBillPreview">

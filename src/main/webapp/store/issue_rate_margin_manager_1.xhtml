@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:bil="http://java.sun.com/jsf/composite/bill"
+      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
+      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+      xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form >
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="From Department"/>
+                        <au:department value="#{issueRateMarginsController.fromDepartment}"/>
+                        <h:outputLabel value="To Department"/>
+                        <au:department value="#{issueRateMarginsController.fromDepartment}"/>
+                    </h:panelGrid>
+
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

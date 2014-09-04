@@ -23,28 +23,28 @@
                 <div class="fiveinchbill" >
 
 
-                    <div  class="receiptno">
+                    <div  class="receiptnoPrinting">
                         <h:outputLabel value="#{cc.attrs.bill.insId}" />             
                     </div>
 
-                    <div  class="billdate">
+                    <div  class="billdatePrinting">
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
-                            <f:convertDateTime pattern="dd MM yyyy" /></h:outputLabel>
+                            <f:convertDateTime pattern="dd/MM/yyyy" /></h:outputLabel>
 
                     </div>
 
                     <div class="payment">
                     </div>
 
-                    <div class="billtime">
+                    <div class="billtimePrinting">
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
                             <f:convertDateTime pattern="h:mm a" /></h:outputLabel>         
                     </div>
 
-                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" styleClass="ptname" />
-                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" styleClass="bhtNo" />
+                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" styleClass="ptnamePrinting" />
+                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" styleClass="bhtNoGSPrinting" />
 
-                    <table class="items"  >
+                    <table class="itemsGSPrinting"  >
                         <tr style="t">
                             <td style="text-align: left; font-weight: bold;">
                                 <h:outputLabel value="Discription" />
@@ -194,7 +194,7 @@
                                                                        and b.billClass eq 'class com.divudi.entity.BilledBill')
                                                                        or 
                                                                        (b.cancelled eq false 
-                                                                       and b.billedBill eq null
+                                                                       and b.refundedBill eq null
                                                                        and b.billClass eq 'class com.divudi.entity.RefundBill'))}" >
                                                 <tr>
                                                     <td>
@@ -243,10 +243,10 @@
 
                     </table>
 
-                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" styleClass="cashier">
+                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" styleClass="cashierGSPrinting">
                     </h:outputLabel>
 
-                    <h:outputLabel value="Patient/Gurdian" styleClass="guardian">
+                    <h:outputLabel value="Patient/Gurdian" styleClass="guardianGSPrinting">
                     </h:outputLabel>
 
                 </div>

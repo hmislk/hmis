@@ -15,13 +15,13 @@
                 <p:commandButton ajax="false" value="Back to Intrim"
                                  action="/inward/inward_bill_intrim" onclick="onSubmitButton();"/>
                 <p:dataTable value="#{bhtSummeryController.billItems}" var="ser"
-                             rowStyleClass="#{((ser.bill.billClass eq 'class com.divudi.entity.BilledBill')
-                                              or 
-                                              (ser.bill.billedBill eq null 
-                                              and ser.bill.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}">
+                             rowStyleClass="#{(ser.bill.billClass eq 'class com.divudi.entity.BilledBill')? '':'noDisplayRow'}">
                     <p:column headerText="Services Name">
                         #{ser.item.name}
-                    </p:column>                   
+                    </p:column>          
+                    <p:column headerText="Returned">
+                        <h:outputLabel  rendered="#{ser.refunded}" value="Returned" style="color: red;"/>
+                    </p:column>          
                     <p:column headerText="Gross Value">
                         <h:outputLabel value="#{ser.grossValue}">
                             <f:convertNumber pattern="#,##0.00"/>
@@ -39,14 +39,14 @@
                     </p:column>
                     <p:column headerText="Created At">
                         <h:outputLabel value="#{ser.bill.createdAt}">
-                            <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                         </h:outputLabel>                                                   
                         <br/>
                         <h:panelGroup rendered="#{ser.bill.cancelled}" >
                             <h:outputLabel style="color: red;" value="Cancelled at " />
                             <h:outputLabel style="color: red;" rendered="#{ser.bill.cancelled}" 
                                            value="#{ser.bill.cancelledBill.createdAt}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                             </h:outputLabel>
                         </h:panelGroup>
                     </p:column>
@@ -72,7 +72,7 @@
                             <h:outputLabel style="color: #008000;" value="Edited at " />
                             <h:outputLabel style="color: #008000;" 
                                            value="#{ser.bill.editedAt}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                             </h:outputLabel>
                         </h:panelGroup>
                     </p:column>
@@ -87,7 +87,7 @@
                             <h:outputLabel style="color: #008000;" value="Checked at " />
                             <h:outputLabel style="color: #008000;" 
                                            value="#{ser.bill.checkeAt}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                             </h:outputLabel>
                         </h:panelGroup>                        
                     </p:column>
@@ -111,7 +111,7 @@
                                          actionListener="#{inwardSearch.selectBillItem(ser)}" >  
                         </p:commandButton>
                     </p:column>
-                    
+
                 </p:dataTable>
             </h:form>
 

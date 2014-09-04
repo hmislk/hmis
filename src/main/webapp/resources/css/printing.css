@@ -6,6 +6,12 @@
         Purpose of the stylesheet follows.
 */
 
+
+*{
+    margin:0px;
+    padding: 0px;
+}
+
 root { 
     display: block;
 }
@@ -216,13 +222,14 @@ root {
 
 }
 
-.heading{
+.headingPrinting{
     text-align: center!important; 
     min-width: 90%!important; 
     /*padding: 5px!important;*/ 
     padding-top: 30%!important;
     margin: auto!important; 
     font-size: 13px!important;
+    font-weight: bold;
 }
 
 .headingBhtP{
@@ -250,11 +257,27 @@ root {
     border: 1px!important;    
 }
 
-.cashier{
+.cashierPrinting{
     text-decoration: overline;
     position:absolute!important;
     left:25%!important;
-    bottom:10%!important;
+    bottom:3%!important;
+
+}
+
+.cashierGSPrinting{
+    text-decoration: overline;
+    position:absolute!important;
+    left:15%!important;
+    bottom:3%!important;
+
+}
+
+.guardianGSPrinting{
+    text-decoration: overline;
+    position:absolute!important;
+    right: 15%!important;
+    bottom:3%!important;
 
 }
 
@@ -303,48 +326,55 @@ root {
 
 }
 
-.receiptno{
+.receiptnoPrinting{
     position: absolute;
-    left: 35%;
-    top: 15%;
+    left: 36%;
+    top: 6.5%;
 }
 
-.billdate{
+.billdatePrinting{
     position: absolute;
-    left: 80%;
-    top: 15%;
+    left: 85%;
+    top: 6.5%;
 
 }
-.payment{
+.paymentPrinting{
     position: absolute;
-    left: 35%;
-    top: 18%;
-
-}
-
-.billtime{
-    position: absolute;
-    left:80%;
-    top: 18%;
+    left: 36%;
+    top: 10%;
 
 }
 
-
-.ptname{
+.billtimePrinting{
     position: absolute;
-    left: 35%;
-    top: 22%;
+    left:85%;
+    top: 10%;
+
+}
+
+
+.ptnamePrinting{
+    position: absolute;
+    left: 36%;
+    top: 13.3%;
+
+}
+
+.bhtNoGSPrinting{
+    position: absolute;
+    left: 36%;
+    top: 16.8%;
 
 }
 
 .bhtNo{
     position: absolute;
-    left: 35%;
-    margin-top: 26%;
+    left: 36%;
+    margin-top: 26.5%;
 
 }
 
-.billName{
+.billNamePrinting{
     position: absolute;
     left: 75%;
     top: 25%;
@@ -353,36 +383,46 @@ root {
 
 }
 
-.phone{
+.phonePrinting{
     position: absolute;
-    left: 35%;
-    top: 24%;
+    left: 36%;
+    top: 15.8%;
+
+}
+
+.bhtNoPrinting{
+    position: absolute;
+    left: 24%;
+    top: 16.8%;
 
 }
 
 
 
 .cashier{
-    position: absolute;
-    bottom: 1%;
+    position: inherit;
+    
     left: 10%;
     text-decoration: overline;
     font-size: 12px;
 
 }
 
-.pgsign{
+.pgsignPrinting{
     position: absolute;
-    bottom: 1%;
-    left: 10%;
+    bottom: 3%;
+    left: 0%;
     text-decoration: overline; 
     margin-left: 70%; 
     font-size: 12px;
 
 }
 
-.consult{
-    position: absolute;bottom: 1%;left: 60%;
+.consultPrinting{
+    position: absolute;
+    left: 36%;
+    top: 17.8%;
+    
 }
 
 .consult2{
@@ -401,26 +441,39 @@ root {
 }
 
 
-.items{
+.itemsPrinting{
+    
+    font-size: 11px;
     position: absolute;
-    left: 15%;
+    left: 12%;
     top: 37%;
 
 }
 
-.rates{
+.itemsGSPrinting{
+    
+    font-size: 11px;
     position: absolute;
-    left: 70%;
-    top: 37%;
+    left: 7%;
+    top: 26.5%;
 
 }
 
-.totals{
+.ratesPrinting{    
+    position: absolute;
+    left: 80%;
+    top: 37%;
+    text-align: right;
+
+}
+
+.totalsPrinting{
     position: absolute;
     left: 30%;
-    bottom: 25%;
+    bottom: 10%;
     font-size: 150%;
     font-weight: bolder;
+    text-align: right;
 }
 
 .worksheetfont{

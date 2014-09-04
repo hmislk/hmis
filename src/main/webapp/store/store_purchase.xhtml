@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pharmacy="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:stores="http://java.sun.com/jsf/composite/store">
 
     <ui:define name="content">
 
@@ -89,7 +89,7 @@
                             <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storePurchaseController.setBatch()}"/>
                         </p:calendar> 
                         <p:inputText autocomplete="off"  styleClass="numericTxt" 
-                                      id="tmp" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
+                                     id="tmp" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
 
 
                         <p:commandButton id="btnAdd" value="Add Item" 
@@ -154,6 +154,44 @@
 
                 </p:dataTable>  
 
+
+                <p:panel header="Bill Expenses" >
+                    <p:focus id="focusExpense" for="acExpense" ></p:focus>
+                    <h:panelGrid id="billExpenseGrid" columns="4" style="min-width: 100%;">
+                            <h:outputLabel value="Select Expense"/>
+                            <h:outputLabel value="Value"/>
+                            <h:outputLabel value="Descreption"/>
+                            <h:outputLabel ></h:outputLabel>
+                            <p:autoComplete id="acExpense"   value="#{storePurchaseController.currentExpense.item}" 
+                                            forceSelection="true"
+                                            completeMethod="#{itemController.completeExpenseItem}" 
+                                            var="ex" itemLabel="#{ex.name}" itemValue="#{ex}" >
+                            </p:autoComplete>
+                            <p:inputText autocomplete="off" id="txtExpense"
+                                         styleClass="numericTxt" 
+                                         value="#{storePurchaseController.currentExpense.rate}" style="width:100%" />  
+                            <p:inputText maxlength="250" value="#{storePurchaseController.currentExpense.descreption}" ></p:inputText>
+                            <p:commandButton id="btnAddExpense" value="Add Expense" 
+                                             action="#{storePurchaseController.addExpense()}" 
+                                             process="billExpenseGrid" 
+                                             update="tblExpenses billExpenseGrid tot focusExpense :#{p:component('net')} :#{p:component('lblBillExpenses')}"/>
+                    </h:panelGrid>
+                    <p:dataTable id="tblExpenses" value="#{storePurchaseController.billExpenses}" var="be"
+                                 emptyMessage="No Bill Expenses" >
+                        <p:column headerText="Expense" >
+                            <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
+                        </p:column>
+                         <p:column headerText="Value" >
+                             <h:outputLabel value="#{be.netValue}" >
+                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                             </h:outputLabel>
+                        </p:column>
+                         <p:column headerText="Descreption" >
+                             <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+
                 <p:panel>
                     <p:panelGrid columns="2" id="tot" style="min-width: 100%">
                         <p:outputLabel value="Gross Total"/>
@@ -162,6 +200,10 @@
                         <p:inputText autocomplete="off" id="tx" value="#{storePurchaseController.bill.tax}" > 
                             <p:ajax process="gro tx dis" update="net" event="keyup"/>
                         </p:inputText>
+                         <p:outputLabel value="Expenses"/>
+                        <p:outputLabel id="lblBillExpenses" 
+                                     value="#{storePurchaseController.bill.expenseTotal}" > 
+                        </p:outputLabel>
                         <p:outputLabel value="Discount"/>
                         <p:inputText autocomplete="off" id="dis" value="#{storePurchaseController.bill.discount}" >
                             <p:ajax process="gro tx dis" update="net" event="keyup"/>
@@ -180,7 +222,7 @@
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel id="gpBillPreview">
-                    <pharmacy:purhcase bill="#{storePurchaseController.bill}"/>
+                    <stores:purhcase bill="#{storePurchaseController.bill}"/>
                 </p:panel>
             </p:panel>
         </h:form>

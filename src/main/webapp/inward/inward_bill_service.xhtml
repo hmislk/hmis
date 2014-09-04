@@ -119,7 +119,7 @@
 
                                         <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
                                                     id="billedTimeStamp"
-                                                    pattern="dd MM yyyy hh mm a" >                               
+                                                    pattern="dd MM yyyy hh mm ss a" >                               
                                         </p:calendar>
 
                                         <p:watermark for="acIx" value="Item"/>
@@ -199,7 +199,7 @@
                                                              disabled="#{!bif.billItem.item.userChangable
                                                                          or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
                                                     <f:convertNumber pattern="#,000.00" />
-                                                    <f:ajax event="blur" execute="@this" 
+                                                    <f:ajax event="keyup" execute="@this" 
                                                             render=" :#{p:component('tblRequests')}  
                                                             :#{p:component('pBillDetails')} matrix feeValue" 
                                                             listener="#{billBhtController.feeChanged(bif)}" />
@@ -257,7 +257,7 @@
 
                 <h:panelGroup rendered="#{billBhtController.printPreview}" >
                     <div class="nonPrintBlock" >
-                        <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                        <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.makeNull()}" onclick="onSubmitButton();" >
@@ -280,55 +280,55 @@
                                         <div >
 
 
-                                            <div class="receiptno" >
+                                            <div class="receiptnoPrinting" >
                                                 <h:outputLabel value="#{bill.insId}">
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="billdate" >
+                                            <div class="billdatePrinting" >
                                                 <h:outputLabel value="#{bill.billDate}">
                                                     <f:convertDateTime pattern="dd/MM/yy"/>
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="payment" >
+                                            <div class="paymentPrinting" >
                                                 <h:outputLabel value="#{bill.paymentMethod}">
                                                     
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="billtime" >
+                                            <div class="billtimePrinting" >
                                                 <h:outputLabel value="#{bill.billTime}"
                                                                >
-                                                    <f:convertDateTime pattern="hh mm a"/>
+                                                    <f:convertDateTime pattern="hh mm ss a"/>
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="ptname" >
+                                            <div class="ptnamePrinting" >
                                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}"
                                                                >
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="phone" >
+                                            <div class="phonePrinting" >
                                                 <h:outputLabel value="#{bill.patient.person.phone}"
                                                                >
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="cashier" >
+                                            <div class="cashierPrinting" >
                                                 <h:outputLabel value="Cashier : #{bill.creater.code}">
                                                 </h:outputLabel>
                                             </div>
 
-                                            <div class="consult" >
+                                            <div class="consultPrinting" >
                                                 <h:outputLabel value="#{bill.collectingCentre.name}" />
                                                 <h:outputLabel value="#{bill.creditCompany.name}" />
                                             </div>
 
 
 
-                                            <div class="items" >
+                                            <div class="itemsPrinting" >
                                                 <h:dataTable value="#{billBhtController.lstBillEntries}" var="bip"   >
                                                     <h:column >
                                                         <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >

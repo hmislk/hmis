@@ -53,7 +53,7 @@ import org.primefaces.event.TabChangeEvent;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- formatics)
+ * formatics)
  */
 @Named
 @SessionScoped
@@ -682,6 +682,7 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void selectBatchBillListener() {
+        makeNullList();
         Bill fetchedBill = getBillBean().fetchByForwardBill(getBatchBill(), SurgeryBillType.ProfessionalFee);
         if (fetchedBill != null) {
             setCurrent(fetchedBill);
@@ -690,7 +691,10 @@ public class InwardProfessionalBillController implements Serializable {
             if (enc != null) {
                 setProEncounterComponents(enc);
             }
+        } else {
+            current = null;
         }
+
     }
 
     public void makeNull() {

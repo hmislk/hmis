@@ -1228,8 +1228,8 @@ public class InwardReportControllerBht implements Serializable {
                 + " sum(bf.feeGrossValue),"
                 + " sum(bf.feeValue)"
                 + " from BillFee bf "
-                + " where bf.bill.patientEncounter.paymentFinalized=true "
-                + " and bf.retired=false"
+                + " where bf.retired=false "
+                + " and bf.bill.patientEncounter.paymentFinalized=true "                
                 + " and bf.billItem.retired=false "
                 + " and bf.fee.feeType!=:ftp "
                 + " and bf.bill.patientEncounter=:bhtno ";
@@ -1271,12 +1271,14 @@ public class InwardReportControllerBht implements Serializable {
         for (Object[] objs : results) {
 
             OpdService row = new OpdService();
+            
             row.setCategory((Category) objs[0]);
-            row.setDiscount((double) objs[1]);
-            row.setMargin((double) objs[2]);
-            row.setGrossValue((double) objs[3]);
-            row.setNetValue((double) objs[4]);
+            row.setDiscount((Double) objs[1]);
+            row.setMargin((Double) objs[2]);
+            row.setGrossValue((Double) objs[3]);
+            row.setNetValue((Double) objs[4]);
 
+            
             opdSrviceGross += row.getGrossValue();
             opdServiceMargin += row.getMargin();
             opdServiceDiscount += row.getDiscount();

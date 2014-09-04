@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.facade.IssueRateMarginsFacade;
@@ -41,26 +42,95 @@ public class IssueRateMarginsController implements Serializable {
     private IssueRateMarginsFacade ejbFacade;
     private IssueRateMargins current;
     private List<IssueRateMargins> items = null;
-    
+
     Institution fromInstitution;
     Institution toInstitution;
     Department fromDepartment;
     Department toDepartment;
+    IssueRateMargins issueRateMargins;
 
-  
-   
-   
-    
-    public void save(){
-        if(getCurrent().getId()==null||getCurrent().getId()==0){
+    public void save() {
+        if (getCurrent().getId() == null || getCurrent().getId() == 0) {
             getFacade().create(current);
-        }else{
+        } else {
             getFacade().edit(current);
         }
     }
-    
+
+    public void makeNull() {
+        issueRateMargins = null;
+    }
+
+    @Inject
+    PharmacyBean pharmacyBean;
+
+    public void add() {
+        IssueRateMargins tmp = pharmacyBean.fetchIssueRateMargins(fromDepartment, getIssueRateMargins().getToDepartment());
+
+        if (tmp != null) {
+            UtilityController.addErrorMessage("Already Exist");
+            return;
+        }
+
+        getIssueRateMargins().setFromDepartment(fromDepartment);
+
+        if (getIssueRateMargins().getId() == null) {
+            ejbFacade.create(getIssueRateMargins());
+        } else {
+            ejbFacade.edit(getIssueRateMargins());
+        }
+
+        createMargins();
+
+        issueRateMargins = null;
+    }
+    @Inject
+    DepartmentController departmentController;
+
+    public void addAllDep() {
+        if (fromDepartment == null) {
+            return;
+        }
+        for (Department d : departmentController.getItems()) {
+            IssueRateMargins tmp = pharmacyBean.fetchIssueRateMargins(fromDepartment, d);
+            if (tmp != null) {
+                continue;
+            }
+
+            IssueRateMargins newIssueRateMargins = new IssueRateMargins();
+            newIssueRateMargins.setFromDepartment(fromDepartment);
+            newIssueRateMargins.setToDepartment(d);
+            newIssueRateMargins.setAtPurchaseRate(true);
+            ejbFacade.create(newIssueRateMargins);
+        }
+
+        createMargins();
+    }
+
+    public void onEdit(IssueRateMargins tmp) {
+        ejbFacade.edit(tmp);
+        createMargins();
+    }
+
+    public void delete(IssueRateMargins tmp) {
+        tmp.setRetired(Boolean.TRUE);
+        ejbFacade.edit(tmp);
+        createMargins();
+    }
+
     public Institution getFromInstitution() {
         return fromInstitution;
+    }
+
+    public IssueRateMargins getIssueRateMargins() {
+        if (issueRateMargins == null) {
+            issueRateMargins = new IssueRateMargins();
+        }
+        return issueRateMargins;
+    }
+
+    public void setIssueRateMargins(IssueRateMargins issueRateMargins) {
+        this.issueRateMargins = issueRateMargins;
     }
 
     public void setFromInstitution(Institution fromInstitution) {
@@ -90,7 +160,7 @@ public class IssueRateMarginsController implements Serializable {
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
     }
-    
+
     public IssueRateMarginsFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -106,6 +176,14 @@ public class IssueRateMarginsController implements Serializable {
     public IssueRateMarginsController() {
     }
 
+    public void createMargins() {
+        String sql;
+        sql = "select m from IssueRateMargins m "
+                + " where m.retired=false ";
+
+        items = ejbFacade.findBySQL(sql);
+    }
+
     public IssueRateMargins getCurrent() {
         String sql;
         sql = "select m from IssueRateMargins m where m.fromInstitution=:fi and "
@@ -117,9 +195,9 @@ public class IssueRateMarginsController implements Serializable {
         m.put("td", toDepartment);
         m.put("fi", fromInstitution);
         m.put("ti", toInstitution);
-        current=getFacade().findFirstBySQL(sql, m);
-        if(current==null){
-            current=new IssueRateMargins();
+        current = getFacade().findFirstBySQL(sql, m);
+        if (current == null) {
+            current = new IssueRateMargins();
             current.setFromDepartment(fromDepartment);
             current.setToDepartment(toDepartment);
             current.setFromInstitution(fromInstitution);
@@ -129,12 +207,9 @@ public class IssueRateMarginsController implements Serializable {
         return current;
     }
 
-    
-    
     public void setCurrent(IssueRateMargins current) {
         this.current = current;
     }
-
 
     private IssueRateMarginsFacade getFacade() {
         return ejbFacade;
@@ -144,9 +219,10 @@ public class IssueRateMarginsController implements Serializable {
         return items;
     }
 
-    public void listAll(){
-        items=getFacade().findAll();
+    public void listAll() {
+        items = getFacade().findAll();
     }
+
     /**
      *
      */
@@ -232,4 +308,5 @@ public class IssueRateMarginsController implements Serializable {
             }
         }
     }
+
 }

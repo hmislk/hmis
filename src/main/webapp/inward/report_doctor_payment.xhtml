@@ -37,7 +37,7 @@
                         </p:panel>
                         <p:panel>
                             <p:commandButton ajax="false" value="Fill" action="#{inwardStaffPaymentBillController.fillDocPayingBillFee()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                            <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
@@ -57,9 +57,9 @@
                                         </p:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Date">
+                                    <p:column headerText="BHT">
                                         <f:facet name="header">
-                                            <p:outputLabel value="Date" />
+                                            <p:outputLabel value="BHT" />
                                         </f:facet>
                                         <p:outputLabel value="#{bf.bill.patientEncounter.bhtNo}" >
                                             <f:convertDateTime pattern="dd MM yyyy" />
@@ -71,6 +71,14 @@
                                             <p:outputLabel value="Name" />
                                         </f:facet>
                                         <p:outputLabel value="#{bf.staff.person.nameWithTitle}" >
+                                        </p:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Code">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Code" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{bf.staff.code}" >
                                         </p:outputLabel>
                                     </p:column>
 

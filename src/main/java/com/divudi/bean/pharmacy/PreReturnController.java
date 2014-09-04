@@ -8,10 +8,12 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PharmacyItemData;
 import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -21,8 +23,6 @@ import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,6 +30,7 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -58,7 +59,7 @@ public class PreReturnController implements Serializable {
     private BillNumberController billNumberBean;
     @EJB
     private BillFacade billFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -105,7 +106,7 @@ public class PreReturnController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    @EJB
+    @Inject
     private PharmacyCalculation pharmacyRecieveBean;
 
     public void onEdit(BillItem tmp) {
@@ -199,6 +200,9 @@ public class PreReturnController implements Serializable {
         }
 
     }
+    
+    @EJB
+    StaffBean staffBean;
 
     public void settle() {
 
@@ -209,6 +213,18 @@ public class PreReturnController implements Serializable {
 
 //        getBill().getReturnPreBills().add(getReturnBill());
         getBillFacade().edit(getBill());
+
+//        if (getReturnBill().getPaymentMethod() == PaymentMethod.Credit) {
+//            //   System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+//            //   System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+//            if (getBill().getToStaff() != null) {
+//                //   System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+//                staffBean.updateStaffCredit(getBill().getToStaff(), getReturnBill().getNetTotal());
+//                UtilityController.addSuccessMessage("Staff Credit Updated");
+//                getReturnBill().setFromStaff(getBill().getToStaff());
+//                getBillFacade().edit(getReturnBill());
+//            }
+//        }
 
         /// setOnlyReturnValue();
         printPreview = true;

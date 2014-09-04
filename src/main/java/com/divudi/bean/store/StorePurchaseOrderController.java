@@ -48,7 +48,7 @@ public class StorePurchaseOrderController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @Inject
     private BillNumberController billNumberBean;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -145,10 +145,10 @@ public class StorePurchaseOrderController implements Serializable {
 
     }
 
-//    public String viewRequestedList() {
-//        clearList();
-//        return "store_purhcase_order_list_to_approve";
-//    }
+    public String viewRequestedList() {
+        clearList();
+        return "store_purhcase_order_list_to_approve";
+    }
 
     @Inject
     private PharmacyController pharmacyController;

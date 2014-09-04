@@ -68,7 +68,7 @@ public class PatientReportController implements Serializable {
     TransferController transferController;
     @EJB
     private PatientReportFacade ejbFacade;
-    @EJB
+    @Inject
     private PatientReportBean prBean;
     @EJB
     PatientInvestigationItemValueFacade piivFacade;
@@ -448,7 +448,7 @@ public class PatientReportController implements Serializable {
     public void savePatientReportItemValues() {
         if (currentPatientReport != null) {
             for (PatientReportItemValue v : getCurrentPatientReport().getPatientReportItemValues()) {
-            //System.out.println("saving ptrtiv + " + v);
+                //System.out.println("saving ptrtiv + " + v);
                 //System.out.println("saving ptrtiv Stre " + v.getStrValue());
                 //System.out.println("saving ptrtiv Double " + v.getDoubleValue());
                 //System.out.println("saving ptrtiv Lob " + v.getLobValue());
@@ -481,10 +481,16 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setDataEntryInstitution(getSessionController().getLoggedUser().getInstitution());
         currentPatientReport.setDataEntryUser(getSessionController().getLoggedUser());
 
-        getFacade().edit(currentPatientReport);
-        getPiFacade().edit(currentPtIx);
-
-        //UtilityController.addSuccessMessage("Saved");
+        if (currentPatientReport.getId() == 0) {
+            getFacade().create(currentPatientReport);
+        } else {
+            getFacade().edit(currentPatientReport);
+        }
+        if (currentPtIx.getId() == null) {
+            getPiFacade().create(currentPtIx);
+        } else {
+            getPiFacade().edit(currentPtIx);
+        }
     }
 
     public void approvePatientReport() {
@@ -601,7 +607,7 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
-        //System.err.println("creating a new microbiology report");
+        System.err.println("creating a new microbiology report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
@@ -666,6 +672,8 @@ public class PatientReportController implements Serializable {
         Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
         currentReportInvestigation = ix;
         currentPtIx = pi;
+        System.out.println("ix = " + ix.getName());
+        System.out.println("pi = " + pi.getInvestigation().getName());
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             createNewMicrobiologyReport(pi, ix);
         } else {

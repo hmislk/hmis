@@ -31,7 +31,7 @@
                     </p:autoComplete>
                     <p:autoComplete value="#{pharmacyErrorChecking.item}"  
                                     style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  
-                                    completeMethod="#{itemController.completeAmpItem}" 
+                                    completeMethod="#{itemController.completeAmpItemAll}" 
                                     var="item" itemValue="#{item}" itemLabel="#{item.name}" 
                                     forceSelection="true"  >
                         <p:column headerText="Item">
@@ -103,7 +103,7 @@
 
                             <p:column headerText="Bill Date/Time" >
                                 <h:outputLabel value="#{pb.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Id" >
@@ -133,7 +133,7 @@
 
                             <p:column headerText="Bill Date/Time" >
                                 <h:outputLabel value="#{pb.bill.referenceBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 
@@ -176,7 +176,7 @@
 
                             <p:column headerText="Bill Date/Time" >
                                 <h:outputLabel value="#{pb.referanceBillItem.bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 
@@ -196,7 +196,7 @@
 
                             <p:column headerText="Bill Date/Time" >
                                 <h:outputLabel value="#{pb.referanceBillItem.bill.referenceBill.billDate}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 

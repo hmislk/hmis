@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.entity.BillExpense;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Category;
@@ -68,7 +69,9 @@ public class ItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c.item from ItemsDistributors c where c.retired=false "
+            sql = "select c.item from ItemsDistributors c"
+                    + " where c.retired=false "
+                    + " and c.item.retired=false "
                     + " and c.institution=:ins and (upper(c.item.name) like :q or "
                     + " upper(c.item.barcode) like :q or upper(c.item.code) like :q )order by c.item.name";
             hm.put("ins", getInstituion());
@@ -117,10 +120,11 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
-    
+
     List<Item> itemList;
+
     public List<Item> completePharmacyItem(String query) {
-        
+
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
@@ -168,11 +172,10 @@ public class ItemController implements Serializable {
 
     }
 
-    
-    
     List<Item> suggestions;
+
     public List<Item> completeAmpItem(String query) {
-        
+
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
@@ -193,9 +196,32 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
+    
+     public List<Item> completeAmpItemAll(String query) {
+
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+
+            sql = "select c from Item c where "
+                    + " (type(c)= :amp) and "
+                    + " ( c.departmentType is null or c.departmentType!=:dep ) "
+                    + " and (upper(c.name) like :str or upper(c.code) like :str or"
+                    + " upper(c.barcode) like :str ) order by c.name";
+            //System.out.println(sql);
+            tmpMap.put("dep", DepartmentType.Store);
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("str", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
+
+    }
+
 
     public List<Item> completeStoreItem(String query) {
-        List<Item> suggestions;
         String sql;
         HashMap tmpMap = new HashMap();
         if (query == null) {
@@ -218,6 +244,27 @@ public class ItemController implements Serializable {
         }
         return suggestions;
 
+    }
+
+    public List<Item> completeExpenseItem(String query) {
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c from Item c "
+                    + "where c.retired=false and "
+                    + "(type(c)= :amp) "
+                    + "and (upper(c.name) like :str or "
+                    + "upper(c.code) like :str or "
+                    + "upper(c.barcode) like :str) "
+                    + "order by c.name";
+            //System.out.println(sql);
+            tmpMap.put("amp", BillExpense.class);
+            tmpMap.put("str", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
     }
 
     public List<Item> fetchStoreItem() {
@@ -398,7 +445,7 @@ public class ItemController implements Serializable {
         m.put("pac", Packege.class);
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
-         m.put("inward", InwardService.class);
+        m.put("inward", InwardService.class);
         m.put("q", "%" + query.toUpperCase() + "%");
 
         return getFacade().findBySQL(sql, m, 20);

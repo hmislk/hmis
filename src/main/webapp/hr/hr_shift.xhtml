@@ -53,11 +53,11 @@
                             <h:outputLabel value="Shift Order"/>
                             <p:inputText autocomplete="off" value="#{shiftController.current.shiftOrder}"/>
                             <p:outputLabel value="Starting Time"/>
-                            <p:calendar id='start'  value="#{shiftController.current.startingTime}" navigator="true" pattern="hh:mm a" timeOnly="true">                            
+                            <p:calendar id='start'  value="#{shiftController.current.startingTime}" navigator="true" pattern="hh:mm:ss a" timeOnly="true">                            
                             </p:calendar>  
 
                             <p:outputLabel value="End Time"/>                        
-                            <p:calendar  value="#{shiftController.current.endingTime}" navigator="true" pattern="hh:mm a" timeOnly="true">                            
+                            <p:calendar  value="#{shiftController.current.endingTime}" navigator="true" pattern="hh:mm:ss a" timeOnly="true">                            
                             </p:calendar>  
 
                             <p:outputLabel value="Previous Shift"/>

@@ -86,10 +86,10 @@
                                      sortBy="#{pb.id}" >
 
                             <p:column headerText="id" >
-                                <h:commandButton action="/pharmacy/pharmacy_reprint_bill">
+                                <h:commandButton action="store_reprint_bill">
                                     <h:outputLabel value="#{pb.id}" >
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{pb.bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{pb.bill}" target="#{storeBillSearch.bill}"/>
                                 </h:commandButton>
                             </p:column>
 
@@ -101,7 +101,7 @@
 
                             <p:column headerText="Bill Date/Time" >
                                 <h:outputLabel value="#{pb.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Id" >
@@ -131,7 +131,7 @@
 
                             <p:column headerText="Bill Date/Time" >
                                 <h:outputLabel value="#{pb.bill.referenceBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 
@@ -174,7 +174,7 @@
 
                             <p:column headerText="Bill Date/Time" >
                                 <h:outputLabel value="#{pb.referanceBillItem.bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 
@@ -194,7 +194,7 @@
 
                             <p:column headerText="Bill Date/Time" >
                                 <h:outputLabel value="#{pb.referanceBillItem.bill.referenceBill.billDate}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 

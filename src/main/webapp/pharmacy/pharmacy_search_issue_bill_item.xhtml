@@ -18,10 +18,10 @@
 
                         <h:panelGrid columns="5" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                             </p:calendar>
                             <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyIssueBillItemTable()}"/>
                         </h:panelGrid>
@@ -63,7 +63,7 @@
 
                             <p:column headerText="Billed At"  >
                                 <h:outputLabel value="#{pi.bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy - hh mm a"/>
+                                    <f:convertDateTime pattern="dd MMM yyyy - hh mm ss a"/>
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{pi.bill.referenceBill.cancelled}" >
@@ -71,7 +71,7 @@
                                     <h:outputLabel style="color: red;" 
                                                    rendered="#{pi.bill.referenceBill.cancelled}" 
                                                    value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MM yy hh mm a"/>
+                                        <f:convertDateTime pattern="dd MM yy hh mm ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{pi.bill.referenceBill.refunded}" >
@@ -79,7 +79,7 @@
                                     <h:outputLabel style="color: red;" 
                                                    rendered="#{pi.bill.referenceBill.refunded}" 
                                                    value="#{pi.referanceBillItem.bill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MM yy hh mm a"/>
+                                        <f:convertDateTime pattern="dd MM yy hh mm ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>     

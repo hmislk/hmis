@@ -20,24 +20,7 @@
             <p:growl id="publicGrowl" autoUpdate="true"  life="1600"/>
             <h:panelGroup >
                 <h:form>
-                    <script type="text/javascript" language="JavaScript">
-                        var $ = jQuery;
-                        $(document).ready(function() {
-                            $("input[id*='TimeStamp']").mask('99 99 9999 99 99 aa');
-                            $("input[id*='DateOnly']").mask('99 99 9999');
-                            $("input[id*='DateOnlyShort']").mask('99 99 99');
-                        });
 
-                        var formSubmitted = false;
-                        function onSubmitButton() {
-                            if (!formSubmitted) {
-                                formSubmitted = true;
-                            } else {
-                                // disable event propagation if form is already submitted
-                                event.preventDefault();
-                            }
-                        }
-                    </script>
 
                     <h:panelGroup >
                         <p:ajaxStatus style="width:64px;height:64px;position:fixed;right:5px;top:5px">  
@@ -51,7 +34,7 @@
                         </p:ajaxStatus>
 
                         <h:panelGroup rendered="#{sessionController.logged}" style="border: 1px solid;border-radius: 6px;" 
-                                 styleClass="nonPrintBlock" >
+                                      styleClass="nonPrintBlock" >
                             <f:facet name="header" >
                                 <h:outputLabel value="#{labels.topic}" />
                             </f:facet>
@@ -178,6 +161,8 @@
                                                      value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_item" actionListener="#{searchController.makeListNull}"   
                                                      value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                        <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager"    
+                                                     value="Unit Issue Margin" />
                                     </p:submenu>
 
                                     <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}">
@@ -262,7 +247,7 @@
                                     <p:submenu label="Unit Issue" rendered="#{webUserController.hasPrivilege('StoreIssue')}">
                                         <p:menuitem ajax="false" action="/store/store_issue"  value="Issue"
                                                     rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}" 
-                                                    actionListener="#{pharmacySaleBhtController.resetAll()}"/>
+                                                    actionListener="#{storeIssueController.resetAll()}" />
                                         <p:menuitem  ajax="false" action="/store/store_search_sale_bill_issue"
                                                      actionListener="#{searchController.makeListNull}"  value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('StoreIssueSearchBill')}"/>
                                         <p:menuitem  ajax="false" action="/store/store_search_sale_bill_item_issue" actionListener="#{searchController.makeListNull}"   
@@ -303,6 +288,7 @@
                                     <p:menuitem  ajax="false" action="/store/store_summery_index"  value="Summery" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
                                     <p:menuitem  ajax="false" action="/store/store_admin"  value="Administration" rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
                                 </p:submenu>
+                                
                                 <p:submenu label="Channeling" rendered="#{webUserController.hasPrivilege('Channelling')}">                                
 
                                     <p:menuitem  ajax="false"  value="Channel Booking"  action="/channel/channel_booking" actionListener="#{bookingController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" ></p:menuitem>
@@ -311,7 +297,7 @@
                                     <p:menuitem  ajax="false"  value="Doctor Leave"  action="/channel/channel_doctor_leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" ></p:menuitem>
 
                                     <p:menuitem  ajax="false"  value="Channel Sheduling"  action="/channel/channel_shedule" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
-                                    <p:menuitem  ajax="false"  value="Channel Agent Fee"  action="/channel/channel_agent_fee" rendered="#{webUserController.hasPrivilege('ChannellingChannelAgentFee')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee" rendered="#{webUserController.hasPrivilege('ChannellingChannelAgentFee')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingDoctorSessionView')}"></p:menuitem>
 
                                     <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
@@ -366,6 +352,7 @@
                                             </p:submenu>     
                                         </p:submenu>
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search" actionListener="#{searchController.makeListNull}"  value="Payment done Search"  />
+                                        <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search_billItems" actionListener="#{searchController.makeListNull}"  value="Payment done Search BillItem"  />
                                     </p:submenu>
 
                                     <p:submenu label="Agent"  rendered="#{webUserController.hasPrivilege('Payment')}">
@@ -559,8 +546,11 @@
                 </p:panel>
 
 
+
+                <div style="bottom: 0px; left: 10px; opacity: 0.4; z-index: 0; min-height: 25px;"></div>
+
                 <p:panel styleClass="nonPrintBlock" 
-                         style="position: fixed; bottom: 10px; left: 10px; opacity: 0.4;"
+                         style="position: fixed; bottom: 0px; left: 10px; opacity: 0.4; z-index: 0;"
                          rendered="#{sessionController.logged}" >
                     <h:form>
                         <h:commandLink value="Logout" style="text-decoration: underline; "  action="#{sessionController.logout}"  rendered ="#{sessionController.logged}" ></h:commandLink>
@@ -576,7 +566,7 @@
             </h:panelGrid>
 
             <div style="position: fixed; bottom: 10px; right: 10px; opacity: 0.4;" class="nonPrintBlock" >
-                <p:clock pattern="HH:mm a - dd MMMM yyyy" mode="server"  />  
+                <p:clock pattern="hh:mm:ss a - dd MMMM yyyy" mode="server"  />  
             </div>
 
         </p:panel>

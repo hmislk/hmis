@@ -8,6 +8,7 @@ package com.divudi.bean.inward;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
@@ -86,15 +87,15 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     double netTotal;
     double netPaid;
-    
+
     public void fillAdmissionBookOnlyInward() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
-                + " and b.discharged=false "
+                //                + " and b.discharged=false "
                 + " and b.paymentFinalized=false "
                 + " and b.dateOfAdmission between :fd and :td ";
 
@@ -107,11 +108,11 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         calTtoal();
-        for(PatientEncounter p: patientEncounters){
-            netTotal+=p.getTransTotal();
+        for (PatientEncounter p : patientEncounters) {
+            netTotal += p.getTransTotal();
             System.out.println("p.getTransPaid() = " + p.getTransPaid());
             System.out.println("Bht No = " + p.getBhtNo());
-            netPaid+=p.getTransPaid();
+            netPaid += p.getTransPaid();
         }
     }
 
@@ -148,6 +149,15 @@ public class InwardReportController implements Serializable {
 
     }
 
+    double total;
+    double paid;
+    double creditPaid;
+    double creditUsed;
+    double calTotal;
+
+    @Inject
+    InwardReportControllerBht inwardReportControllerBht;
+
     public void fillDischargeBook() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
@@ -160,6 +170,16 @@ public class InwardReportController implements Serializable {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
         }
+        
+        if (institution != null) {
+            sql += " and b.creditCompany =:ins ";
+            m.put("ins", institution);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
 
         sql += " order by  b.dateOfDischarge";
 
@@ -167,6 +187,47 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
+        if (patientEncounters == null) {
+            return;
+        }
+        total = 0;
+        paid = 0;
+        calTotal = 0;
+        for (PatientEncounter p : patientEncounters) {
+            inwardReportControllerBht.setPatientEncounter(p);
+            inwardReportControllerBht.process();
+            p.setTransTotal(inwardReportControllerBht.getNetTotal());
+
+            total += p.getFinalBill().getNetTotal();
+            paid += p.getFinalBill().getPaidAmount();
+            creditUsed += p.getCreditUsedAmount();
+            creditPaid += p.getPaidByCreditCompany();
+            calTotal += p.getTransTotal();
+        }
+    }
+
+    public BhtSummeryController getBhtSummeryController() {
+        return bhtSummeryController;
+    }
+
+    public void setBhtSummeryController(BhtSummeryController bhtSummeryController) {
+        this.bhtSummeryController = bhtSummeryController;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public double getPaid() {
+        return paid;
+    }
+
+    public void setPaid(double paid) {
+        this.paid = paid;
     }
 
     public List<IncomeByCategoryRecord> getIncomeByCategoryRecords() {
@@ -333,11 +394,12 @@ public class InwardReportController implements Serializable {
         this.admissionTypeFacade = admissionTypeFacade;
     }
 
+    @EJB
+    CommonFunctions commonFunctions;
+
     public Date getFromDate() {
         if (fromDate == null) {
-            Calendar c = Calendar.getInstance();
-            c.set(Calendar.MONTH, 0);
-            fromDate = c.getTime();
+            fromDate = commonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -565,5 +627,47 @@ public class InwardReportController implements Serializable {
     public void setNetPaid(double netPaid) {
         this.netPaid = netPaid;
     }
+
+    public double getCalTotal() {
+        return calTotal;
+    }
+
+    public void setCalTotal(double calTotal) {
+        this.calTotal = calTotal;
+    }
+
+    public double getCreditPaid() {
+        return creditPaid;
+    }
+
+    public void setCreditPaid(double creditPaid) {
+        this.creditPaid = creditPaid;
+    }
+
+    public double getCreditUsed() {
+        return creditUsed;
+    }
+
+    public void setCreditUsed(double creditUsed) {
+        this.creditUsed = creditUsed;
+    }
+
+    public InwardReportControllerBht getInwardReportControllerBht() {
+        return inwardReportControllerBht;
+    }
+
+    public void setInwardReportControllerBht(InwardReportControllerBht inwardReportControllerBht) {
+        this.inwardReportControllerBht = inwardReportControllerBht;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+    
+    
 
 }

@@ -18,8 +18,14 @@
                 <p:panel rendered="#{!bhtSummeryController.printPreview}" >
                     <f:facet name="header" >
                         <h:panelGrid columns="15"  >
-                            <h:outputLabel value="Inward Final Bill" />                          
-                            <p:commandButton  value="Settle" action="#{bhtSummeryController.settle}" ajax="false"
+                            <h:outputLabel value="Inward Final Bill" />    
+                            <p:commandButton update="dList tot" value="Refresh" style="float: right;"
+                                             actionListener="#{bhtSummeryController.updateTotal()}" 
+                                             onclick="onSubmitButton();"/>
+                            <p:commandButton  value="Settle" action="#{bhtSummeryController.settle}" 
+                                              id="settle"
+                                              ajax="false"
+                                              disabled="#{bhtSummeryController.changed}"
                                               style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
 
                             </p:commandButton>
@@ -73,12 +79,12 @@
                             <h:outputLabel value="Printing Admission Time"/>
                             <p:calendar value="#{bhtSummeryController.patientEncounter.printingAdmissionTime}" 
                                         id="printingAdmissionTimeStamp"
-                                        pattern="dd MM yyyy hh mm a" >                               
+                                        pattern="dd MM yyyy hh mm ss a" >                               
                             </p:calendar>     
                             <h:outputLabel value="Printing Discharge Time"/>
                             <p:calendar value="#{bhtSummeryController.patientEncounter.printingDischargeTime}"
                                         id="printingDischargeTimeStamp"
-                                        pattern="dd MM yyyy hh mm a" >                               
+                                        pattern="dd MM yyyy hh mm ss a" >                               
                             </p:calendar>    
                         </h:panelGrid>
                     </h:panelGrid>
@@ -94,18 +100,19 @@
                         </p:column>
                         <p:column headerText="Discount">
                             <p:inputText autocomplete="off" id="catDiscount" value="#{c.discount}"  disabled="#{c.inwardChargeType eq 'RoomCharges' 
-                                                                   or c.inwardChargeType eq 'MOCharges'
-                                                                   or c.inwardChargeType eq 'MaintainCharges'
-                                                                   or c.inwardChargeType eq 'NursingCharges'
-                                                                   or c.inwardChargeType eq 'LinenCharges'
-                                                                   or c.inwardChargeType eq 'MedicalCareICU'
-                                                                   or c.inwardChargeType eq 'AdministrationCharge'
-                                                                   or c.inwardChargeType eq 'ProfessionalCharge'
-                                                                   or c.inwardChargeType eq 'MedicalCare' 
-                                                                   or c.total eq 0}" >
+                                                                                      or c.inwardChargeType eq 'MOCharges'
+                                                                                      or c.inwardChargeType eq 'MaintainCharges'
+                                                                                      or c.inwardChargeType eq 'NursingCharges'
+                                                                                      or c.inwardChargeType eq 'LinenCharges'
+                                                                                      or c.inwardChargeType eq 'MedicalCareICU'
+                                                                                      or c.inwardChargeType eq 'AdministrationCharge'
+                                                                                      or c.inwardChargeType eq 'ProfessionalCharge'
+                                                                                      or c.inwardChargeType eq 'MedicalCare' 
+                                                                                      or c.total eq 0}" >
                                 <f:convertNumber pattern="#,000.00" />
                                 <p:ajax process="@this" update="@this catNetTotal :#{p:component('tot')}  "  event="blur"
                                         listener="#{bhtSummeryController.changeDiscountListener(c)}"/>
+                                <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
                         <p:column headerText="NetTotal">
@@ -116,23 +123,24 @@
                         <p:column >
                             <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedTotal}" 
                                          disabled="#{c.inwardChargeType eq 'RoomCharges' 
-                                                              or c.inwardChargeType eq 'MOCharges'
-                                                              or c.inwardChargeType eq 'MaintainCharges'
-                                                              or c.inwardChargeType eq 'NursingCharges'
-                                                              or c.inwardChargeType eq 'LinenCharges'
-                                                              or c.inwardChargeType eq 'MedicalCareICU'
-                                                              or c.inwardChargeType eq 'AdministrationCharge'
-                                                              or c.inwardChargeType eq 'ProfessionalCharge'}">
+                                                     or c.inwardChargeType eq 'MOCharges'
+                                                     or c.inwardChargeType eq 'MaintainCharges'
+                                                     or c.inwardChargeType eq 'NursingCharges'
+                                                     or c.inwardChargeType eq 'LinenCharges'
+                                                     or c.inwardChargeType eq 'MedicalCareICU'
+                                                     or c.inwardChargeType eq 'AdministrationCharge'
+                                                     or c.inwardChargeType eq 'ProfessionalCharge'}">
                                 <f:convertNumber pattern="#,000.00" />
                                 <p:ajax process="@this" update=":#{p:component('tot')} "  event="blur"
                                         listener="#{bhtSummeryController.updateTotal()}"/>
+                                <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
                     </p:dataTable>  
 
                     <p:spacer height="100"/>
 
-                    <p:commandButton update="dList tot" value="Refresh" style="float: right;" actionListener="#{bhtSummeryController.updateTotal()}" onclick="onSubmitButton();"/>
+
 
                     <p:tabView id="tabView">
 
@@ -153,7 +161,7 @@
                                     <p:calendar navigator="true"  
                                                 id="printingRoomAdmittedTimeStamp"
                                                 value="#{b.printAdmittedAt}" 
-                                                pattern="dd MM yyyy hh mm a" >
+                                                pattern="dd MM yyyy hh mm ss a" >
                                         <p:ajax event="change" process="@this" listener="#{patientRoomController.edit(b)}"/>
                                     </p:calendar>
                                 </p:column>
@@ -161,7 +169,7 @@
                                     <p:calendar navigator="true"  
                                                 id="printingRoomDischargeTimeStamp"
                                                 value="#{b.printDischargeAt}" 
-                                                pattern="dd MM yyyy hh mm a" >
+                                                pattern="dd MM yyyy hh mm ss a" >
                                         <p:ajax event="change" process="@this" listener="#{patientRoomController.edit(b)}"/>
                                     </p:calendar>
 
@@ -185,6 +193,7 @@
                                         <f:convertNumber pattern="#,000.00" />                                           
                                         <p:ajax event="blur" process="@this"  update="chargeNet" 
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomRoomCharge(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -197,6 +206,7 @@
                                         <f:convertNumber pattern="#,000.00" />                                        
                                         <p:ajax event="blur" process="@this" 
                                                 listener="#{bhtSummeryController.changeAdjustedValueRoomCharge(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -217,6 +227,7 @@
                                         <f:convertNumber pattern="#,000.00" />                                        
                                         <p:ajax event="blur" process="@this" update="mainNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomMaintain(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -229,6 +240,7 @@
                                         <f:convertNumber pattern="#,000.00" />                                           
                                         <p:ajax event="blur" process="@this" 
                                                 listener="#{bhtSummeryController.changeAdjustedValueMaintain(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
 
@@ -250,6 +262,7 @@
                                         <f:convertNumber pattern="#,000.00" />                                          
                                         <p:ajax event="blur" process="@this"  update="moNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomMo(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -260,9 +273,10 @@
                                 <p:column headerText="Adjusted" >                                      
                                     <p:inputText autocomplete="off" id="moAdj" value="#{b.adjustedMoCharge}" >
                                         <f:convertNumber pattern="#,000.00" />        
-                                        
+
                                         <p:ajax event="blur" process="@this" 
                                                 listener="#{bhtSummeryController.changeAdjustedValueMo(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -283,9 +297,10 @@
                                 <p:column headerText="Discount" >                                      
                                     <p:inputText autocomplete="off" value="#{b.discountNursingCharge}" >
                                         <f:convertNumber pattern="#,000.00" />     
-                                       
+
                                         <p:ajax event="blur" process="@this"  update="nurNet" 
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomNursing(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -296,9 +311,10 @@
                                 <p:column headerText="Adjusted">                                      
                                     <p:inputText autocomplete="off" id="nurAdj" value="#{b.ajdustedNursingCharge}" >
                                         <f:convertNumber pattern="#,000.00" />    
-                                        
+
                                         <p:ajax event="blur" process="@this"
                                                 listener="#{bhtSummeryController.changeAdjustedValueNursing(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -318,9 +334,10 @@
                                 <p:column  headerText="Discount" >                                      
                                     <p:inputText autocomplete="off" value="#{b.discountAdministrationCharge}" >
                                         <f:convertNumber pattern="#,000.00" />     
-                                     
+
                                         <p:ajax event="blur" process="@this"  update="admNet" 
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomAdministration(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -331,8 +348,9 @@
                                 <p:column headerText="Adjusted">                                      
                                     <p:inputText autocomplete="off" id="admAdj" value="#{b.ajdustedAdministrationCharge}" >
                                         <f:convertNumber pattern="#,000.00" />   
-                                        
+
                                         <p:ajax event="blur" process="@this" listener="#{bhtSummeryController.changeAdjustedValueAdministration(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -351,9 +369,10 @@
                                 <p:column headerText="Discount" >                                      
                                     <p:inputText autocomplete="off" value="#{b.discountMedicalCareCharge}" >
                                         <f:convertNumber pattern="#,000.00" />
-                                       
+
                                         <p:ajax event="blur" process="@this"  update="medNet" 
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomMedicalCare(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -364,8 +383,9 @@
                                 <p:column headerText="Adjusted">                                      
                                     <p:inputText autocomplete="off" id="medAdj" value="#{b.ajdustedMedicalCareCharge}" >
                                         <f:convertNumber pattern="#,000.00" />   
-                                     
+
                                         <p:ajax event="blur" process="@this"  listener="#{bhtSummeryController.changeAdjustedValueMedicalCare(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -385,9 +405,10 @@
                                 <p:column headerText="Discount" >                                      
                                     <p:inputText autocomplete="off" value="#{b.discountLinenCharge}" >
                                         <f:convertNumber pattern="#,000.00" />
-                                        
+
                                         <p:ajax event="blur" process="@this"  update="linNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomLinen(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -399,6 +420,7 @@
                                     <p:inputText autocomplete="off" id="linAdj" value="#{b.ajdustedLinenCharge}" >
                                         <f:convertNumber pattern="#,000.00" />                                             
                                         <p:ajax event="blur" process="@this"  listener="#{bhtSummeryController.changeAdjustedValueLinen(b)}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -423,6 +445,7 @@
                                 <p:ajax event="blur" process="@this" 
                                         update=":#{p:component('dList')} :#{p:component('tot')}"  
                                         listener="#{bhtSummeryController.changeAdjustedProValue(pf)}"/>
+                                <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
 
@@ -438,10 +461,10 @@
                     <h:panelGrid columns="2">
                         <p:panel rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
                             <h:panelGrid columns="1">
-                                <p:commandButton value="Patient Copy" ajax="false" onclick="onSubmitButton();" >
+                                <p:commandButton value="Patient Copy" ajax="false">
                                     <p:printer target="claimablePatientCopy" ></p:printer>
                                 </p:commandButton>                               
-                                <p:commandButton value="Duplicate Copy" ajax="false" onclick="onSubmitButton();" >
+                                <p:commandButton value="Duplicate Copy" ajax="false" >
                                     <p:printer target="claimableDuplicate" ></p:printer>
                                 </p:commandButton> 
                             </h:panelGrid>
@@ -461,17 +484,17 @@
                                                 </p:panel>-->
                         <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
                             <h:panelGrid columns="1">
-                                <p:commandButton ajax="false" value="Green Sheet Print" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="Green Sheet Print" >
                                     <p:printer target="finalBillGreenSheet" ></p:printer>
                                 </p:commandButton>
                             </h:panelGrid>
                         </p:panel>
                         <p:panel header="Not Claimable" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
                             <h:panelGrid columns="1">
-                                <p:commandButton ajax="false" value="Green Sheet Print Without Professional" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="Green Sheet Print Without Professional"  >
                                     <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
                                 </p:commandButton>
-                                <p:commandButton value="Professional Fees" ajax="false" onclick="onSubmitButton();" >
+                                <p:commandButton value="Professional Fees" ajax="false" >
                                     <p:printer target="professional" ></p:printer>
                                 </p:commandButton>
                             </h:panelGrid>

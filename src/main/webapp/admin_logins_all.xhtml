@@ -15,16 +15,16 @@
                     <p:panel id="panelReport" >
                         <f:facet name ="header" >
                             <h:outputLabel styleClass="noPrintButton"  value="Logins Report" />
-                            <p:calendar styleClass="noPrintButton" value="#{loginController.fromDate}" pattern="dd MMMM yyyy hh:mm a" >
+                            <p:calendar styleClass="noPrintButton" value="#{loginController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                             </p:calendar>
-                            <p:calendar styleClass="noPrintButton" value="#{loginController.toDate}" pattern="dd MMMM yyyy hh:mm a" >
+                            <p:calendar styleClass="noPrintButton" value="#{loginController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                             </p:calendar>
 
                             <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false"  onclick="onSubmitButton();">                               
                             </p:commandButton>
                             <p:defaultCommand target="btnRefresh"/>
                             
-                            <p:commandButton styleClass="noPrintButton" value="Print" ajax="false"  onclick="onSubmitButton();">
+                            <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
                                 <p:printer target="panelReport" />
                             </p:commandButton>
                             
@@ -38,12 +38,12 @@
                             <br/>
                             <h:outputLabel value="From : " />
                             <h:outputLabel value="#{loginController.fromDate}"  >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                             </h:outputLabel>
                             &nbsp;&nbsp;&nbsp;&nbsp;
                             <h:outputLabel value="To : "  ></h:outputLabel>
                             <h:outputLabel value="#{loginController.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
                             </h:outputLabel>
 
                         </p:panel>
@@ -65,12 +65,12 @@
                             </p:column>
                             <p:column headerText="Login At">
                                 <h:outputLabel value="#{b.logedAt}" >
-                                    <f:convertDateTime pattern="dd MM yy hh:mm a" />
+                                    <f:convertDateTime pattern="dd MM yy hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Log out at">
                                 <h:outputLabel value="#{b.logoutAt}" >
-                                    <f:convertDateTime pattern="dd MM yy hh:mm a" />
+                                    <f:convertDateTime pattern="dd MM yy hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="IP">
