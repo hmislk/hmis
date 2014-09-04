@@ -42,7 +42,7 @@
 
                         <h:panelGroup  rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveEdit')}" >
 
-                            <ph:grn_edit bill="#{pharmacyBillSearch.bill}" />
+                            <ph:grn_edit bill="#{pharmacyBillSearch.bill}" rendered="false" />
                         </h:panelGroup>
                     </h:panelGroup>
 

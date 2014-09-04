@@ -65,12 +65,12 @@
                         </h:panelGroup>
                     </p:column>  
                     <p:column>
-                        <p:commandButton ajax="false" value="View Request" action="/pharmacy/pharmacy_reprint_transfer_request">
-                            <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
+                        <p:commandButton ajax="false" value="View Request" action="store_reprint_transfer_request">
+                            <f:setPropertyActionListener value="#{p}" target="#{storeBillSearch.bill}"/>
                         </p:commandButton>
                     </p:column>
                     <p:column>
-                        <p:commandButton ajax="false" value="Issue" action="/pharmacy/pharmacy_transfer_issue"
+                        <p:commandButton ajax="false" value="Issue" action="store_transfer_issue"
                                          disabled="#{p.cancelled eq true}">
                             <f:setPropertyActionListener target="#{transferIssueController.requestedBill}" value="#{p}"/>
                         </p:commandButton>
@@ -112,8 +112,8 @@
                                 </h:outputLabel>                                  
                             </p:column>
                             <p:column>
-                                <p:commandButton ajax="false" value="View Issued Note" action="/pharmacy/pharmacy_reprint_transfer_isssue" >
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                <p:commandButton ajax="false" value="View Issued Note" action="store_reprint_transfer_isssue" >
+                                    <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b}"/>
                                 </p:commandButton>
                             </p:column>
 

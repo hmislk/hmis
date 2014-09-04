@@ -11,6 +11,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.table.String1Value2;
 import com.divudi.data.table.String2Value4;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -37,6 +38,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -64,6 +66,8 @@ public class InwardReportController1 implements Serializable {
     List<String2Value4> inwardCharges;
     List<String1Value2> finalValues;
     List<BillFee> billFees;
+    @EJB
+    private CommonFunctions commonFunctions;
     @EJB
     BillFeeFacade billFeeFacade;
     @EJB
@@ -1193,7 +1197,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         opdServices = new ArrayList<>();
-
+        System.err.println("Call");
         for (Object[] objs : results) {
 
             OpdService row = new OpdService();
@@ -1202,10 +1206,12 @@ public class InwardReportController1 implements Serializable {
             row.setMargin((double) objs[2]);
             row.setGrossValue((double) objs[3]);
             row.setNetValue((double) objs[4]);
-//            System.err.println("objs[5] = " + objs[5]);
-            try {
+            System.err.println("objs 1 = ");
+            try {                
                 long billed = calFee(row.getCategory(), new BilledBill());
+                System.err.println("objs 2 = ");
                 long cancel = calFee(row.getCategory(), new CancelledBill());
+                System.err.println("objs 3 = ");
                 long ret = calFee(row.getCategory(), new RefundBill());
                 row.setCount(billed - (cancel + ret));
             } catch (Exception e) {
@@ -1537,6 +1543,45 @@ public class InwardReportController1 implements Serializable {
         return "report_income_by_caregories_and_bht";
     }
 
+    public void processPatientRooms() {
+        String sql;
+        Map m = new HashMap();
+        sql = "select bf "
+                + " from PatientRoom bf "
+                + " where bf.patientEncounter.paymentFinalized=true "
+                + " and bf.retired=false"
+                + " and bf.patientEncounter.dateOfDischarge between :fd and :td ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        if (admissionType != null) {
+            sql = sql + " and bf.patientEncounter.admissionType=:at ";
+            m.put("at", admissionType);
+
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and bf.patientEncounter.paymentMethod=:bt ";
+            m.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and bf.patientEncounter.creditCompany=:cc ";
+            m.put("cc", institution);
+        }
+
+        sql += " order by bf.patientEncounter.bhtNo";
+        patientRooms = patientRoomFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+//        PatientEncounter pe = new PatientEncounter();
+//        pe.getBhtNo();
+        if (billFees == null) {
+            billFees = new ArrayList<>();
+        }
+
+      
+    }
+
     ////////////GETTERS AND SETTERS
     public List<String1Value2> getTimedServices() {
         return timedServices;
@@ -1555,6 +1600,9 @@ public class InwardReportController1 implements Serializable {
     }
 
     public Date getFromDate() {
+        if(fromDate == null){
+        fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
         return fromDate;
     }
 
@@ -1563,6 +1611,9 @@ public class InwardReportController1 implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        }
         return toDate;
     }
 
@@ -1609,6 +1660,16 @@ public class InwardReportController1 implements Serializable {
     public void setProfessionals(List<String1Value2> professionals) {
         this.professionals = professionals;
     }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+    
+    
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;

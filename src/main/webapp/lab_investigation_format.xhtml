@@ -28,9 +28,6 @@
                             <p:column>
                                 #{apt.department.name}
                             </p:column>
-                            <p:column>
-                                #{apt.total}
-                            </p:column>
                             <p:ajax event="itemSelect" process="acPt" update=":#{p:component('pPreview')} :#{p:component('pDetails')} :#{p:component('pIx')} "/>
                         </p:autoComplete> 
                         <!--ixConverter-->
@@ -207,7 +204,7 @@
 
                 <p:panel id="pPreview"   >
                     <f:facet name="header" >
-                        <p:commandButton ajax="false" value="Print" onclick="onSubmitButton();"  >
+                        <p:commandButton ajax="false" value="Print" >
                             <p:printer target="divPrint" />
                         </p:commandButton>
                     </f:facet>

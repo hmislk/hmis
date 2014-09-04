@@ -7,7 +7,7 @@
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>ruhunu</name>
+    <name>Live</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -34,6 +34,7 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.6</version>
         </dependency>
+       
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
@@ -132,7 +133,12 @@
             <artifactId>mail</artifactId>
             <version>1.4</version>
         </dependency>
-            
+        <dependency>
+            <groupId>xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+
     </dependencies>
 
     <build>

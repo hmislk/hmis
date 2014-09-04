@@ -42,6 +42,8 @@ public enum BillType {
     StoreBhtIssue,
     StoreBhtPre,
     StoreIssue,
+    @Deprecated
+    StoreTransferIssue,
     PharmacyPre,
     PharmacyOrder,
     PharmacyOrderApprove,
@@ -52,7 +54,9 @@ public enum BillType {
     PurchaseReturn,// Purchase Return
     PharmacyTransferRequest,
     PharmacyTransferIssue,
+    PharmacyDirectIssue,
     PharmacyTransferReceive,
+    PharmacyDirectReceive,
     PharmacyAdjustment,
     DrawerAdjustment,
     PharmacyMajorAdjustment,

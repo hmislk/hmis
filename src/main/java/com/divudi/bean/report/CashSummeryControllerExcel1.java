@@ -438,7 +438,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
             AdmissionTypeBills admB = new AdmissionTypeBills();
             admB.setAdmissionType(at);
             admB.setBills(getBillBean().fetchInwardPaymentBills(at, fromDate, toDate, institution));
-            admB.setTotal(getBillBean().calInwardPaymentTotal(at, fromDate, toDate, institution));
+            admB.setTotal(getBillBean().calInwardPaymentTotal1(at, fromDate, toDate, institution));
             inwardTot += admB.getTotal();
             admissionTypeBillses.add(admB);
         }

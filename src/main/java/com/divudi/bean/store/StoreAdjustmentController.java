@@ -64,7 +64,7 @@ public class StoreAdjustmentController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;

@@ -574,7 +574,7 @@ public class InwardSearch implements Serializable {
             RefundBill cb = createRefundCancelBill();
             //Copy & paste
             getBillFacade().create(cb);
-            cancelBillItems(cb);
+            cancelBillItems(cb);            
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
@@ -744,12 +744,12 @@ public class InwardSearch implements Serializable {
     private RefundBill createRefundCancelBill() {
         RefundBill cb = new RefundBill();
         cb.copy(getBill());
-        cb.setBilledBill(getBill());
+        cb.setRefundedBill(getBill());
         cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         cb.setCreater(getSessionController().getLoggedUser());
-        cb.setPaymentMethod(getBill().getPaymentMethod());
+        cb.setPaymentMethod(getPaymentMethod());
         cb.setComments(comment);
         //TODO: Find null Point Exception
 
@@ -1062,7 +1062,6 @@ public class InwardSearch implements Serializable {
         b.setCheckedBy(getSessionController().getLoggedUser());
 
         getBillFacade().edit(b);
-        
 
         UtilityController.addErrorMessage("Successfully Cheked");
     }
@@ -1088,18 +1087,19 @@ public class InwardSearch implements Serializable {
         UtilityController.addErrorMessage("Successfully Cheked");
     }
 
-    public void selectBillItem(BillItem billItem){
+    public void selectBillItem(BillItem billItem) {
         makeNull();
-        BillItem tmp=billItemFacede.find(billItem.getId());
-        bill=tmp.getBill();
+        BillItem tmp = billItemFacede.find(billItem.getId());
+        bill = tmp.getBill();
     }
-    
+
     public void setBill(Bill bill) {
         recreateModel();
         if (bill == null) {
             return;
         }
         this.bill = billFacade.find(bill.getId());
+        paymentMethod = bill.getPaymentMethod();
 
     }
 

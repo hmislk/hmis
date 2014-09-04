@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.creditCardBill}" var="ch" sortBy="#{ch.billClass}" 
+                     rendered="#{bookKeepingSummery.creditCardBill.size()>0}">
+            <f:facet name="header">              
+                <p:outputLabel value="Credit Card Transactions"/>    
+            </f:facet>
+            <p:column headerText="Bill No" style="width: 20%;">
+                <f:facet name="header">              
+                    <p:outputLabel value="Bill No"/>    
+                </f:facet>
+                <h:outputLabel value="#{ch.insId}"/>
+                <br/>
+                <h:panelGroup rendered="#{ch.cancelled}">
+                    <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
+                    <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="#{ch.cancelledBill.createdAt}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
+                </h:panelGroup>
+            </p:column>                            
+            <p:column headerText="Credit Card No" >
+                <f:facet name="header">              
+                    <p:outputLabel value="Credit Card No"/>    
+                </f:facet>
+                <h:outputLabel value="#{ch.creditCardRefNo}"/>                            
+            </p:column>
+            <p:column headerText="Bank" style="width: 20%">
+                <f:facet name="header">              
+                    <p:outputLabel value="Bank"/>    
+                </f:facet>
+                <h:outputLabel value="#{ch.bank.name}" style="width: 20%" />                            
+            </p:column>
+
+            <p:column headerText="Memo" style="width: 20%">
+                <f:facet name="header">              
+                    <p:outputLabel value="Memo"/>    
+                </f:facet>
+                <h:outputLabel value="#{ch.comments}" style="width: 20%" />                            
+            </p:column>
+
+            <p:column/>
+
+            <p:column headerText="Total" style="width: 20%; text-align: right;">
+                <f:facet name="header">              
+                    <p:outputLabel value="Total"/>    
+                </f:facet>
+                <h:outputLabel value="#{0-ch.netTotal}">
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>      
+            </p:column>
+
+            <p:column headerText="" style="width: 10%!important; text-align: right;">
+                <f:facet name="header">
+                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"/>
+                </f:facet>
+                <h:outputLabel value="">
+                </h:outputLabel>      
+            </p:column>
+
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="5" footerText="Total" />
+                    <p:column style="text-align: right;" footerText="#{0-bookKeepingSummery.creditCardTotal}" >
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{0-bookKeepingSummery.creditCardTotal}" >
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>   
+                        </f:facet>
+                    </p:column>
+
+                    <p:column style="text-align: right; width: 50px; vertical-align: bottom; padding-bottom: 0px;margin-bottom: 0px;">
+                        <f:facet name="footer">
+                            <h:outputLabel value="------------">
+                            </h:outputLabel>   
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+        </p:dataTable>
+    </cc:implementation>
+</html>
