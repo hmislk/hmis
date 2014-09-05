@@ -415,9 +415,9 @@ public class PracticeBookingController implements Serializable {
         bi.setStaff(getDoctor());
         bi.setBillType(BillType.ClinicalOpdBooking);
         if (foreigner) {
-            bi.setTotal(getSelectedServiceSession().getTotalFfee());
+            bi.setTotal(getSelectedServiceSession().getTotal());
         } else {
-            bi.setTotal(getSelectedServiceSession().getTotalFee());
+            bi.setTotal(getSelectedServiceSession().getTotal());
         }
         bi.setPatient(getPatientController().getCurrent());
         //   System.out.println("pt = " + getPatientController().getCurrent().getPerson().getName());
@@ -515,7 +515,7 @@ public class PracticeBookingController implements Serializable {
                     List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql);
                     //System.out.println("tmp is " + tmp.size());
                     if (!tmp.isEmpty()) {
-                        serviceSessions = getChannelBean().setSessionAt(tmp);
+                        serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
                     }
                 } catch (Exception e) {
                     //System.out.println("error 11 + " + e.getMessage());

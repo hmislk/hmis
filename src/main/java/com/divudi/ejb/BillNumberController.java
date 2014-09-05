@@ -520,6 +520,19 @@ public class BillNumberController {
         return result;
 
     }
+    
+    public String storeInventryItemNumberGenerator() {
+        HashMap hm = new HashMap();
+        String sql = "SELECT count(b) FROM Amp b where b.retired=false and b.departmentType=:dep ";
+        hm.put("dep", DepartmentType.Inventry);
+        String result;
+        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
+
+        result = dd.toString();
+
+        return result;
+
+    }
 
     public DepartmentFacade getDepFacade() {
         return depFacade;

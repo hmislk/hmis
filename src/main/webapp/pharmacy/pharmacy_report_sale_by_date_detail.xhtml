@@ -72,7 +72,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Person"/>
                                 </f:facet>
-                            </p:column>                            
+                            </p:column>  
+                            <p:column headerText="Retired">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Retired"/>
+                                </f:facet>
+                            </p:column> 
                             <p:column headerText="Total">
                                 <f:facet name="header">
                                     <h:outputLabel value="Total"/>
@@ -110,6 +115,9 @@
 
                         <p:column>
                             <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="Retired" rendered="#{b.retired eq true}"/>
                         </p:column>
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{b.total}">
@@ -208,7 +216,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Person"/>
                                 </f:facet>
-                            </p:column>                           
+                            </p:column>    
+                            <p:column headerText="Retired">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Retired"/>
+                                </f:facet>
+                            </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <h:outputLabel value="Total"/>
@@ -245,7 +258,10 @@
                         </p:column>                        
                         <p:column>
                             <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
-                        </p:column>                       
+                        </p:column> 
+                        <p:column>
+                            <h:outputLabel value="Retired" rendered="#{b.retired eq true}"/>
+                        </p:column>
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{b.total}">
                                 <f:convertNumber pattern="#,000.00" />
@@ -341,7 +357,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Person"/>
                                 </f:facet>
-                            </p:column>                           
+                            </p:column>     
+                            <p:column headerText="Retired">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Retired"/>
+                                </f:facet>
+                            </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <h:outputLabel value="Total"/>
@@ -378,7 +399,10 @@
                         </p:column>                        
                         <p:column>
                             <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
-                        </p:column>                       
+                        </p:column> 
+                        <p:column>
+                            <h:outputLabel value="Retired" rendered="#{b.retired eq true}"/>
+                        </p:column>
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{b.total}">
                                 <f:convertNumber pattern="#,000.00" />

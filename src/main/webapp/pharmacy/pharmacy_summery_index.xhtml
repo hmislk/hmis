@@ -21,7 +21,7 @@
                             </f:facet>    
                             <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Detailed Report" action="/reportCashier/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Summery" action="/reportCashier/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
-                            
+
 
                         </h:panelGrid>
 
@@ -45,8 +45,8 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Sale Detail Report By Date" action="pharmacy_report_sale_by_date_detail_payment_method.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
 
                         </h:panelGrid>
-                        
-                         <h:panelGrid columns="1" >
+
+                        <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="GRN" />
                             </f:facet>    
@@ -54,7 +54,7 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="GRN Summery By Supplier" action="pharmacy_report_grn_detail_by_supplier.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
 
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="Purchase" />
@@ -63,7 +63,7 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Purchase Summery By Supplier" action="pharmacy_report_purchase_detail_by_supplier.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
 
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="GRN Payment" />
@@ -72,7 +72,7 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="GRN Payment Summery By Supplier" action="pharmacy_report_grnPayment_detail_by_supplier.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
 
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="Issue Report" />
@@ -83,9 +83,11 @@
                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Department Unit Issue by Item" 
                                              action="unit_report_by_item.xhtml"/>
-
+                            <p:commandButton styleClass="linkButton" ajax="false"
+                                             value="BHT Issue by Item" 
+                                             action="/inward/report_bht_issue_by_item.xhtml"/>
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="Transfer Report" />

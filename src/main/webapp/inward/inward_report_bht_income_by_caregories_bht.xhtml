@@ -51,13 +51,20 @@
                         </p:commandButton>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5" fileName="newly_added_report"  />
+                            <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5" fileName="BHT_Income_by_Categories"  />
                         </p:commandButton>  
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:panelGrid columns="2" style="width: 100%;">
                                 <p:panel header="Summery" style="text-align: center;">
                                 <p:panel style="text-align: left;">
                                     <h:panelGrid columns="4"  style="min-width: 100%;">
+                                        <h:outputLabel value=" &nbsp;"/>
+                                        <h:outputLabel value="Report Total">
+                                        </h:outputLabel>                                      
+                                        <h:outputLabel value="Final Bill Total" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Diffreance" >
+                                        </h:outputLabel>
                                         <h:outputLabel value="Gross &nbsp;"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.total}">
                                             <f:convertNumber pattern="#,##0.00" />

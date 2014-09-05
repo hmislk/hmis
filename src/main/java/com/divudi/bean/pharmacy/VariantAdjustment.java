@@ -52,7 +52,7 @@ public class VariantAdjustment implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @Inject
     private BillNumberController billNumberBean;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;

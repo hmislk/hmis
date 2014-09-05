@@ -1093,6 +1093,8 @@ public class PharmacySaleReport implements Serializable {
         grantNetTotal = calGrantNetTotalIssue();
 
     }
+    
+    
 
     public void createLabHadnOverReportByDate() {
         billedSummery = new PharmacySummery();
@@ -1875,7 +1877,7 @@ public class PharmacySaleReport implements Serializable {
         grantDiscount = calGrantDiscountByDepartment();
 
     }
-
+    
     public void createSaleReportByDateDetailPaymentScheme() {
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
@@ -2104,10 +2106,10 @@ public class PharmacySaleReport implements Serializable {
         refundedDetail.setCreditTotal(calGrantTotalByPaymentMethod(PaymentMethod.Credit, new RefundBill()));
         refundedDetail.setCardTotal(calGrantTotalByPaymentMethod(PaymentMethod.Card, new RefundBill()));
 
-        grantCardTotal = calGrantTotalByPaymentMethod(PaymentMethod.Card);
-        grantCashTotal = calGrantTotalByPaymentMethod(PaymentMethod.Cash);
-        grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
-        grantDiscount = calGrantDiscountByDepartment();
+        grantCardTotal = grantCardTotal + calGrantTotalByPaymentMethod(PaymentMethod.Card);
+        grantCashTotal = grantCashTotal + calGrantTotalByPaymentMethod(PaymentMethod.Cash);
+        grantCreditTotal = grantCreditTotal + calGrantTotalByPaymentMethod(PaymentMethod.Credit);
+        grantDiscount = grantDiscount + calGrantDiscountByDepartment();
 
     }
 

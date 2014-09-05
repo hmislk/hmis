@@ -10,6 +10,8 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 
 
+
+
 /**
  *
  * @author buddhika

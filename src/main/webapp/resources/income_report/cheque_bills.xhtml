@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.chequeBill}" var="ch" sortBy="#{ch.billClass}" 
+                     rendered="#{bookKeepingSummery.chequeBill.size()>0}">
+            <f:facet name="header">              
+                <p:outputLabel value="Cheque Transactions"/>    
+            </f:facet>
+            <p:column headerText="Bill No" style="width: 20%;">
+                <f:facet name="header">              
+                    <p:outputLabel value="Bill No"/>    
+                </f:facet>
+                <h:outputLabel value="#{ch.insId}" />
+                <br/>
+                <h:panelGroup rendered="#{ch.cancelled}">
+                    <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
+                    <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="#{ch.cancelledBill.createdAt}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
+                </h:panelGroup>
+            </p:column>                        
+            <p:column headerText="Cheque No" style="width: 20%;">
+                <f:facet name="header">              
+                    <p:outputLabel value="Cheque No"/>    
+                </f:facet>
+                <h:outputLabel value="#{ch.chequeRefNo}">                                
+                </h:outputLabel>                               
+            </p:column>  
+            <p:column headerText="Bank" style="width: 20%">
+                <f:facet name="header">              
+                    <p:outputLabel value="Bank" style="width: 20%" />    
+                </f:facet>
+                <h:outputLabel value="#{ch.bank.name}">                                   
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Cheque Date" style="width: 20%;"> 
+                <f:facet name="header">              
+                    <p:outputLabel value="Cheque Date" />    
+                </f:facet>
+                <h:outputLabel value="#{ch.chequeDate}">
+                    <f:convertDateTime pattern="dd MM yy"/>
+                </h:outputLabel>                               
+            </p:column> 
+
+            <p:column headerText="Total" style="text-align: right;">
+                <f:facet name="header">              
+                    <p:outputLabel value="Total"/>    
+                </f:facet>
+                <h:outputLabel value="#{0-ch.netTotal}">
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+            </p:column>
+
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="5" footerText="Total"/>
+                    <p:column style="text-align: right;" footerText="#{0-bookKeepingSummery.chequeTotal}">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{0-bookKeepingSummery.chequeTotal}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>   
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+        </p:dataTable>
+
+
+    </cc:implementation>
+</html>

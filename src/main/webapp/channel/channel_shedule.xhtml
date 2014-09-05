@@ -8,8 +8,8 @@
 
     <ui:define name="content">
         <h:form>
-            
-            
+
+
             <h:panelGrid columns="2" class="alignTop">
                 <p:panel >
                     <h:panelGrid columns="2">
@@ -20,8 +20,8 @@
                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
                         </p:autoComplete>
 
-                       
-                        
+
+
                         <h:outputLabel  value="Doctor" ></h:outputLabel>
                         <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
                                           completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
@@ -39,6 +39,8 @@
                             </f:ajax>
                         </p:selectOneListbox>
                     </h:panelGrid>
+                    
+                    
                     <h:panelGrid id="gpSelectButtons" columns="3"  >                     
                         <p:commandButton ajax="false" id="btnAdd" value="Add"  action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
                             <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail" execute="" >
@@ -54,18 +56,17 @@
 
                 <p:panel id="gpDetail">                    
                     <f:facet name="header">
-                        <p:commandButton ajax="false"  id="btnSave" value="Save"  action="#{sheduleController.saveSelected}" styleClass="buttons" onclick="onSubmitButton();">
+                        <p:commandButton ajax="false"  id="btnSave" value="Save"  
+                                         action="#{sheduleController.saveSelected}" styleClass="buttons" onclick="onSubmitButton();">
                             <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail "  execute="gpDetail" >
                             </f:ajax>
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="New Shedule" actionListener="#{sheduleController.makeNull}" onclick="onSubmitButton();"/>
-
                     </f:facet>
                     <p:panelGrid columns="2">  
                         <p:outputLabel value="Session Name"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
                         <p:outputLabel value="Start Time"/>                        
-                        <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm:ss" timeOnly="true">                            
+                        <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
                         </p:calendar>
                         <p:outputLabel value="Max Number"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.maxNo}"/>
@@ -75,8 +76,8 @@
                         <p:inputText autocomplete="off" value="#{sheduleController.current.roomNo}"/>
                         <p:outputLabel value="Before Session" rendered="false"/>
                         <p:autoComplete rendered="false" forceSelection="true" value="#{sheduleController.current.beforeSession}" 
-                                         completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                         converter="sscon"   >                            
+                                        completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                        converter="sscon"   >                            
                         </p:autoComplete>
                         <p:outputLabel value="After Session" rendered="false"/>
                         <p:autoComplete  rendered="false" forceSelection="true" value="#{sheduleController.current.afterSession}" 
@@ -91,26 +92,6 @@
                         <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/> 
                     </p:panelGrid>
                     <br/>
-             
-                    <h:panelGrid columns="3" style="min-width: 100%;">
-                        <p:outputLabel value="Fee Name"/>
-                        <p:outputLabel value="Local Fee"/>
-                        <p:outputLabel value="Foriegn Fee"/>
-
-                        <p:outputLabel value="Hospital Fee"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.hospitalFee.fee}"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.hospitalFee.ffee}"/>
-
-                        <p:outputLabel value="Doctor Fee"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.doctorFee.fee}"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.doctorFee.ffee}"/>
-                        
-                        <p:outputLabel value="Tax"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.tax.fee}"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.tax.ffee}"/>
-
-                    </h:panelGrid>
-
                     <p:tabView  >
                         <p:tab title="WeekDay"> 
                             <p:selectOneMenu id="wdate" value="#{sheduleController.current.sessionWeekday}">

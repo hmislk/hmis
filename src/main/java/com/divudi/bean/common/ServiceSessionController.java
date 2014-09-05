@@ -20,7 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import javax.inject.Inject;
-import javax.inject.Named; import javax.ejb.EJB;
+import javax.inject.Named;
+import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -31,11 +32,11 @@ import javax.faces.convert.FacesConverter;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class ServiceSessionController implements Serializable {
+public class ServiceSessionController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -53,12 +54,12 @@ public  class ServiceSessionController implements Serializable {
     }
 
     public List<ServiceSession> completeServiceSession(String qry) {
-        List<ServiceSession> a=null ;
+        List<ServiceSession> a = null;
         if (qry != null) {
             a = getFacade().findBySQL("select c from ServiceSession c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
-        if(a==null){
-            a=new ArrayList<ServiceSession>();
+        if (a == null) {
+            a = new ArrayList<ServiceSession>();
         }
         return a;
     }
@@ -69,16 +70,14 @@ public  class ServiceSessionController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<ServiceSession>();
         } else {
-                        
+
             sql = "select p from ServiceSession p where p.retired=false and ((upper(p.staff.person.name) like '%" + query.toUpperCase() + "%') or (upper(p.name) like '%" + query.toUpperCase() + "%') or (upper(p.staff.speciality.name) like '%" + query.toUpperCase() + "%') ) order by p.name";
             //System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
     }
-    
-    
-    
+
     public void prepServiceSessiondd() {
         current = new ServiceSession();
     }
@@ -184,6 +183,9 @@ public  class ServiceSessionController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
+            if (value == null) {
+                return null;
+            }
             java.lang.Long key;
             key = Long.valueOf(value);
             return key;

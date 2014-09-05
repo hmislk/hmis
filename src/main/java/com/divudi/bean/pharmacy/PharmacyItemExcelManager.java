@@ -120,7 +120,7 @@ public class PharmacyItemExcelManager implements Serializable {
     MeasurementUnitFacade muFacade;
     @EJB
     PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;
@@ -915,6 +915,92 @@ public class PharmacyItemExcelManager implements Serializable {
             billFacade.edit(obj);
 
         }
+
+    }
+
+    public void correctIssueToUnit3() {
+        Map m = new HashMap();
+        String sql;
+        m.put("bt", BillType.PharmacyIssue);
+
+        sql = "select b "
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bt ";
+
+        List<BillItem> list = billItemFacade.findBySQL(sql, m);
+        if (list == null) {
+            return;
+        }
+
+        for (BillItem obj : list) {
+            IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(obj.getBill().getDepartment(), obj.getBill().getToDepartment());
+            if (issueRateMargins == null) {
+                System.out.println("ERRROR");
+                continue;
+            }
+
+            if (issueRateMargins.isAtPurchaseRate()) {
+                if (obj.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() != obj.getRate()) {
+                    obj.setNetRate(obj.getRate());
+                    System.err.println("))))))))))))))");
+                }
+            }
+
+            double value = obj.getNetRate() * obj.getPharmaceuticalBillItem().getQty();
+//            System.out.println("*************************************");
+//            System.err.println("BillClass " + obj.getBill().getClass());
+//            System.err.println("QTY " + obj.getPharmaceuticalBillItem().getQty());
+//            System.err.println("Net Rate " + obj.getNetRate());
+//            System.err.println("Gross " + obj.getGrossValue());
+//            System.err.println("Value " + value);
+
+            if (obj.getGrossValue() > 0) {
+                obj.setGrossValue(Math.abs(value));
+            } else {
+                obj.setGrossValue(0 - Math.abs(value));
+            }
+
+            obj.setMarginValue(0);
+            obj.setNetValue(obj.getGrossValue());
+
+//            billItemFacade.edit(obj);
+        }
+
+//        m = new HashMap();
+//        m.put("bt", BillType.PharmacyIssue);
+//
+//        sql = "select b "
+//                + " from Bill b "
+//                + " where b.retired=false "
+//                + " and b.billType=:bt ";
+//
+//        List<Bill> listB = billFacade.findBySQL(sql, m);
+//        if (listB == null) {
+//            return;
+//        }
+//
+//        for (Bill obj : listB) {
+//            m = new HashMap();
+//            sql = "select sum(b.grossValue)"
+//                    + " from BillItem b "
+//                    + " where b.retired=false "
+//                    + " and b.bill=:bt ";
+//            m.put("bt", obj);
+//            Double dbl = billFacade.findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+//
+//            if (dbl == null) {
+//                System.err.println("ERR");
+//                return;
+//            }
+//
+//            obj.setTotal(dbl);
+//            obj.setMargin(0);
+//            obj.setNetTotal(dbl);
+//
+//            billFacade.edit(obj);
+//
+//        }
 
     }
 

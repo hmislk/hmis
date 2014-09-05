@@ -97,7 +97,7 @@ public class BillSearch implements Serializable {
     private CommonFunctions commonFunctions;
     @Inject
     private BillNumberController billNumberBean;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     EjbApplication ejbApplication;
@@ -116,6 +116,14 @@ public class BillSearch implements Serializable {
     private LazyDataModel<BillItem> searchBillItems;
     @EJB
     private BillItemFacade billItemFacade;
+    
+    public void updateBill(){
+        
+        bill.setEditedAt(new Date());
+        bill.setEditor(sessionController.getLoggedUser());
+        billFacade.edit(bill);
+        
+    }
 
     public void createCashReturnBills() {
         bills = null;
@@ -177,6 +185,9 @@ public class BillSearch implements Serializable {
     public void onEdit(RowEditEvent event) {
 
         BillFee tmp = (BillFee) event.getObject();
+        
+        tmp.setEditedAt(new Date());
+        tmp.setEditor(sessionController.getLoggedUser());
 
         if (tmp.getPaidValue() != 0.0) {
             UtilityController.addErrorMessage("Already Staff FeePaid");
@@ -184,6 +195,22 @@ public class BillSearch implements Serializable {
         }
 
         getBillFeeFacade().edit(tmp);
+
+    }
+    
+    public void onEditItem(RowEditEvent event) {
+
+        BillItem tmp = (BillItem) event.getObject();
+        
+        tmp.setEditedAt(new Date());
+        tmp.setEditor(sessionController.getLoggedUser());
+
+//        if (tmp.getPaidValue() != 0.0) {
+//            UtilityController.addErrorMessage("Already Staff FeePaid");
+//            return;
+//        }
+
+        getBillItemFacade().edit(tmp);
 
     }
 
@@ -1122,6 +1149,7 @@ public class BillSearch implements Serializable {
             getBillFeeFacade().create(bf);
         }
     }
+    
     @Inject
     private BillBeanController billBean;
 

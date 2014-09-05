@@ -8,7 +8,7 @@
 
     <ui:define name="content">
         <h:form>
-            <h:panelGrid columns="4" id="spec">     
+            <h:panelGrid columns="4" id="spec" styleClass="alignTop">     
                 <p:panel header="Speciality">       
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
@@ -23,32 +23,29 @@
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this" render="tbl"  /> 
+                            <f:ajax  event="change" execute="@this" render="tbl" listener="#{bookingController.generateSessions()}" /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
 
-                <p:panel style="height: 300px;  padding: 2px; margin: auto;position:relative ;"  >
+                <p:panel header="Session" style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;"  >
                     <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
                                  id="tbl" var="ses"
                                  selectionMode="single" 
                                  selection="#{bookingController.selectedServiceSession}" >
 
-                        <f:facet name="header">
-                            <h:outputLabel value="Sessions"/>
-                        </f:facet>
-
-                        <p:ajax event="rowSelect" update=":#{p:component('bSession')} :#{p:component('amt')}" />  
+                        <p:ajax event="rowSelect" process="tbl"
+                                update=":#{p:component('bSession')} :#{p:component('lblSessionTotal')}" />  
 
                         <p:column headerText="Date">
                             <h:outputLabel value="#{ses.sessionAt}">
                                 <f:convertDateTime pattern="dd MM yyyy"/>
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Session Name">
+                        <p:column headerText="Session">
                             <h:outputLabel value="#{ses.name}"/>
                         </p:column>
-                        <p:column headerText="Max Count">
+                        <p:column headerText="Max">
                             <h:outputLabel value="#{ses.maxNo}"/>
                         </p:column>
                         <p:column headerText="Time">
@@ -91,7 +88,7 @@
                 <p:panel id="list" style="min-width: 500px; max-width: 500px; min-height:400px;max-height: 400px;border: 1px solid red;"  >
                     <f:facet name="header" >
                         <h:panelGrid columns="2"  >    
-                            <p:outputLabel value="Paymentmethod"/>
+                            <p:outputLabel value="Payment Method"/>
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.current.paymentMethod}">  
                                 <f:selectItem itemLabel="Select Paymentmethod"/>
                                 <f:selectItem  itemLabel="Cash" itemValue="Cash"  />
@@ -100,11 +97,16 @@
                                 <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt " event="change" />
                             </p:selectOneMenu>
 
+                            <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegner">
+                                <f:ajax event="change" execute="@this tbl" render="lblSessionTotal"/>
+                            </p:selectBooleanCheckbox>
+
+
                             <h:outputLabel id="agent" value="Agent"  style="display: #{(channelBillController.current.paymentMethod eq 'Credit' or channelBillController.current.paymentMethod eq 'Agent') ? 'block' : 'none'} ; " />
                             <p:autoComplete id="agent2" forceSelection="true" style="display: #{(channelBillController.current.paymentMethod eq 'Credit' or channelBillController.current.paymentMethod eq 'Agent') ? 'block' : 'none'} ; "
                                             value="#{channelBillController.current.fromInstitution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
                                             itemLabel="#{ix.name}" itemValue="#{ix}" >
-                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 amt agRefLbl agRefTxt"/>
+                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt"/>
                                 <p:column>#{ix.institutionCode}</p:column>
                                 <p:column>#{ix.name}</p:column>                                
                             </p:autoComplete>  
@@ -159,11 +161,8 @@
                     </p:tabView>
                     <h:panelGrid columns="2" style="min-width: 100%;">
                         <p:outputLabel value="Amount"/>
-                        <p:outputLabel id="amt" value="#{channelBillController.amount}"/>
+                        <p:outputLabel id="lblSessionTotal" value="#{channelBillController.amount}"/>
 
-                        <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegn">
-                            <f:ajax event="change" execute="@this tbl" render="amt"/>
-                        </p:selectBooleanCheckbox>
 
                         <p:commandButton   value="Add" ajax="false" style="float: right;" 
                                            onclick="if (!confirm('Are you sure you want to Add this record?'))
@@ -364,11 +363,11 @@
 
 
                         <p:tab title="Search">
-                            <p:calendar id="cal"  value="#{channelsearch.date}" pattern="dd MMMM yyyy" >   
+                            <p:calendar id="cal"  value="#{channelSearchController.date}" pattern="dd MMMM yyyy" >   
                                 <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                             </p:calendar>
-                            <p:dataTable id="bSessionSearch" value="#{channelsearch.billSessions}" var='bs'
-                                         filteredValue="#{channelsearch.filteredbillSessions}">
+                            <p:dataTable id="bSessionSearch" value="#{channelSearchController.billSessions}" var='bs'
+                                         filteredValue="#{channelSearchController.filteredbillSessions}">
 
 
                                 <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">

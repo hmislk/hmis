@@ -20,6 +20,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -109,7 +110,7 @@ public class ChannelBean {
         return !tmp.isEmpty();
     }
 
-    public List<ServiceSession> setSessionAt(List<ServiceSession> sessions) {
+    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessions(List<ServiceSession> sessions) {
         int sessionDayCount = 0;
         List<ServiceSession> serviceSessions = new ArrayList<>();
         Date nowDate = Calendar.getInstance().getTime();
@@ -142,7 +143,7 @@ public class ChannelBean {
                         newSs.setStartingTime(ss.getStartingTime());
                         newSs.setSessionWeekday(ss.getSessionWeekday());
                         newSs.setHospitalFee(ss.getHospitalFee());
-                        newSs.setStaffFee(ss.getStaffFee());
+                        newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
                         newSs.setSessionAt(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(newSs));
@@ -152,7 +153,7 @@ public class ChannelBean {
                         ////System.out.println("Specific Count : " + sessionDayCount);
                         serviceSessions.add(newSs);
 
-                        if (tmp != ss.getSessionWeekday()) {
+                        if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                             sessionDayCount++;
                         }
                     }
@@ -170,7 +171,7 @@ public class ChannelBean {
                         newSs.setStartingTime(ss.getStartingTime());
                         newSs.setSessionWeekday(ss.getSessionWeekday());
                         newSs.setHospitalFee(ss.getHospitalFee());
-                        newSs.setStaffFee(ss.getStaffFee());
+                        newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
                         newSs.setSessionAt(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(newSs));
@@ -181,7 +182,7 @@ public class ChannelBean {
 
                         serviceSessions.add(newSs);
 
-                        if (tmp != ss.getSessionWeekday()) {
+                        if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                             sessionDayCount++;
                         }
                     }

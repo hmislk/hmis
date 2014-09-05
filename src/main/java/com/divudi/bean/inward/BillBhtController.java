@@ -637,6 +637,10 @@ public class BillBhtController implements Serializable {
     }
 
     public void feeChanged(BillFee bf) {
+        if (bf.getFeeGrossValue() == null) {
+            return;
+        }
+
         if (errorCheckForPatientRoomDepartment()) {
             return;
         }
@@ -652,6 +656,10 @@ public class BillBhtController implements Serializable {
     }
 
     public void feeChangedSurgery(BillFee bf) {
+        if (bf.getFeeGrossValue() == null) {
+            return;
+        }
+
         if (getBatchBill() == null) {
             return;
         }

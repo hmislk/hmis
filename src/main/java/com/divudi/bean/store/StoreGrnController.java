@@ -76,15 +76,13 @@ public class StoreGrnController implements Serializable {
     private CategoryFacade categoryFacade;
     @EJB
     private ItemBatchFacade itemBatchFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
-    private AmpFacade ampFacade;
-    @EJB
-    private PharmacyCalculation pharmacyBillBean;
+    private AmpFacade ampFacade;   
     @EJB
     private CommonFunctions commonFunctions;
-    @EJB
+    @Inject
     private PharmacyCalculation pharmacyCalculation;
     @Inject
     ApplicationController applicationController;
@@ -145,27 +143,15 @@ public class StoreGrnController implements Serializable {
     }
 
     public void setBatch(BillItem pid) {
-//        if (pid.getPharmaceuticalBillItem().getDoe() == null) {
-//            return;
-//        }
-//
-//        if (pid.getPharmaceuticalBillItem().getDoe() != null) {
-//            if (pid.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
-//                pid.getPharmaceuticalBillItem().setStringValue(null);
-//                return;
-//                //    return;
-//            }
-//        }
+
         if (pid.getPharmaceuticalBillItem().getDoe() == null) {
             pid.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
         }
+
         Date date = pid.getPharmaceuticalBillItem().getDoe();
         DateFormat df = new SimpleDateFormat("ddMMyyyy");
         String reportDate = df.format(date);
-// Print what date is today!
-        //       //System.err.println("Report Date: " + reportDate);
         pid.getPharmaceuticalBillItem().setStringValue(reportDate);
-
         onEdit(pid);
     }
 
@@ -217,7 +203,7 @@ public class StoreGrnController implements Serializable {
             UtilityController.addErrorMessage(msg);
             return;
         }
-        getPharmacyBillBean().calSaleFreeValue(getGrnBill());
+        pharmacyCalculation.calSaleFreeValue(getGrnBill());
         if (getGrnBill().getInvoiceDate() == null) {
             getGrnBill().setInvoiceDate(getApproveBill().getCreatedAt());
         }
@@ -245,7 +231,7 @@ public class StoreGrnController implements Serializable {
 
             //     updatePoItemQty(i);
             //System.err.println("1 " + i);
-            ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
+            ItemBatch itemBatch = pharmacyCalculation.saveItemBatch(i);
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
 
             double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
@@ -260,7 +246,7 @@ public class StoreGrnController implements Serializable {
             i.getPharmaceuticalBillItem().setStock(stock);
 
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            getPharmacyBillBean().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            pharmacyCalculation.editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
 
             getGrnBill().getBillItems().add(i);
         }
@@ -357,6 +343,8 @@ public class StoreGrnController implements Serializable {
         getGrnBill().setInstitution(getSessionController().getInstitution());
         //   getGrnBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
         //   getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
+      
+        getGrnBill().calGrnNetTotal();
         if (getGrnBill().getId() == null) {
             getBillFacade().create(getGrnBill());
         } else {
@@ -369,7 +357,7 @@ public class StoreGrnController implements Serializable {
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
             System.err.println("Qty Unit : " + i.getQtyInUnit());
 //            System.err.println("Remaining Qty : " + i.getRemainingQty());
-            double remains = getPharmacyBillBean().calQtyInTwoSql(i);
+            double remains = pharmacyCalculation.calQtyInTwoSql(i);
             System.err.println("Tot GRN Qty : " + remains);
 //            System.err.println("QTY : " + i.getQtyInUnit());
             if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
@@ -419,12 +407,12 @@ public class StoreGrnController implements Serializable {
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
         onEdit(tmp);
-        //    onEditPurchaseRate(tmp);
-        setBatch(tmp);
+        //   onEditPurchaseRate(tmp);
+       // setBatch(tmp);
     }
 
     public void onEdit(BillItem tmp) {
-        double remains = getPharmacyBillBean().getRemainingQty(tmp.getPharmaceuticalBillItem());
+        double remains = pharmacyCalculation.getRemainingQty(tmp.getPharmaceuticalBillItem());
 
 //        System.err.println("1 " + tmp.getTmpQty());
 //        System.err.println("2 " + tmp.getQty());
@@ -644,13 +632,7 @@ public class StoreGrnController implements Serializable {
         this.ampFacade = ampFacade;
     }
 
-    public PharmacyCalculation getPharmacyBillBean() {
-        return pharmacyBillBean;
-    }
-
-    public void setPharmacyBillBean(PharmacyCalculation pharmacyBillBean) {
-        this.pharmacyBillBean = pharmacyBillBean;
-    }
+ 
 
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;

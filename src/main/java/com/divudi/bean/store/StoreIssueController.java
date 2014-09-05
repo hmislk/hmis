@@ -88,7 +88,7 @@ public class StoreIssueController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;

@@ -26,6 +26,12 @@
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Cancel" action="store_cancel_bill_retail_bht" disabled="#{storeBillSearch.bill.cancelled}">                           
                             </p:commandButton>
+                            <p:commandButton ajax="false" value="Return Item" 
+                                             action="store_bill_return_issue"   
+                                             disabled="#{storeBillSearch.bill.cancelled eq true}" onclick="onSubmitButton();" >                                
+                                <f:setPropertyActionListener value="#{storeBillSearch.bill}" 
+                                                             target="#{issueReturnController.bill}"  />
+                            </p:commandButton>
                            
                         </f:facet>
 

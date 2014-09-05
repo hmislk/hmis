@@ -82,18 +82,27 @@
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.department.name}" />
                 <h:outputLabel value="Supplier "/>
                 <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
+                
+                <h:outputLabel value="Payment Method "/>
+                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
 
             </h:panelGrid>
 
 
             <div >
-                <p:spacer height="15px"/>
+                <p:spacer height="20px"/>
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">                                     
                     <p:column style="text-align: left!important;"  >
                         <f:facet name="header">
                             <h:outputLabel value="Item" style="font-weight: bold!important; " />
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
+                    </p:column>
+                    <p:column style="text-align: left!important;"  >
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Category" style="font-weight: bold!important; " />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.item.category.name}"/>
                     </p:column>
                     <p:column style="width: 8px;text-align: right!important;" >
                         <f:facet name="header">
@@ -163,7 +172,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column style="text-align: right!important;">
+<!--                    <p:column style="text-align: right!important;">
                         <f:facet name="header">
                             <h:outputLabel value="Sale" style="font-weight: bold!important;" />
                             <br/>
@@ -172,11 +181,11 @@
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                    </p:column>
+                    </p:column>-->
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="7" footerText="GRN Total" style="font-weight: bold!important;"/>
+                            <p:column colspan="8" footerText="GRN Total" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer">
                                     <br></br>
@@ -190,7 +199,7 @@
                         
 
                         <p:row >
-                            <p:column colspan="7" footerText="Tax"/>
+                            <p:column colspan="8" footerText="Tax"/>
                             <p:column style="text-align: right;" footerText="#{cc.attrs.bill.tax}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{cc.attrs.bill.tax}">
@@ -201,7 +210,7 @@
 
                         </p:row>
                         <p:row >
-                            <p:column colspan="7" footerText="Discount"/>
+                            <p:column colspan="8" footerText="Discount"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.discount}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.discount}" style="text-decoration: underline;">
@@ -211,8 +220,21 @@
                             </p:column>
 
                         </p:row>
+                        
+                        <p:row >
+                            <p:column colspan="8" footerText="GRN Net Total"/>
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.discount}">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{cc.attrs.bill.grnNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:row>
+                        
                         <p:row>
-                            <p:column colspan="7" footerText="Expenses" style="font-weight: bold!important;"/>
+                            <p:column colspan="8" footerText="Expenses" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer">
                                     <br></br>
@@ -223,7 +245,7 @@
                             </p:column>
                         </p:row>
                         <p:row >
-                            <p:column colspan="7" footerText="Net Total" style="font-weight: bold!important;"/>
+                            <p:column colspan="8" footerText="Net Total" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{cc.attrs.bill.netTotal}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.netTotal}" style="font-weight: bold!important; text-decoration: underline;">
@@ -296,7 +318,7 @@
                     <h:outputLabel value="Amount : Rs. ................" style="position: absolute; left: 70%;"/>
                     <br></br>
                     <br></br>                    
-                    <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. Ruhunu Pharmaceuticals &amp; Services (Pvt) Ltd : "/>
+                    <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. Ruhunu Hospital (Pvt) Ltd : "/>
                     <br></br>
 
                     <!--                    <div >-->

@@ -41,14 +41,12 @@ public class SheduleController implements Serializable {
     @Inject
     private SessionController sessionController;
     private Speciality speciality;
-    ServiceSession current;  
+    ServiceSession current;
     private Staff currentStaff;
     private List<ServiceSession> filteredValue;
     private Fee hospitalFee;
     private Fee doctorFee;
     private Fee tax;
-
-   
 
     public void makeNull() {
         speciality = null;
@@ -57,7 +55,7 @@ public class SheduleController implements Serializable {
         filteredValue = null;
         hospitalFee = null;
         doctorFee = null;
-        tax = null;     
+        tax = null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -204,45 +202,24 @@ public class SheduleController implements Serializable {
         getCurrent();
     }
 
-    private void saveFee() {
-
-        if (getHospitalFee().getId() == null) {
-            getHospitalFee().setServiceSession(getCurrent());
-            getHospitalFee().setStaff(getCurrentStaff());
-            getHospitalFee().setSpeciality(getSpeciality());
-            getFeeFacade().create(getHospitalFee());
-        } else {
-            getFeeFacade().edit(getHospitalFee());
-        }
-
-        if (getDoctorFee().getId() == null) {
-            getDoctorFee().setServiceSession(getCurrent());
-            getDoctorFee().setStaff(getCurrentStaff());
-            getDoctorFee().setSpeciality(getSpeciality());
-            getFeeFacade().create(getDoctorFee());
-        } else {
-            getFeeFacade().edit(getDoctorFee());
-        }
-
-        if (getTax().getId() == null) {
-            getTax().setServiceSession(getCurrent());
-            getTax().setStaff(getCurrentStaff());
-            getTax().setSpeciality(getSpeciality());
-            getFeeFacade().create(getTax());
-        } else {
-            getFeeFacade().edit(getTax());
-        }
-
-    }
-
     private boolean checkError() {
         if (getCurrent().getStartingTime() == null) {
             UtilityController.addErrorMessage("Starting time Must be Filled");
             return true;
         }
 
-        if (getCurrent().getSessionWeekday() == 0 && getCurrent().getSessionDate() == null) {
+        if (getCurrent().getSessionWeekday() == null && getCurrent().getSessionDate() == null) {
             UtilityController.addErrorMessage("Set Weekday or Date");
+            return true;
+        }
+
+        if (speciality == null) {
+            UtilityController.addErrorMessage("Plaese Select Specility");
+            return true;
+        }
+
+        if (currentStaff == null) {
+            UtilityController.addErrorMessage("Plaese Select Doctor");
             return true;
         }
 
@@ -253,18 +230,7 @@ public class SheduleController implements Serializable {
         if (checkError()) {
             return;
         }
-
         current.setStaff(currentStaff);
-
-        getCurrent().setStaffFee(getDoctorFee().getFee());
-        getCurrent().setStaffFfee(getDoctorFee().getFfee());
-
-        getCurrent().setHospitalFee(getHospitalFee().getFee());
-        getCurrent().setHospitalFfee(getHospitalFee().getFfee());
-
-        getCurrent().setTax(getTax().getFee());
-        getCurrent().setTaxf(getTax().getFfee());
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("savedOldSuccessfully");
@@ -274,15 +240,6 @@ public class SheduleController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
-
-        saveFee();
-
-        //System.out.println("After saving");
-        //System.out.println("df :" + getCurrent().getStaffFee());
-        //System.out.println("dff :" + getCurrent().getStaffForiegnFee());
-        //System.out.println("hf :" + getCurrent().getHospitalFee());
-        //System.out.println("hff :" + getCurrent().getHospitalForiegnFee());
-
         prepareAdd();
         getItems();
     }
@@ -367,5 +324,4 @@ public class SheduleController implements Serializable {
         this.tax = tax;
     }
 
-   
 }
