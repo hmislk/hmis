@@ -845,8 +845,8 @@ public class mdInwardReportController implements Serializable {
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                //                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.createdAt <= :toDate "
+                                + " and b.createdAt between :fromDate and :toDate "
+//                + " and b.createdAt <= :toDate "
                 + " and b.retired=false  "
                 + " and b.patientEncounter.discharged =false";
 
