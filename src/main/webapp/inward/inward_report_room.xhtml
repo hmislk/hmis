@@ -17,7 +17,9 @@
                         <f:facet name="header" >
                             <h:outputLabel value="BHT Income by Categories" ></h:outputLabel>
                         </f:facet>
-                        <h:panelGrid columns="2" >
+                     
+                            
+                            <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " ></h:outputLabel>
                             <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To : " ></h:outputLabel>
@@ -41,6 +43,9 @@
 
 
                         </h:panelGrid>
+
+
+                        
 
                         <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createRoomTime()}" onclick="onSubmitButton();"  ></p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
