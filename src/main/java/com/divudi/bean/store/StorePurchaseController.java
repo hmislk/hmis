@@ -12,6 +12,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.CashTransactionBean;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.BillItem;
@@ -34,9 +35,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -72,9 +75,45 @@ public class StorePurchaseController implements Serializable {
     private boolean printPreview;
     ///////////
     //  private List<PharmacyItemData> pharmacyItemDatas;
-List<BillItem> billExpenses;
+    List<BillItem> billExpenses;
     
+    @EJB
+    private CommonFunctions commonFunctions;
     
+    Date frmDate;
+    Date toDate;
+    double total;
+    
+    public void createPurchaseExpencess(){
+    
+        
+        String sql;
+        HashMap m= new HashMap();
+        
+        sql="select bi from BillItem bi where "
+                + " bi.expenseBill.createdAt between :fd and :td "
+                + " and bi.expenseBill.retired=false and "
+                + " (bi.expenseBill.billType=:bt1 or bi.expenseBill.billType=:bt2)";
+        
+        if (currentExpense.getItem()!=null) {
+            sql+=" and bi.item=:item ";
+            m.put("item", currentExpense.getItem());
+        }
+        
+        m.put("fd", frmDate);
+        m.put("td", toDate);
+        m.put("bt1", BillType.PharmacyGrnBill);
+        m.put("bt2", BillType.PharmacyPurchaseBill);
+        
+        billExpenses=getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        total=0.0;
+        for (BillItem bi : billExpenses) {
+            total+=bi.getNetValue();
+        }
+        
+    }
+
     public void makeNull() {
         //  currentPharmacyItemData = null;
         printPreview = false;
@@ -133,7 +172,6 @@ List<BillItem> billExpenses;
 //                //    return;
 //            }
 //        }
-
         calTotal();
     }
 
@@ -149,7 +187,7 @@ List<BillItem> billExpenses;
     }
 
     public void setBatch() {
-        if(getCurrentBillItem().getPharmaceuticalBillItem().getDoe()==null){
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getDoe() == null) {
             getCurrentBillItem().getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
         }
         Date date = getCurrentBillItem().getPharmaceuticalBillItem().getDoe();
@@ -241,7 +279,7 @@ List<BillItem> billExpenses;
             getBillItemFacade().create(i);
             getBill().getBillExpenses().add(i);
         }
-        
+
         getBillFacade().edit(getBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
@@ -249,11 +287,10 @@ List<BillItem> billExpenses;
 
         UtilityController.addSuccessMessage("Successfully Billed");
         printPreview = true;
-        
+
     }
 
     private List<BillItem> billItems;
-    
 
     public void addItem() {
 
@@ -266,8 +303,6 @@ List<BillItem> billExpenses;
             return;
         }
 
-        
-
         if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0) {
             UtilityController.addErrorMessage("Please enter Purchase QTY");
             return;
@@ -277,11 +312,10 @@ List<BillItem> billExpenses;
 //            UtilityController.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
 //            return;
 //        }
-
         if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() <= 0) {
             getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() * (1 + (.01 * getCurrentBillItem().getItem().getCategory().getSaleMargin())));
         }
-        
+
         getCurrentBillItem().getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
 //        setBatch();
 
@@ -297,27 +331,26 @@ List<BillItem> billExpenses;
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
-        if(getCurrentExpense().getItem()==null){
+        if (getCurrentExpense().getItem() == null) {
             JsfUtil.addErrorMessage("Expense ?");
             return;
         }
-        if(currentExpense.getQty()==null || currentExpense.getQty().equals(0.0)){
+        if (currentExpense.getQty() == null || currentExpense.getQty().equals(0.0)) {
             currentExpense.setQty(1.0);
         }
-        if(currentExpense.getNetRate()==0.0){
+        if (currentExpense.getNetRate() == 0.0) {
             currentExpense.setNetRate(currentExpense.getRate());
         }
-        
-        currentExpense.setNetValue(currentExpense.getNetRate()*currentExpense.getQty());
-        currentExpense.setGrossValue(currentExpense.getRate()*currentExpense.getQty());
-        
+
+        currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
+        currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
+
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
         currentExpense = null;
         calTotal();
     }
 
-    
     public void saveBill() {
 
         getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.PharmacyPurchaseBill, BillNumberSuffix.PHPUR));
@@ -366,7 +399,7 @@ List<BillItem> billExpenses;
 
     public void calTotal() {
         double tot = 0.0;
-        double exp=0.0;
+        double exp = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
             p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
@@ -377,15 +410,15 @@ List<BillItem> billExpenses;
             tot += p.getNetValue();
         }
 
-        for(BillItem e:getBillExpenses()){
+        for (BillItem e : getBillExpenses()) {
             double nv = e.getNetRate() * e.getQty();
-            e.setNetValue(0-nv);
-            exp+= e.getNetValue();
+            e.setNetValue(0 - nv);
+            exp += e.getNetValue();
         }
-        
+
         getBill().setExpenseTotal(exp);
         getBill().setTotal(tot);
-        getBill().setNetTotal(tot+exp);
+        getBill().setNetTotal(tot + exp);
 
     }
 
@@ -466,7 +499,7 @@ List<BillItem> billExpenses;
     }
 
     public BillItem getCurrentExpense() {
-        if(currentExpense==null){
+        if (currentExpense == null) {
             currentExpense = new BillItem();
             currentExpense.setQty(1.0);
         }
@@ -477,8 +510,6 @@ List<BillItem> billExpenses;
         this.currentExpense = currentExpense;
     }
 
-    
-    
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
@@ -494,7 +525,7 @@ List<BillItem> billExpenses;
     }
 
     public List<BillItem> getBillExpenses() {
-        if(billExpenses==null){
+        if (billExpenses == null) {
             billExpenses = new ArrayList<>();
         }
         return billExpenses;
@@ -503,8 +534,6 @@ List<BillItem> billExpenses;
     public void setBillExpenses(List<BillItem> billExpenses) {
         this.billExpenses = billExpenses;
     }
-    
-    
 
     public List<BillItem> getBillItems() {
         if (billItems == null) {
@@ -524,7 +553,35 @@ List<BillItem> billExpenses;
     public void setApplicationController(ApplicationController applicationController) {
         this.applicationController = applicationController;
     }
-    
-    
+
+    public Date getFrmDate() {
+        if (frmDate == null) {
+            frmDate =commonFunctions.getStartOfMonth(new Date());
+        }
+        return frmDate;
+    }
+
+    public void setFrmDate(Date frmDate) {
+        this.frmDate = frmDate;
+    }
+
+    public Date getToDate() {
+        if (toDate==null) {
+            toDate=new Date();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
 
 }

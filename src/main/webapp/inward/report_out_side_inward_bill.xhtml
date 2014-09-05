@@ -10,41 +10,49 @@
     <ui:define name="content">
         <h:form>
             <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Out Side Service Bill reoprt" />
+                </f:facet>
+                <h:panelGrid columns="1" style="min-width: 100%;">                    
+                    <p:panel>
+                        <h:outputLabel value="From"/>
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                            <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                        </p:calendar>
+                        <h:outputLabel value="To"/>
+                        <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                            <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                        </p:calendar>
+                        <p:autoComplete id="ins" value="#{mdInwardReportController.institution}"
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                        </p:autoComplete>
+                        
+                        <p:commandButton ajax="false" value="Process By Added Date" 
+                                         action="#{mdInwardReportController.createOutSideBillsByAddedDate()}"
+                                         style="float: right;" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Process By Discharge Date" 
+                                         action="#{mdInwardReportController.createOutSideBillsByDischargeDate()}"
+                                         style="float: right;" onclick="onSubmitButton();" />
+                        <p:watermark for="ins" value="Institution" />
+                    </p:panel>
 
-                <h:panelGrid columns="6" style="min-width: 100%;">                    
-                    <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                    </p:calendar>
-                    <h:outputLabel value="To"/>
-                    <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                    </p:calendar>
-                    <p:autoComplete id="ins" value="#{mdInwardReportController.institution}"
-                                    completeMethod="#{institutionController.completeIns}"
-                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                        <p:column>
-                            #{ix.name}
-                        </p:column>
-                    </p:autoComplete>
-                    <p:watermark for="ins" value="Institution" />
-                    <p:commandButton ajax="false" value="Process By Added Date" 
-                                     action="#{mdInwardReportController.createOutSideBillsByAddedDate()}"
-                                     style="float: right;" onclick="onSubmitButton();" />
-                    <p:commandButton ajax="false" value="Process By Discharge Date" 
-                                     action="#{mdInwardReportController.createOutSideBillsByDischargeDate()}"
-                                     style="float: right;" onclick="onSubmitButton();" />
 
-                    <p:commandButton value="Print" ajax="false" action="#" >
-                        <p:printer target="gpBillPreview" ></p:printer>
-                    </p:commandButton>
+                    <p:panel>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
 
-                    <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.createOutSideBillsByAddedDate()}">
-                        <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_discharge" />
-                    </p:commandButton>
-                    <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.createOutSideBillsByDischargeDate()}">
-                        <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_admit" />
-                    </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.createOutSideBillsByAddedDate()}">
+                            <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_discharge" />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.createOutSideBillsByDischargeDate()}">
+                            <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_admit" />
+                        </p:commandButton>
+                    </p:panel>
                 </h:panelGrid>   
 
                 <p:panel id="gpBillPreview">
@@ -83,6 +91,14 @@
                             </f:facet>
                             <p:outputLabel value="#{bill.inwardChargeType}" />
                         </p:column>
+                        <p:column headerText="Added Date">
+                            <f:facet name="header">
+                                <p:outputLabel value="Added Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{bill.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                            </p:outputLabel>
+                        </p:column>
                         <p:column headerText="Creater Name">     
                             <f:facet name="header">
                                 <p:outputLabel value="Creater Name" />
@@ -101,17 +117,17 @@
                             </f:facet>
                             <p:outputLabel value="#{bill.bill.patientEncounter.bhtNo}" />
                         </p:column>
-                        <p:column headerText="Total">
+                        <p:column headerText="Total" style="text-align: right;">
                             <f:facet name="header">
                                 <p:outputLabel value="Total" />
                             </f:facet>
-                            <h:outputLabel value="#{bill.bill.netTotal}">
+                            <h:outputLabel value="#{bill.bill.netTotal}" style="text-align: right;">
                                 <f:convertNumber pattern="#,000.00" />
                             </h:outputLabel>
                         </p:column>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column colspan="7" footerText="Total">
+                                <p:column colspan="8" footerText="Total">
                                     <f:facet name="footer">
                                         <p:outputLabel value="Total" />
                                     </f:facet>
