@@ -7,35 +7,37 @@
                 xmlns:h="http://java.sun.com/jsf/html">
 
     <ui:define name="content">
+
         <h:form>
-            <h:panelGrid columns="4" id="spec" styleClass="alignTop">     
-                <p:panel header="Speciality">       
+
+            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">     
+
+                <p:panel header="Specialities">       
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                             <f:ajax  event="change" execute="@this" render="scStaff"  /> 
                         </p:selectOneListbox>
-
                     </h:panelGrid>
                 </p:panel>
 
-                <p:panel header="Consultant">       
+                <p:panel header="Consultants">       
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this" render="tbl" listener="#{bookingController.generateSessions()}" /> 
+                            <f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions()}" /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
 
-                <p:panel header="Session" style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;"  >
+                <p:panel header="Sessions" style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;"  >
                     <p:dataTable value="#{bookingController.serviceSessions}" rowKey="#{ses.roomNo}"
-                                 id="tbl" var="ses"
+                                 id="tblSessionsOfSelectedConsultant" var="ses"
                                  selectionMode="single" 
                                  selection="#{bookingController.selectedServiceSession}" >
 
-                        <p:ajax event="rowSelect" process="tbl"
-                                update=":#{p:component('bSession')} :#{p:component('lblSessionTotal')}" />  
+                        <p:ajax event="rowSelect" process="tblSessionsOfSelectedConsultant"
+                                update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}" />  
 
                         <p:column headerText="Date">
                             <h:outputLabel value="#{ses.sessionAt}">
@@ -56,11 +58,17 @@
                         <p:column headerText="Booked">
                             <h:outputLabel value="#{ses.displayCount}"/>                                                            
                         </p:column>
+                        <p:column headerText="Fee">
+                            <h:outputLabel value="#{ses.originatingSession.totalFee}"/>                                                            
+                        </p:column>
+                         <p:column headerText="Fee">
+                            <h:outputLabel value="#{ses.originatingSession.id}"/>                                                            
+                        </p:column>
                     </p:dataTable>
                 </p:panel>
 
-                <p:panel>
-                    <p:dataTable id="bSession" value="#{bookingController.billSessions}" var='bs'
+                <p:panel header="Bookings">
+                    <p:dataTable id="tblBookingsOfSelectedSession" value="#{bookingController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingController.selectedBillSession}">
                         <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />  
@@ -84,10 +92,36 @@
                     </p:dataTable>                    
                 </p:panel>                
             </h:panelGrid>
-            <h:panelGrid columns="2">
-                <p:panel id="list" style="min-width: 500px; max-width: 500px; min-height:400px;max-height: 400px;border: 1px solid red;"  >
+
+
+            <h:panelGrid id="gdManageBookings" columns="2" styleClass="alignTop">
+
+                <p:panel id="gpThisBookingDetails" style="min-width: 500px; max-width: 500px; min-height:400px;max-height: 400px;"  >
                     <f:facet name="header" >
-                        <h:panelGrid columns="2"  >    
+                        <h:panelGrid columns="3"  > 
+                            <p:outputLabel value="Amount"/>
+
+                            <h:panelGroup id="lblSessionTotal">
+                                #{bookingController.selectedServiceSession.originatingSession.id}
+                                <br/>
+                                #{bookingController.selectedServiceSession.originatingSession.totalFee}
+                                <p:outputLabel  
+                                    value="#{bookingController.selectedServiceSession.totalFfee}"
+                                    rendered="#{channelBillController.foriegn}"
+                                    >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:outputLabel>
+                                <p:outputLabel  
+                                    value="#{bookingController.selectedServiceSession.totalFee}"
+                                    rendered="#{!channelBillController.foriegn}"
+                                    >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:outputLabel>
+
+                            </h:panelGroup>
+
+                            <p:spacer />
+
                             <p:outputLabel value="Payment Method"/>
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.current.paymentMethod}">  
                                 <f:selectItem itemLabel="Select Paymentmethod"/>
@@ -98,7 +132,7 @@
                             </p:selectOneMenu>
 
                             <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegner">
-                                <f:ajax event="change" execute="@this tbl" render="lblSessionTotal"/>
+                                <f:ajax event="change" execute="@this tblSessionsOfSelectedConsultant" render="lblSessionTotal"/>
                             </p:selectBooleanCheckbox>
 
 
@@ -110,6 +144,7 @@
                                 <p:column>#{ix.institutionCode}</p:column>
                                 <p:column>#{ix.name}</p:column>                                
                             </p:autoComplete>  
+                            <p:spacer />
                             <h:outputLabel id="agRefLbl" value="Agent Reference No"  style="display: #{(channelBillController.current.paymentMethod eq 'Credit' or channelBillController.current.paymentMethod eq 'Agent') ? 'block' : 'none'} ; "/>
                             <p:inputText autocomplete="off" id="agRefTxt" value="#{channelBillController.agentRefNo}"  style="display: #{(channelBillController.current.paymentMethod eq 'Credit' or channelBillController.current.paymentMethod eq 'Agent') ? 'block' : 'none'} ; " />
 
@@ -160,8 +195,6 @@
                         </p:tab>
                     </p:tabView>
                     <h:panelGrid columns="2" style="min-width: 100%;">
-                        <p:outputLabel value="Amount"/>
-                        <p:outputLabel id="lblSessionTotal" value="#{channelBillController.amount}"/>
 
 
                         <p:commandButton   value="Add" ajax="false" style="float: right;" 
@@ -172,7 +205,8 @@
                         <p:commandButton ajax="false" action="#{channelBillController.makeNull}"  value="New Booking" onclick="onSubmitButton();"/>
                     </h:panelGrid>
                 </p:panel>
-                <p:panel>
+
+                <p:panel id="panelSelectedBookinDetails">
                     <p:tabView id="detail">
                         <p:tab title="Booking" id="booking">
                             <h:panelGrid columns="2">
@@ -516,6 +550,8 @@
                         </p:tab>
                     </p:tabView>
                 </p:panel>
+
+
             </h:panelGrid>
 
         </h:form>
