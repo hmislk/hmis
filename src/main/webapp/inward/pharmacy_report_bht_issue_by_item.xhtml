@@ -19,8 +19,7 @@
                                         itemValue="#{dept}" forceSelection="true" 
                                         value="#{reportsTransfer.fromDepartment}" 
                                         converter="dep" >
-                        </p:autoComplete>
-
+                        </p:autoComplete>                    
                         <h:outputLabel value="From" ></h:outputLabel>
                         <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                         <h:outputLabel value="To" ></h:outputLabel>
@@ -28,8 +27,11 @@
                     </h:panelGrid>
 
 
-                    <p:commandButton ajax="false" value="Fill" 
-                                     action="#{reportsTransfer.fillItemCountsBhtIssue}" />
+                    <p:commandButton ajax="false" value="Fill BHT Issue" 
+                                     action="#{reportsTransfer.fillItemCountsBht()}" />
+                    
+                       <p:commandButton ajax="false" value="Fill Surgery Issue" 
+                                     action="#{reportsTransfer.fillItemCountsBhtSurgery()}" />
 
 
                     <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >

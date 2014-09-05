@@ -64,7 +64,7 @@
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" 
-                                         value="#{inwardReportController.patientEncounters}" var="i" rowIndexVar="in"  >
+                                         value="#{inwardReportController.patientEncounters}" var="i" rowIndexVar="in">
                                 <f:facet name="header">
                                     <h:outputLabel value="Inward Discharge Details "/>
                                     <h:panelGrid columns="4">
@@ -254,11 +254,11 @@
                                     <h:outputLabel value="#{i.finalBill.netTotal-i.transTotal}"  >
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
-                                    <!--                                    <f:facet name="footer">
-                                                                            <h:outputLabel value="#{inwardReportController.total-inwardReportController.calTotal}"  >
-                                                                            <f:convertNumber pattern="#,000.00"/>
-                                                                        </h:outputLabel>-->
-                                    <!--</f:facet>-->
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.total-inwardReportController.calTotal}"  >
+                                            <f:convertNumber pattern="#,000.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="BHT No">
                                     <f:facet name="header">
