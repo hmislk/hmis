@@ -224,6 +224,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node6631 = new PrivilageNode("By Department", node663, Privileges.MemberShipOpdMemberShipDisByDepartment);
         TreeNode node6632 = new PrivilageNode("By Category", node663, Privileges.MemberShipOpdMemberShipDisByCategory);
         TreeNode node6633 = new PrivilageNode("Opd MemberShip Report", node663, Privileges.MemberShipOpdMemberShipDisOpdMemberShipReport);
+        TreeNode node67 = new PrivilageNode("Only For Developers(Don't Add That)", node6, Privileges.Developers);
 
         TreeNode node9 = new PrivilageNode("Human Resource", tmproot);
         TreeNode node91 = new PrivilageNode("HR Menu", node9, Privileges.Hr);

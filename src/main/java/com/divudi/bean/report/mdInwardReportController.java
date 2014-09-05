@@ -264,6 +264,72 @@ public class mdInwardReportController implements Serializable {
 
     }
 
+    public void createOutSideBillsByAddedDate() {
+        makeListNull();
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BillItem b"
+                + " where b.bill.billType = :billType "
+                + " and b.bill.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.bill.retired=false ";
+        
+        if (institution!=null) {
+            sql+= " and b.bill.fromInstitution=:ins ";
+            temMap.put("ins", institution);
+        }
+        
+        temMap.put("billType", BillType.InwardOutSideBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        billItem=getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        if (billItem == null) {
+            billItem = new ArrayList<>();
+
+        }
+
+        total = 0.0;
+        for (BillItem b : billItem) {
+            total += b.getBill().getNetTotal();
+        }
+
+    }
+
+    public void createOutSideBillsByDischargeDate() {
+        makeListNull();
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BillItem b"
+                + " where b.bill.billType = :billType "
+                + " and b.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.bill.retired=false ";
+        
+        if (institution!=null) {
+            sql+= " and b.bill.fromInstitution=:ins ";
+            temMap.put("ins", institution);
+        }
+        
+        temMap.put("billType", BillType.InwardOutSideBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        billItem=getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        if (billItem == null) {
+            billItem = new ArrayList<>();
+
+        }
+
+        total = 0.0;
+        for (BillItem b : billItem) {
+            total += b.getBill().getNetTotal();
+        }
+
+    }
+
     public List<Bill> getBills() {
         return bills;
     }
