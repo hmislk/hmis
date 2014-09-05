@@ -65,7 +65,7 @@
                             <p:spacer  width="10"></p:spacer>
                             
                             <p:commandButton value="#{channellingFeeController.fee.id eq null ?'Save':'Update'}" 
-                                             process="gpDetail" update="gpList" 
+                                             process="gpDetail lstSelect" update="gpList" 
                                              onclick="PF('dlg3').hide();" actionListener="#{channellingFeeController.saveCharge()}"></p:commandButton>
                         </f:facet>
 

@@ -187,7 +187,11 @@ public class ServiceSessionController implements Serializable {
                 return null;
             }
             java.lang.Long key;
-            key = Long.valueOf(value);
+            try {
+                key = Long.valueOf(value);
+            } catch (Exception e) {
+                key = 0l;
+            }
             return key;
         }
 

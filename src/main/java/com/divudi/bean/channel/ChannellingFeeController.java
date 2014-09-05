@@ -237,6 +237,9 @@ public class ChannellingFeeController implements Serializable {
     }
 
     public List<ServiceSession> getSessions() {
+        if(sessions==null){
+            fillSessions();
+        }
         return sessions;
     }
 
@@ -246,9 +249,6 @@ public class ChannellingFeeController implements Serializable {
     }
 
     public Item getSession() {
-        if (sessions == null) {
-            fillSessions();
-        }
         return session;
     }
 
