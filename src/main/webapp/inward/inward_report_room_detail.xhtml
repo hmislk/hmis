@@ -49,12 +49,12 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                            <p:dataTable id="tb1" value="#{inwardReportController1.patientRooms}" var="rm">
                                 <p:column >
-                                    #{rm.patientEncounter.bhtNo}
+                                    <h:outputLabel value="#{rm.patientEncounter.bhtNo}" />
                                 </p:column>
                                 <p:column >
-                                    #{rm.admittedAt}
+                                    <h:outputLabel value="#{rm.admittedAt}" />
                                 </p:column>
                                 <p:column >
                                     #{rm.dischargedAt}

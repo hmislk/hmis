@@ -13,86 +13,100 @@
                     <f:facet name="header">
                         <h:outputLabel value="INWARD CASH DUE"/>
                     </f:facet>
-                    <h:panelGrid columns="5" style="min-width: 100%;" >
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                            <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
-                        </p:calendar>
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                            <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
-                        </p:calendar>
-                        <p:commandButton ajax="false" value="Process Cash DUE" action="#{creditCompanyDueController.createInwardCashDue()}" onclick="onSubmitButton();"/>
+                    <h:panelGrid columns="2" >
+
+                        <h:outputLabel value="From" ></h:outputLabel>
+                        <p:calendar value="#{creditCompanyDueController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                        <h:outputLabel value="To" ></h:outputLabel>
+                        <p:calendar value="#{creditCompanyDueController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+
+                        <p:outputLabel value="Admission Type"/>
+                        <p:selectOneMenu value="#{creditCompanyDueController.admissionType}">
+                            <f:selectItem itemLabel="All Admission Type"/>
+                            <f:selectItems  value="#{admissionTypeController.items}" var="myItem" 
+                                            itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                        </p:selectOneMenu>
+
+                        <h:outputLabel value="BHT Type : " ></h:outputLabel>
+                        <p:selectOneMenu   id="cmbBhtType" value="#{creditCompanyDueController.paymentMethod}"  >
+                            <f:selectItem itemLabel="All BHT Types" />                           
+                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                        </p:selectOneMenu>
+
+
+                        <h:outputLabel value="Company Name : " style="min-width: 100px;"  />  
+                        <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
+                                        value="#{creditCompanyDueController.institution}"  
+                                        completeMethod="#{creditCompanyController.completeCredit}" 
+                                        var="ix" itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" size="30" >  
+                            <f:ajax event="itemSelect" execute="@this"  ></f:ajax>
+                        </p:autoComplete>
+
+
                     </h:panelGrid>
 
-                    <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
-                        <p:columnGroup type="header">
-                            <p:row>
-                                <p:column headerText="Patient Encounter">                                    
-                                </p:column>
-                                <p:column headerText="Patient Name">                                    
-                                </p:column>
-                                <p:column headerText="Used Amount">                                    
-                                </p:column>
-                                <p:column headerText="Paid Amount">                                    
-                                </p:column>
-                                 <p:column headerText="Net Amount">                                    
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable value="#{i.patientEncounters}" var="b">
-                            <f:facet name="header">
-                                <h:outputLabel  value="#{i.institution.name}"/>
-                            </f:facet>
-                            <p:column>                              
-                                <h:outputLabel value="#{b.bhtNo}" />                                
-                            </p:column>
-                            <p:column>                               
-                                <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
-                            </p:column>
-                            <p:column style="text-align: right;">                                
-                                <h:outputLabel value="#{b.creditUsedAmount}" >
-                                    <f:convertNumber pattern="#,000.00" />
-                                </h:outputLabel>                                 
-                            </p:column>
-                            <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{b.creditPaidAmount}" >
-                                    <f:convertNumber pattern="#,000.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{b.creditUsedAmount+b.creditPaidAmount}" >
-                                    <f:convertNumber pattern="#,000.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total" colspan="2" />
-                                    <p:column style="text-align: right;">
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{i.total}">
-                                                <f:convertNumber pattern="#,000.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column style="text-align: right;" >
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{i.paidTotal}">
-                                                <f:convertNumber pattern="#,000.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                     <p:column style="text-align: right;" >
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{i.total+i.paidTotal}">
-                                                <f:convertNumber pattern="#,000.00" />
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:subTable>
+                    <p:commandButton ajax="false" value="Process" action="#{creditCompanyDueController.createInwardCashDue()}"/>
 
+                    <p:dataTable value="#{creditCompanyDueController.patientEncounters}"  var="p" rowIndexVar="i" >
+                        <p:column>
+                            #{i+1}
+                        </p:column>
+                        <p:column headerText="BHT">
+                            #{p.bhtNo}
+                        </p:column>
+                        <p:column headerText="Company">
+                            #{p.creditCompany.name}
+                        </p:column>
+                        <p:column headerText="Admissted At">
+                            #{p.dateOfAdmission}
+                        </p:column>
+                        <p:column headerText="Discharged At">
+                            #{p.dateOfDischarge}
+                        </p:column>
+                        <p:column headerText="Final Total">
+                            <h:outputLabel value="#{p.finalBill.netTotal}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>
+                            <f:facet name="footer">
+
+                                <h:outputLabel value="#{creditCompanyDueController.billed}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Paid By Patient">
+                            <h:outputLabel value="#{p.finalBill.paidAmount}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>
+                            <f:facet name="footer">
+
+                                <h:outputLabel value="#{creditCompanyDueController.paidByPatient}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Paid By Company">
+                            <h:outputLabel value="#{p.paidByCreditCompany}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>                            
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{creditCompanyDueController.paidByCompany}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Due">
+
+                            <h:outputLabel value="#{p.finalBill.netTotal-p.finalBill.paidAmount}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{creditCompanyDueController.billed-(creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient)}">
+                                    <f:convertNumber pattern="#,000.00"/>                                    
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
                     </p:dataTable>
                 </h:form>
             </ui:define>

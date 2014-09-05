@@ -35,7 +35,7 @@ import javax.persistence.Transient;
 @Entity
 public class PatientReport implements Serializable {
 
-    @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PatientReportItemValue> patientReportItemValues;
 
 //    @Transient
@@ -530,7 +530,8 @@ public class PatientReport implements Serializable {
     public void setItem(Item item) {
         this.item = item;
     }
-
+    
+    //AntiBiotic List
     public boolean getTransHasAbst() {
 
         transHasAbst = false;

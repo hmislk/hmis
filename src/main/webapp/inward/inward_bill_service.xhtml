@@ -199,7 +199,7 @@
                                                              disabled="#{!bif.billItem.item.userChangable
                                                                          or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
                                                     <f:convertNumber pattern="#,000.00" />
-                                                    <f:ajax event="blur" execute="@this" 
+                                                    <f:ajax event="keyup" execute="@this" 
                                                             render=" :#{p:component('tblRequests')}  
                                                             :#{p:component('pBillDetails')} matrix feeValue" 
                                                             listener="#{billBhtController.feeChanged(bif)}" />

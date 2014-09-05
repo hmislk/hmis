@@ -139,6 +139,7 @@ public class BhtSummeryController implements Serializable {
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     private Item item;
+    boolean changed = false;
 
     public List<PatientRoom> getPatientRooms() {
         if (patientRooms == null) {
@@ -1283,7 +1284,6 @@ public class BhtSummeryController implements Serializable {
 //            UtilityController.addErrorMessage("Some Inward Service Bills Are Not Checked ");
 //            return true;
 //        }
-
         if (getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardProfessional)) {
             UtilityController.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
             return true;
@@ -1293,7 +1293,6 @@ public class BhtSummeryController implements Serializable {
 //            UtilityController.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
 //            return true;
 //        }
-
         if (getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.PharmacyBhtPre)) {
             UtilityController.addErrorMessage("Some Pharmacy Issue Bills Are Not Checked 1 ");
             return true;
@@ -1323,7 +1322,6 @@ public class BhtSummeryController implements Serializable {
 //            UtilityController.addErrorMessage("Some Inward Out Side Bills Are Not Checked ");
 //            return true;
 //        }
-
         if (getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardPaymentBill)) {
             UtilityController.addErrorMessage("Some Inward Payment Bills Are Not Checked ");
             return true;
@@ -1352,9 +1350,9 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
-            if (checkBill()) {
-                return "";
-            }
+//            if (checkBill()) {
+//                return "";
+//            }
         }
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
@@ -1434,6 +1432,7 @@ public class BhtSummeryController implements Serializable {
             }
 
             getBillItemFacade().edit(temBi);
+
             getCurrent().getBillItems().add(temBi);
         }
 
@@ -1561,6 +1560,7 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void makeNull() {
+        changed = false;
         chargeItemTotals = null;
         grantTotal = 0.0;
         discount = 0.0;
@@ -1746,8 +1746,8 @@ public class BhtSummeryController implements Serializable {
         if (dischargeAt == null) {
             dischargeAt = new Date();
         }
-        
-        if(getPatientEncounter().getCurrentPatientRoom()==null){
+
+        if (getPatientEncounter().getCurrentPatientRoom() == null) {
             return 0;
         }
 
@@ -1959,6 +1959,12 @@ public class BhtSummeryController implements Serializable {
             due -= getPatientEncounter().getCreditLimit();
         }
 
+        changed = false;
+
+    }
+
+    public void changeIsMade() {
+        changed = true;
     }
 
     public List<ChargeItemTotal> getChargeItemTotals() {
@@ -2229,6 +2235,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public void setChanged(boolean changed) {
+        this.changed = changed;
     }
 
 }

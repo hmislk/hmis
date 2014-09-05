@@ -8,7 +8,7 @@
       xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
     <body>
-        <ui:composition template="./resources/template/template.xhtml">
+        <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
                 <h:form>
@@ -71,7 +71,15 @@
                                         <h:outputLabel value="#{bip.billItem.item.name}"/>
                                     </p:column>
                                     <p:column>
-                                        <f:facet name="header">Fee</f:facet>
+                                        <f:facet name="header">Gross Fee Value</f:facet>
+                                        <h:outputLabel value="#{bip.feeGrossValue}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Discount Fee Value</f:facet>
+                                        <h:outputLabel value="#{bip.feeDiscount}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Net Fee Value</f:facet>
                                         <h:outputLabel value="#{bip.feeValue}"/>
                                     </p:column>  
                                     <p:column>
@@ -166,16 +174,16 @@
                                                 <div class="billtimePrinting">
                                                     <h:outputLabel value="#{billSearch.bill.cancelledBill.billTime}"  
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}">
-                                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                                        <f:convertDateTime pattern="hh:mm a"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{billSearch.bill.refundedBill.billTime}"  
                                                                    rendered="#{billSearch.bill.refundedBill.insId ne null}">
-                                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                                        <f:convertDateTime pattern="hh:mm a"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{billSearch.bill.billTime}" 
                                                                    rendered="#{billSearch.bill.refundedBill.insId eq null and 
                                                                                billSearch.bill.cancelledBill.insId eq null }">
-                                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                                        <f:convertDateTime pattern="hh:mm a"/>
                                                     </h:outputLabel>
                                                 </div>
 
@@ -194,7 +202,7 @@
                                                 <div class="ratesPrinting" >
                                                     <h:dataTable value="#{billSearch.billItems}" var="bip1"  >
                                                         <h:column>
-                                                            <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px;" >
+                                                            <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px; font-size: 11px!important;" >
                                                                 <f:convertNumber pattern="#,000.00" />
                                                             </h:outputLabel>
                                                         </h:column>

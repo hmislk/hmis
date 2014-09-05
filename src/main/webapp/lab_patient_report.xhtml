@@ -4,8 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
-
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 
 
     <head>
@@ -404,28 +404,22 @@
                                     <tr><td><h:outputLabel/></td></tr>
                                     <tr><td><h:outputLabel/></td></tr>
                                     <tr>
+
                                         <td id="micromemos">
-                                            <table  >                 
+                                            <table>
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-
-                                                    <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.transCssTop  lt 50 }" >
-
-
-                                                        <tr >
-                                                            <td style="min-width: 250px;vertical-align: top;padding: 2px; margin: 2px;">
-                                                                <h:outputLabel value="#{prv.investigationItem.name}"  escape="false"  style="padding: 2px; margin: 2px;" />
+                                                    <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.transCssTop lt 50 }" >
+                                                        <tr style="vertical-align: top;">
+                                                            <td style="min-width: 250px;padding-left: 1px; padding-right: 1px;">
+                                                                <h:outputLabel value="#{prv.investigationItem.name}"   escape="false"  />
                                                             </td>
-                                                            <td style="vertical-align: top;padding: 2px; margin: 2px;">
-                                                                <h:outputLabel value="#{prv.lobValue}"  escape="false" style="white-space: pre-wrap;padding: 2px; margin: 0px;" />
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>
-                                                                &nbsp;
+                                                            <td style="min-width: 1150px;padding-left: 1px; padding-right: 1px;">
+                                                                <h:outputLabel value="#{fn:replace(prv.lobValue,'\\n','&lt;br/&gt;')}"    escape="false"   />
                                                             </td>
                                                         </tr>
                                                     </h:panelGroup>
-
+                                                </ui:repeat>
+                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                     <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'DynamicLabel' and prv.investigationItem.retired eq false and prv.investigationItem.transCssTop  lt 50 }" >
                                                         <tr >
                                                             <td >
@@ -435,16 +429,7 @@
 
                                                             </td>
                                                         </tr>
-                                                        <tr>
-                                                            <td>
-                                                                &nbsp;
-                                                            </td>
-                                                        </tr>
-
                                                     </h:panelGroup>
-
-
-
                                                 </ui:repeat>
                                             </table>
                                         </td>
@@ -469,7 +454,9 @@
                                             <table>
                                                 <tr>
                                                     <td colspan="2"  >
-                                                        <h:outputLabel value="Antibiotic Sensitivity Test" rendered="#{patientReportController.currentPatientReport.transHasAbst}" ></h:outputLabel>
+                                                        <h:outputLabel value="Antibiotic Sensitivity Test" 
+                                                                       rendered="#{patientReportController.currentPatientReport.transHasAbst}"
+                                                                       style="font-size: 120%; font-weight: bold; padding-left: 20px;"></h:outputLabel>
                                                     </td>
                                                 </tr>
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
@@ -480,9 +467,9 @@
                                                             <td style="min-width: 250px;">
                                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
                                                             </td>
-                                                            <td>
+                                                            <td  style="min-width: 850px;">
 
-                                                                <h:outputLabel value="#{prv.strValue}" escape="false" />
+                                                                <h:outputLabel value="#{prv.strValue}" escape="false"  />
                                                             </td>
                                                         </tr>
                                                     </h:panelGroup>
@@ -497,21 +484,17 @@
                                             <table>
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                     <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.transCssTop gt 50 }" >
-
                                                         <tr>
-                                                            <td style="min-width: 250px;padding: 5px;padding-left: 1px; padding-right: 1px;">
+                                                            <td style="min-width: 250px;padding-left: 1px; padding-right: 1px; vertical-align: top;">
                                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
                                                             </td>
                                                             <td>
-                                                                <h:outputLabel value="#{prv.lobValue}"    escape="false" style="white-space: pre-wrap;padding: 2px; margin: 0px;"  />
+                                                                <h:outputLabel value="#{fn:replace(prv.lobValue,'\\n','&lt;br/&gt;')}"    escape="false" />
                                                             </td>
                                                         </tr>
-
                                                     </h:panelGroup>
-
                                                 </ui:repeat>
                                             </table>
-
                                         </td>
                                     </tr>
 
