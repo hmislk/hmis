@@ -10,7 +10,7 @@
         <h:form>
             <p:panel>
 
-                <h:panelGrid columns="5" style="min-width: 100%;">                    
+                <h:panelGrid columns="6" style="min-width: 100%;">                    
                     <h:outputLabel value="From"/>
                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
@@ -19,70 +19,75 @@
                     <h:outputLabel value="To"/>
                     <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                    </p:calendar>
-                    <p:commandButton id="btnRefresh" ajax="false" value="Refresh"  style="float: right;" onclick="onSubmitButton();" />
-                    <p:defaultCommand target="btnRefresh"/>
+                    </p:calendar>     
+                    <p:commandButton ajax="false" value="Process by Added Date" 
+                                     action="#{mdInwardReportController.createItemWithFeeByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
+                    <p:commandButton ajax="false" value="Process by Discharge Date" 
+                                     action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
+                   
                 </h:panelGrid>   
 
-                <p:dataTable id="tbl" value="#{mdInwardReportController.billsDischarged}" rowIndexVar="i" var="bill" filteredValue="#{mdInwardReportController.fillterBill}" sortBy="#{bill.institution.id}">
-                    <p:column headerText="Serial No">
+                <p:dataTable id="tbl" value="#{mdInwardReportController.itemWithFees}" rowIndexVar="i" var="iwf" filteredValue="#{mdInwardReportController.fillterItemWithFees}"  sortBy="#{iwf.item.retired}">
+                    <p:column headerText="No">
                          <h:outputLabel value="#{i+1}"/>
                     </p:column>
-                    <p:column headerText="Institution" filterBy="#{bill.toInstitution.name}" filterMatchMode="contains">
-                         <h:outputLabel value="#{bill.toInstitution.name}"?>
+                    <p:column headerText="Institution" filterBy="#{iwf.item.institution.name}" filterMatchMode="contains">
+                         <h:outputLabel value="#{iwf.item.institution.name}"/>
                     </p:column>
-                    <p:column headerText="Department" filterBy="#{bill.toDepartment.name}" filterMatchMode="contains">
-                         <h:outputLabel value="#{bill.toDepartment.name}"/>
-                    </p:column>                   
-                    <p:column headerText="Cancelled/Refunded" filterBy="#{bill.class}" filterMatchMode="contains" >                        
-                        <p:outputLabel value="Refunded" rendered="#{bill.class eq 'class com.divudi.entity.RefundBill'}"/>
-                        <p:outputLabel value="Cancelled" rendered="#{bill.class eq 'class com.divudi.entity.CancelledBill'}"/>
+                    <p:column headerText="Department" filterBy="#{iwf.item.department.name}" filterMatchMode="contains">
+                         <h:outputLabel value="#{iwf.item.department.name}"/>
+                    </p:column>    
+                    <p:column headerText="Parent Categoy" filterBy="#{iwf.item.category.parentCategory.name}" filterMatchMode="contains">
+                         <h:outputLabel value="#{iwf.item.category.parentCategory.name}"/>
+                    </p:column>   
+                    <p:column headerText="Categoy" filterBy="#{iwf.item.category.name}" filterMatchMode="contains">
+                         <h:outputLabel value="#{iwf.item.category.name}"/>
+                    </p:column>   
+                    <p:column headerText="Name" filterBy="#{iwf.item.name}" filterMatchMode="contains">
+                         <h:outputLabel value="#{iwf.item.name}"/>
                     </p:column>
-                    <p:column headerText="Bill No" filterBy="#{bill.insId}" filterMatchMode="contains" >                        
-                         <h:outputLabel value="#{bill.insId}"/>
-                    </p:column>
-                    <p:column headerText="Name" filterBy="#{bill.patient.person.name}" filterMatchMode="contains">
-                         <h:outputLabel value="#{bill.patient.person.name}"/>
+                    <p:column headerText="Count">
+                         <h:outputLabel value="#{iwf.count}"/>
                     </p:column>
                     <p:column headerText="Hospital Fee">
-                        <h:outputLabel value="#{bill.hospitalFee}">
+                        <h:outputLabel value="#{iwf.hospitalFee}">
                             <f:convertNumber pattern="#,000.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="Professional Fee">
-                        <h:outputLabel value="#{bill.professionalFee}">
+                    <p:column headerText="Hospital Fee">
+                        <h:outputLabel value="#{iwf.proFee}">
                             <f:convertNumber pattern="#,000.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="Total">
-                        <h:outputLabel value="#{bill.netTotal}">
+                        <h:outputLabel value="#{iwf.hospitalFee+iwf.proFee}">
                             <f:convertNumber pattern="#,000.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="6">
+                            <p:column colspan="7" >                               
                                 <f:facet name="footer">
                                      <h:outputLabel value="Total"/>
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{mdInwardReportController.hospitalTotal}">
+                                    <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal}">
                                         <f:convertNumber pattern="#,000.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{mdInwardReportController.professionalTotal}">
+                                    <h:outputLabel value="#{mdInwardReportController.itemProfessionalTotal}">
                                         <f:convertNumber pattern="#,000.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{mdInwardReportController.professionalTotal+mdInwardReportController.hospitalTotal}">
+                                    <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal+mdInwardReportController.itemProfessionalTotal}">
                                         <f:convertNumber pattern="#,000.00" />
                                     </h:outputLabel>
                                 </f:facet>

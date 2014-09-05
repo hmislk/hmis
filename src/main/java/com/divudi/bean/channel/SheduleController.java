@@ -41,14 +41,12 @@ public class SheduleController implements Serializable {
     @Inject
     private SessionController sessionController;
     private Speciality speciality;
-    ServiceSession current;  
+    ServiceSession current;
     private Staff currentStaff;
     private List<ServiceSession> filteredValue;
     private Fee hospitalFee;
     private Fee doctorFee;
     private Fee tax;
-
-   
 
     public void makeNull() {
         speciality = null;
@@ -57,7 +55,7 @@ public class SheduleController implements Serializable {
         filteredValue = null;
         hospitalFee = null;
         doctorFee = null;
-        tax = null;     
+        tax = null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -204,15 +202,24 @@ public class SheduleController implements Serializable {
         getCurrent();
     }
 
-    
     private boolean checkError() {
         if (getCurrent().getStartingTime() == null) {
             UtilityController.addErrorMessage("Starting time Must be Filled");
             return true;
         }
 
-        if (getCurrent().getSessionWeekday() == 0 && getCurrent().getSessionDate() == null) {
+        if (getCurrent().getSessionWeekday() == null && getCurrent().getSessionDate() == null) {
             UtilityController.addErrorMessage("Set Weekday or Date");
+            return true;
+        }
+
+        if (speciality == null) {
+            UtilityController.addErrorMessage("Plaese Select Specility");
+            return true;
+        }
+
+        if (currentStaff == null) {
+            UtilityController.addErrorMessage("Plaese Select Doctor");
             return true;
         }
 
@@ -317,5 +324,4 @@ public class SheduleController implements Serializable {
         this.tax = tax;
     }
 
-   
 }

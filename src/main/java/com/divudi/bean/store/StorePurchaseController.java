@@ -126,13 +126,13 @@ List<BillItem> billExpenses;
             UtilityController.addErrorMessage("You cant set retail price below purchase rate");
         }
 
-        if (tmp.getPharmaceuticalBillItem().getDoe() != null) {
-            if (tmp.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
-                tmp.getPharmaceuticalBillItem().setDoe(null);
-                UtilityController.addErrorMessage("Check Date of Expiry");
-                //    return;
-            }
-        }
+//        if (tmp.getPharmaceuticalBillItem().getDoe() != null) {
+//            if (tmp.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
+//                tmp.getPharmaceuticalBillItem().setDoe(null);
+//                UtilityController.addErrorMessage("Check Date of Expiry");
+//                //    return;
+//            }
+//        }
 
         calTotal();
     }
@@ -283,7 +283,7 @@ List<BillItem> billExpenses;
         }
         
         getCurrentBillItem().getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
-        setBatch();
+//        setBatch();
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);

@@ -110,9 +110,15 @@ public class ChannelBean {
         return !tmp.isEmpty();
     }
 
-    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessions(List<ServiceSession> sessions) {
+    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessions(List<ServiceSession> inputSessions) {
         int sessionDayCount = 0;
-        List<ServiceSession> serviceSessions = new ArrayList<>();
+        List<ServiceSession> createdSessions = new ArrayList<>();
+
+        
+        if(inputSessions==null || inputSessions.isEmpty()){
+            return createdSessions;
+        }
+        
         Date nowDate = Calendar.getInstance().getTime();
 
         Calendar c = Calendar.getInstance();
@@ -124,20 +130,22 @@ public class ChannelBean {
         while (toDate.after(nowDate) && sessionDayCount < getFinalVariables().getSessionSessionDayCounter()) {
             boolean hasSpecificDateSession = false;
 
-            if (checkLeaveDate(nowDate, sessions.get(0).getStaff())) {
+            if (checkLeaveDate(nowDate, inputSessions.get(0).getStaff())) {
                 continue;
             }
 
-            for (ServiceSession ss : sessions) {
+            for (ServiceSession ss : inputSessions) {
                 if (ss.getSessionDate() != null) {
                     Calendar sessionDate = Calendar.getInstance();
                     sessionDate.setTime(ss.getSessionDate());
                     Calendar nDate = Calendar.getInstance();
                     nDate.setTime(nowDate);
-
+                    
+                    
                     if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
                         hasSpecificDateSession = true;
                         ServiceSession newSs = new ServiceSession();
+                        newSs.setOriginatingSession(ss);
                         newSs.setName(ss.getName());
                         newSs.setMaxNo(ss.getMaxNo());
                         newSs.setStartingTime(ss.getStartingTime());
@@ -151,7 +159,7 @@ public class ChannelBean {
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
                         ////System.out.println("Specific Count : " + sessionDayCount);
-                        serviceSessions.add(newSs);
+                        createdSessions.add(newSs);
 
                         if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                             sessionDayCount++;
@@ -161,12 +169,13 @@ public class ChannelBean {
             }
 
             if (hasSpecificDateSession == false) {
-                for (ServiceSession ss : sessions) {
+                for (ServiceSession ss : inputSessions) {
                     Calendar wdc = Calendar.getInstance();
                     wdc.setTime(nowDate);
                     if (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK)) {
                         ServiceSession newSs = new ServiceSession();
                         newSs.setName(ss.getName());
+                        newSs.setOriginatingSession(ss);
                         newSs.setMaxNo(ss.getMaxNo());
                         newSs.setStartingTime(ss.getStartingTime());
                         newSs.setSessionWeekday(ss.getSessionWeekday());
@@ -180,7 +189,7 @@ public class ChannelBean {
                         newSs.setRoomNo(rowIndex++);
                         // //System.out.println("Count : " + sessionDayCount);
 
-                        serviceSessions.add(newSs);
+                        createdSessions.add(newSs);
 
                         if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                             sessionDayCount++;
@@ -196,7 +205,7 @@ public class ChannelBean {
             nowDate = nc.getTime();
 
         }
-        return serviceSessions;
+        return createdSessions;
     }
 
     public Date calSessionTime(ServiceSession serviceSession) {
