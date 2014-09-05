@@ -23,6 +23,7 @@ public class InstitutionBills {
     private double returned;
     private double total;
     private double paidTotal;
+    double paidByPatient;
 
     public Institution getInstitution() {
         return institution;
@@ -63,4 +64,14 @@ public class InstitutionBills {
     public void setReturned(double returned) {
         this.returned = returned;
     }
+
+    public double getPaidByPatient() {
+        return paidByPatient;
+    }
+
+    public void setPaidByPatient(double paidByPatient) {
+        this.paidByPatient = paidByPatient;
+    }
+    
+    
 }

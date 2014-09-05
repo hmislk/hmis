@@ -29,12 +29,15 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 
 /**
  *
  * @author Buddhika
  */
-@Stateless
+@Named
+@ApplicationScoped
 public class PatientReportBean {
 
     @EJB
@@ -255,14 +258,14 @@ public class PatientReportBean {
             PatientReportItemValue val = null;
             if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.DynamicLabel)) {
                 if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
-
+//                    System.err.println("1");
                     sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
                             + " and i.investigationItem=:inv ";
                     HashMap hm = new HashMap();
                     hm.put("ptRp", ptReport);
                     hm.put("inv", ii);
                     val = getPtRivFacade().findFirstBySQL(sql, hm);
-                    //System.out.println("val is " + val);
+//                    System.out.println("val is " + val);
                     if (val == null) {
                         val = new PatientReportItemValue();
                         val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
@@ -270,28 +273,24 @@ public class PatientReportBean {
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
-                        
+
                         //added by safrin
                         getPtRivFacade().create(val);
                         ptReport.getPatientReportItemValues().add(val);
 
-                        //System.out.println("value added to pr teport" + ptReport);
+//                        System.out.println("value added to pr teport" + ptReport);
                     }
 
                 }
             }
-//            if (val != null) {
-//                if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
-//                    ptReport.getPatientReportItemValues().add(val);
-//                    //System.err.println("sss: " + val);
-//                }
-//            }
+
         }
 
         //Add Antibiotics
         List<Antibiotic> abs = getAntibioticFacade().findBySQL("select a from Antibiotic a where a.retired=false order by a.name");
 
         for (Antibiotic a : abs) {
+            System.err.println("*** " + a.getName());
             InvestigationItem ii = investigationItemForAntibiotic(a, ptReport.getPatientInvestigation().getInvestigation());
             PatientReportItemValue val;
             sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
@@ -301,14 +300,16 @@ public class PatientReportBean {
             hm.put("inv", ii);
 
             val = getPtRivFacade().findFirstBySQL(sql, hm);
+            System.err.println("ID " + val);
             if (val == null) {
                 val = new PatientReportItemValue();
                 val.setStrValue("");
                 val.setInvestigationItem((InvestigationItem) ii);
                 val.setPatient(ptReport.getPatientInvestigation().getPatient());
                 val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                System.err.println("Repor " + ptReport);
                 val.setPatientReport(ptReport);
-                
+
                 //Added by Safrin
                 getPtRivFacade().create(val);
                 ptReport.getPatientReportItemValues().add(val);
@@ -327,23 +328,23 @@ public class PatientReportBean {
     public InvestigationItem investigationItemForAntibiotic(Antibiotic a, Investigation i) {
         Map m = new HashMap();
         String sql;
-        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a and ii.retired=false";
+        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a ";
         m.put("i", i);
         m.put("a", a.getName());
         InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
         if (ii == null) {
-//            System.out.println("ii is null");
+            System.out.println("ii is null");
             ii = new InvestigationItem();
             ii.setName(a.getName());
             ii.setItem(i);
             ii.setIxItemType(InvestigationItemType.Value);
             ii.setIxItemValueType(InvestigationItemValueType.Varchar);
             ii.setCssTop("90%");
-            getIiFacade().edit(ii);
-//            i.getReportItems().add(ii);
-//            getIxFacade().edit(i);
+            getIiFacade().create(ii);
+            i.getReportItems().add(ii);
+            getIxFacade().edit(i);
         } else {
-            //System.out.println("ii was found and it is " + ii.getItem().getName() + " and " + ii.getName());
+            System.out.println("ii was found and it is " + ii.getItem().getName() + " and " + ii.getName());
         }
         return ii;
     }

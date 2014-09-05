@@ -53,17 +53,17 @@
                             </p:column>
                         </p:autoComplete>
                         <p:commandButton id="btnSupAdd"
-                            value="Add Item" 
-                            action="#{storePurchaseOrderRequestController.addItem}" 
-                            process="exDItem @this" 
-                            update="exDItem itemList tot" />
+                                         value="Add Item" 
+                                         action="#{storePurchaseOrderRequestController.addItem}" 
+                                         process="exDItem @this" 
+                                         update="exDItem itemList tot" />
 
                     </p:panel>
 
                     <p:panel header="Add Extra Item ">
                         <p:autoComplete id="exItem" value="#{storePurchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
-                                        completeMethod="#{itemController.completeStoreItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                        completeMethod="#{itemController.completeStoreInventryItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             <p:column headerText="Item" >
                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
                             </p:column>
@@ -103,12 +103,12 @@
                         <h:outputLabel  value="Pharmacy Bill Item"/>
                         <p:commandButton ajax="false" value="Remove All" action="#{storePurchaseOrderRequestController.removeSelected()}"/>
                     </f:facet>  
-                    
+
                     <p:column selectionMode="multiple" style="width: 10px;"></p:column>
-                    
-             
+
+
                     <p:column headerText="No" style="width: 25px;">
-                       #{bi.searialNo}
+                        #{bi.searialNo}
                     </p:column>
 
                     <p:column headerText="Item Name"  style="width:30%">  
@@ -116,16 +116,14 @@
                     </p:column>  
 
                     <p:column headerText="Qty" style="width:20%"> 
-                        <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">  
-                            <f:convertNumber pattern="#00.00"/>
+                        <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">                       
                             <f:ajax event="keyup" render="total :#{p:component('tot')} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                             <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
                         </p:inputText>
                     </p:column>  
                     <p:column headerText="Purchase Price" style="width:20%">  
                         <h:panelGroup id="price">
-                            <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">
-                                <f:convertNumber pattern="#00.00"/>
+                            <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">                                
                                 <f:ajax event="keyup" render="total :#{p:component('tot')}"  execute="@this qty" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                                 <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
                             </p:inputText>
@@ -134,8 +132,7 @@
 
                     <p:column headerText="Total" style="width:20%">  
                         <h:panelGroup id="total">
-                            <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                            <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >                                
                             </h:outputText>
                         </h:panelGroup>
                     </p:column>  

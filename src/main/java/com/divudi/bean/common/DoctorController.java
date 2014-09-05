@@ -137,6 +137,10 @@ public class DoctorController implements Serializable {
             UtilityController.addErrorMessage("Please enter a name");
             return;
         }
+        if (current.getSpeciality()==null) {
+            UtilityController.addErrorMessage("Please Select Speciality.");
+            return;
+        }
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
             getPersonFacade().create(current.getPerson());
         } else {

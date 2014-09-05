@@ -79,7 +79,7 @@ public class StoreAmpController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
-        recreateModel();
+        items=null;
         // getItems();
     }
 

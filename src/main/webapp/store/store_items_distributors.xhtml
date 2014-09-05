@@ -58,16 +58,7 @@
                                     </p:column>
                                      <p:column headerText="Item BarCode">
                                          <h:outputLabel value="#{i.item.barcode}"/> 
-                                    </p:column>
-                                    <p:column headerText="Retire">
-                                        <h:outputLabel value="#{i.item.retired}"/>
-                                    </p:column>
-                                    <p:column headerText="id">
-                                        <h:outputLabel value="#{i.item.retirer.webUserPerson.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Deleted Time">
-                                        <h:outputLabel value="#{i.item.retiredAt}"/>
-                                    </p:column>
+                                    </p:column>                                    
                                     <p:column headerText="Action">
                                         <p:commandButton ajax="false" value="Remove" action="#{storeItemsDistributorsController.removeFromPackage()}" >
                                             <f:setPropertyActionListener target="#{storeItemsDistributorsController.current}" value="#{i}"/>

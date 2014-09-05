@@ -6,10 +6,8 @@ package com.divudi.entity;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -50,6 +48,20 @@ public class ServiceSession extends Item implements Serializable {
     double displayPercent;
     double duration;
     int roomNo;
+    
+    
+    @Transient
+    ServiceSession originatingSession;
+
+    public ServiceSession getOriginatingSession() {
+        return originatingSession;
+    }
+
+    public void setOriginatingSession(ServiceSession originatingSession) {
+        this.originatingSession = originatingSession;
+    }
+    
+    
   
     public Integer getSessionWeekday() {
         return sessionWeekday;

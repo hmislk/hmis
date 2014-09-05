@@ -515,7 +515,7 @@ public class PracticeBookingController implements Serializable {
                     List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql);
                     //System.out.println("tmp is " + tmp.size());
                     if (!tmp.isEmpty()) {
-                        serviceSessions = getChannelBean().setSessionAt(tmp);
+                        serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
                     }
                 } catch (Exception e) {
                     //System.out.println("error 11 + " + e.getMessage());

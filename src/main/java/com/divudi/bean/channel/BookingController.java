@@ -6,10 +6,12 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.FeeType;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.ServiceSession;
@@ -20,19 +22,20 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -78,6 +81,8 @@ public class BookingController implements Serializable {
     private PatientFacade patientFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
+    @EJB
+    ItemFeeFacade ItemFeeFacade;
     /////////////////////////
     @EJB
     private ChannelBean channelBean;
@@ -122,9 +127,6 @@ public class BookingController implements Serializable {
         }
     }
 
-
-
-  
     public void updatePatient() {
         getBillSessionFacade().edit(getSelectedBillSession());
 
@@ -204,22 +206,73 @@ public class BookingController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    public List<ServiceSession> getServiceSessions() {
-        serviceSessions = new ArrayList<>();
-        String sql;
-
-        if (staff != null) {
-            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " order by s.sessionWeekday";
-            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql);
-
-            serviceSessions=getChannelBean().setSessionAt(tmp);
-
+    public void updateChargesForServiceSession(List<ServiceSession> lstSs) {
+        for(ServiceSession ss:lstSs){
+            updateChargesForServiceSession(ss);
         }
+    }
+    
+    public void updateChargesForServiceSession(ServiceSession ss) {
+        List<ItemFee> fs;
+        String jpql;
+        Map m = new HashMap();
+        jpql = "Select f from ItemFee f "
+                + " where f.retired=false and "
+                + " f.item=:ses "
+                + " order by f.id";
+        m.put("ses", ss);
+        fs = getItemFeeFacade().findBySQL(jpql, m);
 
-        return serviceSessions;
+        ss.setHospitalFee(0.0);
+        ss.setProfessionalFee(0.0);
+        ss.setTaxFee(0.0);
+        ss.setOtherFee(0.0);
+        ss.setTotalFee(0.0);
+
+        ss.setHospitalFfee(0.0);
+        ss.setProfessionalFfee(0.0);
+        ss.setTaxFfee(0.0);
+        ss.setOtherFfee(0.0);
+        ss.setTotalFfee(0.0);
+
+        ss.setItemFees(new ArrayList<ItemFee>());
+        
+        for (ItemFee f : fs) {
+            if (f.getFeeType() == FeeType.OwnInstitution) {
+                ss.setHospitalFee(ss.getHospitalFee() + f.getFee());
+                ss.setHospitalFfee(ss.getHospitalFfee() + f.getFfee());
+            }else if(f.getFeeType() == FeeType.Staff) {
+                ss.setProfessionalFee(ss.getProfessionalFee() + f.getFee());
+                ss.setProfessionalFfee(ss.getProfessionalFfee() + f.getFfee());
+            }else  if(f.getFeeType() == FeeType.Tax) {
+                ss.setTaxFee(ss.getProfessionalFee() + f.getFee());
+                ss.setTaxFfee(ss.getProfessionalFfee() + f.getFfee());
+            }else{
+                ss.setOtherFee(ss.getOtherFee() + f.getFee());
+                ss.setOtherFfee(ss.getOtherFfee() + f.getFfee());
+            }
+            ss.getItemFees().add(f);
+        }
+        ss.setTotalFee(ss.getHospitalFee() + ss.getProfessionalFee() + ss.getTaxFee() + ss.getOtherFee());
+        ss.setTotalFfee(ss.getHospitalFfee() + ss.getProfessionalFfee() + ss.getTaxFfee() + ss.getOtherFfee());
     }
 
-    
+    public void generateSessions() {
+        serviceSessions = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+        m.put("staff", getStaff());
+        if (staff != null) {
+            sql = "Select s From ServiceSession s where s.retired=false and s.staff=:staff order by s.sessionWeekday";
+            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
+            updateChargesForServiceSession(tmp);
+            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
+        }
+    }
+
+    public List<ServiceSession> getServiceSessions() {
+        return serviceSessions;
+    }
 
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
 
@@ -234,8 +287,6 @@ public class BookingController implements Serializable {
         this.serviceSessionFacade = serviceSessionFacade;
     }
 
-   
-
     public List<BillSession> getBillSessions() {
 
         if (getSelectedServiceSession() != null) {
@@ -248,8 +299,6 @@ public class BookingController implements Serializable {
 
         return billSessions;
     }
-
-   
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
@@ -390,4 +439,13 @@ public class BookingController implements Serializable {
     public void setChannelBean(ChannelBean channelBean) {
         this.channelBean = channelBean;
     }
+
+    public ItemFeeFacade getItemFeeFacade() {
+        return ItemFeeFacade;
+    }
+
+    public void setItemFeeFacade(ItemFeeFacade ItemFeeFacade) {
+        this.ItemFeeFacade = ItemFeeFacade;
+    }
+
 }

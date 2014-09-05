@@ -190,7 +190,7 @@
                                                     </ui:repeat>   
                                                 </table>
                                             </h:panelGroup>
-                                            <h:panelGroup rendered="#{bip.inwardChargeType eq 'RoomCharges' }">
+                                            <h:panelGroup>
                                                 <table>                                               
                                                     <ui:repeat value="#{bip.billFees}" var="fe">
                                                         <h:panelGroup >
@@ -333,7 +333,7 @@
                                                                        and b.billClass eq 'class com.divudi.entity.BilledBill')
                                                                        or 
                                                                        (b.cancelled eq false 
-                                                                       and b.billedBill eq null
+                                                                       and b.refundedBill eq null
                                                                        and b.billClass eq 'class com.divudi.entity.RefundBill'))}" >                                            
                                                 <tr>
                                                     <td>

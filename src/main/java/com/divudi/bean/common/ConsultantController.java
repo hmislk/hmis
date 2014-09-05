@@ -111,6 +111,14 @@ public class ConsultantController implements Serializable {
             UtilityController.addErrorMessage("Nothing to save");
             return;
         }
+        if (current.getPerson().getName().trim().equals("")) {
+            UtilityController.addErrorMessage("Please Enter a Name");
+            return;
+        }
+        if (current.getSpeciality()==null) {
+            UtilityController.addErrorMessage("Please Select Speciality.");
+            return;
+        }
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
             getPersonFacade().create(current.getPerson());
         } else {
