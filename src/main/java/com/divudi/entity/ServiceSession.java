@@ -48,6 +48,20 @@ public class ServiceSession extends Item implements Serializable {
     double displayPercent;
     double duration;
     int roomNo;
+    
+    
+    @Transient
+    ServiceSession originatingSession;
+
+    public ServiceSession getOriginatingSession() {
+        return originatingSession;
+    }
+
+    public void setOriginatingSession(ServiceSession originatingSession) {
+        this.originatingSession = originatingSession;
+    }
+    
+    
   
     public Integer getSessionWeekday() {
         return sessionWeekday;
