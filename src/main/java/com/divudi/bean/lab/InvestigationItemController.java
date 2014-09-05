@@ -19,7 +19,6 @@ import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
 import com.divudi.facade.util.JsfUtil;
-import com.thoughtworks.xstream.XStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -64,20 +63,6 @@ public class InvestigationItemController implements Serializable {
     Investigation copyingToInvestigation;
     String ixXml;
 
-    public void convertToXml() {
-        System.out.println("convertingto xml");
-        JsfUtil.addErrorMessage("Converting started");
-        XStream xstream = new XStream();
-        xstream.alias("investigation", Investigation.class);
-        xstream.alias("investigation_item", InvestigationItem.class);
-        xstream.alias("investigation_item_value", InvestigationItemValue.class);
-        xstream.alias("investigation_category", Category.class);
-        xstream.omitField(null, ixXml);
-        System.out.println("copyingFromInvestigation = " + copyingFromInvestigation);
-        String ixString = xstream.toXML(copyingFromInvestigation);
-        JsfUtil.addSuccessMessage(ixXml);
-        System.out.println("ixString = " + ixString);
-    }
 
     public String copyInvestigation() {
         if (copyingFromInvestigation == null) {

@@ -62,13 +62,23 @@
                                 <h:panelGrid id="gpDetailText">
                                     <p:panel>
                                         <p:panelGrid columns="2">
-                                            <h:outputText  value="Display Name" ></h:outputText>
-                                            <h:inputText autocomplete="off" id="txtName"  value="#{storeInventryAmpController.current.name}"  />
-                                            <h:outputText  value="Item Code" ></h:outputText>
-                                            <h:inputText autocomplete="off"  value="#{storeInventryAmpController.current.code}"  ></h:inputText>
-                                            <h:outputText  value="Bar Code" ></h:outputText>
-                                            <h:inputText autocomplete="off"  value="#{storeInventryAmpController.current.barcode}"  ></h:inputText>
-                                            <h:outputText  value="Manufacturer" ></h:outputText>
+                                            <p:outputLabel  value="Display Name" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" id="txtName"  value="#{storeInventryAmpController.current.name}"  />
+                                            <p:outputLabel  value="Item Code" ></p:outputLabel>
+                                            <p:inputText autocomplete="off"  value="#{storeInventryAmpController.current.code}"  ></p:inputText>
+                                            <p:outputLabel  value="Bar Code" ></p:outputLabel>
+                                            <p:inputText autocomplete="off"  value="#{storeInventryAmpController.current.barcode}"  ></p:inputText>
+
+
+                                            <p:outputLabel  value="Measurment Unit" ></p:outputLabel>
+                                            <p:selectOneMenu value="#{storeInventryAmpController.current.measurementUnit}" >
+                                                <f:selectItem itemLabel="Select Measurment Unit" ></f:selectItem>
+                                                <f:selectItems value="#{measurementUnitController.items}" var="mu" 
+                                                               itemValue="#{mu}" itemLabel="#{mu.name}" ></f:selectItems>
+                                            </p:selectOneMenu>
+
+
+                                            <p:outputLabel  value="Manufacturer" ></p:outputLabel>
                                             <p:autoComplete  converter="ManuFacCon" completeMethod="#{manufacturerController.completeManu}"
                                                              var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{storeInventryAmpController.current.institution}" ></p:autoComplete>
                                             <h:outputLabel value="Item Category"/>
@@ -77,10 +87,10 @@
                                                              completeMethod="#{storeItemCategoryController.completeCategory}" 
                                                              var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                             </p:autoComplete>                                           
-                                            <h:outputText value="#{storeInventryAmpController.current.category.id}" ></h:outputText>
+                                            <p:outputLabel value="" ></p:outputLabel>
                                             <p:selectBooleanCheckbox value="#{storeInventryAmpController.current.discountAllowed}" itemLabel="Discount Allowed"/>                                          
                                             <h:outputLabel value="Creator"/>
-                                            <h:outputLabel value="#{storeInventryAmpController.current.creater.webUserPerson.nameWithTitle}"/>`
+                                            <h:outputLabel value="#{storeInventryAmpController.current.creater.webUserPerson.nameWithTitle}"/>
                                         </p:panelGrid>
                                     </p:panel>
 

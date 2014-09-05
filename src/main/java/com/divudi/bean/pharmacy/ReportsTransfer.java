@@ -515,10 +515,10 @@ public class ReportsTransfer implements Serializable {
                 + " where b.bill.department=:fdept ";
 
         if (surgeryBillType != null) {
-            sql += " and b.surgeryBillType:surg";
+            sql += " and b.bill.surgeryBillType=:surg";
             m.put("surg", surgeryBillType);
         }else{
-            sql+=" and b.surgeryBillType is null ";
+            sql+=" and b.bill.surgeryBillType is null ";
         }
 
         if (toDepartment != null) {

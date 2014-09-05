@@ -102,17 +102,14 @@
                             <p:outputLabel value="Amount"/>
 
                             <h:panelGroup id="lblSessionTotal">
-                                #{bookingController.selectedServiceSession.originatingSession.id}
-                                <br/>
-                                #{bookingController.selectedServiceSession.originatingSession.totalFee}
                                 <p:outputLabel  
-                                    value="#{bookingController.selectedServiceSession.totalFfee}"
+                                    value="#{bookingController.selectedServiceSession.originatingSession.totalFfee}"
                                     rendered="#{channelBillController.foriegn}"
                                     >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:outputLabel>
                                 <p:outputLabel  
-                                    value="#{bookingController.selectedServiceSession.totalFee}"
+                                    value="#{bookingController.selectedServiceSession.originatingSession.totalFee}"
                                     rendered="#{!channelBillController.foriegn}"
                                     >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
