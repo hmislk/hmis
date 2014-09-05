@@ -193,6 +193,8 @@ public class InwardReportController implements Serializable {
         total = 0;
         paid = 0;
         calTotal = 0;
+        creditPaid=0;
+        creditUsed=0;
         for (PatientEncounter p : patientEncounters) {
             inwardReportControllerBht.setPatientEncounter(p);
             inwardReportControllerBht.process();
@@ -203,8 +205,12 @@ public class InwardReportController implements Serializable {
             creditUsed += p.getCreditUsedAmount();
             creditPaid += p.getPaidByCreditCompany();
             calTotal += p.getTransTotal();
+            
         }
     }
+    
+    
+    
 
     public BhtSummeryController getBhtSummeryController() {
         return bhtSummeryController;
