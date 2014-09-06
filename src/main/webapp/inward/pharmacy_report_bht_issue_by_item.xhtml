@@ -12,7 +12,7 @@
 
             <ui:define name="content">
                 <h:form >
-                    <h:panelGrid columns="4" >
+                    <h:panelGrid columns="2" >
                         <h:outputLabel value="From Department" />
                         <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                         var="dept" itemLabel="#{dept.name}"
@@ -29,14 +29,17 @@
 
                     <p:commandButton ajax="false" value="Fill BHT Issue" 
                                      action="#{reportsTransfer.fillItemCountsBht()}" />
-                    
-                       <p:commandButton ajax="false" value="Fill Surgery Issue" 
+
+                    <p:commandButton ajax="false" value="Fill Surgery Issue" 
                                      action="#{reportsTransfer.fillItemCountsBhtSurgery()}" />
 
 
                     <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >
                         <p:column headerText="Item">
-                            #{i.item.name}
+                            #{i.itemBatch.item.name}
+                        </p:column>
+                        <p:column>
+                            #{i.itemBatch.batchNo}
                         </p:column>
                         <p:column headerText="Count">
                             #{i.count}
