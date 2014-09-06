@@ -209,55 +209,119 @@
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
 
-                        <table >
-                            <tr>
+                        <h:outputLabel id="panelAddedBillPrint" >
+
+                            <table >
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="#{sessionController.department.printingName}" ></h:outputLabel>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="#{sessionController.department.address}" ></h:outputLabel>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="#{sessionController.department.telephone1}" ></h:outputLabel>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="--------------------------" ></h:outputLabel>
+                                    </td>
+                                </tr>
                                 <td>
-                                    <h:outputLabel value="#{sessionController.department.printingName}" ></h:outputLabel>
+                                    <td>
+                                        <table >
+                                            <tr>
+                                                <td>
+                                                    <h:outputLabel value="Name" ></h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <p:spacer width="10" ></p:spacer>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value=":" ></h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value="#{channelBillController.current.patient.person.nameWithTitle}" ></h:outputLabel>
+                                                </td>
+
+                                            </tr>
+
+
+                                            <tr>
+                                                <td>
+                                                    <h:outputLabel value="Consultant" ></h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <p:spacer width="10" ></p:spacer>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value=":" ></h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <ui:repeat value="#{channelBillController.current.billItems}" var="cbi" >
+                                                        <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" ></h:outputLabel>
+                                                    </ui:repeat>
+
+                                                </td>
+
+                                            </tr>
+
+                                            <ui:repeat value="#{channelBillController.current.billFees}" var="cbif" >
+                                                <tr>
+                                                    <td>
+                                                        <h:outputLabel value="#{cbif.fee.name}" ></h:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <p:spacer width="10" ></p:spacer>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value=":" ></h:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value="#{cbif.feeValue}" >
+                                                            <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                                        </h:outputLabel>
+                                                    </td>
+
+                                                </tr>
+                                            </ui:repeat>
+
+
+                                            <tr>
+                                                <td>
+                                                    <h:outputLabel value="Total" ></h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <p:spacer width="10" ></p:spacer>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value=":" ></h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value="#{channelBillController.current.netTotal}" >
+                                                        <f:convertDateTime pattern="#,##0.00" ></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                </td>
+
+                                            </tr>
+
+                                        </table>
+                                    </td>
                                 </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <h:outputLabel value="#{sessionController.department.address}" ></h:outputLabel>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <h:outputLabel value="#{sessionController.department.telephone1}" ></h:outputLabel>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <h:outputLabel value="--------------------------" ></h:outputLabel>
-                                </td>
-                            </tr>
-                            <td>
-                                <td>
-                                    <table >
-                                        <tr>
-                                            <td>
-                                                <h:outputLabel value="Name" ></h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <p:spacer width="10" ></p:spacer>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value=":" ></h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value="#{channelBillController.current.patient.person.nameWithTitle}" ></h:outputLabel>
-                                            </td>
-                                            
-                                        </tr>
-                                    </table>
-                                </td>
-                            </td>
-                        </table>
-                        
-                        <h:outputLabel value="#{channelBillController.current.total}" ></h:outputLabel>
+                            </table>
+
+
+                        </h:outputLabel>
 
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
 
                         <p:commandButton value="Print" ajax="false" >
+                            <p:printer target="panelAddedBillPrint" ></p:printer>
                         </p:commandButton>
 
                     </p:dialog>  

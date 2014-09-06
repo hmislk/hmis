@@ -712,6 +712,7 @@ public class ChannelBillController implements Serializable {
         }
         savePatient();
         current = saveBilledBill();
+        current = getBillFacade().find(current.getId());
         UtilityController.addSuccessMessage("Channel Booking Added.");
     }
 
