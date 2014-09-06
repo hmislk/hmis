@@ -550,27 +550,12 @@ public class ChannelBillController implements Serializable {
     }
 
     public double getAmount() {
-
         amount = 0.0;
-        AgentsFees agentFee = getAgentFee();
-
         if (!foriegn) {
-            amount = getSs().getHospitalFee() + getSs().getProfessionalFee();
-            if (agentFee.getFee() != null && agentFee.getFee().getFee() != 0.0) {
-                amount += agentFee.getFee().getFee();
-            } else {
-                UtilityController.addErrorMessage("Please Set This Agent to Fee");
-            }
+            amount = getbookingController().getSelectedServiceSession().getOriginatingSession().getTotalFee();
         } else {
-            amount = getSs().getHospitalFfee() + getSs().getProfessionalFfee();
-            if (agentFee.getFee() != null && agentFee.getFee().getFfee() != 0.0) {
-                amount += agentFee.getFee().getFfee();
-            } else {
-                UtilityController.addErrorMessage("Please Set This Agent to Fee");
-            }
-
+            amount = getbookingController().getSelectedServiceSession().getOriginatingSession().getTotalFfee();
         }
-
         return amount;
     }
 
@@ -832,11 +817,7 @@ public class ChannelBillController implements Serializable {
         } else {
             savingBill.setBillType(BillType.ChannelPaid);
             savingBill.setTotal(amount);
-            if (foriegn) {
-                savingBill.setNetTotal(amount - getAgentFee().getFee().getFfee());
-            } else {
-                savingBill.setNetTotal(amount - getAgentFee().getFee().getFee());
-            }
+            savingBill.setNetTotal(amount);
         }
 
         if (getCurrent().getPaymentMethod().equals(PaymentMethod.Agent)) {
