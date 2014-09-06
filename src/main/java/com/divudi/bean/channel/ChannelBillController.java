@@ -768,7 +768,7 @@ public class ChannelBillController implements Serializable {
                 bf.setFeeValue(f.getFfee());
 
             } else {
-                bf.setFeeValue(f.getFfee());
+                bf.setFeeValue(f.getFee());
             }
 
             if (getCurrent().getPaymentMethod().equals(PaymentMethod.Credit)) {
