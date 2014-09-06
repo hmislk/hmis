@@ -796,6 +796,7 @@ public class ChannelBillController implements Serializable {
         bs.setServiceSession(getbookingController().getSelectedServiceSession().getOriginatingSession());
         bs.setSessionDate(getbookingController().getSelectedServiceSession().getSessionDate());
         bs.setSessionTime(getbookingController().getSelectedServiceSession().getSessionTime());
+        bs.setStaff(getbookingController().getSelectedServiceSession().getStaff());
 
         int count = getServiceSessionBean().getSessionNumber(getbookingController().getSelectedServiceSession(), getbookingController().getSelectedServiceSession().getSessionAt());
         bs.setSerialNo(count);

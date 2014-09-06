@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html">
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel">
 
     <ui:define name="content">
 
@@ -209,7 +210,9 @@
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
 
-                        <h:outputLabel id="panelAddedBillPrint" >
+                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" >
+                            <ch:channelRecipt bill="#{channelBillController.current}" />
+                        </h:panelGroup>
 
                             <h1>#{channelBillController.current.id}</h1>
                             
@@ -249,6 +252,25 @@
                                                 </td>
                                                 <td>
                                                     <h:outputLabel value="#{channelBillController.current.patient.person.nameWithTitle}" ></h:outputLabel>
+                                                </td>
+
+                                            </tr>
+                                            
+                                            <tr>
+                                                <td>
+                                                    <h:outputLabel value="Appoinment Number" ></h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <p:spacer width="10" ></p:spacer>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value=":" ></h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <ui:repeat value="#{channelBillController.current.billItems}" var="cbi" >
+                                                        <h:outputLabel value="#{cbi.billSession.serialNo}" ></h:outputLabel>
+                                                    </ui:repeat>
+
                                                 </td>
 
                                             </tr>
@@ -318,7 +340,6 @@
                             </table>
 
 
-                        </h:outputLabel>
 
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
 
