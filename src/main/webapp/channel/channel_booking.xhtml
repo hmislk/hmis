@@ -198,7 +198,9 @@
                     <h:panelGrid columns="2" style="min-width: 100%;">
 
 
-                        <p:commandButton   value="Add" process="@this gpThisBookingDetails" update="gpThisBookingDetails" style="float: right;" 
+                        <p:commandButton   value="Add" process="@this gpThisBookingDetails" 
+                                           ajax="false"
+                                           update="gpThisBookingDetails" style="float: right;" 
                                            action="#{channelBillController.add}" 
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
@@ -207,16 +209,16 @@
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
-                        
+
                         <h:outputLabel value="#{channelBillController.current.netTotal}" ></h:outputLabel>
-                        
+
                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
-                       
+
                         <p:commandButton value="Print" ajax="false" >
                         </p:commandButton>
-                        
+
                     </p:dialog>  
-                    
+
                 </p:panel>
 
                 <p:panel id="panelSelectedBookinDetails">
@@ -227,6 +229,10 @@
                                 <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
                                 <p:outputLabel value="Booking Id"/>
                                 <p:outputLabel value="#{bookingController.selectedBillSession.bill.bookingId}"/>
+                                <p:outputLabel value="Serial No"/>
+                                <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
+                                    <p:outputLabel value="#{bis.billSession.serialNo}"/>
+                                </ui:repeat>
                                 <p:outputLabel value="Payment Method"/>
                                 <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
                                 <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
@@ -236,13 +242,24 @@
                                 <p:outputLabel value="Booking User"/>
                                 <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
                                 <p:outputLabel value="Booked At"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"/>
+                                <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
+                                    <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
+                                </p:outputLabel>
                                 <p:outputLabel value="Consultant"/>
                                 <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
-                                <p:outputLabel value="Appointment Date"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.sessionDate}"/>
-                                <p:outputLabel value="Appointment Time"/>
-                                <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"/>
+                                <p:outputLabel value="Appointment Date">
+                                </p:outputLabel>
+                                <p:outputLabel value="#{bookingController.selectedBillSession.sessionDate}"> 
+                                    <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" >
+                                    </f:convertDateTime>
+
+                                </p:outputLabel>
+                                <p:outputLabel value="Appointment Time">
+
+                                </p:outputLabel>
+                                <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"> 
+                                    <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                </p:outputLabel>
 
                             </h:panelGrid>                            
                         </p:tab>
