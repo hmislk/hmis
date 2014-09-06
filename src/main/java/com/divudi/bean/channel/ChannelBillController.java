@@ -726,9 +726,8 @@ public class ChannelBillController implements Serializable {
             return;
         }
         savePatient();
-        saveBilledBill();
+        current = saveBilledBill();
         UtilityController.addSuccessMessage("Channel Booking Added.");
-        makeNull();
     }
 
     private Bill saveBilledBill() {
