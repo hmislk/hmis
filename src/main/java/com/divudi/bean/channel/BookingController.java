@@ -164,12 +164,17 @@ public class BookingController implements Serializable {
 
     public void fillConsultants() {
         String sql;
+        Map m = new HashMap();
+        m.put("sp", getSpeciality());
         if (getSpeciality() != null) {
-            sql = "select p from Staff p where p.retired=false and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+            sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
+            consultants = getStaffFacade().findBySQL(sql, m);
         } else {
-            sql = "select p from Doctor p where p.retired=false order by p.person.name";
+            sql = "select p from Staff p where p.retired=false order by p.person.name";
+            consultants = getStaffFacade().findBySQL(sql);
         }
-        consultants = getStaffFacade().findBySQL(sql);
+//        System.out.println("consultants = " + consultants);
+        setStaff(null);
     }
 
     public List<Staff> getConsultants() {
@@ -203,7 +208,7 @@ public class BookingController implements Serializable {
     public void setStaff(Staff staff) {
         this.staff = staff;
         generateSessions();
-        fillSessions();
+        setSelectedServiceSession(null);
     }
 
     public StaffFacade getStaffFacade() {
@@ -283,7 +288,6 @@ public class BookingController implements Serializable {
     }
 
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
-
         this.serviceSessions = serviceSessions;
     }
 
@@ -299,12 +303,16 @@ public class BookingController implements Serializable {
         return billSessions;
     }
 
-    public void fillSessions() {
-        String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession.id=" + getSelectedServiceSession().getId() + " and bs.sessionDate= :ssDate";
-        HashMap hh = new HashMap();
-        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-
+    public void fillBillSessions() {
+        if (getSelectedServiceSession() != null) {
+            String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession=:ss and bs.sessionDate= :ssDate";
+            HashMap hh = new HashMap();
+            hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+            hh.put("ss", getSelectedServiceSession());
+            billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        } else {
+            billSessions = new ArrayList<>();
+        }
     }
 
     public void setBillSessions(List<BillSession> billSessions) {
@@ -317,7 +325,7 @@ public class BookingController implements Serializable {
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
         this.selectedServiceSession = selectedServiceSession;
-        fillSessions();
+        fillBillSessions();
         setSelectedBillSession(null);
     }
 
