@@ -16,15 +16,15 @@
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                            <f:ajax  event="change" execute="@this" render="scStaff"  /> 
-                            <f:ajax  event="click" execute="@this" render="scStaff"   /> 
+                            <p:ajax  event="change" process="@this" update="scStaff" /> 
+                            <p:ajax  event="click" process="@this" update="scStaff" /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
 
-                <p:panel header="Consultants">       
+                <p:panel header="Consultants" id="scStaff" >    
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                             <f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  /> 
                             <f:ajax  event="click" execute="@this" render="tblSessionsOfSelectedConsultant"  /> 
@@ -64,10 +64,9 @@
                             <h:outputLabel value="#{ses.displayCount}"/>                                                            
                         </p:column>
                         <p:column headerText="Fee">
-                            <h:outputLabel value="#{ses.originatingSession.totalFee}"/>                                                            
-                        </p:column>
-                        <p:column headerText="Fee">
-                            <h:outputLabel value="#{ses.originatingSession.id}"/>                                                            
+                            <h:outputLabel value="#{ses.originatingSession.totalFee}">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>                                                            
                         </p:column>
                     </p:dataTable>
                 </p:panel>
@@ -168,7 +167,7 @@
                                 <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;text-transform:uppercase;">
                                 </p:inputText>
                                 <h:outputLabel value="Phone"/>
-                                <p:inputMask mask="999-99999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
+                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
                                 </p:inputMask>
                                 <h:outputLabel value="Sex"/>
                                 <p:selectOneMenu id="txtNewSex"  value="#{channelBillController.newPatient.person.sex}" style="width: 200px;">
