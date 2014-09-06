@@ -7,46 +7,144 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-import java.util.TimeZone;
-import com.divudi.facade.SpecialityFacade;
+
+import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Speciality;
+import com.divudi.entity.Staff;
+import com.divudi.facade.SpecialityFacade;
+import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import javax.inject.Inject;
-import javax.inject.Named; import javax.ejb.EJB;
-import javax.inject.Inject;
+import java.util.Map;
+import java.util.TimeZone;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
+import org.primefaces.model.DualListModel;
 
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class SpecialityController implements Serializable {
+public class SpecialityController implements Serializable {
 
     @Inject
     SessionController sessionController;
     @EJB
     private SpecialityFacade ejbFacade;
+    @EJB
+    StaffFacade staffFacade;
     List<Speciality> selectedItems;
     private Speciality current;
     private List<Speciality> items = null;
     String selectText = "";
 
+    DualListModel<Speciality> specialities;
+
+    public String convertSpecialities() {
+        List<Speciality> speNoDoc = specialities.getSource() ;
+        List<Speciality> speDoc = specialities.getTarget();
+        Map m;
+        String jpql = "";
+
+        for (Speciality s : speDoc) {
+            if (!(s instanceof DoctorSpeciality)) {
+                DoctorSpeciality ds = new DoctorSpeciality();
+                ds.setCode(s.getCode());
+                ds.setCreatedAt(new Date());
+                ds.setCreater(getSessionController().getLoggedUser());
+                ds.setDblValue(s.getDblValue());
+                ds.setDescription(s.getDescription());
+                ds.setName(s.getName());
+                ds.setOrderNo(s.getOrderNo());
+                ds.setParentCategory(s.getParentCategory());
+                getFacade().create(ds);
+                
+                s.setRetired(true);
+                s.setRetireComments("As a conversion");
+                s.setRetiredAt(new Date());
+                s.setRetirer(getSessionController().getLoggedUser());
+                getFacade().edit(s);
+                
+                jpql = "select s from Staff s where s.speciality=:sp";
+                m = new HashMap();
+                m.put("sp", s);
+                List<Staff> ss = getStaffFacade().findBySQL(jpql, m);
+                for (Staff st : ss) {
+                    st.setSpeciality(ds);
+                    getStaffFacade().edit(st);
+                }
+            }
+        }
+
+        for (Speciality s : speNoDoc) {
+            if ((s instanceof DoctorSpeciality)) {
+                Speciality ds = new Speciality();
+                ds.setCode(s.getCode());
+                ds.setCreatedAt(new Date());
+                ds.setCreater(getSessionController().getLoggedUser());
+                ds.setDblValue(s.getDblValue());
+                ds.setDescription(s.getDescription());
+                ds.setName(s.getName());
+                ds.setOrderNo(s.getOrderNo());
+                ds.setParentCategory(s.getParentCategory());
+                getFacade().create(ds);
+                
+                s.setRetired(true);
+                s.setRetireComments("As a conversion");
+                s.setRetiredAt(new Date());
+                s.setRetirer(getSessionController().getLoggedUser());
+                getFacade().edit(s);
+                
+                jpql = "select s from Staff s where s.speciality=:sp";
+                m = new HashMap();
+                m.put("sp", s);
+                List<Staff> ss = getStaffFacade().findBySQL(jpql, m);
+                for (Staff st : ss) {
+                    st.setSpeciality(ds);
+                    getStaffFacade().edit(st);
+                }
+            }
+        }
+
+        return toConvertSpecialities();
+    }
+
+    public String toConvertSpecialities() {
+        List<Speciality> speNoDoc;
+        List<Speciality> speDoc;
+        String sql;
+        Map m = new HashMap();
+        m.put("sc", DoctorSpeciality.class);
+        sql = "select s from Speciality s where s.retired=false and type(s) <>:sc order by s.name";
+        speNoDoc = getFacade().findBySQL(sql, m);
+
+        sql = "select s from Speciality s where s.retired=false and  type(s) =:sc order by s.name";
+        speDoc = getFacade().findBySQL(sql, m);
+
+        specialities = new DualListModel<>(speNoDoc, speDoc);
+
+        return "admin_staff_convert_specialities";
+    }
+
     public List<Speciality> completeSpeciality(String qry) {
         selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
-    
+
     public List<Speciality> getSelectedItems() {
-       if (selectText.trim().equals("")) {
+        if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false order by c.name");
         } else {
             selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -110,8 +208,8 @@ public  class SpecialityController implements Serializable {
     }
 
     public Speciality getCurrent() {
-        if(current==null){
-            current= new Speciality();
+        if (current == null) {
+            current = new Speciality();
         }
         return current;
     }
@@ -142,13 +240,25 @@ public  class SpecialityController implements Serializable {
     }
 
     public List<Speciality> getItems() {
-       if (items == null) {
+        if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Speciality i where i.retired=false order by i.name";
             //System.out.println("Sql for SpacilityController.getItems is " + temSql);
             items = getFacade().findBySQL(temSql);
         }
         return items;
+    }
+
+    public DualListModel<Speciality> getSpecialities() {
+        return specialities;
+    }
+
+    public void setSpecialities(DualListModel<Speciality> specialities) {
+        this.specialities = specialities;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
     }
 
     /**
@@ -193,8 +303,7 @@ public  class SpecialityController implements Serializable {
             }
         }
     }
-    
-    
+
     @FacesConverter("specilityCon")
     public static class SpecialityConverter implements Converter {
 
@@ -234,5 +343,5 @@ public  class SpecialityController implements Serializable {
             }
         }
     }
-    
+
 }
