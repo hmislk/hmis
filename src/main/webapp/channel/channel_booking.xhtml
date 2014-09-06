@@ -15,7 +15,7 @@
                 <p:panel header="Specialities">       
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
-                            <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                            <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                             <f:ajax  event="change" execute="@this" render="scStaff"  /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
@@ -121,7 +121,7 @@
 
                             <p:outputLabel value="Payment Method"/>
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.current.paymentMethod}">  
-                                <f:selectItem itemLabel="Select Paymentmethod"/>
+                                <!--<f:selectItem itemLabel="Select Paymentmethod"/>-->
                                 <f:selectItem  itemLabel="Cash" itemValue="Cash"  />
                                 <f:selectItem  itemLabel="Agent" itemValue="Agent"  />
                                 <f:selectItem  itemLabel="Credit" itemValue="Credit"  />                                

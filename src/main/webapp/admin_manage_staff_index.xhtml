@@ -25,7 +25,9 @@
                             <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature"/>
                             <p:commandButton  styleClass="linkButton" ajax="false" value="Connect staff to user" action="admin_user_staff"/>
                             <p:commandButton  styleClass="linkButton" ajax="false" value="Specility Not set Staff List " action="admin_speciality_not_set"/>
-
+                            
+                            <p:commandButton styleClass="linkButton" value="Convert Specialities to Medical Specialities" action="#{specialityController.toConvertSpecialities()}" ajax="false" ></p:commandButton>
+                            
                         </h:panelGrid>
 
                     </p:panel>
