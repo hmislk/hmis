@@ -46,7 +46,7 @@
 
                         <p:column headerText="Date">
                             <h:outputLabel value="#{ses.sessionAt}">
-                                <f:convertDateTime pattern="dd MM yyyy"/>
+                                <f:convertDateTime pattern="dd/MM/yy"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Session">
@@ -57,7 +57,7 @@
                         </p:column>
                         <p:column headerText="Time">
                             <h:outputLabel value="#{ses.startingTime}">
-                                <f:convertDateTime pattern="hh:mm:ss a"/>
+                                <f:convertDateTime pattern="hh:mm a"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Booked">
