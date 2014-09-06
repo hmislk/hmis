@@ -199,8 +199,6 @@
 
 
                         <p:commandButton   value="Add" process="@this gpThisBookingDetails" update="gpThisBookingDetails" style="float: right;" 
-                                           onclick="if (!confirm('Are you sure you want to Add this record?'))
-                                                       return false;" 
                                            action="#{channelBillController.add}" 
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
