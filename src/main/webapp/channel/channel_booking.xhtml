@@ -198,8 +198,7 @@
                     <h:panelGrid columns="2" style="min-width: 100%;">
 
 
-                        <p:commandButton   value="Add" process="@this gpThisBookingDetails" 
-                                           ajax="false"
+                        <p:commandButton   value="Add" process="@form" 
                                            update="gpThisBookingDetails" style="float: right;" 
                                            action="#{channelBillController.add}" 
                                            oncomplete="PF('dlgAdd').show();">                        
