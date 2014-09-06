@@ -17,6 +17,7 @@
                         <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                             <f:ajax  event="change" execute="@this" render="scStaff"  /> 
+                            <f:ajax  event="click" execute="@this" render="scStaff"   /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
@@ -25,7 +26,8 @@
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions()}" /> 
+                            <f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  /> 
+                            <f:ajax  event="click" execute="@this" render="tblSessionsOfSelectedConsultant"  /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
@@ -38,6 +40,9 @@
 
                         <p:ajax event="rowSelect" process="tblSessionsOfSelectedConsultant"
                                 update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}" />  
+                          <p:ajax event="rowUnselect" process="tblSessionsOfSelectedConsultant"
+                                update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}" />  
+
 
                         <p:column headerText="Date">
                             <h:outputLabel value="#{ses.sessionAt}">
@@ -61,7 +66,7 @@
                         <p:column headerText="Fee">
                             <h:outputLabel value="#{ses.originatingSession.totalFee}"/>                                                            
                         </p:column>
-                         <p:column headerText="Fee">
+                        <p:column headerText="Fee">
                             <h:outputLabel value="#{ses.originatingSession.id}"/>                                                            
                         </p:column>
                     </p:dataTable>

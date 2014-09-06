@@ -87,6 +87,8 @@ public class BookingController implements Serializable {
     @EJB
     private ChannelBean channelBean;
 
+    List<Staff> consultants;
+
     public String nurse() {
         if (preSet()) {
             return "channel_nurse_view";
@@ -160,19 +162,22 @@ public class BookingController implements Serializable {
         return suggestions;
     }
 
-    public List<Staff> getConsultants() {
-        List<Staff> suggestions;
+    public void fillConsultants() {
         String sql;
-
         if (getSpeciality() != null) {
             sql = "select p from Staff p where p.retired=false and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
         } else {
             sql = "select p from Doctor p where p.retired=false order by p.person.name";
         }
-        //System.out.println(sql);
-        suggestions = getStaffFacade().findBySQL(sql);
+        consultants = getStaffFacade().findBySQL(sql);
+    }
 
-        return suggestions;
+    public List<Staff> getConsultants() {
+        return consultants;
+    }
+
+    public void setConsultants(List<Staff> consultants) {
+        this.consultants = consultants;
     }
 
     /**
@@ -186,8 +191,9 @@ public class BookingController implements Serializable {
     }
 
     public void setSpeciality(Speciality speciality) {
-        makeNull();
         this.speciality = speciality;
+        fillConsultants();
+        setStaff(null);
     }
 
     public Staff getStaff() {
@@ -196,6 +202,8 @@ public class BookingController implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+        generateSessions();
+        fillSessions();
     }
 
     public StaffFacade getStaffFacade() {
@@ -207,11 +215,11 @@ public class BookingController implements Serializable {
     }
 
     public void updateChargesForServiceSession(List<ServiceSession> lstSs) {
-        for(ServiceSession ss:lstSs){
+        for (ServiceSession ss : lstSs) {
             updateChargesForServiceSession(ss);
         }
     }
-    
+
     public void updateChargesForServiceSession(ServiceSession ss) {
         List<ItemFee> fs;
         String jpql;
@@ -236,18 +244,18 @@ public class BookingController implements Serializable {
         ss.setTotalFfee(0.0);
 
         ss.setItemFees(new ArrayList<ItemFee>());
-        
+
         for (ItemFee f : fs) {
             if (f.getFeeType() == FeeType.OwnInstitution) {
                 ss.setHospitalFee(ss.getHospitalFee() + f.getFee());
                 ss.setHospitalFfee(ss.getHospitalFfee() + f.getFfee());
-            }else if(f.getFeeType() == FeeType.Staff) {
+            } else if (f.getFeeType() == FeeType.Staff) {
                 ss.setProfessionalFee(ss.getProfessionalFee() + f.getFee());
                 ss.setProfessionalFfee(ss.getProfessionalFfee() + f.getFfee());
-            }else  if(f.getFeeType() == FeeType.Tax) {
+            } else if (f.getFeeType() == FeeType.Tax) {
                 ss.setTaxFee(ss.getProfessionalFee() + f.getFee());
                 ss.setTaxFfee(ss.getProfessionalFfee() + f.getFfee());
-            }else{
+            } else {
                 ss.setOtherFee(ss.getOtherFee() + f.getFee());
                 ss.setOtherFfee(ss.getOtherFfee() + f.getFfee());
             }
@@ -288,16 +296,15 @@ public class BookingController implements Serializable {
     }
 
     public List<BillSession> getBillSessions() {
-
-        if (getSelectedServiceSession() != null) {
-            String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession.id=" + getSelectedServiceSession().getId() + " and bs.sessionDate= :ssDate";
-            HashMap hh = new HashMap();
-            hh.put("ssDate", getSelectedServiceSession().getSessionAt());
-            billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-
-        }
-
         return billSessions;
+    }
+
+    public void fillSessions() {
+        String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession.id=" + getSelectedServiceSession().getId() + " and bs.sessionDate= :ssDate";
+        HashMap hh = new HashMap();
+        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+
     }
 
     public void setBillSessions(List<BillSession> billSessions) {
@@ -310,6 +317,8 @@ public class BookingController implements Serializable {
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
         this.selectedServiceSession = selectedServiceSession;
+        fillSessions();
+        setSelectedBillSession(null);
     }
 
     public void makeBillSessionNull() {
