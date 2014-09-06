@@ -212,6 +212,11 @@
                         
                         <h:outputLabel value="#{channelBillController.current.netTotal}" ></h:outputLabel>
                         
+                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
+                       
+                        <p:commandButton value="Print" ajax="false" >
+                        </p:commandButton>
+                        
                     </p:dialog>  
                     
                 </p:panel>
@@ -247,7 +252,7 @@
 
                         <p:tab title="Reprint" id="print"></p:tab>
 
-                        <h:panelGroup id="panelBillPrint" >
+                        <p:panel id="panelBillPrint" >
 
                             <div>
 
@@ -295,7 +300,7 @@
 
                             </div>
 
-                        </h:panelGroup>
+                        </p:panel>
 
                         <p:tab title="Cancel" id="cancel">
                             <p:panelGrid columns="3">
