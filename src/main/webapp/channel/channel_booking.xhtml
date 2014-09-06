@@ -15,17 +15,19 @@
                 <p:panel header="Specialities">       
                     <h:panelGrid columns="1">
                         <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
-                            <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                            <f:ajax  event="change" execute="@this" render="scStaff"  /> 
+                            <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                            <p:ajax  event="change" process="@this" update="scStaff" /> 
+                            <p:ajax  event="click" process="@this" update="scStaff" /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
 
-                <p:panel header="Consultants">       
+                <p:panel header="Consultants" id="scStaff" >    
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions()}" /> 
+                            <f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  /> 
+                            <f:ajax  event="click" execute="@this" render="tblSessionsOfSelectedConsultant"  /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
@@ -38,10 +40,13 @@
 
                         <p:ajax event="rowSelect" process="tblSessionsOfSelectedConsultant"
                                 update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}" />  
+                        <p:ajax event="rowUnselect" process="tblSessionsOfSelectedConsultant"
+                                update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}" />  
+
 
                         <p:column headerText="Date">
                             <h:outputLabel value="#{ses.sessionAt}">
-                                <f:convertDateTime pattern="dd MM yyyy"/>
+                                <f:convertDateTime pattern="dd/MM/yy"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Session">
@@ -52,17 +57,16 @@
                         </p:column>
                         <p:column headerText="Time">
                             <h:outputLabel value="#{ses.startingTime}">
-                                <f:convertDateTime pattern="hh:mm:ss a"/>
+                                <f:convertDateTime pattern="hh:mm a"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Booked">
                             <h:outputLabel value="#{ses.displayCount}"/>                                                            
                         </p:column>
                         <p:column headerText="Fee">
-                            <h:outputLabel value="#{ses.originatingSession.totalFee}"/>                                                            
-                        </p:column>
-                         <p:column headerText="Fee">
-                            <h:outputLabel value="#{ses.originatingSession.id}"/>                                                            
+                            <h:outputLabel value="#{ses.originatingSession.totalFee}">
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>                                                            
                         </p:column>
                     </p:dataTable>
                 </p:panel>
@@ -102,17 +106,14 @@
                             <p:outputLabel value="Amount"/>
 
                             <h:panelGroup id="lblSessionTotal">
-                                #{bookingController.selectedServiceSession.originatingSession.id}
-                                <br/>
-                                #{bookingController.selectedServiceSession.originatingSession.totalFee}
                                 <p:outputLabel  
-                                    value="#{bookingController.selectedServiceSession.totalFfee}"
+                                    value="#{bookingController.selectedServiceSession.originatingSession.totalFfee}"
                                     rendered="#{channelBillController.foriegn}"
                                     >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:outputLabel>
                                 <p:outputLabel  
-                                    value="#{bookingController.selectedServiceSession.totalFee}"
+                                    value="#{bookingController.selectedServiceSession.originatingSession.totalFee}"
                                     rendered="#{!channelBillController.foriegn}"
                                     >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -124,7 +125,7 @@
 
                             <p:outputLabel value="Payment Method"/>
                             <p:selectOneMenu  id="cmbPs" value="#{channelBillController.current.paymentMethod}">  
-                                <f:selectItem itemLabel="Select Paymentmethod"/>
+                                <!--<f:selectItem itemLabel="Select Paymentmethod"/>-->
                                 <f:selectItem  itemLabel="Cash" itemValue="Cash"  />
                                 <f:selectItem  itemLabel="Agent" itemValue="Agent"  />
                                 <f:selectItem  itemLabel="Credit" itemValue="Credit"  />                                
@@ -166,7 +167,7 @@
                                 <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;text-transform:uppercase;">
                                 </p:inputText>
                                 <h:outputLabel value="Phone"/>
-                                <p:inputMask mask="999-99999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
+                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
                                 </p:inputMask>
                                 <h:outputLabel value="Sex"/>
                                 <p:selectOneMenu id="txtNewSex"  value="#{channelBillController.newPatient.person.sex}" style="width: 200px;">
@@ -197,13 +198,27 @@
                     <h:panelGrid columns="2" style="min-width: 100%;">
 
 
-                        <p:commandButton   value="Add" ajax="false" style="float: right;" 
+                        <p:commandButton   value="Add" process="@this gpThisBookingDetails" update="gpThisBookingDetails" style="float: right;" 
                                            onclick="if (!confirm('Are you sure you want to Add this record?'))
                                                        return false;" 
-                                           action="#{channelBillController.add}" >                        
+                                           action="#{channelBillController.add}" 
+                                           oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
                         <p:commandButton ajax="false" action="#{channelBillController.makeNull}"  value="New Booking" onclick="onSubmitButton();"/>
                     </h:panelGrid>
+
+                    <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
+                              modal="true" height="400" width="600">
+                        
+                        <h:outputLabel value="#{channelBillController.current.netTotal}" ></h:outputLabel>
+                        
+                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
+                       
+                        <p:commandButton value="Print" ajax="false" >
+                        </p:commandButton>
+                        
+                    </p:dialog>  
+                    
                 </p:panel>
 
                 <p:panel id="panelSelectedBookinDetails">
@@ -237,6 +252,55 @@
 
                         <p:tab title="Reprint" id="print"></p:tab>
 
+                        <p:panel id="panelBillPrint" >
+
+                            <div>
+
+                                <table >
+                                    <tr>
+                                        <td>
+
+                                            <table >
+                                                <tr>
+                                                    <td>
+                                                        <h:outputLabel value="Name" ></h:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        :
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value="#{channelBillController.current.patient.person.nameWithTitle}" ></h:outputLabel>
+                                                    </td>
+                                                    <td>
+                                                        <p:spacer width="30" ></p:spacer>
+                                                    </td>
+                                                    <td>
+
+                                                    </td>
+                                                    <td>
+                                                        :
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value="#{channelBillController.current.patient.person.nameWithTitle}" ></h:outputLabel>                                                        
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+
+                                        </td>
+                                    </tr>
+                                    <td>
+                                        <td>
+
+                                        </td>
+                                    </td>
+
+                                </table>
+
+
+                            </div>
+
+                        </p:panel>
 
                         <p:tab title="Cancel" id="cancel">
                             <p:panelGrid columns="3">

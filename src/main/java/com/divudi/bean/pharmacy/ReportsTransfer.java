@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
+import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.BillItem;
@@ -163,7 +164,7 @@ public class ReportsTransfer implements Serializable {
                 + " and bi.bill.billDate between :fd and :td "
                 + " and bi.bill.billType in :bt "
                 + " group by bi.item ";
-        
+
         if (!fast) {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) desc";
         } else {
@@ -215,7 +216,7 @@ public class ReportsTransfer implements Serializable {
         } else {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) asc";
         }
-        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
+        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecordsQty = new ArrayList<>();
         for (Object[] obj : objs) {
             StockReportRecord r = new StockReportRecord();
@@ -392,7 +393,7 @@ public class ReportsTransfer implements Serializable {
         netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItem(fromDate, toDate, department);
 
     }
-    
+
     public void createDepartmentIssueStore() {
         listz = new ArrayList<>();
 
@@ -442,7 +443,7 @@ public class ReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
     }
-    
+
     public void fillDepartmentUnitIssueByBillStore() {
         Map m = new HashMap();
         String sql;
@@ -483,6 +484,42 @@ public class ReportsTransfer implements Serializable {
                 + " sum(b.netValue)"
                 + " from BillItem b "
                 + " where b.bill.department=:fdept ";
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " and b.bill.createdAt between :fd and :td"
+                + " and b.bill.billType=:bt"
+                + " group by b.pharmaceuticalBillItem.itemBatch "
+                + " order by b.item.name";
+
+        return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    private List<Object[]> fetchBillItem(BillType billType, SurgeryBillType surgeryBillType) {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+
+        sql = "select b.pharmaceuticalBillItem.itemBatch,"
+                + " sum(b.grossValue),"
+                + " sum(b.marginValue),"
+                + " sum(b.discount),"
+                + " sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept ";
+
+        if (surgeryBillType != null) {
+            sql += " and b.bill.surgeryBillType=:surg";
+            m.put("surg", surgeryBillType);
+        }else{
+            sql+=" and b.bill.surgeryBillType is null ";
+        }
 
         if (toDepartment != null) {
             sql += " and b.bill.toDepartment=:tdept ";
@@ -633,7 +670,7 @@ public class ReportsTransfer implements Serializable {
         billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
 
     }
-    
+
     public void fillItemCountsStore() {
 
         List<Object[]> list = fetchBillItem(BillType.StoreIssue);
@@ -681,7 +718,7 @@ public class ReportsTransfer implements Serializable {
 
     public void fillItemCountsBht() {
 
-        List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre);
+        List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre, null);
 
         if (list == null) {
             return;
@@ -727,6 +764,54 @@ public class ReportsTransfer implements Serializable {
 
     }
     
+    public void fillItemCountsBhtSurgery() {
+
+        List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre, SurgeryBillType.PharmacyItem);
+
+        if (list == null) {
+            return;
+        }
+
+        itemCounts = new ArrayList<>();
+        totalsValue = 0;
+        marginValue = 0;
+        discountsValue = 0;
+        netTotalValues = 0;
+        purchaseValue = 0;
+        retailValue = 0;
+        for (Object[] obj : list) {
+            ItemCount row = new ItemCount();
+            row.setItemBatch((ItemBatch) obj[0]);
+            row.setGross((Double) obj[1]);
+            row.setMargin((Double) obj[2]);
+            row.setDiscount((Double) obj[3]);
+            row.setNet((Double) obj[4]);
+
+            Double pre = calCount(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
+            Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
+            Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
+            System.err.println("PRE " + pre);
+            System.err.println("PRE CAN " + preCancel);
+            System.err.println("Return " + returned);
+//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
+
+            row.setCount(pre - (preCancel + returned));
+
+            totalsValue += row.getGross();
+            marginValue += row.getMargin();
+            discountsValue += row.getDiscount();
+            netTotalValues += row.getNet();
+
+            itemCounts.add(row);
+        }
+
+        billTotal = fetchBillTotal(BillType.PharmacyBhtPre);
+        billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
+        billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
+        billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
+
+    }
+
     public void fillItemCountsBhtStore() {
 
         List<Object[]> list = fetchBillItem(BillType.StoreBhtIssue);

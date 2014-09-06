@@ -154,6 +154,7 @@ public class ChannelBean {
                         newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
                         newSs.setSessionAt(nowDate);
+                        newSs.setSessionDate(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(newSs));
                         newSs.setStaff(ss.getStaff());
                         //Temprory
@@ -185,6 +186,7 @@ public class ChannelBean {
                         newSs.setSessionAt(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(newSs));
                         newSs.setStaff(ss.getStaff());
+                        newSs.setSessionDate(nowDate);
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
                         // //System.out.println("Count : " + sessionDayCount);

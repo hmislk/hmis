@@ -19,8 +19,10 @@
 
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
-                                <h:outputLabel value="Bill No(Ins ID/Dept ID)"/>
+                                <h:outputLabel value="Bill No(Ins ID)"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" />
+                                <h:outputLabel value="Bill No(Dept ID)"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.deptId}" />
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createSearchBill()}"/>
                                 
                             </h:panelGrid>
