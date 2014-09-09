@@ -961,6 +961,48 @@ public class mdInwardReportController implements Serializable {
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+    private List<Bill> inwdPaymentBillsAdmitted(Bill bill) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"                
+                + " and b.retired=false  "
+                + " and b.patientEncounter.discharged=false";
+
+        
+
+        sql += " order by b.insId desc  ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+       
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+    
+    private double calPaymentBillsAdmitted(Bill bill) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(b.netTotal) from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"                
+                + " and b.retired=false  "
+                + " and b.patientEncounter.discharged=false";
+
+        
+
+        sql += " order by b.insId desc  ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+       
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
 
     private List<Bill> fetchPaymentBills(String args) {
         String sql = "";
@@ -1035,6 +1077,18 @@ public class mdInwardReportController implements Serializable {
         totalValue = calInwdPaymentBillsNotDischarge(new BilledBill());
         cancelledTotal = calInwdPaymentBillsNotDischarge(new CancelledBill());
         refundTotal = calInwdPaymentBillsNotDischarge(new RefundBill());
+
+    }
+    
+    public void admittedPatientSummerries() {
+
+        bil = inwdPaymentBillsAdmitted(new BilledBill());
+        cancel = inwdPaymentBillsAdmitted(new CancelledBill());
+        refund = inwdPaymentBillsAdmitted(new RefundBill());
+
+        totalValue = calPaymentBillsAdmitted(new BilledBill());
+        cancelledTotal = calPaymentBillsAdmitted(new CancelledBill());
+        refundTotal = calPaymentBillsAdmitted(new RefundBill());
 
     }
 
