@@ -88,6 +88,7 @@ public class BookingController implements Serializable {
     private ChannelBean channelBean;
 
     List<Staff> consultants;
+    boolean printPreview;
 
     public String nurse() {
         if (preSet()) {
@@ -282,6 +283,14 @@ public class BookingController implements Serializable {
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
         }
     }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    } 
 
     public List<ServiceSession> getServiceSessions() {
         return serviceSessions;

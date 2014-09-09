@@ -974,10 +974,26 @@ public class mdInwardReportController implements Serializable {
 
         
 
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
+
         sql += " order by b.insId desc  ";
 
         temMap.put("billType", BillType.InwardPaymentBill);
         temMap.put("class", bill.getClass());
+        
+        
        
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -994,6 +1010,20 @@ public class mdInwardReportController implements Serializable {
                 + " and b.patientEncounter.discharged=false";
 
         
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
 
         sql += " order by b.insId desc  ";
 
