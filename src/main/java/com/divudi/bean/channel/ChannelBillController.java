@@ -651,7 +651,7 @@ public class ChannelBillController implements Serializable {
                 return true;
             }
 
-            if (getCurrent().getFromInstitution().getBallance() - amount < -getCurrent().getFromInstitution().getAllowedCredit()) {
+            if (getCurrent().getFromInstitution().getBallance() - amount < 0-getCurrent().getFromInstitution().getAllowedCredit()) {
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
                 return true;
             }
@@ -710,9 +710,13 @@ public class ChannelBillController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        System.err.println("1");
         savePatient();
+        System.err.println("2");
         current = saveBilledBill();
+        System.err.println("3");
         current = getBillFacade().find(current.getId());
+        System.err.println("eeeeeee");
         UtilityController.addSuccessMessage("Channel Booking Added.");
     }
 
@@ -817,8 +821,10 @@ public class ChannelBillController implements Serializable {
 
         billItems.add(bi);
 
+        System.err.println("L1");
         getAmount();
 
+        System.err.println("L2");
         if (getCurrent().getPaymentMethod().equals(PaymentMethod.Credit)) {
             savingBill.setBillType(BillType.ChannelCredit);
         } else {
@@ -827,37 +833,49 @@ public class ChannelBillController implements Serializable {
             savingBill.setNetTotal(amount);
         }
 
+        System.err.println("L3");
         if (getCurrent().getPaymentMethod().equals(PaymentMethod.Agent)) {
             updateBallance();
         }
 
+        System.err.println("L4");
         if (getPatientTabId().equals("tabNewPt")) {
             savingBill.setPatient(newPatient);
         } else {
             savingBill.setPatient(searchPatient);
         }
 
+        System.err.println("L5");
         savingBill.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         savingBill.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
 
         savingBill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         savingBill.setCreater(getSessionController().getLoggedUser());
 
+        System.err.println("L6");
         getBillFacade().create(savingBill);
+        System.err.println("L7");
         getBillItemFacade().create(bi);
+        System.err.println("L8");
         for (BillFee bf : billFees) {
             getBillFeeFacade().create(bf);
         }
         
+        System.err.println("L9");
 
         billItems.add(bi);
         savingBill.setBillItems(billItems);
         savingBill.setBillFees(billFees);
         bi.setBillSession(bs);
 
+        System.err.println("L10");
         getBillItemFacade().edit(bi);
+        System.err.println("L11");
+        
         getBillSessionFacade().edit(bs);
-        getBillSessionFacade().edit(bs);
+//        System.err.println("L12");
+//        getBillSessionFacade().edit(bs);
+        System.err.println("L13");
         getBillFacade().edit(savingBill);
 
         return savingBill;
