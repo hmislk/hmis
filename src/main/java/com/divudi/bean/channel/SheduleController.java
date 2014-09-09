@@ -175,6 +175,8 @@ public class SheduleController implements Serializable {
         hospitalFee = null;
         doctorFee = null;
         tax = null;
+        speciality = null;
+        currentStaff = null;
     }
 
     public ServiceSessionFacade getFacade() {
