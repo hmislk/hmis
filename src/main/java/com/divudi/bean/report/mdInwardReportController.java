@@ -1271,15 +1271,15 @@ public class mdInwardReportController implements Serializable {
 
         tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        for (Item i : tmp) {
-            ItemWithFee iwf = new ItemWithFee();
-            iwf.setItem(i);
-            setCount(iwf);
-            setFee(iwf);
-            //   //System.out.println("ss " + itemWithFees.size());
-            //      //System.out.println("ss " + iwf.getItem());
-            itemWithFees.add(iwf);
-        }
+//        for (Item i : tmp) {
+//            ItemWithFee iwf = new ItemWithFee();
+//            iwf.setItem(i);
+//            setCount(iwf);
+//            setFee(iwf);
+//            //   //System.out.println("ss " + itemWithFees.size());
+//            //      //System.out.println("ss " + iwf.getItem());
+//            itemWithFees.add(iwf);
+//        }
 
     }
 

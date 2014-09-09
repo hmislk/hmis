@@ -24,16 +24,18 @@
                                     <p:commandButton ajax="false" action="#{searchController.createInwardServiceTable()}" value="Search" onclick="onSubmitButton();" />
                                 </h:panelGrid>
 
-                                <h:panelGrid columns="5">
+                                <h:panelGrid columns="6">
                                     <h:outputLabel value="Bill No"/>
                                     <h:outputLabel value="BHT No"/>
                                     <h:outputLabel value="Patient Name"/>
-                                    <h:outputLabel value="Patient Phone"/>                                   
+                                    <h:outputLabel value="Patient Phone"/>   
+                                    <h:outputLabel value="Item Name"/>   
                                     <h:outputLabel value="Net Total"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
 
                                 </h:panelGrid>
@@ -82,17 +84,12 @@
                                 <h:outputLabel value="#{bill.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
 
                             </p:column>   
-                            <p:column headerText="Gross Value" >
-
-                                <h:outputLabel value="#{bill.total}" >
-                                    <f:convertNumber pattern="#,000.00"/>
-                                </h:outputLabel>
-
-                            </p:column>     
-
                             <p:column headerText="Comments" >                                
                                 <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                                 </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="BHT Total Value">
+                                #{bill.patientEncounter.finalBill.netTotal}
                             </p:column>
                         </p:dataTable>
 

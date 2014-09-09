@@ -37,6 +37,17 @@ public class SearchKeyword {
     private String paymentmethod;
     private String insId;
     private String deptId;
+    String serviceName;
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+    
+    
 
     public boolean checkKeyword() {
         if (billNo != null && !billNo.trim().equals("")) {
