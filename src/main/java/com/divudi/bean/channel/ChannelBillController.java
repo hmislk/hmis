@@ -710,14 +710,15 @@ public class ChannelBillController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        System.err.println("1");
+        
         savePatient();
-        System.err.println("2");
+        
         current = saveBilledBill();
-        System.err.println("3");
+        
         current = getBillFacade().find(current.getId());
-        System.err.println("eeeeeee");
+        
         UtilityController.addSuccessMessage("Channel Booking Added.");
+        
     }
 
     private Bill saveBilledBill() {
@@ -802,8 +803,10 @@ public class ChannelBillController implements Serializable {
         bs.setSessionTime(getbookingController().getSelectedServiceSession().getSessionTime());
         bs.setStaff(getbookingController().getSelectedServiceSession().getStaff());
 
-        int count = getServiceSessionBean().getSessionNumber(getbookingController().getSelectedServiceSession(), getbookingController().getSelectedServiceSession().getSessionAt());
+        int count = getServiceSessionBean().getSessionNumber(getbookingController().getSelectedServiceSession().getOriginatingSession(), getbookingController().getSelectedServiceSession().getSessionAt());
+        System.err.println("count" + count);
         bs.setSerialNo(count);
+        
 
         bi.setAdjustedValue(0.0);
         bi.setAgentRefNo(agentRefNo);
@@ -821,10 +824,10 @@ public class ChannelBillController implements Serializable {
 
         billItems.add(bi);
 
-        System.err.println("L1");
+        
         getAmount();
 
-        System.err.println("L2");
+        
         if (getCurrent().getPaymentMethod().equals(PaymentMethod.Credit)) {
             savingBill.setBillType(BillType.ChannelCredit);
         } else {
@@ -833,50 +836,51 @@ public class ChannelBillController implements Serializable {
             savingBill.setNetTotal(amount);
         }
 
-        System.err.println("L3");
+        
         if (getCurrent().getPaymentMethod().equals(PaymentMethod.Agent)) {
             updateBallance();
         }
 
-        System.err.println("L4");
+        
         if (getPatientTabId().equals("tabNewPt")) {
             savingBill.setPatient(newPatient);
         } else {
             savingBill.setPatient(searchPatient);
         }
 
-        System.err.println("L5");
+        
         savingBill.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         savingBill.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
 
         savingBill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         savingBill.setCreater(getSessionController().getLoggedUser());
 
-        System.err.println("L6");
+        
         getBillFacade().create(savingBill);
-        System.err.println("L7");
+        
         getBillItemFacade().create(bi);
-        System.err.println("L8");
+        
         for (BillFee bf : billFees) {
             getBillFeeFacade().create(bf);
         }
         
-        System.err.println("L9");
+        
 
         billItems.add(bi);
         savingBill.setBillItems(billItems);
         savingBill.setBillFees(billFees);
         bi.setBillSession(bs);
 
-        System.err.println("L10");
+        
         getBillItemFacade().edit(bi);
-        System.err.println("L11");
+        
         
         getBillSessionFacade().edit(bs);
 //        System.err.println("L12");
 //        getBillSessionFacade().edit(bs);
-        System.err.println("L13");
+        
         getBillFacade().edit(savingBill);
+        
 
         return savingBill;
     }
