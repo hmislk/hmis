@@ -208,7 +208,7 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferReceive);
+        m.put("bt", BillType.StoreTransferReceive);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
@@ -241,7 +241,7 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
+        m.put("bt", BillType.StoreTransferIssue);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
@@ -275,7 +275,7 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
+        m.put("bt", BillType.StoreTransferIssue);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
@@ -316,7 +316,7 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
+        m.put("bt", BillType.StoreTransferReceive);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
