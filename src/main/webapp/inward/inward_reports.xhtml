@@ -15,7 +15,7 @@
                         <p:panel header=" Service Report " >
                             <h:panelGrid columns="1">
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill" action="report_md_inward_bill" actionListener="#{mdInwardReportController.makeNull()}"/> 
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item " action="report_md_inward_item" actionListener="#{mdInwardReportController.makeNull()}"/> 
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item " action="report_md_inward_item" rendered="false"  actionListener="#{mdInwardReportController.makeNull()}"/> 
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Out Side Bill Report" action="report_out_side_inward_bill" actionListener="#{mdInwardReportController.makeNull()}"/>
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Time Service Report" action="inward_report_timed_service" actionListener="#{inwardTimedItemController.makeNull()}"/>
                             </h:panelGrid>
