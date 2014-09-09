@@ -127,7 +127,7 @@
                                         <h:outputLabel value="#{billSearch.bill.editor.webUserPerson.name}" ></h:outputLabel> 
 
                                         <h:outputLabel value="Update Bill :" ></h:outputLabel>
-                                        <p:commandButton value="Update" action="#{billSearch.updateBill()}" ajax="false" ></p:commandButton>
+                                        <p:commandButton value="Update" action="#{billSearch.updateBill()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
 
                                     </p:panelGrid>
                                 </p:panel>
@@ -216,7 +216,7 @@
 
                                     </p:column>
                                     <p:column style="width:6%">  
-                                        <p:rowEditor > 
+                                        <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
                                         </p:rowEditor>
                                     </p:column>  
                                 </p:dataTable>
@@ -261,7 +261,7 @@
                                         </p:cellEditor>
                                     </p:column>
                                     <p:column style="width:6%">  
-                                        <p:rowEditor > 
+                                        <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
                                         </p:rowEditor>
                                     </p:column>  
 
