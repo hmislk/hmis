@@ -97,7 +97,7 @@
 
                         </tr>
 
-                        <ui:repeat value="#{cc.attrs.bill.billbillFees}" var="cbif" >
+                        <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
                             <tr>
                                 <td>
                                     <h:outputLabel value="#{cbif.fee.name}" ></h:outputLabel>
@@ -129,7 +129,7 @@
                                 <h:outputLabel value=":" ></h:outputLabel>
                             </td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.bill.billnetTotal}" >
+                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
                             </td>
