@@ -396,9 +396,9 @@ public class StaffSalaryController implements Serializable {
             }
 
             for (StaffShift ss : getHumanResourceBean().fetchStaffShifts(staffSalary)) {
-                ss.setConsideredForOt(Boolean.FALSE);
-                ss.setConsideredForSalary(Boolean.FALSE);
-                ss.setConsideredForExtraDuty(Boolean.FALSE);
+//                ss.setConsideredForOt(Boolean.FALSE);
+//                ss.setConsideredForSalary(Boolean.FALSE);
+//                ss.setConsideredForExtraDuty(Boolean.FALSE);
                 getStaffShiftFacade().edit(ss);
             }
             

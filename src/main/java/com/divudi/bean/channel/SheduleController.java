@@ -9,20 +9,22 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Fee;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -38,6 +40,8 @@ public class SheduleController implements Serializable {
     private ServiceSessionFacade facade;
     @EJB
     private FeeFacade feeFacade;
+    @EJB
+    SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
     @Inject
     private SessionController sessionController;
     private Speciality speciality;
@@ -135,6 +139,14 @@ public class SheduleController implements Serializable {
         return current;
     }
 
+    public SessionNumberGeneratorFacade getSessionNumberGeneratorFacade() {
+        return sessionNumberGeneratorFacade;
+    }
+
+    public void setSessionNumberGeneratorFacade(SessionNumberGeneratorFacade sessionNumberGeneratorFacade) {
+        this.sessionNumberGeneratorFacade = sessionNumberGeneratorFacade;
+    }
+
     public void setCurrent(ServiceSession current) {
         this.current = current;
 
@@ -228,10 +240,24 @@ public class SheduleController implements Serializable {
         return false;
     }
 
+    public SessionNumberGenerator saveSessionNumber() {
+        SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
+        sessionNumberGenerator.setSpeciality(speciality);
+        sessionNumberGenerator.setStaff(currentStaff);
+        sessionNumberGenerator.setName(currentStaff.getPerson().getName() + " " + current.getName());
+        sessionNumberGeneratorFacade.create(sessionNumberGenerator);
+        return sessionNumberGenerator;
+    }
+
     public void saveSelected() {
+        if (getCurrent().getSessionNumberGenerator() == null) {
+            SessionNumberGenerator ss = saveSessionNumber();
+            current.setSessionNumberGenerator(ss);
+        }
         if (checkError()) {
             return;
         }
+
         current.setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
