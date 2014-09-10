@@ -188,6 +188,9 @@ public class PharmacyPurchaseController implements Serializable {
             UtilityController.addErrorMessage("Select Dealor");
             return;
         }
+        if (getBill().getReferenceInstitution()==null) {
+            UtilityController.addErrorMessage("Select Reference Institution");
+        }
         if (getBill().getInvoiceNumber() == null || "".equals(getBill().getInvoiceNumber().trim())) {
             UtilityController.addErrorMessage("Please Fill invoice number");
             return;
