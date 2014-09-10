@@ -88,7 +88,7 @@
 <!--                                <h:outputLabel id="lblEnd" value="Select End  Record"
                                                rendered="#{sts.endRecord.recordTimeStamp eq null}"/><br/>-->
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
-                                    <f:selectItem itemLabel="Selectt"/>
+                                    <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
                                     <f:ajax event="change" execute="@this" render="@this endRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>

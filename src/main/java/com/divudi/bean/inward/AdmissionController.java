@@ -129,7 +129,7 @@ public class AdmissionController implements Serializable {
             sql = "select c from Admission c "
                     + " where abs(c.creditUsedAmount)-abs(c.creditPaidAmount) >:val  "
                     + " and c.paymentMethod= :pm "
-                    + " and c.paymentFinalized=true "
+                    + " and c.discharged=true "
                     + " and c.retired=false "
                     + " and (upper(c.bhtNo) like :q"
                     + " or upper(c.patient.person.name) like :q "
@@ -154,7 +154,7 @@ public class AdmissionController implements Serializable {
         sql = "select c from PatientEncounter c "
                 + " where c.retired=false "
                 + " and abs(c.creditUsedAmount)-abs(c.creditPaidAmount) >:val "
-                + " and c.paymentFinalized=true "
+                + " and c.discharged=true "
                 + " and c.paymentMethod=:pm  "
                 + " and c.creditCompany=:ins ";
 

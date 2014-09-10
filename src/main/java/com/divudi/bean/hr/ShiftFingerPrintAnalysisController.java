@@ -152,7 +152,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                        fingerPrintRecordFacade.create(fpr);
                         list.add(fpr);
                         ss.setStartRecord(fpr);
-                        staffShiftFacade.edit(ss);
+//                        staffShiftFacade.edit(ss);
 
                     }
 
@@ -161,7 +161,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                        fingerPrintRecordFacade.create(fpr);
                         list.add(fpr);
                         ss.setEndRecord(fpr);
-                        staffShiftFacade.edit(ss);
+//                        staffShiftFacade.edit(ss);
                     }
 
                     ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
