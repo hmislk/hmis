@@ -94,7 +94,9 @@
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}"/>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                        </h:outputLabel>
                     </p:column>
 
                     <p:column>

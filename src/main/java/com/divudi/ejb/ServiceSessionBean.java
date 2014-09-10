@@ -221,11 +221,12 @@ public class ServiceSessionBean {
     }
 
     public int getSessionNumber(ServiceSession serviceSession, Date sessionDate) {
+        System.out.println("Service count "+serviceSession.getSessionNumberGenerator());
         List<BillSession> tmp;
-        String sql = "Select bs From BillSession bs where bs.serviceSession=:ss and bs.sessionDate= :ssDate";
+        String sql = "Select bs From BillSession bs where bs.serviceSession.sessionNumberGenerator=:ss and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
-        hh.put("ss", serviceSession);
+        hh.put("ss", serviceSession.getSessionNumberGenerator());
         tmp = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
         return tmp.size() + 1;
     }

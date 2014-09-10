@@ -4,7 +4,8 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -21,17 +22,7 @@
                                     <f:ajax event="change" execute="@this" render="col" listener="#{rosterStaffController.createStaff}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel  value="Staff" ></h:outputLabel>
-                                <p:autoComplete   forceSelection="true" value="#{rosterStaffController.currentStaff}" id="scStaff"
-                                                  completeMethod="#{staffController.completeStaff}" var="mys" 
-                                                  itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                  converter="stfcon"   >   
-                                    <p:column headerText="Name">
-                                        #{mys.person.name}
-                                    </p:column>
-                                     <p:column headerText="Name">
-                                        #{mys.code}
-                                    </p:column>
-                                </p:autoComplete> 
+                                <hr:completeStaff value="#{rosterStaffController.currentStaff}"/>
 
                                 <p:commandButton id="btnAddStaff" value="Add Staff" ajax="false"
                                                   action="#{rosterStaffController.add}" onclick="onSubmitButton();" >                                      
