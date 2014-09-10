@@ -84,7 +84,7 @@
                     <p:dataTable id="tblBookingsOfSelectedSession" value="#{bookingController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingController.selectedBillSession}">
-                        <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />  
+                        <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" listener="#{channelBillController.createBillfees}" />  
 
                         <p:column headerText="No">#{bs.serialNo}</p:column>
                         <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
@@ -324,7 +324,7 @@
                         </p:panel>
 
                         <p:tab title="Cancel" id="cancel">
-                            <p:panelGrid columns="3">
+<!--                            <p:panelGrid columns="3">
                                 <p:outputLabel/>
                                 <p:outputLabel value="Paid Amount"/>
                                 <p:outputLabel value="Previous Repay"/>                              
@@ -358,14 +358,20 @@
                                                          +channelBillController.agentPay.prevFee.feeValue}" />
 
 
-                            </p:panelGrid>
+                            </p:panelGrid>-->
+                                                         
+                                                         <h:panelGroup>
+                                                             <ch:bill_fees bill="#{channelBillController.current}" />
+                                                         </h:panelGroup>
+                                                             
+                                                        
                             <p:commandButton ajax="false" value="Cancel" action="#{channelBillController.cancel}" disabled="#{channelBillController.billSession.bill.refunded==true
                                                                                    or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
                         </p:tab>
 
 
                         <p:tab title="Refund" id="refund">
-                            <p:panelGrid columns="4">
+<!--                            <p:panelGrid columns="4">
                                 <p:outputLabel/>
                                 <p:outputLabel value="Paid Amount"/>
                                 <p:outputLabel value="Previous Repay"/>
@@ -412,7 +418,10 @@
                                                                  +channelBillController.hospitalFee.repayment.feeValue
                                                                  +channelBillController.tax.repayment.feeValue
                                                                  +channelBillController.agentPay.repayment.feeValue}" />
-                            </p:panelGrid>
+                            </p:panelGrid>-->
+                                                                 <h:panelGroup>
+                                                                     <ch:bill_fees bill="#{channelBillController.current}" />
+                                                                 </h:panelGroup>
                             <p:commandButton ajax="false" value="Refund" action="#{channelBillController.refund}" disabled="#{channelBillController.billSession.bill.refunded==true
                                                                                    or channelBillController.billSession.bill.cancelled==true
                                                                                    or channelBillController.billSession.bill.billType eq 'ChannelCredit'}" onclick="onSubmitButton();"/>
