@@ -863,10 +863,8 @@ public class ChannelBillController implements Serializable {
         for (BillFee bf : billFees) {
             getBillFeeFacade().create(bf);
         }
-        
-        
 
-        billItems.add(bi);
+//        billItems.add(bi);
         savingBill.setBillItems(billItems);
         savingBill.setBillFees(billFees);
         bi.setBillSession(bs);

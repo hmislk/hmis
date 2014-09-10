@@ -17,7 +17,7 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Payment Detail">
 
 
-                    <p:panelGrid columns="8" style="noPrintButton">
+                    <p:panelGrid columns="10" style="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -39,6 +39,11 @@
                                         value="#{commonReport.institution}"
                                         completeMethod="#{dealerController.completeDealor}"
                                          forceSelection="true" rendered="true"
+                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                        <h:outputLabel value="Reference Institution"/>
+                        <p:autoComplete converter="institutionConverter" value="#{commonReport.referenceInstitution}"
+                                        completeMethod="#{institutionController.completeCompany}" 
+                                        forceSelection="true"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
                         <p:defaultCommand target="btnRefresh"/>
@@ -96,7 +101,13 @@
                             </f:facet> 
                             <h:outputLabel value="#{b.deptId}"/>
                         </p:column>
+                        <p:column headerText="Reference Institution"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Reference Institution"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.referenceInstitution.name}"/>
 
+                        </p:column>
                         <p:column headerText="Invoice No" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Invoice No"/>
@@ -200,7 +211,13 @@
                             <h:outputLabel value="#{b1.billedBill.deptId}" >
                             </h:outputLabel>
                         </p:column>
+                        <p:column headerText="Reference Institution"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Reference Institution"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.referenceInstitution.name}"/>
 
+                        </p:column>
                         <p:column headerText="Cancelled At"   >
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled At"/>
@@ -294,7 +311,13 @@
                             </f:facet> 
                             <h:outputLabel value="#{b.referenceBill.deptId}"/>
                         </p:column>
+                        <p:column headerText="Reference Institution"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Reference Institution"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.referenceInstitution.name}"/>
 
+                        </p:column>
                         <p:column headerText="Return At"  >
                             <f:facet name="header">  
                                 <h:outputLabel value="Created At"/>
@@ -384,7 +407,13 @@
                             <h:outputLabel value="#{b1.billedBill.deptId}" >
                             </h:outputLabel>
                         </p:column>
+                        <p:column headerText="Reference Institution"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Reference Institution"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.referenceInstitution.name}"/>
 
+                        </p:column>
                         <p:column headerText="Cancelled At"   >
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled At"/>
