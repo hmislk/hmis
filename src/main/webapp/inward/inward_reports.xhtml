@@ -60,10 +60,9 @@
 
 
                         <p:panel header="Inward Admission Book">
-                            <h:panelGrid columns="1">
-                                <p:commandButton value="All Admission Detail" action="admission_book_all" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
-                                <p:commandButton value="Admission Detail" action="admission_book" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
-                                <p:commandButton value="Dicharge Detail" action="discharge_book" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                            <h:panelGrid columns="1">                                
+                                <p:commandButton value="Admission Detail By Admitted Date" action="admission_book" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="Dicharge Detail By Discharged Date" action="discharge_book" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="Balance Payment Report(D)" actionListener="#{mdInwardReportController.makeNull()}" action="inward_search_balance_payment"  styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="Balance Payment Report(Credit)(D)" actionListener="#{mdInwardReportController.makeNull()}" action="inward_search_balance_payment_1"  styleClass="linkButton" ajax="false" />
                             </h:panelGrid>
