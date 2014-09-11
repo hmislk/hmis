@@ -12,12 +12,19 @@
             <ui:define name="content">
                 <h:form>
                     <h:panelGrid columns="3" >                           
-                        <p:panel>
+                        <p:panel header="Attendance">
                             <p:commandButton value="(1) Attendance Report" 
                                              action="hr_report_attendance" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
-                            
+                            <p:commandButton value="(2) Early In " 
+                                             action="hr_report_attendance_early_in" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
+                            <p:commandButton value="(3) Early Out " 
+                                             action="hr_report_attendance_early_out" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
                         </p:panel>
 
 
