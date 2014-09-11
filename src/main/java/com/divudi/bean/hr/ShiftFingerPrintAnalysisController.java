@@ -52,6 +52,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
 
+    public void restTimeStamp(FingerPrintRecord fingerPrintRecord) {
+        if (fingerPrintRecord.getLoggedRecord() != null) {
+            fingerPrintRecord.setRecordTimeStamp(fingerPrintRecord.getLoggedRecord().getRecordTimeStamp());
+        } else {
+            fingerPrintRecord.setRecordTimeStamp(null);
+        }
+
+    }
+
     public void makeTableNull() {
         shiftTables = null;
     }
@@ -148,7 +157,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                     FingerPrintRecord fpr = null;
                     if (ss.getStartRecord() == null) {
-                        fpr = createFingerPrint(ss.getStaff(), FingerPrintRecordType.Varified, Times.inTime);
+                        fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.inTime);
 //                        fingerPrintRecordFacade.create(fpr);
                         list.add(fpr);
                         ss.setStartRecord(fpr);
@@ -157,7 +166,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     }
 
                     if (ss.getEndRecord() == null) {
-                        fpr = createFingerPrint(ss.getStaff(), FingerPrintRecordType.Varified, Times.outTime);
+                        fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.outTime);
 //                        fingerPrintRecordFacade.create(fpr);
                         list.add(fpr);
                         ss.setEndRecord(fpr);
@@ -208,12 +217,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
     }
 
-    private FingerPrintRecord createFingerPrint(Staff staff, FingerPrintRecordType fingerPrintRecordType, Times times) {
+    private FingerPrintRecord createFingerPrint(StaffShift staffShift, FingerPrintRecordType fingerPrintRecordType, Times times) {
         FingerPrintRecord fpr = new FingerPrintRecord();
         fpr.setCreatedAt(new Date());
         fpr.setCreater(getSessionController().getLoggedUser());
         fpr.setFingerPrintRecordType(fingerPrintRecordType);
-        fpr.setStaff(staff);
+        fpr.setStaff(staffShift.getStaff());
+        fpr.setStaffShift(staffShift);
         fpr.setTimes(times);
         fpr.setComments("(NEW " + times.toString() + " )");
         return fpr;

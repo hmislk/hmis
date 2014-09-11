@@ -275,8 +275,11 @@ public class InwardReportController implements Serializable {
             inwardReportControllerBht.process();
             p.setTransTotal(inwardReportControllerBht.getNetTotal());
 
-            total += p.getFinalBill().getNetTotal();
-            paid += p.getFinalBill().getPaidAmount();
+            if (p.getFinalBill() != null) {
+                total += p.getFinalBill().getNetTotal();
+                paid += p.getFinalBill().getPaidAmount();
+            }
+            
             creditUsed += p.getCreditUsedAmount();
             creditPaid += p.getPaidByCreditCompany();
             calTotal += p.getTransTotal();
@@ -326,16 +329,19 @@ public class InwardReportController implements Serializable {
             inwardReportControllerBht.process();
             p.setTransTotal(inwardReportControllerBht.getNetTotal());
 
-            total += p.getFinalBill().getNetTotal();
-            paid += p.getFinalBill().getPaidAmount();
+            if (p.getFinalBill() != null) {
+
+                total += p.getFinalBill().getNetTotal();
+                paid += p.getFinalBill().getPaidAmount();
+            }
             creditUsed += p.getCreditUsedAmount();
             creditPaid += p.getPaidByCreditCompany();
             calTotal += p.getTransTotal();
 
         }
     }
-    
-      public void fillDischargeBookPaymentFinalized() {
+
+    public void fillDischargeBookPaymentFinalized() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
@@ -385,7 +391,6 @@ public class InwardReportController implements Serializable {
 
         }
     }
-
 
     public BhtSummeryController getBhtSummeryController() {
         return bhtSummeryController;

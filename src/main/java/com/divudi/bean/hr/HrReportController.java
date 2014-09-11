@@ -77,9 +77,98 @@ public class HrReportController implements Serializable {
             hm.put("des", getReportKeyWord().getDesignation());
         }
 
-        if (getReportKeyWord().getRoster()!= null) {
+        if (getReportKeyWord().getRoster() != null) {
             sql += " and ss.staff.roster=:rs";
             hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getShift() != null) {
+            sql += " and ss.shift=:sh";
+            hm.put("sh", getReportKeyWord().getShift());
+        }
+
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void createStaffShiftEarlyIn() {
+        HashMap hm = new HashMap();
+        String sql = "select ss from StaffShift ss"
+                + " where ss.retired=false "
+                + " and ss.shiftStartTime  > ss.startRecord.recordTimeStamp"
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getShift() != null) {
+            sql += " and ss.shift=:sh";
+            hm.put("sh", getReportKeyWord().getShift());
+        }
+
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
+    public void createStaffShiftEarlyOut() {
+        HashMap hm = new HashMap();
+        String sql = "select ss from StaffShift ss"
+                + " where ss.retired=false "
+                + " and ss.shiftEndTime > ss.endRecord.recordTimeStamp"
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getShift() != null) {
+            sql += " and ss.shift=:sh";
+            hm.put("sh", getReportKeyWord().getShift());
         }
 
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
