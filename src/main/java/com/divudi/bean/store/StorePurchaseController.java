@@ -79,6 +79,8 @@ public class StorePurchaseController implements Serializable {
     
     @EJB
     private CommonFunctions commonFunctions;
+    @Inject
+    private BillNumberController billNumberController;
     
     Date frmDate;
     Date toDate;
@@ -291,6 +293,18 @@ public class StorePurchaseController implements Serializable {
     }
 
     private List<BillItem> billItems;
+    
+    public void createSerialNumber(){
+        System.out.println("In");
+        
+        String s=getBillNumberController().serialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getSessionController().getLoggedUser().getDepartment(), getCurrentBillItem().getItem());
+        System.out.println("s = " + s);
+        
+        getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(s);
+        
+        
+        System.out.println("Out");
+    }
 
     public void addItem() {
 
@@ -582,6 +596,14 @@ public class StorePurchaseController implements Serializable {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public BillNumberController getBillNumberController() {
+        return billNumberController;
+    }
+
+    public void setBillNumberController(BillNumberController billNumberController) {
+        this.billNumberController = billNumberController;
     }
 
 }

@@ -37,6 +37,9 @@ public class BillItem implements Serializable {
 
     @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY)
     BillSession billSession;
+    
+    @ManyToOne
+    private BillItem parentBillItem;
 
     @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     PharmaceuticalBillItem pharmaceuticalBillItem;
@@ -125,6 +128,8 @@ public class BillItem implements Serializable {
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
     private List<BillFee> proFees = new ArrayList<>();
+    @OneToMany(mappedBy = "parentBillItem")
+    private List<BillItem> chiledBillItems;
 
     public PriceMatrix getPriceMatrix() {
         return priceMatrix;
@@ -638,6 +643,22 @@ public class BillItem implements Serializable {
 
     public void setMarginRate(double marginRate) {
         this.marginRate = marginRate;
+    }
+
+    public BillItem getParentBillItem() {
+        return parentBillItem;
+    }
+
+    public void setParentBillItem(BillItem parentBillItem) {
+        this.parentBillItem = parentBillItem;
+    }
+
+    public List<BillItem> getChiledBillItems() {
+        return chiledBillItems;
+    }
+
+    public void setChiledBillItems(List<BillItem> chiledBillItems) {
+        this.chiledBillItems = chiledBillItems;
     }
 
     
