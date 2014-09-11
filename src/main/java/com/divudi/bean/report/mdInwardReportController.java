@@ -392,7 +392,7 @@ public class mdInwardReportController implements Serializable {
                 + " b.bill.billType = :billType "
                 //                + " and b.bill.cancelled=false "
                 + " and b.bill.institution=:ins "
-                + " and b.patientEncounter.paymentFinalized=true "
+                + " and b.patientEncounter.discharged=true "
                 + " and b.bill.createdAt between :fromDate and :toDate "
                 + " and b.bill.retired=false  ";
 
@@ -809,8 +809,8 @@ public class mdInwardReportController implements Serializable {
                 + " and b.retired=false  ";
 
         sql += " and ((b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-                + " and b.patientEncounter.discharged = true "
-                + " and b.patientEncounter.paymentFinalized = true )";
+//                + " and b.patientEncounter.paymentFinalized = true "
+                + " and b.patientEncounter.discharged = true )";
 
         sql += " or (b.createdAt <= :toDate "
                 + " and b.patientEncounter.dateOfDischarge > :toDate ))";
@@ -849,8 +849,8 @@ public class mdInwardReportController implements Serializable {
                 + " and b.retired=false ";
 
         sql += " and ((b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-                + " and b.patientEncounter.discharged = true "
-                + " and b.patientEncounter.paymentFinalized = true )";
+//                + " and b.patientEncounter.paymentFinalized = true "
+                + " and b.patientEncounter.discharged = true )";
 
         sql += " or (b.createdAt <= :toDate "
                 + " and b.patientEncounter.dateOfDischarge > :toDate ))";
@@ -1155,8 +1155,8 @@ public class mdInwardReportController implements Serializable {
                 //                + " and b.createdAt between :fromDate and :toDate "
                 //                + " and b.createdAt <= :toDate"
                 + " and b.retired = false"
-                + " and b.patientEncounter.discharged = true"
-                + " and b.patientEncounter.paymentFinalized = true";
+//                + " and b.patientEncounter.paymentFinalized = true"
+                + " and b.patientEncounter.discharged = true";
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
@@ -1193,8 +1193,8 @@ public class mdInwardReportController implements Serializable {
                 //                + " and b.createdAt between :fromDate and :toDate "
                 //                + " and b.createdAt <= :toDate"
                 + " and b.retired = false  "
-                + " and b.patientEncounter.discharged = true"
-                + " and b.patientEncounter.paymentFinalized = true";
+//                + " and b.patientEncounter.paymentFinalized = true"
+                + " and b.patientEncounter.discharged = true";
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";

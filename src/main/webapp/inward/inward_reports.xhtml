@@ -60,10 +60,9 @@
 
 
                         <p:panel header="Inward Admission Book">
-                            <h:panelGrid columns="1">
-                                <p:commandButton value="All Admission Detail" action="admission_book_all" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
-                                <p:commandButton value="Admission Detail" action="admission_book" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
-                                <p:commandButton value="Dicharge Detail" action="discharge_book" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                            <h:panelGrid columns="1">                                
+                                <p:commandButton value="Admission Detail By Admitted Date" action="admission_book" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="Dicharge Detail By Discharged Date" action="discharge_book" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="Balance Payment Report(D)" actionListener="#{mdInwardReportController.makeNull()}" action="inward_search_balance_payment"  styleClass="linkButton" ajax="false" />
                                 <p:commandButton value="Balance Payment Report(Credit)(D)" actionListener="#{mdInwardReportController.makeNull()}" action="inward_search_balance_payment_1"  styleClass="linkButton" ajax="false" />
                             </h:panelGrid>
@@ -89,7 +88,7 @@
                             <p:commandButton value="(2)Complete Payments of Discharged Patient" action="bht_deposit_by_discharge_date" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                             <p:commandButton value="(3)Deposite of Undischarged Patient" action="bht_deposit_by_created_date_not_discharge" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                             <p:commandButton value="(4)All Payment By Created Date Date" action="bht_deposit_by_created_date_all" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
-                            <p:commandButton value="(5)Deposit of Admission Patient" action="bht_deposit_of_admitted_patient" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                            <p:commandButton value="(5)Deposit of Admitted Patient" action="bht_deposit_of_admitted_patient" actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
                         </p:panel>
 
 
