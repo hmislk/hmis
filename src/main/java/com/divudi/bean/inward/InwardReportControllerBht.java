@@ -100,7 +100,7 @@ public class InwardReportControllerBht implements Serializable {
                 + " FROM PatientRoom pr "
                 + " where pr.retired=false"
                 //                + " and pr.patientEncounter.paymentFinalized=true
-                + " and pr.patientEncounter.bhtNo=:bh ";
+                + " and pr.patientEncounter=:pe ";
 
         if (admissionType != null) {
             sql = sql + " and pr.patientEncounter.admissionType=:at ";
@@ -116,7 +116,7 @@ public class InwardReportControllerBht implements Serializable {
             sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
             hm.put("cc", institution);
         }
-        hm.put("bh", patientEncounter);
+        hm.put("pe", patientEncounter);
 
         Object obj[] = patientRoomFacade.findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
         System.err.println("OBJ " + obj);
@@ -432,7 +432,7 @@ public class InwardReportControllerBht implements Serializable {
                 + " and (b.bill.billType=:btp1 "
                 + " or  b.bill.billType=:btp2)"
                 + " and b.bill.patientEncounter.discharged=true "
-                + " and b.bill.patientEncounter.bhtNo=:bh ";
+                + " and b.bill.patientEncounter=:pe ";
 
         if (admissionType != null) {
             sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
@@ -450,7 +450,7 @@ public class InwardReportControllerBht implements Serializable {
             hm.put("cc", institution);
         }
 
-        hm.put("bh", patientEncounter);
+        hm.put("pe", patientEncounter);
         hm.put("btp1", BillType.PharmacyBhtPre);
         hm.put("btp2", BillType.StoreBhtPre);
 
