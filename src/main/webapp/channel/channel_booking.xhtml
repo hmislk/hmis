@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html">
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel">
 
     <ui:define name="content">
 
@@ -68,6 +69,14 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputLabel>                                                            
                         </p:column>
+                        <p:column headerText="ID">
+                            <h:outputLabel value="#{ses.id}">
+                            </h:outputLabel>                                                            
+                        </p:column>
+                        <p:column headerText="Bill num">
+                            <h:outputLabel value="#{ses.originatingSession.sessionNumberGenerator.id}">
+                            </h:outputLabel>                                                            
+                        </p:column>
                     </p:dataTable>
                 </p:panel>
 
@@ -75,7 +84,7 @@
                     <p:dataTable id="tblBookingsOfSelectedSession" value="#{bookingController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingController.selectedBillSession}">
-                        <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />  
+                        <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" listener="#{channelBillController.createBillfees}" />  
 
                         <p:column headerText="No">#{bs.serialNo}</p:column>
                         <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
@@ -203,128 +212,16 @@
                                            action="#{channelBillController.add}" 
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
+                        
                         <p:commandButton ajax="false" action="#{channelBillController.makeNull}"  value="New Booking" onclick="onSubmitButton();"/>
                     </h:panelGrid>
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
 
-                        <h:outputLabel id="panelAddedBillPrint" >
-
-                            <h1>#{channelBillController.current.id}</h1>
-                            
-                            <table >
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="#{sessionController.department.printingName}" ></h:outputLabel>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="#{sessionController.department.address}" ></h:outputLabel>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="#{sessionController.department.telephone1}" ></h:outputLabel>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="--------------------------" ></h:outputLabel>
-                                    </td>
-                                </tr>
-                                <td>
-                                    <td>
-                                        <table >
-                                            <tr>
-                                                <td>
-                                                    <h:outputLabel value="Name" ></h:outputLabel>
-                                                </td>
-                                                <td>
-                                                    <p:spacer width="10" ></p:spacer>
-                                                </td>
-                                                <td>
-                                                    <h:outputLabel value=":" ></h:outputLabel>
-                                                </td>
-                                                <td>
-                                                    <h:outputLabel value="#{channelBillController.current.patient.person.nameWithTitle}" ></h:outputLabel>
-                                                </td>
-
-                                            </tr>
-
-
-                                            <tr>
-                                                <td>
-                                                    <h:outputLabel value="Consultant" ></h:outputLabel>
-                                                </td>
-                                                <td>
-                                                    <p:spacer width="10" ></p:spacer>
-                                                </td>
-                                                <td>
-                                                    <h:outputLabel value=":" ></h:outputLabel>
-                                                </td>
-                                                <td>
-                                                    <ui:repeat value="#{channelBillController.current.billItems}" var="cbi" >
-                                                        <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" ></h:outputLabel>
-                                                    </ui:repeat>
-
-                                                </td>
-
-                                            </tr>
-
-                                            <ui:repeat value="#{channelBillController.current.billFees}" var="cbif" >
-                                                <tr>
-                                                    <td>
-                                                        <h:outputLabel value="#{cbif.fee.name}" ></h:outputLabel>
-                                                    </td>
-                                                    <td>
-                                                        <p:spacer width="10" ></p:spacer>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputLabel value=":" ></h:outputLabel>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputLabel value="#{cbif.feeValue}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputLabel>
-                                                    </td>
-
-                                                </tr>
-                                            </ui:repeat>
-
-
-                                            <tr>
-                                                <td>
-                                                    <h:outputLabel value="Total" ></h:outputLabel>
-                                                </td>
-                                                <td>
-                                                    <p:spacer width="10" ></p:spacer>
-                                                </td>
-                                                <td>
-                                                    <h:outputLabel value=":" ></h:outputLabel>
-                                                </td>
-                                                <td>
-                                                    <h:outputLabel value="#{channelBillController.current.netTotal}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </td>
-
-                                            </tr>
-
-                                        </table>
-                                    </td>
-                                </td>
-                            </table>
-
-
-                        </h:outputLabel>
-
-                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
-
-                        <p:commandButton value="Print" ajax="false" >
-                            <p:printer target="panelAddedBillPrint" ></p:printer>
-                        </p:commandButton>
+                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" >
+                            <ch:channelRecipt bill="#{channelBillController.current}" />
+                        </h:panelGroup>
 
                     </p:dialog>  
 
@@ -427,7 +324,7 @@
                         </p:panel>
 
                         <p:tab title="Cancel" id="cancel">
-                            <p:panelGrid columns="3">
+<!--                            <p:panelGrid columns="3">
                                 <p:outputLabel/>
                                 <p:outputLabel value="Paid Amount"/>
                                 <p:outputLabel value="Previous Repay"/>                              
@@ -461,14 +358,20 @@
                                                          +channelBillController.agentPay.prevFee.feeValue}" />
 
 
-                            </p:panelGrid>
+                            </p:panelGrid>-->
+                                                         
+                                                         <h:panelGroup>
+                                                             <ch:bill_fees bill="#{channelBillController.current}" />
+                                                         </h:panelGroup>
+                                                             
+                                                        
                             <p:commandButton ajax="false" value="Cancel" action="#{channelBillController.cancel}" disabled="#{channelBillController.billSession.bill.refunded==true
                                                                                    or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
                         </p:tab>
 
 
                         <p:tab title="Refund" id="refund">
-                            <p:panelGrid columns="4">
+<!--                            <p:panelGrid columns="4">
                                 <p:outputLabel/>
                                 <p:outputLabel value="Paid Amount"/>
                                 <p:outputLabel value="Previous Repay"/>
@@ -515,7 +418,10 @@
                                                                  +channelBillController.hospitalFee.repayment.feeValue
                                                                  +channelBillController.tax.repayment.feeValue
                                                                  +channelBillController.agentPay.repayment.feeValue}" />
-                            </p:panelGrid>
+                            </p:panelGrid>-->
+                                                                 <h:panelGroup>
+                                                                     <ch:bill_fees bill="#{channelBillController.current}" />
+                                                                 </h:panelGroup>
                             <p:commandButton ajax="false" value="Refund" action="#{channelBillController.refund}" disabled="#{channelBillController.billSession.bill.refunded==true
                                                                                    or channelBillController.billSession.bill.cancelled==true
                                                                                    or channelBillController.billSession.bill.billType eq 'ChannelCredit'}" onclick="onSubmitButton();"/>

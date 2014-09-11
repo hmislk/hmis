@@ -172,8 +172,8 @@ public class StoreTransferRequestController implements Serializable {
 
         saveBill();
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.PharmacyTransferRequest, BillNumberSuffix.PHTRQ));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.PharmacyTransferRequest, BillNumberSuffix.PHTRQ));
+        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.StoreTransferRequest, BillNumberSuffix.STTRQ));
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.StoreTransferRequest, BillNumberSuffix.STTRQ));
 
         getBill().setCreater(getSessionController().getLoggedUser());
         getBill().setCreatedAt(Calendar.getInstance().getTime());

@@ -56,6 +56,25 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         shiftTables = null;
     }
 
+    public void listenStart(StaffShift staffShift, Date date) {
+        System.err.println("Staff Shift " + staffShift.getId());
+        System.err.println("Date  " + date);
+        staffShift.getStartRecord().setRecordTimeStamp(date);
+        System.err.println("TESS");
+
+//        fingerPrintRecordFacade.edit(staffShift.getStartRecord());
+//        staffShiftFacade.edit(staffShift);
+    }
+
+    public void listenEnd(StaffShift staffShift, Date date) {
+        System.err.println("Staff Shift " + staffShift.getId());
+        System.err.println("Date  " + date);
+        staffShift.getEndRecord().setRecordTimeStamp(date);
+        System.err.println("TESS");
+//        fingerPrintRecordFacade.edit(staffShift.getEndRecord());
+//        staffShiftFacade.edit(staffShift);
+    }
+
     public void selectRosterLstener() {
         makeTableNull();
     }
@@ -102,18 +121,18 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             for (Staff stf : getHumanResourceBean().fetchStaff(getRoster())) {
-                System.err.println("#########");
-                System.err.println("Date " + nowDate);
-                System.err.println("Staff " + stf.getCode());
+//                System.err.println("#########");
+//                System.err.println("Date " + nowDate);
+//                System.err.println("Staff " + stf.getCode());
                 List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShiftWithShift(nowDate, stf);
 
                 if (staffShifts.isEmpty()) {
-                    System.err.println("CONTINUE");
+//                    System.err.println("CONTINUE");
                     continue;
                 }
 
                 for (StaffShift ss : staffShifts) {
-
+                    List<FingerPrintRecord> list = new ArrayList<>();
                     FingerPrintRecord fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
                     FingerPrintRecord fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
 
@@ -130,17 +149,23 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     FingerPrintRecord fpr = null;
                     if (ss.getStartRecord() == null) {
                         fpr = createFingerPrint(ss.getStaff(), FingerPrintRecordType.Varified, Times.inTime);
+//                        fingerPrintRecordFacade.create(fpr);
+                        list.add(fpr);
                         ss.setStartRecord(fpr);
+//                        staffShiftFacade.edit(ss);
 
                     }
 
                     if (ss.getEndRecord() == null) {
                         fpr = createFingerPrint(ss.getStaff(), FingerPrintRecordType.Varified, Times.outTime);
+//                        fingerPrintRecordFacade.create(fpr);
+                        list.add(fpr);
                         ss.setEndRecord(fpr);
+//                        staffShiftFacade.edit(ss);
                     }
 
                     ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
-
+                    ss.getFingerPrintRecordList().addAll(list);
                     netT.getStaffShift().add(ss);
                 }
 
@@ -167,7 +192,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         FingerPrintRecord fingerPrintRecord = staffShift.getStartRecord();
 
         if (fingerPrintRecord != null) {
-            fingerPrintRecord.setTimes(Times.inTime);           
+            fingerPrintRecord.setTimes(Times.inTime);
         }
     }
 
@@ -179,7 +204,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         FingerPrintRecord fingerPrintRecord = staffShift.getEndRecord();
 
         if (fingerPrintRecord != null) {
-            fingerPrintRecord.setTimes(Times.outTime);           
+            fingerPrintRecord.setTimes(Times.outTime);
         }
     }
 
@@ -190,6 +215,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         fpr.setFingerPrintRecordType(fingerPrintRecordType);
         fpr.setStaff(staff);
         fpr.setTimes(times);
+        fpr.setComments("(NEW " + times.toString() + " )");
         return fpr;
     }
 
@@ -204,22 +230,24 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 if (ss.getPreviousStaffShift() == null) {
                     if (ss.getStartRecord() == null) {
-                        UtilityController.addErrorMessage("Some Starting Records Has No Starting Record");
+                        System.err.println("SS " + ss.getId());
+                        UtilityController.addErrorMessage(" 1 Some Starting Records Has"
+                                + " No Starting Record");
                         return true;
                     }
                     if (ss.getStartRecord().getRecordTimeStamp() == null) {
-                        UtilityController.addErrorMessage("Some Starting Records Has No Time ");
+                        UtilityController.addErrorMessage(" 2 Some Starting Records Has No Time ");
                         return true;
                     }
                 }
 
                 if (ss.getNextStaffShift() == null) {
                     if (ss.getEndRecord() == null) {
-                        UtilityController.addErrorMessage("Some End Records Has No Starting Record");
+                        UtilityController.addErrorMessage(" 3 Some End Records Has No Starting Record");
                         return true;
                     }
                     if (ss.getEndRecord().getRecordTimeStamp() == null) {
-                        UtilityController.addErrorMessage("Some End Records Has No Time ");
+                        UtilityController.addErrorMessage(" 4 Some End Records Has No Time ");
                         return true;
                     }
                 }
@@ -238,7 +266,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 //        System.err.println("2");
         if (errorCheckForSave()) {
-            UtilityController.addErrorMessage("Staff Shift Not Updated");
+//            UtilityController.addErrorMessage("Staff Shift Not Updated");
             return;
         }
 //        System.err.println("3");
