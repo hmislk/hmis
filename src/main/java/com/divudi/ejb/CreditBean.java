@@ -108,7 +108,7 @@ public class CreditBean {
             sql += " and (abs(b.creditUsedAmount)-abs(b.creditPaidAmount)) <:val ";
         }
         sql += " and b.dateOfDischarge between :frm and :to "
-                + " and b.paymentFinalized = true "
+                + " and b.discharged = true "
                 + " and b.paymentMethod= :pm "
                 + " and b.creditCompany=:ins  ";
 
@@ -129,7 +129,7 @@ public class CreditBean {
         sql = "Select distinct(b.creditCompany) "
                 + " From PatientEncounter b "
                 + " where b.retired=false "
-                + " and b.paymentFinalized=true "
+                + " and b.discharged=true "
                 + " and b.paymentMethod=:pm ";
 
         if (lessThan) {
@@ -156,7 +156,7 @@ public class CreditBean {
             sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount) <:val ";
         }
         sql += " and b.dateOfDischarge between :frm and :to "
-                + " and b.paymentFinalized = true "
+                + " and b.discharged = true "
                 + " and b.paymentMethod = :pm "
                 + " order by b.creditCompany.name  ";
 
@@ -391,7 +391,7 @@ public class CreditBean {
         HashMap hm = new HashMap();
         sql = "Select b From PatientEncounter b "
                 + " where b.retired=false "
-                + " and b.paymentFinalized=true "
+                + " and b.discharged=true "
                 + " and b.paymentMethod=:pm "
                 + " and (b.creditCompany=:ins ) ";
 
