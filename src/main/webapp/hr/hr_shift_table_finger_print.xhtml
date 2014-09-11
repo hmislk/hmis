@@ -72,7 +72,7 @@
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
                                                    itemLabel="#{i.timeLabel}" itemValue="#{i}" />
-                                    <f:ajax event="change" execute="@this" render="@this strRc"
+                                    <f:ajax event="change" execute="@this" render="strRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
@@ -90,7 +90,7 @@
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
-                                    <f:ajax event="change" execute="@this" render="@this endRc"
+                                    <f:ajax event="change" execute="@this" render="endRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>   
                             </h:panelGroup>
@@ -109,7 +109,7 @@
                                         listener="#{shiftFingerPrintAnalysisController.listenStart(sts,data.date)}"/>
                             </p:calendar>
                             <p:selectBooleanCheckbox value="#{sts.startRecord.allowedOverTime}" />
-
+                            <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.startRecord)}"/>
 
                         </h:panelGroup>
 
@@ -127,7 +127,7 @@
                                         listener="#{shiftFingerPrintAnalysisController.listenEnd(sts,data.date)}"/>
                             </p:calendar>
                             <p:selectBooleanCheckbox value="#{sts.endRecord.allowedOverTime}"/>
-                   
+                            <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.endRecord)}"/>
                         </h:panelGroup>
                         <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
 
