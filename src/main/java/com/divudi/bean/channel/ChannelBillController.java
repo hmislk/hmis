@@ -883,7 +883,8 @@ public class ChannelBillController implements Serializable {
 
         savingBill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         savingBill.setCreater(getSessionController().getLoggedUser());
-        savingBill.setDepartment(sessionController.getDepartment());
+        savingBill.setDepartment(getSessionController().getDepartment());
+
         getBillFacade().create(savingBill);
 
         getBillItemFacade().create(bi);
@@ -903,6 +904,7 @@ public class ChannelBillController implements Serializable {
 //        System.err.println("L12");
 //        getBillSessionFacade().edit(bs);
 
+        savingBill.setSingleBillItem(bi);
         getBillFacade().edit(savingBill);
 
         return savingBill;
