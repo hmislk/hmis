@@ -19,7 +19,7 @@
                                     completeMethod="#{dealerController.completeDealor}" 
                                     forceSelection="true"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-                    <h:outputLabel value="Reference Institution"/>
+                    <h:outputLabel value="GRN Institution"/>
                     <p:autoComplete converter="institutionConverter" value="#{grnController.grnBill.referenceInstitution}"
                                     completeMethod="#{institutionController.completeCompany}" 
                                     forceSelection="true"
