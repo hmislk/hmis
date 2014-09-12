@@ -437,6 +437,10 @@ public class BillItem implements Serializable {
         return searialNo;
     }
 
+     public Integer getSearialNoInteger() {
+        return searialNo;
+    }
+     
     public void setSearialNo(int searialNo) {
         this.searialNo = searialNo;
     }
