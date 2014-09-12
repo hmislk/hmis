@@ -104,7 +104,12 @@
 
                 <p:dataTable styleClass="noBorder" var="ph" value="#{storePurchaseController.billItems}" id="itemList">  
                     <f:facet name="header">  
-                        Ordered Item 
+                        Ordered Item <br></br>
+                        <p:selectOneMenu id="cmbPs" value="#{storePurchaseController.currentBillItem.parentBillItem}" >
+                            <f:selectItem itemLabel="Select Parent Item" />
+                            <f:selectItems value="#{storePurchaseController.billItems}" var="bi" itemValue="#{bi}" itemLabel="#{bi.item.name}" />
+                            <f:ajax event="change" execute="@this" listener="#{storePurchaseController.itemListner(bi)}" /> 
+                        </p:selectOneMenu>
                     </f:facet>  
 
                     <p:column headerText="Item Name" style="width:30%">  
@@ -113,6 +118,13 @@
                         </h:outputLabel>
 
                     </p:column>  
+                    
+                    <p:column headerText="Parent Item Name" style="width:30%">  
+
+                        <h:outputLabel id="parentitem" value="#{ph.parentBillItem.item.name} - #{ph.parentBillItem.item.code}" style="width:100%">
+                        </h:outputLabel>
+
+                    </p:column>
 
                     <p:column headerText="Qty" style="width:20%">                     
                         <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}"  >
