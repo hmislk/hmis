@@ -65,21 +65,23 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         shiftTables = null;
     }
 
-    public void listenStart(StaffShift staffShift, Date date) {
-        System.err.println("Staff Shift " + staffShift.getId());
-        System.err.println("Date  " + date);
-        staffShift.getStartRecord().setRecordTimeStamp(date);
-        System.err.println("TESS");
+    public void listenStart(StaffShift staffShift) {
+        if (staffShift.getStartRecord().getLoggedRecord() != null) {
+            return;
+        }
+
+        staffShift.getStartRecord().setRecordTimeStamp(staffShift.getShiftStartTime());
 
 //        fingerPrintRecordFacade.edit(staffShift.getStartRecord());
 //        staffShiftFacade.edit(staffShift);
     }
 
-    public void listenEnd(StaffShift staffShift, Date date) {
-        System.err.println("Staff Shift " + staffShift.getId());
-        System.err.println("Date  " + date);
-        staffShift.getEndRecord().setRecordTimeStamp(date);
-        System.err.println("TESS");
+    public void listenEnd(StaffShift staffShift) {
+        if (staffShift.getEndRecord().getLoggedRecord() != null) {
+            return;
+        }
+        staffShift.getEndRecord().setRecordTimeStamp(staffShift.getShiftEndTime());
+
 //        fingerPrintRecordFacade.edit(staffShift.getEndRecord());
 //        staffShiftFacade.edit(staffShift);
     }
