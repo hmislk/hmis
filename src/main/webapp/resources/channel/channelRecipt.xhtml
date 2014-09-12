@@ -5,7 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+      xmlns:cc="http://java.sun.com/jsf/composite">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -17,33 +17,42 @@
     <cc:implementation>
 
         <h:panelGroup>
-            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+            <h:outputStylesheet library="css" name="pharmacypos.css"></h:outputStylesheet>
 
             <h:panelGroup id="panelAddedBillPrint">
-                <div class="fiveinchbillBreak">
+                <div>
+                    
+                    <div class="institutionName">
+                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
+                    </div>
+                    
+                    <div class="institutionContact">
+                        <h:outputLabel value="#{cc.attrs.bill.department.address}" ></h:outputLabel>
+                        <div>
+                        <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
+                        </div>
+                        <div>
+                        <h:outputLabel value="Fax:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
+                        </div>
+                    </div>
+                    <p:spacer height="15"/>
+                    
+                    <div class="headingBill" style="text-align: center; font-weight: bold;">
+                        <h:outputLabel value="Channell Bill"   />    
+                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" /> 
+                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    </div>
+                    
+                    
+                    <div class="billline">
+                        <h:outputLabel value="--------------------------" ></h:outputLabel>
+                    </div>
+                    <p:spacer height="30"/>
                     
                     
                     <table >
-                        <tr>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" ></h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.bill.department.address}" ></h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h:outputLabel value="--------------------------" ></h:outputLabel>
-                            </td>
-                        </tr>
+
+                       
                         <td>
                             <td>
                                 
@@ -147,7 +156,8 @@
 
                                         </tr>
                                     </ui:repeat>
-
+                                    
+                                    
 
                                     <tr>
                                         <td>
@@ -166,6 +176,22 @@
                                         </td>
 
                                     </tr>
+                                    
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Session Name" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.singleBillItem.item.name}"></h:outputLabel>
+                                        </td>
+
+                                    </tr>
 
                                 </table>
                             </td>
@@ -180,6 +206,6 @@
             </p:commandButton>
 
 
-        </h:panelGroup>>
+        </h:panelGroup>
     </cc:implementation>
 </html>
