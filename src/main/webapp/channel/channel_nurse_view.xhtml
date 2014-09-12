@@ -8,7 +8,12 @@
 
     <ui:define name="content">
         <p:outputLabel value="Nurse View"/>
-        <p:panel>
+        <h:form>
+        <p:commandButton value="Print" ajax="fasle" action="#">
+            <p:printer target="nurseView"/>
+            
+        </p:commandButton>
+        <p:panel id="nurseView">
             <f:facet name="header">
                 <h:panelGrid columns="2">
                     <p:outputLabel value="Consultant"/>
@@ -46,6 +51,8 @@
             </p:dataTable>
 
         </p:panel>
+        </h:form>
+      
     </ui:define>
 
 

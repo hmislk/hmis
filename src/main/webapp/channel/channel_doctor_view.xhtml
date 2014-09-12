@@ -7,8 +7,12 @@
                 xmlns:h="http://java.sun.com/jsf/html">
 
     <ui:define name="content">
-        <p:outputLabel value="Nurse View"/>
-        <p:panel>
+        <p:outputLabel value="Doctor View"/>
+        <h:form>
+        <p:commandButton value="Print" ajax="fasle" action="#">
+            <p:printer target="doctorView"/>           
+        </p:commandButton>
+            <p:panel id="doctorView">
             <f:facet name="header">
                 <h:panelGrid columns="2">
                     <p:outputLabel value="Consultant"/>
@@ -70,6 +74,7 @@
             </p:dataTable>
 
         </p:panel>
+        </h:form>
     </ui:define>
 
 

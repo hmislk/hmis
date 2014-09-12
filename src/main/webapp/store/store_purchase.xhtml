@@ -97,26 +97,32 @@
                                          process="btnSer" update="tmp"/>
                         <p:commandButton id="btnAdd" value="Add Item" 
                                          action="#{storePurchaseController.addItem}" 
-                                         process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
+                                         process="cmbParent itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
+                        
+                        
+                         
+                        <p:selectOneMenu id="cmbParent" value="#{storePurchaseController.parentBillItem}" converter="temBillItemConverter"  >
+                            <f:selectItem itemLabel="Select Parent Item" />
+                            <f:selectItems   value="#{storePurchaseController.billItems}" var="bi" itemValue="#{bi}" itemLabel="#{bi.item.name}" />
+                            <f:ajax event="change" execute="@this" /> 
+                        </p:selectOneMenu>
+                        
                     </p:panelGrid>
 
                 </h:panelGrid>
 
                 <p:dataTable styleClass="noBorder" var="ph" value="#{storePurchaseController.billItems}" id="itemList">  
                     <f:facet name="header">  
-                        Ordered Item <br></br>
-                        <p:selectOneMenu id="cmbPs" value="#{storePurchaseController.currentBillItem.parentBillItem}" >
-                            <f:selectItem itemLabel="Select Parent Item" />
-                            <f:selectItems value="#{storePurchaseController.billItems}" var="bi" itemValue="#{bi}" itemLabel="#{bi.item.name}" />
-                            <f:ajax event="change" execute="@this" listener="#{storePurchaseController.itemListner(bi)}" /> 
-                        </p:selectOneMenu>
                     </f:facet>  
 
+                    <p:column headerText="Serial No" style="width:30%">  
+                        <h:outputLabel id="serialNo" value="#{ph.searialNo}" style="width:100%">
+                        </h:outputLabel>
+                    </p:column>  
+                    
                     <p:column headerText="Item Name" style="width:30%">  
-
                         <h:outputLabel id="item" value="#{ph.item.name} - #{ph.item.code}" style="width:100%">
                         </h:outputLabel>
-
                     </p:column>  
                     
                     <p:column headerText="Parent Item Name" style="width:30%">  
