@@ -95,6 +95,22 @@
 
 
                             </p:panel>
+                            
+                            <p:panel>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Channel Rest"/>
+                                </f:facet>
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset Channel Session Number" 
+                                                 action="#{sheduleController.resetSessionNumbers()}" onclick="onSubmitButton();" />
+                                
+                                   <p:commandButton styleClass="linkButton" ajax="false" value="Reset Paid Amount " 
+                                                 action="#{pharmacyItemExcelManager.resetFinalBillPaidValue()}" onclick="onSubmitButton();" />
+
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Set Credit Used Amount " 
+                                                 action="#{pharmacyItemExcelManager.restCreditUsedAmount()}" onclick="onSubmitButton();" />
+
+
+                            </p:panel>
 
                         </h:panelGrid>
 
