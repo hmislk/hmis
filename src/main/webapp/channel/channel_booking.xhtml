@@ -275,7 +275,7 @@
 
                         <p:panel id="panelBillPrint" >
 
-                            <div>
+<!--                            <div>
 
                                 <table >
                                     <tr>
@@ -319,7 +319,11 @@
                                 </table>
 
 
-                            </div>
+                            </div>-->
+                            
+<h:panelGroup>
+    <ch:bill_fees bill="#{channelBillController.current}" />
+</h:panelGroup>
 
                         </p:panel>
 
@@ -359,6 +363,7 @@
 
 
                             </p:panelGrid>-->
+                                                         
                                                          
                                                          <h:panelGroup>
                                                              <ch:bill_fees bill="#{channelBillController.current}" />
