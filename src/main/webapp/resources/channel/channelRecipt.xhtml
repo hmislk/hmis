@@ -5,7 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+      xmlns:cc="http://java.sun.com/jsf/composite">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -29,7 +29,10 @@
                     <div class="institutionContact">
                         <h:outputLabel value="#{cc.attrs.bill.department.address}" ></h:outputLabel>
                         <div>
-                        <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
+                        <h:outputLabel value="Tel:-#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
+                        </div>
+                        <div>
+                        <h:outputLabel value="Fax:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
                         </div>
                     </div>
                     
