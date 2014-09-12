@@ -72,6 +72,7 @@ public class CommonReport implements Serializable {
     private Department department;
     private BillType billType;
     private Institution creditCompany;
+    private Institution referenceInstitution;
     /////////////////////
     private BillsTotals billedBills;
     private BillsTotals cancellededBills;
@@ -141,7 +142,6 @@ public class CommonReport implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
-    
     double totalFee;
     double billTotal;
 
@@ -153,8 +153,6 @@ public class CommonReport implements Serializable {
         this.billTotal = billTotal;
     }
 
-    
-    
     public double getTotalFee() {
         return totalFee;
     }
@@ -179,7 +177,7 @@ public class CommonReport implements Serializable {
         m.put("td", toDate);
         billFees = getBillFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
         totalFee = displayOutsideCalBillFees();
-        billTotal=displayOutsideBillFeeBillTotals();
+        billTotal = displayOutsideBillFeeBillTotals();
         return "/lab/lab_report_by_outside_institution";
     }
 
@@ -617,13 +615,22 @@ public class CommonReport implements Serializable {
     }
 
     private List<Bill> getBills(Bill billClass, BillType billType, Department dep) {
-        String sql = "SELECT b FROM Bill b WHERE type(b)=:bill"
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT b FROM Bill b WHERE type(b)=:bill"
                 + " and b.retired=false and "
                 + " b.billType = :btp "
                 + " and b.department=:d "
-                + " and b.createdAt between :fromDate and "
-                + " :toDate order by b.deptId  ";
-        Map temMap = new HashMap();
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:ins ";
+            temMap.put("ins", getReferenceInstitution());
+        }
+
+        sql += " order by b.deptId  ";
+
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("bill", billClass.getClass());
@@ -635,12 +642,21 @@ public class CommonReport implements Serializable {
     }
 
     private List<Bill> grnBills(Bill billClass, BillType billType, Department dep, Institution ins) {
-        String sql = "SELECT b FROM Bill b WHERE type(b)=:bill and b.retired=false and "
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT b FROM Bill b WHERE type(b)=:bill and b.retired=false and "
                 + " b.billType = :btp and (b.fromInstitution=:ins or b.toInstitution=:ins ) "
                 + " and b.department=:d "
-                + " and b.createdAt between :fromDate and "
-                + " :toDate order by b.deptId,b.fromInstitution.name ";
-        Map temMap = new HashMap();
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:inst ";
+            temMap.put("inst", getReferenceInstitution());
+            System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
+        }
+        sql += "order by b.deptId,b.fromInstitution.name ";
+
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("bill", billClass.getClass());
@@ -1155,12 +1171,20 @@ public class CommonReport implements Serializable {
     }
 
     private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod, Department dep) {
-        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false and "
                 + " b.billType=:btp and b.department=:d "
                 + " and b.paymentMethod=:pm "
                 + "  and b.createdAt between :fromDate and :toDate";
-        Map temMap = new HashMap();
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:ins ";
+            temMap.put("ins", getReferenceInstitution());
+        }
+
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("btp", billType);
@@ -1189,13 +1213,22 @@ public class CommonReport implements Serializable {
     }
 
     private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod, Department dep, Institution ins) {
-        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false and "
                 + " b.billType=:btp and b.department=:d "
                 + " and b.paymentMethod=:pm and "
                 + " (b.fromInstitution=:ins or b.toInstitution=:ins) "
-                + "  and b.createdAt between :fromDate and :toDate";
-        Map temMap = new HashMap();
+                + "  and b.createdAt between :fromDate and :toDate ";
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:inst ";
+            temMap.put("inst", getReferenceInstitution());
+            System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
+        }
+
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("btp", billType);
@@ -2702,6 +2735,14 @@ public class CommonReport implements Serializable {
 
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
+    }
+
+    public Institution getReferenceInstitution() {
+        return referenceInstitution;
+    }
+
+    public void setReferenceInstitution(Institution referenceInstitution) {
+        this.referenceInstitution = referenceInstitution;
     }
 
 }

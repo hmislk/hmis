@@ -10,6 +10,7 @@ import com.divudi.data.DepartmentType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
@@ -534,6 +535,71 @@ public class BillNumberController {
 
     }
 
+    public String storeInventryItemNumberGenerator() {
+        HashMap hm = new HashMap();
+        String sql = "SELECT count(b) FROM Amp b where b.retired=false and b.departmentType=:dep ";
+        hm.put("dep", DepartmentType.Inventry);
+        String result;
+        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
+
+        result = dd.toString();
+
+        return result;
+
+    }
+
+    public String serialNumberGenerater(Institution ins, Department toDept, Item item) {
+        if (ins == null) {
+            System.out.println("Ins null");
+            return "";
+        }
+
+        String sql = "SELECT count(b) FROM BillItem b where "
+                + " b.bill.institution=:ins "
+                + " and b.bill.department=:tDep "
+                + " and b.item=:item "
+                + " and (b.billType=:btp1 or b.billType=:btp2)";
+
+        HashMap hm = new HashMap();
+        hm.put("ins", ins);
+        hm.put("tDep", toDept);
+        hm.put("item", item);
+        hm.put("btp1", BillType.PharmacyPurchaseBill);
+        hm.put("btp2", BillType.PharmacyGrnBill);
+        Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        //System.err.println("fff " + b);
+
+//        if (toDept != null) {
+//            result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
+//        } else {
+//            result = ins.getInstitutionCode() + "/" + 1;
+//        }
+//        return result;
+        System.out.println("In Bill Num Gen");
+        String result;
+        if (b != null && b != 0) {
+            b = b + 1;
+            if (toDept != null) {
+                result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + b;
+                System.out.println("result = " + result);
+            } else {
+                result = ins.getInstitutionCode() + "/" + b;
+                System.out.println("result = " + result);
+            }
+            return result;
+        } else {
+            if (toDept != null) {
+                result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
+                System.out.println("result = " + result);
+            } else {
+                result = ins.getInstitutionCode() + "/" + 1;
+                System.out.println("result = " + result);
+            }
+            return result;
+        }
+        
+    }
+
     public DepartmentFacade getDepFacade() {
         return depFacade;
     }
@@ -565,5 +631,5 @@ public class BillNumberController {
     public void setItemFacade(ItemFacade itemFacade) {
         this.itemFacade = itemFacade;
     }
-
+    
 }

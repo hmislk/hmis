@@ -42,8 +42,10 @@ public enum BillType {
     StoreBhtIssue,
     StoreBhtPre,
     StoreIssue,
-    @Deprecated
+//    @Deprecated Piumi requested issue 60 
     StoreTransferIssue,
+    StoreTransferReceive,
+    StoreTransferRequest,
     PharmacyPre,
     PharmacyOrder,
     PharmacyOrderApprove,
