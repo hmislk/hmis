@@ -279,10 +279,11 @@ public class BillNumberController {
         }
     }
 
-    public String bookingIdGenerator() {
+    public String bookingIdGenerator(Institution institution) {
 
-        String sql = "SELECT count(b) FROM BilledBill b where b.retired=false "
-                + "  AND b.billType= :btp1 or b.billType=:btp2";
+        String sql = "SELECT count(b) FROM BilledBill b "
+                + " where b.retired=false "
+                + "  AND (b.billType= :btp1 or b.billType=:btp2 )";
         String result;
         HashMap h = new HashMap();
         h.put("btp1", BillType.ChannelPaid);
@@ -291,10 +292,10 @@ public class BillNumberController {
         Long b = getBillFacade().findAggregateLong(sql, h, TemporalType.DATE);
 
         if (b != 0) {
-            result = (b + 1) + "";
+            result = institution.getInstitutionCode() + "CHAN" + (b + 1) + "";
             return result;
         } else {
-            result = 1 + "";
+            result = institution.getInstitutionCode() + "CHAN" + 1 + "";
             return result;
         }
 
@@ -584,7 +585,7 @@ public class BillNumberController {
             }
             return result;
         }
-        
+
     }
 
     public DepartmentFacade getDepFacade() {
@@ -618,5 +619,5 @@ public class BillNumberController {
     public void setItemFacade(ItemFacade itemFacade) {
         this.itemFacade = itemFacade;
     }
-    
+
 }

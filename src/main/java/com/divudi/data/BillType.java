@@ -63,6 +63,7 @@ public enum BillType {
     DrawerAdjustment,
     PharmacyMajorAdjustment,
     ChannelPaid,
+    ChannelAgent,
     ChannelCredit,
     ChannelProPayment,
     gpBooking,

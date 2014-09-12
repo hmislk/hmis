@@ -108,6 +108,10 @@ public class Bill implements Serializable {
     PaymentMethod paymentMethod;
     @ManyToOne
     BillItem singleBillItem;
+    @ManyToOne
+    BillSession singleBillSession;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date appointmentAt;
     //Values
     double total;
     double margin;
@@ -317,6 +321,8 @@ public class Bill implements Serializable {
         saleValue = 0 - bill.getSaleValue();
         freeValue = 0 - bill.getFreeValue();
         grantTotal = 0 - bill.getGrantTotal();
+        staffFee = bill.getStaffFee();
+        hospitalFee = bill.getHospitalFee();
 
     }
 
@@ -353,6 +359,8 @@ public class Bill implements Serializable {
         this.discount = (bill.getDiscount());
         this.netTotal = (bill.getNetTotal());
         this.total = (bill.getTotal());
+        this.staffFee = bill.getStaffFee();
+        this.hospitalFee = bill.getHospitalFee();
     }
 
     public List<BillComponent> getBillComponents() {
@@ -1394,5 +1402,22 @@ public class Bill implements Serializable {
     public void setReferenceInstitution(Institution referenceInstitution) {
         this.referenceInstitution = referenceInstitution;
     }
+
+    public BillSession getSingleBillSession() {
+        return singleBillSession;
+    }
+
+    public void setSingleBillSession(BillSession singleBillSession) {
+        this.singleBillSession = singleBillSession;
+    }
+
+    public Date getAppointmentAt() {
+        return appointmentAt;
+    }
+
+    public void setAppointmentAt(Date appointmentAt) {
+        this.appointmentAt = appointmentAt;
+    }
+    
 
 }
