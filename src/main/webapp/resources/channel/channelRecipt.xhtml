@@ -35,6 +35,7 @@
                         <h:outputLabel value="Fax:-#{cc.attrs.bill.department.fax}" ></h:outputLabel>
                         </div>
                     </div>
+                    <p:spacer height="15"/>
                     
                     <div class="headingBill" style="text-align: center; font-weight: bold;">
                         <h:outputLabel value="Channell Bill"   />    
@@ -42,9 +43,11 @@
                         <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
                     </div>
                     
+                    
                     <div class="billline">
                         <h:outputLabel value="--------------------------" ></h:outputLabel>
                     </div>
+                    <p:spacer height="30"/>
                     
                     
                     <table >
