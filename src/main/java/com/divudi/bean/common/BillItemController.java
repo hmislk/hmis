@@ -160,10 +160,6 @@ public class BillItemController implements Serializable {
                 System.out.println("null controller");
                 return null;
             }
-            if (controller.getFacade() == null) {
-                System.out.println("facade null");
-                return null;
-            }
             if (getKey(value) == null) {
                 System.out.println("value null");
                 return null;
