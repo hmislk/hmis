@@ -541,13 +541,18 @@ public class BillNumberController {
             return "";
         }
 
-        String sql = "SELECT count(b.id) FROM ItemBatch b where "
-                + " b.item.institution=:ins and b.item.department=:tDep and b.item=:item ";
+        String sql = "SELECT count(b) FROM BillItem b where "
+                + " b.bill.institution=:ins "
+                + " and b.bill.department=:tDep "
+                + " and b.item=:item "
+                + " and (b.billType=:btp1 or b.billType=:btp2)";
 
         HashMap hm = new HashMap();
         hm.put("ins", ins);
         hm.put("tDep", toDept);
         hm.put("item", item);
+        hm.put("btp1", BillType.PharmacyPurchaseBill);
+        hm.put("btp2", BillType.PharmacyGrnBill);
         Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         //System.err.println("fff " + b);
 
