@@ -26,6 +26,17 @@
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
                         </p:panel>
+                          <p:panel header="Person">
+                            <p:commandButton value="(1) Department Report" 
+                                             action="hr_report_department" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
+                            <p:commandButton value="(2) Employee Detail " 
+                                             action="hr_report_employee_detail" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
+                           
+                        </p:panel>
 
 
                     </h:panelGrid>
