@@ -51,6 +51,7 @@ public class SheduleController implements Serializable {
     private Fee hospitalFee;
     private Fee doctorFee;
     private Fee tax;
+    List<SessionNumberGenerator> lstSessionNumberGenerator;
 
     public void makeNull() {
         speciality = null;
@@ -109,6 +110,14 @@ public class SheduleController implements Serializable {
 
         }
         return suggestions;
+    }
+
+    public List<SessionNumberGenerator> getLstSessionNumberGenerator() {
+        return lstSessionNumberGenerator;
+    }
+
+    public void setLstSessionNumberGenerator(List<SessionNumberGenerator> lstSessionNumberGenerator) {
+        this.lstSessionNumberGenerator = lstSessionNumberGenerator;
     }
 
     public SheduleController() {
@@ -247,6 +256,28 @@ public class SheduleController implements Serializable {
         sessionNumberGenerator.setName(currentStaff.getPerson().getName() + " " + current.getName());
         sessionNumberGeneratorFacade.create(sessionNumberGenerator);
         return sessionNumberGenerator;
+    }
+
+    public void resetSessionNumbers() {
+
+        String sql;
+        sql = " SELECT sg FROM ServiceSession sg WHERE sg.retired=false";
+        List<ServiceSession> list = facade.findBySQL(sql);
+
+        for (ServiceSession sng : list) {
+            if (sng.getSessionNumberGenerator() != null) {
+                continue;
+            }
+            SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
+            sessionNumberGenerator.setSpeciality(sng.getStaff().getSpeciality());
+            sessionNumberGenerator.setStaff(sng.getStaff());
+            sessionNumberGenerator.setName(sng.getStaff().getPerson().getName() + " " + sng.getName());
+            sessionNumberGeneratorFacade.create(sessionNumberGenerator);
+
+            sng.setSessionNumberGenerator(sessionNumberGenerator);
+            facade.edit(sng);
+        }
+
     }
 
     public void saveSelected() {
