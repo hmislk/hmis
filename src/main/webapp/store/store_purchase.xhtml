@@ -17,7 +17,7 @@
 
                     <f:facet name="header" > 
                         <h:panelGrid columns="6"  >
-                            <h:outputText value="Pharmacy Purchase" />                     
+                            <h:outputText value="Store Purchase" />                     
                             <p:selectOneMenu   id="cmbPs" value="#{storePurchaseController.bill.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}" />
                             </p:selectOneMenu>
@@ -42,14 +42,15 @@
 
                 <h:panelGrid id="itemselectgrid" columns="2" style="min-width: 100%;">
                     <p:focus id="focusItem" for="acItem" ></p:focus>
-                    <p:panelGrid id="itemSelectgrid1" columns="8">                       
+                    <p:panelGrid id="itemSelectgrid1" columns="9">                       
                         <h:outputLabel value="Select Item"/>
                         <h:outputLabel value="Qty"/>
                         <h:outputLabel value="Free"/>
                         <h:outputLabel value="Purchase Rate"></h:outputLabel>
                         <h:outputLabel value="Sale Price"></h:outputLabel>
-                        <h:outputLabel value="DOE(dd mm yy)"/>
-                        <h:outputLabel value="Bathch No"/>
+                        <h:outputLabel value="DOE(dd mm yy)/Warrenty Date"/>
+                        <h:outputLabel value="Bathch No/Serial Number"/>
+                        <h:outputLabel ></h:outputLabel>
                         <h:outputLabel ></h:outputLabel>
 
                         <p:autoComplete id="acItem"   value="#{storePurchaseController.currentBillItem.item}" 
@@ -91,7 +92,9 @@
                         <p:inputText autocomplete="off"  styleClass="numericTxt" 
                                      id="tmp" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
 
-
+                        <p:commandButton id="btnSer" value="Create Serial" 
+                                         action="#{storePurchaseController.createSerialNumber()}" 
+                                         process="btnSer" update="tmp"/>
                         <p:commandButton id="btnAdd" value="Add Item" 
                                          action="#{storePurchaseController.addItem}" 
                                          process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
@@ -145,7 +148,9 @@
                     </p:column>  
 
 
-
+                    <p:column headerText="Batch No/Serial Number" style="width:24%">                    
+                        <h:outputText id="batNO" value=" #{ph.pharmaceuticalBillItem.stringValue}" />  
+                    </p:column>
 
 
                     <p:column headerText="Profit Margin" style="width:24%">                    

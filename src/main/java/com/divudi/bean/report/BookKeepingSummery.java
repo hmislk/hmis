@@ -1071,10 +1071,10 @@ public class BookKeepingSummery implements Serializable {
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
-        if (Math.abs(lng) > 2) {
-            UtilityController.addErrorMessage("Date Range is too Long");
-            return;
-        }
+//        if (Math.abs(lng) > 2) {
+//            UtilityController.addErrorMessage("Date Range is too Long");
+//            return;
+//        }
 
         createOPdListWithProDayEndTable();
         createOutSideFee();

@@ -106,7 +106,7 @@
                                         value="#{sts.startRecord.recordTimeStamp}" 
                                         pattern="dd MM yy hh mm ss a"  >                           
                                 <p:ajax event="click" process="@this" update="@this"
-                                        listener="#{shiftFingerPrintAnalysisController.listenStart(sts,data.date)}"/>
+                                        listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                             </p:calendar>
                             <p:selectBooleanCheckbox value="#{sts.startRecord.allowedOverTime}" />
                             <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.startRecord)}"/>
@@ -124,7 +124,7 @@
                                         value="#{sts.endRecord.recordTimeStamp}" 
                                         pattern="dd MM yy hh mm ss a" >          
                                 <p:ajax event="click" process="@this" update="@this"
-                                        listener="#{shiftFingerPrintAnalysisController.listenEnd(sts,data.date)}"/>
+                                        listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
                             </p:calendar>
                             <p:selectBooleanCheckbox value="#{sts.endRecord.allowedOverTime}"/>
                             <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.endRecord)}"/>
