@@ -306,7 +306,7 @@ public class ChannelBillController implements Serializable {
         hm.put("bt", bs.getBillItem());
 
         listBillFees = billFeeFacade.findBySQL(sql, hm);
-        billSession=bs;
+        billSession = bs;
 
     }
 
@@ -406,7 +406,7 @@ public class ChannelBillController implements Serializable {
         getInstitutionFacade().edit(cb.getFromInstitution());
     }
 
-    private void cancelBillFee(Bill b, BillItem bt) {       
+    private void cancelBillFee(Bill b, BillItem bt) {
         if (getDoctorFee().getRepayment().getFeeValue() != 0.0) {
             createBillFee(b, bt, getDoctorFee(), getDoctorFee().getBilledFee().getFeeValue());
         }
@@ -783,7 +783,7 @@ public class ChannelBillController implements Serializable {
             bf.setBillItem(bi);
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
-            bf.setDepartment(f.getDepartment());
+            bf.setDepartment(getSessionController().getDepartment());
             bf.setFee(f);
             bf.setFeeAt(new Date());
             bf.setFeeDiscount(0.0);
@@ -883,7 +883,7 @@ public class ChannelBillController implements Serializable {
 
         savingBill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         savingBill.setCreater(getSessionController().getLoggedUser());
-
+        savingBill.setDepartment(sessionController.getDepartment());
         getBillFacade().create(savingBill);
 
         getBillItemFacade().create(bi);
