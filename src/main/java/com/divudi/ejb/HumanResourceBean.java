@@ -795,6 +795,21 @@ public class HumanResourceBean {
 
         return getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
+    
+     public StaffLeave fetchFirstStaffLeave(Staff staff, Date frmDate, Date toDate) {
+
+        String sql = "Select s From StaffLeave s"
+                + " where s.retired=false "
+                + " and s.staff=:st"
+                + " and s.leaveDate between :frm and :to ";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+        hm.put("frm", frmDate);
+        hm.put("to", toDate);
+
+        return getStaffLeaveFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+    }
+
 
     public boolean isHoliday(Date d) {
         String sql = "Select d From PhDate d "
