@@ -545,7 +545,7 @@ public class BillNumberController {
                 + " b.bill.institution=:ins "
                 + " and b.bill.department=:tDep "
                 + " and b.item=:item "
-                + " and (b.billType=:btp1 or b.billType=:btp2)";
+                + " and (b.bill.billType=:btp1 or b.bill.billType=:btp2)";
 
         HashMap hm = new HashMap();
         hm.put("ins", ins);

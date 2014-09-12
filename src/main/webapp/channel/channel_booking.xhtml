@@ -5,7 +5,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel">
+                xmlns:ch="http://java.sun.com/jsf/composite/channel">
 
     <ui:define name="content">
 
@@ -220,7 +220,7 @@
                               modal="true" height="400" width="600">
 
                         <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" >
-                            <ch:channelRecipt bill="#{channelBillController.current}" />
+                            <ch:channelRecipt bill="#{channelBillController.current}" dup="false"/>
                         </h:panelGroup>
 
                     </p:dialog>  
@@ -271,11 +271,16 @@
                         </p:tab>
 
 
-                        <p:tab title="Reprint" id="print"></p:tab>
+                        <p:tab title="Reprint" id="rePrint">
+                            <h:panelGroup id="panelReBillPrint" styleClass="noBorder">
+                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                    </h:panelGroup>
+                            
+</p:tab>
 
                         <p:panel id="panelBillPrint" >
 
-                            <div>
+<!--                            <div>
 
                                 <table >
                                     <tr>
@@ -319,46 +324,15 @@
                                 </table>
 
 
-                            </div>
+                            </div>-->
+                            
+                    <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder">
+                        <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                    </h:panelGroup>
 
                         </p:panel>
 
-                        <p:tab title="Cancel" id="cancel">
-<!--                            <p:panelGrid columns="3">
-                                <p:outputLabel/>
-                                <p:outputLabel value="Paid Amount"/>
-                                <p:outputLabel value="Previous Repay"/>                              
-
-                                <p:outputLabel value="Doctor Fee"/>
-                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue}"/>
-                                <p:outputLabel value="#{channelBillController.doctorFee.prevFee.feeValue}"/>
-
-
-                                <p:outputLabel value="Institution"/>
-                                <p:outputLabel value="#{channelBillController.hospitalFee.billedFee.feeValue}"/>
-                                <p:outputLabel value="#{channelBillController.hospitalFee.prevFee.feeValue}"/>                                                               
-
-                                <p:outputLabel value="Tax" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
-                                <p:outputLabel value="#{channelBillController.tax.billedFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
-                                <p:outputLabel value="#{channelBillController.tax.prevFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>                                                               
-
-                                <p:outputLabel value="Agent" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
-                                <p:outputLabel value="#{channelBillController.agentPay.billedFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
-                                <p:outputLabel value="#{channelBillController.agentPay.prevFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/> 
-
-                                <p:outputLabel value="Total"/>
-                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue
-                                                        +channelBillController.hospitalFee.billedFee.feeValue
-                                                        +channelBillController.tax.billedFee.feeValue
-                                                        +channelBillController.agentPay.billedFee.feeValue}"/>
-
-                                <p:outputLabel  value="#{channelBillController.doctorFee.prevFee.feeValue
-                                                         +channelBillController.hospitalFee.prevFee.feeValue
-                                                         +channelBillController.tax.prevFee.feeValue
-                                                         +channelBillController.agentPay.prevFee.feeValue}" />
-
-
-                            </p:panelGrid>-->
+                        <p:tab title="Cancel" id="cancel">                                                         
                                                          
                                                          <h:panelGroup>
                                                              <ch:bill_fees bill="#{channelBillController.current}" />

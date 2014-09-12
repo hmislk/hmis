@@ -106,6 +106,7 @@ public class ChannelBillController implements Serializable {
     private BillNumberController billNumberBean;
     @EJB
     private ChannelBean channelBean;
+    List<BillItem> billItems;
 
     public Patient getNewPatient() {
         if (newPatient == null) {
@@ -306,7 +307,7 @@ public class ChannelBillController implements Serializable {
         hm.put("bt", bs.getBillItem());
 
         listBillFees = billFeeFacade.findBySQL(sql, hm);
-        billSession=bs;
+        billSession = bs;
 
     }
 
@@ -324,6 +325,14 @@ public class ChannelBillController implements Serializable {
 
     public void setListBillFees(List<BillFee> listBillFees) {
         this.listBillFees = listBillFees;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
     }
 
     private boolean errorCheckCancelling() {
@@ -353,19 +362,48 @@ public class ChannelBillController implements Serializable {
 
     }
 
-    private void cancelBillItems(CancelledBill can) {
+    private void cancelBillItemsOld(CancelledBill can) {
         BillItem bi = getBillSession().getBillItem();
 
         BillItem b = new BillItem();
         b.setBill(can);
 
-        b.setNetValue(-bi.getNetValue());
+        b.setNetValue(0 - bi.getNetValue());
         b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         b.setCreater(getSessionController().getLoggedUser());
 
         getBillItemFacade().create(b);
 
-        cancelBillFee(can, b);
+        cancelBillFeeOld(can, b);
+    }
+
+    private void cancelBillItems(CancelledBill can) {
+        BillItem bi = billSession.getBillItem();
+
+        BillItem b = new BillItem();
+        b.setBill(can);
+        b.copy(bi);
+        b.invertValue(bi);
+        b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        b.setCreater(getSessionController().getLoggedUser());
+
+        getBillItemFacade().create(b);
+        String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
+        List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+        cancelBillFee(can, b, tmp);
+
+    }
+    
+    private void cancelBillSession(CancelledBill can) {
+        
+        BillSession bs = new BillSession();
+        bs.setBill(can);
+        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreater(getSessionController().getLoggedUser());
+
+        getBillSessionFacade().create(bs);
+        
+
     }
 
     private CancelledBill createCancelBill() {
@@ -401,12 +439,27 @@ public class ChannelBillController implements Serializable {
         return cb;
     }
 
+    private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
+        for (BillFee nB : tmp) {
+            BillFee bf = new BillFee();
+            bf.copy(nB);
+            bf.invertValue(nB);
+            bf.setBill(can);
+            bf.setBillItem(bt);
+
+            bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bf.setCreater(getSessionController().getLoggedUser());
+
+            getBillFeeFacade().create(bf);
+        }
+    }
+
     private void addBallance(Bill cb, double amt) {
         cb.getFromInstitution().setBallance(cb.getFromInstitution().getBallance() + amt);
         getInstitutionFacade().edit(cb.getFromInstitution());
     }
 
-    private void cancelBillFee(Bill b, BillItem bt) {       
+    private void cancelBillFeeOld(Bill b, BillItem bt) {
         if (getDoctorFee().getRepayment().getFeeValue() != 0.0) {
             createBillFee(b, bt, getDoctorFee(), getDoctorFee().getBilledFee().getFeeValue());
         }
@@ -783,7 +836,7 @@ public class ChannelBillController implements Serializable {
             bf.setBillItem(bi);
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
-            bf.setDepartment(f.getDepartment());
+            bf.setDepartment(getSessionController().getDepartment());
             bf.setFee(f);
             bf.setFeeAt(new Date());
             bf.setFeeDiscount(0.0);
@@ -883,6 +936,7 @@ public class ChannelBillController implements Serializable {
 
         savingBill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         savingBill.setCreater(getSessionController().getLoggedUser());
+        savingBill.setDepartment(getSessionController().getDepartment());
 
         getBillFacade().create(savingBill);
 
@@ -903,6 +957,7 @@ public class ChannelBillController implements Serializable {
 //        System.err.println("L12");
 //        getBillSessionFacade().edit(bs);
 
+        savingBill.setSingleBillItem(bi);
         getBillFacade().edit(savingBill);
 
         return savingBill;

@@ -81,8 +81,10 @@ public class BillSession implements Serializable {
     WebUser absentUnmarkedUser;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date absentUnmarkedAt;
+    @ManyToOne
     PatientEncounter patientEncounter;
-    
+    BillSession referenceBillSession;
+    double qty;
     //Transient Only Reporting Purpose
     @Transient
     ChannelFee doctorFee;
@@ -92,6 +94,33 @@ public class BillSession implements Serializable {
     ChannelFee hospitalFee;
     @Transient
     ChannelFee agentFee;
+    
+    public void copy(BillSession billSession){
+        referenceBillSession = billSession.getReferenceBillSession();
+        qty = billSession.getQty();
+        item =billSession.getItem();        
+    
+    }
+    
+    public void invert(BillSession billSession){}
+
+    public BillSession getReferenceBillSession() {
+        return referenceBillSession;
+    }
+
+    public void setReferenceBillSession(BillSession referenceBillSession) {
+        this.referenceBillSession = referenceBillSession;
+    }
+
+    public double getQty() {
+        return qty;
+    }
+
+    public void setQty(double qty) {
+        this.qty = qty;
+    }
+    
+    
 
     public int getSerialNo() {
         return serialNo;
