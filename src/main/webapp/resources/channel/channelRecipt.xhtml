@@ -20,7 +20,7 @@
             <h:outputStylesheet library="css" name="pharmacypos.css"></h:outputStylesheet>
 
             <h:panelGroup id="panelAddedBillPrint">
-                <div class="fiveinchbill">
+                <div>
                     
                     <div class="institutionName">
                         <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
@@ -151,7 +151,7 @@
                                         </tr>
                                     </ui:repeat>
                                     
-                                    <h:outputLabel value="#{cc.attrs.bill.singleBillItem.item.name}"></h:outputLabel>
+                                    
 
                                     <tr>
                                         <td>
@@ -167,6 +167,22 @@
                                             <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
+                                        </td>
+
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Session Name" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.singleBillItem.item.name}"></h:outputLabel>
                                         </td>
 
                                     </tr>
