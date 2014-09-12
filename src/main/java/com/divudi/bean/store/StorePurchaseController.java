@@ -76,42 +76,43 @@ public class StorePurchaseController implements Serializable {
     ///////////
     //  private List<PharmacyItemData> pharmacyItemDatas;
     List<BillItem> billExpenses;
-    
+
     @EJB
     private CommonFunctions commonFunctions;
-    
+    @Inject
+    private BillNumberController billNumberController;
+
     Date frmDate;
     Date toDate;
     double total;
-    
-    public void createPurchaseExpencess(){
-    
-        
+
+    public void createPurchaseExpencess() {
+
         String sql;
-        HashMap m= new HashMap();
-        
-        sql="select bi from BillItem bi where "
+        HashMap m = new HashMap();
+
+        sql = "select bi from BillItem bi where "
                 + " bi.expenseBill.createdAt between :fd and :td "
                 + " and bi.expenseBill.retired=false and "
                 + " (bi.expenseBill.billType=:bt1 or bi.expenseBill.billType=:bt2)";
-        
-        if (currentExpense.getItem()!=null) {
-            sql+=" and bi.item=:item ";
+
+        if (currentExpense.getItem() != null) {
+            sql += " and bi.item=:item ";
             m.put("item", currentExpense.getItem());
         }
-        
+
         m.put("fd", frmDate);
         m.put("td", toDate);
         m.put("bt1", BillType.PharmacyGrnBill);
         m.put("bt2", BillType.PharmacyPurchaseBill);
-        
-        billExpenses=getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
-        total=0.0;
+
+        billExpenses = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        total = 0.0;
         for (BillItem bi : billExpenses) {
-            total+=bi.getNetValue();
+            total += bi.getNetValue();
         }
-        
+
     }
 
     public void makeNull() {
@@ -246,6 +247,7 @@ public class StorePurchaseController implements Serializable {
         getPharmacyBillBean().calSaleFreeValue(getBill());
 
         for (BillItem i : getBillItems()) {
+            i.setId(null);
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
@@ -292,8 +294,18 @@ public class StorePurchaseController implements Serializable {
 
     private List<BillItem> billItems;
 
-    public void addItem() {
+    public void createSerialNumber() {
+        System.out.println("In");
 
+        String s = getBillNumberController().serialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getSessionController().getLoggedUser().getDepartment(), getCurrentBillItem().getItem());
+        System.out.println("s = " + s);
+
+        getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(s);
+
+        System.out.println("Out");
+    }
+
+    public void addItem() {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
@@ -317,14 +329,29 @@ public class StorePurchaseController implements Serializable {
         }
 
         getCurrentBillItem().getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
-//        setBatch();
 
+        if (getCurrentBillItem().getParentBillItem() != null) {
+            System.out.println("getCurrentBillItem().getParentBillItem().getItem().getName() = " + getCurrentBillItem().getParentBillItem().getItem().getName());
+            System.out.println("getCurrentBillItem().getItem().getName() = " + getCurrentBillItem().getItem().getName());
+            getCurrentBillItem().setParentBillItem(currentBillItem.getParentBillItem());
+        }
+
+//        setBatch();
         getCurrentBillItem().setSearialNo(getBillItems().size());
+    
+        getCurrentBillItem().setId((currentBillItem.getSearialNoInteger()).longValue());
         getBillItems().add(currentBillItem);
 
         currentBillItem = null;
 
         calTotal();
+    }
+    
+    public void itemListner(BillItem bi){
+    
+        System.out.println("bill"+bi.getItem().getName());
+        getCurrentBillItem().setParentBillItem(bi);
+        
     }
 
     public void addExpense() {
@@ -556,7 +583,7 @@ public class StorePurchaseController implements Serializable {
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate =commonFunctions.getStartOfMonth(new Date());
+            frmDate = commonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }
@@ -566,8 +593,8 @@ public class StorePurchaseController implements Serializable {
     }
 
     public Date getToDate() {
-        if (toDate==null) {
-            toDate=new Date();
+        if (toDate == null) {
+            toDate = new Date();
         }
         return toDate;
     }
@@ -582,6 +609,14 @@ public class StorePurchaseController implements Serializable {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public BillNumberController getBillNumberController() {
+        return billNumberController;
+    }
+
+    public void setBillNumberController(BillNumberController billNumberController) {
+        this.billNumberController = billNumberController;
     }
 
 }

@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -38,6 +39,8 @@ public class ServiceSession extends Item implements Serializable {
     
     @OneToOne
     ServiceSession afterSession;
+    @ManyToOne
+    SessionNumberGenerator sessionNumberGenerator;
     @OneToOne(mappedBy = "afterSession")
     ServiceSession beforeSession;
     /////Newly Added
@@ -52,6 +55,16 @@ public class ServiceSession extends Item implements Serializable {
     
     @Transient
     ServiceSession originatingSession;
+
+    public SessionNumberGenerator getSessionNumberGenerator() {
+        return sessionNumberGenerator;
+    }
+
+    public void setSessionNumberGenerator(SessionNumberGenerator sessionNumberGenerator) {
+        this.sessionNumberGenerator = sessionNumberGenerator;
+    }
+    
+    
 
     public ServiceSession getOriginatingSession() {
         return originatingSession;

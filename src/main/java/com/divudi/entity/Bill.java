@@ -57,7 +57,7 @@ public class Bill implements Serializable {
 
     @Enumerated(EnumType.STRING)
     BillClassType billClassType;
-    
+
     @ManyToOne
     BatchBill batchBill;
 
@@ -129,7 +129,6 @@ public class Bill implements Serializable {
     double expenseTotal;
     //with minus tax and discount
     double grnNetTotal;
-    
 
     //Institution
     @ManyToOne
@@ -144,6 +143,8 @@ public class Bill implements Serializable {
     Institution toInstitution;
     @ManyToOne
     Institution creditCompany;
+    @ManyToOne
+    Institution referenceInstitution;
     //Departments
     @ManyToOne
     Department referringDepartment;
@@ -316,7 +317,6 @@ public class Bill implements Serializable {
         saleValue = 0 - bill.getSaleValue();
         freeValue = 0 - bill.getFreeValue();
         grantTotal = 0 - bill.getGrantTotal();
-        
 
     }
 
@@ -327,7 +327,7 @@ public class Bill implements Serializable {
         creditCompany = bill.getCreditCompany();
         staff = bill.getStaff();
         toStaff = bill.getToStaff();
-        fromStaff=bill.getFromStaff();
+        fromStaff = bill.getFromStaff();
         toDepartment = bill.getToDepartment();
         toInstitution = bill.getToInstitution();
         fromDepartment = bill.getFromDepartment();
@@ -342,7 +342,8 @@ public class Bill implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
-       chequeDate = bill.getChequeDate();
+        chequeDate = bill.getChequeDate();
+        referenceInstitution = bill.getReferenceInstitution();
 
         //      referenceBill=bill.getReferenceBill();
     }
@@ -819,16 +820,14 @@ public class Bill implements Serializable {
     }
 
     public void setGrnNetTotal(double grnNetTotal) {
-        this.grnNetTotal =grnNetTotal;
-        
-        
+        this.grnNetTotal = grnNetTotal;
+
     }
-    public void calGrnNetTotal(){
-       this.grnNetTotal = total + tax + discount;
-        
+
+    public void calGrnNetTotal() {
+        this.grnNetTotal = total + tax + discount;
+
     }
-    
-    
 
     public double getPaidAmount() {
         return paidAmount;
@@ -1387,7 +1386,13 @@ public class Bill implements Serializable {
     public void setMargin(double margin) {
         this.margin = margin;
     }
-    
-    
+
+    public Institution getReferenceInstitution() {
+        return referenceInstitution;
+    }
+
+    public void setReferenceInstitution(Institution referenceInstitution) {
+        this.referenceInstitution = referenceInstitution;
+    }
 
 }

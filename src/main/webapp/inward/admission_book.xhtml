@@ -33,14 +33,18 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{inwardReportController.fillAdmissionBookOnlyInward()}" onclick="onSubmitButton();" ></p:commandButton>
-
+                            <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill UnDischarged Only " action="#{inwardReportController.fillAdmissionBookOnlyInward()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill Discharged Only " action="#{inwardReportController.fillAdmissionBookOnlyDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill Discharged and Payment Not Finalized " action="#{inwardReportController.fillAdmissionBookOnlyDischargedNotFinalized()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill Discharged and Payment Finalized" action="#{inwardReportController.fillAdmissionBookOnlyDischargedFinalized()}" onclick="onSubmitButton();" ></p:commandButton>
+                            
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                                <pe:exporter type="xlsx" target="tbl" fileName="Admission_Detail_by_Admitted_Date"  />
                             </p:commandButton>  
                         </h:panelGrid>
 
@@ -184,7 +188,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                               <p:column headerText="BHT No">
+                                <p:column headerText="BHT No">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
@@ -222,7 +226,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

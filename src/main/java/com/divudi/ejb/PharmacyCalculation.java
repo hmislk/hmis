@@ -647,6 +647,10 @@ public class PharmacyCalculation implements Serializable{
         if (checkItemBatch(billItems)) {
             msg = "Please Fill Batch deatail and Sale Price to All Item";
         }
+        
+        if (b.getReferenceInstitution()==null) {
+            msg="Please Fill Reference Institution";
+        }
 
         return msg;
     }

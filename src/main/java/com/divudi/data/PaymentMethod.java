@@ -11,7 +11,7 @@ package com.divudi.data;
 public enum PaymentMethod {
    Cash,
    Credit,
-   @Deprecated
+//   @Deprecated
    Agent,
    Card,
    Cheque,

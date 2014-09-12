@@ -60,9 +60,9 @@ public class StaffShift implements Serializable {
     private int repeatedCount;
     @Enumerated(EnumType.STRING)
     private WorkingType workingType;
-    private boolean consideredForOt;
-    boolean consideredForSalary;
-    boolean consideredForExtraDuty;
+//    private boolean consideredForOt;
+//    boolean consideredForSalary;
+//    boolean consideredForExtraDuty;
 
     @ManyToOne
     StaffSalary staffSalary;
@@ -70,7 +70,6 @@ public class StaffShift implements Serializable {
     FingerPrintRecord startRecord;
     @ManyToOne
     FingerPrintRecord endRecord;    
-    
 
     @ManyToOne
     StaffShift previousStaffShift;
@@ -96,14 +95,7 @@ public class StaffShift implements Serializable {
         this.transFirstColumn = transFirstColumn;
     }
 
-    public boolean isConsideredForExtraDuty() {
-        return consideredForExtraDuty;
-    }
-
-    public void setConsideredForExtraDuty(boolean consideredForExtraDuty) {
-        this.consideredForExtraDuty = consideredForExtraDuty;
-    }
-
+    
     public StaffSalary getStaffSalary() {
         return staffSalary;
     }
@@ -125,29 +117,7 @@ public class StaffShift implements Serializable {
 
     }
 
-    public boolean isConsideredForOt() {
-        return consideredForOt;
-    }
-
-    public boolean getConsideredForOt() {
-        return consideredForOt;
-    }
-
-    public void setConsideredForOt(boolean consideredForOt) {
-        this.consideredForOt = consideredForOt;
-    }
-
-    public boolean isConsideredForSalary() {
-        return consideredForSalary;
-    }
-
-    public boolean getConsideredForSalary() {
-        return consideredForSalary;
-    }
-
-    public void setConsideredForSalary(boolean consideredForSalary) {
-        this.consideredForSalary = consideredForSalary;
-    }
+   
 
     public FingerPrintRecord getStartRecord() {
         return startRecord;
