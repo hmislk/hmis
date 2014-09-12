@@ -1,0 +1,3 @@
+SET FOREIGN_KEY_CHECKS=0;
+DELETE from billSession where `ID` > 0;
+SET FOREIGN_KEY_CHECKS=1;
