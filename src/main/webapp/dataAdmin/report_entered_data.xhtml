@@ -95,6 +95,15 @@
 
 
                             </p:panel>
+                            
+                            <p:panel>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Channel Rest"/>
+                                </f:facet>
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset Channel Session Number" 
+                                                 action="#{sheduleController.resetSessionNumbers()}" onclick="onSubmitButton();" />
+                                
+                            </p:panel>
 
                         </h:panelGrid>
 

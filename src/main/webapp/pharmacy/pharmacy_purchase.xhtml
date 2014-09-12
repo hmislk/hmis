@@ -25,7 +25,7 @@
                             <p:autoComplete converter="deal" value="#{pharmacyPurchaseController.bill.fromInstitution}" 
                                             forceSelection="true"
                                             completeMethod="#{dealerController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-                            <h:outputLabel value="Reference Institution"/>
+                            <h:outputLabel value="Purchasing Institution"/>
                             <p:autoComplete converter="institutionConverter" value="#{pharmacyPurchaseController.bill.referenceInstitution}"
                                             completeMethod="#{institutionController.completeCompany}" 
                                             forceSelection="true"
