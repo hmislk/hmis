@@ -5,6 +5,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
+import com.divudi.bean.common.BillItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
@@ -68,6 +69,20 @@ public class StorePurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     ApplicationController applicationController;
+    @Inject
+    BillItemController billItemController;
+
+    public BillItemController getBillItemController() {
+        return billItemController;
+    }
+
+    public void setBillItemController(BillItemController billItemController) {
+        this.billItemController = billItemController;
+    }
+    
+    
+    
+    
     ////////////
     private BillItem currentBillItem;
     BillItem currentExpense;
@@ -76,6 +91,8 @@ public class StorePurchaseController implements Serializable {
     ///////////
     //  private List<PharmacyItemData> pharmacyItemDatas;
     List<BillItem> billExpenses;
+    BillItem parentBillItem;
+    
 
     @EJB
     private CommonFunctions commonFunctions;
@@ -86,6 +103,16 @@ public class StorePurchaseController implements Serializable {
     Date toDate;
     double total;
 
+    public BillItem getParentBillItem() {
+        return parentBillItem;
+    }
+
+    public void setParentBillItem(BillItem parentBillItem) {
+        this.parentBillItem = parentBillItem;
+    }
+
+    
+    
     public void createPurchaseExpencess() {
 
         String sql;
@@ -340,18 +367,26 @@ public class StorePurchaseController implements Serializable {
         getCurrentBillItem().setSearialNo(getBillItems().size());
     
         getCurrentBillItem().setId((currentBillItem.getSearialNoInteger()).longValue());
+        
+        getCurrentBillItem().setSearialNo(getBillItems().size() + 1);
+        
+        System.out.println("1. getCurrentBillItem().getParentBillItem(); = " + getCurrentBillItem().getParentBillItem());
+        getCurrentBillItem().setParentBillItem(parentBillItem);
+        System.out.println("2. getCurrentBillItem().getParentBillItem(); = " + getCurrentBillItem().getParentBillItem());
+        parentBillItem =new BillItem();
+        parentBillItem =null;
+        System.out.println("3. getCurrentBillItem().getParentBillItem(); = " + getCurrentBillItem().getParentBillItem());
         getBillItems().add(currentBillItem);
 
         currentBillItem = null;
+        
+        getBillItemController().setItems(billItems);
 
         calTotal();
     }
     
     public void itemListner(BillItem bi){
-    
-        System.out.println("bill"+bi.getItem().getName());
         getCurrentBillItem().setParentBillItem(bi);
-        
     }
 
     public void addExpense() {
@@ -431,7 +466,8 @@ public class StorePurchaseController implements Serializable {
         for (BillItem p : getBillItems()) {
             p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
-            p.setSearialNo(serialNo++);
+            serialNo++;
+            p.setSearialNo(serialNo);
             double netValue = p.getQty() * p.getRate();
             p.setNetValue(0 - netValue);
             tot += p.getNetValue();
