@@ -783,7 +783,7 @@ public class ChannelBillController implements Serializable {
             bf.setBillItem(bi);
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
-            bf.setDepartment(sessionController.getDepartment());
+            bf.setDepartment(getSessionController().getDepartment());
             bf.setFee(f);
             bf.setFeeAt(new Date());
             bf.setFeeDiscount(0.0);
@@ -883,7 +883,7 @@ public class ChannelBillController implements Serializable {
 
         savingBill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         savingBill.setCreater(getSessionController().getLoggedUser());
-
+        savingBill.setDepartment(sessionController.getDepartment());
         getBillFacade().create(savingBill);
 
         getBillItemFacade().create(bi);
