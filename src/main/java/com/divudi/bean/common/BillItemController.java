@@ -35,12 +35,15 @@ import javax.inject.Named;
 @SessionScoped
 public class BillItemController implements Serializable {
 
-    @EJB
-    private com.divudi.facade.BillItemFacade ejbFacade;
     private List<BillItem> items = null;
     private BillItem selected;
 
-    public BillItemController() {
+    public List<BillItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<BillItem> items) {
+        this.items = items;
     }
 
     public BillItem getSelected() {
@@ -51,94 +54,18 @@ public class BillItemController implements Serializable {
         this.selected = selected;
     }
 
-    protected void setEmbeddableKeys() {
+    public BillItemController() {
     }
 
-    protected void initializeEmbeddableKey() {
-    }
-
-    private BillItemFacade getFacade() {
-        return ejbFacade;
-    }
-
-    public BillItem prepareCreate() {
-        selected = new BillItem();
-        initializeEmbeddableKey();
-        return selected;
-    }
-
-    public void create() {
-        persist(PersistAction.CREATE, ResourceBundle.getBundle("/Bundle").getString("BillItemCreated"));
-        if (!JsfUtil.isValidationFailed()) {
-            items = null;    // Invalidate list of items to trigger re-query.
-        }
-    }
-
-    public void update() {
-        persist(PersistAction.UPDATE, ResourceBundle.getBundle("/Bundle").getString("BillItemUpdated"));
-    }
-
-    public void destroy() {
-        persist(PersistAction.DELETE, ResourceBundle.getBundle("/Bundle").getString("BillItemDeleted"));
-        if (!JsfUtil.isValidationFailed()) {
-            selected = null; // Remove selection
-            items = null;    // Invalidate list of items to trigger re-query.
-        }
-    }
-
-    public List<BillItem> getItems() {
+    public BillItem findBillItemInListBySerial(Integer id) {
         if (items == null) {
-            items = getFacade().findAll();
-        }
-        return items;
-    }
-
-    public void setItems(List<BillItem> items) {
-        this.items = items;
-    }
-
-    private void persist(PersistAction persistAction, String successMessage) {
-        if (selected != null) {
-            setEmbeddableKeys();
-            try {
-                if (persistAction != PersistAction.DELETE) {
-                    getFacade().edit(selected);
-                } else {
-                    getFacade().remove(selected);
-                }
-                JsfUtil.addSuccessMessage(successMessage);
-            } catch (EJBException ex) {
-                String msg = "";
-                Throwable cause = ex.getCause();
-                if (cause != null) {
-                    msg = cause.getLocalizedMessage();
-                }
-                if (msg.length() > 0) {
-                    JsfUtil.addErrorMessage(msg);
-                } else {
-                    JsfUtil.addErrorMessage(ex, ResourceBundle.getBundle("/Bundle").getString("PersistenceErrorOccured"));
-                }
-            } catch (Exception ex) {
-                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
-                JsfUtil.addErrorMessage(ex, ResourceBundle.getBundle("/Bundle").getString("PersistenceErrorOccured"));
-            }
-        }
-    }
-
-    public List<BillItem> getItemsAvailableSelectMany() {
-        return getFacade().findAll();
-    }
-
-    public List<BillItem> getItemsAvailableSelectOne() {
-        return getFacade().findAll();
-    }
-
-    public BillItem findBillItemInListBySerial(int serial) {
-        if (items==null) {
             return null;
         }
         for (BillItem bi : items) {
-            if (serial == bi.getSearialNo()) {
+            System.err.println("PASs " + id);
+            System.err.println("BIB " + bi.getSearialNo());
+            if (id.equals(bi.getSearialNo())) {
+                System.err.println("******");
                 return bi;
             }
         }
@@ -152,7 +79,7 @@ public class BillItemController implements Serializable {
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 System.out.println("value = " + value);
-                System.out.println("value.length() = " + value.length());
+//                System.out.println("value.length() = " + value.length());
                 return null;
             }
             BillItemController controller = (BillItemController) facesContext.getApplication().getELResolver().
@@ -169,11 +96,12 @@ public class BillItemController implements Serializable {
         }
 
         java.lang.Integer getKey(String value) {
-            java.lang.Integer key = 0;
+            System.err.println("Args From Context "+value);
+            java.lang.Integer key = null;
             try {
                 key = Integer.valueOf(value);
-            } catch (Exception e) {
-                System.err.println("e" +e.getMessage());
+            } catch (NumberFormatException e) {
+                System.err.println("e" + e.getMessage());
             }
 
             return key;
