@@ -8,9 +8,11 @@ package com.divudi.data;
  *
  * @author buddhika
  */
+
 public enum PaymentMethod {
    Cash,
    Credit,
+   OnCall,
 //   @Deprecated
    Agent,
    Card,

@@ -63,7 +63,7 @@
                             <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>                          
                         </p:column> 
                         <p:column headerText="P/A">                           
-                            <p:outputLabel value="Absent"  rendered="#{bs.present==false}"/>  
+                            <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
                         </p:column> 
                     </p:dataTable>                    
                 </p:panel>   
@@ -245,8 +245,8 @@
                                 <p:inputText autocomplete="off" value="#{bookingPastController.selectedBillSession.bill.patient.person.name}" />
                                 <p:outputLabel value="Patient"/>
                                 <p:inputText autocomplete="off" value="#{bookingPastController.selectedBillSession.bill.patient.person.phone}"/>
-                                <p:outputLabel value="Present"/>
-                                <p:selectBooleanCheckbox value="#{bookingPastController.selectedBillSession.present}" >
+                                <p:outputLabel value="Mark As Absent"/>
+                                <p:selectBooleanCheckbox value="#{bookingPastController.selectedBillSession.absent}" >
                                 </p:selectBooleanCheckbox>
                                 <p:outputLabel/>
                                 <p:commandButton ajax="false" value="Update" action="#{bookingPastController.updatePatient}"
@@ -383,8 +383,8 @@
                                         <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
                                     </h:commandLink>
                                 </p:column> 
-                                <p:column headerText="P/A" filterBy="#{bs.present}" filterMatchMode="contains">                                      
-                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"> <p:outputLabel value="Absent"  rendered="#{bs.present==false}"/>  
+                                <p:column headerText="P/A" filterBy="#{bs.absent}" filterMatchMode="contains">                                      
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"> <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
                                         <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                                         <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
                                         <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>

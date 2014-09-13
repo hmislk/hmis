@@ -60,9 +60,13 @@ public class ChannelSearchController implements Serializable {
 
         if (billSessions == null) {
             if (getDate() != null) {
-                String sql = "Select bs From BillSession bs where bs.retired=false and bs.sessionDate= :ssDate order by "
-                        + "bs.serviceSession.staff.speciality.name,bs.serviceSession.staff.person.name,"
-                        + "bs.serviceSession.id,bs.serialNo";
+                String sql = "Select bs From BillSession bs "
+                        + " where bs.retired=false "
+                        + " and bs.sessionDate= :ssDate "
+                        + " order by  bs.serviceSession.staff.speciality.name,"
+                        + " bs.serviceSession.staff.person.name,"
+                        + " bs.serviceSession.id,"
+                        + " bs.serialNo";
                 HashMap hh = new HashMap();
                 hh.put("ssDate", getDate());
                 billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);

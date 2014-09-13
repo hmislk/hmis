@@ -122,7 +122,7 @@ public class ChannelReportController implements Serializable {
                     if ((b.getBillType() == BillType.ChannelPaid && b.getReferenceBill() == null && b instanceof BilledBill)
                             || (b.getBillType() == BillType.ChannelCredit && b instanceof BilledBill)) {
                         BillSession bs = getBillSessionFacade().findFirstBySQL("select b from BillSession b where b.retired=false and b.bill.id=" + b.getId());
-                        if (bs.getPresent() == false) {
+                        if (bs.isAbsent()) {
                             cd.setAbsentCount(cd.getAbsentCount() + 1);
                         }
                     }
@@ -204,7 +204,7 @@ public class ChannelReportController implements Serializable {
                     if ((b.getBillType() == BillType.ChannelPaid && b.getReferenceBill() == null && b instanceof BilledBill)
                             || (b.getBillType() == BillType.ChannelCredit && b instanceof BilledBill)) {
                         BillSession bs = getBillSessionFacade().findFirstBySQL("select b from BillSession b where b.retired=false and b.bill.id=" + b.getId());
-                        if (bs.getPresent() == false) {
+                        if (bs.isAbsent()) {
                             cd.setAbsentCount(cd.getAbsentCount() + 1);
                         }
                     }
