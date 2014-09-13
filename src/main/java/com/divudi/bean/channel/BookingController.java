@@ -6,6 +6,7 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.entity.Bill;
@@ -29,6 +30,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -290,7 +293,7 @@ public class BookingController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
-    } 
+    }
 
     public List<ServiceSession> getServiceSessions() {
         return serviceSessions;
@@ -312,16 +315,26 @@ public class BookingController implements Serializable {
         return billSessions;
     }
 
-    public void fillBillSessions() {
-        if (getSelectedServiceSession() != null) {
-            String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession=:ss and bs.sessionDate= :ssDate";
-            HashMap hh = new HashMap();
-            hh.put("ssDate", getSelectedServiceSession().getSessionAt());
-            hh.put("ss", getSelectedServiceSession());
-            billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-        } else {
-            billSessions = new ArrayList<>();
-        }
+    public void fillBillSessions(SelectEvent event) {
+        selectedBillSession = null;
+        selectedServiceSession = ((ServiceSession) event.getObject());
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate";
+        HashMap hh = new HashMap();
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
+        hh.put("ss", getSelectedServiceSession());
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+
     }
 
     public void setBillSessions(List<BillSession> billSessions) {
@@ -334,8 +347,7 @@ public class BookingController implements Serializable {
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
         this.selectedServiceSession = selectedServiceSession;
-        fillBillSessions();
-        setSelectedBillSession(null);
+
     }
 
     public void makeBillSessionNull() {
