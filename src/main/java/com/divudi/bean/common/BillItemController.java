@@ -97,8 +97,6 @@ public class BillItemController implements Serializable {
         this.items = items;
     }
 
-    
-    
     private void persist(PersistAction persistAction, String successMessage) {
         if (selected != null) {
             setEmbeddableKeys();
@@ -136,6 +134,9 @@ public class BillItemController implements Serializable {
     }
 
     public BillItem findBillItemInListBySerial(int serial) {
+        if (items==null) {
+            return null;
+        }
         for (BillItem bi : items) {
             if (serial == bi.getSearialNo()) {
                 return bi;
@@ -168,8 +169,13 @@ public class BillItemController implements Serializable {
         }
 
         java.lang.Integer getKey(String value) {
-            java.lang.Integer key;
-            key = Integer.valueOf(value);
+            java.lang.Integer key = 0;
+            try {
+                key = Integer.valueOf(value);
+            } catch (Exception e) {
+                System.err.println("e" +e.getMessage());
+            }
+
             return key;
         }
 

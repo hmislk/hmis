@@ -368,7 +368,7 @@ public class StorePurchaseController implements Serializable {
     
         getCurrentBillItem().setId((currentBillItem.getSearialNoInteger()).longValue());
         
-        getCurrentBillItem().setSearialNo(getBillItems().size() + 1);
+//        getCurrentBillItem().setSearialNo(getBillItems().size() + 1);
         
         System.out.println("1. getCurrentBillItem().getParentBillItem(); = " + getCurrentBillItem().getParentBillItem());
         getCurrentBillItem().setParentBillItem(parentBillItem);
