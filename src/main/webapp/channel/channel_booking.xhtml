@@ -49,10 +49,10 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Session">
-                            <h:outputLabel value="#{ses.name}"/>
+                            #{ses.name}
                         </p:column>
                         <p:column headerText="Max">
-                            <h:outputLabel value="#{ses.maxNo}"/>
+                            #{ses.maxNo}
                         </p:column>
                         <p:column headerText="Time">
                             <h:outputLabel value="#{ses.startingTime}">
@@ -60,7 +60,7 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Booked">
-                            <h:outputLabel value="#{ses.displayCount}"/>                                                            
+                           #{ses.displayCount}
                         </p:column>
                         <p:column headerText="Fee">
                             <h:outputLabel value="#{ses.originatingSession.totalFee}">

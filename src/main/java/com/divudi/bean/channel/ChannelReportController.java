@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.ChannelDoctor;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillSession;
@@ -22,7 +23,9 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +48,9 @@ public class ChannelReportController implements Serializable {
     private double total;
     ///////
     private List<BillSession> billSessions;
+    ReportKeyWord reportKeyWord;
+    Date fromDate;
+    Date toDate;
     private List<ChannelDoctor> channelDoctors;
     /////
     @EJB
@@ -56,8 +62,43 @@ public class ChannelReportController implements Serializable {
     ///////////
     @EJB
     private ChannelBean channelBean;
+    
+    public void createBillSession_report_1(){
+         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+    }
 
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if(reportKeyWord==null){
+            reportKeyWord=new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    
+    
     public void makeNull() {
+        reportKeyWord=null;
         serviceSession = null;
         billSessions = null;
     }
@@ -77,7 +118,7 @@ public class ChannelReportController implements Serializable {
 
     public List<ChannelDoctor> getTotalPatient() {
 
-        channelDoctors = new ArrayList<ChannelDoctor>();
+        channelDoctors = new ArrayList<>();
 
         String sql = "Select bs.bill From BillSession bs where bs.bill.staff is not null and bs.retired=false and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
@@ -133,6 +174,12 @@ public class ChannelReportController implements Serializable {
 
         return channelDoctors;
     }
+
+    public List<BillSession> getBillSessions() {
+        return billSessions;
+    }
+    
+    
 
     public List<ChannelDoctor> getTotalDoctor() {
 

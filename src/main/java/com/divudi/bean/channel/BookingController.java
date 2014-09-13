@@ -223,56 +223,56 @@ public class BookingController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    public void updateChargesForServiceSession(List<ServiceSession> lstSs) {
-        for (ServiceSession ss : lstSs) {
-            updateChargesForServiceSession(ss);
-        }
-    }
+//    public void updateChargesForServiceSession(List<ServiceSession> lstSs) {
+//        for (ServiceSession ss : lstSs) {
+//            updateChargesForServiceSession(ss);
+//        }
+//    }
 
-    public void updateChargesForServiceSession(ServiceSession ss) {
-        List<ItemFee> fs;
-        String jpql;
-        Map m = new HashMap();
-        jpql = "Select f from ItemFee f "
-                + " where f.retired=false and "
-                + " f.item=:ses "
-                + " order by f.id";
-        m.put("ses", ss);
-        fs = getItemFeeFacade().findBySQL(jpql, m);
-
-        ss.setHospitalFee(0.0);
-        ss.setProfessionalFee(0.0);
-        ss.setTaxFee(0.0);
-        ss.setOtherFee(0.0);
-        ss.setTotalFee(0.0);
-
-        ss.setHospitalFfee(0.0);
-        ss.setProfessionalFfee(0.0);
-        ss.setTaxFfee(0.0);
-        ss.setOtherFfee(0.0);
-        ss.setTotalFfee(0.0);
-
-        ss.setItemFees(new ArrayList<ItemFee>());
-
-        for (ItemFee f : fs) {
-            if (f.getFeeType() == FeeType.OwnInstitution) {
-                ss.setHospitalFee(ss.getHospitalFee() + f.getFee());
-                ss.setHospitalFfee(ss.getHospitalFfee() + f.getFfee());
-            } else if (f.getFeeType() == FeeType.Staff) {
-                ss.setProfessionalFee(ss.getProfessionalFee() + f.getFee());
-                ss.setProfessionalFfee(ss.getProfessionalFfee() + f.getFfee());
-            } else if (f.getFeeType() == FeeType.Tax) {
-                ss.setTaxFee(ss.getProfessionalFee() + f.getFee());
-                ss.setTaxFfee(ss.getProfessionalFfee() + f.getFfee());
-            } else {
-                ss.setOtherFee(ss.getOtherFee() + f.getFee());
-                ss.setOtherFfee(ss.getOtherFfee() + f.getFfee());
-            }
-            ss.getItemFees().add(f);
-        }
-        ss.setTotalFee(ss.getHospitalFee() + ss.getProfessionalFee() + ss.getTaxFee() + ss.getOtherFee());
-        ss.setTotalFfee(ss.getHospitalFfee() + ss.getProfessionalFfee() + ss.getTaxFfee() + ss.getOtherFfee());
-    }
+//    public void updateChargesForServiceSession(ServiceSession ss) {
+//        List<ItemFee> fs;
+//        String jpql;
+//        Map m = new HashMap();
+//        jpql = "Select f from ItemFee f "
+//                + " where f.retired=false and "
+//                + " f.item=:ses "
+//                + " order by f.id";
+//        m.put("ses", ss);
+//        fs = getItemFeeFacade().findBySQL(jpql, m);
+//
+//        ss.setHospitalFee(0.0);
+//        ss.setProfessionalFee(0.0);
+//        ss.setTaxFee(0.0);
+//        ss.setOtherFee(0.0);
+//        ss.setTotalFee(0.0);
+//
+//        ss.setHospitalFfee(0.0);
+//        ss.setProfessionalFfee(0.0);
+//        ss.setTaxFfee(0.0);
+//        ss.setOtherFfee(0.0);
+//        ss.setTotalFfee(0.0);
+//
+//        ss.setItemFees(new ArrayList<ItemFee>());
+//
+//        for (ItemFee f : fs) {
+//            if (f.getFeeType() == FeeType.OwnInstitution) {
+//                ss.setHospitalFee(ss.getHospitalFee() + f.getFee());
+//                ss.setHospitalFfee(ss.getHospitalFfee() + f.getFfee());
+//            } else if (f.getFeeType() == FeeType.Staff) {
+//                ss.setProfessionalFee(ss.getProfessionalFee() + f.getFee());
+//                ss.setProfessionalFfee(ss.getProfessionalFfee() + f.getFfee());
+//            } else if (f.getFeeType() == FeeType.Tax) {
+//                ss.setTaxFee(ss.getProfessionalFee() + f.getFee());
+//                ss.setTaxFfee(ss.getProfessionalFfee() + f.getFfee());
+//            } else {
+//                ss.setOtherFee(ss.getOtherFee() + f.getFee());
+//                ss.setOtherFfee(ss.getOtherFfee() + f.getFfee());
+//            }
+//            ss.getItemFees().add(f);
+//        }
+//        ss.setTotalFee(ss.getHospitalFee() + ss.getProfessionalFee() + ss.getTaxFee() + ss.getOtherFee());
+//        ss.setTotalFfee(ss.getHospitalFfee() + ss.getProfessionalFfee() + ss.getTaxFfee() + ss.getOtherFfee());
+//    }
 
     public void generateSessions() {
         serviceSessions = new ArrayList<>();
@@ -280,9 +280,12 @@ public class BookingController implements Serializable {
         Map m = new HashMap();
         m.put("staff", getStaff());
         if (staff != null) {
-            sql = "Select s From ServiceSession s where s.retired=false and s.staff=:staff order by s.sessionWeekday";
+            sql = "Select s From ServiceSession s "
+                    + " where s.retired=false "
+                    + " and s.staff=:staff "
+                    + " order by s.sessionWeekday";
             List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
-            updateChargesForServiceSession(tmp);
+//            updateChargesForServiceSession(tmp);
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessions(tmp);
         }
     }
