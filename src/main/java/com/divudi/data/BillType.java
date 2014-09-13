@@ -5,12 +5,20 @@
  */
 package com.divudi.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Buddhika
  */
 public enum BillType {
 
+    //Dont Use in With BillType in Channel
+    @Deprecated
+    ChannelCashFlow(null),
+    @Deprecated
+    ChannelCreditFlow(null),
     OpdBathcBill,
     SurgeryBill,
     LabBill,
@@ -42,7 +50,7 @@ public enum BillType {
     StoreBhtIssue,
     StoreBhtPre,
     StoreIssue,
-//    @Deprecated Piumi requested issue 60 
+    //    @Deprecated Piumi requested issue 60 
     StoreTransferIssue,
     StoreTransferReceive,
     StoreTransferRequest,
@@ -62,8 +70,11 @@ public enum BillType {
     PharmacyAdjustment,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
-    ChannelPaid,
-    ChannelCredit,
+    ChannelCash(ChannelCashFlow),
+    ChannelPaid(ChannelCashFlow),
+    ChannelAgent(ChannelCashFlow),
+    ChannelOnCall(ChannelCreditFlow),
+    ChannelStaff(ChannelCreditFlow),
     ChannelProPayment,
     gpBooking,
     gpSettling,
@@ -74,6 +85,8 @@ public enum BillType {
     GrnPaymentCancellReturn,
     CashIn,
     CashOut,
+    @Deprecated
+    ChannelCredit,
     ClinicalOpdBooking;
 
     public String getLabel() {
@@ -125,4 +138,61 @@ public enum BillType {
 
         return "";
     }
+
+    private BillType parent = null;
+
+    public BillType getParent() {
+        return parent;
+    }
+
+    public void setParent(BillType parent) {
+        this.parent = parent;
+    }
+
+    private BillType(BillType parent) {
+        this.parent = parent;
+        if (this.parent != null) {
+            this.parent.addChild(this);
+        }
+    }
+
+    private BillType() {
+    }
+
+    private final List<BillType> children = new ArrayList<>();
+
+    public BillType[] children() {
+        return children.toArray(new BillType[children.size()]);
+    }
+
+    public BillType[] allChildren() {
+        List<BillType> list = new ArrayList<>();
+        addChildren(this, list);
+        return list.toArray(new BillType[list.size()]);
+    }
+
+    private static void addChildren(BillType root, List<BillType> list) {
+        list.addAll(root.children);
+        for (BillType child : root.children) {
+            addChildren(child, list);
+        }
+    }
+
+    private void addChild(BillType child) {
+        this.children.add(child);
+    }
+
+    public boolean is(BillType other) {
+        if (other == null) {
+            return false;
+        }
+
+        for (BillType t = this; t != null; t = t.parent) {
+            if (other == t) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

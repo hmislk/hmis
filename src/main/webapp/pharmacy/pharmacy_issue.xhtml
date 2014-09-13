@@ -52,6 +52,11 @@
                                         <p:ajax process="acDept" update=":#{p:component('pBillDetails')} #{p:component('tblBillItem')} " 
                                                 event="itemSelect"  listener="#{pharmacyIssueController.calculateAllRates}" />
                                     </p:autoComplete>
+                                    
+                                    <p:inputText value="#{storeIssueController.preBill.invoiceNumber}" id="req"/>
+                                    
+                                    <p:watermark value="Request Number" for="req"/>
+                                    <p:watermark value="Issuing Department" for="acDept"/>
 
                                 </f:facet>
                                 <h:panelGrid columns="1" >

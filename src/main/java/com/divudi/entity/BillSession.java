@@ -7,7 +7,6 @@ package com.divudi.entity;
 import com.divudi.data.dataStructure.ChannelFee;
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -46,14 +45,10 @@ public class BillSession implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
-    String deptId;
-    String insId;
-    String catId;
-    String sessionId;
-    @ManyToOne
-    Bill bill;
-    @OneToOne(fetch = FetchType.LAZY)
-    BillItem billItem;
+//    String deptId;
+//    String insId;
+//    String catId;
+//    String sessionId;    
     @ManyToOne
     Institution institution;
     @ManyToOne
@@ -70,9 +65,9 @@ public class BillSession implements Serializable {
     Date sessionTime;
     int serialNo;
     //Present
-    Boolean present = true;
+    //  Boolean present = true;
     //Absent
-    boolean absent=false;
+    boolean absent = false;
     @ManyToOne
     WebUser absentMarkedUser;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -81,8 +76,20 @@ public class BillSession implements Serializable {
     WebUser absentUnmarkedUser;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date absentUnmarkedAt;
+    @ManyToOne
     PatientEncounter patientEncounter;
-    
+    ////////////////////////////
+    @ManyToOne
+    Bill bill;
+    @OneToOne(fetch = FetchType.LAZY)
+    BillItem billItem;
+    @ManyToOne
+    //Used to Save Billed Session and Cancell Bill Session Data
+    BillSession referenceBillSession;
+    @ManyToOne
+    //Used in Credit Payment For BillSession
+    BillSession paidBillSession;
+//    double qty;
     //Transient Only Reporting Purpose
     @Transient
     ChannelFee doctorFee;
@@ -93,6 +100,31 @@ public class BillSession implements Serializable {
     @Transient
     ChannelFee agentFee;
 
+    public void copy(BillSession billSession) {
+        packege = billSession.getPackege();
+        item = billSession.getItem();
+        name = billSession.getName();
+        institution = billSession.getInstitution();
+        department = billSession.getDepartment();
+        staff = billSession.getStaff();
+        serviceSession = billSession.getServiceSession();
+        category = billSession.getCategory();
+        sessionDate = billSession.getSessionDate();
+        sessionTime = billSession.getSessionTime();
+        serialNo = billSession.getSerialNo();
+        absent = billSession.isAbsent();
+        patientEncounter = billSession.getPatientEncounter();
+
+    }
+
+//    public double getQty() {
+//        return qty;
+//    }
+//
+//    public void setQty(double qty) {
+//        this.qty = qty;
+//    }
+//    
     public int getSerialNo() {
         return serialNo;
     }
@@ -230,38 +262,37 @@ public class BillSession implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public String getDeptId() {
-        return deptId;
-    }
-
-    public void setDeptId(String deptId) {
-        this.deptId = deptId;
-    }
-
-    public String getInsId() {
-        return insId;
-    }
-
-    public void setInsId(String insId) {
-        this.insId = insId;
-    }
-
-    public String getCatId() {
-        return catId;
-    }
-
-    public void setCatId(String catId) {
-        this.catId = catId;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
+//    public String getDeptId() {
+//        return deptId;
+//    }
+//
+//    public void setDeptId(String deptId) {
+//        this.deptId = deptId;
+//    }
+//
+//    public String getInsId() {
+//        return insId;
+//    }
+//
+//    public void setInsId(String insId) {
+//        this.insId = insId;
+//    }
+//
+//    public String getCatId() {
+//        return catId;
+//    }
+//
+//    public void setCatId(String catId) {
+//        this.catId = catId;
+//    }
+//
+//    public String getSessionId() {
+//        return sessionId;
+//    }
+//
+//    public void setSessionId(String sessionId) {
+//        this.sessionId = sessionId;
+//    }
     public Bill getBill() {
         return bill;
     }
@@ -309,14 +340,14 @@ public class BillSession implements Serializable {
     public void setSessionTime(Date sessionTime) {
         this.sessionTime = sessionTime;
     }
-
-    public Boolean getPresent() {
-        return present;
-    }
-
-    public void setPresent(Boolean present) {
-        this.present = present;
-    }
+//
+//    public Boolean getPresent() {
+//        return present;
+//    }
+//
+//    public void setPresent(Boolean present) {
+//        this.present = present;
+//    }
 
     public ChannelFee getDoctorFee() {
         return doctorFee;
@@ -398,7 +429,20 @@ public class BillSession implements Serializable {
         this.patientEncounter = patientEncounter;
     }
 
+    public BillSession getReferenceBillSession() {
+        return referenceBillSession;
+    }
 
-    
+    public void setReferenceBillSession(BillSession referenceBillSession) {
+        this.referenceBillSession = referenceBillSession;
+    }
+
+    public BillSession getPaidBillSession() {
+        return paidBillSession;
+    }
+
+    public void setPaidBillSession(BillSession paidBillSession) {
+        this.paidBillSession = paidBillSession;
+    }
 
 }

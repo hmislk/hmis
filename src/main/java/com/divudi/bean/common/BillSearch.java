@@ -1122,7 +1122,9 @@ public class BillSearch implements Serializable {
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
-
+////////////////////////
+            
+            
             cancelBillFee(can, b, tmp);
 
         }
@@ -1141,7 +1143,7 @@ public class BillSearch implements Serializable {
 
             bf.setBill(can);
             bf.setBillItem(bt);
-            bf.setFeeValue(-nB.getFeeValue());
+            bf.setFeeValue(0-nB.getFeeValue());
 
             bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             bf.setCreater(getSessionController().getLoggedUser());

@@ -5,14 +5,12 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
+import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.StaffShift;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -34,25 +32,78 @@ public class HrReportController implements Serializable {
     ReportKeyWord reportKeyWord;
     Date fromDate;
     Date toDate;
-    Institution insitution;
     @EJB
     CommonFunctions commonFunctions;
     List<StaffShift> staffShifts;
+    List<FingerPrintRecord> fingerPrintRecords;
     @EJB
     StaffShiftFacade staffShiftFacade;
-    
     @EJB
-    DepartmentFacade departmentFacade;
-    @EJB
-    private StaffFacade staffFacade;
-    
-    List<Department> selectDepartments;
-    private List<Staff> staffs;
+    FingerPrintRecordFacade fingerPrintRecordFacade;
 
-    public void createStaffShift() {
+    public void createFingerPrintRecordLogged() {
+        String sql = "";
         HashMap hm = new HashMap();
-        String sql = "select ss from StaffShift ss"
-                + " where ss.retired=false "
+        createStaffShiftQuary(sql, hm);
+        sql += " and ss.fingerPrintRecordType=:ftp";
+        hm.put("ftp", FingerPrintRecordType.Logged);
+        sql += " order by ss.staff,ss.recordTimeStamp";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void createFingerPrintRecordVarified() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        createStaffShiftQuary(sql, hm);
+        sql += " and ss.fingerPrintRecordType=:ftp";
+        hm.put("ftp", FingerPrintRecordType.Varified);
+        sql += " order by ss.staff,ss.recordTimeStamp";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void createFingerPrintQuary(String sql, HashMap hm) {
+        sql = "select ss from FingerPrintRecord ss"
+                + " where ss.retired=false"
+                + " and ss.recordTimeStamp between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getShift() != null) {
+            sql += " and ss.staffShift.shift=:sh";
+            hm.put("sh", getReportKeyWord().getShift());
+        }
+
+    }
+
+    public void createStaffShiftQuary(String sql, HashMap hm) {
+        sql = "select ss from StaffShift ss"
+                + " where ss.retired=false"
+                + " and ss.leaveType is null "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -87,121 +138,56 @@ public class HrReportController implements Serializable {
             hm.put("sh", getReportKeyWord().getShift());
         }
 
+    }
+
+    public void createStaffShift() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        createStaffShiftQuary(sql, hm);
+        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
     public void createStaffShiftEarlyIn() {
+        String sql = "";
         HashMap hm = new HashMap();
-        String sql = "select ss from StaffShift ss"
-                + " where ss.retired=false "
-                + " and ss.shiftStartTime  > ss.startRecord.recordTimeStamp"
-                + " and ss.shiftDate between :frm  and :to ";
-        hm.put("frm", fromDate);
-        hm.put("to", toDate);
-
-        if (getReportKeyWord().getStaff() != null) {
-            sql += " and ss.staff=:stf";
-            hm.put("stf", getReportKeyWord().getStaff());
-        }
-
-        if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep";
-            hm.put("dep", getReportKeyWord().getDepartment());
-        }
-
-        if (getReportKeyWord().getStaffCategory() != null) {
-            sql += " and ss.staff.staffCategory=:stfCat";
-            hm.put("stfCat", getReportKeyWord().getStaffCategory());
-        }
-
-        if (getReportKeyWord().getDesignation() != null) {
-            sql += " and ss.staff.designation=:des";
-            hm.put("des", getReportKeyWord().getDesignation());
-        }
-
-        if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs";
-            hm.put("rs", getReportKeyWord().getRoster());
-        }
-
-        if (getReportKeyWord().getShift() != null) {
-            sql += " and ss.shift=:sh";
-            hm.put("sh", getReportKeyWord().getShift());
-        }
-
+        createStaffShiftQuary(sql, hm);
+        sql += " and ss.shiftStartTime  > ss.startRecord.recordTimeStamp";
+        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+
     }
-    
+
+    public void createStaffShiftLateIn() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        createStaffShiftQuary(sql, hm);
+        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
+        sql += " order by ss.shift,ss.shiftDate";
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
     public void createStaffShiftEarlyOut() {
+        String sql = "";
         HashMap hm = new HashMap();
-        String sql = "select ss from StaffShift ss"
-                + " where ss.retired=false "
-                + " and ss.shiftEndTime > ss.endRecord.recordTimeStamp"
-                + " and ss.shiftDate between :frm  and :to ";
-        hm.put("frm", fromDate);
-        hm.put("to", toDate);
-
-        if (getReportKeyWord().getStaff() != null) {
-            sql += " and ss.staff=:stf";
-            hm.put("stf", getReportKeyWord().getStaff());
-        }
-
-        if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep";
-            hm.put("dep", getReportKeyWord().getDepartment());
-        }
-
-        if (getReportKeyWord().getStaffCategory() != null) {
-            sql += " and ss.staff.staffCategory=:stfCat";
-            hm.put("stfCat", getReportKeyWord().getStaffCategory());
-        }
-
-        if (getReportKeyWord().getDesignation() != null) {
-            sql += " and ss.staff.designation=:des";
-            hm.put("des", getReportKeyWord().getDesignation());
-        }
-
-        if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs";
-            hm.put("rs", getReportKeyWord().getRoster());
-        }
-
-        if (getReportKeyWord().getShift() != null) {
-            sql += " and ss.shift=:sh";
-            hm.put("sh", getReportKeyWord().getShift());
-        }
-
+        createStaffShiftQuary(sql, hm);
+        sql += " and ss.shiftEndTime > ss.endRecord.recordTimeStamp";
+        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+
     }
-    
-   public void createDepatmentList(){
-       String sql;
-       HashMap m=new HashMap();
-       
-       sql=" select d from Department d where "
-               + " d.retired=false ";
-       
-       if(getInsitution()!=null){
-           sql+=" and d.institution=:ins ";
-           m.put("ins", insitution);
-       }
-       
-       selectDepartments=getDepartmentFacade().findBySQL(sql, m);
-       
-   }
-   
-   public void createStaffList(){
-       String sql;
-       HashMap m=new HashMap();
-       
-       sql=" select s from Staff s where "
-               + " s.retired=false and type(s)=:dtp";
-       
-       m.put("dtp", Staff.class);
-       
-       staffs=getStaffFacade().findBySQL(sql,m);
-       
-   }
+
+    public void createStaffShiftLateOut() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        createStaffShiftQuary(sql, hm);
+        sql += " and ss.shiftEndTime < ss.endRecord.recordTimeStamp";
+        sql += " order by ss.shift,ss.shiftDate";
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
     /**
      * Creates a new instance of HrReport
      */
@@ -210,6 +196,8 @@ public class HrReportController implements Serializable {
 
     public void makeNull() {
         reportKeyWord = null;
+        staffShifts = null;
+        fingerPrintRecords = null;
     }
 
     public ReportKeyWord getReportKeyWord() {
@@ -262,44 +250,20 @@ public class HrReportController implements Serializable {
         this.staffShifts = staffShifts;
     }
 
-    public DepartmentFacade getDepartmentFacade() {
-        return departmentFacade;
+    public List<FingerPrintRecord> getFingerPrintRecords() {
+        return fingerPrintRecords;
     }
 
-    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
-        this.departmentFacade = departmentFacade;
+    public void setFingerPrintRecords(List<FingerPrintRecord> fingerPrintRecords) {
+        this.fingerPrintRecords = fingerPrintRecords;
     }
 
-    public List<Department> getSelectDepartments() {
-        return selectDepartments;
+    public StaffShiftFacade getStaffShiftFacade() {
+        return staffShiftFacade;
     }
 
-    public void setSelectDepartments(List<Department> selectDepartments) {
-        this.selectDepartments = selectDepartments;
-    }
-
-    public Institution getInsitution() {
-        return insitution;
-    }
-
-    public void setInsitution(Institution insitution) {
-        this.insitution = insitution;
-    }
-
-    public StaffFacade getStaffFacade() {
-        return staffFacade;
-    }
-
-    public void setStaffFacade(StaffFacade staffFacade) {
-        this.staffFacade = staffFacade;
-    }
-
-    public List<Staff> getStaffs() {
-        return staffs;
-    }
-
-    public void setStaffs(List<Staff> staffs) {
-        this.staffs = staffs;
+    public void setStaffShiftFacade(StaffShiftFacade staffShiftFacade) {
+        this.staffShiftFacade = staffShiftFacade;
     }
 
 }

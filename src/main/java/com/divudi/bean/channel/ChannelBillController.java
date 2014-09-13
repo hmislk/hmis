@@ -4,29 +4,30 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.ChannelFee;
 import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Fee;
+import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
-import com.divudi.entity.channel.AgentsFees;
-import com.divudi.facade.AgentsFeesFacade;
+import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -36,8 +37,6 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -46,7 +45,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 
@@ -59,17 +60,15 @@ import org.primefaces.event.TabChangeEvent;
 public class ChannelBillController implements Serializable {
 
     private BillSession billSession;
-    private Bill current;
-    private ChannelFee doctorFee;
-    private ChannelFee hospitalFee;
-    private ChannelFee tax;
-    private ChannelFee agentPay;
     private String patientTabId = "tabNewPt";
     private Patient newPatient;
     private Patient searchPatient;
     private String agentRefNo;
     private double amount;
     private boolean foriegn = false;
+    PaymentMethod paymentMethod;
+    Institution institution;
+    Bill printingBill;
     ///////////////////////////////////
     private List<BillFee> billFee;
     private List<BillFee> refundBillFee;
@@ -78,8 +77,6 @@ public class ChannelBillController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private BillFacade billFacade;
-    @EJB
-    private AgentsFeesFacade agentsFeesFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -94,6 +91,8 @@ public class ChannelBillController implements Serializable {
     private PatientFacade patientFacade;
     @EJB
     private ServiceSessionFacade serviceSessionFacade;
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
     //////////////////////////////////
     @EJB
     private ServiceSessionBean serviceSessionBean;
@@ -106,6 +105,7 @@ public class ChannelBillController implements Serializable {
     private BillNumberController billNumberBean;
     @EJB
     private ChannelBean channelBean;
+    List<BillItem> billItems;
 
     public Patient getNewPatient() {
         if (newPatient == null) {
@@ -127,74 +127,57 @@ public class ChannelBillController implements Serializable {
         this.searchPatient = searchPatient;
     }
 
+    private BillSession savePaidBillSession(Bill bill, BillItem billItem) {
+        BillSession bs = new BillSession();
+        bs.copy(getBillSession());
+        bs.setBill(bill);
+        bs.setBillItem(billItem);
+        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreater(getSessionController().getLoggedUser());
+
+        getBillSessionFacade().create(bs);
+        return bs;
+
+    }
+
     public void settleCredit() {
         if (errorCheckForSettle()) {
             return;
         }
 
-        Bill b = saveBill();
-        BillItem bi = saveBillItem(b);
-        saveBillFee(b, bi);
+        Bill b = savePaidBill();
+        BillItem bi = savePaidBillItem(b);
+        savePaidBillFee(b, bi);
+        BillSession bs = savePaidBillSession(b, bi);
 
-        // getBillSession().getBill().setReferenceBill(b);
+        getBillSession().setPaidBillSession(bs);
+
+        getBillSession().getBill().setPaidAmount(b.getPaidAmount());
         getBillFacade().edit(getBillSession().getBill());
 
-        editBillSession(b, bi);
-
+//        editBillSession(b, bi);
         UtilityController.addSuccessMessage("Channel Booking Added");
 
     }
 
-    private double getBilledTotalFee() {
-        return getDoctorFee().getBilledFee().getFeeValue()
-                + getHospitalFee().getBilledFee().getFeeValue()
-                + getTax().getBilledFee().getFeeValue()
-                + getAgentPay().getBilledFee().getFeeValue();
-    }
-
-    private double getRefundedTotalFee() {
-        return getDoctorFee().getRepayment().getFeeValue()
-                + getHospitalFee().getRepayment().getFeeValue()
-                + getTax().getRepayment().getFeeValue()
-                + getAgentPay().getRepayment().getFeeValue();
-    }
-
-    private void deductBallance() {
-        double tmp = getBilledTotalFee() - getAgentPay().getBilledFee().getFeeValue();
-        getBillSession().getBill().getFromInstitution().setBallance(getBillSession().getBill().getFromInstitution().getBallance() - tmp);
-        getInstitutionFacade().edit(getBillSession().getBill().getFromInstitution());
-    }
-
-    private Bill saveBill() {
+//
+//    private void deductBallance() {
+//        double tmp = getBilledTotalFee() - getAgentPay().getBilledFee().getFeeValue();
+//        getBillSession().getBill().getFromInstitution().setBallance(getBillSession().getBill().getFromInstitution().getBallance() - tmp);
+//        getInstitutionFacade().edit(getBillSession().getBill().getFromInstitution());
+//    }
+    private Bill savePaidBill() {
         Bill temp = new BilledBill();
-
+        temp.copy(getBillSession().getBill());
+        temp.copyValue(getBillSession().getBill());
+        temp.setPaidAmount(getBillSession().getBill().getNetTotal());
         temp.setReferenceBill(getBillSession().getBill());
-        temp.setFromInstitution(getBillSession().getBill().getFromInstitution());
-        temp.setStaff(getBillSession().getBill().getStaff());
-
-        if (getBillSession().getBill().getFromInstitution() != null) {
-            temp.setPaymentMethod(PaymentMethod.Agent);
-        } else {
-            temp.setPaymentMethod(PaymentMethod.Cash);
-        }
-
-        temp.setBookingId(getBillSession().getBill().getBookingId());
-
+        temp.setInsId(getBillSession().getBill().getInsId());
+        temp.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), temp));
         temp.setBillType(BillType.ChannelPaid);
-
-        double amt = getBilledTotalFee();
-        temp.setTotal(amt);
-        temp.setNetTotal(amt - getAgentPay().getBilledFee().getFeeValue());
-
-        if (getBillSession().getBill().getFromInstitution() != null) {
-            deductBallance();
-        }
-
-        temp.setPatient(getBillSession().getBill().getPatient());
 
         temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
         getBillFacade().create(temp);
@@ -202,47 +185,36 @@ public class ChannelBillController implements Serializable {
         return temp;
     }
 
-    private BillItem saveBillItem(Bill b) {
+    private BillItem savePaidBillItem(Bill b) {
         BillItem bi = new BillItem();
+        bi.copy(billSession.getBillItem());
         bi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         bi.setCreater(getSessionController().getLoggedUser());
         bi.setBill(b);
-
-        double amt = getBilledTotalFee() - getAgentPay().getBilledFee().getFeeValue();
-        bi.setNetValue(amt);
-
-        bi.setSessionDate(getBillSession().getSessionDate());
         getBillItemFacade().create(bi);
 
         return bi;
     }
 
-    private void saveBillFee(Bill b, BillItem bi) {
+    private void savePaidBillFee(Bill b, BillItem bi) {
 
-        for (BillFee f : getBillFee()) {
+        for (BillFee f : billSession.getBill().getBillFees()) {
 
             BillFee bf = new BillFee();
-
+            bf.copy(f);
             bf.setCreatedAt(Calendar.getInstance().getTime());
             bf.setCreater(getSessionController().getLoggedUser());
-
-            bf.setStaff(f.getStaff());
-
-            bf.setPatient(b.getPatient());
             bf.setBill(b);
             bf.setBillItem(bi);
-            bf.setFee(f.getFee());
-            bf.setFeeValue(f.getFeeValue());
-            bf.setFeeGrossValue(f.getFeeValue());
             getBillFeeFacade().create(bf);
         }
     }
 
     private void editBillSession(Bill b, BillItem bi) {
-        getBillSession().setBill(b);
-        getBillSession().setBillItem(bi);
-
-        getBillSessionFacade().edit(getBillSession());
+//        getBillSession().setBill(b);
+//        getBillSession().setBillItem(bi);
+//
+//        getBillSessionFacade().edit(getBillSession());
     }
 
     private boolean errorCheckForSettle() {
@@ -262,19 +234,18 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorCheckRefunding() {
-        if (getBillSession().getBill().getBillType() == BillType.ChannelCredit) {
+        if (getBillSession().getBill().getBillType().getParent() == BillType.ChannelCreditFlow) {
             UtilityController.addSuccessMessage("Credit Bill Cant be Refunded");
             return true;
         }
 
-        if (getDoctorFee().getBilledFee().getFeeValue() < getDoctorFee().getRepayment().getFeeValue()
-                || getHospitalFee().getBilledFee().getFeeValue() < getHospitalFee().getRepayment().getFeeValue()
-                || getTax().getBilledFee().getFeeValue() < getTax().getRepayment().getFeeValue()
-                || getAgentPay().getBilledFee().getFeeValue() < getAgentPay().getRepayment().getFeeValue()) {
-            UtilityController.addSuccessMessage("You can't refund mor than paid fee");
-            return true;
-        }
-
+//        if (getDoctorFee().getBilledFee().getFeeValue() < getDoctorFee().getRepayment().getFeeValue()
+//                || getHospitalFee().getBilledFee().getFeeValue() < getHospitalFee().getRepayment().getFeeValue()
+//                || getTax().getBilledFee().getFeeValue() < getTax().getRepayment().getFeeValue()
+//                || getAgentPay().getBilledFee().getFeeValue() < getAgentPay().getRepayment().getFeeValue()) {
+//            UtilityController.addSuccessMessage("You can't refund mor than paid fee");
+//            return true;
+//        }
         return false;
     }
 
@@ -284,15 +255,17 @@ public class ChannelBillController implements Serializable {
         }
 
         RefundBill rb = (RefundBill) createRefundBill();
+        BillItem bilItm = refundBillItems(rb);
+        BillSession rSession = refundBillSession(rb, bilItm);
 
-        refundBillItems(rb);
+        getBillSession().setReferenceBillSession(rSession);
+        billSessionFacade.edit(getBillSession());
 
         getBillSession().getBill().setRefunded(true);
         getBillSession().getBill().setRefundedBill(rb);
         getBillFacade().edit(getBillSession().getBill());
 
     }
-
     List<BillFee> listBillFees;
 
     public void createBillfees(SelectEvent event) {
@@ -306,7 +279,7 @@ public class ChannelBillController implements Serializable {
         hm.put("bt", bs.getBillItem());
 
         listBillFees = billFeeFacade.findBySQL(sql, hm);
-        billSession=bs;
+        billSession = bs;
 
     }
 
@@ -326,8 +299,19 @@ public class ChannelBillController implements Serializable {
         this.listBillFees = listBillFees;
     }
 
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
     private boolean errorCheckCancelling() {
 
+        if (getBillSession() == null) {
+            return true;
+        }
         return false;
     }
 
@@ -338,52 +322,87 @@ public class ChannelBillController implements Serializable {
 
         CancelledBill cb = createCancelBill();
 
-        cancelBillItems(cb);
+        BillItem cItem = cancelBillItems(cb);
+        BillSession cbs = cancelBillSession(cb, cItem);
 
         getBillSession().getBill().setCancelled(true);
         getBillSession().getBill().setCancelledBill(cb);
         getBillFacade().edit(getBillSession().getBill());
 
-        if (getBillSession().getBill().getReferenceBill() != null) {
-            getBillSession().setBill(getBillSession().getBill().getReferenceBill());
-            getBillSessionFacade().edit(getBillSession());
-        }
+        //Update BillSession        
+        getBillSession().setReferenceBillSession(cbs);
+        billSessionFacade.edit(getBillSession());
 
+//        if (getBillSession().getBill().getReferenceBill() != null) {
+//            getBillSession().setBill(getBillSession().getBill().getReferenceBill());
+//            getBillSessionFacade().edit(getBillSession());
+//        }
         UtilityController.addSuccessMessage("Cancelled");
 
     }
 
-    private void cancelBillItems(CancelledBill can) {
-        BillItem bi = getBillSession().getBillItem();
+//    private void cancelBillItemsOld(CancelledBill can) {
+//        BillItem bi = getBillSession().getBillItem();
+//
+//        BillItem b = new BillItem();
+//        b.setBill(can);
+//
+//        b.setNetValue(0 - bi.getNetValue());
+//        b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//        b.setCreater(getSessionController().getLoggedUser());
+//
+//        getBillItemFacade().create(b);
+//
+//        cancelBillFeeOld(can, b);
+//    }
+    private BillItem cancelBillItems(CancelledBill can) {
+        BillItem bi = billSession.getBillItem();
 
         BillItem b = new BillItem();
         b.setBill(can);
-
-        b.setNetValue(-bi.getNetValue());
+        b.copy(bi);
+        b.invertValue(bi);
         b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         b.setCreater(getSessionController().getLoggedUser());
 
         getBillItemFacade().create(b);
+        String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
+        List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+        cancelBillFee(can, b, tmp);
 
-        cancelBillFee(can, b);
+        return b;
+    }
+
+    private BillSession cancelBillSession(CancelledBill can, BillItem canBillItem) {
+        BillSession bs = new BillSession();
+        bs.copy(getBillSession());
+        bs.setBill(can);
+        bs.setBillItem(canBillItem);
+        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreater(getSessionController().getLoggedUser());
+
+        getBillSessionFacade().create(bs);
+        return bs;
+    }
+
+    private BillSession refundBillSession(Bill bill, BillItem billItem) {
+        BillSession bs = new BillSession();
+        bs.copy(getBillSession());
+        bs.setBill(bill);
+        bs.setBillItem(billItem);
+        bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bs.setCreater(getSessionController().getLoggedUser());
+
+        getBillSessionFacade().create(bs);
+        return bs;
     }
 
     private CancelledBill createCancelBill() {
         CancelledBill cb = new CancelledBill();
 
+        cb.copy(getBillSession().getBill());
+        cb.invertValue(getBillSession().getBill());
         cb.setBilledBill(getBillSession().getBill());
-        cb.setBillType(getBillSession().getBill().getBillType());
-
-        cb.setBookingId(getBillSession().getBill().getBookingId());
-
-        cb.setFromInstitution(getBillSession().getBill().getFromInstitution());
-
-        cb.setPaymentMethod(getBillSession().getBill().getPaymentMethod());
-
-        cb.setNetTotal(0 - getBillSession().getBill().getNetTotal());
-        cb.setTotal(0 - getBillSession().getBill().getTotal());
-
-        cb.setPatient(getBillSession().getBill().getPatient());
         cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -391,133 +410,133 @@ public class ChannelBillController implements Serializable {
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
+        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
+
         getBillFacade().create(cb);
 
-        if (cb.getPaymentMethod() == PaymentMethod.Agent) {
-            double amt = getBilledTotalFee() - getAgentPay().getBilledFee().getFeeValue();
-            addBallance(cb, amt);
-        }
-
+//        if (cb.getPaymentMethod() == PaymentMethod.Agent) {
+//            updateBallance(cb.getFromInstitution(), cb.getNetTotal(), HistoryType.ChannelBookingCancel,
+//                    cb, null, billSession);
+//        }
         return cb;
     }
 
-    private void addBallance(Bill cb, double amt) {
-        cb.getFromInstitution().setBallance(cb.getFromInstitution().getBallance() + amt);
-        getInstitutionFacade().edit(cb.getFromInstitution());
+    private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
+        for (BillFee nB : tmp) {
+            BillFee bf = new BillFee();
+            bf.copy(nB);
+            bf.invertValue(nB);
+            bf.setBill(can);
+            bf.setBillItem(bt);
+
+            bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bf.setCreater(getSessionController().getLoggedUser());
+
+            getBillFeeFacade().create(bf);
+        }
     }
 
-    private void cancelBillFee(Bill b, BillItem bt) {       
-        if (getDoctorFee().getRepayment().getFeeValue() != 0.0) {
-            createBillFee(b, bt, getDoctorFee(), getDoctorFee().getBilledFee().getFeeValue());
-        }
-
-        if (getHospitalFee().getRepayment().getFeeValue() != 0.0) {
-            createBillFee(b, bt, getHospitalFee(), getHospitalFee().getBilledFee().getFeeValue());
-        }
-
-        if (getTax().getRepayment().getFeeValue() != 0.0) {
-            createBillFee(b, bt, getTax(), getTax().getBilledFee().getFeeValue());
-        }
-
-        if (getAgentPay().getRepayment().getFeeValue() != 0.0) {
-            createBillFee(b, bt, getAgentPay(), getAgentPay().getBilledFee().getFeeValue());
-        }
-
-    }
-
-    public void refundBillItems(RefundBill rb) {
+//    private void addBallance(Bill cb, double amt) {
+//        cb.getFromInstitution().setBallance(cb.getFromInstitution().getBallance() + amt);
+//        getInstitutionFacade().edit(cb.getFromInstitution());
+//    }
+//
+//    private void cancelBillFeeOld(Bill b, BillItem bt) {
+//        if (getDoctorFee().getRepayment().getFeeValue() != 0.0) {
+//            createBillFee(b, bt, getDoctorFee(), getDoctorFee().getBilledFee().getFeeValue());
+//        }
+//
+//        if (getHospitalFee().getRepayment().getFeeValue() != 0.0) {
+//            createBillFee(b, bt, getHospitalFee(), getHospitalFee().getBilledFee().getFeeValue());
+//        }
+//
+//        if (getTax().getRepayment().getFeeValue() != 0.0) {
+//            createBillFee(b, bt, getTax(), getTax().getBilledFee().getFeeValue());
+//        }
+//
+//        if (getAgentPay().getRepayment().getFeeValue() != 0.0) {
+//            createBillFee(b, bt, getAgentPay(), getAgentPay().getBilledFee().getFeeValue());
+//        }
+//
+//    }
+    public BillItem refundBillItems(RefundBill rb) {
         BillItem bi = getBillSession().getBillItem();
 
         BillItem rbi = new BillItem();
+        rbi.copy(bi);
         rbi.setBill(rb);
         rbi.setCreatedAt(Calendar.getInstance().getTime());
         rbi.setCreater(getSessionController().getLoggedUser());
         rbi.setItem(bi.getItem());
-
-        double netValue = getRefundedTotalFee();
-
-        rbi.setNetValue(-netValue);
-        rbi.setRefunded(Boolean.TRUE);
+        rbi.setQty(0 - 1.0);
+        rbi.setGrossValue(0 - getRefundableTotal());
+        rbi.setNetValue(0 - getRefundableTotal());
         rbi.setReferanceBillItem(bi);
         getBillItemFacade().create(rbi);
 
         bi.setRefunded(Boolean.TRUE);
         getBillItemFacade().edit(bi);
 
-        returnBillFee(rb, rbi);
+        createReturnBillFee(rb, rbi);
+
+        return rbi;
 
     }
 
-    private void returnBillFee(Bill b, BillItem bt) {
-        if (getDoctorFee().getRepayment().getFeeValue() != 0.0) {
-            createBillFee(b, bt, getDoctorFee(), getDoctorFee().getRepayment().getFeeValue());
-        }
-
-        if (getHospitalFee().getRepayment().getFeeValue() != 0.0) {
-            createBillFee(b, bt, getHospitalFee(), getHospitalFee().getRepayment().getFeeValue());
-        }
-
-        if (getTax().getRepayment().getFeeValue() != 0.0) {
-            createBillFee(b, bt, getTax(), getTax().getRepayment().getFeeValue());
-        }
-
-        if (getAgentPay().getRepayment().getFeeValue() != 0.0) {
-            createBillFee(b, bt, getAgentPay(), getAgentPay().getRepayment().getFeeValue());
+    private void createReturnBillFee(Bill b, BillItem bt) {
+        for (BillFee bf : billSession.getBill().getBillFees()) {
+            if (bf.getTmpChangedValue() != null && bf.getTmpChangedValue() != 0) {
+                BillFee newBf = new BillFee();
+                newBf.copy(bf);
+                newBf.setFeeGrossValue(0 - bf.getTmpChangedValue());
+                newBf.setFeeValue(0 - bf.getTmpChangedValue());
+                newBf.setBill(b);
+                newBf.setBillItem(bt);
+                newBf.setCreatedAt(new Date());
+                newBf.setCreater(sessionController.getLoggedUser());
+                billFeeFacade.create(newBf);
+            }
         }
     }
 
-    private void createBillFee(Bill b, BillItem bt, ChannelFee cf, double feeValue) {
+    double refundableTotal = 0;
 
-        cf.getRepayment().setFee(cf.getBilledFee().getFee());
-        cf.getRepayment().setPatient(cf.getBilledFee().getPatient());
-        cf.getRepayment().setDepartment(cf.getBilledFee().getDepartment());
-        cf.getRepayment().setInstitution(cf.getBilledFee().getInstitution());
-        cf.getRepayment().setSpeciality(cf.getBilledFee().getSpeciality());
-        cf.getRepayment().setStaff(cf.getBilledFee().getStaff());
+    public double getRefundableTotal() {
+        return refundableTotal;
+    }
 
-        cf.getRepayment().setBill(b);
-        cf.getRepayment().setBillItem(bt);
-        cf.getRepayment().setFeeValue(-feeValue);
+    public void setRefundableTotal(double refundableTotal) {
+        this.refundableTotal = refundableTotal;
+    }
 
-        cf.getRepayment().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cf.getRepayment().setCreater(getSessionController().getLoggedUser());
-
-        getBillFeeFacade().create(cf.getRepayment());
-
+    public void calRefundTotal() {
+        refundableTotal = 0;
+        for (BillFee bf : billSession.getBill().getBillFees()) {
+            if (bf.getTmpChangedValue() != null) {
+                refundableTotal += bf.getTmpChangedValue();
+            }
+        }
     }
 
     private Bill createRefundBill() {
         RefundBill rb = new RefundBill();
-
+        rb.copy(getBillSession().getBill());
         Date bd = Calendar.getInstance().getTime();
         rb.setBillDate(bd);
         rb.setBillTime(bd);
         rb.setCreatedAt(bd);
-        rb.setBillType(getBillSession().getBill().getBillType());
         rb.setBilledBill(getBillSession().getBill());
         rb.setCreater(getSessionController().getLoggedUser());
-        rb.setDepartment(getSessionController().getLoggedUser().getDepartment());
-
-        rb.setInstitution(getSessionController().getLoggedUser().getInstitution());
         rb.setDepartment(getSessionController().getDepartment());
+        rb.setInstitution(getSessionController().getInstitution());
 
-        rb.setFromInstitution(getBillSession().getBill().getFromInstitution());
-        rb.setStaff(getBillSession().getBill().getStaff());
-
-        rb.setPaymentMethod(getBillSession().getBill().getPaymentMethod());
-
-        double total = getRefundedTotalFee();
-        rb.setNetTotal(-(total - getAgentPay().getRepayment().getFeeValue()));
-        rb.setTotal(-total);
-        rb.setPatient(getBillSession().getBill().getPatient());
+        rb.setNetTotal(0 - getRefundableTotal());
+        rb.setTotal(0 - getRefundableTotal());
+        rb.setPaidAmount(0 - getRefundableTotal());   
 
         getBillFacade().create(rb);
 
-        if (rb.getPaymentMethod() == PaymentMethod.Agent) {
-            double amt = getRefundedTotalFee() - getAgentPay().getRepayment().getFeeValue();
-            addBallance(rb, amt);
-        }
-
+//Need To Update Agent BAllance
         return rb;
 
     }
@@ -538,50 +557,15 @@ public class ChannelBillController implements Serializable {
         }
     }
 
-    private void updateBallance() {
-        AgentsFees agentFee = getAgentFee();
-        double tmp = 0.0;
-        if (agentFee.getFee() != null) {
-            if (!foriegn) {
-                tmp = getSs().getHospitalFee() + getSs().getProfessionalFee();
-            } else {
-                tmp = getSs().getHospitalFfee() + getSs().getProfessionalFfee();
-            }
-        }
+    public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, BillItem billItem, BillSession billSession) {
+        AgentHistory agentHistory = new AgentHistory();
+        agentHistory.setBeforeBallance(ins.getBallance());
+        agentHistory.setTransactionValue(transactionValue);
+        agentHistory.setHistoryType(historyType);
+        agentHistoryFacade.create(agentHistory);
 
-        getCurrent().getFromInstitution().setBallance(getCurrent().getFromInstitution().getBallance() - tmp);
-        getInstitutionFacade().edit(getCurrent().getFromInstitution());
-    }
-
-    private AgentsFees createAgentFee() {
-        AgentsFees agentFee = new AgentsFees();
-        agentFee.setFee(new Fee());
-
-        return agentFee;
-
-    }
-
-    private AgentsFees getAgentFee() {
-        AgentsFees agentFee = createAgentFee();
-
-        if (getbookingController().getSelectedServiceSession() != null) {
-            if (getCurrent().getFromInstitution() != null) {
-                agentFee = getAgentsFeesFacade().findFirstBySQL("Select i From AgentsFees i where "
-                        + "i.serviceSession.id=" + getbookingController().getSelectedServiceSession().getId()
-                        + " and i.agent.id=" + getCurrent().getFromInstitution().getId());
-
-                if (agentFee == null) {
-                    agentFee = getAgentsFeesFacade().findFirstBySQL("Select i From AgentsFees i where "
-                            + "i.agent.id=" + getCurrent().getFromInstitution().getId());
-                }
-            }
-        }
-
-        if (agentFee == null) {
-            agentFee = createAgentFee();
-        }
-
-        return agentFee;
+        ins.setBallance(ins.getBallance() + transactionValue);
+        getInstitutionFacade().edit(ins);
     }
 
     public double getAmount() {
@@ -651,16 +635,26 @@ public class ChannelBillController implements Serializable {
         foriegn = false;
         billFee = null;
         refundBillFee = null;
-        doctorFee = null;
-        hospitalFee = null;
-        agentPay = null;
-        tax = null;
         newPatient = null;
         searchPatient = null;
-        current = null;
+        printingBill = null;
+        agentRefNo = "";
+        billSession = null;
+        patientTabId = "tabNewPt";
+        billFee = null;
+        refundBillFee = null;
+        billItems = null;
+        paymentMethod = null;
+        institution = null;
+        refundableTotal = 0;
     }
 
     private boolean errorCheck() {
+        if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
+            UtilityController.addErrorMessage("Please Select Session");
+            return true;
+        }
+
         if (patientTabId.equals("tabNewPt")) {
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("")) {
                 UtilityController.addErrorMessage("Can not bill without Patient ");
@@ -675,25 +669,25 @@ public class ChannelBillController implements Serializable {
             }
         }
 
-        if (getCurrent().getPaymentMethod() == null) {
+        if (paymentMethod == null) {
             UtilityController.addErrorMessage("Please select Paymentmethod");
             return true;
         }
 
-        if (getCurrent().getPaymentMethod() == PaymentMethod.Agent) {
-            if (getCurrent().getFromInstitution() == null) {
+        if (paymentMethod == PaymentMethod.Agent) {
+            if (institution == null) {
                 UtilityController.addErrorMessage("Please select Agency");
                 return true;
             }
 
-            if (getCurrent().getFromInstitution().getBallance() - amount < 0 - getCurrent().getFromInstitution().getAllowedCredit()) {
+            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
                 return true;
             }
 
         }
 
-        if (getCurrent().getFromInstitution() != null) {
+        if (institution != null) {
             if (getAgentRefNo().trim().isEmpty()) {
                 UtilityController.addErrorMessage("Please Enter Agent Ref No");
                 return true;
@@ -748,88 +742,25 @@ public class ChannelBillController implements Serializable {
 
         savePatient();
 
-        current = saveBilledBill();
+        printingBill = saveBilledBill();
 
-        current = getBillFacade().find(current.getId());
+        printingBill = getBillFacade().find(printingBill.getId());
 
         UtilityController.addSuccessMessage("Channel Booking Added.");
 
     }
 
-    private Bill saveBilledBill() {
-        Bill savingBill = getCurrent();
-
-        savingBill.setBookingId(getBillNumberBean().bookingIdGenerator());
-        System.out.println("getbookingController() = " + getbookingController());
-        System.out.println("getbookingController().getSelectedServiceSession() = " + getbookingController().getSelectedServiceSession());
-        System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession() = " + getbookingController().getSelectedServiceSession().getOriginatingSession());
-        System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession().getStaff() = " + getbookingController().getSelectedServiceSession().getOriginatingSession().getStaff());
-        System.out.println("getbookingController().getSelectedServiceSession().getSessionDate() = " + getbookingController().getSelectedServiceSession().getSessionDate());
-        savingBill.setStaff(getbookingController().getSelectedServiceSession().getOriginatingSession().getStaff());
-
-        List<BillItem> billItems = new ArrayList<>();
-        List<BillFee> billFees = new ArrayList<>();
-
-        BillItem bi = new BillItem();
+    private BillSession createBillSession(Bill bill, BillItem billItem) {
         BillSession bs = new BillSession();
-
-        getBillSessionFacade().create(bs);
-
-        System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees() = " + getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees());
-
-        for (ItemFee f : getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees()) {
-            BillFee bf = new BillFee();
-            bf.setBill(savingBill);
-            bf.setBillItem(bi);
-            bf.setCreatedAt(new Date());
-            bf.setCreater(getSessionController().getLoggedUser());
-            bf.setDepartment(f.getDepartment());
-            bf.setFee(f);
-            bf.setFeeAt(new Date());
-            bf.setFeeDiscount(0.0);
-            bf.setOrderNo(0);
-            bf.setPatient(savingBill.getPatient());
-            bf.setSpeciality(f.getSpeciality());
-            if (bf.getPatienEncounter() != null) {
-                bf.setPatienEncounter(savingBill.getPatientEncounter());
-            }
-
-            bf.setPatient(savingBill.getPatient());
-
-            if (f.getFeeType() == FeeType.Staff) {
-                bf.setStaff(f.getStaff());
-            }
-
-            if (f.getFeeType() == FeeType.OwnInstitution) {
-                bf.setInstitution(getCurrent().getFromInstitution());
-            }
-
-            if (foriegn) {
-                bf.setFeeValue(f.getFfee());
-
-            } else {
-                bf.setFeeValue(f.getFee());
-            }
-
-            if (getCurrent().getPaymentMethod().equals(PaymentMethod.Credit)) {
-                bf.setPaidValue(0.0);
-            } else {
-                bf.setPaidValue(bf.getFeeValue());
-            }
-
-            billFees.add(bf);
-            System.out.println("billFees = " + billFees);
-        }
-
         bs.setAbsent(false);
-        bs.setBill(savingBill);
-        bs.setBillItem(bi);
+        bs.setBill(bill);
+        bs.setBillItem(billItem);
         bs.setCreatedAt(new Date());
         bs.setCreater(getSessionController().getLoggedUser());
         bs.setDepartment(getbookingController().getSelectedServiceSession().getOriginatingSession().getDepartment());
         bs.setInstitution(getbookingController().getSelectedServiceSession().getOriginatingSession().getInstitution());
         bs.setItem(getbookingController().getSelectedServiceSession().getOriginatingSession());
-        bs.setPresent(true);
+//        bs.setPresent(true);
 
         System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession() = " + getbookingController().getSelectedServiceSession().getOriginatingSession());
 
@@ -842,9 +773,16 @@ public class ChannelBillController implements Serializable {
         System.err.println("count" + count);
         bs.setSerialNo(count);
 
+        getBillSessionFacade().create(bs);
+
+        return bs;
+    }
+
+    private BillItem createBillItem(Bill bill) {
+        BillItem bi = new BillItem();        
         bi.setAdjustedValue(0.0);
         bi.setAgentRefNo(agentRefNo);
-        bi.setBill(savingBill);
+        bi.setBill(bill);
         bi.setBillTime(new Date());
         bi.setCreatedAt(new Date());
         bi.setCreater(getSessionController().getLoggedUser());
@@ -856,61 +794,156 @@ public class ChannelBillController implements Serializable {
         bi.setRate(getbookingController().getSelectedServiceSession().getOriginatingSession().getTotal());
         bi.setSessionDate(getbookingController().getSelectedServiceSession().getSessionAt());
 
-        billItems.add(bi);
+        billItemFacade.create(bi);
+        return bi;
+    }
+
+    private List<BillFee> createBillFee(Bill bill, BillItem billItem) {
+        List<BillFee> billFeeList = new ArrayList<>();
+
+        for (ItemFee f : getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees()) {
+            BillFee bf = new BillFee();
+            bf.setBill(bill);
+            bf.setBillItem(billItem);
+            bf.setCreatedAt(new Date());
+            bf.setCreater(getSessionController().getLoggedUser());
+            bf.setDepartment(getSessionController().getDepartment());
+            bf.setFee(f);
+            bf.setFeeAt(new Date());
+            bf.setFeeDiscount(0.0);
+            bf.setOrderNo(0);
+            bf.setPatient(bill.getPatient());
+            bf.setSpeciality(f.getSpeciality());
+            if (bf.getPatienEncounter() != null) {
+                bf.setPatienEncounter(bill.getPatientEncounter());
+            }
+
+            bf.setPatient(bill.getPatient());
+
+            if (f.getFeeType() == FeeType.Staff) {
+                bf.setStaff(f.getStaff());
+            }
+
+            if (f.getFeeType() == FeeType.OwnInstitution) {
+                bf.setInstitution(sessionController.getInstitution());
+            }
+
+            if (foriegn) {
+                bf.setFeeValue(f.getFfee());
+            } else {
+                bf.setFeeValue(f.getFee());
+            }
+
+            if (paymentMethod.equals(PaymentMethod.Credit)) {
+                bf.setPaidValue(0.0);
+            } else {
+                bf.setPaidValue(bf.getFeeValue());
+            }
+
+            billFeeFacade.create(bf);
+            billFeeList.add(bf);
+            System.out.println("billFees = " + billFeeList);
+        }
+
+        return billFeeList;
+
+    }
+
+    public Bill getPrintingBill() {
+        return printingBill;
+    }
+
+    public void setPrintingBill(Bill printingBill) {
+        this.printingBill = printingBill;
+    }
+
+    private Bill createBill() {
+        Bill bill = new BilledBill();
+        bill.setStaff(getbookingController().getSelectedServiceSession().getOriginatingSession().getStaff());
+        bill.setAppointmentAt(getbookingController().getSelectedServiceSession().getSessionAt());
+        bill.setTotal(getAmount());
+        bill.setNetTotal(getAmount());
+        
+
+        if (getPatientTabId().equals("tabNewPt")) {
+            bill.setPatient(newPatient);
+        } else {
+            bill.setPatient(searchPatient);
+        }
+
+        switch (paymentMethod) {
+            case OnCall:
+                bill.setBillType(BillType.ChannelOnCall);
+                break;
+            case Cash:
+                bill.setBillType(BillType.ChannelCash);
+                break;
+            case Agent:
+                bill.setBillType(BillType.ChannelAgent);
+                break;
+            case Staff:
+                bill.setBillType(BillType.ChannelStaff);
+                break;
+        }
+
+        bill.setInsId(getBillNumberBean().institutionChannelBillNumberGenerator(sessionController.getInstitution(), bill));
+
+        if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
+            bill.setBookingId(getBillNumberBean().bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
+            bill.setPaidAmount(getAmount());
+        }
+
+        bill.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bill.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bill.setCreater(getSessionController().getLoggedUser());
+        bill.setDepartment(getSessionController().getDepartment());
+        bill.setInstitution(sessionController.getInstitution());
+        getBillFacade().create(bill);
+
+        return bill;
+    }
+
+    @Inject
+    BillBeanController billBeanController;
+
+    private Bill saveBilledBill() {
+        Bill savingBill = createBill();
+        BillItem savingBillItem = createBillItem(savingBill);
+        BillSession savingBillSession = createBillSession(savingBill, savingBillItem);
+        List<BillFee> savingBillFees = createBillFee(savingBill, savingBillItem);
+        List<BillItem> savingBillItems = new ArrayList<>();
+        savingBillItems.add(savingBillItem);
 
         getAmount();
 
-        if (getCurrent().getPaymentMethod().equals(PaymentMethod.Credit)) {
-            savingBill.setBillType(BillType.ChannelCredit);
-        } else {
-            savingBill.setBillType(BillType.ChannelPaid);
-            savingBill.setTotal(amount);
-            savingBill.setNetTotal(amount);
-        }
+        getBillItemFacade().edit(savingBillItem);
 
-        if (getCurrent().getPaymentMethod().equals(PaymentMethod.Agent)) {
-            updateBallance();
-        }
+        //Update Bill Session
+        savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
+        savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
+        savingBillItem.setBillSession(savingBillSession);
+        getBillSessionFacade().edit(savingBillSession);
 
-        if (getPatientTabId().equals("tabNewPt")) {
-            savingBill.setPatient(newPatient);
-        } else {
-            savingBill.setPatient(searchPatient);
-        }
-
-        savingBill.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        savingBill.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-
-        savingBill.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        savingBill.setCreater(getSessionController().getLoggedUser());
-
-        getBillFacade().create(savingBill);
-
-        getBillItemFacade().create(bi);
-
-        for (BillFee bf : billFees) {
-            getBillFeeFacade().create(bf);
-        }
-
-//        billItems.add(bi);
-        savingBill.setBillItems(billItems);
-        savingBill.setBillFees(billFees);
-        bi.setBillSession(bs);
-
-        getBillItemFacade().edit(bi);
-
-        getBillSessionFacade().edit(bs);
-//        System.err.println("L12");
-//        getBillSessionFacade().edit(bs);
-
+        //Update Bill
+        savingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBill));
+        savingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBill));
+        savingBill.setSingleBillItem(savingBillItem);
+        savingBill.setSingleBillSession(savingBillSession);
+        savingBill.setBillItems(savingBillItems);
+        savingBill.setBillFees(savingBillFees);
         getBillFacade().edit(savingBill);
+
+        if (savingBill.getPaymentMethod() == PaymentMethod.Agent) {
+            updateBallance(savingBill.getInstitution(), savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession);
+        }
 
         return savingBill;
     }
 
     public List<BillFee> getBillFee() {
 
-        billFee = new ArrayList<BillFee>();
+        billFee = new ArrayList<>();
         if (billSession != null) {
             String sql = "Select s From BillFee s where s.retired=false and s.bill.id=" + billSession.getBill().getId();
             billFee = getBillFeeFacade().findBySQL(sql);
@@ -949,81 +982,6 @@ public class ChannelBillController implements Serializable {
 
     public void setBillSession(BillSession billSession) {
         this.billSession = billSession;
-    }
-
-    public ChannelFee getDoctorFee() {
-        if (doctorFee == null) {
-            doctorFee = new ChannelFee();
-
-            for (BillFee bf : getBillFee()) {
-                if (bf.getFee().getFeeType() == FeeType.Staff) {
-                    doctorFee.setBilledFee(bf);
-                }
-            }
-
-            for (BillFee bf : getRefundBillFee()) {
-                if (bf.getFee().getFeeType() == FeeType.Staff) {
-                    doctorFee.setPrevFee(bf);
-                }
-            }
-
-            doctorFee.setRepayment(new BillFee());
-
-        }
-
-        return doctorFee;
-    }
-
-    public void setDoctorFee(ChannelFee doctorFee) {
-        this.doctorFee = doctorFee;
-    }
-
-    public ChannelFee getHospitalFee() {
-        if (hospitalFee == null) {
-            hospitalFee = new ChannelFee();
-            for (BillFee bf : getBillFee()) {
-                if (bf.getFee().getFeeType() == FeeType.OwnInstitution) {
-                    hospitalFee.setBilledFee(bf);
-                }
-            }
-
-            for (BillFee bf : getRefundBillFee()) {
-                if (bf.getFee().getFeeType() == FeeType.OwnInstitution) {
-                    hospitalFee.setPrevFee(bf);
-                }
-            }
-
-            hospitalFee.setRepayment(new BillFee());
-        }
-
-        return hospitalFee;
-    }
-
-    public void setHospitalFee(ChannelFee hospitalFee) {
-        this.hospitalFee = hospitalFee;
-    }
-
-    public ChannelFee getTax() {
-        if (tax == null) {
-            tax = new ChannelFee();
-            for (BillFee bf : getBillFee()) {
-                if (bf.getFee().getFeeType() == FeeType.Tax) {
-                    tax.setBilledFee(bf);
-                }
-            }
-
-            for (BillFee bf : getRefundBillFee()) {
-                if (bf.getFee().getFeeType() == FeeType.Tax) {
-                    tax.setPrevFee(bf);
-                }
-            }
-
-        }
-        return tax;
-    }
-
-    public void setTax(ChannelFee tax) {
-        this.tax = tax;
     }
 
     public SessionController getSessionController() {
@@ -1068,41 +1026,6 @@ public class ChannelBillController implements Serializable {
 
     public void setInstitutionFacade(InstitutionFacade institutionFacade) {
         this.institutionFacade = institutionFacade;
-    }
-
-    public ChannelFee getAgentPay() {
-        if (agentPay == null) {
-            agentPay = new ChannelFee();
-            for (BillFee bf : getBillFee()) {
-                if (bf.getFee().getFeeType() == FeeType.OtherInstitution) {
-                    agentPay.setBilledFee(bf);
-                }
-            }
-
-            for (BillFee bf : getRefundBillFee()) {
-                if (bf.getFee().getFeeType() == FeeType.OtherInstitution) {
-                    agentPay.setPrevFee(bf);
-                }
-            }
-
-        }
-
-        return agentPay;
-    }
-
-    public void setAgentPay(ChannelFee agentPay) {
-        this.agentPay = agentPay;
-    }
-
-    public Bill getCurrent() {
-        if (current == null) {
-            current = new BilledBill();
-        }
-        return current;
-    }
-
-    public void setCurrent(Bill current) {
-        this.current = current;
     }
 
     public PersonFacade getPersonFacade() {
@@ -1155,14 +1078,6 @@ public class ChannelBillController implements Serializable {
         this.serviceSessionFacade = serviceSessionFacade;
     }
 
-    public AgentsFeesFacade getAgentsFeesFacade() {
-        return agentsFeesFacade;
-    }
-
-    public void setAgentsFeesFacade(AgentsFeesFacade agentsFeesFacade) {
-        this.agentsFeesFacade = agentsFeesFacade;
-    }
-
     public FeeFacade getFeeFacade() {
         return feeFacade;
     }
@@ -1206,4 +1121,37 @@ public class ChannelBillController implements Serializable {
     public void setChannelBean(ChannelBean channelBean) {
         this.channelBean = channelBean;
     }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public AgentHistoryFacade getAgentHistoryFacade() {
+        return agentHistoryFacade;
+    }
+
+    public void setAgentHistoryFacade(AgentHistoryFacade agentHistoryFacade) {
+        this.agentHistoryFacade = agentHistoryFacade;
+    }
+
+    public BillBeanController getBillBeanController() {
+        return billBeanController;
+    }
+
+    public void setBillBeanController(BillBeanController billBeanController) {
+        this.billBeanController = billBeanController;
+    }
+
 }
