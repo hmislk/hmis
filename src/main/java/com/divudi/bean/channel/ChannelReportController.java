@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.ChannelDoctor;
@@ -31,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
@@ -48,6 +50,9 @@ public class ChannelReportController implements Serializable {
     private double total;
     ///////
     private List<BillSession> billSessions;
+    private List<BillSession> billSessionsBilled;
+    private List<BillSession> billSessionsReturn;
+    private List<BillSession> billSessionsCancelled;
     ReportKeyWord reportKeyWord;
     Date fromDate;
     Date toDate;
@@ -62,10 +67,57 @@ public class ChannelReportController implements Serializable {
     ///////////
     @EJB
     private ChannelBean channelBean;
-    
-    public void createBillSession_report_1(){
-         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+    @Inject
+    SessionController sessionController;
+
+    public void createBillSession_report_1() {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "SELECT bs FROM BillSession bs"
+                + "  where type(bs.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0"
+                + " AND b.bill.institution=:ins "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.appointmentAt between :frm and  :to";
+        HashMap hm = new HashMap();
+        hm.put("ins", sessionController.getInstitution());
+        hm.put("bt", bts);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+        hm.put("class", BilledBill.class);
+        billSessionsBilled = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+        sql = "SELECT bs FROM BillSession bs"
+                + "  where type(bs.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0"
+                + " AND b.bill.institution=:ins "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.createdAt between :frm and  :to";
+        hm = new HashMap();
+        hm.put("ins", sessionController.getInstitution());
+        hm.put("bt", bts);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+        hm.put("class", CancelledBill.class);
+        billSessionsCancelled = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+        sql = "SELECT bs FROM BillSession bs"
+                + "  where type(bs.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0"
+                + " AND b.bill.institution=:ins "
+                + " and b.bill.billType in :bt "
+                + " and b.bill.createdAt between :frm and  :to";
+        hm = new HashMap();
+        hm.put("ins", sessionController.getInstitution());
+        hm.put("bt", bts);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+        hm.put("class", RefundBill.class);
+        billSessionsReturn = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
     }
 
     public Date getFromDate() {
@@ -85,8 +137,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public ReportKeyWord getReportKeyWord() {
-        if(reportKeyWord==null){
-            reportKeyWord=new ReportKeyWord();
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
         }
         return reportKeyWord;
     }
@@ -95,10 +147,8 @@ public class ChannelReportController implements Serializable {
         this.reportKeyWord = reportKeyWord;
     }
 
-    
-    
     public void makeNull() {
-        reportKeyWord=null;
+        reportKeyWord = null;
         serviceSession = null;
         billSessions = null;
     }
@@ -178,8 +228,6 @@ public class ChannelReportController implements Serializable {
     public List<BillSession> getBillSessions() {
         return billSessions;
     }
-    
-    
 
     public List<ChannelDoctor> getTotalDoctor() {
 
@@ -437,4 +485,38 @@ public class ChannelReportController implements Serializable {
     public void setChannelBean(ChannelBean channelBean) {
         this.channelBean = channelBean;
     }
+
+    public List<BillSession> getBillSessionsBilled() {
+        return billSessionsBilled;
+    }
+
+    public void setBillSessionsBilled(List<BillSession> billSessionsBilled) {
+        this.billSessionsBilled = billSessionsBilled;
+    }
+
+    public List<BillSession> getBillSessionsReturn() {
+        return billSessionsReturn;
+    }
+
+    public void setBillSessionsReturn(List<BillSession> billSessionsReturn) {
+        this.billSessionsReturn = billSessionsReturn;
+    }
+
+    public List<BillSession> getBillSessionsCancelled() {
+        return billSessionsCancelled;
+    }
+
+    public void setBillSessionsCancelled(List<BillSession> billSessionsCancelled) {
+        this.billSessionsCancelled = billSessionsCancelled;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+    
+    
 }

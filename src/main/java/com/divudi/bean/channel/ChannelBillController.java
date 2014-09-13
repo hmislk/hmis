@@ -530,9 +530,9 @@ public class ChannelBillController implements Serializable {
         rb.setDepartment(getSessionController().getDepartment());
         rb.setInstitution(getSessionController().getInstitution());
 
-        rb.setNetTotal(getRefundableTotal());
-        rb.setTotal(getRefundableTotal());
-        rb.invertValue();
+        rb.setNetTotal(0 - getRefundableTotal());
+        rb.setTotal(0 - getRefundableTotal());
+        rb.setPaidAmount(0 - getRefundableTotal());   
 
         getBillFacade().create(rb);
 
@@ -779,7 +779,7 @@ public class ChannelBillController implements Serializable {
     }
 
     private BillItem createBillItem(Bill bill) {
-        BillItem bi = new BillItem();
+        BillItem bi = new BillItem();        
         bi.setAdjustedValue(0.0);
         bi.setAgentRefNo(agentRefNo);
         bi.setBill(bill);
@@ -863,6 +863,7 @@ public class ChannelBillController implements Serializable {
         bill.setAppointmentAt(getbookingController().getSelectedServiceSession().getSessionAt());
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
+        
 
         if (getPatientTabId().equals("tabNewPt")) {
             bill.setPatient(newPatient);
