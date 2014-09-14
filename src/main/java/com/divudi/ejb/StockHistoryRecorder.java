@@ -8,7 +8,6 @@ package com.divudi.ejb;
 import com.divudi.data.HistoryType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AmpFacade;
@@ -19,16 +18,17 @@ import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
-import javax.ejb.Singleton;
+import javax.ejb.Stateless;
 
 /**
  *
  * @author Buddhika
  */
-@Singleton
+@Stateless
 public class StockHistoryRecorder {
 
     @EJB
@@ -44,14 +44,13 @@ public class StockHistoryRecorder {
     @EJB
     StockHistoryFacade stockHistoryFacade;
 
-//    @Schedule(minute = "1", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "1", persistent = false)
-    @Schedule(minute = "58", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "10", persistent = false)
+    @Schedule(dayOfMonth = "1",persistent = false)
     public void myTimer() {
         Date startTime = new Date();
-        System.out.println("Start writing stock history: " +startTime);
-        for (Department d : getDepartmentFacade().findAll()) {
+        System.out.println("Start writing stock history: " + startTime);
+        for (Department d : fetchStockDepartment()) {
             if (!d.isRetired()) {
-                for (Amp amp : getAmpFacade().findAll()) {
+                for (Item amp : fetchStockItem(d)) {
                     if (!amp.isRetired()) {
                         StockHistory h = new StockHistory();
                         h.setFromDate(new Date());
@@ -65,8 +64,25 @@ public class StockHistoryRecorder {
                 System.out.println("hx finished for = " + d);
             }
         }
-      System.out.println("End writing stock history: " +new Date()); 
+        System.out.println("End writing stock history: " + new Date());
 //        System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
+    }
+
+    public List<Department> fetchStockDepartment() {
+        String sql;
+        Map m = new HashMap();
+        sql = "select distinct(s.department) from Stock s order by s.department.name";
+        return departmentFacade.findBySQL(sql, m);
+    }
+
+    public List<Item> fetchStockItem(Department department) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select distinct(s.itemBatch.item) from Stock s"
+                + " where s.department=:dep "
+                + "  order by s.itemBatch.item.name";
+        m.put("dep", department);
+        return itemFacade.findBySQL(sql, m);
     }
 
     public double getStockQty(Item item, Department department) {
