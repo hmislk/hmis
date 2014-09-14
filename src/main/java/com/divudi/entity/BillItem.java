@@ -38,6 +38,9 @@ public class BillItem implements Serializable {
     @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY)
     BillSession billSession;
 
+    @ManyToOne
+    private BillItem parentBillItem;
+
     @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     PharmaceuticalBillItem pharmaceuticalBillItem;
     static final long serialVersionUID = 1L;
@@ -59,6 +62,8 @@ public class BillItem implements Serializable {
     double netValue;
     double marginValue;
     private double adjustedValue;
+    double hospitalFee;
+    double staffFee;
 //    private double dblValue;
     @ManyToOne
     Item item;
@@ -125,6 +130,24 @@ public class BillItem implements Serializable {
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
     private List<BillFee> proFees = new ArrayList<>();
+    @OneToMany(mappedBy = "parentBillItem")
+    private List<BillItem> chiledBillItems;
+
+    public double getHospitalFee() {
+        return hospitalFee;
+    }
+
+    public void setHospitalFee(double hospitalFee) {
+        this.hospitalFee = hospitalFee;
+    }
+
+    public double getStaffFee() {
+        return staffFee;
+    }
+
+    public void setStaffFee(double staffFee) {
+        this.staffFee = staffFee;
+    }
 
     public PriceMatrix getPriceMatrix() {
         return priceMatrix;
@@ -157,6 +180,8 @@ public class BillItem implements Serializable {
         discount = billItem.getDiscount();
         adjustedValue = billItem.getAdjustedValue();
         discountRate = billItem.getDiscountRate();
+        staffFee = billItem.getStaffFee();
+        hospitalFee = billItem.getHospitalFee();
         Rate = billItem.getRate();
         netRate = billItem.getNetRate();
         searialNo = billItem.getSearialNo();
@@ -181,6 +206,23 @@ public class BillItem implements Serializable {
         marginValue = 0 - billItem.getMarginValue();
         netValue = 0 - billItem.getNetValue();
         adjustedValue = 0 - billItem.getAdjustedValue();
+        staffFee = 0 - billItem.getStaffFee();
+        hospitalFee = 0 - billItem.getHospitalFee();
+    }
+
+    public void invertValue() {
+        if (getQty() != null) {
+            qty = 0 - getQty();
+        }
+        Rate = 0 - getRate();
+        discount = 0 - getDiscount();
+        netRate = 0 - getNetRate();
+        grossValue = 0 - getGrossValue();
+        marginValue = 0 - getMarginValue();
+        netValue = 0 - getNetValue();
+        adjustedValue = 0 - getAdjustedValue();
+        staffFee = 0 - getStaffFee();
+        hospitalFee = 0 - getHospitalFee();
     }
 
     @Override
@@ -432,6 +474,10 @@ public class BillItem implements Serializable {
         return searialNo;
     }
 
+    public Integer getSearialNoInteger() {
+        return searialNo;
+    }
+
     public void setSearialNo(int searialNo) {
         this.searialNo = searialNo;
     }
@@ -640,6 +686,20 @@ public class BillItem implements Serializable {
         this.marginRate = marginRate;
     }
 
-    
-    
+    public BillItem getParentBillItem() {
+        return parentBillItem;
+    }
+
+    public void setParentBillItem(BillItem parentBillItem) {
+        this.parentBillItem = parentBillItem;
+    }
+
+    public List<BillItem> getChiledBillItems() {
+        return chiledBillItems;
+    }
+
+    public void setChiledBillItems(List<BillItem> chiledBillItems) {
+        this.chiledBillItems = chiledBillItems;
+    }
+
 }

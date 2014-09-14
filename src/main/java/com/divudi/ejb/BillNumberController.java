@@ -8,8 +8,12 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
+import com.divudi.entity.RefundBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
@@ -53,8 +57,12 @@ public class BillNumberController {
 
     public String institutionBillNumberGenerator(Institution ins, Bill bill, BillType billType, BillNumberSuffix billNumberSuffix) {
 
-        String sql = "SELECT count(b) FROM Bill b where type(b)=:type and b.retired=false AND "
-                + " b.institution=:ins AND b.billType=:btp and b.createdAt is not null";
+        String sql = "SELECT count(b) FROM Bill b"
+                + "  where type(b)=:type "
+                + " and b.retired=false"
+                + " AND b.institution=:ins "
+                + " AND b.billType=:btp "
+                + " and b.createdAt is not null";
         String result = "";
         HashMap hm = new HashMap();
         hm.put("ins", ins);
@@ -76,6 +84,47 @@ public class BillNumberController {
                 result = ins.getInstitutionCode() + "/" + 1;
             }
 
+        }
+
+        return result;
+    }
+
+    public String institutionChannelBillNumberGenerator(Institution ins, Bill bill) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "SELECT count(b) FROM Bill b"
+                + "  where type(b)=:type "
+                + " and b.retired=false"
+                + " AND b.institution=:ins "
+                + " and b.billType in :bt "
+                + " and b.createdAt is not null";
+        String result = "";
+        HashMap hm = new HashMap();
+        hm.put("ins", ins);
+        hm.put("bt", bts);
+        hm.put("type", bill.getClass());
+        Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+
+        String suffix = "";
+
+        if (bill instanceof BilledBill) {
+            suffix = "CHANN";
+        }
+
+        if (bill instanceof CancelledBill) {
+            suffix = "CHANNCAN";
+        }
+
+        if (bill instanceof RefundBill) {
+            suffix = "CHANNREF";
+        }
+
+        if (i != null) {
+            result = ins.getInstitutionCode() + suffix + "/" + (i + 1);
+        } else {
+            result = ins.getInstitutionCode() + suffix + "/" + 1;
         }
 
         return result;
@@ -278,22 +327,35 @@ public class BillNumberController {
         }
     }
 
-    public String bookingIdGenerator() {
-
-        String sql = "SELECT count(b) FROM BilledBill b where b.retired=false "
-                + "  AND b.billType= :btp1 or b.billType=:btp2";
+    public String bookingIdGenerator(Institution institution, Bill bill) {
+        BillType[] billTypes = BillType.ChannelCashFlow.allChildren();
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "SELECT count(b) FROM BillSession b "
+                + " where b.bill.retired=false "
+                + "  AND type(b.bill)=:class "
+                + "  AND b.bill.billType in :bt ";
         String result;
         HashMap h = new HashMap();
-        h.put("btp1", BillType.ChannelPaid);
-        h.put("btp2", BillType.ChannelCredit);
+        h.put("bt", bts);
+        h.put("class", bill.getClass());
+
+        String suff = "";
+
+        if (bill instanceof CancelledBill) {
+            suff = "CAN";
+        }
+
+        if (bill instanceof RefundBill) {
+            suff = "REF";
+        }
 
         Long b = getBillFacade().findAggregateLong(sql, h, TemporalType.DATE);
 
         if (b != 0) {
-            result = (b + 1) + "";
+            result = institution.getInstitutionCode() + "CHANN" + suff + "/" + (b + 1) + "";
             return result;
         } else {
-            result = 1 + "";
+            result = institution.getInstitutionCode() + "CHANN" + suff + "/" + 1 + "";
             return result;
         }
 
@@ -520,7 +582,7 @@ public class BillNumberController {
         return result;
 
     }
-    
+
     public String storeInventryItemNumberGenerator() {
         HashMap hm = new HashMap();
         String sql = "SELECT count(b) FROM Amp b where b.retired=false and b.departmentType=:dep ";
@@ -531,6 +593,58 @@ public class BillNumberController {
         result = dd.toString();
 
         return result;
+
+    }
+
+    public String serialNumberGenerater(Institution ins, Department toDept, Item item) {
+        if (ins == null) {
+            System.out.println("Ins null");
+            return "";
+        }
+
+        String sql = "SELECT count(b) FROM BillItem b where "
+                + " b.bill.institution=:ins "
+                + " and b.bill.department=:tDep "
+                + " and b.item=:item "
+                + " and (b.bill.billType=:btp1 or b.bill.billType=:btp2)";
+
+        HashMap hm = new HashMap();
+        hm.put("ins", ins);
+        hm.put("tDep", toDept);
+        hm.put("item", item);
+        hm.put("btp1", BillType.PharmacyPurchaseBill);
+        hm.put("btp2", BillType.PharmacyGrnBill);
+        Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        //System.err.println("fff " + b);
+
+//        if (toDept != null) {
+//            result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
+//        } else {
+//            result = ins.getInstitutionCode() + "/" + 1;
+//        }
+//        return result;
+        System.out.println("In Bill Num Gen");
+        String result;
+        if (b != null && b != 0) {
+            b = b + 1;
+            if (toDept != null) {
+                result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + b;
+                System.out.println("result = " + result);
+            } else {
+                result = ins.getInstitutionCode() + "/" + b;
+                System.out.println("result = " + result);
+            }
+            return result;
+        } else {
+            if (toDept != null) {
+                result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
+                System.out.println("result = " + result);
+            } else {
+                result = ins.getInstitutionCode() + "/" + 1;
+                System.out.println("result = " + result);
+            }
+            return result;
+        }
 
     }
 

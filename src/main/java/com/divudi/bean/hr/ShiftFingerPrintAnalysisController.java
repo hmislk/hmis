@@ -16,8 +16,10 @@ import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.Roster;
+import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.facade.FingerPrintRecordFacade;
+import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -51,6 +53,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     SessionController sessionController;
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
+    @EJB
+    StaffLeaveFacade staffLeaveFacade;
 
     public void restTimeStamp(FingerPrintRecord fingerPrintRecord) {
         if (fingerPrintRecord.getLoggedRecord() != null) {
@@ -65,21 +69,23 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         shiftTables = null;
     }
 
-    public void listenStart(StaffShift staffShift, Date date) {
-        System.err.println("Staff Shift " + staffShift.getId());
-        System.err.println("Date  " + date);
-        staffShift.getStartRecord().setRecordTimeStamp(date);
-        System.err.println("TESS");
+    public void listenStart(StaffShift staffShift) {
+        if (staffShift.getStartRecord().getLoggedRecord() != null) {
+            return;
+        }
+
+        staffShift.getStartRecord().setRecordTimeStamp(staffShift.getShiftStartTime());
 
 //        fingerPrintRecordFacade.edit(staffShift.getStartRecord());
 //        staffShiftFacade.edit(staffShift);
     }
 
-    public void listenEnd(StaffShift staffShift, Date date) {
-        System.err.println("Staff Shift " + staffShift.getId());
-        System.err.println("Date  " + date);
-        staffShift.getEndRecord().setRecordTimeStamp(date);
-        System.err.println("TESS");
+    public void listenEnd(StaffShift staffShift) {
+        if (staffShift.getEndRecord().getLoggedRecord() != null) {
+            return;
+        }
+        staffShift.getEndRecord().setRecordTimeStamp(staffShift.getShiftEndTime());
+
 //        fingerPrintRecordFacade.edit(staffShift.getEndRecord());
 //        staffShiftFacade.edit(staffShift);
     }
@@ -141,6 +147,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 }
 
                 for (StaffShift ss : staffShifts) {
+                    StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate(), ss.getShiftDate());
+
                     List<FingerPrintRecord> list = new ArrayList<>();
                     FingerPrintRecord fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
                     FingerPrintRecord fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
@@ -153,6 +161,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     if (fingerPrintRecordOut != null) {
                         fingerPrintRecordOut.setTimes(Times.outTime);
                         ss.setEndRecord(fingerPrintRecordOut);
+                    }
+
+                    //Setting Leave Type To StaffShift From Staff Leave
+                    if (staffLeave != null) {
+                        ss.setLeaveType(staffLeave.getLeaveType());
                     }
 
                     FingerPrintRecord fpr = null;
@@ -234,7 +247,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             for (StaffShift ss : st.getStaffShift()) {
 
                 if (ss.getShift().getDayType() == DayType.DayOff
-                        || ss.getShift().getDayType() == DayType.SleepingDay) {
+                        || ss.getShift().getDayType() == DayType.SleepingDay
+                        || ss.getLeaveType() != null) {
                     continue;
                 }
 

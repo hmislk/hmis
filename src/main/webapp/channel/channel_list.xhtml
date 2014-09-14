@@ -107,8 +107,8 @@
                     <f:setPropertyActionListener target="#{bookingController.selectedBillSession}" value="#{bs}"/>
                 </h:commandLink>
             </p:column> 
-            <p:column headerText="P/A" filterBy="#{bs.present}" filterMatchMode="contains">                                      
-                <h:commandLink action="channel_booking"> <p:outputLabel value="Absent"  rendered="#{bs.present==false}"/>  
+            <p:column headerText="P/A" filterBy="#{bs.absent}" filterMatchMode="contains">                                      
+                <h:commandLink action="channel_booking"> <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
                     <f:setPropertyActionListener target="#{bookingController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
                     <f:setPropertyActionListener target="#{bookingController.staff}" value="#{bs.serviceSession.staff}"/>
                     <f:setPropertyActionListener target="#{bookingController.selectedServiceSession}" value="#{bs.serviceSession}"/>

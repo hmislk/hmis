@@ -15,5 +15,9 @@ public enum HistoryType {
     Order,
     GoodReceive,
     Stock,
-    MonthlyRecord,
+    ChannelBooking,
+    ChannelBookingCancel,
+    ChannelDeposit,
+    ChannelDepositCancel,
+    
 }

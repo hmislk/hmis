@@ -175,7 +175,7 @@ public class WebUserController implements Serializable {
         }
 
         for (WebUserPrivilege w : getSessionController().getUserPrivileges()) {
-            if (w.getPrivilege().equals(Privileges.valueOf(privilege))) {
+            if (w.getPrivilege() != null && w.getPrivilege().equals(Privileges.valueOf(privilege))) {
 
                 hasPri = true;
                 return hasPri;
@@ -319,7 +319,7 @@ public class WebUserController implements Serializable {
         getCurrent().setWebUserPerson(p);
         setSpeciality(null);
         currentPrivilegeses = null;
-      
+
     }
 
     public SecurityController getSecurityController() {
@@ -355,12 +355,12 @@ public class WebUserController implements Serializable {
 
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to save");
-            return ;
+            return;
         }
 
         if (userNameAvailable(getCurrent().getName())) {
             UtilityController.addErrorMessage("User name already exists. Plese enter another user name");
-            return ;
+            return;
         }
         Staff staff = new Staff();
         getCurrent().setActivated(true);
@@ -405,7 +405,7 @@ public class WebUserController implements Serializable {
         prepairAddNewUser();
         selectText = "";
         UtilityController.addSuccessMessage("New User Added");
-       
+
     }
 
     public List<WebUser> getToApproveUsers() {
