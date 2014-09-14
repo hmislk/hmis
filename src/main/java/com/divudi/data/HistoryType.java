@@ -15,4 +15,5 @@ public enum HistoryType {
     Order,
     GoodReceive,
     Stock,
+    MonthlyRecord,
 }
