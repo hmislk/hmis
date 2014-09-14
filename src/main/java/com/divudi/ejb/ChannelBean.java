@@ -93,7 +93,7 @@ public class ChannelBean {
         return billFee;
     }
 
-    public int getBillSessionsCount(ServiceSession ss) {
+    public int getBillSessionsCount(ServiceSession ss, Date date) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select count(bs) From BillSession bs "
@@ -103,7 +103,7 @@ public class ChannelBean {
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
-        hh.put("ssDate", ss.getSessionAt());
+        hh.put("ssDate", date);
         hh.put("ser", ss);
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
@@ -123,6 +123,7 @@ public class ChannelBean {
 
     public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessions(List<ServiceSession> inputSessions) {
         int sessionDayCount = 0;
+        System.err.println("Passing Sessions " + inputSessions);
         List<ServiceSession> createdSessions = new ArrayList<>();
 
         if (inputSessions == null || inputSessions.isEmpty()) {
@@ -164,7 +165,7 @@ public class ChannelBean {
                         newSs.setId(ss.getId());
                         newSs.setSessionAt(nowDate);
                         newSs.setSessionDate(nowDate);
-                        newSs.setDisplayCount(getBillSessionsCount(newSs));
+                        newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setStaff(ss.getStaff());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
@@ -193,7 +194,7 @@ public class ChannelBean {
                         newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
                         newSs.setSessionAt(nowDate);
-                        newSs.setDisplayCount(getBillSessionsCount(newSs));
+                        newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setStaff(ss.getStaff());
                         newSs.setSessionDate(nowDate);
                         //Temprory
@@ -216,13 +217,15 @@ public class ChannelBean {
             nowDate = nc.getTime();
 
         }
+
+        System.err.println("Created Sessions  " + createdSessions);
         return createdSessions;
     }
 
     public Date calSessionTime(ServiceSession serviceSession) {
         Calendar starting = Calendar.getInstance();
         starting.setTime(serviceSession.getStartingTime());
-        int count = getBillSessionsCount(serviceSession);
+        int count = getBillSessionsCount(serviceSession,serviceSession.getSessionAt());
 
         if (count == 0) {
             return starting.getTime();
