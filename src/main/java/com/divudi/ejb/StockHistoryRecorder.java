@@ -45,7 +45,7 @@ public class StockHistoryRecorder {
     StockHistoryFacade stockHistoryFacade;
 
 //    @Schedule(minute = "1", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "1", persistent = false)
-    @Schedule(minute = "48", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "9", persistent = false)
+    @Schedule(minute = "58", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "10", persistent = false)
     public void myTimer() {
         Date startTime = new Date();
         System.out.println("Start writing stock history: " +startTime);
