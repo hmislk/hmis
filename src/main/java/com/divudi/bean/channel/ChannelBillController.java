@@ -27,7 +27,9 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
+import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -48,6 +50,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 
@@ -106,7 +109,7 @@ public class ChannelBillController implements Serializable {
     @EJB
     private ChannelBean channelBean;
     List<BillItem> billItems;
-
+    
     public Patient getNewPatient() {
         if (newPatient == null) {
             newPatient = new Patient();
@@ -532,7 +535,7 @@ public class ChannelBillController implements Serializable {
 
         rb.setNetTotal(0 - getRefundableTotal());
         rb.setTotal(0 - getRefundableTotal());
-        rb.setPaidAmount(0 - getRefundableTotal());   
+        rb.setPaidAmount(0 - getRefundableTotal());
 
         getBillFacade().create(rb);
 
@@ -648,6 +651,9 @@ public class ChannelBillController implements Serializable {
         institution = null;
         refundableTotal = 0;
     }
+    
+    @Inject
+    AgentReferenceBookController agentReferenceBookController;
 
     private boolean errorCheck() {
         if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
@@ -696,6 +702,12 @@ public class ChannelBillController implements Serializable {
 
         if (getSs().getMaxNo() != 0.0 && getbookingController().getSelectedServiceSession().getDisplayCount() >= getSs().getMaxNo()) {
             UtilityController.addErrorMessage("No Space to Book");
+            return true;
+        }
+
+        
+        if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo())) {
+            UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
             return true;
         }
 
@@ -779,7 +791,7 @@ public class ChannelBillController implements Serializable {
     }
 
     private BillItem createBillItem(Bill bill) {
-        BillItem bi = new BillItem();        
+        BillItem bi = new BillItem();
         bi.setAdjustedValue(0.0);
         bi.setAgentRefNo(agentRefNo);
         bi.setBill(bill);
@@ -863,7 +875,6 @@ public class ChannelBillController implements Serializable {
         bill.setAppointmentAt(getbookingController().getSelectedServiceSession().getSessionAt());
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
-        
 
         if (getPatientTabId().equals("tabNewPt")) {
             bill.setPatient(newPatient);
@@ -1153,5 +1164,14 @@ public class ChannelBillController implements Serializable {
     public void setBillBeanController(BillBeanController billBeanController) {
         this.billBeanController = billBeanController;
     }
+
+    public AgentReferenceBookController getAgentReferenceBookController() {
+        return agentReferenceBookController;
+    }
+
+    public void setAgentReferenceBookController(AgentReferenceBookController agentReferenceBookController) {
+        this.agentReferenceBookController = agentReferenceBookController;
+    }
+
 
 }
