@@ -43,25 +43,27 @@
                                 update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
                                 listener="#{bookingController.fillBillSessions}" />  
 
-                        <p:column headerText="Date">
-                            <h:outputLabel value="#{ses.sessionAt}">
-                                <f:convertDateTime pattern="dd/MM/yy"/>
-                            </h:outputLabel>
-                        </p:column>
+
                         <p:column headerText="Session">
                             #{ses.name}
                         </p:column>
                         <p:column headerText="Max">
                             #{ses.maxNo}
                         </p:column>
-                        <p:column headerText="Time">
-                            <h:outputLabel value="#{ses.startingTime}">
-                                <f:convertDateTime pattern="hh:mm a"/>
-                            </h:outputLabel>
-                        </p:column>
                         <p:column headerText="Booked">
-                           #{ses.displayCount}
+                            #{ses.displayCount}
                         </p:column>
+                        <p:column headerText="Date">
+                            <p:outputLabel value="#{ses.sessionAt}">
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Time">
+                            <p:outputLabel value="#{ses.startingTime}">
+                                <f:convertDateTime pattern="hh:mm a"/>
+                            </p:outputLabel>
+                        </p:column>
+
                         <p:column headerText="Fee">
                             <h:outputLabel value="#{ses.originatingSession.totalFee}">
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
