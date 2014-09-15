@@ -4,15 +4,18 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.data.BillType;
 import static com.divudi.data.SessionNumberType.ByCategory;
 import static com.divudi.data.SessionNumberType.ByItem;
 import static com.divudi.data.SessionNumberType.BySubCategory;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.ServiceSession;
 import com.divudi.facade.BillSessionFacade;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -168,7 +171,7 @@ public class ServiceSessionBean {
                 + " order by b.serialNo";
         Map m = new HashMap();
         m.put("item", i);
-        m.put("sd", d);        
+        m.put("sd", d);
         billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
         return billSessions;
     }
@@ -221,14 +224,30 @@ public class ServiceSessionBean {
     }
 
     public int getSessionNumber(ServiceSession serviceSession, Date sessionDate) {
-        System.out.println("Service count "+serviceSession.getSessionNumberGenerator());
-        List<BillSession> tmp;
-        String sql = "Select bs From BillSession bs where bs.serviceSession.sessionNumberGenerator=:ss and bs.sessionDate= :ssDate";
+        System.out.println("Service count " + serviceSession.getSessionNumberGenerator());
+        
+        BillType[] billTypes = {BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff};
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select count(bs) From BillSession bs where "
+                + " bs.serviceSession.sessionNumberGenerator=:ss "
+                + " and bs.bill.billType in :bt "
+                + " and type(bs.bill)=:class"
+                + " and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
         hh.put("ss", serviceSession.getSessionNumberGenerator());
-        tmp = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-        return tmp.size() + 1;
+        Long lgValue = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
+        if (lgValue == null) {
+            return 1;
+        }
+
+        return lgValue.intValue() + 1;
     }
 
 }

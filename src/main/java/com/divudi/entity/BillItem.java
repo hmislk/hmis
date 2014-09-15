@@ -210,6 +210,21 @@ public class BillItem implements Serializable {
         hospitalFee = 0 - billItem.getHospitalFee();
     }
 
+    public void invertValue() {
+        if (getQty() != null) {
+            qty = 0 - getQty();
+        }
+        Rate = 0 - getRate();
+        discount = 0 - getDiscount();
+        netRate = 0 - getNetRate();
+        grossValue = 0 - getGrossValue();
+        marginValue = 0 - getMarginValue();
+        netValue = 0 - getNetValue();
+        adjustedValue = 0 - getAdjustedValue();
+        staffFee = 0 - getStaffFee();
+        hospitalFee = 0 - getHospitalFee();
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -594,6 +609,8 @@ public class BillItem implements Serializable {
 
         return tmp;
     }
+    
+    
 
     public void setBillFees(List<BillFee> billFees) {
         this.billFees = billFees;

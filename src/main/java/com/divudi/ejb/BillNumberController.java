@@ -8,9 +8,12 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.RefundBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
@@ -54,8 +57,12 @@ public class BillNumberController {
 
     public String institutionBillNumberGenerator(Institution ins, Bill bill, BillType billType, BillNumberSuffix billNumberSuffix) {
 
-        String sql = "SELECT count(b) FROM Bill b where type(b)=:type and b.retired=false AND "
-                + " b.institution=:ins AND b.billType=:btp and b.createdAt is not null";
+        String sql = "SELECT count(b) FROM Bill b"
+                + "  where type(b)=:type "
+                + " and b.retired=false"
+                + " AND b.institution=:ins "
+                + " AND b.billType=:btp "
+                + " and b.createdAt is not null";
         String result = "";
         HashMap hm = new HashMap();
         hm.put("ins", ins);
@@ -77,6 +84,47 @@ public class BillNumberController {
                 result = ins.getInstitutionCode() + "/" + 1;
             }
 
+        }
+
+        return result;
+    }
+
+    public String institutionChannelBillNumberGenerator(Institution ins, Bill bill) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "SELECT count(b) FROM Bill b"
+                + "  where type(b)=:type "
+                + " and b.retired=false"
+                + " AND b.institution=:ins "
+                + " and b.billType in :bt "
+                + " and b.createdAt is not null";
+        String result = "";
+        HashMap hm = new HashMap();
+        hm.put("ins", ins);
+        hm.put("bt", bts);
+        hm.put("type", bill.getClass());
+        Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+
+        String suffix = "";
+
+        if (bill instanceof BilledBill) {
+            suffix = "CHANN";
+        }
+
+        if (bill instanceof CancelledBill) {
+            suffix = "CHANNCAN";
+        }
+
+        if (bill instanceof RefundBill) {
+            suffix = "CHANNREF";
+        }
+
+        if (i != null) {
+            result = ins.getInstitutionCode() + suffix + "/" + (i + 1);
+        } else {
+            result = ins.getInstitutionCode() + suffix + "/" + 1;
         }
 
         return result;
@@ -279,23 +327,35 @@ public class BillNumberController {
         }
     }
 
-    public String bookingIdGenerator(Institution institution) {
-
-        String sql = "SELECT count(b) FROM BilledBill b "
-                + " where b.retired=false "
-                + "  AND (b.billType= :btp1 or b.billType=:btp2 )";
+    public String bookingIdGenerator(Institution institution, Bill bill) {
+        BillType[] billTypes = BillType.ChannelCashFlow.allChildren();
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "SELECT count(b) FROM BillSession b "
+                + " where b.bill.retired=false "
+                + "  AND type(b.bill)=:class "
+                + "  AND b.bill.billType in :bt ";
         String result;
         HashMap h = new HashMap();
-        h.put("btp1", BillType.ChannelPaid);
-        h.put("btp2", BillType.ChannelCredit);
+        h.put("bt", bts);
+        h.put("class", bill.getClass());
+
+        String suff = "";
+
+        if (bill instanceof CancelledBill) {
+            suff = "CAN";
+        }
+
+        if (bill instanceof RefundBill) {
+            suff = "REF";
+        }
 
         Long b = getBillFacade().findAggregateLong(sql, h, TemporalType.DATE);
 
         if (b != 0) {
-            result = institution.getInstitutionCode() + "CHAN" + (b + 1) + "";
+            result = institution.getInstitutionCode() + "CHANN" + suff + "/" + (b + 1) + "";
             return result;
         } else {
-            result = institution.getInstitutionCode() + "CHAN" + 1 + "";
+            result = institution.getInstitutionCode() + "CHANN" + suff + "/" + 1 + "";
             return result;
         }
 
@@ -522,7 +582,7 @@ public class BillNumberController {
         return result;
 
     }
-
+    
     public String storeInventryItemNumberGenerator() {
         HashMap hm = new HashMap();
         String sql = "SELECT count(b) FROM Amp b where b.retired=false and b.departmentType=:dep ";
@@ -535,6 +595,19 @@ public class BillNumberController {
         return result;
 
     }
+
+//    public String storeInventryItemNumberGenerator() {
+//        HashMap hm = new HashMap();
+//        String sql = "SELECT count(b) FROM Amp b where b.retired=false and b.departmentType=:dep ";
+//        hm.put("dep", DepartmentType.Inventry);
+//        String result;
+//        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
+//
+//        result = dd.toString();
+//
+//        return result;
+//
+//    }
 
     public String serialNumberGenerater(Institution ins, Department toDept, Item item) {
         if (ins == null) {

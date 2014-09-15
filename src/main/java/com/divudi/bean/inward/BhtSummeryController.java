@@ -1462,6 +1462,7 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void saveRoomBillFee(List<PatientRoom> patientRooms, BillItem bItem) {
+        List<BillFee> list = new ArrayList<>();
         for (PatientRoom pt : patientRooms) {
             BillFee tmp = new BillFee();
             tmp.setBill(bItem.getBill());
@@ -1477,9 +1478,11 @@ public class BhtSummeryController implements Serializable {
                 getBillFeeFacade().edit(tmp);
             }
 
-            bItem.getBillFees().add(tmp);
+            list.add(tmp);
 
         }
+
+        bItem.setBillFees(list);
 
     }
 

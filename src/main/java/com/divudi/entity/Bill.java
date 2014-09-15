@@ -321,8 +321,28 @@ public class Bill implements Serializable {
         saleValue = 0 - bill.getSaleValue();
         freeValue = 0 - bill.getFreeValue();
         grantTotal = 0 - bill.getGrantTotal();
-        staffFee = bill.getStaffFee();
-        hospitalFee = bill.getHospitalFee();
+        staffFee = 0 - bill.getStaffFee();
+        hospitalFee = 0 - bill.getHospitalFee();
+
+    }
+
+    public void invertValue() {
+        staffFee = 0 - getStaffFee();
+        performInstitutionFee = 0 - getPerformInstitutionFee();
+        billerFee = 0 - getBillerFee();
+        discount = 0 - getDiscount();
+        netTotal = 0 - getNetTotal();
+        total = 0 - getTotal();
+        discountPercent = 0 - getDiscountPercent();
+        paidAmount = 0 - getPaidAmount();
+        balance = 0 - getBalance();
+        cashPaid = 0 - getCashPaid();
+        cashBalance = 0 - getCashBalance();
+        saleValue = 0 - getSaleValue();
+        freeValue = 0 - getFreeValue();
+        grantTotal = 0 - getGrantTotal();
+        staffFee = 0 - getStaffFee();
+        hospitalFee = 0 - getHospitalFee();
 
     }
 
@@ -350,7 +370,8 @@ public class Bill implements Serializable {
         bank = bill.getBank();
         chequeDate = bill.getChequeDate();
         referenceInstitution = bill.getReferenceInstitution();
-
+        bookingId = bill.getBookingId();
+        appointmentAt = bill.getAppointmentAt();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -1418,6 +1439,5 @@ public class Bill implements Serializable {
     public void setAppointmentAt(Date appointmentAt) {
         this.appointmentAt = appointmentAt;
     }
-    
 
 }

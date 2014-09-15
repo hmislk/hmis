@@ -79,10 +79,7 @@ public class StorePurchaseController implements Serializable {
     public void setBillItemController(BillItemController billItemController) {
         this.billItemController = billItemController;
     }
-    
-    
-    
-    
+
     ////////////
     private BillItem currentBillItem;
     BillItem currentExpense;
@@ -92,7 +89,6 @@ public class StorePurchaseController implements Serializable {
     //  private List<PharmacyItemData> pharmacyItemDatas;
     List<BillItem> billExpenses;
     BillItem parentBillItem;
-    
 
     @EJB
     private CommonFunctions commonFunctions;
@@ -111,8 +107,6 @@ public class StorePurchaseController implements Serializable {
         this.parentBillItem = parentBillItem;
     }
 
-    
-    
     public void createPurchaseExpencess() {
 
         String sql;
@@ -255,6 +249,22 @@ public class StorePurchaseController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    private void saveParentBillItem(BillItem billItem) {
+
+        if (billItem == null) {
+            return;
+        }
+
+        if (billItem.getParentBillItem() != null) {
+            saveParentBillItem(billItem.getParentBillItem());
+        }
+
+        if (billItem.getId() == null) {
+            billItemFacade.create(billItem);
+        }
+
+    }
+
     public void settle() {
 
         if (getBill().getFromInstitution() == null) {
@@ -273,8 +283,12 @@ public class StorePurchaseController implements Serializable {
         //   saveBillComponent();
         getPharmacyBillBean().calSaleFreeValue(getBill());
 
+        //Restting IDs
         for (BillItem i : getBillItems()) {
             i.setId(null);
+        }
+
+        for (BillItem i : getBillItems()) {
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
@@ -284,7 +298,12 @@ public class StorePurchaseController implements Serializable {
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getBill());
-            getBillItemFacade().create(i);
+
+            saveParentBillItem(i.getParentBillItem());
+
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            }
 
             getPharmaceuticalBillItemFacade().create(tmpPh);
 
@@ -364,28 +383,22 @@ public class StorePurchaseController implements Serializable {
         }
 
 //        setBatch();
-        getCurrentBillItem().setSearialNo(getBillItems().size());
-    
-        getCurrentBillItem().setId((currentBillItem.getSearialNoInteger()).longValue());
-        
-//        getCurrentBillItem().setSearialNo(getBillItems().size() + 1);
-        
-        System.out.println("1. getCurrentBillItem().getParentBillItem(); = " + getCurrentBillItem().getParentBillItem());
+        getCurrentBillItem().setSearialNo(getBillItems().size() + 1);
+        getCurrentBillItem().setId(getCurrentBillItem().getSearialNoInteger().longValue());
+
+//        getCurrentBillItem().setSearialNo(getBillItems().size() + 1);      
         getCurrentBillItem().setParentBillItem(parentBillItem);
-        System.out.println("2. getCurrentBillItem().getParentBillItem(); = " + getCurrentBillItem().getParentBillItem());
-        parentBillItem =new BillItem();
-        parentBillItem =null;
-        System.out.println("3. getCurrentBillItem().getParentBillItem(); = " + getCurrentBillItem().getParentBillItem());
+
         getBillItems().add(currentBillItem);
 
         currentBillItem = null;
-        
+
         getBillItemController().setItems(billItems);
 
         calTotal();
     }
-    
-    public void itemListner(BillItem bi){
+
+    public void itemListner(BillItem bi) {
         getCurrentBillItem().setParentBillItem(bi);
     }
 

@@ -114,6 +114,7 @@ public class Shift implements Serializable {
         cal.setTime(getEndingTime());
         int eHour = cal.get(Calendar.HOUR_OF_DAY);
 
+        
         if (sHour < eHour) {
             durationHour = eHour - sHour;
         } else {
@@ -121,6 +122,7 @@ public class Shift implements Serializable {
             durationHour += 12 - eHour;
         }
 
+        
         return durationHour;
     }
 

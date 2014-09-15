@@ -103,7 +103,7 @@
                          
                         <p:selectOneMenu id="cmbParent" value="#{storePurchaseController.parentBillItem}" converter="temBillItemConverter"  >
                             <f:selectItem itemLabel="Select Parent Item" />
-                            <f:selectItems   value="#{storePurchaseController.billItems}" var="bi" itemValue="#{bi}" itemLabel="#{bi.searialNo}" />
+                            <f:selectItems   value="#{storePurchaseController.billItems}" var="bi" itemValue="#{bi}" itemLabel="#{bi.item.name}" />
                             <f:ajax event="change" execute="@this" /> 
                         </p:selectOneMenu>
                         

@@ -69,7 +69,6 @@ import javax.persistence.TemporalType;
  *
  * @author Buddhika
  */
-
 @Named
 @ApplicationScoped
 public class PharmacyBean {
@@ -185,7 +184,7 @@ public class PharmacyBean {
         us.setCreater(webUser);
         us.setCreatedAt(new Date());
         us.setUserStockContainer(userStockContainer);
-     //   System.out.println("2");
+        //   System.out.println("2");
         if (us.getId() == null) {
             getUserStockFacade().create(us);
         } else {
@@ -249,11 +248,11 @@ public class PharmacyBean {
         }
 
     }
-    
+
     @EJB
     IssueRateMarginsFacade issueRateMarginsFacade;
-    
-     public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
+
+    public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
         String sql;
         HashMap hm = new HashMap();
         sql = "select m from IssueRateMargins m "
@@ -364,9 +363,8 @@ public class PharmacyBean {
 //        if (bill.getBillItems().isEmpty() || bill.isCancelled()) {
 //            return null;
 //        }
-        
         //@Safrin
-         if (bill.isCancelled()) {
+        if (bill.isCancelled()) {
             return null;
         }
 
@@ -610,7 +608,6 @@ public class PharmacyBean {
 
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Department department) {
         //System.err.println("Adding Stock : ");
-
         String sql;
         HashMap hm = new HashMap();
         sql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
@@ -623,7 +620,6 @@ public class PharmacyBean {
             s.setDepartment(department);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
         }
-
         if (s.getId() == null || s.getId() == 0) {
             //System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() + qty);

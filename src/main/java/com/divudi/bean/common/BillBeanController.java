@@ -819,12 +819,12 @@ public class BillBeanController implements Serializable {
     public double calBillTotal(BillType billType, boolean isOpd, Date fromDate, Date toDate, Institution institution) {
         String sql;
         Map temMap = new HashMap();
-        sql = " SELECT sum(b.netTotal) "
-                + " FROM Bill b"
-                + " WHERE b.retired=false "
-                + " and b.billType = :bTp "
-                + " and b.institution=:ins "
-                + " and b.createdAt between :fromDate and :toDate ";
+        sql = " SELECT sum(b.netValue) "
+                + " FROM BillItem b"
+                + " WHERE b.bill.retired=false "
+                + " and b.bill.billType = :bTp "
+                + " and b.bill.institution=:ins "
+                + " and b.bill.createdAt between :fromDate and :toDate ";
 
         if (isOpd) {
             sql += " and b.referenceBill.billType=:refTp";
@@ -833,7 +833,6 @@ public class BillBeanController implements Serializable {
             sql += " and b.patientEncounter is not null ";
         }
 
-        sql += " order by b.id";
 
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
