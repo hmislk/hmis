@@ -834,11 +834,11 @@ public class ChannelBillController implements Serializable {
                 bf.setFeeValue(f.getFee());
             }
 
-            if (paymentMethod.equals(PaymentMethod.Credit)) {
-                bf.setPaidValue(0.0);
-            } else {
-                bf.setPaidValue(bf.getFeeValue());
-            }
+//            if (paymentMethod.equals(PaymentMethod.Credit)) {
+//                bf.setPaidValue(0.0);
+//            } else {
+//                bf.setPaidValue(bf.getFeeValue());
+//            }
 
             billFeeFacade.create(bf);
             billFeeList.add(bf);

@@ -20,47 +20,27 @@
                                         <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{channelStaffPaymentBillController.speciality}" id="acSpeciality"
                                                         completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                         converter="specilityCon"   >
-                                            <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff tblFee" listener="#{channelStaffPaymentBillController.calculateDueFees}" />
+                                            <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff" />
                                         </p:autoComplete>
                                         <p:watermark value="Speciality" for="acSpeciality"/>
 
 
-                                        <p:autoComplete minQueryLength="2"  style="width: 400px;" forceSelection="true" value="#{channelStaffPaymentBillController.currentStaff}" id="scStaff"
-                                                        completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                        converter="stfcon"   >
-                                            <f:ajax event="itemSelect" execute="scStaff" render="tblFee pTotals" listener="#{channelStaffPaymentBillController.calculateDueFees}" />
+                                        <p:autoComplete minQueryLength="2"  style="width: 400px;"
+                                                        forceSelection="true" 
+                                                        value="#{channelStaffPaymentBillController.currentStaff}" id="scStaff"
+                                                        completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
+                                                        itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                        converter="stfcon"   >                                            
                                         </p:autoComplete>
+
+                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy" />
                                         <p:watermark value="Staff" for="scStaff"/>
 
-                                        <p:calendar id="date" value="#{channelStaffPaymentBillController.date}" navigator="false" pattern="dd MMMM yyyy" >
-                                            <f:ajax event="dateSelect" execute="@this scStaff"  render="tbl"/>
-                                        </p:calendar>
+                                        <p:commandButton ajax="false" value="Process"  action="#{channelStaffPaymentBillController.calculateDueFees}"/>
+                                        <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController}"/>
                                     </h:panelGrid>
 
-
-
-                                    <p:dataTable value="#{channelStaffPaymentBillController.serviceSessions}" rowKey="#{ses.id}"
-                                                 id="tbl" var="ses"
-                                                 selectionMode="single" 
-                                                 selection="#{channelStaffPaymentBillController.selectedServiceSession}" >
-
-                                        <p:ajax event="rowSelect" listener="#{channelStaffPaymentBillController.calculateDueFees}" process="tbl :#{p:component('scStaff')} :#{p:component('date')}" update=":#{p:component('tblFee')} :#{p:component('lblDue')}" />  
-
-                                        <p:column headerText="Session Name">
-                                            <h:outputLabel value="#{ses.name}"/>
-                                        </p:column>
-
-                                        <p:column headerText="Max Count">
-                                            <h:outputLabel value="#{ses.maxNo}"/>
-                                        </p:column>
-
-                                        <p:column headerText="Time">
-                                            <h:outputLabel value="#{ses.startingTime}">
-                                                <f:convertDateTime pattern="hh:mm:ss a"/>
-                                            </h:outputLabel>
-                                        </p:column>
-
-                                    </p:dataTable>
 
 
                                 </h:panelGrid>
@@ -140,8 +120,17 @@
                         </p:panel>
                     </h:panelGroup>
 
-                    <bi:staffBill controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                    <h:panelGroup rendered="#{channelStaffPaymentBillController.printPreview}">
 
+
+                        <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController.makenull()}" />
+
+                                         <bi:staffBill id="gpBillPreview" controller="#{channelStaffPaymentBillController}" 
+                                      bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                    </h:panelGroup>
 
 
 
