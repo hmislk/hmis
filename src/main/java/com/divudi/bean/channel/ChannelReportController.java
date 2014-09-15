@@ -73,8 +73,8 @@ public class ChannelReportController implements Serializable {
     public void createBillSession_report_1() {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
-        String sql = "SELECT bs FROM BillSession bs"
-                + "  where type(bs.bill)=:class "
+        String sql = "SELECT b FROM BillSession b "
+                + "  where type(b.bill)=:class "
                 + " and b.bill.retired=false "
                 + " and b.bill.paidAmount!=0"
                 + " AND b.bill.institution=:ins "
@@ -88,8 +88,8 @@ public class ChannelReportController implements Serializable {
         hm.put("class", BilledBill.class);
         billSessionsBilled = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
-        sql = "SELECT bs FROM BillSession bs"
-                + "  where type(bs.bill)=:class "
+        sql = "SELECT b FROM BillSession b"
+                + "  where type(b.bill)=:class "
                 + " and b.bill.retired=false "
                 + " and b.bill.paidAmount!=0"
                 + " AND b.bill.institution=:ins "
@@ -103,8 +103,8 @@ public class ChannelReportController implements Serializable {
         hm.put("class", CancelledBill.class);
         billSessionsCancelled = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
-        sql = "SELECT bs FROM BillSession bs"
-                + "  where type(bs.bill)=:class "
+        sql = "SELECT b FROM BillSession b "
+                + "  where type(b.bill)=:class "
                 + " and b.bill.retired=false "
                 + " and b.bill.paidAmount!=0"
                 + " AND b.bill.institution=:ins "
