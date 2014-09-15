@@ -282,7 +282,13 @@
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
-                                             action="#{channelBillController.cancel}"
+                                             action="#{channelBillController.cancelCashFlowBill}"
+                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true}" 
+                                             onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false" value="Cancel" 
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
+                                             action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
                                              onclick="onSubmitButton();"/>
@@ -307,7 +313,15 @@
                                 </p:dataTable>
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Refund" 
-                                             action="#{channelBillController.refund}" 
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
+                                             action="#{channelBillController.refundCashFlowBill}" 
+                                             disabled="#{channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true}"
+                                             onclick="onSubmitButton();"/>
+
+                            <p:commandButton ajax="false" value="Refund" 
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
+                                             action="#{channelBillController.refundCreditPaidBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
