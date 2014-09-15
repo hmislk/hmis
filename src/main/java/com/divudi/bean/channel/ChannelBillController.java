@@ -27,7 +27,9 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
+import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -48,6 +50,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 
@@ -106,7 +109,7 @@ public class ChannelBillController implements Serializable {
     @EJB
     private ChannelBean channelBean;
     List<BillItem> billItems;
-
+    
     public Patient getNewPatient() {
         if (newPatient == null) {
             newPatient = new Patient();
@@ -149,10 +152,10 @@ public class ChannelBillController implements Serializable {
         BillItem bi = savePaidBillItem(b);
         savePaidBillFee(b, bi);
         BillSession bs = savePaidBillSession(b, bi);
-
         getBillSession().setPaidBillSession(bs);
 
         getBillSession().getBill().setPaidAmount(b.getPaidAmount());
+        getBillSession().getBill().setPaidBill(b);
         getBillFacade().edit(getBillSession().getBill());
 
 //        editBillSession(b, bi);
@@ -309,34 +312,48 @@ public class ChannelBillController implements Serializable {
 
     private boolean errorCheckCancelling() {
 
-        if (getBillSession() == null) {
-            return true;
-        }
         return false;
     }
 
-    public void cancel() {
+    public void cancelCashFlowBill() {
+        if (getBillSession() == null) {
+            return;
+        }
+
+        cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
+
+    }
+
+    public void cancel(Bill bill, BillItem billItem, BillSession billSession) {
         if (errorCheckCancelling()) {
             return;
         }
 
-        CancelledBill cb = createCancelBill();
+        CancelledBill cb = createCancelBill(bill);
 
-        BillItem cItem = cancelBillItems(cb);
-        BillSession cbs = cancelBillSession(cb, cItem);
+        BillItem cItem = cancelBillItems(billItem, cb);
+        BillSession cbs = cancelBillSession(billSession, cb, cItem);
 
-        getBillSession().getBill().setCancelled(true);
-        getBillSession().getBill().setCancelledBill(cb);
-        getBillFacade().edit(getBillSession().getBill());
+        bill.setCancelled(true);
+        bill.setCancelledRefundedAt(new Date());
+        bill.setCancelledBill(cb);
+        getBillFacade().edit(bill);
 
         //Update BillSession        
-        getBillSession().setReferenceBillSession(cbs);
-        billSessionFacade.edit(getBillSession());
+        billSession.setReferenceBillSession(cbs);
+        billSessionFacade.edit(billSession);
 
 //        if (getBillSession().getBill().getReferenceBill() != null) {
 //            getBillSession().setBill(getBillSession().getBill().getReferenceBill());
 //            getBillSessionFacade().edit(getBillSession());
 //        }
+        if (cb.getPaymentMethod() == PaymentMethod.Agent) {
+            updateBallance(cb.getFromInstitution(),
+                    0 - cb.getNetTotal(),
+                    HistoryType.ChannelBookingCancel,
+                    cb, cItem, cbs, cItem.getAgentRefNo());
+        }
+
         UtilityController.addSuccessMessage("Cancelled");
 
     }
@@ -355,8 +372,7 @@ public class ChannelBillController implements Serializable {
 //
 //        cancelBillFeeOld(can, b);
 //    }
-    private BillItem cancelBillItems(CancelledBill can) {
-        BillItem bi = billSession.getBillItem();
+    private BillItem cancelBillItems(BillItem bi, CancelledBill can) {
 
         BillItem b = new BillItem();
         b.setBill(can);
@@ -373,9 +389,9 @@ public class ChannelBillController implements Serializable {
         return b;
     }
 
-    private BillSession cancelBillSession(CancelledBill can, BillItem canBillItem) {
+    private BillSession cancelBillSession(BillSession billSession, CancelledBill can, BillItem canBillItem) {
         BillSession bs = new BillSession();
-        bs.copy(getBillSession());
+        bs.copy(billSession);
         bs.setBill(can);
         bs.setBillItem(canBillItem);
         bs.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -397,12 +413,12 @@ public class ChannelBillController implements Serializable {
         return bs;
     }
 
-    private CancelledBill createCancelBill() {
+    private CancelledBill createCancelBill(Bill bill) {
         CancelledBill cb = new CancelledBill();
 
-        cb.copy(getBillSession().getBill());
-        cb.invertValue(getBillSession().getBill());
-        cb.setBilledBill(getBillSession().getBill());
+        cb.copy(bill);
+        cb.invertValue(bill);
+        cb.setBilledBill(bill);
         cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -414,10 +430,6 @@ public class ChannelBillController implements Serializable {
 
         getBillFacade().create(cb);
 
-//        if (cb.getPaymentMethod() == PaymentMethod.Agent) {
-//            updateBallance(cb.getFromInstitution(), cb.getNetTotal(), HistoryType.ChannelBookingCancel,
-//                    cb, null, billSession);
-//        }
         return cb;
     }
 
@@ -532,7 +544,7 @@ public class ChannelBillController implements Serializable {
 
         rb.setNetTotal(0 - getRefundableTotal());
         rb.setTotal(0 - getRefundableTotal());
-        rb.setPaidAmount(0 - getRefundableTotal());   
+        rb.setPaidAmount(0 - getRefundableTotal());
 
         getBillFacade().create(rb);
 
@@ -557,10 +569,15 @@ public class ChannelBillController implements Serializable {
         }
     }
 
-    public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, BillItem billItem, BillSession billSession) {
+    public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, BillItem billItem, BillSession billSession, String refNo) {
         AgentHistory agentHistory = new AgentHistory();
+        agentHistory.setCreatedAt(new Date());
+        agentHistory.setBill(bill);
+        agentHistory.setBillItem(billItem);
+        agentHistory.setBillSession(billSession);
         agentHistory.setBeforeBallance(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
+        agentHistory.setReferenceNo(refNo);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
@@ -648,6 +665,9 @@ public class ChannelBillController implements Serializable {
         institution = null;
         refundableTotal = 0;
     }
+    
+    @Inject
+    AgentReferenceBookController agentReferenceBookController;
 
     private boolean errorCheck() {
         if (getbookingController().getSelectedServiceSession().getOriginatingSession() == null) {
@@ -696,6 +716,12 @@ public class ChannelBillController implements Serializable {
 
         if (getSs().getMaxNo() != 0.0 && getbookingController().getSelectedServiceSession().getDisplayCount() >= getSs().getMaxNo()) {
             UtilityController.addErrorMessage("No Space to Book");
+            return true;
+        }
+
+        
+        if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo())) {
+            UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
             return true;
         }
 
@@ -779,7 +805,7 @@ public class ChannelBillController implements Serializable {
     }
 
     private BillItem createBillItem(Bill bill) {
-        BillItem bi = new BillItem();        
+        BillItem bi = new BillItem();
         bi.setAdjustedValue(0.0);
         bi.setAgentRefNo(agentRefNo);
         bi.setBill(bill);
@@ -863,7 +889,6 @@ public class ChannelBillController implements Serializable {
         bill.setAppointmentAt(getbookingController().getSelectedServiceSession().getSessionAt());
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
-        
 
         if (getPatientTabId().equals("tabNewPt")) {
             bill.setPatient(newPatient);
@@ -891,6 +916,7 @@ public class ChannelBillController implements Serializable {
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
             bill.setBookingId(getBillNumberBean().bookingIdGenerator(sessionController.getInstitution(), new BilledBill()));
             bill.setPaidAmount(getAmount());
+            bill.setPaidAt(new Date());
         }
 
         bill.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -935,7 +961,7 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(savingBill);
 
         if (savingBill.getPaymentMethod() == PaymentMethod.Agent) {
-            updateBallance(savingBill.getInstitution(), savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession);
+            updateBallance(savingBill.getInstitution(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
         }
 
         return savingBill;
@@ -1153,5 +1179,14 @@ public class ChannelBillController implements Serializable {
     public void setBillBeanController(BillBeanController billBeanController) {
         this.billBeanController = billBeanController;
     }
+
+    public AgentReferenceBookController getAgentReferenceBookController() {
+        return agentReferenceBookController;
+    }
+
+    public void setAgentReferenceBookController(AgentReferenceBookController agentReferenceBookController) {
+        this.agentReferenceBookController = agentReferenceBookController;
+    }
+
 
 }

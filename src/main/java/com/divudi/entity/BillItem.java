@@ -190,6 +190,7 @@ public class BillItem implements Serializable {
         referenceBill = billItem.getReferenceBill();
         marginValue = billItem.getMarginValue();
         priceMatrix = billItem.getPriceMatrix();
+        agentRefNo=billItem.getAgentRefNo();
         //  referanceBillItem=billItem.getReferanceBillItem();
     }
 
