@@ -123,12 +123,12 @@ public class Shift implements Serializable {
             durationHour = eHour - sHour;
             System.err.println("2 " + durationHour);
         } else {
-//            System.err.println("3 ");
-//            durationHour = sHour - 12;
-//            System.err.println("4 "+durationHour);
-//            durationHour += 12 - eHour;
-//            System.err.println("5 "+durationHour);
-            durationHour = sHour - eHour;
+            System.err.println("3 ");
+            durationHour = sHour - 12;
+            System.err.println("4 "+durationHour);
+            durationHour += 12 - eHour;
+            System.err.println("5 "+durationHour);
+//            durationHour = 24 - sHour;
         }
 
         return durationHour;
