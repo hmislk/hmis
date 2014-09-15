@@ -796,16 +796,16 @@ public class HumanResourceBean {
         return getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
     
-     public StaffLeave fetchFirstStaffLeave(Staff staff, Date frmDate, Date toDate) {
+     public StaffLeave fetchFirstStaffLeave(Staff staff, Date date) {
 
         String sql = "Select s From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st"
-                + " and s.leaveDate between :frm and :to ";
+                + " and (s.fromDate >= :date and s.toDate<= :date)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
-        hm.put("frm", frmDate);
-        hm.put("to", toDate);
+        hm.put("date", date);
+//        hm.put("to", toDate);
 
         return getStaffLeaveFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
     }
