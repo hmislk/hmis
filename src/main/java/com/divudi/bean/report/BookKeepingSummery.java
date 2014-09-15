@@ -1011,6 +1011,7 @@ public class BookKeepingSummery implements Serializable {
                 + inwardPaymentTotal
                 + agentPaymentTotal
                 + creditCompanyTotal
+                + creditCompanyTotalInward
                 + pettyCashTotal;
 
     }
@@ -1075,7 +1076,6 @@ public class BookKeepingSummery implements Serializable {
 //            UtilityController.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
-
         createOPdListWithProDayEndTable();
         createOutSideFee();
         createPharmacySale();

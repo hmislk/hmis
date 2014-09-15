@@ -122,6 +122,7 @@ public class Shift implements Serializable {
             durationHour += 12 - eHour;
         }
 
+        
         return durationHour;
     }
 
