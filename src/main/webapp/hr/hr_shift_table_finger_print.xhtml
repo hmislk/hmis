@@ -49,6 +49,12 @@
                     <p:column headerText="Shift Name" styleClass="singleLine">
                         <h:outputLabel value="#{sts.shift.name}" />
                     </p:column>
+                    <p:column headerText="Leave Type" styleClass="singleLine">
+                        <p:selectOneMenu  value="#{sts.leaveType}">
+                            <f:selectItem itemLabel="Leave Type"/>
+                            <f:selectItems value="#{staffLeaveController.leaveType}"/>
+                        </p:selectOneMenu>          
+                    </p:column>
 
                     <p:column>
                         <f:facet name="header">
@@ -66,8 +72,8 @@
                     <p:column headerText="Starting Record Frm Attendence"> 
                         <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
                             <h:panelGroup  rendered="#{sts.startRecord.staffShift eq null}">
-<!--                                <h:outputLabel id="lbrStart" value="Select Start  Record"
-                                               rendered="#{sts.startRecord.recordTimeStamp eq null}"/><br/>-->
+                                <!--                                <h:outputLabel id="lbrStart" value="Select Start  Record"
+                                                                               rendered="#{sts.startRecord.recordTimeStamp eq null}"/><br/>-->
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
@@ -85,8 +91,8 @@
                     <p:column headerText="Ending Record Frm Attendence">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
                             <h:panelGroup rendered="#{sts.endRecord.staffShift eq null}">
-<!--                                <h:outputLabel id="lblEnd" value="Select End  Record"
-                                               rendered="#{sts.endRecord.recordTimeStamp eq null}"/><br/>-->
+                                <!--                                <h:outputLabel id="lblEnd" value="Select End  Record"
+                                                                               rendered="#{sts.endRecord.recordTimeStamp eq null}"/><br/>-->
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
