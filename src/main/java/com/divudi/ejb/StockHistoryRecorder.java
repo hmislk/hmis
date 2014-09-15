@@ -44,29 +44,29 @@ public class StockHistoryRecorder {
     @EJB
     StockHistoryFacade stockHistoryFacade;
 
-    @Schedule(dayOfMonth = "1",persistent = false)
-    public void myTimer() {
-        Date startTime = new Date();
-        System.out.println("Start writing stock history: " + startTime);
-        for (Department d : fetchStockDepartment()) {
-            if (!d.isRetired()) {
-                for (Item amp : fetchStockItem(d)) {
-                    if (!amp.isRetired()) {
-                        StockHistory h = new StockHistory();
-                        h.setFromDate(new Date());
-                        h.setHistoryType(HistoryType.MonthlyRecord);
-                        h.setDepartment(d);
-                        h.setItem(amp);
-                        h.setStockQty(getStockQty(amp, d));
-                        getStockHistoryFacade().create(h);
-                    }
-                }
-                System.out.println("hx finished for = " + d);
-            }
-        }
-        System.out.println("End writing stock history: " + new Date());
-//        System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
-    }
+//    @Schedule(dayOfMonth = "1",persistent = false)
+//    public void myTimer() {
+//        Date startTime = new Date();
+//        System.out.println("Start writing stock history: " + startTime);
+//        for (Department d : fetchStockDepartment()) {
+//            if (!d.isRetired()) {
+//                for (Item amp : fetchStockItem(d)) {
+//                    if (!amp.isRetired()) {
+//                        StockHistory h = new StockHistory();
+//                        h.setFromDate(new Date());
+//                        h.setHistoryType(HistoryType.MonthlyRecord);
+//                        h.setDepartment(d);
+//                        h.setItem(amp);
+//                        h.setStockQty(getStockQty(amp, d));
+//                        getStockHistoryFacade().create(h);
+//                    }
+//                }
+//                System.out.println("hx finished for = " + d);
+//            }
+//        }
+//        System.out.println("End writing stock history: " + new Date());
+////        System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
+//    }
 
     public List<Department> fetchStockDepartment() {
         String sql;
