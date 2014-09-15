@@ -355,6 +355,12 @@ public class StorePurchaseController implements Serializable {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
+        
+        if(getCurrentBillItem().getItem().getCategory() == null){
+            
+            UtilityController.addErrorMessage("Please Select Category");
+            return;
+        }
 
         if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
             UtilityController.addErrorMessage("Please enter Purchase Rate");
