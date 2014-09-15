@@ -132,6 +132,7 @@ public class BillItem implements Serializable {
     private List<BillFee> proFees = new ArrayList<>();
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;
+    
 
     public double getHospitalFee() {
         return hospitalFee;

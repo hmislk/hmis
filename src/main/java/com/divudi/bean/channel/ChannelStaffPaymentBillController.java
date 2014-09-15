@@ -560,7 +560,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public List<BillItem> getBillItems() {
         if (getCurrent() != null) {
-            String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
+            String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id = " + current.getId();
             billItems = getBillItemFacade().findBySQL(sql);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();
