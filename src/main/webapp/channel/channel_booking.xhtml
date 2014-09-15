@@ -73,7 +73,8 @@
                 </p:panel>
 
                 <p:panel header="Bookings">
-                    <p:dataTable id="tblBookingsOfSelectedSession" value="#{bookingController.billSessions}" var='bs'
+                    <p:dataTable id="tblBookingsOfSelectedSession"
+                                 value="#{bookingController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingController.selectedBillSession}">
                         <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 

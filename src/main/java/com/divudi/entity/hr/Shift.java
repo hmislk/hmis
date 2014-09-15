@@ -78,7 +78,7 @@ public class Shift implements Serializable {
     Shift previousShift;
     @ManyToOne
     Shift nextShift;
-    
+
     private boolean hideShift;
 
     public Shift getPreviousShift() {
@@ -96,8 +96,6 @@ public class Shift implements Serializable {
     public void setNextShift(Shift nextShift) {
         this.nextShift = nextShift;
     }
-    
-    
 
     public Shift() {
 
@@ -114,14 +112,25 @@ public class Shift implements Serializable {
         cal.setTime(getEndingTime());
         int eHour = cal.get(Calendar.HOUR_OF_DAY);
 
+        System.err.println("S Time " + startingTime);
+        System.err.println("E Time " + endingTime);
+
+        System.err.println("S H " + sHour);
+        System.err.println("E H " + eHour);
+
         if (sHour < eHour) {
+            System.err.println("1 ");
             durationHour = eHour - sHour;
+            System.err.println("2 " + durationHour);
         } else {
+            System.err.println("3 ");
             durationHour = sHour - 12;
+            System.err.println("4 "+durationHour);
             durationHour += 12 - eHour;
+            System.err.println("5 "+durationHour);
+//            durationHour = 24 - sHour;
         }
 
-        
         return durationHour;
     }
 
@@ -324,7 +333,6 @@ public class Shift implements Serializable {
 //    public void setCount(int count) {
 //        this.count = count;
 //    }
-
     public int getShiftOrder() {
         return shiftOrder;
     }
@@ -340,5 +348,5 @@ public class Shift implements Serializable {
     public void setHideShift(boolean hideShift) {
         this.hideShift = hideShift;
     }
-    
+
 }
