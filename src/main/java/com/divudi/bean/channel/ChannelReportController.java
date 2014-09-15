@@ -7,6 +7,8 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.channel.DateEnum;
+import com.divudi.data.channel.PaymentEnum;
 import com.divudi.data.dataStructure.ChannelDoctor;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.ChannelBean;
@@ -14,6 +16,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
@@ -70,54 +73,58 @@ public class ChannelReportController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    public void createBillSession_report_1() {
+    public List<BillSession> createBillSessionQuery(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+
         String sql = "SELECT b FROM BillSession b "
                 + "  where type(b.bill)=:class "
-                + " and b.bill.retired=false "
-                + " and b.bill.paidAmount!=0"
                 + " AND b.bill.institution=:ins "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.appointmentAt between :frm and  :to";
-        HashMap hm = new HashMap();
+                + " and b.bill.retired=false"
+                + " and type(b.bill)=:class ";
+
+        switch (paymentEnum) {
+            case Paid:
+                sql += " and b.bill.paidAmount!=0";
+                break;
+            case NotPaid:
+                sql += " and b.bill.paidAmount=0";
+                break;
+            case All:
+                break;
+        }
+
+        switch (dateEnum) {
+            case AppointmentDate:
+                sql += " and b.bill.appointmentAt between :frm and  :to";
+                break;
+            case PaidDate:
+                sql += " and b.bill.paidAt between :frm and  :to";
+                break;
+            case CreatedDate:
+                sql += " and b.bill.createdAt between :frm and  :to";
+                break;
+            case CancelledRefundedDate:
+                sql += " and b.bill.cancelledRefundedAt between :frm and  :to";
+                break;
+
+        }
+
         hm.put("ins", sessionController.getInstitution());
         hm.put("bt", bts);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
-        hm.put("class", BilledBill.class);
-        billSessionsBilled = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        hm.put("class", bill.getClass());
 
-        sql = "SELECT b FROM BillSession b"
-                + "  where type(b.bill)=:class "
-                + " and b.bill.retired=false "
-                + " and b.bill.paidAmount!=0"
-                + " AND b.bill.institution=:ins "
-                + " and b.bill.billType in :bt "
-                + " and b.bill.createdAt between :frm and  :to";
-        hm = new HashMap();
-        hm.put("ins", sessionController.getInstitution());
-        hm.put("bt", bts);
-        hm.put("frm", getFromDate());
-        hm.put("to", getToDate());
-        hm.put("class", CancelledBill.class);
-        billSessionsCancelled = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+    }
 
-        sql = "SELECT b FROM BillSession b "
-                + "  where type(b.bill)=:class "
-                + " and b.bill.retired=false "
-                + " and b.bill.paidAmount!=0"
-                + " AND b.bill.institution=:ins "
-                + " and b.bill.billType in :bt "
-                + " and b.bill.createdAt between :frm and  :to";
-        hm = new HashMap();
-        hm.put("ins", sessionController.getInstitution());
-        hm.put("bt", bts);
-        hm.put("frm", getFromDate());
-        hm.put("to", getToDate());
-        hm.put("class", RefundBill.class);
-        billSessionsReturn = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
-
+    public void createBillSession_report_1() {
+        billSessionsBilled = createBillSessionQuery(new BilledBill(), PaymentEnum.Paid, DateEnum.AppointmentDate);
+        billSessionsCancelled=createBillSessionQuery(new CancelledBill(), PaymentEnum.Paid, DateEnum.CancelledRefundedDate);
+        billSessionsReturn=createBillSessionQuery(new RefundBill(), PaymentEnum.Paid, DateEnum.CancelledRefundedDate);
     }
 
     public Date getFromDate() {
@@ -517,6 +524,5 @@ public class ChannelReportController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
-    
+
 }

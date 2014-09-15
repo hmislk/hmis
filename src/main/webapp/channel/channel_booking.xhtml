@@ -281,6 +281,7 @@
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
                             </h:panelGroup>
                             <p:commandButton ajax="false" value="Cancel" 
+                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
                                              action="#{channelBillController.cancel}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
