@@ -77,6 +77,8 @@
                                             itemLabel="#{mys.name}" 
                                             itemValue="#{mys}">                                  
                             </p:autoComplete>
+                            <h:outputLabel value="Duration Hour"/>
+                            <h:outputLabel value="#{shiftController.current.durationHour}"/>
                             <p:outputLabel value="Hide Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.hideShift}" />
                             <p:commandButton ajax="false" value="Save"  
