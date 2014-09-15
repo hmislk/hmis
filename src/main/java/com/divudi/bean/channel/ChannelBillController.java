@@ -290,13 +290,12 @@ public class ChannelBillController implements Serializable {
         }
 
         refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBillItem().getBillFees(), getBillSession().getPaidBillSession());
+        refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBillItem().getBillFees(), getBillSession());
 
-        getBillSession().getBill().setRefunded(true);
-        getBillSession().getBill().setCancelledRefundedAt(new Date());
-        billFacade.edit(getBillSession().getBill());
     }
 
     public void refund(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
+        calRefundTotal();
 
         RefundBill rb = (RefundBill) createRefundBill(bill);
         BillItem rBilItm = refundBillItems(billItem, rb);
@@ -308,7 +307,6 @@ public class ChannelBillController implements Serializable {
 
         bill.setRefunded(true);
         bill.setRefundedBill(rb);
-        bill.setCancelledRefundedAt(new Date());
         getBillFacade().edit(getBillSession().getBill());
 
     }
@@ -397,10 +395,7 @@ public class ChannelBillController implements Serializable {
         }
 
         cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
-
-        getBillSession().getBill().setCancelled(true);
-        getBillSession().getBill().setCancelledRefundedAt(new Date());
-        getBillFacade().edit(getBillSession().getBill());
+        cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
 
     }
 
@@ -415,7 +410,6 @@ public class ChannelBillController implements Serializable {
         BillSession cbs = cancelBillSession(billSession, cb, cItem);
 
         bill.setCancelled(true);
-        bill.setCancelledRefundedAt(new Date());
         bill.setCancelledBill(cb);
         getBillFacade().edit(bill);
 
@@ -554,6 +548,7 @@ public class ChannelBillController implements Serializable {
     public BillItem refundBillItems(BillItem bi, RefundBill rb) {
         BillItem rbi = new BillItem();
         rbi.copy(bi);
+        rbi.resetValue();
         rbi.setBill(rb);
         rbi.setCreatedAt(Calendar.getInstance().getTime());
         rbi.setCreater(getSessionController().getLoggedUser());
@@ -583,8 +578,19 @@ public class ChannelBillController implements Serializable {
                 newBf.setCreatedAt(new Date());
                 newBf.setCreater(sessionController.getLoggedUser());
                 billFeeFacade.create(newBf);
+
+                if (bf.getFee().getFeeType() == FeeType.Staff) {
+                    bt.setStaffFee(0 - bf.getTmpChangedValue());
+                }
+
+                if (bf.getFee().getFeeType() == FeeType.OwnInstitution) {
+                    bt.setHospitalFee(0 - bf.getTmpChangedValue());
+                }
+
             }
         }
+
+        billItemFacade.edit(bt);
     }
 
     double refundableTotal = 0;
@@ -940,7 +946,6 @@ public class ChannelBillController implements Serializable {
 //            } else {
 //                bf.setPaidValue(bf.getFeeValue());
 //            }
-
             billFeeFacade.create(bf);
             billFeeList.add(bf);
             System.out.println("billFees = " + billFeeList);

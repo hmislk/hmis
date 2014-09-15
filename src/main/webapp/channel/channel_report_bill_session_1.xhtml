@@ -151,7 +151,7 @@
                             </p:dataTable>
 
 
-                            <p:dataTable value="#{channelReportController.valueList}" var="#{ls}">
+                            <p:dataTable value="#{channelReportController.valueList}" var="ls">
                                 <p:column headerText="BillType">
                                     #{ls.string}
                                 </p:column>
@@ -161,7 +161,7 @@
                                 <p:column headerText="Cancelled">
                                     #{ls.value2}
                                 </p:column>
-                                <p:column headerText="Refunde">
+                                <p:column headerText="Refund">
                                     #{ls.value3}
                                 </p:column>
                             </p:dataTable>

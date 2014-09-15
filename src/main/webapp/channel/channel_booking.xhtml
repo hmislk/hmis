@@ -297,6 +297,10 @@
 
                         <p:tab title="Refund" id="refund">                          
                             <h:panelGroup>
+                                <h:panelGrid columns="2">
+                                    <h:outputLabel value="Refundable Total : "/>
+                                    <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
+                                </h:panelGrid>
                                 <p:dataTable value="#{channelBillController.billSession.billItem.bill.billFees}" var="bi">
                                     <p:column headerText="Fee Name">
                                         <p:outputLabel value="#{bi.fee.name}"/>
@@ -308,7 +312,10 @@
                                         <p:outputLabel value="#{bi.feeValue}"/> 
                                     </p:column>
                                     <p:column headerText="Return Value">
-                                        <p:inputText value="#{bi.tmpChangedValue}"/>
+                                        <p:inputText value="#{bi.tmpChangedValue}">
+                                            <f:ajax execute="@this" render=":#{p:component('tot')}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
+                                        </p:inputText>
+
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGroup>

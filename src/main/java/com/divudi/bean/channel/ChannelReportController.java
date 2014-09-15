@@ -83,10 +83,8 @@ public class ChannelReportController implements Serializable {
 
         String sql = "SELECT b FROM BillSession b "
                 + "  where type(b.bill)=:class "
-                + " AND b.bill.institution=:ins "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.retired=false"
-                + " and type(b.bill)=:class ";
+                + " and b.bill.retired=false";
 
         if (reportKeyWord.getSpeciality() != null) {
             sql += "and b.staff.speciality=:sp";
@@ -138,9 +136,6 @@ public class ChannelReportController implements Serializable {
                 break;
             case CreatedDate:
                 sql += " and b.bill.createdAt between :frm and  :to";
-                break;
-            case CancelledRefundedDate:
-                sql += " and b.bill.cancelledRefundedAt between :frm and  :to";
                 break;
 
         }
@@ -160,10 +155,8 @@ public class ChannelReportController implements Serializable {
         String sql = "SELECT sum(b.billItem.qty),b.bill.billType "
                 + " FROM BillSession b "
                 + "  where type(b.bill)=:class "
-                + " AND b.bill.institution=:ins "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.retired=false"
-                + " and type(b.bill)=:class ";
+                + " and b.bill.retired=false";
 
         if (reportKeyWord.getSpeciality() != null) {
             sql += "and b.staff.speciality=:sp";
@@ -216,9 +209,6 @@ public class ChannelReportController implements Serializable {
             case CreatedDate:
                 sql += " and b.bill.createdAt between :frm and  :to";
                 break;
-            case CancelledRefundedDate:
-                sql += " and b.bill.cancelledRefundedAt between :frm and  :to";
-                break;
 
         }
 
@@ -235,12 +225,14 @@ public class ChannelReportController implements Serializable {
 
     public void createBillSession_report_1() {
         billSessionsBilled = createBillSessionQuery(new BilledBill(), PaymentEnum.Paid, DateEnum.AppointmentDate, getReportKeyWord());
-        billSessionsCancelled = createBillSessionQuery(new CancelledBill(), PaymentEnum.Paid, DateEnum.CancelledRefundedDate, getReportKeyWord());
-        billSessionsReturn = createBillSessionQuery(new RefundBill(), PaymentEnum.Paid, DateEnum.CancelledRefundedDate, getReportKeyWord());
+        billSessionsCancelled = createBillSessionQuery(new CancelledBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
+        billSessionsReturn = createBillSessionQuery(new RefundBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
 
+        valueList=new ArrayList<>();
+        
         List<Object[]> billedAgg = createBillSessionQueryAgregation(new BilledBill(), PaymentEnum.Paid, DateEnum.AppointmentDate, getReportKeyWord());
-        List<Object[]> cancelledAgg = createBillSessionQueryAgregation(new CancelledBill(), PaymentEnum.Paid, DateEnum.CancelledRefundedDate, getReportKeyWord());
-        List<Object[]> returnedAgg = createBillSessionQueryAgregation(new RefundBill(), PaymentEnum.Paid, DateEnum.CancelledRefundedDate, getReportKeyWord());
+        List<Object[]> cancelledAgg = createBillSessionQueryAgregation(new CancelledBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
+        List<Object[]> returnedAgg = createBillSessionQueryAgregation(new RefundBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
 
         String1Value3 channelAgent = new String1Value3();
         String1Value3 channelCall = new String1Value3();
