@@ -609,6 +609,8 @@ public class BillItem implements Serializable {
 
         return tmp;
     }
+    
+    
 
     public void setBillFees(List<BillFee> billFees) {
         this.billFees = billFees;
