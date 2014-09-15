@@ -5,11 +5,9 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.HistoryType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
@@ -44,26 +42,30 @@ public class StockHistoryRecorder {
     @EJB
     StockHistoryFacade stockHistoryFacade;
 
-    @Schedule(dayOfMonth = "1",persistent = false)
+    @SuppressWarnings("unused")
+//    @Schedule(minute = "1", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "1", persistent = false)
+//    @Schedule(minute = "*", second = "10", dayOfMonth = "*", month = "*", year = "*", hour = "*", persistent = false)
+    @Schedule(minute = "59", second = "59", hour = "23", dayOfMonth = "Last", info = "2nd Scheduled Timer")
+//    @Schedule(second="*/1", minute="*",hour="*", persistent=false)
     public void myTimer() {
         Date startTime = new Date();
         System.out.println("Start writing stock history: " + startTime);
-        for (Department d : fetchStockDepartment()) {
-            if (!d.isRetired()) {
-                for (Item amp : fetchStockItem(d)) {
-                    if (!amp.isRetired()) {
-                        StockHistory h = new StockHistory();
-                        h.setFromDate(new Date());
-                        h.setHistoryType(HistoryType.MonthlyRecord);
-                        h.setDepartment(d);
-                        h.setItem(amp);
-                        h.setStockQty(getStockQty(amp, d));
-                        getStockHistoryFacade().create(h);
-                    }
-                }
-                System.out.println("hx finished for = " + d);
-            }
-        }
+//        for (Department d : fetchStockDepartment()) {
+//            if (!d.isRetired()) {
+//                for (Item amp : fetchStockItem(d)) {
+//                    if (!amp.isRetired()) {
+//                        StockHistory h = new StockHistory();
+//                        h.setFromDate(new Date());
+//                        h.setHistoryType(HistoryType.MonthlyRecord);
+//                        h.setDepartment(d);
+//                        h.setItem(amp);
+//                        h.setStockQty(getStockQty(amp, d));
+//                        getStockHistoryFacade().create(h);
+//                    }
+//                }
+//                System.out.println("hx finished for = " + d);
+//            }
+//        }
         System.out.println("End writing stock history: " + new Date());
 //        System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
     }
