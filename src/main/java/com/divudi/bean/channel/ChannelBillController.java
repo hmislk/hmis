@@ -267,7 +267,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBillItem().getBillFees(), getBillSession());
+        refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
     }
 
     public void refundCreditPaidBill() {
@@ -289,8 +289,8 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBillItem().getBillFees(), getBillSession().getPaidBillSession());
-        refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBillItem().getBillFees(), getBillSession());
+        refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
+        refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
 
     }
 
@@ -568,6 +568,7 @@ public class ChannelBillController implements Serializable {
 
     private void createReturnBillFee(List<BillFee> billFees, Bill b, BillItem bt) {
         for (BillFee bf : billFees) {
+            System.err.println("Change Val "+bf.getTmpChangedValue());
             if (bf.getTmpChangedValue() != null && bf.getTmpChangedValue() != 0) {
                 BillFee newBf = new BillFee();
                 newBf.copy(bf);
