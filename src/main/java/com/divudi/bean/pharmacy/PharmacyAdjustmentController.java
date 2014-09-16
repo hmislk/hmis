@@ -299,7 +299,7 @@ public class PharmacyAdjustmentController implements Serializable {
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
 
         ph.setBillItem(null);
-        ItemBatch ib = itemBatchFacade.find(getStock().getItemBatch().getId());  
+        ItemBatch ib = itemBatchFacade.find(getStock().getItemBatch().getId());
         ph.setPurchaseRate(ib.getPurcahseRate());
         ph.setRetailRate(ib.getRetailsaleRate());
         tbi.setItem(getStock().getItemBatch().getItem());
@@ -337,9 +337,10 @@ public class PharmacyAdjustmentController implements Serializable {
         billItem = null;
         BillItem tbi = getBillItem();
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
-
+        ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
         ph.setBillItem(null);
-        ph.setPurchaseRate(rsr);
+        ph.setPurchaseRate(itemBatch.getPurcahseRate());
+        ph.setRetailRate(itemBatch.getRetailsaleRate());
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setRate(rsr);
         //pharmaceutical Bill Item
