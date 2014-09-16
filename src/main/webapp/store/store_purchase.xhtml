@@ -42,14 +42,15 @@
 
                 <h:panelGrid id="itemselectgrid" columns="2" style="min-width: 100%;">
                     <p:focus id="focusItem" for="acItem" ></p:focus>
-                    <p:panelGrid id="itemSelectgrid1" columns="9">                       
+                    <p:panelGrid id="itemSelectgrid1" columns="10">                       
                         <h:outputLabel value="Select Item"/>
                         <h:outputLabel value="Qty"/>
                         <h:outputLabel value="Free"/>
                         <h:outputLabel value="Purchase Rate"></h:outputLabel>
                         <h:outputLabel value="Sale Price"></h:outputLabel>
                         <h:outputLabel value="DOE(dd mm yy)/Warrenty Date"/>
-                        <h:outputLabel value="Bathch No/Serial Number"/>
+                        <h:outputLabel value="Bathch No"/>
+                        <h:outputLabel value="Serial Number"/>
                         <h:outputLabel ></h:outputLabel>
                         <h:outputLabel ></h:outputLabel>
 
@@ -90,11 +91,15 @@
                             <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storePurchaseController.setBatch()}"/>
                         </p:calendar> 
                         <p:inputText autocomplete="off"  styleClass="numericTxt" 
-                                     id="tmp" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
+                                     id="tmp" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />
+                        
+                        <p:inputText autocomplete="off"  styleClass="numericTxt" 
+                                     id="sn" value="#{storePurchaseController.currentBillItem.searialNo}"  />
 
                         <p:commandButton id="btnSer" value="Create Serial" 
                                          action="#{storePurchaseController.createSerialNumber()}" 
-                                         process="btnSer" update="tmp"/>
+                                         process="btnSer" update="sn"/>
+                        
                         <p:commandButton id="btnAdd" value="Add Item" 
                                          action="#{storePurchaseController.addItem}" 
                                          process="cmbParent itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>

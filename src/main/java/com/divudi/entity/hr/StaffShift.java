@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.hr;
 
+import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -80,6 +81,18 @@ public class StaffShift implements Serializable {
     private boolean sleepingDay;
     @Transient
     boolean transFirstColumn;
+    @Enumerated(EnumType.STRING)
+    LeaveType leaveType;
+
+    public LeaveType getLeaveType() {
+        return leaveType;
+    }
+
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
+    }
+    
+    
 
     
 
