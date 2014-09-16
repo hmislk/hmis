@@ -133,6 +133,14 @@ public enum BillType {
                 return "Cash In Transaction";
             case CashOut:
                 return "Cash Out Transaction";
+            case ChannelAgent:
+                return "Channel Agent";
+            case ChannelCash:
+                return "Channel Cash";
+            case ChannelOnCall:
+                return "Channel On Call";
+            case ChannelStaff:
+                return "Channel Staff";
 
         }
 

@@ -70,6 +70,8 @@ public class InwardReportController implements Serializable {
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
         this.patientEncounters = patientEncounters;
     }
+    double netTotal;
+    double netPaid;
 
     public void fillAdmissionBook() {
         Map m = new HashMap();
@@ -85,11 +87,16 @@ public class InwardReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
+        calTtoal();
+        for (PatientEncounter p : patientEncounters) {
+            netTotal += p.getTransTotal();
+            System.out.println("p.getTransPaid() = " + p.getTransPaid());
+            System.out.println("Bht No = " + p.getBhtNo());
+            netPaid += p.getTransPaid();
+        }
     }
 
-    double netTotal;
-    double netPaid;
+    
 
     public void fillAdmissionBookOnlyInward() {
         Map m = new HashMap();

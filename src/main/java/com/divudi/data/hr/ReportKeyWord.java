@@ -6,8 +6,12 @@
 
 package com.divudi.data.hr;
 
-import com.divudi.entity.Category;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
+import com.divudi.entity.Patient;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Designation;
 import com.divudi.entity.hr.Roster;
@@ -25,6 +29,57 @@ public class ReportKeyWord {
     Designation designation;
     Roster roster;
     Shift shift;
+    Speciality speciality;
+    Patient patient;
+    Institution institution;
+    PaymentMethod paymentMethod;
+    Item item;
+    
+    
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    
+    
+    
 
     public Staff getStaff() {
         return staff;
@@ -75,6 +130,7 @@ public class ReportKeyWord {
     public void setShift(Shift shift) {
         this.shift = shift;
     }
+    
     
     
 }
