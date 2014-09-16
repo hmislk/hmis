@@ -137,6 +137,12 @@ public class RoomChangeController implements Serializable {
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
     }
+    
+     public void dischargeCancel(PatientRoom pR) {       
+        pR.setDischarged(false);
+        pR.setDischargedBy(null);
+        getPatientRoomFacade().edit(pR);
+    }
 
     public void removeGuardianRoom(PatientRoom pR) {
 
