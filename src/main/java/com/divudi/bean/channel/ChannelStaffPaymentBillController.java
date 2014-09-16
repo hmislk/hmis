@@ -22,6 +22,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ import javax.persistence.TemporalType;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -135,6 +136,30 @@ public class ChannelStaffPaymentBillController implements Serializable {
         speciality = null;
         serviceSessions = null;
     }
+    
+    
+    public void makenull() {
+        billFees = null;
+        billItems = null;
+        printPreview = false;        
+        selectedItems = null;
+        items = null;
+        dueBillFeeReport = null;
+        dueBillFees = null;
+        payingBillFees = null;
+        billFees = null;
+        /////////////////////    
+        fromDate = null;
+        toDate = null;
+        current = null;
+        currentStaff = null;
+        totalDue = 0.0;
+        totalPaying = 0.0;
+        printPreview = false;
+        paymentMethod = null;
+        speciality = null;
+        serviceSessions = null;
+    }
 
     public StaffFacade getStaffFacade() {
         return staffFacade;
@@ -199,9 +224,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
         this.totalPaying = totalPaying;
     }
 
-    public void calculateDueFees() {
+    public void calculateDueFeesOld() {
         if (currentStaff == null || currentStaff.getId() == null || selectedServiceSession == null) {
-            dueBillFees = new ArrayList<BillFee>();
+            dueBillFees = new ArrayList<>();
         } else {
             String sql;
             HashMap h = new HashMap();
@@ -224,6 +249,41 @@ public class ChannelStaffPaymentBillController implements Serializable {
             dueBillFees = tmp;
 
         }
+
+    }
+
+    public void calculateDueFees() {
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = " SELECT b FROM BillFee b "
+                + "  where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.bill.refunded=false"
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt "
+                + " and b.staff=:stf ";
+
+        HashMap hm = new HashMap();
+        if (getFromDate() != null && getToDate() != null) {
+            sql += " and b.bill.appointmentAt between :frm and  :to";
+            hm.put("frm", getFromDate());
+            hm.put("to", getToDate());
+        }
+
+        if (getSelectedServiceSession() != null) {
+            sql += " and bs.serviceSession=:ss";
+            hm.put("ss", getSelectedServiceSession());
+        }
+
+        hm.put("stf", getCurrentStaff());
+        //hm.put("ins", sessionController.getInstitution());
+        hm.put("bt", bts);
+
+        hm.put("class", BilledBill.class);
+        dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -502,9 +562,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public Date getToDate() {
-        if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        }
+        //Dont Remove Comments if u want ask Safrin
+//        if (toDate == null) {
+//            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//        }
         return toDate;
     }
 
@@ -514,9 +575,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public Date getFromDate() {
-        if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        }
+        //Dont Remove Comments if u want ask Safrin
+//        if (fromDate == null) {
+//            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//        }
         return fromDate;
     }
 
@@ -560,7 +622,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public List<BillItem> getBillItems() {
         if (getCurrent() != null) {
-            String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
+            String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id = " + current.getId();
             billItems = getBillItemFacade().findBySQL(sql);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();

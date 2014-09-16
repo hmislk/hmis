@@ -23,13 +23,11 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-
 /**
-         *
-         * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for
-         * MSc(Biomedical Informatics)
-         */
-
+ *
+ * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * Informatics)
+ */
 @Named
 @SessionScoped
 public class AgencyController implements Serializable {
@@ -52,9 +50,14 @@ public class AgencyController implements Serializable {
         } else {
             Map m = new HashMap();
             m.put("it", InstitutionType.Agency);
-            sql = "select p from Institution p where p.retired=false and p.institutionType=:it and ((upper(p.name) like '%" + query.toUpperCase() + "%') or (upper(p.institutionCode) like '%" + query.toUpperCase() + "%') ) order by p.name";
+            sql = "select p from Institution p where"
+                    + "  p.retired=false and "
+                    + " p.institutionType=:it "
+                    + " and ((upper(p.name) like '%" + query.toUpperCase() + "%') "
+                    + " or (upper(p.institutionCode) like '%" + query.toUpperCase() + "%') ) "
+                    + " order by p.name";
             //System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, m);
+            suggestions = getFacade().findBySQL(sql, m, 20);
         }
         return suggestions;
     }
