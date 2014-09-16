@@ -959,9 +959,9 @@ public class BookKeepingSummery implements Serializable {
             newRow.setString1(admissionType.getName() + " " + paymentMethod + " : ");
             newRow.setSummery(true);
 
-            if (grantDbl != 0) {
-                getInwardCollections().add(newRow);
-            }
+//            if (grantDbl != 0) {
+            getInwardCollections().add(newRow);
+//            }
 
             //BILLS
             for (Bill b : getBillBean().fetchInwardPaymentBills(admissionType, paymentMethod, fromDate, toDate, institution)) {
@@ -984,9 +984,9 @@ public class BookKeepingSummery implements Serializable {
 
             newRow.setValue2(grantDbl);
 
-            if (grantDbl != 0) {
-                getInwardCollections().add(newRow);
-            }
+//            if (grantDbl != 0) {
+            getInwardCollections().add(newRow);
+//            }
 
         }
     }

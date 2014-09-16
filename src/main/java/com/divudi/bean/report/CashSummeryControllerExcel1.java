@@ -6,7 +6,6 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.DepartmentController;
-import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -23,14 +22,12 @@ import com.divudi.data.table.String6;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.BillFacade;
@@ -620,29 +617,29 @@ public class CashSummeryControllerExcel1 implements Serializable {
         this.departmentController = departmentController;
     }
 
-    public void createCashCategoryWithoutPro() {
-        long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
-
-        if (Math.abs(lng) > 2) {
-            UtilityController.addErrorMessage("Date Range is too Long");
-            return;
-        }
-
-        createOPdCategoryTable();
-        createOtherInstituion();
-        createPharmacySale();
-        createInwardCollection();
-        createAgentCollection();
-        createCreditCompanyCollection();
-        createCollections2Hos();
-        createDepartmentPayment();
-        createInwardProfessions();
-        createCardBill();
-        createChequeBill();
-        createSlipBill();
-        createFinalSummery();
-
-    }
+//    public void createCashCategoryWithoutPro() {
+//        long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+//
+//        if (Math.abs(lng) > 2) {
+//            UtilityController.addErrorMessage("Date Range is too Long");
+//            return;
+//        }
+//
+//        createOPdCategoryTable();
+//        createOtherInstituion();
+//        createPharmacySale();
+//        createInwardCollection();
+//        createAgentCollection();
+//        createCreditCompanyCollection();
+//        createCollections2Hos();
+//        createDepartmentPayment();
+//        createInwardProfessions();
+//        createCardBill();
+//        createChequeBill();
+//        createSlipBill();
+//        createFinalSummery();
+//
+//    }
 
     public void createOPdCategoryTable() {
         System.err.println("createOPdCategoryTable");
