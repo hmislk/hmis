@@ -15,6 +15,7 @@ import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -146,6 +147,24 @@ public class HrReportController implements Serializable {
         createStaffShiftQuary(sql, hm);
         sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void createStaffShiftOnlyOt() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        createStaffShiftQuary(sql, hm);
+        sql += " and (ss.startRecord.allowedOverTime=true or "
+                + " ss.endRecord.allowedOverTime=true )";
+        sql += " order by ss.shift,ss.shiftDate";
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        
+        if (staffShifts == null) {
+            return;
+        }
+
+        for (StaffShift ss : staffShifts) {
+             
+        }
     }
 
     public void createStaffShiftEarlyIn() {

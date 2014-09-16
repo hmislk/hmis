@@ -81,8 +81,20 @@ public class StaffShift implements Serializable {
     private boolean sleepingDay;
     @Transient
     boolean transFirstColumn;
+    @Transient
+    Date transTime;
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
+
+    public Date getTransTime() {
+        return transTime;
+    }
+
+    public void setTransTime(Date transTime) {
+        this.transTime = transTime;
+    }
+    
+    
 
     public LeaveType getLeaveType() {
         return leaveType;
