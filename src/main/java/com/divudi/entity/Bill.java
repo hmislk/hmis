@@ -110,8 +110,7 @@ public class Bill implements Serializable {
     BillItem singleBillItem;
     @ManyToOne
     BillSession singleBillSession;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date appointmentAt;
+
     //Values
     double total;
     double margin;
@@ -257,6 +256,22 @@ public class Bill implements Serializable {
     @ManyToOne
     private WebUser fromWebUser;
     double claimableTotal;
+
+    //Denormalization
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date appointmentAt;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date paidAt;  
+    @ManyToOne
+    Bill paidBill;
+
+    public Bill getPaidBill() {
+        return paidBill;
+    }
+
+    public void setPaidBill(Bill paidBill) {
+        this.paidBill = paidBill;
+    }
 
     public BillClassType getBillClassType() {
         return billClassType;
@@ -1440,4 +1455,14 @@ public class Bill implements Serializable {
         this.appointmentAt = appointmentAt;
     }
 
+    public Date getPaidAt() {
+        return paidAt;
+    }
+
+    public void setPaidAt(Date paidAt) {
+        this.paidAt = paidAt;
+    }
+
+ 
+    
 }

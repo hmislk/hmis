@@ -189,7 +189,23 @@ public class BillItem implements Serializable {
         referenceBill = billItem.getReferenceBill();
         marginValue = billItem.getMarginValue();
         priceMatrix = billItem.getPriceMatrix();
+        agentRefNo = billItem.getAgentRefNo();
         //  referanceBillItem=billItem.getReferanceBillItem();
+    }
+
+    public void resetValue() {
+        qty = 0.0;
+        grossValue = 0;
+        netValue = 0;
+        discount = 0;
+        adjustedValue = 0;
+        discountRate = 0.0;
+        staffFee = 0.0;
+        hospitalFee = 0.0;
+        Rate = 0.0;
+        netRate = 0.0;
+        tmpQty = 0.0;
+        marginValue = 0.0;
     }
 
     public BillItem() {

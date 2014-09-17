@@ -7,13 +7,18 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.channel.DateEnum;
+import com.divudi.data.channel.PaymentEnum;
 import com.divudi.data.dataStructure.ChannelDoctor;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.data.table.String1Value1;
+import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
@@ -53,6 +58,7 @@ public class ChannelReportController implements Serializable {
     private List<BillSession> billSessionsBilled;
     private List<BillSession> billSessionsReturn;
     private List<BillSession> billSessionsCancelled;
+    List<String1Value3> valueList;
     ReportKeyWord reportKeyWord;
     Date fromDate;
     Date toDate;
@@ -70,54 +76,249 @@ public class ChannelReportController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    public void createBillSession_report_1() {
+    public List<BillSession> createBillSessionQuery(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
-        String sql = "SELECT bs FROM BillSession bs"
-                + "  where type(bs.bill)=:class "
-                + " and b.bill.retired=false "
-                + " and b.bill.paidAmount!=0"
-                + " AND b.bill.institution=:ins "
-                + " and b.bill.billType in :bt "
-                + " and b.bill.appointmentAt between :frm and  :to";
         HashMap hm = new HashMap();
-        hm.put("ins", sessionController.getInstitution());
-        hm.put("bt", bts);
-        hm.put("frm", getFromDate());
-        hm.put("to", getToDate());
-        hm.put("class", BilledBill.class);
-        billSessionsBilled = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
-        sql = "SELECT bs FROM BillSession bs"
-                + "  where type(bs.bill)=:class "
-                + " and b.bill.retired=false "
-                + " and b.bill.paidAmount!=0"
-                + " AND b.bill.institution=:ins "
+        String sql = "SELECT b FROM BillSession b "
+                + "  where type(b.bill)=:class "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.createdAt between :frm and  :to";
-        hm = new HashMap();
-        hm.put("ins", sessionController.getInstitution());
+                + " and b.bill.retired=false";
+
+        if (reportKeyWord.getSpeciality() != null) {
+            sql += "and b.staff.speciality=:sp";
+            hm.put("sp", reportKeyWord.getSpeciality());
+        }
+
+        if (reportKeyWord.getStaff() != null) {
+            sql += "and b.staff=:stf";
+            hm.put("stf", reportKeyWord.getStaff());
+        }
+
+        if (reportKeyWord.getPatient() != null) {
+            sql += "and b.bill.patient=:pt";
+            hm.put("pt", reportKeyWord.getPatient());
+        }
+
+        if (reportKeyWord.getInstitution() != null) {
+            sql += "and b.bill.fromInstitution=:ins";
+            hm.put("ins", reportKeyWord.getInstitution());
+        }
+
+        if (reportKeyWord.getPaymentMethod() != null) {
+            sql += "and b.bill.paymentMethod=:pm";
+            hm.put("pm", reportKeyWord.getPaymentMethod());
+        }
+
+        if (reportKeyWord.getItem() != null) {
+            sql += "and b.serviceSession=:sv";
+            hm.put("sv", reportKeyWord.getItem());
+        }
+
+        switch (paymentEnum) {
+            case Paid:
+                sql += " and b.bill.paidAmount!=0";
+                break;
+            case NotPaid:
+                sql += " and b.bill.paidAmount=0";
+                break;
+            case All:
+                break;
+        }
+
+        switch (dateEnum) {
+            case AppointmentDate:
+                sql += " and b.bill.appointmentAt between :frm and  :to";
+                break;
+            case PaidDate:
+                sql += " and b.bill.paidAt between :frm and  :to";
+                break;
+            case CreatedDate:
+                sql += " and b.bill.createdAt between :frm and  :to";
+                break;
+
+        }
         hm.put("bt", bts);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
-        hm.put("class", CancelledBill.class);
-        billSessionsCancelled = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        hm.put("class", bill.getClass());
 
-        sql = "SELECT bs FROM BillSession bs"
-                + "  where type(bs.bill)=:class "
-                + " and b.bill.retired=false "
-                + " and b.bill.paidAmount!=0"
-                + " AND b.bill.institution=:ins "
+        return billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public List<Object[]> createBillSessionQueryAgregation(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+
+        String sql = "SELECT sum(b.billItem.qty),b.bill.billType "
+                + " FROM BillSession b "
+                + "  where type(b.bill)=:class "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.createdAt between :frm and  :to";
-        hm = new HashMap();
-        hm.put("ins", sessionController.getInstitution());
+                + " and b.bill.retired=false";
+
+        if (reportKeyWord.getSpeciality() != null) {
+            sql += "and b.staff.speciality=:sp";
+            hm.put("sp", reportKeyWord.getSpeciality());
+        }
+
+        if (reportKeyWord.getStaff() != null) {
+            sql += "and b.staff=:stf";
+            hm.put("stf", reportKeyWord.getStaff());
+        }
+
+        if (reportKeyWord.getPatient() != null) {
+            sql += "and b.bill.patient=:pt";
+            hm.put("pt", reportKeyWord.getPatient());
+        }
+
+        if (reportKeyWord.getInstitution() != null) {
+            sql += "and b.bill.fromInstitution=:ins";
+            hm.put("ins", reportKeyWord.getInstitution());
+        }
+
+        if (reportKeyWord.getPaymentMethod() != null) {
+            sql += "and b.bill.paymentMethod=:pm";
+            hm.put("pm", reportKeyWord.getPaymentMethod());
+        }
+
+        if (reportKeyWord.getItem() != null) {
+            sql += "and b.serviceSession=:sv";
+            hm.put("sv", reportKeyWord.getItem());
+        }
+
+        switch (paymentEnum) {
+            case Paid:
+                sql += " and b.bill.paidAmount!=0";
+                break;
+            case NotPaid:
+                sql += " and b.bill.paidAmount=0";
+                break;
+            case All:
+                break;
+        }
+
+        switch (dateEnum) {
+            case AppointmentDate:
+                sql += " and b.bill.appointmentAt between :frm and  :to";
+                break;
+            case PaidDate:
+                sql += " and b.bill.paidAt between :frm and  :to";
+                break;
+            case CreatedDate:
+                sql += " and b.bill.createdAt between :frm and  :to";
+                break;
+
+        }
+
+        sql += " group by b.bill.billType "
+                + " order by b.bill.billType ";
+
         hm.put("bt", bts);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
-        hm.put("class", RefundBill.class);
-        billSessionsReturn = billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        hm.put("class", bill.getClass());
 
+        return billSessionFacade.findAggregates(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    public void createBillSession_report_1() {
+        billSessionsBilled = createBillSessionQuery(new BilledBill(), PaymentEnum.Paid, DateEnum.AppointmentDate, getReportKeyWord());
+        billSessionsCancelled = createBillSessionQuery(new CancelledBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
+        billSessionsReturn = createBillSessionQuery(new RefundBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
+
+        valueList=new ArrayList<>();
+        
+        List<Object[]> billedAgg = createBillSessionQueryAgregation(new BilledBill(), PaymentEnum.Paid, DateEnum.AppointmentDate, getReportKeyWord());
+        List<Object[]> cancelledAgg = createBillSessionQueryAgregation(new CancelledBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
+        List<Object[]> returnedAgg = createBillSessionQueryAgregation(new RefundBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
+
+        String1Value3 channelAgent = new String1Value3();
+        String1Value3 channelCall = new String1Value3();
+        String1Value3 channelCash = new String1Value3();
+        String1Value3 channelStaff = new String1Value3();
+
+        //SETTING BILLED COUNT
+        for (Object[] obj : billedAgg) {
+            Double dbl = (Double) obj[0];
+            BillType btp = (BillType) obj[1];
+
+            switch (btp) {
+                case ChannelAgent:
+                    channelAgent.setString(btp.getLabel());
+                    channelAgent.setValue1(dbl);
+                    break;
+                case ChannelCash:
+                    channelCash.setString(btp.getLabel());
+                    channelCash.setValue1(dbl);
+                    break;
+                case ChannelOnCall:
+                    channelCall.setString(btp.getLabel());
+                    channelCall.setValue1(dbl);
+                    break;
+                case ChannelStaff:
+                    channelStaff.setString(btp.getLabel());
+                    channelStaff.setValue1(dbl);
+                    break;
+            }
+        }
+
+        //SETTING CANCELLED COUNT
+        for (Object[] obj : cancelledAgg) {
+            Double dbl = (Double) obj[0];
+            BillType btp = (BillType) obj[1];
+
+            switch (btp) {
+                case ChannelAgent:
+                    channelAgent.setString(btp.getLabel());
+                    channelAgent.setValue2(dbl);
+                    break;
+                case ChannelCash:
+                    channelCash.setString(btp.getLabel());
+                    channelCash.setValue2(dbl);
+                    break;
+                case ChannelOnCall:
+                    channelCall.setString(btp.getLabel());
+                    channelCall.setValue2(dbl);
+                    break;
+                case ChannelStaff:
+                    channelStaff.setString(btp.getLabel());
+                    channelStaff.setValue2(dbl);
+                    break;
+            }
+        }
+
+        //SETTING REFUND COUNT
+        for (Object[] obj : returnedAgg) {
+            Double dbl = (Double) obj[0];
+            BillType btp = (BillType) obj[1];
+
+            switch (btp) {
+                case ChannelAgent:
+                    channelAgent.setString(btp.getLabel());
+                    channelAgent.setValue3(dbl);
+                    break;
+                case ChannelCash:
+                    channelCash.setString(btp.getLabel());
+                    channelCash.setValue3(dbl);
+                    break;
+                case ChannelOnCall:
+                    channelCall.setString(btp.getLabel());
+                    channelCall.setValue3(dbl);
+                    break;
+                case ChannelStaff:
+                    channelStaff.setString(btp.getLabel());
+                    channelStaff.setValue3(dbl);
+                    break;
+
+            }
+        }
+
+        getValueList().add(channelAgent);
+        getValueList().add(channelCall);
+        getValueList().add(channelCash);
+        getValueList().add(channelStaff);
     }
 
     public Date getFromDate() {
@@ -151,10 +352,11 @@ public class ChannelReportController implements Serializable {
         reportKeyWord = null;
         serviceSession = null;
         billSessions = null;
+        valueList = null;
     }
 
     public List<BillSession> getBillSessionsNurse() {
-        billSessions = new ArrayList<BillSession>();
+        billSessions = new ArrayList<>();
         if (serviceSession != null) {
             String sql = "Select bs From BillSession bs where bs.retired=false and bs.bill.cancelled=false and bs.bill.refunded=false and bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate";
             HashMap hh = new HashMap();
@@ -517,6 +719,16 @@ public class ChannelReportController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
-    
+
+    public List<String1Value3> getValueList() {
+        if (valueList == null) {
+            valueList = new ArrayList<>();
+        }
+        return valueList;
+    }
+
+    public void setValueList(List<String1Value3> valueList) {
+        this.valueList = valueList;
+    }
+
 }

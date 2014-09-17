@@ -24,41 +24,44 @@
                                 <p:panel header="Patient Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.patient.person.nameWithTitle }" ></h:outputLabel>
                                         <h:outputLabel value="BHT No:" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.patientEncounter.bhtNo}" ></h:outputLabel>
-                                        <h:outputLabel value="Staff ​Name:" rendered="#{billSearch.bill.staff}"></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.staff.person.nameWithTitle }" rendered="#{billSearch.bill.staff}"></h:outputLabel> 
+                                        <h:outputLabel value="#{billSearch.billSearch.patientEncounter.bhtNo}" ></h:outputLabel>
+                                        <h:outputLabel value="Staff ​Name:" rendered="#{billSearch.billSearch.staff}"></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.staff.person.nameWithTitle }" rendered="#{billSearch.billSearch.staff}"></h:outputLabel> 
                                         <h:outputLabel value="Age" />
-                                        <h:outputLabel value="#{billSearch.bill.patient.age}"  />
+                                        <h:outputLabel value="#{billSearch.billSearch.patient.age}"  />
                                         <h:outputLabel value="Sex" >
                                         </h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.patient.person.sex}" >
+                                        <h:outputLabel value="#{billSearch.billSearch.patient.person.sex}" >
                                         </h:outputLabel>
                                         <h:outputLabel value="Phone" >
                                         </h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.patient.person.phone}" >
+                                        <h:outputLabel value="#{billSearch.billSearch.patient.person.phone}" >
                                         </h:outputLabel>
                                     </p:panelGrid>
                                 </p:panel>
                                 <p:panel header="Bill Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.insId}" ></h:outputLabel>
 
                                         <h:outputLabel value="Bill Date :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.createdAt}" >
+                                        <h:outputLabel value="#{billSearch.billSearch.createdAt}" >
                                             <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
                                         </h:outputLabel>
 
                                         <h:outputLabel value="Bill Id :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.id}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.id}" ></h:outputLabel>
 
                                         <h:outputLabel value="Bill Type :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.billType}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.billType}" ></h:outputLabel>
+                                        
+                                        <h:outputLabel value="Bill Class :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.billClass}" ></h:outputLabel>
 
                                         <h:outputLabel value="Institution :" ></h:outputLabel>
-                                        <p:autoComplete forceSelection="true" value="#{billSearch.bill.institution}"
+                                        <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.institution}"
                                                         completeMethod="#{institutionController.completeIns}"
                                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                             <p:column>
@@ -70,7 +73,7 @@
                                         </p:autoComplete>
 
                                         <h:outputLabel value="To Institution :" ></h:outputLabel>
-                                        <p:autoComplete forceSelection="true" value="#{billSearch.bill.toInstitution}"
+                                        <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.toInstitution}"
                                                         completeMethod="#{institutionController.completeIns}"
                                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                             <p:column>
@@ -84,10 +87,10 @@
                                         <h:outputLabel value="To Department :" ></h:outputLabel>
                                         <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{billSearch.bill.toDepartment}" converter="dep"/>
+                                                        value="#{billSearch.billSearch.toDepartment}" converter="dep"/>
 
                                         <h:outputLabel value="From Institution :" ></h:outputLabel>
-                                        <p:autoComplete forceSelection="true" value="#{billSearch.bill.fromInstitution}"
+                                        <p:autoComplete forceSelection="true" value="#{billSearch.billSearch.fromInstitution}"
                                                         completeMethod="#{institutionController.completeIns}"
                                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                             <p:column>
@@ -101,33 +104,40 @@
                                         <h:outputLabel value="From Department :" ></h:outputLabel>
                                         <p:autoComplete id="frmdep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{billSearch.bill.fromDepartment}" converter="dep"/>
+                                                        value="#{billSearch.billSearch.fromDepartment}" converter="dep"/>
 
                                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <p:selectOneMenu   id="pay" value="#{billSearch.bill.paymentMethod}">     
+                                        <p:selectOneMenu   id="pay" value="#{billSearch.billSearch.paymentMethod}">     
                                             <f:selectItems value="#{enumController.paymentMethods}"  />
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="Total :" ></h:outputLabel>
-                                        <h:inputText value="#{billSearch.bill.total}"/>
+                                        <h:inputText value="#{billSearch.billSearch.total}"/>
 
                                         <h:outputLabel value="Discount :" ></h:outputLabel>
-                                        <h:inputText value="#{billSearch.bill.discount}"/>
+                                        <h:inputText value="#{billSearch.billSearch.discount}"/>
 
                                         <h:outputLabel value="Margin :" ></h:outputLabel>
-                                        <h:inputText value="#{billSearch.bill.margin}"/>
+                                        <h:inputText value="#{billSearch.billSearch.margin}"/>
 
                                         <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                        <h:inputText value="#{billSearch.bill.netTotal}"/>
+                                        <h:inputText value="#{billSearch.billSearch.netTotal}"/>
 
                                         <h:outputLabel value="Billed By :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.creater.webUserPerson.name}" ></h:outputLabel> 
+                                        <h:outputLabel value="#{billSearch.billSearch.creater.webUserPerson.name}" ></h:outputLabel> 
                                         
                                         <h:outputLabel value="Edited By :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.editor.webUserPerson.name}" ></h:outputLabel> 
+                                        <h:outputLabel value="#{billSearch.billSearch.editor.webUserPerson.name}" ></h:outputLabel>
 
                                         <h:outputLabel value="Update Bill :" ></h:outputLabel>
                                         <p:commandButton value="Update" action="#{billSearch.updateBill()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
+                                        
+                                        <h:outputLabel value="Retired :" ></h:outputLabel>
+                                        <p:selectBooleanCheckbox value="#{billSearch.billSearch.retired}" ></p:selectBooleanCheckbox>
+                                        
+                                        
+                                        <h:outputLabel value="Update Bill :" ></h:outputLabel>
+                                        <p:commandButton value="Bill Retired" action="#{billSearch.updateBillRetierd()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
 
                                     </p:panelGrid>
                                 </p:panel>
@@ -218,7 +228,15 @@
                                     <p:column style="width:6%">  
                                         <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
                                         </p:rowEditor>
-                                    </p:column>  
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Retired</f:facet>
+                                        <p:selectBooleanCheckbox value="#{bip.retired}" ></p:selectBooleanCheckbox>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Update</f:facet>
+                                        <p:commandButton value="Bill Fee Retired" action="#{billSearch.updateBillFeeRetierd(bip)}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
+                                    </p:column>
                                 </p:dataTable>
                             </p:panel>
                             <p:panel header="Bill Item Detail">
@@ -264,7 +282,14 @@
                                         <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
                                         </p:rowEditor>
                                     </p:column>  
-
+                                    <p:column>
+                                        <f:facet name="header">Retired</f:facet>
+                                        <p:selectBooleanCheckbox value="#{bip21.retired}" ></p:selectBooleanCheckbox>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Update</f:facet>
+                                        <p:commandButton value="Bill Item Retired" action="#{billSearch.updateBillItemRetierd(bip21)}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
+                                    </p:column>
                                 </p:dataTable>
                             </p:panel>
                         </p:panel>
