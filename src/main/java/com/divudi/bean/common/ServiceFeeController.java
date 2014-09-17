@@ -196,7 +196,7 @@ public class ServiceFeeController implements Serializable {
     }
     
     public void edit(ItemFee itemFee){
-        
+        calTot();
         itemFee.setEditer(getSessionController().getLoggedUser());
         itemFee.setEditedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         
