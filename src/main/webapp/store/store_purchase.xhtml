@@ -104,12 +104,25 @@
                                          action="#{storePurchaseController.addItem}" 
                                          process="cmbParent itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
                         
-                        
+                        <h:outputLabel value="Parent Item"/>
+                        <h:outputLabel value="Make"/>
+                        <h:outputLabel value="Model"/>
+                        <h:outputLabel value="Inventory Code"></h:outputLabel>
+                        <h:outputLabel value=""></h:outputLabel>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel ></h:outputLabel>
+                        <h:outputLabel ></h:outputLabel>
                          
                         <p:selectOneMenu id="cmbParent" value="#{storePurchaseController.parentBillItem}" converter="temBillItemConverter"  >
                             <f:selectItem itemLabel="Select Parent Item" />
                             <f:selectItems   value="#{storePurchaseController.billItems}" var="bi" itemValue="#{bi}" itemLabel="#{bi.item.name}" />
                             <f:ajax event="change" execute="@this" /> 
+                        </p:selectOneMenu>
+                        
+                        <p:selectOneMenu id="cmbMake" value="#{storePurchaseController.currentBillItem.make}" >
+                            
                         </p:selectOneMenu>
                         
                     </p:panelGrid>
