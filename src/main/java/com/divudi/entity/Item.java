@@ -135,6 +135,19 @@ public class Item implements Serializable {
     @Transient
     double transCheckedCount;
 
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date effectiveFrom;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date effectiveTo;
+
+    public Date getEffectiveFrom() {
+        return effectiveFrom;
+    }
+
+    public void setEffectiveFrom(Date effectiveFrom) {
+        this.effectiveFrom = effectiveFrom;
+    }
+
     public double getTransCheckedCount() {
         return transCheckedCount;
     }
@@ -232,7 +245,7 @@ public class Item implements Serializable {
     public void setItemFees(List<ItemFee> itemFees) {
         this.itemFees = itemFees;
     }
-    
+
     public double getTaxFee() {
         return taxFee;
     }
@@ -280,9 +293,7 @@ public class Item implements Serializable {
     public void setTotalFfee(double totalFfee) {
         this.totalFfee = totalFfee;
     }
-    
-    
-    
+
     @Transient
     ItemFee itemFee;
 
