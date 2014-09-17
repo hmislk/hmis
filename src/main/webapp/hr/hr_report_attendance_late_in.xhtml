@@ -67,24 +67,32 @@
                                 <p:column headerText="Staff Shift">
                                     #{ss.shift.name}
                                 </p:column>
-                                 <p:column headerText="Shift In Time ">
-                                     <h:outputLabel value="#{ss.shiftStartTime}">
+                                <p:column headerText="Shift In Time ">
+                                    <h:outputLabel value="#{ss.shiftStartTime}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>  
-                                    
+                                    </h:outputLabel>                                      
                                 </p:column> 
                                 <p:column headerText="In Actual ">
                                     <h:outputLabel value="#{ss.startRecord.loggedRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                     <h:outputLabel value="Previous" rendered="#{ss.previousStaffShift ne null}"/>
-                                </p:column>                                                         
+                                </p:column> 
+                                <p:column headerText="Late In Minute Logged">
+                                    <h:outputLabel value="#{ss.lateInLogged/60}">                                        
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </p:column>   
                                 <p:column headerText="In Checked ">
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>  
-                                    <h:outputLabel value="Previous" rendered="#{ss.previousStaffShift ne null}"/>
-                                </p:column>                                                                                  
+                                    </h:outputLabel>                                     
+                                </p:column>           
+                                <p:column headerText="Late In Minute Varified">
+                                    <h:outputLabel value="#{ss.lateInVarified/60}">                                        
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </p:column>   
                             </p:dataTable>
                         </p:panel>
 

@@ -230,6 +230,30 @@ public class BillNumberController {
         return result;
     }
 
+    public boolean checkBillNumberDeptId(Department dep, Bill bill, BillType billType, String number) {
+
+        String sql = "SELECT b "
+                + " FROM Bill b "
+                + " where type(b)=:type "
+                + " AND b.retired=false "
+                + " AND b.department=:dep"
+                + " and upper(b.deptId)=:str "
+                + " AND b.billType=:btp ";
+
+        HashMap hm = new HashMap();
+        hm.put("dep", dep);
+        hm.put("btp", billType);
+        hm.put("type", bill.getClass());
+        hm.put("str", number.toUpperCase());
+        Bill result = getBillFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        if (result != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public String institutionBillNumberGeneratorWithReference(Department dep, Bill bill, BillType billType, BillNumberSuffix billNumberSuffix) {
 
         String sql = "SELECT count(b) "
@@ -247,6 +271,17 @@ public class BillNumberController {
         hm.put("type", bill.getClass());
         Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
+        result = createNumber(i, billNumberSuffix, dep);
+
+        if (checkBillNumberDeptId(dep, bill, billType, result)) {
+            result = createNumber(i + 1, billNumberSuffix, dep);
+        }
+
+        return result;
+    }
+
+    private String createNumber(Long i, BillNumberSuffix billNumberSuffix, Department dep) {
+        String result = "";
         if (i != null) {
             if (billNumberSuffix != BillNumberSuffix.NONE) {
                 result = dep.getDepartmentCode() + billNumberSuffix + "/" + (i + 1);
@@ -264,6 +299,7 @@ public class BillNumberController {
         }
 
         return result;
+
     }
 
     public String institutionBillNumberGeneratorByPayment(Department dep, Bill bill, BillType billType, BillNumberSuffix billNumberSuffix) {
@@ -582,7 +618,7 @@ public class BillNumberController {
         return result;
 
     }
-    
+
     public String storeInventryItemNumberGenerator() {
         HashMap hm = new HashMap();
         String sql = "SELECT count(b) FROM Amp b where b.retired=false and b.departmentType=:dep ";
@@ -608,7 +644,6 @@ public class BillNumberController {
 //        return result;
 //
 //    }
-
     public String serialNumberGenerater(Institution ins, Department toDept, Item item) {
         if (ins == null) {
             System.out.println("Ins null");
