@@ -109,7 +109,7 @@
                     </p:column>
 
                     <p:column headerText="Starting Record Varified">
-                        <h:panelGroup rendered="#{sts.previousStaffShift eq null and sts.startRecord ne null}">
+                        <h:panelGroup >
                             <p:calendar id="strRc"       
                                         disabled="#{sts.previousStaffShift ne null}"
                                         value="#{sts.startRecord.recordTimeStamp}" 
@@ -125,7 +125,7 @@
                     </p:column>
 
                     <p:column headerText="Ending Record  Varified">
-                        <h:panelGroup rendered="#{sts.nextStaffShift eq null and sts.endRecord ne null}">
+                        <h:panelGroup>
                             <p:calendar id="endRc"
                                         disabled="#{sts.nextStaffShift ne null}"
                                         value="#{sts.endRecord.recordTimeStamp}" 

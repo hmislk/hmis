@@ -150,11 +150,11 @@ public class StaffShift implements Serializable {
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
             earlyOutLogged = inSecond;
         }
-
+        
         //Calculate Late Out Logged
-        if (getEndRecord().getLoggedRecord().getRecordTimeStamp().before(getShiftEndTime())) {
-            fromCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
-            toCalendar.setTime(getShiftEndTime());
+        if (getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
+            fromCalendar.setTime(getShiftEndTime());
+            toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
             lateOutLogged = inSecond;
         }

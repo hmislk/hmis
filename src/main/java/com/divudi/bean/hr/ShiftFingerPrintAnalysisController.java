@@ -177,7 +177,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                        staffShiftFacade.edit(ss);
 
                         if (ss.getPreviousStaffShift() != null) {
-                            ss.getStartRecord().setComments("(P)");
+//                            System.err.println("PREV");
+                            ss.getStartRecord().setComments("(NEW PREV)");
                             ss.getStartRecord().setRecordTimeStamp(ss.getShiftStartTime());
                         }
 
@@ -191,7 +192,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                        staffShiftFacade.edit(ss);
 
                         if (ss.getNextStaffShift() != null) {
-                            ss.getEndRecord().setComments("(N)");
+//                            System.err.println("NEXT");
+                            ss.getEndRecord().setComments("(NEW NEXT)");
                             ss.getEndRecord().setRecordTimeStamp(ss.getShiftEndTime());
                         }
                     }
