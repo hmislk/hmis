@@ -20,9 +20,8 @@
             </f:facet>
             <p:column headerText="Bill Id">
                 <h:outputLabel value="#{a.insId}"/>
-                <br/>
                 <h:panelGroup rendered="#{a.cancelled}">
-                    <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
+                    <h:outputLabel style="color: red;" value="Cancelled at "/>
                     <h:outputLabel style="color: red;" rendered="#{a.cancelled}" value="#{a.cancelledBill.createdAt}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>

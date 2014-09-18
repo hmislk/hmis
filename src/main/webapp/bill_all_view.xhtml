@@ -43,9 +43,12 @@
                                 </p:panel>
                                 <p:panel header="Bill Detail">
                                     <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Bill No (Ins Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.insId}" />
 
+                                        <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.deptId}" />
+                                        
                                         <h:outputLabel value="Bill Date :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.createdAt}" >
                                             <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>

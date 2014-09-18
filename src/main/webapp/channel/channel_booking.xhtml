@@ -5,7 +5,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel">
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
 
@@ -65,10 +66,16 @@
                         </p:column>
 
                         <p:column headerText="Fee">
-                            <h:outputLabel value="#{ses.originatingSession.totalFee}">
+                            <p:outputLabel value="#{ses.originatingSession.totalFee}">
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>                                                            
-                        </p:column>                      
+                            </p:outputLabel>                                                            
+                        </p:column>   
+
+                        <p:column >
+                            <p:commandLink value="Edit" onclick="PF('dlgSessionEdit').show();" />
+
+                        </p:column>
+
                     </p:dataTable>
                 </p:panel>
 
@@ -532,6 +539,12 @@
             </h:panelGrid>
 
         </h:form>
+
+        <p:dialog  widgetVar="dlgSessionEdit" modal="true" height="100">
+           
+        </p:dialog> 
+
+
     </ui:define>
 
 

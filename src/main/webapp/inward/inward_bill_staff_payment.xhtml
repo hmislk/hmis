@@ -5,7 +5,8 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill">
+      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <h:body>
 
@@ -66,7 +67,10 @@
 
                                     <p:column selectionMode="multiple" ></p:column>
 
-                                    <p:column headerText="BHT No">
+                                    <p:column >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="BHT No"/>
+                                        </f:facet>                                        
                                         <h:outputLabel value="#{bf.bill.patientEncounter.bhtNo}">
                                         </h:outputLabel>
                                     </p:column>
@@ -74,6 +78,11 @@
 
 
                                     <p:column headerText="Bill Date">
+                                    
+                                      <f:facet name="header">
+                                            <h:outputLabel value="Bill Date"/>
+                                           
+                                       </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
                                         </h:outputLabel>
@@ -81,15 +90,26 @@
 
 
                                     <p:column headerText="Patient">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Patient"/>
+                                        </f:facet>
+                                        
                                         <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
                                         <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
                                     </p:column> 
 
                                     <p:column headerText="Test" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Test"/>
+                                        </f:facet>
+                                        
                                         <h:outputLabel value="#{bf.billItem.item.name}" />
                                     </p:column>
 
                                     <p:column headerText="Charge" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Charge"/>
+                                        </f:facet>
                                         <h:outputLabel value="#{bf.feeValue}" >
                                             <f:convertNumber pattern="#,000.00" />
                                         </h:outputLabel>
@@ -118,6 +138,9 @@
                                     <p:commandButton ajax="false" value="Pay" action="#{inwardStaffPaymentBillController.settleBill()}" onclick="onSubmitButton();" >
                                         <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
                                     </p:commandButton>
+                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                        <pe:exporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due"  />
+                                    </p:commandButton>  
                                 </h:panelGroup>
                             </h:panelGrid>
 

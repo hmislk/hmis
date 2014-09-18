@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
@@ -51,6 +52,14 @@ public class ServiceSession extends Item implements Serializable {
     double displayPercent;
     double duration;
     int roomNo;
+    int durationIncrementCount =1;
+    boolean showAppointmentCount = true;
+    boolean oncallBookingsAllowed = true;
+    long advanceAppointmentPeriod = 10;
+    int advanceAPpointmentPeriodUnit = Calendar.DATE;
+    boolean showAppointmentTime = true;
+   
+    
     
     
     @Transient
