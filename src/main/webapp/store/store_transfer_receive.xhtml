@@ -10,26 +10,26 @@
     <ui:define name="content">
         <h:form>
             <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-            <p:panel rendered="#{!transferReceiveController.printPreview}">
+            <p:panel rendered="#{!storeTransferReceiveController.printPreview}">
                 <p:panel>
 
                     <f:facet name="header" >                                  
                         <h:panelGrid columns="4"  >                        
-                            <p:outputLabel value="Staff :#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
+                            <p:outputLabel value="Staff :#{storeTransferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
 
-                            <p:commandButton  value="Recieve" action="#{transferReceiveController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                            <p:commandButton  value="Recieve" action="#{storeTransferReceiveController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                             </p:commandButton>
 
                         </h:panelGrid>
                     </f:facet>
                 </p:panel>
 
-                <p:dataTable styleClass="noBorder" var="ph" value="#{transferReceiveController.billItems}" 
+                <p:dataTable styleClass="noBorder" var="ph" value="#{storeTransferReceiveController.billItems}" 
                              id="itemList" scrollable="true" scrollHeight="250" sortBy="#{ph.searialNo}"
                              editable="true">  
 
-                    <p:ajax event="rowEdit" listener="#{transferReceiveController.onEdit}" />  
-                    <p:ajax event="rowEditCancel" listener="#{transferReceiveController.onEdit}"/> 
+                    <p:ajax event="rowEdit" listener="#{storeTransferReceiveController.onEdit}" />  
+                    <p:ajax event="rowEditCancel" listener="#{storeTransferReceiveController.onEdit}"/> 
 
 
                     <f:facet name="header">  
@@ -52,7 +52,7 @@
                             </f:facet>                        
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" >
-                                    <f:ajax event="focus" render=":#{p:component('tab')}" execute="@this" listener="#{transferReceiveController.onFocus(ph)}"/>
+                                    <f:ajax event="focus" render=":#{p:component('tab')}" execute="@this" listener="#{storeTransferReceiveController.onFocus(ph)}"/>
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>
@@ -64,15 +64,15 @@
                 <st:history/>
 
             </p:panel>
-            <p:panel rendered="#{transferReceiveController.printPreview}">
-                <p:commandButton ajax="false" action="store_transfer_issued_list" actionListener="#{transferReceiveController.makeNull()}" value="Issued List"/>                    
+            <p:panel rendered="#{storeTransferReceiveController.printPreview}">
+                <p:commandButton ajax="false" action="store_transfer_issued_list" actionListener="#{storeTransferReceiveController.makeNull()}" value="Issued List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
 
                 <p:panel   id="gpBillPreview"   >
 
-                    <st:transferReceive bill="#{transferReceiveController.receivedBill}" />
+                    <st:transferReceive bill="#{storeTransferReceiveController.receivedBill}" />
 
                 </p:panel>
 

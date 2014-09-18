@@ -10,33 +10,33 @@
     <ui:define name="content">
         <h:form>
 
-            <p:panel rendered="#{!transferIssueController.printPreview}">
+            <p:panel rendered="#{!storeTransferIssueController.printPreview}">
 
                 <f:facet name="header" >                                  
                     <h:panelGrid columns="4"   >
                         <f:facet name="header">
-                            <h:outputLabel value="Department :#{transferIssueController.requestedBill.department.name}" />
+                            <h:outputLabel value="Department :#{storeTransferIssueController.requestedBill.department.name}" />
                         </f:facet>
                         <p:autoComplete converter="stfcon" completeMethod="#{staffController.completeStaffWithoutDoctors}" styleClass="noPrintButton"
                                         forceSelection="true"
                                         var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
-                                        value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
-                        <p:commandButton  value="Issue" action="#{transferIssueController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                                        value="#{storeTransferIssueController.issuedBill.toStaff}" ></p:autoComplete>
+                        <p:commandButton  value="Issue" action="#{storeTransferIssueController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                         </p:commandButton>                        
                     </h:panelGrid>
                 </f:facet>
 
 
                 <p:dataTable styleClass="noBorder" var="bItm" scrollable="true" scrollHeight="250" 
-                             value="#{transferIssueController.billItems}" 
+                             value="#{storeTransferIssueController.billItems}" 
                              id="itemList" sortBy="#{bItm.searialNo}"  editable="true">  
 
                     <f:facet name="header">  
                         Requested Item 
                     </f:facet>  
 
-                    <p:ajax event="rowEdit" listener="#{transferIssueController.onEdit}"  />  
-                    <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEdit}" /> 
+                    <p:ajax event="rowEdit" listener="#{storeTransferIssueController.onEdit}"  />  
+                    <p:ajax event="rowEditCancel" listener="#{storeTransferIssueController.onEdit}" /> 
 
 
 
@@ -65,14 +65,14 @@
                             </f:facet>                        
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" >
-                                    <f:ajax event="focus" render=":#{p:component('tab')}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                    <f:ajax event="focus" render=":#{p:component('tab')}" execute="@this" listener="#{storeTransferIssueController.onFocus(bItm)}"/>
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>              
 
                     <p:column style="width: 10px!important;">
-                        <p:commandButton value="Remove"  ajax="false" action="#{transferIssueController.remove(bItm)}">
+                        <p:commandButton value="Remove"  ajax="false" action="#{storeTransferIssueController.remove(bItm)}">
                         </p:commandButton>
                     </p:column>
                 </p:dataTable>  
@@ -81,15 +81,15 @@
                 <ph:history/>
 
             </p:panel>
-            <p:panel rendered="#{transferIssueController.printPreview}">
-                <p:commandButton ajax="false" action="pharmacy_transfer_request_list" actionListener="#{transferIssueController.makeNull()}" value="Requested List"/>                    
+            <p:panel rendered="#{storeTransferIssueController.printPreview}">
+                <p:commandButton ajax="false" action="pharmacy_transfer_request_list" actionListener="#{storeTransferIssueController.makeNull()}" value="Requested List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
 
                 <p:panel   id="gpBillPreview"   >
 
-                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+                    <ph:transferIssue bill="#{storeTransferIssueController.issuedBill}"/>
 
                 </p:panel>
 
