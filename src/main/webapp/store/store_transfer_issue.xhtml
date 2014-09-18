@@ -82,7 +82,7 @@
 
             </p:panel>
             <p:panel rendered="#{storeTransferIssueController.printPreview}">
-                <p:commandButton ajax="false" action="pharmacy_transfer_request_list" actionListener="#{storeTransferIssueController.makeNull()}" value="Requested List"/>                    
+                <p:commandButton ajax="false" action="store_transfer_request_list" actionListener="#{storeTransferIssueController.makeNull()}" value="Requested List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
