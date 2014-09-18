@@ -178,7 +178,15 @@
                                 </p:column>                                
                                 <p:column>
                                     <p:commandButton ajax="false" value="Update Room"
-                                                     action="#{roomChangeController.dischargeWithCurrentTime(rm)}" actionListener="#{bhtSummeryController.updatePatientRoom(rm)}" onclick="onSubmitButton();"/>
+                                                     action="#{roomChangeController.dischargeWithCurrentTime(rm)}"
+                                                     actionListener="#{bhtSummeryController.updatePatientRoom(rm)}" 
+                                                     onclick="onSubmitButton();"/>
+                                </p:column> 
+                                 <p:column>
+                                    <p:commandButton ajax="false" value="Cancel Discharge"
+                                                     action="#{roomChangeController.dischargeCancel(rm)}"
+                                                     actionListener="#{bhtSummeryController.updatePatientRoom(rm)}" 
+                                                     onclick="onSubmitButton();"/>
                                 </p:column> 
 
                             </p:dataTable>
@@ -626,7 +634,7 @@
                                           var="p"
                                           rowStyleClass="#{((p.billClass eq 'class com.divudi.entity.BilledBill')
                                                            or 
-                                                           (p.billedBill eq null and p.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}" >
+                                                           (p.refundedBill eq null and p.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}" >
                                 <p:column headerText="Bill No">
                                     #{p.insId}
                                 </p:column>

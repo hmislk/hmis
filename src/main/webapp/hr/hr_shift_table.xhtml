@@ -59,11 +59,12 @@
                     <p:column rendered="#{data.date ne null}">
                         <f:facet name="header">                            
                             <h:outputLabel value="#{data.date}" >
-                                <f:convertDateTime pattern="dd MM yyyy"/>
+                                <f:convertDateTime pattern="dd MM yyyy E"/>
                             </h:outputLabel>
                         </f:facet>
 
                         <p:autoComplete value="#{sts.shift}"
+                                        autocomplete="off"
                                         rendered="#{!shiftTableController.all}"
                                         forceSelection="true"     
                                         styleClass="autoComplete75px"
@@ -75,6 +76,7 @@
                         </p:autoComplete>
 
                         <p:autoComplete value="#{sts.shift}"
+                                        autocomplete="off"
                                         rendered="#{shiftTableController.all}"
                                         forceSelection="true"     
                                         styleClass="autoComplete75px"

@@ -31,12 +31,12 @@
                         </p:panel>
                         <p:panel>
                             <p:commandButton ajax="false" value="Fill" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummery()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();"  >
+                            <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb" fileName="newly_added_report"  />
+                                <pe:exporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
                             </p:commandButton>
                         </p:panel>
                         <p:panel id="gpBillPreview" header="Payements For #{inwardStaffPaymentBillController.speciality}">

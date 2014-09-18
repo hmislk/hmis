@@ -46,7 +46,7 @@ import org.primefaces.event.TabChangeEvent;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -91,7 +91,7 @@ public class AmpController implements Serializable {
         this.billNumberBean = billNumberBean;
     }
 
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
 
     public PharmacyBean getPharmacyBean() {
@@ -199,8 +199,9 @@ public class AmpController implements Serializable {
         return a;
     }
     List<Amp> ampList = null;
+
     public List<Amp> completeAmpByName(String qry) {
-        
+
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
@@ -219,7 +220,7 @@ public class AmpController implements Serializable {
     }
 
     public List<Amp> completeAmpByCode(String qry) {
-        
+
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
@@ -236,7 +237,7 @@ public class AmpController implements Serializable {
     }
 
     public List<Amp> completeAmpByBarCode(String qry) {
-        
+
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
@@ -244,11 +245,11 @@ public class AmpController implements Serializable {
                 + " c.retired=false and c.departmentType!=:dep and "
                 + "(upper(c.barcode) like :n ) order by c.barcode";
      //   System.out.println("sql = " + sql);
-     //   System.out.println("m = " + m);
+        //   System.out.println("m = " + m);
 
         if (qry != null) {
             ampList = getFacade().findBySQL(sql, m, 30);
-         //   System.out.println("a = " + a);
+            //   System.out.println("a = " + a);
             //System.out.println("a size is " + a.size());
         }
         if (ampList == null) {
@@ -447,7 +448,6 @@ public class AmpController implements Serializable {
     }
     private List<Amp> filteredItems;
 
-   
     public List<Amp> getItems() {
 //        if (items == null) {
 //            items = getFacade().findAll("name", true);

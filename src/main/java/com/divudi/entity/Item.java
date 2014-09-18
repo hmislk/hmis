@@ -123,6 +123,8 @@ public class Item implements Serializable {
 
     @Lob
     String descreption;
+    @Lob
+    String comments;
 
     @Enumerated(EnumType.STRING)
     SymanticType symanticType;
@@ -133,6 +135,19 @@ public class Item implements Serializable {
     @Transient
     double transCheckedCount;
 
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date effectiveFrom;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date effectiveTo;
+
+    public Date getEffectiveFrom() {
+        return effectiveFrom;
+    }
+
+    public void setEffectiveFrom(Date effectiveFrom) {
+        this.effectiveFrom = effectiveFrom;
+    }
+
     public double getTransCheckedCount() {
         return transCheckedCount;
     }
@@ -140,8 +155,6 @@ public class Item implements Serializable {
     public void setTransCheckedCount(double transCheckedCount) {
         this.transCheckedCount = transCheckedCount;
     }
-    
-    
 
     public boolean isMarginNotAllowed() {
         return marginNotAllowed;
@@ -150,8 +163,6 @@ public class Item implements Serializable {
     public void setMarginNotAllowed(boolean marginNotAllowed) {
         this.marginNotAllowed = marginNotAllowed;
     }
-    
-    
 
     public List<WorksheetItem> getWorksheetItems() {
         if (worksheetItems != null) {
@@ -212,6 +223,77 @@ public class Item implements Serializable {
     double hospitalFfee;
     @Transient
     double professionalFfee;
+    @Transient
+    double taxFee;
+    @Transient
+    double taxFfee;
+    @Transient
+    double otherFee;
+    @Transient
+    double otherFfee;
+    @Transient
+    double totalFee;
+    @Transient
+    double totalFfee;
+    @Transient
+    List<ItemFee> itemFees;
+
+    public List<ItemFee> getItemFees() {
+        return itemFees;
+    }
+
+    public void setItemFees(List<ItemFee> itemFees) {
+        this.itemFees = itemFees;
+    }
+
+    public double getTaxFee() {
+        return taxFee;
+    }
+
+    public void setTaxFee(double taxFee) {
+        this.taxFee = taxFee;
+    }
+
+    public double getTaxFfee() {
+        return taxFfee;
+    }
+
+    public void setTaxFfee(double taxFfee) {
+        this.taxFfee = taxFfee;
+    }
+
+    public double getOtherFee() {
+        return otherFee;
+    }
+
+    public void setOtherFee(double otherFee) {
+        this.otherFee = otherFee;
+    }
+
+    public double getOtherFfee() {
+        return otherFfee;
+    }
+
+    public void setOtherFfee(double otherFfee) {
+        this.otherFfee = otherFfee;
+    }
+
+    public double getTotalFee() {
+        return totalFee;
+    }
+
+    public void setTotalFee(double totalFee) {
+        this.totalFee = totalFee;
+    }
+
+    public double getTotalFfee() {
+        return totalFfee;
+    }
+
+    public void setTotalFfee(double totalFfee) {
+        this.totalFfee = totalFfee;
+    }
+
     @Transient
     ItemFee itemFee;
 
@@ -641,6 +723,14 @@ public class Item implements Serializable {
 
     public void setImporter(Institution importer) {
         this.importer = importer;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

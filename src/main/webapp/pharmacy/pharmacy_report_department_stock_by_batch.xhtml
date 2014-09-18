@@ -39,7 +39,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="#{reportsStock.department.name} Stock"/>                                     
                                 </f:facet> 
-                                
+
                                 <p:column>
                                     <h:outputLabel value="#{ii+1}" />
                                 </p:column>
@@ -112,6 +112,7 @@
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
+
                                 <p:columnGroup type="footer">
                                     <p:row>
                                         <p:column colspan="6" footerText="Total">
@@ -123,7 +124,7 @@
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
                                                     <f:convertNumber parent="#,##0.00" />
-                                                 </h:outputLabel>
+                                                </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column></p:column>
@@ -131,6 +132,16 @@
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
                                                     <f:convertNumber parent="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="9" >
+                                            <f:facet name="footer" >
+                                                <h:outputLabel value="Printed At " ></h:outputLabel>
+                                                <h:outputLabel value="#{sessionController.currentDate}" >
+                                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>

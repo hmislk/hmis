@@ -61,16 +61,14 @@ public class TransferIssueController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     ////
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
-    @EJB
+    @Inject
     private PharmacyCalculation pharmacyCalculation;
     @Inject
     private BillNumberController billNumberBean;
     @EJB
-    private CommonFunctions commonFunctions;
-    @EJB
-    private PharmacyCalculation pharmacyRecieveBean;
+    private CommonFunctions commonFunctions;   
     private List<BillItem> billItems;
     UserStockContainer userStockContainer;
 
@@ -275,8 +273,8 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().getBillItems().add(i);
         }
 
-        getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill(), BillType.PharmacyTransferIssue, BillNumberSuffix.PHTI));
-        getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getIssuedBill(), BillType.PharmacyTransferIssue, BillNumberSuffix.PHTI));
+        getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill(), BillType.StoreTransferIssue, BillNumberSuffix.STTI));
+        getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getIssuedBill(), BillType.StoreTransferIssue, BillNumberSuffix.STTI));
 
         getIssuedBill().setInstitution(getSessionController().getInstitution());
         getIssuedBill().setDepartment(getSessionController().getDepartment());
@@ -462,13 +460,7 @@ public class TransferIssueController implements Serializable {
         this.pharmacyController = pharmacyController;
     }
 
-    public PharmacyCalculation getPharmacyRecieveBean() {
-        return pharmacyRecieveBean;
-    }
-
-    public void setPharmacyRecieveBean(PharmacyCalculation pharmacyRecieveBean) {
-        this.pharmacyRecieveBean = pharmacyRecieveBean;
-    }
+   
 
     public List<BillItem> getBillItems() {
         if (billItems == null) {

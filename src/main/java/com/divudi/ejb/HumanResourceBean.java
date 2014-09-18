@@ -133,7 +133,7 @@ public class HumanResourceBean {
         String sql = "Select ss from FingerPrintRecord ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
-                + " and ss.loggedRecord is not null"
+                //                + " and ss.loggedRecord is not null"
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
@@ -171,7 +171,7 @@ public class HumanResourceBean {
         String sql = "Select ss from FingerPrintRecord ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s"
-                + " and ss.loggedRecord is not null"
+                //                + " and ss.loggedRecord is not null"
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
@@ -661,7 +661,9 @@ public class HumanResourceBean {
         hm.put("fd", frm.getTime());
         hm.put("td", to.getTime());
         tmp = getFingerPrintRecordFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
-        System.err.println("fetchMissedFingerFrintRecord:: " + tmp);
+//        System.err.println("fetchMissedFingerFrintRecord:: " + tmp);
+
+        
         return tmp;
     }
 
@@ -793,6 +795,21 @@ public class HumanResourceBean {
 
         return getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
+    
+     public StaffLeave fetchFirstStaffLeave(Staff staff, Date date) {
+
+        String sql = "Select s From StaffLeave s"
+                + " where s.retired=false "
+                + " and s.staff=:st"
+                + " and (s.fromDate >= :date and s.toDate<= :date)";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+        hm.put("date", date);
+//        hm.put("to", toDate);
+
+        return getStaffLeaveFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+    }
+
 
     public boolean isHoliday(Date d) {
         String sql = "Select d From PhDate d "
@@ -930,7 +947,7 @@ public class HumanResourceBean {
 
         sql = "select st From StaffShift st "
                 + " where st.retired=false "
-                + " and st.consideredForSalary!=true "
+                //                + " and st.consideredForSalary!=true "
                 + " and st.startRecord.recordTimeStamp between :frmD and :toD "
                 + " and st.staff=:staf";
         hm.put("frmD", frm);
@@ -946,7 +963,7 @@ public class HumanResourceBean {
 
         sql = "select st From StaffShift st "
                 + " where st.retired=false "
-                + " and st.consideredForExtraDuty!=true "
+                //                + " and st.consideredForExtraDuty!=true "
                 + " and st.startRecord.recordTimeStamp between :frmD and :toD "
                 + " and st.staff=:staf";
         hm.put("frmD", frm);
@@ -962,7 +979,7 @@ public class HumanResourceBean {
 
         sql = "select st From StaffShift st "
                 + " where st.retired=false "
-                + " and st.consideredForSalary=true "
+                //                + " and st.consideredForSalary=true "
                 + " and st.startRecord.recordTimeStamp between :frmD and :toD "
                 + " and st.staff=:staf";
         hm.put("frmD", frm);
@@ -978,7 +995,7 @@ public class HumanResourceBean {
 
         sql = "select st From StaffShift st "
                 + " where st.retired=false "
-                + " and  st.consideredForOt!=true "
+                //                + " and  st.consideredForOt!=true "
                 + " and st.startRecord.recordTimeStamp between :frmD and :toD "
                 + " and st.staff=:staf";
         hm.put("frmD", frm);
@@ -994,7 +1011,7 @@ public class HumanResourceBean {
 
         sql = "select st From StaffShift st "
                 + " where st.retired=false "
-                + " and  st.consideredForOt=true "
+                //                + " and  st.consideredForOt=true "
                 + " and st.startRecord.recordTimeStamp between :frmD and :toD "
                 + " and st.staff=:staf";
         hm.put("frmD", frm);
@@ -1010,7 +1027,7 @@ public class HumanResourceBean {
 
         sql = "select st From StaffShift st "
                 + " where st.retired=false "
-                + " and  st.consideredForExtraDuty=true "
+                //                + " and  st.consideredForExtraDuty=true "
                 + " and st.startRecord.recordTimeStamp between :frmD and :toD "
                 + " and st.staff=:staf";
         hm.put("frmD", frm);
@@ -1212,7 +1229,7 @@ public class HumanResourceBean {
     private StaffShift fetchExistingStaffShift(Date date) {
         String sql = "select s from StaffShift s "
                 + " where s.retired=false "
-                + " and s.consideredForOt=false "
+                //                + " and s.consideredForOt=false "
                 + " and s.shiftStartTime=:d";
 
         HashMap hm = new HashMap();
@@ -1362,7 +1379,7 @@ public class HumanResourceBean {
             int netTime = endTime.get(Calendar.MINUTE) - start.get(Calendar.MINUTE);
             workedMinute += netTime;
 
-            ser.setConsideredForOt(Boolean.TRUE);
+//            ser.setConsideredForOt(Boolean.TRUE);
             System.err.println("SETTING OT TRUE");
             getStaffShiftFacade().edit(ser);
 
@@ -1402,7 +1419,7 @@ public class HumanResourceBean {
             int netTime = endTime.get(Calendar.MINUTE) - start.get(Calendar.MINUTE);
             workedMinute += netTime;
 
-            ser.setConsideredForOt(Boolean.TRUE);
+//            ser.setConsideredForOt(Boolean.TRUE);
             System.err.println("SETTING OT TRUE");
             getStaffShiftFacade().edit(ser);
         }
@@ -1436,37 +1453,24 @@ public class HumanResourceBean {
 //            int netTime = endTime.get(Calendar.MINUTE) - start.get(Calendar.MINUTE);
 //            workedMinute += netTime;
 
-            ser.setConsideredForSalary(Boolean.TRUE);
-            
-           /**
-            * Previous check eligible for salary
-            * if hours less than 28 hours
-            *   if can be covered by leave
-            *       
-            *       calculate salary as normal
-            *       add to leaves if leave is NOT marked
-            *   else
-            *       add to maximum leave hours (hours 8)
-            *           add to leave if not already marked
-            *       calculate no pay
-            *       for monthly
-            *           total salary as usual / divide by 45 * by working hours
-            *       end for
-            *   end if
-            * end if
-            * 
-            * 
-            * 
-            * 
-            * 
-            * 
-            * 
-            * 
-            */
-            
-            
-            
-            
+//            ser.setConsideredForSalary(Boolean.TRUE);
+            /**
+             * Previous check eligible for salary if hours less than 28 hours if
+             * can be covered by leave
+             *
+             * calculate salary as normal add to leaves if leave is NOT marked
+             * else add to maximum leave hours (hours 8) add to leave if not
+             * already marked calculate no pay for monthly total salary as usual
+             * / divide by 45 * by working hours end for end if end if
+             *
+             *
+             *
+             *
+             *
+             *
+             *
+             *
+             */
             System.err.println("SETTING SALARY TRUE");
             getStaffShiftFacade().edit(ser);
         }
@@ -1489,7 +1493,7 @@ public class HumanResourceBean {
 //            int netTime = endTime.get(Calendar.MINUTE) - start.get(Calendar.MINUTE);
 //            workedMinute += netTime;
 
-            ser.setConsideredForExtraDuty(Boolean.TRUE);
+//            ser.setConsideredForExtraDuty(Boolean.TRUE);
             System.err.println("SETTING SALARY TRUE");
             getStaffShiftFacade().edit(ser);
         }

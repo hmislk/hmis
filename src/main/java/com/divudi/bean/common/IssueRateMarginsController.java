@@ -61,7 +61,7 @@ public class IssueRateMarginsController implements Serializable {
         issueRateMargins = null;
     }
 
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
 
     public void add() {

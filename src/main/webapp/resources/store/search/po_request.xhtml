@@ -30,29 +30,29 @@
             </f:facet>
 
             <p:column headerText="Req No" >
-                <h:commandLink action="pharmacy_reprint_order_request" value="#{bill.deptId}">
+                <h:commandLink action="store_reprint_order_request" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column> 
             <p:column headerText="Requested From"  >
-                <h:commandLink action="pharmacy_reprint_order_request" value="#{bill.department.name}">
+                <h:commandLink action="store_reprint_order_request" value="#{bill.department.name}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                 
             <p:column headerText="Delaor Name"  >
-                <h:commandLink action="pharmacy_reprint_order_request" value="#{bill.toInstitution.name}">
+                <h:commandLink action="store_reprint_order_request" value="#{bill.toInstitution.name}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
             <p:column headerText="Billed at"  >
-                <h:commandLink action="pharmacy_reprint_order_request" >
+                <h:commandLink action="store_reprint_order_request" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -69,10 +69,10 @@
                 </h:panelGroup>
             </p:column>                 
             <p:column headerText="Requested by" >
-                <h:commandLink action="pharmacy_reprint_order_request" >
+                <h:commandLink action="store_reprint_order_request" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -89,17 +89,17 @@
             </p:column>                       
 
             <p:column headerText="Paymentmethod"   >
-                <h:commandLink action="pharmacy_reprint_order_request" >
+                <h:commandLink action="store_reprint_order_request" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               
             <p:column headerText="Net Value" filterBy="#{bill.netTotal}" style="text-align: right;"  >
-                <h:commandLink action="pharmacy_reprint_order_request" >
+                <h:commandLink action="store_reprint_order_request" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,000.00"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
 

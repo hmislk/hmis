@@ -211,5 +211,7 @@ public enum Privileges {
     MemberShipOpdMemberShipDisByDepartment,
     MemberShipOpdMemberShipDisByCategory,
     MemberShipOpdMemberShipDisOpdMemberShipReport,
+    
+    Developers,
 
 }

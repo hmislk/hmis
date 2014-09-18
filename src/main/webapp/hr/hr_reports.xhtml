@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml" >
+
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGrid columns="3" >                           
+                        <p:panel header="Attendance">
+                            <h:panelGrid columns="1">
+                                <p:commandButton value="(1) Attendance Report" 
+                                                 action="hr_report_attendance" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                <p:commandButton value="(2) Early In " 
+                                                 action="hr_report_attendance_early_in" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                <p:commandButton value="(3) Early Out " 
+                                                 action="hr_report_attendance_early_out" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                <p:commandButton value="(3) Late In " 
+                                                 action="hr_report_attendance_late_in" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                <p:commandButton value="(3) Late Out " 
+                                                 action="hr_report_attendance_late_out" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel header="Administration">
+                            <h:panelGrid columns="1">
+                                <p:commandButton value="(1) Department Report " 
+                                                 action="hr_report_department" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                <p:commandButton value="(2) Employee Detail " 
+                                                 action="hr_report_employee_detail" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                            </h:panelGrid>
+
+                        </p:panel>
+                        <p:panel header="Shift">
+                            <h:panelGrid columns="1">
+                                <p:commandButton value="(1) Shift Report" 
+                                                 action="hr_report_staff_shift" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                            </h:panelGrid>
+                        </p:panel>
+                        
+                         <p:panel header="Finger Print Records">
+                            <h:panelGrid columns="1">
+                                <p:commandButton value="(1) Finger Print Record By Logged" 
+                                                 action="hr_report_finger_print_record_logged" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                 <p:commandButton value="(2) Finger Print Record By Verified" 
+                                                 action="hr_report_finger_print_record_verified" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel header="Leave" >
+                            
+                        </p:panel>
+
+
+
+                    </h:panelGrid>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

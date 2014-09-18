@@ -88,4 +88,6 @@ public enum BillNumberSuffix {
     DIC,//Department Issue Cancell
     ISS,//Department Issue
     ISSCAN,//Department Issue Cancel
+    STTRQ,//transper request
+    STTI,//transfer issue
 }

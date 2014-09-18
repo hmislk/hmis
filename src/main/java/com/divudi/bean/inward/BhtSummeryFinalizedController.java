@@ -695,36 +695,25 @@ public class BhtSummeryFinalizedController implements Serializable {
     }
 
     public void errorCorrection2() {
-        List<Bill> bills = inwardBean.fetchFinalBills();
-        for (Bill b : bills) {
-            inwardReportControllerBht.setPatientEncounter(b.getPatientEncounter());
-            double gross = inwardReportControllerBht.fetchMadicineGross() + inwardReportControllerBht.fetchMadicineMargin();
-            double discount = inwardReportControllerBht.fetchMadicineDiscount();
-            double netValue = inwardReportControllerBht.fetchMadicineNetValue();
-
-            BillItem billItem = billBeanController.fetchBillItem(b, InwardChargeType.Medicine);
-            if (billItem == null) {
-                continue;
-            }
-
-//            if (gross != billItem.getGrossValue()) {
-//                System.err.println("BHT GROSS **** " + b.getPatientEncounter().getBhtNo());
-//                System.err.println("BillItem " + billItem.getGrossValue());
-//                System.err.println("Pharmacy " + gross);
+//        List<Bill> bills = inwardBean.fetchFinalBills();
+//        for (Bill b : bills) {
+//            inwardReportControllerBht.setPatientEncounter(b.getPatientEncounter());
+//            double gross = inwardReportControllerBht.fetchMadicineGross() + inwardReportControllerBht.fetchMadicineMargin();
+//            double discount = inwardReportControllerBht.fetchMadicineDiscount();
+//            double netValue = inwardReportControllerBht.fetchMadicineNetValue();
+//
+//            BillItem billItem = billBeanController.fetchBillItem(b, InwardChargeType.Medicine);
+//            if (billItem == null) {
+//                continue;
 //            }
-            if (Math.abs((discount - billItem.getDiscount())) > 0.01) {
-                System.err.println("BHT Discount **** " + b.getPatientEncounter().getBhtNo());
-                System.err.println("Pharmacy Discount " + discount);
-                changeDiscountListener(billItem.getDiscount(), billItem.getGrossValue(), b.getPatientEncounter());
-            }
-
-//            if (netValue != billItem.getNetValue()) {
-//                System.err.println("BHT NetValue **** " + b.getPatientEncounter().getBhtNo());
-//                System.err.println("BillItem " + billItem.getNetValue());
-//                System.err.println("Pharmacy " + netValue);
-//              
+//
+//            if (Math.abs((discount - billItem.getDiscount())) > 0.01) {
+//                System.err.println("BHT Discount **** " + b.getPatientEncounter().getBhtNo());
+//                System.err.println("Pharmacy Discount " + discount);
+//                changeDiscountListener(billItem.getDiscount(), billItem.getGrossValue(), b.getPatientEncounter());
 //            }
-        }
+//
+//        }
     }
     @Inject
     BhtIssueReturnController bhtIssueReturnController;

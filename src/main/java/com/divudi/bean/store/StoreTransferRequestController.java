@@ -53,7 +53,7 @@ public class StoreTransferRequestController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
@@ -61,7 +61,7 @@ public class StoreTransferRequestController implements Serializable {
     private Institution dealor;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
-    @EJB
+    @Inject
     private PharmacyCalculation pharmacyBillBean;
     private boolean printPreview;
 
@@ -172,8 +172,8 @@ public class StoreTransferRequestController implements Serializable {
 
         saveBill();
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.PharmacyTransferRequest, BillNumberSuffix.PHTRQ));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.PharmacyTransferRequest, BillNumberSuffix.PHTRQ));
+        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.StoreTransferRequest, BillNumberSuffix.STTRQ));
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.StoreTransferRequest, BillNumberSuffix.STTRQ));
 
         getBill().setCreater(getSessionController().getLoggedUser());
         getBill().setCreatedAt(Calendar.getInstance().getTime());

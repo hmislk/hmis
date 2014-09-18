@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="#{cc.id}" widgetVar="iw" 
+                     value="#{bookKeepingSummery.inwardCollections}"
+                     var="inw" rendered="#{bookKeepingSummery.inwardCollections.size()>0}">
+            <f:facet name="header">
+                Inward Collection
+            </f:facet>               
+            <p:column headerText="Admission Type">
+                <h:outputLabel value="#{inw.string1}"/>
+            </p:column>
+            <p:column style="text-align: right;"  headerText="Total" >
+                <h:outputLabel value="#{inw.value2}" style="font-weight: bolder;" >   
+                    <f:convertNumber pattern="#,000.00"/>
+                </h:outputLabel>
+            </p:column>
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="4" footerText="Inward Collection Total"/>
+                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.inwardPaymentTotal}" >
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{bookKeepingSummery.inwardPaymentTotal}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+        </p:dataTable>
+    </cc:implementation>
+</html>

@@ -9,6 +9,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.ChannelFee;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillSession;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.Staff;
@@ -16,10 +17,12 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -90,14 +93,23 @@ public class ChannelBean {
         return billFee;
     }
 
-    public int getBillSessionsCount(ServiceSession ss) {
-
-        String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession.id=" + ss.getId() + " and bs.sessionDate= :ssDate";
+    public int getBillSessionsCount(ServiceSession ss, Date date) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select count(bs) From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession =:ser "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
-        hh.put("ssDate", ss.getSessionAt());
-        List<BillSession> billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        hh.put("ssDate", date);
+        hh.put("ser", ss);
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        Long lg = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
 
-        return billSessions.size();
+        return lg.intValue();
     }
 
     private boolean checkLeaveDate(Date date, Staff staff) {
@@ -109,9 +121,15 @@ public class ChannelBean {
         return !tmp.isEmpty();
     }
 
-    public List<ServiceSession> setSessionAt(List<ServiceSession> sessions) {
+    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessions(List<ServiceSession> inputSessions) {
         int sessionDayCount = 0;
-        List<ServiceSession> serviceSessions = new ArrayList<>();
+        System.err.println("Passing Sessions " + inputSessions);
+        List<ServiceSession> createdSessions = new ArrayList<>();
+
+        if (inputSessions == null || inputSessions.isEmpty()) {
+            return createdSessions;
+        }
+
         Date nowDate = Calendar.getInstance().getTime();
 
         Calendar c = Calendar.getInstance();
@@ -123,11 +141,11 @@ public class ChannelBean {
         while (toDate.after(nowDate) && sessionDayCount < getFinalVariables().getSessionSessionDayCounter()) {
             boolean hasSpecificDateSession = false;
 
-            if (checkLeaveDate(nowDate, sessions.get(0).getStaff())) {
+            if (checkLeaveDate(nowDate, inputSessions.get(0).getStaff())) {
                 continue;
             }
 
-            for (ServiceSession ss : sessions) {
+            for (ServiceSession ss : inputSessions) {
                 if (ss.getSessionDate() != null) {
                     Calendar sessionDate = Calendar.getInstance();
                     sessionDate.setTime(ss.getSessionDate());
@@ -137,22 +155,24 @@ public class ChannelBean {
                     if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
                         hasSpecificDateSession = true;
                         ServiceSession newSs = new ServiceSession();
+                        newSs.setOriginatingSession(ss);
                         newSs.setName(ss.getName());
                         newSs.setMaxNo(ss.getMaxNo());
                         newSs.setStartingTime(ss.getStartingTime());
                         newSs.setSessionWeekday(ss.getSessionWeekday());
                         newSs.setHospitalFee(ss.getHospitalFee());
-                        newSs.setStaffFee(ss.getStaffFee());
+                        newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
                         newSs.setSessionAt(nowDate);
-                        newSs.setDisplayCount(getBillSessionsCount(newSs));
+                        newSs.setSessionDate(nowDate);
+                        newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setStaff(ss.getStaff());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
                         ////System.out.println("Specific Count : " + sessionDayCount);
-                        serviceSessions.add(newSs);
+                        createdSessions.add(newSs);
 
-                        if (tmp != ss.getSessionWeekday()) {
+                        if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                             sessionDayCount++;
                         }
                     }
@@ -160,28 +180,30 @@ public class ChannelBean {
             }
 
             if (hasSpecificDateSession == false) {
-                for (ServiceSession ss : sessions) {
+                for (ServiceSession ss : inputSessions) {
                     Calendar wdc = Calendar.getInstance();
                     wdc.setTime(nowDate);
                     if (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK)) {
                         ServiceSession newSs = new ServiceSession();
                         newSs.setName(ss.getName());
+                        newSs.setOriginatingSession(ss);
                         newSs.setMaxNo(ss.getMaxNo());
                         newSs.setStartingTime(ss.getStartingTime());
                         newSs.setSessionWeekday(ss.getSessionWeekday());
                         newSs.setHospitalFee(ss.getHospitalFee());
-                        newSs.setStaffFee(ss.getStaffFee());
+                        newSs.setProfessionalFee(ss.getProfessionalFee());
                         newSs.setId(ss.getId());
                         newSs.setSessionAt(nowDate);
-                        newSs.setDisplayCount(getBillSessionsCount(newSs));
+                        newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setStaff(ss.getStaff());
+                        newSs.setSessionDate(nowDate);
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
                         // //System.out.println("Count : " + sessionDayCount);
 
-                        serviceSessions.add(newSs);
+                        createdSessions.add(newSs);
 
-                        if (tmp != ss.getSessionWeekday()) {
+                        if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                             sessionDayCount++;
                         }
                     }
@@ -195,13 +217,15 @@ public class ChannelBean {
             nowDate = nc.getTime();
 
         }
-        return serviceSessions;
+
+        System.err.println("Created Sessions  " + createdSessions);
+        return createdSessions;
     }
 
     public Date calSessionTime(ServiceSession serviceSession) {
         Calendar starting = Calendar.getInstance();
         starting.setTime(serviceSession.getStartingTime());
-        int count = getBillSessionsCount(serviceSession);
+        int count = getBillSessionsCount(serviceSession,serviceSession.getSessionAt());
 
         if (count == 0) {
             return starting.getTime();

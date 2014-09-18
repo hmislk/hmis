@@ -218,6 +218,26 @@ public abstract class AbstractFacade<T> {
         TypedQuery<Object> qry = getEntityManager().createQuery(temSQL, Object.class);
         return qry.getResultList();
     }
+    
+     public Object[] findAggregateModified(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<Object[]> qry = getEntityManager().createQuery(temSQL, Object[].class);
+        setParameterObjectList(qry, parameters, tt);
+
+        try {
+            Object[] obj = qry.getSingleResult();
+
+            for (Object o : obj) {
+                if (o == null) {
+                    return null;
+                }
+            }
+
+            return obj;
+        } catch (Exception e) {
+            System.err.println("Aggregate " + e.getMessage());
+            return null;
+        }
+    }
 
     public double findDoubleByJpql(String temSQL, Map<String, Object> parameters, TemporalType tt) {
         TypedQuery<Double> qry = (TypedQuery<Double>) getEntityManager().createQuery(temSQL);

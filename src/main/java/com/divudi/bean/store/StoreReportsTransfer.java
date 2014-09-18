@@ -5,8 +5,6 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.pharmacy.*;
-import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.ejb.PharmacyBean;
@@ -28,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 
@@ -71,7 +70,7 @@ public class StoreReportsTransfer implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFacade BillFacade;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
 
     /**
@@ -209,7 +208,7 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferReceive);
+        m.put("bt", BillType.StoreTransferReceive);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
@@ -242,7 +241,7 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
+        m.put("bt", BillType.StoreTransferIssue);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
@@ -276,7 +275,7 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
+        m.put("bt", BillType.StoreTransferIssue);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
@@ -317,7 +316,7 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
+        m.put("bt", BillType.StoreTransferReceive);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);

@@ -176,7 +176,7 @@
                                                              disabled="#{!bif.billItem.item.userChangable
                                                                          or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
                                                     <f:convertNumber pattern="#,000.00" />
-                                                    <f:ajax event="blur" execute="@this" 
+                                                    <f:ajax event="keyup" execute="@this" 
                                                             render=" :#{p:component('tblRequests')}  
                                                             :#{p:component('pBillDetails')} matrix feeValue" 
                                                             listener="#{billBhtController.feeChangedSurgery(bif)}" />
@@ -234,7 +234,7 @@
 
                 <h:panelGroup rendered="#{billBhtController.printPreview}" >
                     <div class="nonPrintBlock" >
-                        <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                        <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.makeNull()}" onclick="onSubmitButton();" >

@@ -17,6 +17,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
@@ -63,7 +64,7 @@ public class PharmacyAdjustmentController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @EJB
+    @Inject
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
@@ -298,7 +299,9 @@ public class PharmacyAdjustmentController implements Serializable {
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
 
         ph.setBillItem(null);
-        ph.setPurchaseRate(pr);
+        ItemBatch ib = itemBatchFacade.find(getStock().getItemBatch().getId());
+        ph.setPurchaseRate(ib.getPurcahseRate());
+        ph.setRetailRate(ib.getRetailsaleRate());
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setRate(pr);
         //pharmaceutical Bill Item
@@ -334,9 +337,10 @@ public class PharmacyAdjustmentController implements Serializable {
         billItem = null;
         BillItem tbi = getBillItem();
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
-
+        ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
         ph.setBillItem(null);
-        ph.setPurchaseRate(rsr);
+        ph.setPurchaseRate(itemBatch.getPurcahseRate());
+        ph.setRetailRate(itemBatch.getRetailsaleRate());
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setRate(rsr);
         //pharmaceutical Bill Item

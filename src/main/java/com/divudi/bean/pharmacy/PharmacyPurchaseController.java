@@ -54,7 +54,7 @@ public class PharmacyPurchaseController implements Serializable {
     private BillFacade billFacade;
     @Inject
     private BillNumberController billNumberBean;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -62,7 +62,7 @@ public class PharmacyPurchaseController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private AmpFacade ampFacade;
-    @EJB
+    @Inject
     PharmacyCalculation pharmacyBillBean;
     ////////////
     private BillItem currentBillItem;
@@ -187,6 +187,9 @@ public class PharmacyPurchaseController implements Serializable {
         if (getBill().getFromInstitution() == null) {
             UtilityController.addErrorMessage("Select Dealor");
             return;
+        }
+        if (getBill().getReferenceInstitution()==null) {
+            UtilityController.addErrorMessage("Select Reference Institution");
         }
         if (getBill().getInvoiceNumber() == null || "".equals(getBill().getInvoiceNumber().trim())) {
             UtilityController.addErrorMessage("Please Fill invoice number");

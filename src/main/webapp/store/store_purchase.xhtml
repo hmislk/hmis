@@ -17,7 +17,7 @@
 
                     <f:facet name="header" > 
                         <h:panelGrid columns="6"  >
-                            <h:outputText value="Pharmacy Purchase" />                     
+                            <h:outputText value="Store Purchase" />                     
                             <p:selectOneMenu   id="cmbPs" value="#{storePurchaseController.bill.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}" />
                             </p:selectOneMenu>
@@ -42,14 +42,16 @@
 
                 <h:panelGrid id="itemselectgrid" columns="2" style="min-width: 100%;">
                     <p:focus id="focusItem" for="acItem" ></p:focus>
-                    <p:panelGrid id="itemSelectgrid1" columns="8">                       
+                    <p:panelGrid id="itemSelectgrid1" columns="10">                       
                         <h:outputLabel value="Select Item"/>
                         <h:outputLabel value="Qty"/>
                         <h:outputLabel value="Free"/>
                         <h:outputLabel value="Purchase Rate"></h:outputLabel>
                         <h:outputLabel value="Sale Price"></h:outputLabel>
-                        <h:outputLabel value="DOE(dd mm yy)"/>
+                        <h:outputLabel value="DOE(dd mm yy)/Warrenty Date"/>
                         <h:outputLabel value="Bathch No"/>
+                        <h:outputLabel value="Serial Number"/>
+                        <h:outputLabel ></h:outputLabel>
                         <h:outputLabel ></h:outputLabel>
 
                         <p:autoComplete id="acItem"   value="#{storePurchaseController.currentBillItem.item}" 
@@ -89,27 +91,51 @@
                             <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storePurchaseController.setBatch()}"/>
                         </p:calendar> 
                         <p:inputText autocomplete="off"  styleClass="numericTxt" 
-                                     id="tmp" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
+                                     id="tmp" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />
+                        
+                        <p:inputText autocomplete="off"  styleClass="numericTxt" 
+                                     id="sn" value="#{storePurchaseController.currentBillItem.searialNo}"  />
 
-
+                        <p:commandButton id="btnSer" value="Create Serial" 
+                                         action="#{storePurchaseController.createSerialNumber()}" 
+                                         process="btnSer" update="sn"/>
+                        
                         <p:commandButton id="btnAdd" value="Add Item" 
                                          action="#{storePurchaseController.addItem}" 
-                                         process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
+                                         process="cmbParent itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
+                        
+                        
+                         
+                        <p:selectOneMenu id="cmbParent" value="#{storePurchaseController.parentBillItem}" converter="temBillItemConverter"  >
+                            <f:selectItem itemLabel="Select Parent Item" />
+                            <f:selectItems   value="#{storePurchaseController.billItems}" var="bi" itemValue="#{bi}" itemLabel="#{bi.item.name}" />
+                            <f:ajax event="change" execute="@this" /> 
+                        </p:selectOneMenu>
+                        
                     </p:panelGrid>
 
                 </h:panelGrid>
 
                 <p:dataTable styleClass="noBorder" var="ph" value="#{storePurchaseController.billItems}" id="itemList">  
                     <f:facet name="header">  
-                        Ordered Item 
                     </f:facet>  
 
+                    <p:column headerText="Serial No" style="width:30%">  
+                        <h:outputLabel id="serialNo" value="#{ph.searialNo}" style="width:100%">
+                        </h:outputLabel>
+                    </p:column>  
+                    
                     <p:column headerText="Item Name" style="width:30%">  
-
                         <h:outputLabel id="item" value="#{ph.item.name} - #{ph.item.code}" style="width:100%">
                         </h:outputLabel>
-
                     </p:column>  
+                    
+                    <p:column headerText="Parent Item Name" style="width:30%">  
+
+                        <h:outputLabel id="parentitem" value="#{ph.parentBillItem.item.name} - #{ph.parentBillItem.item.code}" style="width:100%">
+                        </h:outputLabel>
+
+                    </p:column>
 
                     <p:column headerText="Qty" style="width:20%">                     
                         <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}"  >
@@ -145,7 +171,9 @@
                     </p:column>  
 
 
-
+                    <p:column headerText="Batch No/Serial Number" style="width:24%">                    
+                        <h:outputText id="batNO" value=" #{ph.pharmaceuticalBillItem.stringValue}" />  
+                    </p:column>
 
 
                     <p:column headerText="Profit Margin" style="width:24%">                    

@@ -107,7 +107,7 @@ public class PharmacyBillSearch implements Serializable {
     private CommonFunctions commonFunctions;
     @Inject
     private BillNumberController billNumberBean;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     EjbApplication ejbApplication;
@@ -2057,6 +2057,7 @@ public class PharmacyBillSearch implements Serializable {
         //recreateModel();
         return bill;
     }
+      
 
     public void setBill(Bill bb) {
         recreateModel();

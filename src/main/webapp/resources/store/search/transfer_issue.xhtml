@@ -29,8 +29,8 @@
                 <h:outputLabel value="TRANSFER ISSUE"/>
             </f:facet>
             <p:column>
-                <p:commandButton ajax="false" value="View Bill" action="pharmacy_reprint_transfer_isssue">
-                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{bill}"/>
+                <p:commandButton ajax="false" value="View Bill" action="store_reprint_transfer_isssue">
+                    <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{bill}"/>
                 </p:commandButton>
             </p:column>
 

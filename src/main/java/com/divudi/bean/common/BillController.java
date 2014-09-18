@@ -307,7 +307,7 @@ public class BillController implements Serializable {
                 + " where b.billType = :billType "
                 + " and b.cancelled=false "
                 + " and b.retired=false "
-                + " and b.patientEncounter.paymentFinalized=false ";
+                + " and b.patientEncounter.discharged=false ";
 
         sql += " and  ((upper(b.patientEncounter.patient.person.name) like :q )";
         sql += " or  (upper(b.patientEncounter.bhtNo) like :q )";

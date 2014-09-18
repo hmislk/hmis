@@ -9,20 +9,22 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Fee;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -38,17 +40,18 @@ public class SheduleController implements Serializable {
     private ServiceSessionFacade facade;
     @EJB
     private FeeFacade feeFacade;
+    @EJB
+    SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
     @Inject
     private SessionController sessionController;
     private Speciality speciality;
-    ServiceSession current;  
+    ServiceSession current;
     private Staff currentStaff;
     private List<ServiceSession> filteredValue;
     private Fee hospitalFee;
     private Fee doctorFee;
     private Fee tax;
-
-   
+    List<SessionNumberGenerator> lstSessionNumberGenerator;
 
     public void makeNull() {
         speciality = null;
@@ -57,7 +60,7 @@ public class SheduleController implements Serializable {
         filteredValue = null;
         hospitalFee = null;
         doctorFee = null;
-        tax = null;     
+        tax = null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -109,6 +112,14 @@ public class SheduleController implements Serializable {
         return suggestions;
     }
 
+    public List<SessionNumberGenerator> getLstSessionNumberGenerator() {
+        return lstSessionNumberGenerator;
+    }
+
+    public void setLstSessionNumberGenerator(List<SessionNumberGenerator> lstSessionNumberGenerator) {
+        this.lstSessionNumberGenerator = lstSessionNumberGenerator;
+    }
+
     public SheduleController() {
     }
 
@@ -135,6 +146,14 @@ public class SheduleController implements Serializable {
             current = new ServiceSession();
         }
         return current;
+    }
+
+    public SessionNumberGeneratorFacade getSessionNumberGeneratorFacade() {
+        return sessionNumberGeneratorFacade;
+    }
+
+    public void setSessionNumberGeneratorFacade(SessionNumberGeneratorFacade sessionNumberGeneratorFacade) {
+        this.sessionNumberGeneratorFacade = sessionNumberGeneratorFacade;
     }
 
     public void setCurrent(ServiceSession current) {
@@ -177,6 +196,8 @@ public class SheduleController implements Serializable {
         hospitalFee = null;
         doctorFee = null;
         tax = null;
+//        speciality = null;
+//        currentStaff = null;
     }
 
     public ServiceSessionFacade getFacade() {
@@ -204,67 +225,71 @@ public class SheduleController implements Serializable {
         getCurrent();
     }
 
-    private void saveFee() {
-
-        if (getHospitalFee().getId() == null) {
-            getHospitalFee().setServiceSession(getCurrent());
-            getHospitalFee().setStaff(getCurrentStaff());
-            getHospitalFee().setSpeciality(getSpeciality());
-            getFeeFacade().create(getHospitalFee());
-        } else {
-            getFeeFacade().edit(getHospitalFee());
-        }
-
-        if (getDoctorFee().getId() == null) {
-            getDoctorFee().setServiceSession(getCurrent());
-            getDoctorFee().setStaff(getCurrentStaff());
-            getDoctorFee().setSpeciality(getSpeciality());
-            getFeeFacade().create(getDoctorFee());
-        } else {
-            getFeeFacade().edit(getDoctorFee());
-        }
-
-        if (getTax().getId() == null) {
-            getTax().setServiceSession(getCurrent());
-            getTax().setStaff(getCurrentStaff());
-            getTax().setSpeciality(getSpeciality());
-            getFeeFacade().create(getTax());
-        } else {
-            getFeeFacade().edit(getTax());
-        }
-
-    }
-
     private boolean checkError() {
         if (getCurrent().getStartingTime() == null) {
             UtilityController.addErrorMessage("Starting time Must be Filled");
             return true;
         }
 
-        if (getCurrent().getSessionWeekday() == 0 && getCurrent().getSessionDate() == null) {
+        if (getCurrent().getSessionWeekday() == null && getCurrent().getSessionDate() == null) {
             UtilityController.addErrorMessage("Set Weekday or Date");
+            return true;
+        }
+
+        if (speciality == null) {
+            UtilityController.addErrorMessage("Plaese Select Specility");
+            return true;
+        }
+
+        if (currentStaff == null) {
+            UtilityController.addErrorMessage("Plaese Select Doctor");
             return true;
         }
 
         return false;
     }
 
+    public SessionNumberGenerator saveSessionNumber() {
+        SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
+        sessionNumberGenerator.setSpeciality(speciality);
+        sessionNumberGenerator.setStaff(currentStaff);
+        sessionNumberGenerator.setName(currentStaff.getPerson().getName() + " " + current.getName());
+        sessionNumberGeneratorFacade.create(sessionNumberGenerator);
+        return sessionNumberGenerator;
+    }
+
+    public void resetSessionNumbers() {
+
+        String sql;
+        sql = " SELECT sg FROM ServiceSession sg WHERE sg.retired=false";
+        List<ServiceSession> list = facade.findBySQL(sql);
+
+        for (ServiceSession sng : list) {
+            if (sng.getSessionNumberGenerator() != null) {
+                continue;
+            }
+            SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
+            sessionNumberGenerator.setSpeciality(sng.getStaff().getSpeciality());
+            sessionNumberGenerator.setStaff(sng.getStaff());
+            sessionNumberGenerator.setName(sng.getStaff().getPerson().getName() + " " + sng.getName());
+            sessionNumberGeneratorFacade.create(sessionNumberGenerator);
+
+            sng.setSessionNumberGenerator(sessionNumberGenerator);
+            facade.edit(sng);
+        }
+
+    }
+
     public void saveSelected() {
+        if (getCurrent().getSessionNumberGenerator() == null) {
+            SessionNumberGenerator ss = saveSessionNumber();
+            current.setSessionNumberGenerator(ss);
+        }
         if (checkError()) {
             return;
         }
 
         current.setStaff(currentStaff);
-
-        getCurrent().setStaffFee(getDoctorFee().getFee());
-        getCurrent().setStaffFfee(getDoctorFee().getFfee());
-
-        getCurrent().setHospitalFee(getHospitalFee().getFee());
-        getCurrent().setHospitalFfee(getHospitalFee().getFfee());
-
-        getCurrent().setTax(getTax().getFee());
-        getCurrent().setTaxf(getTax().getFfee());
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("savedOldSuccessfully");
@@ -274,15 +299,6 @@ public class SheduleController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
-
-        saveFee();
-
-        //System.out.println("After saving");
-        //System.out.println("df :" + getCurrent().getStaffFee());
-        //System.out.println("dff :" + getCurrent().getStaffForiegnFee());
-        //System.out.println("hf :" + getCurrent().getHospitalFee());
-        //System.out.println("hff :" + getCurrent().getHospitalForiegnFee());
-
         prepareAdd();
         getItems();
     }
@@ -367,5 +383,4 @@ public class SheduleController implements Serializable {
         this.tax = tax;
     }
 
-   
 }

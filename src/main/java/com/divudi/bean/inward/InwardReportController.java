@@ -70,6 +70,8 @@ public class InwardReportController implements Serializable {
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
         this.patientEncounters = patientEncounters;
     }
+    double netTotal;
+    double netPaid;
 
     public void fillAdmissionBook() {
         Map m = new HashMap();
@@ -85,17 +87,53 @@ public class InwardReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
+        calTtoal();
     }
-
-    double netTotal;
-    double netPaid;
 
     public void fillAdmissionBookOnlyInward() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
-                //                + " and b.discharged=false "
+                + " and b.discharged=false "
+                //                + " and b.paymentFinalized=false "
+                + " and b.dateOfAdmission between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad";
+            m.put("ad", admissionType);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        calTtoal();
+    }
+
+    public void fillAdmissionBookOnlyDischarged() {
+        Map m = new HashMap();
+        String sql = "select b from PatientEncounter b "
+                + " where b.retired=false "
+                + " and b.discharged=true "
+                //                + " and b.paymentFinalized=false "
+                + " and b.dateOfAdmission between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad";
+            m.put("ad", admissionType);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        calTtoal();
+
+    }
+
+    public void fillAdmissionBookOnlyDischargedNotFinalized() {
+        Map m = new HashMap();
+        String sql = "select b from PatientEncounter b "
+                + " where b.retired=false "
+                + " and b.discharged=true "
                 + " and b.paymentFinalized=false "
                 + " and b.dateOfAdmission between :fd and :td ";
 
@@ -108,12 +146,26 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         calTtoal();
-        for (PatientEncounter p : patientEncounters) {
-            netTotal += p.getTransTotal();
-            System.out.println("p.getTransPaid() = " + p.getTransPaid());
-            System.out.println("Bht No = " + p.getBhtNo());
-            netPaid += p.getTransPaid();
+
+    }
+
+    public void fillAdmissionBookOnlyDischargedFinalized() {
+        Map m = new HashMap();
+        String sql = "select b from PatientEncounter b "
+                + " where b.retired=false "
+                + " and b.discharged=true "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfAdmission between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad";
+            m.put("ad", admissionType);
         }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        calTtoal();
     }
 
     @Inject
@@ -124,11 +176,16 @@ public class InwardReportController implements Serializable {
             return;
         }
 
+        netTotal = 0;
+        netPaid = 0;
         for (PatientEncounter p : patientEncounters) {
             bhtSummeryController.setPatientEncounter((Admission) p);
             bhtSummeryController.createTables();
             p.setTransTotal(bhtSummeryController.getGrantTotal());
             p.setTransPaid(bhtSummeryController.getPaid());
+
+            netTotal += p.getTransTotal();
+            netPaid += p.getTransPaid();
         }
     }
 
@@ -151,18 +208,85 @@ public class InwardReportController implements Serializable {
 
     double total;
     double paid;
+    double creditPaid;
+    double creditUsed;
+    double calTotal;
+
+    @Inject
+    InwardReportControllerBht inwardReportControllerBht;
 
     public void fillDischargeBook() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
-                + " and b.paymentFinalized=true "
+                //                + " and b.paymentFinalized=true "
                 + " and b.dateOfDischarge between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.creditCompany =:ins ";
+            m.put("ins", institution);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        calTotalDischarged();
+    }
+
+    public void calTotalDischarged() {
+        if (patientEncounters == null) {
+            return;
+        }
+        total = 0;
+        paid = 0;
+        calTotal = 0;
+        creditPaid = 0;
+        creditUsed = 0;
+        for (PatientEncounter p : patientEncounters) {
+            inwardReportControllerBht.setPatientEncounter(p);
+            inwardReportControllerBht.process();
+            p.setTransTotal(inwardReportControllerBht.getNetTotal());
+
+            if (p.getFinalBill() != null) {
+                total += p.getFinalBill().getNetTotal();
+                paid += p.getFinalBill().getPaidAmount();
+            }
+
+            creditUsed += p.getCreditUsedAmount();
+            creditPaid += p.getPaidByCreditCompany();
+            calTotal += p.getTransTotal();
+        }
+    }
+
+    public void fillDischargeBookPaymentNotFinalized() {
+        Map m = new HashMap();
+        String sql = "select b from PatientEncounter b "
+                + " where b.retired=false "
+                + " and b.discharged=true "
+                + " and b.paymentFinalized=false "
+                + " and b.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.creditCompany =:ins ";
+            m.put("ins", institution);
         }
 
         if (paymentMethod != null) {
@@ -176,15 +300,39 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        if (patientEncounters == null) {
-            return;
+        calTotalDischarged();
+    }
+
+    public void fillDischargeBookPaymentFinalized() {
+        Map m = new HashMap();
+        String sql = "select b from PatientEncounter b "
+                + " where b.retired=false "
+                + " and b.discharged=true "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
         }
-        total = 0;
-        paid = 0;
-        for (PatientEncounter p : patientEncounters) {
-            total += p.getFinalBill().getNetTotal();
-            paid += p.getFinalBill().getPaidAmount();
+
+        if (institution != null) {
+            sql += " and b.creditCompany =:ins ";
+            m.put("ins", institution);
         }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        calTotalDischarged();
     }
 
     public BhtSummeryController getBhtSummeryController() {
@@ -290,7 +438,7 @@ public class InwardReportController implements Serializable {
                 + " sum(bf.feeValue)"
                 + " from BillFee bf where"
                 + " bf.bill.patientEncounter is not null"
-                + " and bf.bill.patientEncounter.paymentFinalized=true ";
+                + " and bf.bill.patientEncounter.discharged=true ";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -607,6 +755,46 @@ public class InwardReportController implements Serializable {
 
     public void setNetPaid(double netPaid) {
         this.netPaid = netPaid;
+    }
+
+    public double getCalTotal() {
+        return calTotal;
+    }
+
+    public void setCalTotal(double calTotal) {
+        this.calTotal = calTotal;
+    }
+
+    public double getCreditPaid() {
+        return creditPaid;
+    }
+
+    public void setCreditPaid(double creditPaid) {
+        this.creditPaid = creditPaid;
+    }
+
+    public double getCreditUsed() {
+        return creditUsed;
+    }
+
+    public void setCreditUsed(double creditUsed) {
+        this.creditUsed = creditUsed;
+    }
+
+    public InwardReportControllerBht getInwardReportControllerBht() {
+        return inwardReportControllerBht;
+    }
+
+    public void setInwardReportControllerBht(InwardReportControllerBht inwardReportControllerBht) {
+        this.inwardReportControllerBht = inwardReportControllerBht;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
     }
 
 }

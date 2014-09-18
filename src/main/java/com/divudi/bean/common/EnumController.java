@@ -32,7 +32,6 @@ public class EnumController implements Serializable {
 
     private PaymentScheme paymentScheme;
 
-    
     SessionNumberType[] sessionNumberTypes;
 
     public SessionNumberType[] getSessionNumberTypes() {
@@ -43,9 +42,7 @@ public class EnumController implements Serializable {
     public void setSessionNumberTypes(SessionNumberType[] sessionNumberTypes) {
         this.sessionNumberTypes = sessionNumberTypes;
     }
-    
-    
-    
+
     public FeeType[] getFeeTypes() {
         return FeeType.values();
     }
@@ -88,8 +85,6 @@ public class EnumController implements Serializable {
         return Sex.values();
     }
 
-   
-    
     public PaymentMethod[] getPaymentMethodForAdmission() {
         PaymentMethod[] tmp = {PaymentMethod.Credit, PaymentMethod.Cash};
         return tmp;
@@ -155,9 +150,8 @@ public class EnumController implements Serializable {
             BillType.CashRecieveBill,
             BillType.AgentPaymentReceiveBill,
             BillType.InwardPaymentBill,
-            BillType.PharmacySale,
-//            BillType.PharmacyPurchaseBill,
-//            BillType.GrnPayment,
+            BillType.PharmacySale, //            BillType.PharmacyPurchaseBill,
+        //            BillType.GrnPayment,
         };
 
         return b;
@@ -178,6 +172,17 @@ public class EnumController implements Serializable {
             BillType.PharmacyTransferRequest,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyIssue};
+
+        return b;
+    }
+
+    public BillType[] getPharmacyBillTypes2() {
+        BillType[] b = {
+            BillType.PharmacySale,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre};
 
         return b;
     }
@@ -204,6 +209,12 @@ public class EnumController implements Serializable {
 
     public PaymentMethod[] getPaymentMethodsForPo() {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Credit};
+
+        return p;
+    }
+
+    public PaymentMethod[] getPaymentMethodsForChannel() {
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent, PaymentMethod.OnCall, PaymentMethod.Staff};
 
         return p;
     }

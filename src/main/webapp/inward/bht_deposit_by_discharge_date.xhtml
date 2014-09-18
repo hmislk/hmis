@@ -59,7 +59,7 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.disBhtPySummerries()}">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
+                                <pe:exporter type="xlsx" target="tbl,tbl2,tbl3" fileName="Complete_Paymaents_of_Dischagede_Patient"  />
                             </p:commandButton>  
                         </h:panelGrid>
 

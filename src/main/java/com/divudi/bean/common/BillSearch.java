@@ -97,7 +97,7 @@ public class BillSearch implements Serializable {
     private CommonFunctions commonFunctions;
     @Inject
     private BillNumberController billNumberBean;
-    @EJB
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     EjbApplication ejbApplication;
@@ -110,12 +110,52 @@ public class BillSearch implements Serializable {
     private PharmacyPreSettleController pharmacyPreSettleController;
     private SearchKeyword searchKeyword;
 
+    Bill billSearch;
+
     public BillSearch() {
     }
 
     private LazyDataModel<BillItem> searchBillItems;
     @EJB
     private BillItemFacade billItemFacade;
+
+    public void updateBill() {
+
+        billSearch.setEditedAt(new Date());
+        billSearch.setEditor(sessionController.getLoggedUser());
+        billFacade.edit(billSearch);
+        UtilityController.addSuccessMessage("Bill Upadted");
+
+    }
+
+    public void updateBillRetierd() {
+
+        billSearch.setRetiredAt(new Date());
+        billSearch.setRetirer(sessionController.getLoggedUser());
+        billSearch.setEditedAt(new Date());
+        billSearch.setEditor(sessionController.getLoggedUser());
+        billFacade.edit(billSearch);
+        UtilityController.addSuccessMessage("Bill Retired");
+
+    }
+
+    public void updateBillFeeRetierd(BillFee bf) {
+
+        bf.setRetiredAt(new Date());
+        bf.setRetirer(sessionController.getLoggedUser());
+        getBillFeeFacade().edit(bf);
+        UtilityController.addSuccessMessage("Bill Fee Retired");
+
+    }
+
+    public void updateBillItemRetierd(BillItem bi) {
+
+        bi.setRetiredAt(new Date());
+        bi.setRetirer(sessionController.getLoggedUser());
+        getBillItemFacade().edit(bi);
+        UtilityController.addSuccessMessage("Bill Item Retired");
+
+    }
 
     public void createCashReturnBills() {
         bills = null;
@@ -178,12 +218,30 @@ public class BillSearch implements Serializable {
 
         BillFee tmp = (BillFee) event.getObject();
 
+        tmp.setEditedAt(new Date());
+        tmp.setEditor(sessionController.getLoggedUser());
+
         if (tmp.getPaidValue() != 0.0) {
             UtilityController.addErrorMessage("Already Staff FeePaid");
             return;
         }
 
         getBillFeeFacade().edit(tmp);
+
+    }
+
+    public void onEditItem(RowEditEvent event) {
+
+        BillItem tmp = (BillItem) event.getObject();
+
+        tmp.setEditedAt(new Date());
+        tmp.setEditor(sessionController.getLoggedUser());
+
+//        if (tmp.getPaidValue() != 0.0) {
+//            UtilityController.addErrorMessage("Already Staff FeePaid");
+//            return;
+//        }
+        getBillItemFacade().edit(tmp);
 
     }
 
@@ -219,11 +277,11 @@ public class BillSearch implements Serializable {
             }
 
 //            if (!i.isRefunded()) {
-                refundTotal += i.getGrossValue();
-                refundAmount += i.getNetValue();
-                refundMargin += i.getMarginValue();
-                refundDiscount += i.getDiscount();
-                getTempbillItems().add(i);
+            refundTotal += i.getGrossValue();
+            refundAmount += i.getNetValue();
+            refundMargin += i.getMarginValue();
+            refundDiscount += i.getDiscount();
+            getTempbillItems().add(i);
 //            }
 
         }
@@ -1095,6 +1153,7 @@ public class BillSearch implements Serializable {
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+////////////////////////
 
             cancelBillFee(can, b, tmp);
 
@@ -1114,7 +1173,7 @@ public class BillSearch implements Serializable {
 
             bf.setBill(can);
             bf.setBillItem(bt);
-            bf.setFeeValue(-nB.getFeeValue());
+            bf.setFeeValue(0 - nB.getFeeValue());
 
             bf.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             bf.setCreater(getSessionController().getLoggedUser());
@@ -1122,6 +1181,7 @@ public class BillSearch implements Serializable {
             getBillFeeFacade().create(bf);
         }
     }
+
     @Inject
     private BillBeanController billBean;
 
@@ -1332,7 +1392,17 @@ public class BillSearch implements Serializable {
         sql = "SELECT b FROM BillItem b"
                 + "  WHERE b.retired=false "
                 + " and b.bill=:b";
-        hm.put("b", getBill());
+        hm.put("b", getBillSearch());
+        billItems = getBillItemFacede().findBySQL(sql, hm);
+
+    }
+    
+    private void createBillItemsForRetire() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "SELECT b FROM BillItem b WHERE "
+                + " b.bill=:b";
+        hm.put("b", getBillSearch());
         billItems = getBillItemFacede().findBySQL(sql, hm);
 
     }
@@ -1377,6 +1447,13 @@ public class BillSearch implements Serializable {
         if (getBill() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
+                billFees = getBillFeeFacade().findBySQL(sql);
+            }
+        }
+        
+        if (getBillSearch()!= null) {
+            if (billFees == null) {
+                String sql = "SELECT b FROM BillFee b WHERE b.bill.id=" + getBillSearch().getId();
                 billFees = getBillFeeFacade().findBySQL(sql);
             }
         }
@@ -1702,4 +1779,18 @@ public class BillSearch implements Serializable {
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
     }
+
+    public Bill getBillSearch() {
+        return billSearch;
+    }
+
+    public void setBillSearch(Bill billSearch) {
+
+        recreateModel();
+        System.err.println("Bill " + bill);
+        this.billSearch = billSearch;
+        paymentMethod = billSearch.getPaymentMethod();
+        createBillItemsForRetire();
+    }
+
 }
