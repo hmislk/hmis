@@ -10,20 +10,26 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.FeeType;
 import com.divudi.entity.Department;
+import com.divudi.entity.Fee;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +63,8 @@ public class ChannellingFeeController implements Serializable {
     private StaffFacade staffFacade;
     @EJB
     ServiceSessionFacade serviceSessionFacade;
+    @EJB
+    SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
 
     private Speciality speciality;
     private Staff doctor;
@@ -64,11 +72,113 @@ public class ChannellingFeeController implements Serializable {
     private ItemFee fee;
     private ItemFee removingFee;
 
+    ServiceSession serviceSession;
+    Fee doctorFee;
+    Fee hospitalFee;
+    Fee scanFee;
+    boolean includeScanning;
+
     List<ServiceSession> sessions;
     private List<Staff> doctors;
     private List<ItemFee> fees;
     List<Department> departments = new ArrayList<>();
     List<Staff> staffSuggestions;
+
+    public void prepareEditSessionForAnyDay() {
+        if (serviceSession == null) {
+            JsfUtil.addErrorMessage("Session not selected");
+            return;
+        }
+        if (serviceSession.getOriginatingSession() == null) {
+            JsfUtil.addErrorMessage("Error in setting originating session. Contact Developers.");
+            return;
+        }
+        if (serviceSession.getOriginatingSession().getStaff() == null) {
+            JsfUtil.addErrorMessage("Consultant not set in session. Contact developer");
+            return;
+        } else {
+            doctor = serviceSession.getOriginatingSession().getStaff();
+            speciality = doctor.getSpeciality();
+        }
+        if (serviceSession.getItemFees() == null || serviceSession.getItemFees().isEmpty()) {
+            createAllFeesForServiceSession();
+        } else {
+
+        }
+    }
+
+    public SessionNumberGenerator saveSessionNumber() {
+        SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
+        sessionNumberGenerator.setSpeciality(speciality);
+        sessionNumberGenerator.setStaff(doctor);
+        sessionNumberGenerator.setName(doctor.getPerson().getName() + " " + serviceSession.getOriginatingSession().getName());
+        sessionNumberGeneratorFacade.create(sessionNumberGenerator);
+        return sessionNumberGenerator;
+    }
+
+    public void createAllFeesForServiceSession() {
+        createAllFeesForServiceSessionWithoutScanning();
+        createAllFeesForServiceSessionWithScanning();
+    }
+
+    public void createAllFeesForServiceSessionWithoutScanning() {
+        createConsultantFee();
+        createHospitalFee();
+    }
+
+    public void createAllFeesForServiceSessionWithScanning() {
+        createScanningConsultationFee();
+        createScanningHospitalFee();
+    }
+
+    public void createConsultantFee() {
+        Fee f = new Fee();
+        f.setCreatedAt(new Date());
+        f.setCreater(getSessionController().getLoggedUser());
+        f.setFee(0.0);
+        f.setFfee(0.0);
+        f.setSpeciality(speciality);
+        f.setStaff(doctor);
+        f.setFeeType(FeeType.Staff);
+        f.setName("Consultant Fee");
+    }
+
+    public void createHospitalFee() {
+        Fee f = new Fee();
+        f.setCreatedAt(new Date());
+        f.setCreater(getSessionController().getLoggedUser());
+        f.setFee(0.0);
+        f.setFfee(0.0);
+        f.setInstitution(getSessionController().getInstitution());
+        f.setDepartment(getSessionController().getDepartment());
+        f.setFeeType(FeeType.OwnInstitution);
+        f.setName("Hospital Fee");
+    }
+
+    public void createScanningConsultationFee() {
+        Fee f = new Fee();
+        f.setCreatedAt(new Date());
+        f.setCreater(getSessionController().getLoggedUser());
+        f.setFee(0.0);
+        f.setFfee(0.0);
+        f.setSpeciality(speciality);
+        f.setStaff(doctor);
+        f.setFeeType(FeeType.Staff);
+        f.setName("Scanning Consultant Fee");
+    }
+
+    public void createScanningHospitalFee() {
+        Fee f = new Fee();
+        f.setCreatedAt(new Date());
+        f.setCreater(getSessionController().getLoggedUser());
+        f.setFee(0.0);
+        f.setFfee(0.0);
+        f.setInstitution(getSessionController().getInstitution());
+        f.setDepartment(getSessionController().getDepartment());
+        f.setFeeType(FeeType.OwnInstitution);
+        f.setName("Scanning Hospital Fee");
+
+    }
 
     public List<Department> getInstitutionDepatrments() {
         if (getFee().getInstitution() == null) {
@@ -179,7 +289,7 @@ public class ChannellingFeeController implements Serializable {
         fillFees();
         session.setTotal(calTot());
         getItemFacade().edit(session);
-        
+
     }
 
     private double calTot() {
@@ -237,7 +347,7 @@ public class ChannellingFeeController implements Serializable {
     }
 
     public List<ServiceSession> getSessions() {
-        if(sessions==null){
+        if (sessions == null) {
             fillSessions();
         }
         return sessions;
@@ -258,8 +368,8 @@ public class ChannellingFeeController implements Serializable {
     }
 
     public ItemFee getFee() {
-        if(fee==null){
-            fee=new ItemFee();
+        if (fee == null) {
+            fee = new ItemFee();
         }
         return fee;
     }
@@ -319,6 +429,46 @@ public class ChannellingFeeController implements Serializable {
 
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
+    }
+
+    public ServiceSession getServiceSession() {
+        return serviceSession;
+    }
+
+    public void setServiceSession(ServiceSession serviceSession) {
+        this.serviceSession = serviceSession;
+    }
+
+    public Fee getDoctorFee() {
+        return doctorFee;
+    }
+
+    public void setDoctorFee(Fee doctorFee) {
+        this.doctorFee = doctorFee;
+    }
+
+    public Fee getHospitalFee() {
+        return hospitalFee;
+    }
+
+    public void setHospitalFee(Fee hospitalFee) {
+        this.hospitalFee = hospitalFee;
+    }
+
+    public Fee getScanFee() {
+        return scanFee;
+    }
+
+    public void setScanFee(Fee scanFee) {
+        this.scanFee = scanFee;
+    }
+
+    public List<Staff> getStaffSuggestions() {
+        return staffSuggestions;
+    }
+
+    public void setStaffSuggestions(List<Staff> staffSuggestions) {
+        this.staffSuggestions = staffSuggestions;
     }
 
 }

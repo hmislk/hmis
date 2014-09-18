@@ -567,10 +567,13 @@ public class PatientReport implements Serializable {
             if (o2.getInvestigationItem() == null || o2.getInvestigationItem().getCssTop() == null) {
                 return -1;
             }
-            if (o1.getInvestigationItem().getCssTop().equalsIgnoreCase(o2.getInvestigationItem().getCssTop())) {
-                return o1.getInvestigationItem().getName().compareTo(o2.getInvestigationItem().getName());  //To change body of generated methods, choose Tools | Templates.
+            if(o1.getInvestigationItem().getTransCssTop() > o2.getInvestigationItem().getTransCssTop()){
+                return -1;
+            }else if(o1.getInvestigationItem().getTransCssTop() < o2.getInvestigationItem().getTransCssTop()){
+                return 1;
+            }else{
+                return o1.getStrValue().compareToIgnoreCase(o2.getStrValue());
             }
-            return o1.getInvestigationItem().getCssTop().compareTo(o2.getInvestigationItem().getCssTop());  //To change body of generated methods, choose Tools | Templates.
         }
     }
 

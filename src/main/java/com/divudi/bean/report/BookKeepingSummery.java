@@ -914,24 +914,29 @@ public class BookKeepingSummery implements Serializable {
         System.err.println("createInwardCollection");
         inwardCollections = new ArrayList<>();
 
-        List<Object[]> list = getBillBean().calInwardPaymentTotal(null, fromDate, toDate, institution);
+        List<Object[]> list = getBillBean().calInwardPaymentTotal(fromDate, toDate, institution);
 
+//        AdmissionType headAdmissionType = null;
         for (Object[] obj : list) {
             AdmissionType admissionType = (AdmissionType) obj[0];
-            double grantDbl = (Double) obj[1];
+            PaymentMethod paymentMethod = (PaymentMethod) obj[1];
+            double grantDbl = (Double) obj[2];
+
+            System.err.println("Adm Tp " + admissionType.getName());
+            System.err.println("Paym " + paymentMethod);
+            System.err.println("Value " + grantDbl);
 //            List<Bill> bills = (List<Bill>) (Object) obj[2];
 
             //HEADER
+//            String3Value2 newRow = new String3Value2();
+//            newRow.setString1(admissionType.getName() + " : ");
+//            newRow.setSummery(true);
+////            newRow.setBills(bills);
+//            getInwardCollections().add(newRow);
+            //Value
             String3Value2 newRow = new String3Value2();
-            newRow.setString1(admissionType.getName() + " : ");
-            newRow.setSummery(true);
-//            newRow.setBills(bills);
-            getInwardCollections().add(newRow);
-
-            //FOOTER
-            newRow = new String3Value2();
-            newRow.setString1(admissionType.getName() + " Total : ");
-            newRow.setSummery(true);
+            newRow.setString1(admissionType.getName() + " " + paymentMethod + " : ");
+//            newRow.setSummery(true);
             newRow.setValue2(grantDbl);
 
             getInwardCollections().add(newRow);
@@ -943,22 +948,23 @@ public class BookKeepingSummery implements Serializable {
         System.err.println("createInwardCollection");
         inwardCollections = new ArrayList<>();
 
-        List<Object[]> list = getBillBean().calInwardPaymentTotal(null, fromDate, toDate, institution);
+        List<Object[]> list = getBillBean().calInwardPaymentTotal(fromDate, toDate, institution);
 
         for (Object[] obj : list) {
             AdmissionType admissionType = (AdmissionType) obj[0];
-            double grantDbl = (Double) obj[1];
+            PaymentMethod paymentMethod = (PaymentMethod) obj[1];
+            double grantDbl = (Double) obj[2];
             //HEADER
             String3Value2 newRow = new String3Value2();
-            newRow.setString1(admissionType.getName() + " : ");
+            newRow.setString1(admissionType.getName() + " " + paymentMethod + " : ");
             newRow.setSummery(true);
 
-            if (grantDbl != 0) {
-                getInwardCollections().add(newRow);
-            }
+//            if (grantDbl != 0) {
+            getInwardCollections().add(newRow);
+//            }
 
             //BILLS
-            for (Bill b : getBillBean().fetchInwardPaymentBills(admissionType, fromDate, toDate, institution)) {
+            for (Bill b : getBillBean().fetchInwardPaymentBills(admissionType, paymentMethod, fromDate, toDate, institution)) {
 //                System.err.println("Bills "+b);
                 newRow = new String3Value2();
                 newRow.setString1(b.getPatientEncounter().getBhtNo());
@@ -973,14 +979,14 @@ public class BookKeepingSummery implements Serializable {
 
             //FOOTER
             newRow = new String3Value2();
-            newRow.setString1(admissionType.getName() + " Total : ");
+            newRow.setString1(admissionType.getName() + " " + paymentMethod + " Total : ");
             newRow.setSummery(true);
 
             newRow.setValue2(grantDbl);
 
-            if (grantDbl != 0) {
-                getInwardCollections().add(newRow);
-            }
+//            if (grantDbl != 0) {
+            getInwardCollections().add(newRow);
+//            }
 
         }
     }
@@ -1087,7 +1093,7 @@ public class BookKeepingSummery implements Serializable {
         opdHospitalTotal = getBillBean().calFeeValue(FeeType.OwnInstitution, getFromDate(), getToDate(), getInstitution());
         outSideFeeTotal = getBillBean().calOutSideInstitutionFees(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
-        inwardPaymentTotal = getBillBean().calInwardPaymentTotal(fromDate, toDate, institution);
+        inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
@@ -1303,7 +1309,7 @@ public class BookKeepingSummery implements Serializable {
         opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution());
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
-        inwardPaymentTotal = getBillBean().calInwardPaymentTotal(fromDate, toDate, institution);
+        inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
@@ -1338,7 +1344,7 @@ public class BookKeepingSummery implements Serializable {
         opdHospitalTotal = getBillBean().calFeeValue(FeeType.OwnInstitution, getFromDate(), getToDate(), getInstitution());
         outSideFeeTotal = getBillBean().calOutSideInstitutionFees(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
-        inwardPaymentTotal = getBillBean().calInwardPaymentTotal(fromDate, toDate, institution);
+        inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
@@ -1372,7 +1378,7 @@ public class BookKeepingSummery implements Serializable {
         opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution());
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
-        inwardPaymentTotal = getBillBean().calInwardPaymentTotal(fromDate, toDate, institution);
+        inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);

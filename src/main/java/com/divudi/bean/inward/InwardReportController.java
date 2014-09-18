@@ -88,15 +88,7 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         calTtoal();
-        for (PatientEncounter p : patientEncounters) {
-            netTotal += p.getTransTotal();
-            System.out.println("p.getTransPaid() = " + p.getTransPaid());
-            System.out.println("Bht No = " + p.getBhtNo());
-            netPaid += p.getTransPaid();
-        }
     }
-
-    
 
     public void fillAdmissionBookOnlyInward() {
         Map m = new HashMap();
@@ -115,12 +107,6 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         calTtoal();
-        for (PatientEncounter p : patientEncounters) {
-            netTotal += p.getTransTotal();
-            System.out.println("p.getTransPaid() = " + p.getTransPaid());
-            System.out.println("Bht No = " + p.getBhtNo());
-            netPaid += p.getTransPaid();
-        }
     }
 
     public void fillAdmissionBookOnlyDischarged() {
@@ -140,12 +126,7 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         calTtoal();
-        for (PatientEncounter p : patientEncounters) {
-            netTotal += p.getTransTotal();
-            System.out.println("p.getTransPaid() = " + p.getTransPaid());
-            System.out.println("Bht No = " + p.getBhtNo());
-            netPaid += p.getTransPaid();
-        }
+
     }
 
     public void fillAdmissionBookOnlyDischargedNotFinalized() {
@@ -165,12 +146,7 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         calTtoal();
-        for (PatientEncounter p : patientEncounters) {
-            netTotal += p.getTransTotal();
-            System.out.println("p.getTransPaid() = " + p.getTransPaid());
-            System.out.println("Bht No = " + p.getBhtNo());
-            netPaid += p.getTransPaid();
-        }
+
     }
 
     public void fillAdmissionBookOnlyDischargedFinalized() {
@@ -190,12 +166,6 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         calTtoal();
-        for (PatientEncounter p : patientEncounters) {
-            netTotal += p.getTransTotal();
-            System.out.println("p.getTransPaid() = " + p.getTransPaid());
-            System.out.println("Bht No = " + p.getBhtNo());
-            netPaid += p.getTransPaid();
-        }
     }
 
     @Inject
@@ -206,11 +176,16 @@ public class InwardReportController implements Serializable {
             return;
         }
 
+        netTotal = 0;
+        netPaid = 0;
         for (PatientEncounter p : patientEncounters) {
             bhtSummeryController.setPatientEncounter((Admission) p);
             bhtSummeryController.createTables();
             p.setTransTotal(bhtSummeryController.getGrantTotal());
             p.setTransPaid(bhtSummeryController.getPaid());
+
+            netTotal += p.getTransTotal();
+            netPaid += p.getTransPaid();
         }
     }
 
@@ -268,7 +243,10 @@ public class InwardReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        calTotalDischarged();
+    }
 
+    public void calTotalDischarged() {
         if (patientEncounters == null) {
             return;
         }
@@ -286,11 +264,10 @@ public class InwardReportController implements Serializable {
                 total += p.getFinalBill().getNetTotal();
                 paid += p.getFinalBill().getPaidAmount();
             }
-            
+
             creditUsed += p.getCreditUsedAmount();
             creditPaid += p.getPaidByCreditCompany();
             calTotal += p.getTransTotal();
-
         }
     }
 
@@ -323,29 +300,7 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        if (patientEncounters == null) {
-            return;
-        }
-        total = 0;
-        paid = 0;
-        calTotal = 0;
-        creditPaid = 0;
-        creditUsed = 0;
-        for (PatientEncounter p : patientEncounters) {
-            inwardReportControllerBht.setPatientEncounter(p);
-            inwardReportControllerBht.process();
-            p.setTransTotal(inwardReportControllerBht.getNetTotal());
-
-            if (p.getFinalBill() != null) {
-
-                total += p.getFinalBill().getNetTotal();
-                paid += p.getFinalBill().getPaidAmount();
-            }
-            creditUsed += p.getCreditUsedAmount();
-            creditPaid += p.getPaidByCreditCompany();
-            calTotal += p.getTransTotal();
-
-        }
+        calTotalDischarged();
     }
 
     public void fillDischargeBookPaymentFinalized() {
@@ -377,26 +332,7 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        if (patientEncounters == null) {
-            return;
-        }
-        total = 0;
-        paid = 0;
-        calTotal = 0;
-        creditPaid = 0;
-        creditUsed = 0;
-        for (PatientEncounter p : patientEncounters) {
-            inwardReportControllerBht.setPatientEncounter(p);
-            inwardReportControllerBht.process();
-            p.setTransTotal(inwardReportControllerBht.getNetTotal());
-
-            total += p.getFinalBill().getNetTotal();
-            paid += p.getFinalBill().getPaidAmount();
-            creditUsed += p.getCreditUsedAmount();
-            creditPaid += p.getPaidByCreditCompany();
-            calTotal += p.getTransTotal();
-
-        }
+        calTotalDischarged();
     }
 
     public BhtSummeryController getBhtSummeryController() {

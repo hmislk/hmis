@@ -13,6 +13,5 @@ package com.divudi.data.channel;
 public enum DateEnum {
     AppointmentDate,
     CreatedDate,
-    PaidDate,
-    CancelledRefundedDate
+    PaidDate,    
 }

@@ -29,12 +29,10 @@
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Designation : "/>
+                            <h:outputLabel value="Staff Designation : "/>
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Roster : "/>
+                            <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            <h:outputLabel value="Shift : "/>
-                            <hr:completeShift value="#{hrReportController.reportKeyWord.shift}"/>
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShift()}"/>
@@ -72,13 +70,54 @@
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                     <h:outputLabel value="Previous" rendered="#{ss.previousStaffShift ne null}"/>
-                                </p:column>                                                         
+                                </p:column> 
+                                <p:column headerText="OT Minute From In Record Logged">
+                                    <h:outputLabel value="#{ss.overTimeFromStartRecordLogged/60}">                                        
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </p:column>   
+                                <p:column headerText="Out Actual">
+                                    <h:outputLabel value="#{ss.endRecord.loggedRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                    </h:outputLabel>  
+                                    <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
+                                </p:column>   
+                                <p:column headerText="OT Minute From Out Record Logged">
+                                    <h:outputLabel value="#{ss.overTimeFromEndRecordLogged/60}">                                        
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="OT Minute From Complete Record Logged">
+                                    <h:outputLabel value="#{ss.overTimeCompleteRecordLogged/60}">                                        
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="In Checked ">
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                    </h:outputLabel>                                     
+                                </p:column>  
+                                <p:column headerText="OT Minute From In Record Varified">
+                                    <h:outputLabel value="#{ss.overTimeFromStartRecordVarified/60}">                                        
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Out Checked">
+                                    <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
-                                    <h:outputLabel value="Previous" rendered="#{ss.previousStaffShift ne null}"/>
-                                </p:column>                                                                                  
+                                    <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
+                                </p:column>    
+                                <p:column headerText="OT Minute From Out Record Varified">
+                                    <h:outputLabel value="#{ss.overTimeFromEndRecordVarified/60}">                                        
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="OT Minute From Complete Record Varified">
+                                    <h:outputLabel value="#{ss.overTimeCompleteRecordVarified/60}">                                        
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
                             </p:dataTable>
                         </p:panel>
 

@@ -14,6 +14,10 @@ public class String1Value3 {
     private double value2;
     private double value3;
     boolean summery;
+    
+    
+    
+    
 
     public boolean isSummery() {
         return summery;

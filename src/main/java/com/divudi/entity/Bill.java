@@ -261,9 +261,7 @@ public class Bill implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date appointmentAt;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date paidAt;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date cancelledRefundedAt;
+    Date paidAt;  
     @ManyToOne
     Bill paidBill;
 
@@ -1465,13 +1463,6 @@ public class Bill implements Serializable {
         this.paidAt = paidAt;
     }
 
-    public Date getCancelledRefundedAt() {
-        return cancelledRefundedAt;
-    }
-
-    public void setCancelledRefundedAt(Date cancelledRefundedAt) {
-        this.cancelledRefundedAt = cancelledRefundedAt;
-    }
-
+ 
     
 }
