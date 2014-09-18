@@ -84,10 +84,10 @@ public class ChannelReportController implements Serializable {
         String sql = "SELECT b FROM BillSession b "
                 + "  where type(b.bill)=:class "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.retired=false";
+                + " and b.bill.retired=false ";
 
         if (reportKeyWord.getSpeciality() != null) {
-            sql += "and b.staff.speciality=:sp";
+            sql += " and b.staff.speciality=:sp";
             hm.put("sp", reportKeyWord.getSpeciality());
         }
 
