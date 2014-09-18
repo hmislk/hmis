@@ -28,7 +28,6 @@
             <version>1.5-beta1</version>
             <type>jar</type>
         </dependency>
-      
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
