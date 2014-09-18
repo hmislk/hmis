@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.bean.pharmacy;
+package com.divudi.bean.store;
 
+import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
@@ -42,7 +43,7 @@ import org.primefaces.event.RowEditEvent;
  */
 @Named
 @SessionScoped
-public class TransferReceiveController implements Serializable {
+public class StoreTransferReceiveController implements Serializable {
 
     private Bill issuedBill;
     private Bill receivedBill;
@@ -87,7 +88,7 @@ public class TransferReceiveController implements Serializable {
         billItems = null;
     }
 
-    public TransferReceiveController() {
+    public StoreTransferReceiveController() {
     }
 
     public Bill getIssuedBill() {
@@ -190,8 +191,8 @@ public class TransferReceiveController implements Serializable {
             getReceivedBill().getBillItems().add(i);
         }
 
-        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReceivedBill(), BillType.PharmacyTransferReceive, BillNumberSuffix.PHTI));
-        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReceivedBill(), BillType.PharmacyTransferReceive, BillNumberSuffix.PHTI));
+        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReceivedBill(), BillType.StoreTransferReceive, BillNumberSuffix.STTR));
+        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReceivedBill(), BillType.StoreTransferReceive, BillNumberSuffix.STTR));
 
         getReceivedBill().setInstitution(getSessionController().getInstitution());
         getReceivedBill().setDepartment(getSessionController().getDepartment());
@@ -250,7 +251,7 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void saveBill() {
-        getReceivedBill().setBillType(BillType.PharmacyTransferReceive);
+        getReceivedBill().setBillType(BillType.StoreTransferReceive);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
         getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());

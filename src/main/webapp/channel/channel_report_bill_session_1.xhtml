@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Attendance Report" />
+                            <h:outputLabel value="Bill Session Report" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -73,6 +73,11 @@
                                 <p:column headerText="Status">
                                     <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
                                     <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
+                                    <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportController.netTotal}">
+                                        <f:convertNumber pattern="#,###.##" />
+                                    </p:outputLabel>
+                                </f:facet>
                                 </p:column>
                             </p:dataTable>
 
@@ -110,6 +115,11 @@
                                 <p:column headerText="Status">
                                     <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
                                     <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.cancelTotal}">
+                                            <f:convertNumber pattern="#,###.##" />
+                                        </p:outputLabel>
+                                    </f:facet>
                                 </p:column>
                             </p:dataTable>
 
@@ -147,6 +157,11 @@
                                 <p:column headerText="Status">
                                     <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
                                     <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.refundTotal}">
+                                            <f:convertNumber pattern="#,###.##" />
+                                        </p:outputLabel>
+                                    </f:facet>
                                 </p:column>
                             </p:dataTable>
 
@@ -157,12 +172,27 @@
                                 </p:column>
                                 <p:column headerText="Billed">
                                     #{ls.value1}
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.totalBilled}">
+                                            <f:convertNumber pattern="#,###" />
+                                        </p:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Cancelled">
                                     #{ls.value2}
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.totalCancel}">
+                                            <f:convertNumber pattern="#,###" />
+                                        </p:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Refund">
                                     #{ls.value3}
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.totalRefund}">
+                                            <f:convertNumber pattern="#,###" />
+                                        </p:outputLabel>
+                                    </f:facet>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
