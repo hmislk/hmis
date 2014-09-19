@@ -29,11 +29,13 @@
                                  process="@this frmDate toDate roster"
                                  update="lst"
                                  actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                 action="#{shiftFingerPrintAnalysisController.createShiftTable()}" onclick="onSubmitButton();" />    
+                                 action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
+                                 onclick="onSubmitButton();" />                 
                 <p:commandButton value="SAVE"
                                  process="lst"
                                  update="lst"
-                                 action="#{shiftFingerPrintAnalysisController.save()}" onclick="onSubmitButton();"/>
+                                 action="#{shiftFingerPrintAnalysisController.save()}" 
+                                 onclick="onSubmitButton();"/>
             </h:panelGrid>
 
             <p:dataGrid  id="lst" columns="1" var="data"
@@ -107,8 +109,9 @@
                     </p:column>
 
                     <p:column headerText="Starting Record Varified">
-                        <h:panelGroup rendered="#{sts.previousStaffShift eq null and sts.startRecord ne null}">
-                            <p:calendar id="strRc"                                        
+                        <h:panelGroup >
+                            <p:calendar id="strRc"       
+                                        disabled="#{sts.previousStaffShift ne null}"
                                         value="#{sts.startRecord.recordTimeStamp}" 
                                         pattern="dd MM yy hh mm ss a"  >                           
                                 <p:ajax event="click" process="@this" update="@this"
@@ -119,14 +122,12 @@
 
                         </h:panelGroup>
 
-                        <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
-
-
                     </p:column>
 
                     <p:column headerText="Ending Record  Varified">
-                        <h:panelGroup rendered="#{sts.nextStaffShift eq null and sts.endRecord ne null}">
+                        <h:panelGroup>
                             <p:calendar id="endRc"
+                                        disabled="#{sts.nextStaffShift ne null}"
                                         value="#{sts.endRecord.recordTimeStamp}" 
                                         pattern="dd MM yy hh mm ss a" >          
                                 <p:ajax event="click" process="@this" update="@this"
@@ -135,7 +136,6 @@
                             <p:selectBooleanCheckbox value="#{sts.endRecord.allowedOverTime}"/>
                             <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.endRecord)}"/>
                         </h:panelGroup>
-                        <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
 
                     </p:column>
 

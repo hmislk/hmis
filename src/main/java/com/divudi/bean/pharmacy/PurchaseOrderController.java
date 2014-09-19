@@ -47,7 +47,7 @@ public class PurchaseOrderController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @Inject
     private BillNumberController billNumberBean;
-   @Inject
+    @Inject
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -119,6 +119,8 @@ public class PurchaseOrderController implements Serializable {
         }
         return fromDate;
     }
+    
+   
 
     public String approve() {
         if (getAprovedBill().getPaymentMethod() == null) {
@@ -130,6 +132,12 @@ public class PurchaseOrderController implements Serializable {
 
         saveBill();
         saveBillComponent();
+        
+        
+
+        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
+        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
+        billFacade.edit(getAprovedBill());
 
         //Update Requested Bill Reference
         getRequestedBill().setReferenceBill(getAprovedBill());
@@ -141,6 +149,8 @@ public class PurchaseOrderController implements Serializable {
         //   printPreview = true;
 
     }
+    
+    
 
     public String viewRequestedList() {
         clearList();
@@ -181,9 +191,6 @@ public class PurchaseOrderController implements Serializable {
         getAprovedBill().setFromInstitution(getRequestedBill().getInstitution());
         getAprovedBill().setReferenceBill(getRequestedBill());
         getAprovedBill().setBackwardReferenceBill(getRequestedBill());
-
-        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
-        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
 
         getAprovedBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getAprovedBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());

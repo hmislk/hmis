@@ -34,7 +34,7 @@
                         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill"  style="min-width: 100%;"  >
                             <p:column headerText="View" styleClass="alignTop">
                                 <p:commandButton value="View Bill" action="bill_all_view" ajax="false">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}" />
                                 </p:commandButton>
                             </p:column>
 
