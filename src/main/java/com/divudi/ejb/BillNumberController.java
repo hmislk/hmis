@@ -609,33 +609,21 @@ public class BillNumberController {
 //
 //    }
 
-    public String serialNumberGenerater(Institution ins, Department toDept, Item item) {
+    public String inventoryItemSerialNumberGenerater(Institution ins, Department toDept, Item item) {
         if (ins == null) {
             System.out.println("Ins null");
             return "";
         }
-
         String sql = "SELECT count(b) FROM BillItem b where "
                 + " b.bill.institution=:ins "
-                + " and b.bill.department=:tDep "
                 + " and b.item=:item "
                 + " and (b.bill.billType=:btp1 or b.bill.billType=:btp2)";
-
         HashMap hm = new HashMap();
         hm.put("ins", ins);
-        hm.put("tDep", toDept);
         hm.put("item", item);
-        hm.put("btp1", BillType.PharmacyPurchaseBill);
-        hm.put("btp2", BillType.PharmacyGrnBill);
+        hm.put("btp1", BillType.StorePurchase);
+        hm.put("btp2", BillType.StoreGrnBill);
         Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        //System.err.println("fff " + b);
-
-//        if (toDept != null) {
-//            result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
-//        } else {
-//            result = ins.getInstitutionCode() + "/" + 1;
-//        }
-//        return result;
         System.out.println("In Bill Num Gen");
         String result;
         if (b != null && b != 0) {
@@ -658,7 +646,6 @@ public class BillNumberController {
             }
             return result;
         }
-
     }
 
     public DepartmentFacade getDepFacade() {
