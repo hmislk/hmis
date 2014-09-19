@@ -18,34 +18,35 @@
 
                         <h:panelGrid columns="15"  >                           
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:selectOneMenu   id="cmbPs" value="#{saleReturnController.returnBill.paymentMethod}">                                                                     
-                                <p:selectOneMenu   id="cmbPs" value="#{pharmacyPreSettleController.preBill.paymentMethod}" >   
-                                    <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
-
-                                </p:selectOneMenu>
-                                
-                                <p:inputText value="#{saleReturnController.comment}" id="comment"/>
-                                <p:watermark value="Comment" for="comment"/>
-                               
-                                <h:panelGroup id="creditCard" style="display: #{saleReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                    <pa:creditCard paymentMethodData="#{saleReturnController.paymentMethodData}"/>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="cheque" style="display: #{saleReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                    <pa:cheque paymentMethodData="#{saleReturnController.paymentMethodData}"/>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="slip" style="display: #{saleReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                    <pa:slip paymentMethodData="#{saleReturnController.paymentMethodData}"/>
-                                </h:panelGroup>
-
-                                <p:commandButton  value="Return" action="#{saleReturnController.settle}" 
-                                                  onclick="onSubmitButton();"
-                                                  ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                                </p:commandButton>
-                                <p:outputLabel  value="Recievable Amount" /> 
-                                <p:outputLabel id="total"  value="#{saleReturnController.returnBill.total}" style="float: right;"/>
+                           
+                            <p:selectOneMenu  id="cmbPs"
+                                                value="#{saleReturnController.returnBill.paymentMethod}">     
+                                <f:selectItems value="#{enumController.paymentMethods}"  />
+                                <p:ajax process="cmbPs" update="creditCard cheque slip" 
+                                        event="change" />
                             </p:selectOneMenu>
+                            <p:inputText value="#{saleReturnController.comment}" id="comment"/>
+                            <p:watermark value="Comment" for="comment"/>
+
+                            <h:panelGroup id="creditCard" style="display: #{saleReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                <pa:creditCard paymentMethodData="#{saleReturnController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="cheque" style="display: #{saleReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                <pa:cheque paymentMethodData="#{saleReturnController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="slip" style="display: #{saleReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                <pa:slip paymentMethodData="#{saleReturnController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <p:commandButton  value="Return" action="#{saleReturnController.settle}" 
+                                              onclick="onSubmitButton();"
+                                              ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                            </p:commandButton>
+                            <p:outputLabel  value="Recievable Amount" /> 
+                            <p:outputLabel id="total"  value="#{saleReturnController.returnBill.total}" style="float: right;"/>
+
                         </h:panelGrid>
                     </f:facet>
                 </p:panel>

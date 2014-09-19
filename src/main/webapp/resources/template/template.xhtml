@@ -14,6 +14,8 @@
         <h:outputStylesheet library="css" name="css1.css" />
         <h:outputStylesheet library="css" name="summery.css" />
         <h:outputStylesheet library="css" name="printing.css" />
+        
+        <h:outputScript library="js" name="jsfcrud.js"/>
     </h:head>
     <h:body  >
         <p:panel styleClass="fullSpread" >
@@ -264,7 +266,7 @@
                                                      actionListener="#{storePurchaseController.makeNull()}" ></p:menuitem>
                                     </p:submenu>
                                     <p:submenu label="Transfer" rendered="#{webUserController.hasPrivilege('StoreTransfer')}">
-                                        <p:menuitem  ajax="false" action="/store/store_transfer_request"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferRequest')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/store/store_transfer_request"  value="Request" actionListener="#{storeTransferRequestController.recreate}" rendered="#{webUserController.hasPrivilege('StoreTransferRequest')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/store/store_transfer_request_list"  value="Issue" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferIssue')}" ></p:menuitem>                                           
                                         <p:menuitem  ajax="false" action="/store/store_transfer_issued_list"  value="Recieve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferRecive')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/store/store_report_transfer"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferReport')}" ></p:menuitem>
@@ -489,7 +491,7 @@
                                 </p:submenu>
                                 <p:submenu label="Search" rendered="#{webUserController.hasPrivilege('Search')}">
                                     <p:menuitem  ajax="false"  action="/search_all" value="Grand Search" rendered="#{webUserController.hasPrivilege('SearchGrand')}"></p:menuitem>
-                                    <p:menuitem  ajax="false"  action="/search_bill" value="Bill Search" rendered="#{webUserController.hasPrivilege('SearchGrand')}"></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/search_bill" value="Bill Search" rendered="#{webUserController.hasPrivilege('Developers')}"></p:menuitem>
                                 </p:submenu>
 
                             </p:menubar>

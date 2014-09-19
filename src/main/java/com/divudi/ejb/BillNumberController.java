@@ -728,4 +728,25 @@ public class BillNumberController {
         this.itemFacade = itemFacade;
     }
 
+    public Long inventoryItemSerialNumberGenerater(Institution ins,  Item item) {
+        if (ins == null) {
+            System.out.println("Ins null");
+            return 0l;
+        }
+        String sql = "SELECT count(b) FROM BillItem b where "
+                + " b.bill.institution=:ins "
+                + " and b.item=:item "
+                + " and (b.bill.billType=:btp1 or b.bill.billType=:btp2)";
+
+        HashMap hm = new HashMap();
+        hm.put("ins", ins);
+        hm.put("item", item);
+        hm.put("btp1", BillType.StoreGrnBill);
+        hm.put("btp2", BillType.StorePurchase);
+        Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        System.out.println("In Bill Num Gen" + b);
+        return b;
+    }
+
+
 }

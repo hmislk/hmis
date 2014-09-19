@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.bean.pharmacy;
+package com.divudi.bean.store;
 
+import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
@@ -43,7 +44,7 @@ import org.primefaces.event.RowEditEvent;
  */
 @Named
 @SessionScoped
-public class TransferIssueController implements Serializable {
+public class StoreTransferIssueController implements Serializable {
 
     private Bill requestedBill;
     private Bill issuedBill;
@@ -110,7 +111,7 @@ public class TransferIssueController implements Serializable {
         userStockContainer = null;
     }
 
-    public TransferIssueController() {
+    public StoreTransferIssueController() {
     }
 
     public Bill getRequestedBill() {
@@ -136,8 +137,8 @@ public class TransferIssueController implements Serializable {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getRequestedBill())) {
 
-            double billedIssue = getPharmacyCalculation().getBilledIssuedByRequestedItem(i.getBillItem(), BillType.PharmacyTransferIssue);
-            double cancelledIssue = getPharmacyCalculation().getCancelledIssuedByRequestedItem(i.getBillItem(), BillType.PharmacyTransferIssue);
+            double billedIssue = getPharmacyCalculation().getBilledIssuedByRequestedItem(i.getBillItem(), BillType.StoreTransferIssue);
+            double cancelledIssue = getPharmacyCalculation().getCancelledIssuedByRequestedItem(i.getBillItem(), BillType.StoreTransferIssue);
 
             double issuableQty = i.getQtyInUnit() - (Math.abs(billedIssue) - Math.abs(cancelledIssue));
 
@@ -273,8 +274,8 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().getBillItems().add(i);
         }
 
-        getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill(), BillType.PharmacyTransferIssue, BillNumberSuffix.PHTI));
-        getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getIssuedBill(), BillType.PharmacyTransferIssue, BillNumberSuffix.PHTI));
+        getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill(), BillType.StoreTransferIssue, BillNumberSuffix.STTI));
+        getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getIssuedBill(), BillType.StoreTransferIssue, BillNumberSuffix.STTI));
 
         getIssuedBill().setInstitution(getSessionController().getInstitution());
         getIssuedBill().setDepartment(getSessionController().getDepartment());
@@ -357,7 +358,7 @@ public class TransferIssueController implements Serializable {
     public Bill getIssuedBill() {
         if (issuedBill == null) {
             issuedBill = new BilledBill();
-            issuedBill.setBillType(BillType.PharmacyTransferIssue);
+            issuedBill.setBillType(BillType.StoreTransferIssue);
         }
         return issuedBill;
     }

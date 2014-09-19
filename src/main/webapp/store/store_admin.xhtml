@@ -20,6 +20,7 @@
                             <p:panel header="Store Item" >
                                 <h:panelGrid columns="1" >     
                                     <p:commandButton ajax="false" value="Categories" action="store_item_category" ></p:commandButton>
+                                    <p:commandButton ajax="false" action="/store/make_list" value="Manage Makes" />
                                     <p:commandButton ajax="false" value="Item Master" action="store_item_master" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Import from Excel" action="store_item_import" ></p:commandButton>
                                 </h:panelGrid>
@@ -39,14 +40,14 @@
                                     <p:commandButton ajax="false" value="Frequencies" action="store_frequency_unit" ></p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
-                            
+
                             <p:panel header="Inventry" >
                                 <h:panelGrid columns="1" >
                                     <p:commandButton ajax="false" value="Item Master" action="store_inventry_item_master" ></p:commandButton>
-                                    
+
                                 </h:panelGrid>
                             </p:panel>
-                            
+
                             <p:panel header="Check Entered Data">
                                 <h:panelGrid columns="1">
                                     <p:commandButton ajax="false" value="Item Distributor" action="store_item_by_distributor" ></p:commandButton>
