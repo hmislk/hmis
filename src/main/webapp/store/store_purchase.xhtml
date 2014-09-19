@@ -74,7 +74,7 @@
                                 <p:outputLabel value=" X #{vt.dblValue}" 
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
-                            <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode" listener="#{storePurchaseController.createInventoryItemCode()}" ></f:ajax>
+                            <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode" listener="#{storePurchaseController.createSerialNumber()}" ></f:ajax>
                         </p:autoComplete>
                         <p:inputText autocomplete="off" id="txtQty" styleClass="numericTxt" value="#{storePurchaseController.currentBillItem.tmpQty}" style="width:100%" />  
                         <p:inputText autocomplete="off" id="txtFreeQty"  styleClass="numericTxt" 
