@@ -4,8 +4,7 @@
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel">
+                xmlns:h="http://java.sun.com/jsf/html">
 
     <ui:define name="content">
         <h:form>
@@ -100,51 +99,99 @@
                         </p:tab>
 
 
-                        <p:tab title="Reprint" id="print">
-                            
-                            <h:panelGroup id="panelReBillPrint" styleClass="noBorder">
-                                <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
-                            </h:panelGroup>
-                        </p:tab>
+                        <p:tab title="Reprint" id="print"></p:tab>
 
 
                         <p:tab title="Cancel" id="cancel">
-                            
-                            <h:panelGroup>
-                                <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
-                            </h:panelGroup>
-                            
+                            <p:panelGrid columns="3">
+                                <p:outputLabel/>
+                                <p:outputLabel value="Paid Amount"/>
+                                <p:outputLabel value="Previous Repay"/>                              
+
+                                <p:outputLabel value="Doctor Fee"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue}"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.prevFee.feeValue}"/>
+
+
+                                <p:outputLabel value="Institution"/>
+                                <p:outputLabel value="#{channelBillController.hospitalFee.billedFee.feeValue}"/>
+                                <p:outputLabel value="#{channelBillController.hospitalFee.prevFee.feeValue}"/>                                                               
+
+                                <p:outputLabel value="Tax" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.tax.billedFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.tax.prevFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>                                                               
+
+                                <p:outputLabel value="Agent" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.agentPay.billedFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.agentPay.prevFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/> 
+
+                                <p:outputLabel value="Total"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue
+                                                        +channelBillController.hospitalFee.billedFee.feeValue
+                                                        +channelBillController.tax.billedFee.feeValue
+                                                        +channelBillController.agentPay.billedFee.feeValue}"/>
+
+                                <p:outputLabel  value="#{channelBillController.doctorFee.prevFee.feeValue
+                                                         +channelBillController.hospitalFee.prevFee.feeValue
+                                                         +channelBillController.tax.prevFee.feeValue
+                                                         +channelBillController.agentPay.prevFee.feeValue}" />
+
+
+                            </p:panelGrid>
                             <p:commandButton ajax="false" value="Cancel" action="#{channelBillController.cancel}" disabled="#{channelBillController.billSession.bill.refunded==true
                                                                                    or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
                         </p:tab>
 
 
                         <p:tab title="Refund" id="refund">
-                                                                 
-                                <h:panelGrid columns="2">
-                                    <h:outputLabel value="Refundable Total : "/>
-                                    <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
-                                </h:panelGrid>
-                                <p:dataTable value="#{channelBillController.billSession.bill.billFees}" var="bi">
-                                    <p:column headerText="Fee Name">
-                                        <p:outputLabel value="#{bi.fee.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Fee Type">
-                                        <p:outputLabel value="#{bi.fee.feeType}"/>
-                                    </p:column>
-                                    <p:column headerText="Fee Value">
-                                        <p:outputLabel value="#{bi.feeValue}"/> 
-                                    </p:column>
-                                    <p:column headerText="Return Value">
-                                        <p:inputText value="#{bi.tmpChangedValue}">
-                                            <f:ajax execute="@this" render=":#{p:component('tot')}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
-                                        </p:inputText>
+                            <p:panelGrid columns="4">
+                                <p:outputLabel/>
+                                <p:outputLabel value="Paid Amount"/>
+                                <p:outputLabel value="Previous Repay"/>
+                                <p:outputLabel value="Repayment"/>
 
-                                    </p:column>
-                                </p:dataTable>
-                            
+                                <p:outputLabel value="Doctor Fee"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue}"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.prevFee.feeValue}"/>
+                                <p:inputText autocomplete="off"  id="doc" value="#{channelBillController.doctorFee.repayment.feeValue}" disabled="#{channelBillController.billSession.serviceSession.refundable != true}">
+                                    <f:ajax event="keyup" execute="@this hos tax age" render="tot"/>
+                                </p:inputText>
 
+                                <p:outputLabel value="Institution"/>
+                                <p:outputLabel value="#{channelBillController.hospitalFee.billedFee.feeValue}"/>
+                                <p:outputLabel value="#{channelBillController.hospitalFee.prevFee.feeValue}"/>                               
+                                <p:outputLabel id="hos" value="#{channelBillController.hospitalFee.repayment.feeValue}"/>                                    
 
+                                <p:outputLabel value="Tax" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.tax.billedFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.tax.prevFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>                               
+                                <p:inputText autocomplete="off" id="tax" value="#{channelBillController.tax.repayment.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}">
+                                    <f:ajax event="keyup" execute="doc hos @this age" render="tot"/>
+                                </p:inputText>
+
+                                <p:outputLabel value="Agent" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.agentPay.billedFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.agentPay.prevFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/> 
+                                <p:inputText autocomplete="off" id="age" value="#{channelBillController.agentPay.repayment.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}">
+                                    <f:ajax event="keyup" execute="doc hos tax @this" render="tot"/>
+                                </p:inputText>
+
+                                <p:outputLabel value="Total"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue
+                                                        +channelBillController.hospitalFee.billedFee.feeValue
+                                                        +channelBillController.tax.billedFee.feeValue
+                                                        +channelBillController.agentPay.billedFee.feeValue}"/>
+
+                                <p:outputLabel  value="#{channelBillController.doctorFee.prevFee.feeValue
+                                                         +channelBillController.hospitalFee.prevFee.feeValue
+                                                         +channelBillController.tax.prevFee.feeValue
+                                                         +channelBillController.agentPay.prevFee.feeValue}" />
+
+                                <p:outputLabel id="tot" value="#{channelBillController.doctorFee.repayment.feeValue
+                                                                 +channelBillController.hospitalFee.repayment.feeValue
+                                                                 +channelBillController.tax.repayment.feeValue
+                                                                 +channelBillController.agentPay.repayment.feeValue}" />
+                            </p:panelGrid>
                             <p:commandButton ajax="false" value="Refund" action="#{channelBillController.refund}" disabled="#{channelBillController.billSession.bill.refunded==true
                                                                                    or channelBillController.billSession.bill.cancelled==true
                                                                                    or channelBillController.billSession.bill.billType eq 'ChannelCredit'}" onclick="onSubmitButton();"/>
@@ -155,15 +202,40 @@
 
                         <p:tab title="Settle" id="settle">
                             <p:panel  id="set">
-                                
-                                    <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
+                                <h:panelGrid columns="1">
+                                    <p:panelGrid columns="2">
+                                        <p:outputLabel/>
+                                        <p:outputLabel value="To Pay"/>                                
 
+                                        <p:outputLabel value="Doctor Fee"/>
+                                        <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue}"/>
+
+                                        <p:outputLabel value="Institution"/>
+                                        <p:outputLabel value="#{channelBillController.hospitalFee.billedFee.feeValue}"/>
+
+                                        <p:outputLabel value="Tax" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                        <p:outputLabel value="#{channelBillController.tax.billedFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+
+                                        <p:outputLabel value="Agent" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                        <p:outputLabel value="#{channelBillController.agentPay.billedFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+
+                                        <p:outputLabel value="Total"/>
+                                        <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue
+                                                                +channelBillController.hospitalFee.billedFee.feeValue
+                                                                +channelBillController.tax.billedFee.feeValue
+                                                                +channelBillController.agentPay.billedFee.feeValue}"/>
+
+
+                                    </p:panelGrid>
+
+
+                                </h:panelGrid>
                                 <p:commandButton id="setBtn" ajax="false" value="Settle Credit" action="#{channelBillController.settleCredit}" disabled="#{channelBillController.billSession.bill.billType ne 'ChannelCredit' 
                                                                                                           or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
 
 
                             </p:panel>
-                            
+
                         </p:tab>
 
 

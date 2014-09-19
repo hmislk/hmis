@@ -264,7 +264,7 @@ public class StoreTransferRequestController implements Serializable {
     public Bill getBill() {
         if (bill == null) {
             bill = new BilledBill();
-            bill.setBillType(BillType.PharmacyTransferRequest);
+            bill.setBillType(BillType.StoreTransferRequest);
         }
         return bill;
     }

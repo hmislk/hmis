@@ -82,18 +82,12 @@
 
             <p:spacer height="30"/>
 
-            <in:credit_collection 
-                title=" - OPD"
-                total="#{bookKeepingSummery.creditCompanyTotal}"
-                list="#{bookKeepingSummery.creditCompanyCollections}"
+            <in:credit_collection_opd 
                 id="credit_collection"/>
 
             <p:spacer height="30"/>
 
-            <in:credit_collection 
-                title=" - Inward"
-                total="#{bookKeepingSummery.creditCompanyTotalInward}"
-                list="#{bookKeepingSummery.creditCompanyCollectionsInward}"
+            <in:credit_collection_inward                 
                 id="credit_collection_inward"/>
 
             <p:spacer height="30"/>
