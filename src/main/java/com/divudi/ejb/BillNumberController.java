@@ -728,7 +728,7 @@ public class BillNumberController {
         this.itemFacade = itemFacade;
     }
 
-    public Long inventoryItemSerialNumberGenerater(Institution ins, Department toDept, Item item) {
+    public Long inventoryItemSerialNumberGenerater(Institution ins,  Item item) {
         if (ins == null) {
             System.out.println("Ins null");
             return 0l;

@@ -355,20 +355,30 @@ public class StorePurchaseController implements Serializable {
 
     public void createSerialNumber() {
         System.out.println("In");
-
-        long b = getBillNumberController().inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getSessionController().getLoggedUser().getDepartment(), getCurrentBillItem().getItem());
-        b = b + getBillItems().size() + 1;
-
+        long b = getBillNumberController().inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
+        b = b + 1;
+        for (BillItem bi : getBillItems()) {
+            if (bi.getItem().equals(getCurrentBillItem().getItem())) {
+                b++;
+            }
+        }
+        System.out.println("b = " + b);
         String code = "";
         code += getSessionController().getInstitution().getInstitutionCode();
         code += "/";
         code += getSessionController().getDepartment().getDepartmentCode();
         code += "/";
         if (getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && getCurrentBillItem().getItem().getCategory() != null) {
-            code+= getCurrentBillItem().getItem().getCategory().getCode();
+            code += getCurrentBillItem().getItem().getCategory().getCode();
+            code += "/";
         }
-        
-        System.out.println("Out");
+        if (getCurrentBillItem() != null && getCurrentBillItem().getItem() != null ) {
+            code += getCurrentBillItem().getItem().getCode();
+            code += "/";
+        }
+        code+=b;
+        System.out.println("code = " + code);
+        getCurrentBillItem().getPharmaceuticalBillItem().setCode(code);
     }
 
     public void addItem() {
