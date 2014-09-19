@@ -355,14 +355,14 @@ public class StorePurchaseController implements Serializable {
 
     public void createSerialNumber() {
         System.out.println("In");
-        long b = getBillNumberController().inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getSessionController().getLoggedUser().getDepartment(), getCurrentBillItem().getItem());
+        long b = getBillNumberController().inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
         b = b + 1;
         for (BillItem bi : getBillItems()) {
             if (bi.getItem().equals(getCurrentBillItem().getItem())) {
                 b++;
             }
         }
-
+        System.out.println("b = " + b);
         String code = "";
         code += getSessionController().getInstitution().getInstitutionCode();
         code += "/";
@@ -377,6 +377,7 @@ public class StorePurchaseController implements Serializable {
             code += "/";
         }
         code+=b;
+        System.out.println("code = " + code);
         getCurrentBillItem().getPharmaceuticalBillItem().setCode(code);
     }
 
