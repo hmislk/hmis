@@ -35,21 +35,20 @@
 
                             <p:panel >
                                 <f:facet name="header" >
-                                    <h:outputLabel value="Department Issue" />
-                                    <h:outputLabel value="Issuing Department"/>
                                     <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                                     styleClass="noPrintButton"
                                                     forceSelection="true"
                                                     var="w" itemLabel="#{w.name}" itemValue="#{w}"
                                                     value="#{storeIssueController.toDepartment}" 
                                                     id="acDept">
+                                        
                                         <p:column headerText="Department Name">
                                             #{w.name}
                                         </p:column>
                                         <p:column headerText="Institution Name">
                                             #{w.institution.name}
                                         </p:column>
-                                        <p:ajax process="acDept" update=":#{p:component('pBillDetails')} #{p:component('tblBillItem')} " 
+                                        <p:ajax process="acDept" update=":#{p:component('pBillDetails')}" 
                                                 event="itemSelect"  listener="#{storeIssueController.calculateAllRates}" />
                                     </p:autoComplete>
                                     
@@ -175,34 +174,15 @@
                                                         <p:column style="width:6%">  
                                                             <p:rowEditor />  
                                                         </p:column>  
-                                                        <p:column headerText="Rate">
-                                                            <h:outputLabel value="#{bi.rate}" >
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Margin Rate">
-                                                            <h:outputLabel value="#{bi.marginRate}" >
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </p:column>
 
-                                                        <p:column headerText="Net Rate">
-                                                            <h:outputLabel value="#{bi.netRate}" >
+
+                                                        <p:column headerText="Rate">
+                                                            <h:outputLabel id="rate" value="#{bi.rate}" >
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Gross">
-                                                            <h:outputLabel value="#{bi.grossValue}">
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Margin">
-                                                            <h:outputLabel value="#{bi.marginValue}" >
-                                                                <f:convertNumber pattern="#,##0.00" />
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Net Value">
-                                                            <h:outputLabel value="#{bi.netValue}" id="gros" >
+                                                        <p:column headerText="Value">
+                                                            <h:outputLabel value="#{bi.grossValue}" id="gros">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
@@ -237,18 +217,21 @@
 
                                 <f:facet name="header" >
                                     <h:panelGrid columns="20"  >
-                                        <p:commandButton  accesskey="s" value="Issue" 
-                                                          action="#{storeIssueController.settleBill()}" 
+
+
+
+                                        <h:commandButton  accesskey="s" value="Issue" 
+                                                         action="#{storeIssueController.settleBill()}" 
                                                           onclick="onSubmitButton();"
                                                           actionListener="#{storeIssueController.calculateAllRates}">
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
                                             </f:facet>
-                                        </p:commandButton>
+                                        </h:commandButton>
                                         <p:commandButton accesskey="n" value="New Issue Bill"  
-                                                         onclick="onSubmitButton();"
-                                                         ajax="false" action="/pharmacy/pharmacy_issue"
+                                                          onclick="onSubmitButton();"
+                                                         ajax="false" action="/store_issue"
                                                          actionListener="#{storeIssueController.resetAll()}"  ></p:commandButton>
 
 
@@ -260,19 +243,9 @@
 
 
                                 <p:panel header="Bill Details" id="pBillDetails"  >
-                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol" id="total" >
+                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                         <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{storeIssueController.preBill.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="Margin" ></h:outputLabel>
-                                        <h:outputLabel value="#{storeIssueController.preBill.margin}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                        <h:outputLabel value="#{storeIssueController.preBill.netTotal}" >
+                                        <h:outputLabel id="total" value="#{storeIssueController.preBill.total}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
@@ -305,14 +278,14 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Issue"
-                                             onclick="onSubmitButton();"
-                                             ajax="false" action="/pharmacy/pharmacy_issue" 
+                                              onclick="onSubmitButton();"
+                                             ajax="false" action="store_issue" 
                                              actionListener="#{storeIssueController.resetAll()}" ></p:commandButton>
 
                         </div>
                         <div >
                             <h:panelGroup   id="gpBillPreview"   > 
-                                <phi:issue bill="#{storeIssueController.printBill}"></phi:issue>
+                                <phi:saleBill bill="#{storeIssueController.printBill}"></phi:saleBill>
                             </h:panelGroup>
                         </div>
 
