@@ -48,7 +48,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @ApplicationScoped
-public class PharmacyCalculation implements Serializable{
+public class PharmacyCalculation implements Serializable {
 
     @Inject
     private PharmacyBean pharmacyBean;
@@ -100,7 +100,7 @@ public class PharmacyCalculation implements Serializable{
                 + " and i.item.retired=false"
                 + " and i.institution=:ins "
                 + " order by i.item.name ";
-        tmp = getItemFacade().findBySQL(temSql,hm);
+        tmp = getItemFacade().findBySQL(temSql, hm);
 
         if (tmp == null) {
             tmp = new ArrayList<>();
@@ -505,9 +505,13 @@ public class PharmacyCalculation implements Serializable{
 //            //System.err.println("Edit");
 //            i.get(0).setBatchNo(i.get(0).getBatchNo());
 //            i.get(0).setDateOfExpire(i.get(0).getDateOfExpire());
+            itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
+            itemBatch.setModal(tmp.getPharmaceuticalBillItem().getModel());
             return i.get(0);
         } else {
             //System.err.println("Create");
+            itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
+            itemBatch.setModal(tmp.getPharmaceuticalBillItem().getModel());
             getItemBatchFacade().create(itemBatch);
         }
 
@@ -649,9 +653,9 @@ public class PharmacyCalculation implements Serializable{
         if (checkItemBatch(billItems)) {
             msg = "Please Fill Batch deatail and Sale Price to All Item";
         }
-        
-        if (b.getReferenceInstitution()==null) {
-            msg="Please Fill Reference Institution";
+
+        if (b.getReferenceInstitution() == null) {
+            msg = "Please Fill Reference Institution";
         }
 
         return msg;
