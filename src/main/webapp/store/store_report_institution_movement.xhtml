@@ -26,19 +26,19 @@
                             <h:outputLabel value="" ></h:outputLabel>
                             <h:outputLabel value="" ></h:outputLabel>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storeController.fromDate}"
+                            <p:calendar value="#{storeController1.fromDate}"
                                         pattern="dd MM yyyy hh mm ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storeController.toDate}"
+                            <p:calendar value="#{storeController1.toDate}"
                                         pattern="dd MM yyyy hh mm ss a" ></p:calendar>
                             <h:outputLabel value="" ></h:outputLabel>
                             <p:commandButton ajax="false" value="Average By Date"
-                                             actionListener="#{storeController.averageByDate()}" ></p:commandButton>
+                                             actionListener="#{storeController1.averageByDate()}" ></p:commandButton>
                             <p:commandButton ajax="false" value="Average By Month"
-                                             actionListener="#{storeController.averageByMonth()}" ></p:commandButton>
+                                             actionListener="#{storeController1.averageByMonth()}" ></p:commandButton>
                         </h:panelGrid>
 
-                        <p:dataGrid value="#{storeController.stockAverages}" var="sA" columns="1">
+                        <p:dataGrid value="#{storeController1.stockAverages}" var="sA" columns="1">
 
                             #{sA.item.name}   #{sA.item.code}
                             <p:dataTable styleClass="noBorder" value="#{sA.institutionStocks}" var="ins">

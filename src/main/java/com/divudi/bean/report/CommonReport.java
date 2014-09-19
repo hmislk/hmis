@@ -1707,6 +1707,40 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
     }
+    
+    public void createPurchaseDetailTableStore() {
+        recreteModal();
+
+        purchaseBilled = new BillsTotals();
+        purchaseCancelled = new BillsTotals();
+        purchaseReturn = new BillsTotals();
+        purchaseReturnCancel = new BillsTotals();
+
+        if (getDepartment() == null) {
+            return;
+        }
+
+        //Purchase Billed Bills
+        getPurchaseBilled().setBills(getBills(new BilledBill(), BillType.StorePurchase, getDepartment()));
+        getPurchaseBilled().setCash(calValue(new BilledBill(), BillType.StorePurchase, PaymentMethod.Cash, getDepartment()));
+        getPurchaseBilled().setCredit(calValue(new BilledBill(), BillType.StorePurchase, PaymentMethod.Credit, getDepartment()));
+
+        //Purchase Cancelled Bill
+        getPurchaseCancelled().setBills(getBills(new CancelledBill(), BillType.StorePurchase, getDepartment()));
+        getPurchaseCancelled().setCash(calValue(new CancelledBill(), BillType.StorePurchase, PaymentMethod.Cash, getDepartment()));
+        getPurchaseCancelled().setCredit(calValue(new CancelledBill(), BillType.StorePurchase, PaymentMethod.Credit, getDepartment()));
+
+        //Purchase Refunded Bill
+        getPurchaseReturn().setBills(getBills(new BilledBill(), BillType.PurchaseReturn, getDepartment()));
+        getPurchaseReturn().setCash(calValue(new BilledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
+        getPurchaseReturn().setCredit(calValue(new BilledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
+
+        //Purchase Refunded Bill Cancel
+        getPurchaseReturnCancel().setBills(getBills(new CancelledBill(), BillType.PurchaseReturn, getDepartment()));
+        getPurchaseReturnCancel().setCash(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
+        getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
+
+    }
 
     public void createGrnDetailTableByDealor() {
         recreateList();

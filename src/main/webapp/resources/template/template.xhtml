@@ -247,11 +247,11 @@
                                                      value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('StoreIssueBillItems')}"/>                                       
                                     </p:submenu>
                                     <p:submenu label="Unit Issue" rendered="#{webUserController.hasPrivilege('StoreIssue')}">
-                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_issue"  
+                                        <p:menuitem  ajax="false" action="/store/store_issue"  
                                                      value="Issue" actionListener="#{pharmacyIssueController.resetAll()}"  ></p:menuitem>                                       
-                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill" actionListener="#{searchController.makeListNull}" 
+                                        <p:menuitem  ajax="false" action="/store/store_search_issue_bill" actionListener="#{searchController.makeListNull}" 
                                                      value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
-                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_item" actionListener="#{searchController.makeListNull}"   
+                                        <p:menuitem  ajax="false" action="/store/store_search_issue_bill_item" actionListener="#{searchController.makeListNull}"   
                                                      value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
                                         <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager"    
                                                      value="Unit Issue Margin" />

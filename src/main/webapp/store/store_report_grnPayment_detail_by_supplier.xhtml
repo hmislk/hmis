@@ -37,7 +37,7 @@
                         <h:outputLabel  value="Supplier"  ></h:outputLabel>
                         <p:autoComplete converter="deal" 
                                         value="#{commonReport.institution}"
-                                        completeMethod="#{dealerController.completeDealor}"
+                                        completeMethod="#{storeDealorController.completeDealor}"
                                          forceSelection="true" rendered="true"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
