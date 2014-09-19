@@ -100,7 +100,12 @@
                         </p:tab>
 
 
-                        <p:tab title="Reprint" id="print"></p:tab>
+                        <p:tab title="Reprint" id="print">
+                            
+                            <h:panelGroup id="panelReBillPrint" styleClass="noBorder">
+                                <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                            </h:panelGroup>
+                        </p:tab>
 
 
                         <p:tab title="Cancel" id="cancel">
@@ -138,12 +143,7 @@
                                     </p:column>
                                 </p:dataTable>
                             
-                            <p:commandButton ajax="false" value="Refund" 
-                                             rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
-                                             action="#{channelBillController.refundCashFlowBill}" 
-                                             disabled="#{channelBillController.billSession.bill.refunded==true
-                                                         or channelBillController.billSession.bill.cancelled==true}"
-                                             onclick="onSubmitButton();"/>
+
 
                             <p:commandButton ajax="false" value="Refund" action="#{channelBillController.refund}" disabled="#{channelBillController.billSession.bill.refunded==true
                                                                                    or channelBillController.billSession.bill.cancelled==true
