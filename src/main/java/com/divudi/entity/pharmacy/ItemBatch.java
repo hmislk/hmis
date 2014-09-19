@@ -37,6 +37,7 @@ public class ItemBatch implements Serializable {
     double purcahseRate;
     double retailsaleRate;
     double wholesaleRate;
+    @ManyToOne
     Category make;
     String modal;
 
