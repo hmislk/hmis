@@ -89,7 +89,7 @@ public class StoreReportsStock implements Serializable {
         sql = "select s from Stock s where s.department=:d"
                 + " and s.itemBatch.item.departmentType=:depty"
                 + " order by s.itemBatch.item.name";
-        
+
         m.put("depty", DepartmentType.Store);
         m.put("d", department);
         stocks = getStockFacade().findBySQL(sql, m);
@@ -100,7 +100,29 @@ public class StoreReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
     }
-    
+
+    public void fillInventoryAssets() {
+        if (department == null) {
+            UtilityController.addErrorMessage("Please select a department");
+            return;
+        }
+        Map m = new HashMap();
+        String sql;
+        sql = "select s from Stock s where s.department=:d"
+                + " and s.itemBatch.item.departmentType=:depty"
+                + " order by s.itemBatch.item.name";
+
+        m.put("depty", DepartmentType.Inventry);
+        m.put("d", department);
+        stocks = getStockFacade().findBySQL(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+        }
+    }
+
     public void fillDepartmentInventryStocks() {
         if (department == null) {
             UtilityController.addErrorMessage("Please select a department");
@@ -111,7 +133,7 @@ public class StoreReportsStock implements Serializable {
         sql = "select s from Stock s where s.department=:d"
                 + " and s.itemBatch.item.departmentType=:depty"
                 + " order by s.itemBatch.item.name";
-        
+
         m.put("depty", DepartmentType.Inventry);
         m.put("d", department);
         stocks = getStockFacade().findBySQL(sql, m);
@@ -202,7 +224,7 @@ public class StoreReportsStock implements Serializable {
             double calculatedStk = 0;
             boolean flg = false;
             if (sh != null) {
-             //   System.out.println("Previuos Stock " + sh.getStockQty());
+                //   System.out.println("Previuos Stock " + sh.getStockQty());
                 calculatedStk = (sh.getStockQty() + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit());
                 flg = true;
             } else if (phi != null) {
@@ -211,14 +233,12 @@ public class StoreReportsStock implements Serializable {
             }
 
          //   System.out.println("calculated History Qty " + calculatedStk);
-
             if (flg == true && b.getStockHistory().getStockQty() != calculatedStk) {
                 stockSet.add(b.getStock());
-             //   System.out.println("TRUE");
+                //   System.out.println("TRUE");
             }
 
          //   System.out.println("#########");
-
         }
 
         stocks = new ArrayList<>();
@@ -323,11 +343,11 @@ public class StoreReportsStock implements Serializable {
                     tmpStockList.add(st);
                 } else {
                  //   System.out.println("Itm " + ph.getBillItem().getItem().getName());
-                 //   System.out.println("Prv History Qty " + preHistoryQty);
-                 //   System.out.println("Prv Qty " + previousPh.getQtyInUnit());
-                 //   System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
-                 //   System.out.println("History " + curHistory);
-                 //   System.out.println("######");
+                    //   System.out.println("Prv History Qty " + preHistoryQty);
+                    //   System.out.println("Prv Qty " + previousPh.getQtyInUnit());
+                    //   System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
+                    //   System.out.println("History " + curHistory);
+                    //   System.out.println("######");
                 }
 
                 previousPh = ph;
