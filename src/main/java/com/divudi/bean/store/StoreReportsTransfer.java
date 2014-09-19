@@ -5,8 +5,10 @@
  */
 package com.divudi.bean.store;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
+import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Bill;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 
@@ -60,6 +63,7 @@ public class StoreReportsTransfer implements Serializable {
 
     List<StockReportRecord> movementRecords;
     List<StockReportRecord> movementRecordsQty;
+    List<String1Value3> listz;
 
     /**
      * EJBs
@@ -72,6 +76,8 @@ public class StoreReportsTransfer implements Serializable {
     BillFacade BillFacade;
     @Inject
     PharmacyBean pharmacyBean;
+    @Inject
+    BillBeanController billBeanController;
 
     /**
      * Methods
@@ -235,6 +241,81 @@ public class StoreReportsTransfer implements Serializable {
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
     }
+    
+    public void fillDepartmentUnitIssueByBillStore() {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", BillType.StoreIssue);
+        m.put("fdept", fromDepartment);
+        m.put("tdept", toDepartment);
+        sql = "select b from Bill b where "
+                + " b.fromDepartment=:fdept and "
+                + " b.toDepartment=:tdept and "
+                + " b.createdAt "
+                + " between :fd and :td and "
+                + " b.billType=:bt order by b.id";
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        totalsValue = 0.0;
+        discountsValue = 0.0;
+        netTotalValues = 0.0;
+        for (Bill b : transferBills) {
+            totalsValue = totalsValue + (b.getTotal());
+            discountsValue = discountsValue + b.getDiscount();
+            netTotalValues = netTotalValues + b.getNetTotal();
+        }
+    }
+    
+    public void fillFromDepartmentUnitIssueByBillStore() {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", BillType.StoreIssue);
+        m.put("fdept", fromDepartment);
+//        m.put("tdept", toDepartment);
+        sql = "select b from Bill b where "
+                + " b.fromDepartment=:fdept and "
+//                + " b.toDepartment=:tdept and "
+                + " b.createdAt "
+                + " between :fd and :td and "
+                + " b.billType=:bt order by b.id";
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        totalsValue = 0.0;
+        discountsValue = 0.0;
+        netTotalValues = 0.0;
+        for (Bill b : transferBills) {
+            totalsValue = totalsValue + (b.getTotal());
+            discountsValue = discountsValue + b.getDiscount();
+            netTotalValues = netTotalValues + b.getNetTotal();
+        }
+    }
+    
+    public void createDepartmentIssueStore() {
+        listz = new ArrayList<>();
+
+        List<Object[]> list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(), getFromDepartment());
+        if (list == null) {
+            return;
+        }
+
+        for (Object[] obj : list) {
+            Department item = (Department) obj[0];
+            Double dbl = (Double) obj[1];
+            //double count = 0;
+
+            String1Value3 newD = new String1Value3();
+            newD.setString(item.getName());
+            newD.setValue1(dbl);
+            newD.setSummery(false);
+            listz.add(newD);
+
+        }
+
+        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
+
+    }
 
     public void fillDepartmentTransfersIssueByBillItem() {
         Map m = new HashMap();
@@ -300,7 +381,7 @@ public class StoreReportsTransfer implements Serializable {
             sql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m);
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -320,22 +401,22 @@ public class StoreReportsTransfer implements Serializable {
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
-            sql = "select b from Bill b where b.department=:fdept"
-                    + " and b.toDepartment=:tdept and b.createdAt between :fd "
+            sql = "select b from Bill b where b.fromDepartment=:fdept"
+                    + " and b.department=:tdept and b.createdAt between :fd "
                     + "and :td and b.billType=:bt order by b.id";
         } else if (fromDepartment == null && toDepartment != null) {
             m.put("tdept", toDepartment);
-            sql = "select b from Bill b where b.toDepartment=:tdept and b.createdAt "
+            sql = "select b from Bill b where b.department=:tdept and b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         } else if (fromDepartment != null && toDepartment == null) {
             m.put("fdept", fromDepartment);
-            sql = "select b from Bill b where b.department=:fdept and b.createdAt "
+            sql = "select b from Bill b where b.fromDepartment=:fdept and b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         } else {
             sql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m);
+        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -523,6 +604,22 @@ public class StoreReportsTransfer implements Serializable {
 
     public void setNetTotalValues(double netTotalValues) {
         this.netTotalValues = netTotalValues;
+    }
+
+    public List<String1Value3> getListz() {
+        return listz;
+    }
+
+    public void setListz(List<String1Value3> listz) {
+        this.listz = listz;
+    }
+
+    public BillBeanController getBillBeanController() {
+        return billBeanController;
+    }
+
+    public void setBillBeanController(BillBeanController billBeanController) {
+        this.billBeanController = billBeanController;
     }
 
 }

@@ -990,7 +990,7 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
-        m.put("bType", BillType.PharmacyIssue);
+        m.put("bType", BillType.StoreIssue);
         m.put("ins", getSessionController().getInstitution());
         m.put("class", PreBill.class);
 
