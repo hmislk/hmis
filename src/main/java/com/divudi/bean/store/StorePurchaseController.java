@@ -340,14 +340,34 @@ public class StorePurchaseController implements Serializable {
 
     private List<BillItem> billItems;
 
+    public void createInventoryItemCode() {
+        if (getCurrentBillItem() == null) {
+            return;
+        }
+        if (getCurrentBillItem().getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        if (getCurrentBillItem().getItem() == null) {
+            return;
+        }
+
+    }
+
     public void createSerialNumber() {
         System.out.println("In");
 
-        String s = getBillNumberController().serialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getSessionController().getLoggedUser().getDepartment(), getCurrentBillItem().getItem());
-        System.out.println("s = " + s);
+        long b = getBillNumberController().inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getSessionController().getLoggedUser().getDepartment(), getCurrentBillItem().getItem());
+        b = b + getBillItems().size() + 1;
 
-        getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(s);
-
+        String code = "";
+        code += getSessionController().getInstitution().getInstitutionCode();
+        code += "/";
+        code += getSessionController().getDepartment().getDepartmentCode();
+        code += "/";
+        if (getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && getCurrentBillItem().getItem().getCategory() != null) {
+            code+= getCurrentBillItem().getItem().getCategory().getCode();
+        }
+        
         System.out.println("Out");
     }
 
@@ -355,9 +375,9 @@ public class StorePurchaseController implements Serializable {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
-        
-        if(getCurrentBillItem().getItem().getCategory() == null){
-            
+
+        if (getCurrentBillItem().getItem().getCategory() == null) {
+
             UtilityController.addErrorMessage("Please Select Category");
             return;
         }
@@ -434,12 +454,12 @@ public class StorePurchaseController implements Serializable {
 
     public void saveBill() {
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.PharmacyPurchaseBill, BillNumberSuffix.PHPUR));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.PharmacyPurchaseBill, BillNumberSuffix.PHPUR));
+        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
 
         getBill().setInstitution(getSessionController().getInstitution());
         getBill().setDepartment(getSessionController().getDepartment());
-
+        getBill().setBillType(BillType.StorePurchase);
         getBill().setCreatedAt(new Date());
         getBill().setCreater(getSessionController().getLoggedUser());
 

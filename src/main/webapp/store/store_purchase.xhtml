@@ -42,7 +42,7 @@
 
                 <h:panelGrid id="itemselectgrid" columns="2" style="min-width: 100%;">
                     <p:focus id="focusItem" for="acItem" ></p:focus>
-                    <p:panelGrid id="itemSelectgrid1" columns="10">                       
+                    <p:panelGrid id="itemSelectgrid1" columns="8">                       
                         <h:outputLabel value="Select Item"/>
                         <h:outputLabel value="Qty"/>
                         <h:outputLabel value="Free"/>
@@ -50,8 +50,6 @@
                         <h:outputLabel value="Sale Price"></h:outputLabel>
                         <h:outputLabel value="DOE(dd mm yy)/Warrenty Date"/>
                         <h:outputLabel value="Bathch No"/>
-                        <h:outputLabel value="Serial Number"/>
-                        <h:outputLabel ></h:outputLabel>
                         <h:outputLabel ></h:outputLabel>
 
                         <p:autoComplete id="acItem"   value="#{storePurchaseController.currentBillItem.item}" 
@@ -92,26 +90,38 @@
                         </p:calendar> 
                         <p:inputText autocomplete="off"  styleClass="numericTxt" 
                                      id="tmp" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />
-                        
-                        <p:inputText autocomplete="off"  styleClass="numericTxt" 
-                                     id="sn" value="#{storePurchaseController.currentBillItem.searialNo}"  />
 
-                        <p:commandButton id="btnSer" value="Create Serial" 
-                                         action="#{storePurchaseController.createSerialNumber()}" 
-                                         process="btnSer" update="sn"/>
-                        
+
                         <p:commandButton id="btnAdd" value="Add Item" 
                                          action="#{storePurchaseController.addItem}" 
                                          process="cmbParent itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
-                        
-                        
-                         
+
+                        <h:outputLabel value="Parent Item"/>
+                        <h:outputLabel value="Make"/>
+                        <h:outputLabel value="Model"/>
+                        <h:outputLabel value="Inventory Code"></h:outputLabel>
+                        <h:outputLabel value=""></h:outputLabel>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel ></h:outputLabel>
+
                         <p:selectOneMenu id="cmbParent" value="#{storePurchaseController.parentBillItem}" converter="temBillItemConverter"  >
                             <f:selectItem itemLabel="Select Parent Item" />
                             <f:selectItems   value="#{storePurchaseController.billItems}" var="bi" itemValue="#{bi}" itemLabel="#{bi.item.name}" />
                             <f:ajax event="change" execute="@this" /> 
                         </p:selectOneMenu>
-                        
+
+                        <p:selectOneMenu id="cmbMake" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.make}" >
+                            <f:selectItem itemLabel="Select a Make" ></f:selectItem>
+                            <f:selectItems value="#{makeController.items}" var="make" itemLabel="#{make.name}" itemValue="#{make}" ></f:selectItems>
+                        </p:selectOneMenu>
+
+                        <p:inputText value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.model}" ></p:inputText>
+
+                        <p:inputText value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.code}" ></p:inputText>
+
+
+
                     </p:panelGrid>
 
                 </h:panelGrid>
@@ -124,12 +134,12 @@
                         <h:outputLabel id="serialNo" value="#{ph.searialNo}" style="width:100%">
                         </h:outputLabel>
                     </p:column>  
-                    
+
                     <p:column headerText="Item Name" style="width:30%">  
                         <h:outputLabel id="item" value="#{ph.item.name} - #{ph.item.code}" style="width:100%">
                         </h:outputLabel>
                     </p:column>  
-                    
+
                     <p:column headerText="Parent Item Name" style="width:30%">  
 
                         <h:outputLabel id="parentitem" value="#{ph.parentBillItem.item.name} - #{ph.parentBillItem.item.code}" style="width:100%">
@@ -186,36 +196,36 @@
                 <p:panel header="Bill Expenses" >
                     <p:focus id="focusExpense" for="acExpense" ></p:focus>
                     <h:panelGrid id="billExpenseGrid" columns="4" style="min-width: 100%;">
-                            <h:outputLabel value="Select Expense"/>
-                            <h:outputLabel value="Value"/>
-                            <h:outputLabel value="Descreption"/>
-                            <h:outputLabel ></h:outputLabel>
-                            <p:autoComplete id="acExpense"   value="#{storePurchaseController.currentExpense.item}" 
-                                            forceSelection="true"
-                                            completeMethod="#{itemController.completeExpenseItem}" 
-                                            var="ex" itemLabel="#{ex.name}" itemValue="#{ex}" >
-                            </p:autoComplete>
-                            <p:inputText autocomplete="off" id="txtExpense"
-                                         styleClass="numericTxt" 
-                                         value="#{storePurchaseController.currentExpense.rate}" style="width:100%" />  
-                            <p:inputText maxlength="250" value="#{storePurchaseController.currentExpense.descreption}" ></p:inputText>
-                            <p:commandButton id="btnAddExpense" value="Add Expense" 
-                                             action="#{storePurchaseController.addExpense()}" 
-                                             process="billExpenseGrid" 
-                                             update="tblExpenses billExpenseGrid tot focusExpense :#{p:component('net')} :#{p:component('lblBillExpenses')}"/>
+                        <h:outputLabel value="Select Expense"/>
+                        <h:outputLabel value="Value"/>
+                        <h:outputLabel value="Descreption"/>
+                        <h:outputLabel ></h:outputLabel>
+                        <p:autoComplete id="acExpense"   value="#{storePurchaseController.currentExpense.item}" 
+                                        forceSelection="true"
+                                        completeMethod="#{itemController.completeExpenseItem}" 
+                                        var="ex" itemLabel="#{ex.name}" itemValue="#{ex}" >
+                        </p:autoComplete>
+                        <p:inputText autocomplete="off" id="txtExpense"
+                                     styleClass="numericTxt" 
+                                     value="#{storePurchaseController.currentExpense.rate}" style="width:100%" />  
+                        <p:inputText maxlength="250" value="#{storePurchaseController.currentExpense.descreption}" ></p:inputText>
+                        <p:commandButton id="btnAddExpense" value="Add Expense" 
+                                         action="#{storePurchaseController.addExpense()}" 
+                                         process="billExpenseGrid" 
+                                         update="tblExpenses billExpenseGrid tot focusExpense :#{p:component('net')} :#{p:component('lblBillExpenses')}"/>
                     </h:panelGrid>
                     <p:dataTable id="tblExpenses" value="#{storePurchaseController.billExpenses}" var="be"
                                  emptyMessage="No Bill Expenses" >
                         <p:column headerText="Expense" >
                             <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
                         </p:column>
-                         <p:column headerText="Value" >
-                             <h:outputLabel value="#{be.netValue}" >
-                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                             </h:outputLabel>
+                        <p:column headerText="Value" >
+                            <h:outputLabel value="#{be.netValue}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
                         </p:column>
-                         <p:column headerText="Descreption" >
-                             <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                        <p:column headerText="Descreption" >
+                            <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
                         </p:column>
                     </p:dataTable>
                 </p:panel>
@@ -228,9 +238,9 @@
                         <p:inputText autocomplete="off" id="tx" value="#{storePurchaseController.bill.tax}" > 
                             <p:ajax process="gro tx dis" update="net" event="keyup"/>
                         </p:inputText>
-                         <p:outputLabel value="Expenses"/>
+                        <p:outputLabel value="Expenses"/>
                         <p:outputLabel id="lblBillExpenses" 
-                                     value="#{storePurchaseController.bill.expenseTotal}" > 
+                                       value="#{storePurchaseController.bill.expenseTotal}" > 
                         </p:outputLabel>
                         <p:outputLabel value="Discount"/>
                         <p:inputText autocomplete="off" id="dis" value="#{storePurchaseController.bill.discount}" >

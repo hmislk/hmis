@@ -10,9 +10,9 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Bills" >
+                    <p:panel header="Search Issue Bills" >
                         <f:facet name="header" >                          
-                            <h:outputLabel value="PHARMACY BILL SEARCH SALE BILL  "/>                         
+                            <h:outputLabel value="PHARMACY ISSUE BILL SEARCH"/>                         
                             <h:panelGrid columns="5" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
@@ -20,12 +20,12 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyTable}"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.listStoreIssue()}"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Patient Name"/>    
-                                <h:outputLabel value="Department Name"/>   
+                                <h:outputLabel value="From Department Name"/>   
                                 <h:outputLabel value="Total"/>
                                 <h:outputLabel value="Net Total"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
@@ -46,30 +46,28 @@
                             </p:column>
 
                             <p:column headerText="View">
-                                <p:commandButton ajax="false" value="View Bill" disabled="#{bill.referenceBill eq null}"
-                                                 action="pharmacy_reprint_bill_sale">
-                                    <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
+                                <p:commandButton ajax="false" value="View Bill"
+                                                 action="/pharmacy/pharmacy_reprint_bill_unit_issue">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>   
                                 </p:commandButton>
-                            </p:column>
-
-                            <p:column headerText="Paid/Not">
-                                <h:outputLabel value="PAID" rendered="#{bill.referenceBill ne null}" style="color: green;"/>
-                                <h:outputLabel value="NOT PAID" rendered="#{bill.referenceBill eq null}" style="color: red;"/>
                             </p:column>
 
                             <p:column headerText="Bill No" >                                
                                 <h:outputLabel  value="#{bill.deptId}"  />
                             </p:column>
 
-                            <p:column headerText="Department"  >                                
+                            <p:column headerText="From Department"  >                                
                                 <h:outputLabel value="#{bill.department.name}" />                                    
                             </p:column>   
+                            
+                             <p:column headerText="To Department"  >                                
+                                <h:outputLabel value="#{bill.toDepartment.name}" />                                    
+                            </p:column>   
 
-                            <p:column headerText="Pre Bill at"  >
+                            <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
                                     <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                                 </h:outputLabel>
-
                                 <br/>                                
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Return at " />
@@ -154,9 +152,6 @@
 
                             <p:column headerText="Client" >
                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />
-                                <h:outputLabel value="#{bill.toStaff.person.nameWithTitle}" />
-                                <h:outputLabel value="#{bill.toDepartment.name}" />
-                                <h:outputLabel value="#{bill.toInstitution.name}" />
                             </p:column>
 
                             <p:column headerText="Paymentmethod"   >
