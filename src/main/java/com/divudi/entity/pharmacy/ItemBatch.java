@@ -4,6 +4,7 @@
  */
 package com.divudi.entity.pharmacy;
 
+import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import java.io.Serializable;
 import java.util.Date;
@@ -36,6 +37,26 @@ public class ItemBatch implements Serializable {
     double purcahseRate;
     double retailsaleRate;
     double wholesaleRate;
+    Category make;
+    String modal;
+
+    public Category getMake() {
+        return make;
+    }
+
+    public void setMake(Category make) {
+        this.make = make;
+    }
+
+    public String getModal() {
+        return modal;
+    }
+
+    public void setModal(String modal) {
+        this.modal = modal;
+    }
+    
+    
 
     public double getPurcahseRate() {
         return purcahseRate;

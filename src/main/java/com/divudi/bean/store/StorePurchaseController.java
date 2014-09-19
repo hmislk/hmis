@@ -315,7 +315,9 @@ public class StorePurchaseController implements Serializable {
 
             tmpPh.setItemBatch(itemBatch);
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
-
+            
+            
+            
             tmpPh.setStock(stock);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
 
@@ -372,11 +374,11 @@ public class StorePurchaseController implements Serializable {
             code += getCurrentBillItem().getItem().getCategory().getCode();
             code += "/";
         }
-        if (getCurrentBillItem() != null && getCurrentBillItem().getItem() != null ) {
+        if (getCurrentBillItem() != null && getCurrentBillItem().getItem() != null) {
             code += getCurrentBillItem().getItem().getCode();
             code += "/";
         }
-        code+=b;
+        code += b;
         System.out.println("code = " + code);
         getCurrentBillItem().getPharmaceuticalBillItem().setCode(code);
     }
@@ -387,12 +389,11 @@ public class StorePurchaseController implements Serializable {
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-
             UtilityController.addErrorMessage("Please Select Category");
             return;
         }
 
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0 && getParentBillItem() == null) {
             UtilityController.addErrorMessage("Please enter Purchase Rate");
             return;
         }
@@ -517,9 +518,11 @@ public class StorePurchaseController implements Serializable {
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             serialNo++;
             p.setSearialNo(serialNo);
-            double netValue = p.getQty() * p.getRate();
-            p.setNetValue(0 - netValue);
-            tot += p.getNetValue();
+            if (p.getParentBillItem() != null) {
+                double netValue = p.getQty() * p.getRate();
+                p.setNetValue(0 - netValue);
+                tot += p.getNetValue();
+            }
         }
 
         for (BillItem e : getBillExpenses()) {
@@ -537,7 +540,7 @@ public class StorePurchaseController implements Serializable {
     public BilledBill getBill() {
         if (bill == null) {
             bill = new BilledBill();
-            bill.setBillType(BillType.PharmacyPurchaseBill);
+            bill.setBillType(BillType.StorePurchase);
         }
         return bill;
     }
