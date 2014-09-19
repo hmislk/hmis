@@ -514,6 +514,8 @@ public class PharmacyCalculation implements Serializable{
         //System.err.println("ItemBatc Id " + itemBatch.getId());
         return itemBatch;
     }
+    
+    
 
     public List<Item> findItem(Amp tmp, List<Item> items) {
 
