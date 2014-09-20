@@ -6,7 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:bil="http://java.sun.com/jsf/composite/bill"
-      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
+      xmlns:st="http://java.sun.com/jsf/composite/store"
       xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
 
     <body>
@@ -306,13 +306,13 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Issue"
                                              onclick="onSubmitButton();"
-                                             ajax="false" action="/pharmacy/pharmacy_issue" 
+                                             ajax="false" action="store_issue" 
                                              actionListener="#{storeIssueController.resetAll()}" ></p:commandButton>
 
                         </div>
                         <div >
                             <h:panelGroup   id="gpBillPreview"   > 
-                                <phi:issue bill="#{storeIssueController.printBill}"></phi:issue>
+                                <st:issue bill="#{storeIssueController.printBill}"></st:issue>
                             </h:panelGroup>
                         </div>
 

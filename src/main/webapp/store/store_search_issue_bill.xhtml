@@ -47,8 +47,8 @@
 
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill"
-                                                 action="/pharmacy/pharmacy_reprint_bill_unit_issue">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>   
+                                                 action="store_reprint_bill_unit_issue">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>   
                                 </p:commandButton>
                             </p:column>
 

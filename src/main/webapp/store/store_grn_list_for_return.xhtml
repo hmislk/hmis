@@ -20,8 +20,8 @@
                         <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
                         <h:panelGroup>
-                            <p:commandButton id="btnSearch" ajax="false" value="Logged Institution Search" action="#{searchController.createGrnTable}"/>
-                            <p:commandButton id="btnSearch2" ajax="false" value="All Search" action="#{searchController.createGrnTableAllIns()}"/>
+                            <p:commandButton id="btnSearch" ajax="false" value="Logged Institution Search" action="#{searchController.createGrnTableStore()}"/>
+                            <p:commandButton id="btnSearch2" ajax="false" value="All Search" action="#{searchController.createGrnTableAllInsStore}"/>
                         </h:panelGroup>
                         <h:outputLabel/>
                         <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>

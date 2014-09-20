@@ -1376,7 +1376,32 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getReturnBill(b));
+            b.setListOfBill(getReturnBill(b,BillType.PharmacyGrnReturn));
+        }
+
+    }
+    
+    public void createGrnTableStore() {
+        bills = null;
+        String sql;
+        HashMap tmp = new HashMap();
+
+        sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
+                + " and b.institution=:ins and"
+                + " b.createdAt between :fromDate and :toDate ";
+
+        sql += keysForGrnReturn(tmp);
+
+        sql += " order by b.createdAt desc  ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("ins", getSessionController().getInstitution());
+        tmp.put("bTp", BillType.StoreGrnBill);
+        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getReturnBill(b,BillType.StoreGrnReturn));
         }
 
     }
@@ -1400,18 +1425,42 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getReturnBill(b));
+            b.setListOfBill(getReturnBill(b,BillType.PharmacyGrnReturn));
+        }
+
+    }
+    
+    public void createGrnTableAllInsStore() {
+        bills = null;
+        String sql;
+        HashMap tmp = new HashMap();
+
+        sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        sql += keysForGrnReturn(tmp);
+
+        sql += " order by b.createdAt desc  ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        // tmp.put("ins", getSessionController().getInstitution());
+        tmp.put("bTp", BillType.StoreGrnBill);
+        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getReturnBill(b,BillType.StoreGrnReturn));
         }
 
     }
 
-    private List<Bill> getReturnBill(Bill b) {
+    private List<Bill> getReturnBill(Bill b,BillType bt) {
         String sql = "Select b From BilledBill b where b.retired=false and b.creater is not null"
                 + " and  b.billType=:btp and "
                 + " b.referenceBill=:ref";
         HashMap hm = new HashMap();
         hm.put("ref", b);
-        hm.put("btp", BillType.PharmacyGrnReturn);
+        hm.put("btp", bt);
         return getBillFacade().findBySQL(sql, hm);
     }
 
