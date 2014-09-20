@@ -76,6 +76,9 @@ public class StaffShift implements Serializable {
     StaffShift previousStaffShift;
     @ManyToOne
     StaffShift nextStaffShift;
+    @ManyToOne
+    StaffShift referenceStaffShift;
+    
 
     double earlyInLogged;
     double earlyOutLogged;
@@ -249,7 +252,7 @@ public class StaffShift implements Serializable {
 
     }
 
-    public void calOverTime() {
+    private void calOverTime() {
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
         Long inSecond = 0l;
