@@ -123,11 +123,11 @@ public class AssetCategoryController implements Serializable {
     }
 
     public List<AssetCategory> getItemsAvailableSelectMany() {
-        return getFacade().findAll();
+        return getFacade().findAll(true);
     }
 
     public List<AssetCategory> getItemsAvailableSelectOne() {
-        return getFacade().findAll();
+        return getFacade().findAll(true);
     }
 
     public SessionController getSessionController() {
