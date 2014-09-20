@@ -77,7 +77,7 @@ public class StoreGoodsReturnController implements Serializable {
     public Bill getReturnBill() {
         if (returnBill == null) {
             returnBill = new BilledBill();
-            returnBill.setBillType(BillType.PharmacyGrnReturn);
+            returnBill.setBillType(BillType.StoreGrnReturn);
 
         }
 
@@ -124,8 +124,8 @@ public class StoreGoodsReturnController implements Serializable {
         getReturnBill().setToInstitution(getBill().getFromInstitution());
         getReturnBill().setToDepartment(getBill().getFromDepartment());
         getReturnBill().setFromInstitution(getBill().getToInstitution());
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReturnBill(), BillType.PharmacyGrnReturn, BillNumberSuffix.GRNRET));
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReturnBill(), BillType.PharmacyGrnReturn, BillNumberSuffix.GRNRET));
+        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReturnBill(), BillType.StoreGrnReturn, BillNumberSuffix.GRNRET));
+        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReturnBill(), BillType.StoreGrnReturn, BillNumberSuffix.GRNRET));
 
         getReturnBill().setInstitution(getSessionController().getInstitution());
         getReturnBill().setDepartment(getSessionController().getDepartment());
@@ -247,8 +247,8 @@ public class StoreGoodsReturnController implements Serializable {
             retPh.copy(grnPh);
             retPh.setBillItem(bi);
 
-            double rBilled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-            double rCacnelled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
+            double rBilled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
+            double rCacnelled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
 
             double netQty = Math.abs(rBilled) - Math.abs(rCacnelled);
 

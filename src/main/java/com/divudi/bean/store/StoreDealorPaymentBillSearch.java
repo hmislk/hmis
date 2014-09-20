@@ -448,9 +448,9 @@ public class StoreDealorPaymentBillSearch implements Serializable {
     public List<Bill> getRequests() {
         if (bills == null) {
             if (txtSearch == null || txtSearch.trim().equals("")) {
-                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
+                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.StoreTransferRequest);
             } else {
-                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
+                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.StoreTransferRequest);
             }
             if (bills == null) {
                 bills = new ArrayList<Bill>();

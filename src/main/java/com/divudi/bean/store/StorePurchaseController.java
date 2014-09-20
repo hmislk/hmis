@@ -124,8 +124,8 @@ public class StorePurchaseController implements Serializable {
 
         m.put("fd", frmDate);
         m.put("td", toDate);
-        m.put("bt1", BillType.PharmacyGrnBill);
-        m.put("bt2", BillType.PharmacyPurchaseBill);
+        m.put("bt1", BillType.StoreGrnBill);
+        m.put("bt2", BillType.StorePurchase);
 
         billExpenses = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 

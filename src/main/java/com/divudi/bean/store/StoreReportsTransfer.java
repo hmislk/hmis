@@ -96,8 +96,8 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         Map m = new HashMap();
         m.put("i", institution);
-        m.put("t1", BillType.PharmacyTransferIssue);
-        m.put("t2", BillType.PharmacyPre);
+        m.put("t1", BillType.StoreTransferIssue);
+        m.put("t2", BillType.StorePre);
         m.put("fd", fromDate);
         m.put("td", toDate);
         BillItem bi = new BillItem();
@@ -129,8 +129,8 @@ public class StoreReportsTransfer implements Serializable {
         Map m = new HashMap();
 //        m.put("r", StockReportRecord.class);
         m.put("d", department);
-        m.put("t1", BillType.PharmacyTransferIssue);
-        m.put("t2", BillType.PharmacyPre);
+        m.put("t1", BillType.StoreTransferIssue);
+        m.put("t2", BillType.StorePre);
         m.put("fd", fromDate);
         m.put("td", toDate);
         BillItem bi = new BillItem();
@@ -174,8 +174,8 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         Map m = new HashMap();
         m.put("d", department);
-        m.put("t1", BillType.PharmacyTransferIssue);
-        m.put("t2", BillType.PharmacyPre);
+        m.put("t1", BillType.StoreTransferIssue);
+        m.put("t2", BillType.StorePre);
         m.put("fd", fromDate);
         m.put("td", toDate);
         BillItem bi = new BillItem();
