@@ -236,7 +236,7 @@ public class StoreItemExcelManager implements Serializable {
                 + " and b.billType = :billType ";
 
         temMap.put("class", BilledBill.class);
-        temMap.put("billType", BillType.PharmacyGrnBill);
+        temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
         List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
 
@@ -252,7 +252,7 @@ public class StoreItemExcelManager implements Serializable {
                 + " and b.billType = :billType ";
 
         temMap.put("class", CancelledBill.class);
-        temMap.put("billType", BillType.PharmacyGrnBill);
+        temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
         bills = getBillFacade().findBySQL(sql, temMap);
 
@@ -377,12 +377,12 @@ public class StoreItemExcelManager implements Serializable {
                 + " and b.billType = :billType ";
 
         temMap.put("class", BilledBill.class);
-        temMap.put("billType", BillType.PharmacyGrnBill);
+        temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
         List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
         int index = 1;
         for (Bill b : bills) {
-            if (b.getReferenceBill().getBillType() == BillType.PharmacyOrder) {
+            if (b.getReferenceBill().getBillType() == BillType.StoreOrder) {
                 System.err.println("No " + index++);
                 Bill refApproved = b.getReferenceBill().getReferenceBill();
                 System.err.println("Grn No" + b.getDeptId());
@@ -548,8 +548,8 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Bill b where b.billType = :billType or b.billType = :billType2  ";
 
-        temMap.put("billType", BillType.PharmacyTransferIssue);
-        temMap.put("billType2", BillType.PharmacyTransferReceive);
+        temMap.put("billType", BillType.StoreTransferIssue);
+        temMap.put("billType2", BillType.StoreTransferReceive);
         //temMap.put("dep", getSessionController().getDepartment());
         List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
 
@@ -595,8 +595,8 @@ public class StoreItemExcelManager implements Serializable {
         hm.put("itmB", itemBatch);
         hm.put("dt", date);
         hm.put("dep", department);
-        hm.put("btp1", BillType.PharmacyGrnBill);
-        hm.put("btp2", BillType.PharmacyPurchaseBill);
+        hm.put("btp1", BillType.StoreGrnBill);
+        hm.put("btp2", BillType.StorePurchase);
         return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
@@ -607,8 +607,8 @@ public class StoreItemExcelManager implements Serializable {
         sql = "select p from PharmaceuticalBillItem p where p.billItem.bill.billType = :billType or "
                 + " p.billItem.bill.billType = :billType2 and p.stockHistory is not null order by p.stockHistory.id ";
 
-        temMap.put("billType", BillType.PharmacyTransferIssue);
-        temMap.put("billType2", BillType.PharmacyTransferReceive);
+        temMap.put("billType", BillType.StoreTransferIssue);
+        temMap.put("billType2", BillType.StoreTransferReceive);
         List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findBySQL(sql, temMap);
 
         for (PharmaceuticalBillItem b : list) {

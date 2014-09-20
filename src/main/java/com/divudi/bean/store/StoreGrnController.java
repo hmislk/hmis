@@ -257,8 +257,8 @@ public class StoreGrnController implements Serializable {
             getGrnBill().getBillExpenses().add(i);
         }
 
-        getGrnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
-        getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
+        getGrnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getGrnBill(), BillType.StoreGrnBill, BillNumberSuffix.GRN));
+        getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.StoreGrnBill, BillNumberSuffix.GRN));
 
         getGrnBill().setToInstitution(getApproveBill().getFromInstitution());
         getGrnBill().setToDepartment(getApproveBill().getFromDepartment());
@@ -551,7 +551,7 @@ public class StoreGrnController implements Serializable {
     public Bill getGrnBill() {
         if (grnBill == null) {
             grnBill = new BilledBill();
-            grnBill.setBillType(BillType.PharmacyGrnBill);
+            grnBill.setBillType(BillType.StoreGrnBill);
         }
         return grnBill;
     }

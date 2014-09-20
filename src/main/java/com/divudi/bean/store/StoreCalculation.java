@@ -265,10 +265,10 @@ public class StoreCalculation {
 
     public double calQty(PharmaceuticalBillItem po) {
 
-        double billed = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
-        double cancelled = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());;
-        double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-        double returnedC = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
+        double billed = getTotalQty(po.getBillItem(), BillType.StoreGrnBill, new BilledBill());
+        double cancelled = getTotalQty(po.getBillItem(), BillType.StoreGrnBill, new CancelledBill());;
+        double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
+        double returnedC = getReturnedTotalQty(po.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
 
         double recieveNet = Math.abs(billed) - Math.abs(cancelled);
         double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
@@ -285,8 +285,8 @@ public class StoreCalculation {
 
     public double calQtyInTwoSql(PharmaceuticalBillItem po) {
 
-        double grns = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill);
-        double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn);
+        double grns = getTotalQty(po.getBillItem(), BillType.StoreGrnBill);
+        double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.StoreGrnReturn);
 
         double netQty = grns - grnReturn;
 
@@ -299,7 +299,7 @@ public class StoreCalculation {
 
     public double calQty2(BillItem bil) {
 
-        double returnBill = getTotalQty(bil, BillType.PharmacySale, new RefundBill());
+        double returnBill = getTotalQty(bil, BillType.StoreSale, new RefundBill());
 
         //System.err.println("RETURN " + returnBill);
         return bil.getQty() - returnBill;
@@ -307,7 +307,7 @@ public class StoreCalculation {
 
     public double calQty3(BillItem bil) {
 
-        double returnBill = getTotalQty(bil, BillType.PharmacyPre, new RefundBill());
+        double returnBill = getTotalQty(bil, BillType.StorePre, new RefundBill());
 
         //System.err.println("RETURN " + returnBill);
         return bil.getQty() - returnBill;
