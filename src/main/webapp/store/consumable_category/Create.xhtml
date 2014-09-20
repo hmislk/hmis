@@ -20,13 +20,13 @@
                                            var="parentCategoryItem"
                                            itemValue="#{parentCategoryItem}"/>
                         </p:selectOneMenu>
-                        <p:outputLabel value="#{bundle.CreateConsumableCategoryLabel_code}" for="code" />
+                        <p:outputLabel value="Code" for="code" />
                         <p:inputText id="code" value="#{consumableCategoryController.selected.code}" title="#{bundle.CreateConsumableCategoryTitle_code}" />
-                        <p:outputLabel value="#{bundle.CreateConsumableCategoryLabel_id}" for="id" />
+                        <p:outputLabel value="ID" for="id" />
                         <p:inputText id="id" value="#{consumableCategoryController.selected.id}" title="#{bundle.CreateConsumableCategoryTitle_id}" />
                     </p:panelGrid>
-                    <p:commandButton actionListener="#{consumableCategoryController.create}" value="#{bundle.Save}" update="display,:ConsumableCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args,'ConsumableCategoryCreateDialog');"/>
-                    <p:commandButton value="#{bundle.Cancel}" onclick="ConsumableCategoryCreateDialog.hide()"/>
+                    <p:commandButton actionListener="#{consumableCategoryController.create}" value="Save" update="display,:ConsumableCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args,'ConsumableCategoryCreateDialog');"/>
+                    <p:commandButton value="Cancel" onclick="ConsumableCategoryCreateDialog.hide()"/>
                 </h:panelGroup>
             </h:form>
         </p:dialog>
