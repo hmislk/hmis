@@ -81,7 +81,7 @@ public class AssetCategoryController implements Serializable {
 
     public List<AssetCategory> getItems() {
         if (items == null) {
-            items = getFacade().findAll();
+            items = getFacade().findAll(true);
         }
         return items;
     }
@@ -123,11 +123,11 @@ public class AssetCategoryController implements Serializable {
     }
 
     public List<AssetCategory> getItemsAvailableSelectMany() {
-        return getFacade().findAll();
+        return getFacade().findAll(true);
     }
 
     public List<AssetCategory> getItemsAvailableSelectOne() {
-        return getFacade().findAll();
+        return getFacade().findAll(true);
     }
 
     public SessionController getSessionController() {

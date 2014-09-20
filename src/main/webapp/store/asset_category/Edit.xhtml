@@ -8,26 +8,27 @@
 
     <ui:composition>
 
-        <p:dialog id="AssetCategoryEditDlg" widgetVar="AssetCategoryEditDialog" modal="true" resizable="false" appendTo="@(body)" header="Edit Asset Category">
+        <p:dialog id="AssetCategoryEditDlg" widgetVar="AssetCategoryEditDialog" 
+                  modal="true" resizable="false" appendTo="@(body)" header="Edit Asset Category">
             <h:form id="AssetCategoryEditForm">
                 <h:panelGroup id="display">
                     <p:panelGrid columns="2" rendered="#{assetCategoryController.selected != null}">
-                        <p:outputLabel value="#{bundle.EditAssetCategoryLabel_name}" for="name" />
-                        <p:inputText id="name" value="#{assetCategoryController.selected.name}" title="#{bundle.EditAssetCategoryTitle_name}" />
-                        <p:outputLabel value="#{bundle.EditAssetCategoryLabel_parentCategory}" for="parentCategory" />
+                        <p:outputLabel value="Name" for="name" />
+                        <p:inputText id="name" value="#{assetCategoryController.selected.name}" 
+                                     title="Name" />
+                        <p:outputLabel value="Parant Category" for="parentCategory" />
                         <p:selectOneMenu id="parentCategory" value="#{assetCategoryController.selected.parentCategory}" >
-                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
-                            <f:selectItems value="#{categoryController.itemsAvailableSelectOne}"
+                            <f:selectItem itemLabel="Select a parent category"/>
+                            <f:selectItems value="#{assetCategoryController.itemsAvailableSelectOne}"
                                            var="parentCategoryItem"
                                            itemValue="#{parentCategoryItem}"/>
                         </p:selectOneMenu>
-                        <p:outputLabel value="#{bundle.EditAssetCategoryLabel_code}" for="code" />
-                        <p:inputText id="code" value="#{assetCategoryController.selected.code}" title="#{bundle.EditAssetCategoryTitle_code}" />
-                        <p:outputLabel value="#{bundle.EditAssetCategoryLabel_id}" for="id" />
-                        <p:inputText id="id" value="#{assetCategoryController.selected.id}" title="#{bundle.EditAssetCategoryTitle_id}" />
+                        <p:outputLabel value="Code" for="code" />
+                        <p:inputText id="code" value="#{assetCategoryController.selected.code}" 
+                                     title="Code" />
                     </p:panelGrid>
-                    <p:commandButton actionListener="#{assetCategoryController.update}" value="#{bundle.Save}" update="display,:AssetCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args, 'AssetCategoryEditDialog');"/>
-                    <p:commandButton value="#{bundle.Cancel}" onclick="AssetCategoryEditDialog.hide()"/>
+                    <p:commandButton actionListener="#{assetCategoryController.update}" value="Save" update="display,:AssetCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args, 'AssetCategoryEditDialog');"/>
+                    <p:commandButton value="Cancel" onclick="AssetCategoryEditDialog.hide()"/>
                 </h:panelGroup>
             </h:form>
         </p:dialog>

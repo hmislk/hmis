@@ -93,7 +93,15 @@ public abstract class AbstractFacade<T> {
     }
 
     public List<T> findAll(boolean withoutRetired) {
-        return findAll(null, null, withoutRetired);
+        javax.persistence.criteria.CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        javax.persistence.criteria.CriteriaQuery<T> cq = cb.createQuery(entityClass);
+        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
+        ParameterExpression<String> p = cb.parameter(String.class);
+        Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), false);
+        if (withoutRetired) {
+            cq.where(predicateRetired);
+        }
+        return getEntityManager().createQuery(cq).getResultList();
     }
 
     public List<T> findAll() {
