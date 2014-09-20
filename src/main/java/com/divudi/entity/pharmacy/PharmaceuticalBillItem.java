@@ -5,6 +5,7 @@
 package com.divudi.entity.pharmacy;
 
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Category;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -50,6 +51,32 @@ public class PharmaceuticalBillItem implements Serializable {
     @ManyToOne
     private Stock staffStock;
 
+    @ManyToOne
+    Category make;
+    String model;
+    String code;
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    
+    
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+    
+    
+    
+    
     public void copy(PharmaceuticalBillItem ph) {
         qty = ph.qty;
         freeQty = ph.freeQty;
@@ -314,4 +341,13 @@ public class PharmaceuticalBillItem implements Serializable {
         this.staffStock = staffStock;
     }
 
+    public Category getMake() {
+        return make;
+    }
+
+    public void setMake(Category make) {
+        this.make = make;
+    }
+
+    
 }

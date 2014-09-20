@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="AssetCategoryViewDlg" widgetVar="AssetCategoryViewDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.ViewAssetCategoryTitle}">
+            <h:form id="AssetCategoryViewForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{assetCategoryController.selected != null}">
+                        <h:outputText value="#{bundle.ViewAssetCategoryLabel_name}"/>
+                        <h:outputText value="#{assetCategoryController.selected.name}" title="#{bundle.ViewAssetCategoryTitle_name}"/>
+                        <h:outputText value="#{bundle.ViewAssetCategoryLabel_parentCategory}"/>
+                        <h:outputText value="#{assetCategoryController.selected.parentCategory}" title="#{bundle.ViewAssetCategoryTitle_parentCategory}"/>
+                        <h:outputText value="#{bundle.ViewAssetCategoryLabel_code}"/>
+                        <h:outputText value="#{assetCategoryController.selected.code}" title="#{bundle.ViewAssetCategoryTitle_code}"/>
+                        <h:outputText value="#{bundle.ViewAssetCategoryLabel_id}"/>
+                        <h:outputText value="#{assetCategoryController.selected.id}" title="#{bundle.ViewAssetCategoryTitle_id}"/>
+                    </p:panelGrid>
+                    <p:commandButton value="#{bundle.Close}" onclick="AssetCategoryViewDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

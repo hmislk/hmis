@@ -87,7 +87,9 @@ public enum BillType {
     CashOut,
     @Deprecated
     ChannelCredit,
-    ClinicalOpdBooking;
+    ClinicalOpdBooking,
+    StorePurchase,
+    StoreGrnBill;
 
     public String getLabel() {
         switch (this) {
