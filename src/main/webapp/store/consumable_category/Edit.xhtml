@@ -17,7 +17,7 @@
                         <p:outputLabel value="#{bundle.EditConsumableCategoryLabel_parentCategory}" for="parentCategory" />
                         <p:selectOneMenu id="parentCategory" value="#{consumableCategoryController.selected.parentCategory}" >
                             <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
-                            <f:selectItems value="#{categoryController.itemsAvailableSelectOne}"
+                            <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}"
                                            var="parentCategoryItem"
                                            itemValue="#{parentCategoryItem}"/>
                         </p:selectOneMenu>
