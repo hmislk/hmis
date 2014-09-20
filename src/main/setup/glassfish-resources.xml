@@ -6,9 +6,11 @@
         <property name="portNumber" value="3306"/>
         <property name="databaseName" value="ruhunu"/>
         <property name="User" value="root"/>
-        <property name="Password" value=""/>
+        <property name="Password" value="pdhs123@"/>
         <property name="URL" value="jdbc:mysql://localhost:3306/ruhunu?zeroDateTimeBehavior=convertToNull"/>
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
     </jdbc-connection-pool>
-    <jdbc-resource enabled="true" jndi-name="aan" object-type="user" pool-name="mysql_ruhunu_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="dsR6" object-type="user" pool-name="mysql_ruhunu_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="dsR7" object-type="user" pool-name="mysql_ruhunu_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="sdR9" object-type="user" pool-name="mysql_ruhunu_rootPool"/>
 </resources>

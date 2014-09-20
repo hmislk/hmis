@@ -149,17 +149,21 @@ public class StorePurchaseOrderRequestController implements Serializable {
         getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
-        getBillFacade().create(getCurrentBill());
+        if (getCurrentBill().getId() == null) {
+            getBillFacade().create(getCurrentBill());
+        } else {
+            billFacade.edit(getCurrentBill());
+        }
 
     }
 
     public void generateBillComponent() {
-       // int serialNo = 0;
+        // int serialNo = 0;
         setBillItems(new ArrayList<BillItem>());
         for (Item i : storeCalculation.getItemsForDealor(getCurrentBill().getToInstitution())) {
             BillItem bi = new BillItem();
             bi.setItem(i);
-       
+
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);
             tmp.setQty(getPharmacyBean().getOrderingQty(bi.getItem(), getSessionController().getDepartment()));
@@ -187,10 +191,18 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
             PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
             b.setPharmaceuticalBillItem(null);
-            getBillItemFacade().create(b);
+
+            if (b.getId() == null) {
+                getBillItemFacade().create(b);
+            } else {
+                billItemFacade.edit(b);
+            }
 
             tmpPh.setBillItem(b);
-            getPharmaceuticalBillItemFacade().create(tmpPh);
+
+            if (tmpPh.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(tmpPh);
+            }
 
             b.setPharmaceuticalBillItem(tmpPh);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
@@ -217,6 +229,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
 //            UtilityController.addErrorMessage("Please enter purchase price for all");
 //            return;
 //        }
+
+        calTotal();
 
         saveBill();
         saveBillComponent();
@@ -285,7 +299,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     public Bill getCurrentBill() {
         if (currentBill == null) {
             currentBill = new BilledBill();
-            currentBill.setBillType(BillType.StoreOrder);           
+            currentBill.setBillType(BillType.StoreOrder);
         }
         return currentBill;
     }
@@ -366,7 +380,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public List<BillItem> getBillItems() {
         if (billItems == null) {
-            billItems = new ArrayList<>();       
+            billItems = new ArrayList<>();
         }
         return billItems;
     }
@@ -375,5 +389,4 @@ public class StorePurchaseOrderRequestController implements Serializable {
         this.billItems = billItems;
     }
 
-  
 }

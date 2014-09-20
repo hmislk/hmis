@@ -6,16 +6,16 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
-    <ui:composition template="/template.xhtml">
+    <ui:composition template="/resources/template/template.xhtml">
 
 
-        <ui:define name="title">
-            <h:outputText value="#{bundle.ListConsumableCategoryTitle}"></h:outputText>
-        </ui:define>
-
-        <ui:define name="body">
+        
+        <ui:define name="content">
+            <h:outputStylesheet library="css" name="jsfcrud.css"/>
+            <p:growl id="growl" autoUpdate="false" ></p:growl>
             <h:form id="ConsumableCategoryListForm">
-                <p:panel header="#{bundle.ListConsumableCategoryTitle}">
+                
+                <p:panel header="Manage Comsumable Categories">
                     <p:dataTable id="datalist" value="#{consumableCategoryController.items}" var="item"
                                  selectionMode="single" selection="#{consumableCategoryController.selected}"
                                  paginator="true"
