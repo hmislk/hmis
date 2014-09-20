@@ -18,7 +18,7 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 public class ConsumableCategoryFacade extends AbstractFacade<ConsumableCategory> {
-    @PersistenceContext(unitName = "pu")
+    @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
     @Override
