@@ -81,7 +81,7 @@ public class AssetCategoryController implements Serializable {
 
     public List<AssetCategory> getItems() {
         if (items == null) {
-            items = getFacade().findAll();
+            items = getFacade().findAll(true);
         }
         return items;
     }

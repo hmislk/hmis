@@ -145,8 +145,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void saveBill() {
 
-        getCurrentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrentBill(), BillType.PharmacyOrder, BillNumberSuffix.POR));
-        getCurrentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrentBill(), BillType.PharmacyOrder, BillNumberSuffix.POR));
+        getCurrentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrentBill(), BillType.StoreOrder, BillNumberSuffix.POR));
+        getCurrentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrentBill(), BillType.StoreOrder, BillNumberSuffix.POR));
 
         getCurrentBill().setCreater(getSessionController().getLoggedUser());
         getCurrentBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -293,7 +293,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     public Bill getCurrentBill() {
         if (currentBill == null) {
             currentBill = new BilledBill();
-            currentBill.setBillType(BillType.PharmacyOrder);           
+            currentBill.setBillType(BillType.StoreOrder);           
         }
         return currentBill;
     }

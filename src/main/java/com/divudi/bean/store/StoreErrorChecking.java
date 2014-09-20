@@ -96,31 +96,31 @@ public class StoreErrorChecking implements Serializable {
         currentSaleValue = 0.0;
         currentPurchaseValue = 0.0;
 
-        calculatedStock += getEjb().getTotalQty(BillType.PharmacyGrnBill, new BilledBill(), department, item);
-        calculatedStock -= getEjb().getTotalQty(BillType.PharmacyGrnBill, new CancelledBill(), department, item);
+        calculatedStock += getEjb().getTotalQty(BillType.StoreGrnBill, new BilledBill(), department, item);
+        calculatedStock -= getEjb().getTotalQty(BillType.StoreGrnBill, new CancelledBill(), department, item);
 
-        calculatedStock -= getEjb().getTotalQty(BillType.PharmacyGrnReturn, new BilledBill(), department, item);
-        calculatedStock += getEjb().getTotalQty(BillType.PharmacyGrnReturn, new CancelledBill(), department, item);
+        calculatedStock -= getEjb().getTotalQty(BillType.StoreGrnReturn, new BilledBill(), department, item);
+        calculatedStock += getEjb().getTotalQty(BillType.StoreGrnReturn, new CancelledBill(), department, item);
 
-        calculatedStock += getEjb().getTotalQty(BillType.PharmacyPurchaseBill, new BilledBill(), department, item);
-        calculatedStock -= getEjb().getTotalQty(BillType.PharmacyPurchaseBill, new CancelledBill(), department, item);
+        calculatedStock += getEjb().getTotalQty(BillType.StorePurchase, new BilledBill(), department, item);
+        calculatedStock -= getEjb().getTotalQty(BillType.StorePurchase, new CancelledBill(), department, item);
 
-        calculatedStock -= getEjb().getTotalQty(BillType.PurchaseReturn, new BilledBill(), department, item);
-        calculatedStock += getEjb().getTotalQty(BillType.PurchaseReturn, new CancelledBill(), department, item);
+        calculatedStock -= getEjb().getTotalQty(BillType.StorePurchaseReturn, new BilledBill(), department, item);
+        calculatedStock += getEjb().getTotalQty(BillType.StorePurchaseReturn, new CancelledBill(), department, item);
 
-        calculatedStock -= getEjb().getTotalQtyPreDiduction(BillType.PharmacyPre, new PreBill(), department, item);
+        calculatedStock -= getEjb().getTotalQtyPreDiduction(BillType.StorePre, new PreBill(), department, item);
         //Re Add to Stock of Pre Bill
         //  calculatedStock += getEjb().getTotalQtyPreAdd(BillType.PharmacyPre, new PreBill(), department, item);
-        calculatedStock += getEjb().getTotalQty(BillType.PharmacyPre, new RefundBill(), department, item);
+        calculatedStock += getEjb().getTotalQty(BillType.StorePre, new RefundBill(), department, item);
         //    calculatedStock -= getEjb().getTotalQtyByBillItem(BillType.PharmacySale, new BilledBill(), department, item);
         //    calculatedStock += getEjb().getTotalQtyByBillItem(BillType.PharmacySale, new CancelledBill(), department, item);
         //    calculatedStock += getEjb().getTotalQtyByBillItem(BillType.PharmacySale, new RefundBill(), department, item);
 
-        calculatedStock -= getEjb().getTotalQty(BillType.PharmacyTransferIssue, new BilledBill(), department, item);
-        calculatedStock += getEjb().getTotalQty(BillType.PharmacyTransferIssue, new CancelledBill(), department, item);
+        calculatedStock -= getEjb().getTotalQty(BillType.StoreTransferIssue, new BilledBill(), department, item);
+        calculatedStock += getEjb().getTotalQty(BillType.StoreTransferIssue, new CancelledBill(), department, item);
 
-        calculatedStock += getEjb().getTotalQty(BillType.PharmacyTransferReceive, new BilledBill(), department, item);
-        calculatedStock -= getEjb().getTotalQty(BillType.PharmacyTransferReceive, new CancelledBill(), department, item);
+        calculatedStock += getEjb().getTotalQty(BillType.StoreTransferReceive, new BilledBill(), department, item);
+        calculatedStock -= getEjb().getTotalQty(BillType.StoreTransferReceive, new CancelledBill(), department, item);
 
     }
 
@@ -267,7 +267,7 @@ public class StoreErrorChecking implements Serializable {
 
         //System.err.println("Befor " + calculatedStock);
         double saleQty = 0;
-        for (BillItem bi : getEjb().getPreSaleBillItems(BillType.PharmacyPre, new PreBill(), department, item)) {
+        for (BillItem bi : getEjb().getPreSaleBillItems(BillType.StorePre, new PreBill(), department, item)) {
 
             if (bi.getQty() != null) {
                 calculatedStock -= Math.abs(bi.getQty());
@@ -278,7 +278,7 @@ public class StoreErrorChecking implements Serializable {
 
         // calculatedStock -= saleQty;
         //System.err.println("SaleQty " + saleQty);
-        calculatedStock += getEjb().getTotalQty(BillType.PharmacyPre, new RefundBill(), department, item);
+        calculatedStock += getEjb().getTotalQty(BillType.StorePre, new RefundBill(), department, item);
 
     }
 

@@ -89,7 +89,16 @@ public enum BillType {
     ChannelCredit,
     ClinicalOpdBooking,
     StorePurchase,
-    StoreGrnBill;
+    StoreGrnBill,
+    StoreAdjustment,
+    StoreSale,
+    StoreOrderApprove,
+    StoreGrnReturn,
+    StorePre,
+    StoreOrder,
+    StorePurchaseReturn,
+    
+    ;
 
     public String getLabel() {
         switch (this) {
