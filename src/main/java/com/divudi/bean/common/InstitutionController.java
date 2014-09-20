@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.BillType;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Department;
 import java.util.TimeZone;
@@ -15,6 +16,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.entity.Institution;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +81,8 @@ public class InstitutionController implements Serializable {
 
         return getFacade().findBySQL(sql, hm);
     }
-    List<Institution> institution; 
+    List<Institution> institution;
+
     public List<Institution> completeCreditCompany(String qry) {
         String sql;
         HashMap hm = new HashMap();
@@ -116,11 +119,18 @@ public class InstitutionController implements Serializable {
     public List<Institution> completeSupplier(String qry) {
         String sql;
         HashMap hm = new HashMap();
-        hm.put("type", InstitutionType.Dealer);
-        sql = "select c from Institution c where c.retired=false and"
-                + " c.institutionType=:type and upper(c.name)"
-                + " like '%" + qry.toUpperCase() + "%' order by c.name";
-        return getFacade().findBySQL(sql, hm);
+        InstitutionType[] insType = {InstitutionType.Dealer, InstitutionType.StoreDealor};
+        List<InstitutionType> institutionTypesList = Arrays.asList(insType);
+
+        hm.put("ins", institutionTypesList);
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        sql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.institutionType in :ins"
+                + " and (upper(c.name) like :q "
+                + " or upper(c.institutionCode) like :q )"
+                + " order by c.name";
+        return getFacade().findBySQL(sql, hm, 10);
     }
 
 //     public List<Institution> completeSupplier(String qry) {

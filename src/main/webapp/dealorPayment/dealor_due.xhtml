@@ -12,19 +12,21 @@
                 <h:form>
                     <h:panelGrid columns="6">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="fromDate" value="#{storeDealorDueController.fromDate}" navigator="false"
+                        <p:calendar id="fromDate" value="#{dealorDueController.fromDate}" navigator="false"
                                     pattern="dd MMMM yyyy hh mm ss a" >
 
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{storeDealorDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                        <p:calendar id="toDate" value="#{dealorDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                         </p:calendar>
-                        <p:commandButton value="Process" action="#{storeDealorDueController.fillItemsStore()}" ajax="false"  />
+                        <p:commandButton value="Process Pharmacy Due" action="#{dealorDueController.fillPharmacyDue()}" ajax="false"  />
+                        <p:commandButton value="Process Store Due" action="#{dealorDueController.fillStoreDue()}" ajax="false"  />
+                        <p:commandButton value="Process All Due" action="#{dealorDueController.fillPharmacyStoreDue()}" ajax="false"  />
 
                     </h:panelGrid>
 
-                    <p:dataTable id="lst" value="#{storeDealorDueController.items}" var="i"  style="width: 100%;">
+                    <p:dataTable id="lst" value="#{dealorDueController.items}" var="i"  style="width: 100%;">
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column headerText="GRN No">                                    

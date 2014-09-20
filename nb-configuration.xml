@@ -26,5 +26,6 @@ Any value defined here will override the pom.xml file value but is only applicab
         <netbeans.deploy.on.save>false</netbeans.deploy.on.save>
         <netbeans.hint.j2eeVersion>1.7-web</netbeans.hint.j2eeVersion>
         <org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_deploy_2e_server>gfv3ee6</org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_deploy_2e_server>
+        <netbeans.hint.jdkPlatform>JDK_1.7</netbeans.hint.jdkPlatform>
     </properties>
 </project-shared-configuration>

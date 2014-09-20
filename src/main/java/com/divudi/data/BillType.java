@@ -60,6 +60,7 @@ public enum BillType {
     PharmacyGrnBill,//Cash out
     PharmacyGrnReturn,
     GrnPayment,
+    GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out
     PurchaseReturn,// Purchase Return
     PharmacyTransferRequest,
@@ -79,9 +80,13 @@ public enum BillType {
     gpBooking,
     gpSettling,
     Appointment,
+    @Deprecated
     GrnPaymentBill,
+    @Deprecated
     GrnPaymentReturn,
+    @Deprecated
     GrnPaymentCancell,
+    @Deprecated
     GrnPaymentCancellReturn,
     CashIn,
     CashOut,
@@ -89,7 +94,14 @@ public enum BillType {
     ChannelCredit,
     ClinicalOpdBooking,
     StorePurchase,
-    StoreGrnBill;
+    StoreGrnBill,
+    StoreAdjustment,
+    StoreSale,
+    StoreOrderApprove,
+    StoreGrnReturn,
+    StorePre,
+    StoreOrder,
+    StorePurchaseReturn,;
 
     public String getLabel() {
         switch (this) {
