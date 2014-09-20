@@ -56,18 +56,18 @@ public class ConsumableCategoryController implements Serializable {
     }
 
     public void create() {
-        persist(PersistAction.CREATE, ResourceBundle.getBundle("/Bundle").getString("ConsumableCategoryCreated"));
+        persist(PersistAction.CREATE,"ConsumableCategoryCreated");
         if (!JsfUtil.isValidationFailed()) {
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
 
     public void update() {
-        persist(PersistAction.UPDATE, ResourceBundle.getBundle("/Bundle").getString("ConsumableCategoryUpdated"));
+        persist(PersistAction.UPDATE,"ConsumableCategoryUpdated");
     }
 
     public void destroy() {
-        persist(PersistAction.DELETE, ResourceBundle.getBundle("/Bundle").getString("ConsumableCategoryDeleted"));
+        persist(PersistAction.DELETE,"ConsumableCategoryDeleted");
         if (!JsfUtil.isValidationFailed()) {
             selected = null; // Remove selection
             items = null;    // Invalidate list of items to trigger re-query.
