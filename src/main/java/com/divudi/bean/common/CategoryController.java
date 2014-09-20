@@ -10,7 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.facade.CategoryFacade;
 import com.divudi.entity.Category;
-import com.divudi.entity.ConsumableCategory;
+import com.divudi.entity.pharmacy.ConsumableCategory;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.inward.TimedItemCategory;
