@@ -202,6 +202,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
             if (tmpPh.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(tmpPh);
+            } else {
+                pharmaceuticalBillItemFacade.edit(tmpPh);
             }
 
             b.setPharmaceuticalBillItem(tmpPh);
