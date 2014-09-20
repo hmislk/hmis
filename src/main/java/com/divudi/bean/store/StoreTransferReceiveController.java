@@ -70,7 +70,7 @@ public class StoreTransferReceiveController implements Serializable {
     @EJB
     private CommonFunctions commonFunctions;
     @Inject
-    private PharmacyCalculation pharmacyCalculation;
+    StoreCalculation storeCalculation;
     private List<BillItem> billItems;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
@@ -365,14 +365,6 @@ public class StoreTransferReceiveController implements Serializable {
 
     public void setStockFacade(StockFacade stockFacade) {
         this.stockFacade = stockFacade;
-    }
-
-    public PharmacyCalculation getPharmacyCalculation() {
-        return pharmacyCalculation;
-    }
-
-    public void setPharmacyCalculation(PharmacyCalculation pharmacyCalculation) {
-        this.pharmacyCalculation = pharmacyCalculation;
     }
 
     public PharmacyController getPharmacyController() {

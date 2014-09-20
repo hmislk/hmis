@@ -65,7 +65,7 @@ public class StoreTransferIssueController implements Serializable {
     @Inject
     private PharmacyBean pharmacyBean;
     @Inject
-    private PharmacyCalculation pharmacyCalculation;
+    StoreCalculation storeCalculation;
     @Inject
     private BillNumberController billNumberBean;
     @EJB
@@ -137,8 +137,8 @@ public class StoreTransferIssueController implements Serializable {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getRequestedBill())) {
 
-            double billedIssue = getPharmacyCalculation().getBilledIssuedByRequestedItem(i.getBillItem(), BillType.StoreTransferIssue);
-            double cancelledIssue = getPharmacyCalculation().getCancelledIssuedByRequestedItem(i.getBillItem(), BillType.StoreTransferIssue);
+            double billedIssue = storeCalculation.getBilledIssuedByRequestedItem(i.getBillItem(), BillType.StoreTransferIssue);
+            double cancelledIssue = storeCalculation.getCancelledIssuedByRequestedItem(i.getBillItem(), BillType.StoreTransferIssue);
 
             double issuableQty = i.getQtyInUnit() - (Math.abs(billedIssue) - Math.abs(cancelledIssue));
 
@@ -473,14 +473,6 @@ public class StoreTransferIssueController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
-    }
-
-    public PharmacyCalculation getPharmacyCalculation() {
-        return pharmacyCalculation;
-    }
-
-    public void setPharmacyCalculation(PharmacyCalculation pharmacyCalculation) {
-        this.pharmacyCalculation = pharmacyCalculation;
     }
 
 }

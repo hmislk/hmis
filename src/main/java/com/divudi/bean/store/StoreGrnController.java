@@ -5,7 +5,6 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
-import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
@@ -20,14 +19,9 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -44,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 import javax.ejb.EJB;
@@ -79,11 +72,11 @@ public class StoreGrnController implements Serializable {
     @Inject
     private PharmacyBean pharmacyBean;
     @EJB
-    private AmpFacade ampFacade;   
+    private AmpFacade ampFacade;
     @EJB
     private CommonFunctions commonFunctions;
     @Inject
-    private PharmacyCalculation pharmacyCalculation;
+    StoreCalculation storeCalculation;
     @Inject
     ApplicationController applicationController;
     /////////////////
@@ -136,10 +129,10 @@ public class StoreGrnController implements Serializable {
         filteredValue = null;
         //  billItems = null;
         grns = null;
-        currentExpense=null;
-        billExpenses=null;
+        currentExpense = null;
+        billExpenses = null;
         System.out.println("clear");
-        
+
     }
 
     public void setBatch(BillItem pid) {
@@ -203,7 +196,7 @@ public class StoreGrnController implements Serializable {
             UtilityController.addErrorMessage(msg);
             return;
         }
-        pharmacyCalculation.calSaleFreeValue(getGrnBill());
+        storeCalculation.calSaleFreeValue(getGrnBill());
         if (getGrnBill().getInvoiceDate() == null) {
             getGrnBill().setInvoiceDate(getApproveBill().getCreatedAt());
         }
@@ -231,7 +224,7 @@ public class StoreGrnController implements Serializable {
 
             //     updatePoItemQty(i);
             //System.err.println("1 " + i);
-            ItemBatch itemBatch = pharmacyCalculation.saveItemBatch(i);
+            ItemBatch itemBatch = storeCalculation.saveItemBatch(i);
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
 
             double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
@@ -246,11 +239,11 @@ public class StoreGrnController implements Serializable {
             i.getPharmaceuticalBillItem().setStock(stock);
 
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            pharmacyCalculation.editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            storeCalculation.editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
 
             getGrnBill().getBillItems().add(i);
         }
-        
+
         for (BillItem i : getBillExpenses()) {
             i.setExpenseBill(getGrnBill());
             getBillItemFacade().create(i);
@@ -270,20 +263,17 @@ public class StoreGrnController implements Serializable {
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
 
         calGrossTotal();
-        
-        
+
         System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
         System.out.println("getBillExpenses() = " + getBillExpenses());
-        
+
         if (getGrnBill().getBillExpenses() == null || getGrnBill().getBillExpenses().isEmpty()) {
-            System.out.println("Adding " );
+            System.out.println("Adding ");
             getGrnBill().setBillExpenses(getBillExpenses());
         }
-        
-         
+
         System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
         System.out.println("getBillExpenses() = " + getBillExpenses());
-       
 
         getBillFacade().edit(getGrnBill());
 
@@ -294,7 +284,7 @@ public class StoreGrnController implements Serializable {
 
     public String viewPoList() {
         clearList();
-        
+
         return "store_purchase_order_list_for_recieve";
     }
 
@@ -343,7 +333,7 @@ public class StoreGrnController implements Serializable {
         getGrnBill().setInstitution(getSessionController().getInstitution());
         //   getGrnBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
         //   getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.PharmacyGrnBill, BillNumberSuffix.GRN));
-      
+
         getGrnBill().calGrnNetTotal();
         if (getGrnBill().getId() == null) {
             getBillFacade().create(getGrnBill());
@@ -357,7 +347,7 @@ public class StoreGrnController implements Serializable {
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
             System.err.println("Qty Unit : " + i.getQtyInUnit());
 //            System.err.println("Remaining Qty : " + i.getRemainingQty());
-            double remains = pharmacyCalculation.calQtyInTwoSql(i);
+            double remains = storeCalculation.calQtyInTwoSql(i);
             System.err.println("Tot GRN Qty : " + remains);
 //            System.err.println("QTY : " + i.getQtyInUnit());
             if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
@@ -408,11 +398,11 @@ public class StoreGrnController implements Serializable {
         BillItem tmp = (BillItem) event.getObject();
         onEdit(tmp);
         //   onEditPurchaseRate(tmp);
-       // setBatch(tmp);
+        // setBatch(tmp);
     }
 
     public void onEdit(BillItem tmp) {
-        double remains = pharmacyCalculation.getRemainingQty(tmp.getPharmaceuticalBillItem());
+        double remains = storeCalculation.getRemainingQty(tmp.getPharmaceuticalBillItem());
 
 //        System.err.println("1 " + tmp.getTmpQty());
 //        System.err.println("2 " + tmp.getQty());
@@ -483,14 +473,14 @@ public class StoreGrnController implements Serializable {
         currentExpense = null;
         calGrossTotal();
     }
-    
+
     public void removeItemEx(BillItem bi) {
-        
-        if(bi==null){
+
+        if (bi == null) {
             JsfUtil.addErrorMessage("No Item to Remove");
             return;
         }
-        
+
         getBillExpenses().remove(bi.getSearialNo());
 
         calGrossTotal();
@@ -517,13 +507,11 @@ public class StoreGrnController implements Serializable {
 
         getGrnBill().setExpenseTotal(exp);
 
-        
-
         getGrnBill().setTotal(0 - tmp);
         getGrnBill().setNetTotal(getGrnBill().getTotal() + exp);
-        
+
         ChangeDiscountLitener();
-        
+
     }
 
     public void ChangeDiscountLitener() {
@@ -632,8 +620,6 @@ public class StoreGrnController implements Serializable {
         this.ampFacade = ampFacade;
     }
 
- 
-
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
@@ -729,14 +715,6 @@ public class StoreGrnController implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
-    }
-
-    public PharmacyCalculation getPharmacyCalculation() {
-        return pharmacyCalculation;
-    }
-
-    public void setPharmacyCalculation(PharmacyCalculation pharmacyCalculation) {
-        this.pharmacyCalculation = pharmacyCalculation;
     }
 
     public List<Bill> getGrns() {

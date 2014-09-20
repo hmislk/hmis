@@ -61,6 +61,8 @@ public class StoreGoodsReturnController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
+    @Inject
+    StoreCalculation storeCalculation;
 
     public Bill getBill() {
         return bill;
@@ -96,13 +98,11 @@ public class StoreGoodsReturnController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    @Inject
-    private PharmacyCalculation pharmacyRecieveBean;
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > getPharmacyRecieveBean().calQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
+        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > storeCalculation.calQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpQty(0.0);
             UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
         }
@@ -247,8 +247,8 @@ public class StoreGoodsReturnController implements Serializable {
             retPh.copy(grnPh);
             retPh.setBillItem(bi);
 
-            double rBilled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
-            double rCacnelled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
+            double rBilled = storeCalculation.getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
+            double rCacnelled =storeCalculation.getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
 
             double netQty = Math.abs(rBilled) - Math.abs(rCacnelled);
 
@@ -352,14 +352,6 @@ public class StoreGoodsReturnController implements Serializable {
 
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
-    }
-
-    public PharmacyCalculation getPharmacyRecieveBean() {
-        return pharmacyRecieveBean;
-    }
-
-    public void setPharmacyRecieveBean(PharmacyCalculation pharmacyRecieveBean) {
-        this.pharmacyRecieveBean = pharmacyRecieveBean;
     }
 
     public List<BillItem> getBillItems() {

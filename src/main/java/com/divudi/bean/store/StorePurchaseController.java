@@ -66,7 +66,7 @@ public class StorePurchaseController implements Serializable {
     @EJB
     private AmpFacade ampFacade;
     @Inject
-    PharmacyCalculation pharmacyBillBean;
+    StoreCalculation storeCalculation;
     @Inject
     ApplicationController applicationController;
     @Inject
@@ -151,14 +151,6 @@ public class StorePurchaseController implements Serializable {
 
     public void remove(BillItem b) {
         getBillItems().remove(b.getSearialNo());
-    }
-
-    public PharmacyCalculation getPharmacyBillBean() {
-        return pharmacyBillBean;
-    }
-
-    public void setPharmacyBillBean(PharmacyCalculation pharmacyBillBean) {
-        this.pharmacyBillBean = pharmacyBillBean;
     }
 
     public StorePurchaseController() {
@@ -281,7 +273,7 @@ public class StorePurchaseController implements Serializable {
 
         saveBill();
         //   saveBillComponent();
-        getPharmacyBillBean().calSaleFreeValue(getBill());
+        storeCalculation.calSaleFreeValue(getBill());
 
         //Restting IDs
         for (BillItem i : getBillItems()) {
@@ -310,7 +302,7 @@ public class StorePurchaseController implements Serializable {
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
 
-            ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
+            ItemBatch itemBatch = storeCalculation.saveItemBatch(i);
             double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
 
             tmpPh.setItemBatch(itemBatch);
@@ -492,7 +484,7 @@ public class StorePurchaseController implements Serializable {
         tmp.setBillItem(b);
         //   tmp.setQty(getPharmacyBean().getPurchaseRate(b.getItem(), getSessionController().getDepartment()));
         //     tmp.setPurchaseRate(getPharmacyBean().getPurchaseRate(b.getItem(), getSessionController().getDepartment()));
-        tmp.setRetailRate(getPharmacyBillBean().calRetailRate(tmp));
+        tmp.setRetailRate(storeCalculation.calRetailRate(tmp));
 //        if (b.getId() == null || b.getId() == 0) {
 //            getPharmaceuticalBillItemFacade().create(tmp);
 //        } else {
