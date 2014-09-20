@@ -20,7 +20,9 @@
                         <p:calendar id="toDate" value="#{dealorDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                         </p:calendar>
-                        <p:commandButton value="Process" action="#{dealorDueController.fillItems()}" ajax="false"  />
+                        <p:commandButton value="Process Pharmacy Due" action="#{dealorDueController.fillPharmacyDue()}" ajax="false"  />
+                        <p:commandButton value="Process Store Due" action="#{dealorDueController.fillStoreDue()}" ajax="false"  />
+                        <p:commandButton value="Process All Due" action="#{dealorDueController.fillPharmacyStoreDue()}" ajax="false"  />
 
                     </h:panelGrid>
 

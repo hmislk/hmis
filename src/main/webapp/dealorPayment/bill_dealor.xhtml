@@ -154,7 +154,7 @@
                 <p:panel rendered="#{pharmacyDealorBill.printPreview}" >
                     <p:commandButton value="New Bill" ajax="false" action="#{pharmacyDealorBill.makeNull()}" >
                     </p:commandButton>
-                    <bi:insRecieve billController ="#{pharmacyDealorBill}"  bill="#{pharmacyDealorBill.current}" dup="false"/>                       
+                    <bi:insRecieve billController ="#{pharmacyDealorBill}"  bill="#{pharmacyDealorBill.current}" dup="false" rendered="false"/>                       
                 </p:panel>
 
             </h:form>

@@ -34,7 +34,7 @@
                                 <pa:slip paymentMethodData="#{pharmacyDealorBill.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <p:commandButton id="btnSettle" value="Settle" action="#{pharmacyDealorBill.settleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                            <p:commandButton id="btnSettle" value="Settle" action="#{pharmacyDealorBill.settleBillAll}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                             </p:commandButton>
                             <p:defaultCommand target="btnSettle"/>
 
@@ -73,21 +73,24 @@
                                 <h:outputLabel value="Paying Institution : "/>
                                 <h:outputLabel value="#{pharmacyDealorBill.current.toInstitution.name}"/>
                                 <p:commandButton ajax="false" action="#{pharmacyDealorBill.removeAll()}" value="Remove Selected"/>
-                                
                             </f:facet>
+
+                            <p:ajax event="rowSelect" process="@this" 
+                                    update=":#{p:component('total')}"
+                                    listener="#{pharmacyDealorBill.calTotalBySelectedBillTems()}" />  
 
                             <p:column selectionMode="multiple" />                                        
                             <p:column >  
                                 <f:facet name="header">
                                     <h:outputLabel value="Index No"/>                                  
                                 </f:facet>                              
-                                <p:outputLabel value="#{b.searialNo}"/>
+                                #{b.searialNo}
                             </p:column> 
                             <p:column >  
                                 <f:facet name="header">
                                     <h:outputLabel value="GRN No"/>                                  
                                 </f:facet>                              
-                                <p:outputLabel value="#{b.referenceBill.deptId}"/>
+                                #{b.referenceBill.deptId}
                             </p:column> 
                             <p:column headerText="GRN Amount">
                                 <p:outputLabel value="#{b.referenceBill.netTotal}">
@@ -144,7 +147,7 @@
                 <p:panel rendered="#{pharmacyDealorBill.printPreview}" >
                     <p:commandButton value="New Bill" ajax="false" action="#{pharmacyDealorBill.makeNull()}" >
                     </p:commandButton>
-                    <bi:insRecieve billController ="#{pharmacyDealorBill}"  bill="#{pharmacyDealorBill.current}" dup="false"/>                       
+                    <bi:insRecieve billController ="#{pharmacyDealorBill}"  bill="#{pharmacyDealorBill.current}" dup="false" rendered="false"/>                       
                 </p:panel>
 
             </h:form>
