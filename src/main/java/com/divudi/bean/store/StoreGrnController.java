@@ -774,6 +774,7 @@ public class StoreGrnController implements Serializable {
 
     public void addItem() {
         storePurchaseController.addItem(getCurrentBillItem(), getParentBillItem(), getBillItems());
+        currentBillItem = null;
         calTotal();
     }
 
@@ -786,7 +787,7 @@ public class StoreGrnController implements Serializable {
             currentBillItem = new BillItem();
             PharmaceuticalBillItem cuPharmaceuticalBillItem = new PharmaceuticalBillItem();
             currentBillItem.setPharmaceuticalBillItem(cuPharmaceuticalBillItem);
-            cuPharmaceuticalBillItem.setBillItem(currentBillItem);
+            cuPharmaceuticalBillItem. setBillItem(currentBillItem);
         }
         return currentBillItem;
     }
