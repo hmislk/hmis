@@ -98,11 +98,12 @@ public class StoreGrnController implements Serializable {
     private SearchKeyword searchKeyword;
     private List<Bill> bills;
     BillItem currentExpense;
+    BillItem parentBillItem;
 
     public void removeItem(BillItem bi) {
         getBillItems().remove(bi.getSearialNo());
 
-        calGrossTotal();
+        calTotal();
 
     }
 
@@ -117,7 +118,7 @@ public class StoreGrnController implements Serializable {
         for (BillItem b : selectedBillItems) {
             //  //System.err.println("4");
             getBillItems().remove(b.getSearialNo());
-            calGrossTotal();
+            calTotal();
         }
 
         selectedBillItems = null;
@@ -196,12 +197,18 @@ public class StoreGrnController implements Serializable {
             UtilityController.addErrorMessage(msg);
             return;
         }
+
         storeCalculation.calSaleFreeValue(getGrnBill());
         if (getGrnBill().getInvoiceDate() == null) {
             getGrnBill().setInvoiceDate(getApproveBill().getCreatedAt());
         }
 
         saveBill();
+
+        //Restting IDs
+        for (BillItem i : getBillItems()) {
+            i.setId(null);
+        }
 
         for (BillItem i : getBillItems()) {
             if (i.getTmpQty() == 0.0) {
@@ -215,7 +222,12 @@ public class StoreGrnController implements Serializable {
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getGrnBill());
-            getBillItemFacade().create(i);
+
+            storePurchaseController.saveParentBillItem(i.getParentBillItem());
+
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            }
 
             getPharmaceuticalBillItemFacade().create(ph);
 
@@ -262,7 +274,7 @@ public class StoreGrnController implements Serializable {
         getGrnBill().setCreater(getSessionController().getLoggedUser());
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
 
-        calGrossTotal();
+        calTotal();
 
         System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
         System.out.println("getBillExpenses() = " + getBillExpenses());
@@ -370,7 +382,8 @@ public class StoreGrnController implements Serializable {
 
                 bi.setPharmaceuticalBillItem(ph);
 
-                getBillItems().add(bi);
+                storePurchaseController.addItem(bi, null, getBillItems());
+                storePurchaseController.createSerialNumber(bi);
                 //  getBillItems().r
                 System.out.println("getBillItems() = " + getBillItems());
             }
@@ -383,7 +396,7 @@ public class StoreGrnController implements Serializable {
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
         System.out.println("in");
         generateBillComponent();
-        calGrossTotal();
+        calTotal();
         System.out.println("out");
     }
 
@@ -425,7 +438,7 @@ public class StoreGrnController implements Serializable {
 //                //    return;
 //            }
 //        }
-        calGrossTotal();
+        calTotal();
     }
 
     public void onEditPurchaseRate(BillItem tmp) {
@@ -471,7 +484,7 @@ public class StoreGrnController implements Serializable {
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
         currentExpense = null;
-        calGrossTotal();
+        calTotal();
     }
 
     public void removeItemEx(BillItem bi) {
@@ -483,37 +496,36 @@ public class StoreGrnController implements Serializable {
 
         getBillExpenses().remove(bi.getSearialNo());
 
-        calGrossTotal();
+        calTotal();
 
     }
 
-    private void calGrossTotal() {
-        double tmp = 0.0;
-        double exp = 0.0;
-        int serialNo = 0;
-        for (BillItem p : getBillItems()) {
-            tmp += p.getPharmaceuticalBillItem().getPurchaseRate() * p.getPharmaceuticalBillItem().getQty();
-            p.setSearialNo(serialNo++);
-        }
-
-        for (BillItem e : getBillExpenses()) {
-            double nv = e.getNetRate() * e.getQty();
-            e.setNetValue(0 - nv);
-            System.out.println("nv = " + nv);
-            exp += e.getNetValue();
-            System.out.println("e.getNetValue() = " + e.getNetValue());
-            System.out.println("exp = " + exp);
-        }
-
-        getGrnBill().setExpenseTotal(exp);
-
-        getGrnBill().setTotal(0 - tmp);
-        getGrnBill().setNetTotal(getGrnBill().getTotal() + exp);
-
-        ChangeDiscountLitener();
-
-    }
-
+//    private void calGrossTotal() {
+//        double tmp = 0.0;
+//        double exp = 0.0;
+//        int serialNo = 0;
+//        for (BillItem p : getBillItems()) {
+//            tmp += p.getPharmaceuticalBillItem().getPurchaseRate() * p.getPharmaceuticalBillItem().getQty();
+//            p.setSearialNo(serialNo++);
+//        }
+//
+//        for (BillItem e : getBillExpenses()) {
+//            double nv = e.getNetRate() * e.getQty();
+//            e.setNetValue(0 - nv);
+//            System.out.println("nv = " + nv);
+//            exp += e.getNetValue();
+//            System.out.println("e.getNetValue() = " + e.getNetValue());
+//            System.out.println("exp = " + exp);
+//        }
+//
+//        getGrnBill().setExpenseTotal(exp);
+//
+//        getGrnBill().setTotal(0 - tmp);
+//        getGrnBill().setNetTotal(getGrnBill().getTotal() + exp);
+//
+//        ChangeDiscountLitener();
+//
+//    }
     public void ChangeDiscountLitener() {
         getGrnBill().setNetTotal(getGrnBill().getNetTotal() + getGrnBill().getDiscount());
     }
@@ -740,6 +752,10 @@ public class StoreGrnController implements Serializable {
         return billExpenses;
     }
 
+    public void addChildItemListener(BillItem bi) {
+        parentBillItem = bi;
+    }
+
     public void setBillExpenses(List<BillItem> billExpenses) {
         this.billExpenses = billExpenses;
     }
@@ -755,4 +771,73 @@ public class StoreGrnController implements Serializable {
     public void setCurrentExpense(BillItem currentExpense) {
         this.currentExpense = currentExpense;
     }
+
+    public void addItem() {
+        storePurchaseController.addItem(getCurrentBillItem(), getParentBillItem(), getBillItems());
+        calTotal();
+    }
+
+    BillItem currentBillItem;
+    @Inject
+    StorePurchaseController storePurchaseController;
+
+    public BillItem getCurrentBillItem() {
+        if (currentBillItem == null) {
+            currentBillItem = new BillItem();
+            PharmaceuticalBillItem cuPharmaceuticalBillItem = new PharmaceuticalBillItem();
+            currentBillItem.setPharmaceuticalBillItem(cuPharmaceuticalBillItem);
+            cuPharmaceuticalBillItem.setBillItem(currentBillItem);
+        }
+        return currentBillItem;
+    }
+
+    public void setCurrentBillItem(BillItem currentBillItem) {
+        this.currentBillItem = currentBillItem;
+    }
+
+    public void calTotal() {
+        double tot = 0.0;
+        double exp = 0.0;
+        Integer serialNo = 0;
+        for (BillItem p : getBillItems()) {
+            p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
+            p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            serialNo++;
+            p.setSearialNo(serialNo);
+            p.setId(serialNo.longValue());
+            if (p.getParentBillItem() == null) {
+                double netValue = p.getQty() * p.getRate();
+                p.setNetValue(0 - netValue);
+                tot += p.getNetValue();
+            }
+        }
+
+        for (BillItem e : getBillExpenses()) {
+            double nv = e.getNetRate() * e.getQty();
+            e.setNetValue(0 - nv);
+            exp += e.getNetValue();
+        }
+
+        getGrnBill().setExpenseTotal(exp);
+        getGrnBill().setTotal(tot);
+        getGrnBill().setNetTotal(tot + exp);
+
+    }
+
+    public StoreCalculation getStoreCalculation() {
+        return storeCalculation;
+    }
+
+    public void setStoreCalculation(StoreCalculation storeCalculation) {
+        this.storeCalculation = storeCalculation;
+    }
+
+    public BillItem getParentBillItem() {
+        return parentBillItem;
+    }
+
+    public void setParentBillItem(BillItem parentBillItem) {
+        this.parentBillItem = parentBillItem;
+    }
+
 }
