@@ -10,6 +10,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
@@ -123,10 +124,17 @@ public class StorePurchaseOrderRequestController implements Serializable {
     private PharmacyController pharmacyController;
 
     public void onFocus(BillItem bi) {
+
         getPharmacyController().setPharmacyItem(bi.getItem());
     }
 
     public void onEdit(BillItem bi) {
+        if (bi.getItem().getDepartmentType() == DepartmentType.Inventry) {
+            if (bi.getPharmaceuticalBillItem().getQty() != 1) {
+                bi.getPharmaceuticalBillItem().setQty(1);
+                UtilityController.addErrorMessage("Asset Item Count Reset to 1");
+            }
+        }
 
         bi.setNetValue(bi.getPharmaceuticalBillItem().getQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
 
@@ -202,6 +210,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
             if (tmpPh.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(tmpPh);
+            } else {
+                pharmaceuticalBillItemFacade.edit(tmpPh);
             }
 
             b.setPharmaceuticalBillItem(tmpPh);

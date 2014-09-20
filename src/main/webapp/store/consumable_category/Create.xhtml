@@ -8,25 +8,25 @@
 
     <ui:composition>
 
-        <p:dialog id="ConsumableCategoryCreateDlg" widgetVar="ConsumableCategoryCreateDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.CreateConsumableCategoryTitle}">
+        <p:dialog id="ConsumableCategoryCreateDlg" widgetVar="ConsumableCategoryCreateDialog" modal="true" resizable="false" appendTo="@(body)" header="Cerate Comsumable Category">
             <h:form id="ConsumableCategoryCreateForm">
                 <h:panelGroup id="display">
                     <p:panelGrid columns="2" rendered="#{consumableCategoryController.selected != null}">
-                        <p:outputLabel value="#{bundle.CreateConsumableCategoryLabel_name}" for="name" />
-                        <p:inputText id="name" value="#{consumableCategoryController.selected.name}" title="#{bundle.CreateConsumableCategoryTitle_name}" />
-                        <p:outputLabel value="#{bundle.CreateConsumableCategoryLabel_parentCategory}" for="parentCategory" />
+                        <p:outputLabel value="Name" for="name" />
+                        <p:inputText id="name" value="#{consumableCategoryController.selected.name}" title="Name" />
+                        <p:outputLabel value="Parent Category" for="parentCategory" />
                         <p:selectOneMenu id="parentCategory" value="#{consumableCategoryController.selected.parentCategory}" >
                             <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}"
                                            var="parentCategoryItem"
                                            itemValue="#{parentCategoryItem}"/>
                         </p:selectOneMenu>
-                        <p:outputLabel value="#{bundle.CreateConsumableCategoryLabel_code}" for="code" />
+                        <p:outputLabel value="Code" for="code" />
                         <p:inputText id="code" value="#{consumableCategoryController.selected.code}" title="#{bundle.CreateConsumableCategoryTitle_code}" />
-                        <p:outputLabel value="#{bundle.CreateConsumableCategoryLabel_id}" for="id" />
+                        <p:outputLabel value="ID" for="id" />
                         <p:inputText id="id" value="#{consumableCategoryController.selected.id}" title="#{bundle.CreateConsumableCategoryTitle_id}" />
                     </p:panelGrid>
-                    <p:commandButton actionListener="#{consumableCategoryController.create}" value="#{bundle.Save}" update="display,:ConsumableCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args,'ConsumableCategoryCreateDialog');"/>
-                    <p:commandButton value="#{bundle.Cancel}" onclick="ConsumableCategoryCreateDialog.hide()"/>
+                    <p:commandButton actionListener="#{consumableCategoryController.create}" value="Save" update="display,:ConsumableCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args,'ConsumableCategoryCreateDialog');"/>
+                    <p:commandButton value="Cancel" onclick="ConsumableCategoryCreateDialog.hide()"/>
                 </h:panelGroup>
             </h:form>
         </p:dialog>

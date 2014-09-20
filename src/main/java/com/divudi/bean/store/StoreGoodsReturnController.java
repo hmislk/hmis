@@ -74,6 +74,7 @@ public class StoreGoodsReturnController implements Serializable {
         this.bill = bill;
         generateBillComponent();
         getReturnBill().setToInstitution(bill.getFromInstitution());
+        getReturnBill().setPaymentMethod(bill.getPaymentMethod());
     }
 
     public Bill getReturnBill() {
@@ -97,7 +98,6 @@ public class StoreGoodsReturnController implements Serializable {
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
-
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
@@ -160,12 +160,12 @@ public class StoreGoodsReturnController implements Serializable {
 
             boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
 
-            if(!returnFlag){
+            if (!returnFlag) {
                 i.setTmpQty(0);
                 getBillItemFacade().edit(i);
                 getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
             }
-            
+
             getReturnBill().getBillItems().add(i);
 
         }
@@ -217,7 +217,6 @@ public class StoreGoodsReturnController implements Serializable {
         printPreview = true;
         UtilityController.addSuccessMessage("Successfully Returned");
 
-      
     }
 
     private void calTotal() {
@@ -248,7 +247,7 @@ public class StoreGoodsReturnController implements Serializable {
             retPh.setBillItem(bi);
 
             double rBilled = storeCalculation.getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
-            double rCacnelled =storeCalculation.getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
+            double rCacnelled = storeCalculation.getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
 
             double netQty = Math.abs(rBilled) - Math.abs(rCacnelled);
 

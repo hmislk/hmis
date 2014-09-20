@@ -8,20 +8,20 @@
 
     <ui:composition>
 
-        <p:dialog id="ConsumableCategoryViewDlg" widgetVar="ConsumableCategoryViewDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.ViewConsumableCategoryTitle}">
+        <p:dialog id="ConsumableCategoryViewDlg" widgetVar="ConsumableCategoryViewDialog" modal="true" resizable="false" appendTo="@(body)" header="View Consumable Category Title">
             <h:form id="ConsumableCategoryViewForm">
                 <h:panelGroup id="display">
                     <p:panelGrid columns="2" rendered="#{consumableCategoryController.selected != null}">
-                        <h:outputText value="#{bundle.ViewConsumableCategoryLabel_name}"/>
-                        <h:outputText value="#{consumableCategoryController.selected.name}" title="#{bundle.ViewConsumableCategoryTitle_name}"/>
-                        <h:outputText value="#{bundle.ViewConsumableCategoryLabel_parentCategory}"/>
-                        <h:outputText value="#{consumableCategoryController.selected.parentCategory}" title="#{bundle.ViewConsumableCategoryTitle_parentCategory}"/>
-                        <h:outputText value="#{bundle.ViewConsumableCategoryLabel_code}"/>
-                        <h:outputText value="#{consumableCategoryController.selected.code}" title="#{bundle.ViewConsumableCategoryTitle_code}"/>
-                        <h:outputText value="#{bundle.ViewConsumableCategoryLabel_id}"/>
-                        <h:outputText value="#{consumableCategoryController.selected.id}" title="#{bundle.ViewConsumableCategoryTitle_id}"/>
+                        <h:outputText value="Name"/>
+                        <h:outputText value="#{consumableCategoryController.selected.name}" title="Name"/>
+                        <h:outputText value="ParentCategory"/>
+                        <h:outputText value="#{consumableCategoryController.selected.parentCategory}" title="Parent Category"/>
+                        <h:outputText value="Code"/>
+                        <h:outputText value="#{consumableCategoryController.selected.code}" title="Code"/>
+                        <h:outputText value="ID"/>
+                        <h:outputText value="#{consumableCategoryController.selected.id}" title="ID"/>
                     </p:panelGrid>
-                    <p:commandButton value="#{bundle.Close}" onclick="ConsumableCategoryViewDialog.hide()"/>
+                    <p:commandButton value="Close" onclick="ConsumableCategoryViewDialog.hide()"/>
                 </h:panelGroup>
             </h:form>
         </p:dialog>

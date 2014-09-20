@@ -81,6 +81,8 @@
                                      value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" style="width:100%" /> 
                         <p:inputText autocomplete="off" id="txtPrate"  styleClass="numericTxt" 
                                      value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
+                            <f:ajax event="blur" execute="@this" render="tmpRetail" 
+                                    listener="#{storePurchaseController.purchaseRateListener(storePurchaseController.currentBillItem.pharmaceuticalBillItem)}"/>
                         </p:inputText>
                         <p:inputText autocomplete="off" id="tmpRetail"  styleClass="numericTxt" 
                                      value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  />  
@@ -147,32 +149,49 @@
 
                     </p:column>
 
+                    <!--                    <p:column headerText="Qty" style="width:20%" >                     
+                                            <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}"  >
+                                                <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:component('tot')}"
+                                                        execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
+                                            </p:inputText>
+                                        </p:column>  
+                    -->
                     <p:column headerText="Qty" style="width:20%">                     
-                        <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}"  >
-                            <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:component('tot')}"
-                                    execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
-                        </p:inputText>
-                    </p:column>  
-
-                    <p:column headerText="Free" style="width:20%">       
-                        <p:inputText autocomplete="off" id="freeQty" value="#{ph.pharmaceuticalBillItem.freeQty}" style="width:100%" >
-                            <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:component('tot')}"
-                                    execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
-                        </p:inputText>
+                        <h:outputLabel id="qty" value="#{ph.tmpQty}"  />
                     </p:column> 
 
+                    <!--                    <p:column headerText="Free" style="width:20%">       
+                                            <p:inputText autocomplete="off" id="freeQty" value="#{ph.pharmaceuticalBillItem.freeQty}" style="width:100%" >
+                                                <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:component('tot')}"
+                                                        execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
+                                            </p:inputText>
+                                        </p:column> -->
+
+                    <p:column headerText="Free" style="width:20%">       
+                        <h:outputLabel id="freeQty" value="#{ph.pharmaceuticalBillItem.freeQty}" style="width:100%" />
+
+                    </p:column> 
+
+                    <!--                    <p:column headerText="P. Rate" style="width:24% ;">                     
+                                            <h:inputText autocomplete="off" id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}">
+                                                <f:ajax event="blur" render="profMargin @this retail total :#{p:component('tot')}"  execute="@this qty item qty freeQty purchase retail" listener="#{storePurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
+                                            </h:inputText>
+                                            <p:outputLabel value=" X #{ph.item.dblValue}" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                                                
+                                        </p:column>              -->
+
                     <p:column headerText="P. Rate" style="width:24% ;">                     
-                        <h:inputText autocomplete="off" id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}">
-                            <f:ajax event="blur" render="profMargin @this retail total :#{p:component('tot')}"  execute="@this qty item qty freeQty purchase retail" listener="#{storePurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
-                        </h:inputText>
-                        <p:outputLabel value=" X #{ph.item.dblValue}" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                                                
-                    </p:column>              
+                        <h:outputLabel id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}"/>
+                    </p:column>         
+
+                    <!--                    <p:column headerText="S. Rate" style="width:24%">                   
+                                            <h:inputText autocomplete="off" id="retail" value="#{ph.pharmaceuticalBillItem.retailRate}"  label="Price">
+                                                <f:ajax event="blur" render="profMargin @this total :#{p:component('tot')}"  execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
+                                            </h:inputText>
+                                            <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                    
+                                        </p:column>  -->
 
                     <p:column headerText="S. Rate" style="width:24%">                   
-                        <h:inputText autocomplete="off" id="retail" value="#{ph.pharmaceuticalBillItem.retailRate}"  label="Price">
-                            <f:ajax event="blur" render="profMargin @this total :#{p:component('tot')}"  execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
-                        </h:inputText>
-                        <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                    
+                        <h:outputLabel  id="retail" value="#{ph.pharmaceuticalBillItem.retailRate}" />
                     </p:column>  
 
                     <p:column headerText="Value" style="width:20%;font-weight: bold;">  
@@ -189,6 +208,8 @@
                     <p:column headerText="Profit Margin" style="width:24%">                    
                         <h:outputText id="profMargin" value=" #{(ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate ) / 100}" />  
                     </p:column>
+                 
+                    
 
                 </p:dataTable>  
 
