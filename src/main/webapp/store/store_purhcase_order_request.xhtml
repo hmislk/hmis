@@ -12,7 +12,6 @@
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCreation')}" >
                 You are NOT authorized
             </h:panelGroup>
-            <p:defaultCommand target="btnSupAdd" ></p:defaultCommand>
             <p:panel rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" >
                 <f:facet name="header">
 
@@ -141,6 +140,7 @@
                     </p:dataTable>  
                     <p:spacer height="50"/>
                     <ph:history/>
+                </h:panelGrid>
             </p:panel>            
         </h:form>
     </ui:define>  

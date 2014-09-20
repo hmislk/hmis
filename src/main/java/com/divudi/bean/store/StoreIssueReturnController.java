@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.bean.pharmacy;
+package com.divudi.bean.store;
 
+import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -12,7 +13,6 @@ import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
@@ -38,7 +38,7 @@ import javax.inject.Inject;
  */
 @Named
 @SessionScoped
-public class IssueReturnController implements Serializable {
+public class StoreIssueReturnController implements Serializable {
 
     private Bill bill;
     private Bill returnBill;
@@ -52,7 +52,7 @@ public class IssueReturnController implements Serializable {
     @Inject
     private PharmaceuticalItemController pharmaceuticalItemController;
     @Inject
-    private PharmacyController pharmacyController;
+    StoreController1 storeController1;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -111,12 +111,12 @@ public class IssueReturnController implements Serializable {
     }
 
     @Inject
-    private PharmacyCalculation pharmacyRecieveBean;
+    StoreCalculation storeCalculation;
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
-        
-        if (tmp.getQty()==null){
+
+        if (tmp.getQty() == null) {
             UtilityController.addErrorMessage("Qty Null");
             return;
         }
@@ -142,7 +142,7 @@ public class IssueReturnController implements Serializable {
 
         getReturnBill().copy(getBill());
 
-        getReturnBill().setBillType(BillType.PharmacyIssue);
+        getReturnBill().setBillType(BillType.StoreIssue);
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
@@ -157,10 +157,10 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
         getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getInstitution(), new RefundBill(), BillType.PharmacyIssue, BillNumberSuffix.PHISSRET));
+                getSessionController().getInstitution(), new RefundBill(), BillType.StoreIssue, BillNumberSuffix.PHISSRET));
 
         getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getDepartment(), new RefundBill(), BillType.PharmacyIssue, BillNumberSuffix.PHISSRET));
+                getSessionController().getDepartment(), new RefundBill(), BillType.StoreIssue, BillNumberSuffix.PHISSRET));
 
         //   getReturnBill().setInsId(getBill().getInsId());
         if (getReturnBill().getId() == null) {
@@ -251,7 +251,6 @@ public class IssueReturnController implements Serializable {
 //            UtilityController.addErrorMessage("Checked Bill. Can not Return");
 //            return;
 //        }
-
         saveReturnBill();
         saveComponent();
 
@@ -320,7 +319,7 @@ public class IssueReturnController implements Serializable {
             tmp.setBillItem(bi);
             tmp.copy(i);
 
-            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PharmacyIssue);
+            double rFund = storeCalculation.getTotalQty(i.getBillItem(), BillType.StoreIssue);
 
             System.err.println("Refund " + rFund);
             double tmpQty = (Math.abs(i.getQtyInUnit())) - Math.abs(rFund);
@@ -368,14 +367,6 @@ public class IssueReturnController implements Serializable {
         this.pharmaceuticalItemController = pharmaceuticalItemController;
     }
 
-    public PharmacyController getPharmacyController() {
-        return pharmacyController;
-    }
-
-    public void setPharmacyController(PharmacyController pharmacyController) {
-        this.pharmacyController = pharmacyController;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
     }
@@ -414,14 +405,6 @@ public class IssueReturnController implements Serializable {
 
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
-    }
-
-    public PharmacyCalculation getPharmacyRecieveBean() {
-        return pharmacyRecieveBean;
-    }
-
-    public void setPharmacyRecieveBean(PharmacyCalculation pharmacyRecieveBean) {
-        this.pharmacyRecieveBean = pharmacyRecieveBean;
     }
 
     public List<BillItem> getBillItems() {
