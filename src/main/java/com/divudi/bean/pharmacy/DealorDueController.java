@@ -18,6 +18,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,12 +85,12 @@ public class DealorDueController implements Serializable {
         this.toDate = toDate;
     }
 
-    private void setValues(Institution inst, String1Value5 dataTable5Value) {
+    private void setValues(Institution inst, String1Value5 dataTable5Value, List<BillType> billTypesBilled, List<BillType> billTypesReturned) {
 
-        List<Bill> lst = getCreditBean().getBills(inst);
+        List<Bill> lst = getCreditBean().getBills(inst, billTypesBilled);
         System.err.println("Institution Ins " + inst.getName());
         for (Bill b : lst) {
-            double rt = getCreditBean().getGrnReturnValue(b);
+            double rt = getCreditBean().getGrnReturnValue(b, billTypesReturned);
 
             //   double dbl = Math.abs(b.getNetTotal()) - (Math.abs(b.getTmpReturnTotal()) + Math.abs(b.getPaidAmount()));
             b.setTmpReturnTotal(rt);
@@ -123,70 +124,48 @@ public class DealorDueController implements Serializable {
     @Inject
     private PharmacyDealorBill pharmacyDealorBill;
 
-    public void fillItems() {
-        System.err.println("Fill Items");
-        Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getDealorFromBills(getFromDate(), getToDate(), InstitutionType.Dealer);
-        list.addAll(getCreditBean().getDealorFromReturnBills(getFromDate(), getToDate(), InstitutionType.Dealer));
-
-        setIns.addAll(list);
-        System.err.println("size " + setIns.size());
-        items = new ArrayList<>();
-        for (Institution ins : setIns) {
-            //     System.err.println("Ins " + ins.getName());
-            InstitutionBills newIns = new InstitutionBills();
-            newIns.setInstitution(ins);
-            List<Bill> lst = getCreditBean().getBills(ins, getFromDate(), getToDate());
-
-            newIns.setBills(lst);
-
-            for (Bill b : lst) {
-                double rt = getCreditBean().getGrnReturnValue(b);
-                b.setTmpReturnTotal(rt);
-
-                double dbl = Math.abs(b.getNetTotal()) - (Math.abs(b.getTmpReturnTotal()) + Math.abs(b.getPaidAmount()));
-
-                if (dbl > 0.1) {
-                    b.setTransBoolean(true);
-                    newIns.setReturned(newIns.getReturned() + b.getTmpReturnTotal());
-                    newIns.setTotal(newIns.getTotal() + b.getNetTotal());
-                    newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidAmount());
-
-                    //    System.err.println("Net Total " + b.getNetTotal());
-                    //     System.err.println("Paid " + b.getPaidAmount());
-                    System.err.println("Return " + b.getTmpReturnTotal());
-                }
-            }
-
-            double finalValue = (newIns.getPaidTotal() + newIns.getTotal() + newIns.getReturned());
-            System.err.println("Final Value " + finalValue);
-            if (finalValue != 0 && finalValue < 0.1) {
-                items.add(newIns);
-            }
-        }
+    public void fillPharmacyDue() {
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+        fillIDealorDue(billTypesListBilled, billTypesListReturn);
     }
 
-    public void fillItemsStore() {
-        System.err.println("Fill Items");
-        Set<Institution> setIns = new HashSet<>();
+    public void fillStoreDue() {
+        BillType[] billTypesArrayBilled = {BillType.StoreGrnBill, BillType.StorePurchase};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        BillType[] billTypesArrayReturn = {BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+        fillIDealorDue(billTypesListBilled, billTypesListReturn);
+    }
 
-        List<Institution> list = getCreditBean().getDealorFromBills(getFromDate(), getToDate(), InstitutionType.StoreDealor);
-        list.addAll(getCreditBean().getDealorFromReturnBills(getFromDate(), getToDate(), InstitutionType.StoreDealor));
+    public void fillPharmacyStoreDue() {
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn, BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+        fillIDealorDue(billTypesListBilled, billTypesListReturn);
+    }
+
+    private void fillIDealorDue(List<BillType> billTypeBilled, List<BillType> billTypeReturned) {
+        Set<Institution> setIns = new HashSet<>();
+        List<Institution> list = getCreditBean().getDealorFromBills(getFromDate(), getToDate(), billTypeBilled);
+
+        list.addAll(getCreditBean().getDealorFromReturnBills(getFromDate(), getToDate(), billTypeReturned));
 
         setIns.addAll(list);
-        System.err.println("size " + setIns.size());
         items = new ArrayList<>();
         for (Institution ins : setIns) {
             //     System.err.println("Ins " + ins.getName());
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
-            List<Bill> lst = getCreditBean().getBills(ins, getFromDate(), getToDate());
+            List<Bill> lst = getCreditBean().getBills(ins, getFromDate(), getToDate(), billTypeBilled);
 
             newIns.setBills(lst);
 
             for (Bill b : lst) {
-                double rt = getCreditBean().getGrnReturnValue(b);
+                double rt = getCreditBean().getGrnReturnValue(b, billTypeReturned);
                 b.setTmpReturnTotal(rt);
 
                 double dbl = Math.abs(b.getNetTotal()) - (Math.abs(b.getTmpReturnTotal()) + Math.abs(b.getPaidAmount()));
@@ -215,13 +194,38 @@ public class DealorDueController implements Serializable {
         return items;
     }
 
-    public void createAgeTable() {
+    public void fillStoreDueAge() {
+        BillType[] billTypesArrayBilled = {BillType.StoreGrnBill, BillType.StorePurchase};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        BillType[] billTypesArrayReturn = {BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+
+        createAgeTable(billTypesListBilled, billTypesListReturn);
+    }
+
+    public void fillPharmacyDueAge() {
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+
+        createAgeTable(billTypesListBilled, billTypesListReturn);
+    }
+
+    public void fillPharmacyStoreDueAge() {
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn, BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+        createAgeTable(billTypesListBilled, billTypesListReturn);
+    }
+
+    private void createAgeTable(List<BillType> billTypesBilled, List<BillType> billTypesReturned) {
         makeNull();
-        System.err.println("Fill Items");
         Set<Institution> setIns = new HashSet<>();
 
-        List<Institution> list = getCreditBean().getDealorFromBills(InstitutionType.Dealer);
-        list.addAll(getCreditBean().getDealorFromReturnBills(InstitutionType.Dealer));
+        List<Institution> list = getCreditBean().getDealorFromBills(billTypesBilled);
+        list.addAll(getCreditBean().getDealorFromReturnBills(billTypesReturned));
 
         setIns.addAll(list);
         System.err.println("size " + setIns.size());
@@ -234,38 +238,7 @@ public class DealorDueController implements Serializable {
 
             String1Value5 newRow = new String1Value5();
             newRow.setString(ins.getName());
-            setValues(ins, newRow);
-
-            if (newRow.getValue1() != 0
-                    || newRow.getValue2() != 0
-                    || newRow.getValue3() != 0
-                    || newRow.getValue4() != 0) {
-                dealorCreditAge.add(newRow);
-            }
-        }
-
-    }
-    
-    public void createAgeTableStore() {
-        makeNull();
-        System.err.println("Fill Items");
-        Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getDealorFromBills(InstitutionType.StoreDealor);
-        list.addAll(getCreditBean().getDealorFromReturnBills(InstitutionType.StoreDealor));
-
-        setIns.addAll(list);
-        System.err.println("size " + setIns.size());
-
-        dealorCreditAge = new ArrayList<>();
-        for (Institution ins : setIns) {
-            if (ins == null) {
-                continue;
-            }
-
-            String1Value5 newRow = new String1Value5();
-            newRow.setString(ins.getName());
-            setValues(ins, newRow);
+            setValues(ins, newRow, billTypesBilled, billTypesReturned);
 
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
@@ -277,6 +250,7 @@ public class DealorDueController implements Serializable {
 
     }
 
+ 
     private Institution institution;
 
     public List<Bill> getItems2() {

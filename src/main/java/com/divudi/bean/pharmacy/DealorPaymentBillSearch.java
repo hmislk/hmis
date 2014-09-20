@@ -94,6 +94,33 @@ public class DealorPaymentBillSearch implements Serializable {
     private String comment;
     WebUser user;
 
+    public void approve() {
+        BilledBill newBill = new BilledBill();
+        newBill.copy(getBill());
+        newBill.copyValue(getBill());
+        newBill.setCreatedAt(new Date());
+        newBill.setCreater(sessionController.getLoggedUser());
+        newBill.setInstitution(sessionController.getInstitution());
+        newBill.setDepartment(sessionController.getDepartment());
+        billFacade.create(newBill);
+
+        bill.setReferenceBill(newBill);
+        billFacade.edit(bill);
+
+        for (BillItem bi : getBill().getBillItems()) {
+            BillItem newBi = new BillItem();
+            newBi.copy(bi);
+            newBi.setCreatedAt(new Date());
+            newBi.setCreater(sessionController.getLoggedUser());
+            newBi.setReferanceBillItem(bi);
+            billItemFacede.create(newBi);
+
+            bi.setReferanceBillItem(newBi);
+            billItemFacede.edit(bi);
+
+        }
+    }
+
     public WebUser getUser() {
         return user;
     }
