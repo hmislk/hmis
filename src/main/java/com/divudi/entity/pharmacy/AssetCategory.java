@@ -2,9 +2,8 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.entity;
+package com.divudi.entity.pharmacy;
 
-import com.divudi.entity.lab.*;
 import com.divudi.entity.Category;
 import java.io.Serializable;
 import javax.persistence.Entity;
@@ -18,8 +17,9 @@ import javax.persistence.InheritanceType;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public class ConsumableCategory extends Category implements Serializable {
+public class AssetCategory extends StoreItemCategory implements Serializable {
     private static final long serialVersionUID = 1L;
-   
+    
+
  
 }

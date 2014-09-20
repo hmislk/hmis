@@ -8,13 +8,15 @@
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
     <h:head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>#{labels.topic}</title>
-        <a href="template.xhtml"></a>
+
+        <ui:insert name="title"   >
+            <title>#{labels.topic}</title>
+        </ui:insert>
         <h:outputStylesheet library="css" name="maincss.css" />
         <h:outputStylesheet library="css" name="css1.css" />
         <h:outputStylesheet library="css" name="summery.css" />
         <h:outputStylesheet library="css" name="printing.css" />
-        
+
         <h:outputScript library="js" name="jsfcrud.js"/>
     </h:head>
     <h:body  >
