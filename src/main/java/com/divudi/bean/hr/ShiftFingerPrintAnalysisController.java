@@ -329,8 +329,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     getFingerPrintRecordFacade().create(endRecord);
                 }
 
-                //UPDATE Staff Shift
+                //UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();
+                
+                //Update Staff Shift OT time if DayOff or Sleeping Day
+                if(ss.getShift().getDayType()==DayType.DayOff|| ss.getShift().getDayType()==DayType.SleepingDay){
+                    ss.calOverTimeAll();
+                }
+                
                 getStaffShiftFacade().edit(ss);
             }
         }

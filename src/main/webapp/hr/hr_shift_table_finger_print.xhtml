@@ -52,7 +52,7 @@
                         <h:outputLabel value="#{sts.shift.name}" />
                     </p:column>
                     <p:column headerText="Leave Type" styleClass="singleLine">
-                        <p:selectOneMenu  value="#{sts.leaveType}">
+                        <p:selectOneMenu  value="#{sts.leaveType}" disabled="true">
                             <f:selectItem itemLabel="Leave Type"/>
                             <f:selectItems value="#{staffLeaveController.leaveType}"/>
                         </p:selectOneMenu>          
