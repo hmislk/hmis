@@ -1,11 +1,13 @@
 package com.divudi.bean.pharmacy;
 
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.entity.pharmacy.AssetCategory;
 import com.divudi.facade.AssetCategoryFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.facade.util.JsfUtil.PersistAction;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -18,6 +20,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
 
 @Named("assetCategoryController")
 @SessionScoped
@@ -25,6 +28,8 @@ public class AssetCategoryController implements Serializable {
 
     @EJB
     private AssetCategoryFacade ejbFacade;
+    @Inject
+    SessionController sessionController;
     private List<AssetCategory> items = null;
     private AssetCategory selected;
 
@@ -56,18 +61,18 @@ public class AssetCategoryController implements Serializable {
     }
 
     public void create() {
-        persist(PersistAction.CREATE, ResourceBundle.getBundle("/Bundle").getString("AssetCategoryCreated"));
+        persist(PersistAction.CREATE, "Asset Category Created");
         if (!JsfUtil.isValidationFailed()) {
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
 
     public void update() {
-        persist(PersistAction.UPDATE, ResourceBundle.getBundle("/Bundle").getString("AssetCategoryUpdated"));
+        persist(PersistAction.UPDATE, "Asset Category Updated");
     }
 
     public void destroy() {
-        persist(PersistAction.DELETE, ResourceBundle.getBundle("/Bundle").getString("AssetCategoryDeleted"));
+        persist(PersistAction.DELETE, "Asset Category Deleted");
         if (!JsfUtil.isValidationFailed()) {
             selected = null; // Remove selection
             items = null;    // Invalidate list of items to trigger re-query.
@@ -88,7 +93,11 @@ public class AssetCategoryController implements Serializable {
                 if (persistAction != PersistAction.DELETE) {
                     getFacade().edit(selected);
                 } else {
-                    getFacade().remove(selected);
+                    selected.setRetired(true);
+                    selected.setRetireComments("");
+                    selected.setRetiredAt(new Date());
+                    selected.setRetirer(getSessionController().getLoggedUser());
+                    getFacade().edit(selected);
                 }
                 JsfUtil.addSuccessMessage(successMessage);
             } catch (EJBException ex) {
@@ -121,6 +130,16 @@ public class AssetCategoryController implements Serializable {
         return getFacade().findAll();
     }
 
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    
+    
     @FacesConverter(forClass = AssetCategory.class)
     public static class AssetCategoryControllerConverter implements Converter {
 
