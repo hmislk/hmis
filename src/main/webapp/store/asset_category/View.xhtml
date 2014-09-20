@@ -8,20 +8,23 @@
 
     <ui:composition>
 
-        <p:dialog id="AssetCategoryViewDlg" widgetVar="AssetCategoryViewDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.ViewAssetCategoryTitle}">
+        <p:dialog id="AssetCategoryViewDlg" widgetVar="AssetCategoryViewDialog" modal="true" 
+                  resizable="false" appendTo="@(body)" header="View Category">
             <h:form id="AssetCategoryViewForm">
                 <h:panelGroup id="display">
                     <p:panelGrid columns="2" rendered="#{assetCategoryController.selected != null}">
-                        <h:outputText value="#{bundle.ViewAssetCategoryLabel_name}"/>
-                        <h:outputText value="#{assetCategoryController.selected.name}" title="#{bundle.ViewAssetCategoryTitle_name}"/>
-                        <h:outputText value="#{bundle.ViewAssetCategoryLabel_parentCategory}"/>
-                        <h:outputText value="#{assetCategoryController.selected.parentCategory}" title="#{bundle.ViewAssetCategoryTitle_parentCategory}"/>
-                        <h:outputText value="#{bundle.ViewAssetCategoryLabel_code}"/>
-                        <h:outputText value="#{assetCategoryController.selected.code}" title="#{bundle.ViewAssetCategoryTitle_code}"/>
-                        <h:outputText value="#{bundle.ViewAssetCategoryLabel_id}"/>
-                        <h:outputText value="#{assetCategoryController.selected.id}" title="#{bundle.ViewAssetCategoryTitle_id}"/>
+                        <h:outputText value="Name"/>
+                        <h:outputText value="#{assetCategoryController.selected.name}" 
+                                      title="Name"/>
+                        <h:outputText value="Parent Category"/>
+                        <h:outputText value="#{assetCategoryController.selected.parentCategory.name}" 
+                                      title="Parent Category"/>
+                        <h:outputText value="Code"/>
+                        <h:outputText value="#{assetCategoryController.selected.code}" 
+                                      title="Code"/>
+                        
                     </p:panelGrid>
-                    <p:commandButton value="#{bundle.Close}" onclick="AssetCategoryViewDialog.hide()"/>
+                    <p:commandButton value="Close" onclick="AssetCategoryViewDialog.hide()"/>
                 </h:panelGroup>
             </h:form>
         </p:dialog>
