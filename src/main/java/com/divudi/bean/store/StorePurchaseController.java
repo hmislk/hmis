@@ -325,8 +325,9 @@ public class StorePurchaseController implements Serializable {
 
             if (i.getParentBillItem() != null) {
                 i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
-//                i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
                 getStockFacade().edit(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                getStockFacade().edit(i.getPharmaceuticalBillItem().getStock());
             }
         }
 
