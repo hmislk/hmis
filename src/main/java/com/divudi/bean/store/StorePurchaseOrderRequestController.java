@@ -130,8 +130,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void onEdit(BillItem bi) {
         if (bi.getItem().getDepartmentType() == DepartmentType.Inventry) {
-            if (bi.getPharmaceuticalBillItem().getQty() != 1) {
-                bi.getPharmaceuticalBillItem().setQty(1);
+            if (bi.getTmpQty() != 1) {
+                bi.setTmpQty(1);
                 UtilityController.addErrorMessage("Asset Item Count Reset to 1");
             }
         }
