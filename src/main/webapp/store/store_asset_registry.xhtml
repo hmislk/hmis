@@ -117,6 +117,9 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="View"/>                                     
                                     </f:facet>
+                                    #{i.id}<br/>
+                                    #{i.childStocks.size()}<br/>
+                                    #{i.childStocks}<br/>
                                     <p:commandButton value="Fixed Asset Addition Form" ajax="false" action="report_fixed_asset_addition_form">
                                         <f:setPropertyActionListener value="#{i}" target="#{storeReportsStock.selectedInventoryStock}" ></f:setPropertyActionListener>
                                     </p:commandButton>
