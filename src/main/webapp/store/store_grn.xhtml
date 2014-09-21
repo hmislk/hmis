@@ -297,7 +297,7 @@
                             <p:inputText autocomplete="off" id="txtPrate"  styleClass="numericTxt" 
                                          value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
                                 <f:ajax event="blur" execute="@this" render="tmpRetail" 
-                                        listener="#{storeGrnController.purchaseRateListener(storeGrnController.currentBillItem.pharmaceuticalBillItem)}"/>
+                                        listener="#{storePurchaseController.purchaseRateListener(storeGrnController.currentBillItem.pharmaceuticalBillItem)}"/>
                             </p:inputText>
                             <p:inputText autocomplete="off" id="tmpRetail"  styleClass="numericTxt" 
                                          value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.retailRate}"  />  

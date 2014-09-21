@@ -393,13 +393,11 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addBillItem(BillItem billItem) {
-        
+
 //        if (billItem.getPharmaceuticalBillItem().getPurchaseRate() > billItem.getPharmaceuticalBillItem().getRetailRate()) {
 //            UtilityController.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
 //            return;
 //        }
-        
-        
         if (billItem.getPharmaceuticalBillItem().getRetailRate() <= 0) {
             billItem.getPharmaceuticalBillItem().setRetailRate(billItem.getPharmaceuticalBillItem().getPurchaseRate() * (1 + (.01 * billItem.getItem().getCategory().getSaleMargin())));
         }
@@ -783,6 +781,7 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addChildItemListener(BillItem bi) {
+        System.err.println("Add Child " + bi.getId());
         parentBillItem = bi;
     }
 
@@ -816,7 +815,7 @@ public class StoreGrnController implements Serializable {
         }
 
         if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0 && getParentBillItem() == null) {
-          System.err.println("33");
+            System.err.println("33");
             UtilityController.addErrorMessage("Please enter Purchase Rate");
             return;
         }
@@ -843,8 +842,6 @@ public class StoreGrnController implements Serializable {
             }
         }
 
-        
-        
         addBillItem(getCurrentBillItem());
         currentBillItem = null;
         calTotal();
