@@ -190,6 +190,22 @@ public class StoreGrnController implements Serializable {
         return msg;
     }
 
+    public void saveParentBillItem(BillItem billItem) {
+
+        if (billItem == null) {
+            return;
+        }
+
+        if (billItem.getParentBillItem() != null) {
+            saveParentBillItem(billItem.getParentBillItem());
+        }
+
+        if (billItem.getId() == null) {
+            billItemFacade.create(billItem);
+        }
+
+    }
+
     public void settle() {
 
         String msg = errorCheck(getGrnBill(), billItems);
@@ -205,6 +221,7 @@ public class StoreGrnController implements Serializable {
         }
 
         saveBill();
+        calTotal();
 
         //Restting IDs
         for (BillItem i : getBillItems()) {
@@ -216,6 +233,8 @@ public class StoreGrnController implements Serializable {
                 continue;
             }
 
+            createSerialNumber(i);
+
             PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
             ph.setDoe(applicationController.getStoresExpiery());
             i.setPharmaceuticalBillItem(null);
@@ -224,7 +243,7 @@ public class StoreGrnController implements Serializable {
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getGrnBill());
 
-            storePurchaseController.saveParentBillItem(i.getParentBillItem());
+            saveParentBillItem(i.getParentBillItem());
 
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
@@ -275,8 +294,6 @@ public class StoreGrnController implements Serializable {
         getGrnBill().setCreater(getSessionController().getLoggedUser());
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
 
-        calTotal();
-
         System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
         System.out.println("getBillExpenses() = " + getBillExpenses());
 
@@ -321,6 +338,7 @@ public class StoreGrnController implements Serializable {
         grns = null;
         filteredValue = null;
         bills = null;
+        makeNull();
     }
 
     public BillFacade getBillFacade() {
@@ -384,12 +402,51 @@ public class StoreGrnController implements Serializable {
                 bi.setPharmaceuticalBillItem(ph);
 
                 addBillItem(bi);
-                storePurchaseController.createSerialNumber(bi);
+                createSerialNumber(bi);
                 //  getBillItems().r
                 System.out.println("getBillItems() = " + getBillItems());
             }
 
         }
+    }
+
+    public void createSerialNumber() {
+        createSerialNumber(getCurrentBillItem());
+    }
+
+    public void purchaseRateListener(PharmaceuticalBillItem pharmaceuticalBillItem) {
+        pharmaceuticalBillItem.setRetailRate(pharmaceuticalBillItem.getPurchaseRate());
+    }
+
+    public void createSerialNumber(BillItem billItem) {
+        if (billItem == null) {
+            return;
+        }
+        System.out.println("In");
+        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
+        b = b + 1;
+        for (BillItem bi : getBillItems()) {
+            if (bi.getItem().equals(billItem.getItem())) {
+                b++;
+            }
+        }
+        System.out.println("b = " + b);
+        String code = "";
+        code += getSessionController().getInstitution().getInstitutionCode();
+        code += "/";
+        code += getSessionController().getDepartment().getDepartmentCode();
+        code += "/";
+        if (billItem != null && billItem.getItem() != null && billItem.getItem().getCategory() != null) {
+            code += billItem.getItem().getCategory().getCode();
+            code += "/";
+        }
+        if (billItem != null && billItem.getItem() != null) {
+            code += billItem.getItem().getCode();
+            code += "/";
+        }
+        code += b;
+        System.out.println("code = " + code);
+        billItem.getPharmaceuticalBillItem().setCode(code);
     }
 
     public void addBillItem(BillItem billItem) {
@@ -410,7 +467,7 @@ public class StoreGrnController implements Serializable {
         System.err.println("3");
         billItem.setParentBillItem(getParentBillItem());
 
-        billItem.setSearialNo(getBillItems().size() + 1);
+        billItem.setSearialNo(getBillItems().size());
         billItem.setId(billItem.getSearialNoInteger().longValue());
 
 //        billItem.setSearialNo(getBillItems().size() + 1);        
@@ -565,13 +622,20 @@ public class StoreGrnController implements Serializable {
 //
 //        return tmp;
 //    }
-    public void setApproveBill(Bill approveBill) {
-        this.approveBill = approveBill;
+    public void makeNull() {
         grnBill = null;
         dealor = null;
         pos = null;
         printPreview = false;
         billItems = null;
+        parentBillItem = null;
+        currentBillItem = null;
+        currentExpense = null;
+    }
+
+    public void setApproveBill(Bill approveBill) {
+        this.approveBill = approveBill;
+        makeNull();
         createGrn();
         System.out.println("set Approvebill.");
     }
@@ -782,7 +846,13 @@ public class StoreGrnController implements Serializable {
 
     public void addChildItemListener(BillItem bi) {
         System.err.println("Add Child " + bi.getId());
+        currentBillItem = null;
         parentBillItem = bi;
+    }
+
+    public void addDetailItemListener(BillItem bi) {
+        parentBillItem = null;
+        currentBillItem = bi;
     }
 
     public void setBillExpenses(List<BillItem> billExpenses) {
@@ -848,8 +918,6 @@ public class StoreGrnController implements Serializable {
     }
 
     BillItem currentBillItem;
-    @Inject
-    StorePurchaseController storePurchaseController;
 
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
@@ -872,8 +940,7 @@ public class StoreGrnController implements Serializable {
         for (BillItem p : getBillItems()) {
             p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
-            serialNo++;
-            p.setSearialNo(serialNo);
+            p.setSearialNo(serialNo++);
             p.setId(serialNo.longValue());
             if (p.getParentBillItem() == null) {
                 double netValue = p.getQty() * p.getRate();
