@@ -393,54 +393,23 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addBillItem(BillItem billItem) {
-        if (billItem.getItem() == null) {
-            UtilityController.addErrorMessage("Please Select Item");
-            return;
-        }
-        if (billItem.getItem().getCategory() == null) {
-            UtilityController.addErrorMessage("Please Select Category");
-            return;
-        }
-
-        if (billItem.getPharmaceuticalBillItem().getPurchaseRate() <= 0 && getParentBillItem() == null) {
-            UtilityController.addErrorMessage("Please enter Purchase Rate");
-            return;
-        }
-
-        if (billItem.getPharmaceuticalBillItem().getRetailRate() == 0) {
-            UtilityController.addErrorMessage("Please enter Retail Rate");
-            return;
-        }
-
-        if (billItem.getPharmaceuticalBillItem().getRetailRate() < billItem.getPharmaceuticalBillItem().getPurchaseRate()) {
-            UtilityController.addErrorMessage("Please check Retail Rate");
-            return;
-        }
-
-        if (billItem.getPharmaceuticalBillItem().getQty() <= 0) {
-            UtilityController.addErrorMessage("Please enter Purchase QTY");
-            return;
-        }
-
-        if (billItem.getItem().getDepartmentType() == DepartmentType.Inventry) {
-            if (billItem.getPharmaceuticalBillItem().getQty() != 1) {
-                UtilityController.addErrorMessage("Please Qty must be 1 for Asset");
-                return;
-            }
-        }
-
+        
 //        if (billItem.getPharmaceuticalBillItem().getPurchaseRate() > billItem.getPharmaceuticalBillItem().getRetailRate()) {
 //            UtilityController.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
 //            return;
 //        }
+        
+        
         if (billItem.getPharmaceuticalBillItem().getRetailRate() <= 0) {
             billItem.getPharmaceuticalBillItem().setRetailRate(billItem.getPharmaceuticalBillItem().getPurchaseRate() * (1 + (.01 * billItem.getItem().getCategory().getSaleMargin())));
         }
 
+        System.err.println("2");
         if (billItem.getPharmaceuticalBillItem().getDoe() == null) {
             billItem.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
         }
 
+        System.err.println("3");
         billItem.setParentBillItem(getParentBillItem());
 
         billItem.setSearialNo(getBillItems().size() + 1);
@@ -834,6 +803,48 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addItem() {
+        System.err.println("****");
+        if (getCurrentBillItem().getItem() == null) {
+            System.err.println("11");
+            UtilityController.addErrorMessage("Please Select Item");
+            return;
+        }
+        if (getCurrentBillItem().getItem().getCategory() == null) {
+            System.err.println("22");
+            UtilityController.addErrorMessage("Please Select Category");
+            return;
+        }
+
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0 && getParentBillItem() == null) {
+          System.err.println("33");
+            UtilityController.addErrorMessage("Please enter Purchase Rate");
+            return;
+        }
+
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() == 0) {
+            UtilityController.addErrorMessage("Please enter Retail Rate");
+            return;
+        }
+
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() < getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) {
+            UtilityController.addErrorMessage("Please check Retail Rate");
+            return;
+        }
+
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0) {
+            UtilityController.addErrorMessage("Please enter Purchase QTY");
+            return;
+        }
+
+        if (getCurrentBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
+            if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() != 1) {
+                UtilityController.addErrorMessage("Please Qty must be 1 for Asset");
+                return;
+            }
+        }
+
+        
+        
         addBillItem(getCurrentBillItem());
         currentBillItem = null;
         calTotal();
