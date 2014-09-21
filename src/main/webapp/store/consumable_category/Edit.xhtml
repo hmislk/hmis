@@ -23,8 +23,7 @@
                         </p:selectOneMenu>
                         <p:outputLabel value="Code" for="code" />
                         <p:inputText id="code" value="#{consumableCategoryController.selected.code}" title="Code" />
-                        <p:outputLabel value="ID" for="id" />
-                        <p:inputText id="id" value="#{consumableCategoryController.selected.id}" title="id" />
+                        
                     </p:panelGrid>
                     <p:commandButton actionListener="#{consumableCategoryController.update}" value="Save" update="display,:ConsumableCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args, 'ConsumableCategoryEditDialog');"/>
                     <p:commandButton value="Cancel" onclick="ConsumableCategoryEditDialog.hide()"/>
