@@ -63,6 +63,8 @@ public class StoreReportsStock implements Serializable {
     Date toDate;
     Date fromDateE;
     Date toDateE;
+    
+    Stock selectedInventoryStock;
 
     /**
      * Managed Beans
@@ -719,4 +721,14 @@ public class StoreReportsStock implements Serializable {
         this.stockHistoryFacade = stockHistoryFacade;
     }
 
+    public Stock getSelectedInventoryStock() {
+        return selectedInventoryStock;
+    }
+
+    public void setSelectedInventoryStock(Stock selectedInventoryStock) {
+        this.selectedInventoryStock = selectedInventoryStock;
+    }
+
+    
+    
 }
