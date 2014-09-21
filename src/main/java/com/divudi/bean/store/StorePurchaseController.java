@@ -28,6 +28,7 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -42,6 +43,7 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import sun.org.mozilla.javascript.NativeIterator;
 
 /**
  *
@@ -66,6 +68,11 @@ public class StorePurchaseController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private AmpFacade ampFacade;
+    @EJB
+    StockFacade stockFacade;
+    
+    
+    
     @Inject
     StoreCalculation storeCalculation;
     @Inject
@@ -313,6 +320,14 @@ public class StorePurchaseController implements Serializable {
             getPharmaceuticalBillItemFacade().edit(tmpPh);
 
             getBill().getBillItems().add(i);
+        }
+
+        for (BillItem i : getBillItems()) {
+
+            if (i.getParentBillItem() == null) {
+                i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                getStockFacade().edit(i.getPharmaceuticalBillItem().getStock());
+            }
         }
 
         for (BillItem i : getBillExpenses()) {
@@ -719,5 +734,19 @@ public class StorePurchaseController implements Serializable {
     public void setBillNumberController(BillNumberController billNumberController) {
         this.billNumberController = billNumberController;
     }
+
+    public StockFacade getStockFacade() {
+        return stockFacade;
+    }
+
+    public StoreCalculation getStoreCalculation() {
+        return storeCalculation;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+
 
 }

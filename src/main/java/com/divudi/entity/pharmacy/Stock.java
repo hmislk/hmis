@@ -7,11 +7,15 @@ package com.divudi.entity.pharmacy;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import java.io.Serializable;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 /**
@@ -36,7 +40,34 @@ public class Stock implements Serializable {
     @ManyToOne
     Staff staff;
     String code;
+    
+    @ManyToOne
+    Stock parentStock;
+    
+    @OneToMany(mappedBy = "parentStock",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<Stock> childStocks;
 
+    public List<Stock> getChildStocks() {
+        return childStocks;
+    }
+
+    public void setChildStocks(List<Stock> childStocks) {
+        this.childStocks = childStocks;
+    }
+    
+    
+
+    public Stock getParentStock() {
+        return parentStock;
+    }
+
+    public void setParentStock(Stock parentStock) {
+        this.parentStock = parentStock;
+    }
+
+    
+    
+    
     public String getCode() {
         return code;
     }
