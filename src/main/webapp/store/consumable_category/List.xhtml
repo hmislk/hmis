@@ -37,7 +37,7 @@
                             <f:facet name="header">
                                 <h:outputText value="Parent Category"/>
                             </f:facet>
-                            <h:outputText value="#{item.parentCategory}"/>
+                            <h:outputText value="#{item.parentCategory.name}"/>
                         </p:column>
                         <p:column>
                             <f:facet name="header">
@@ -45,12 +45,7 @@
                             </f:facet>
                             <h:outputText value="#{item.code}"/>
                         </p:column>
-                        <p:column>
-                            <f:facet name="header">
-                                <h:outputText value="ID"/>
-                            </f:facet>
-                            <h:outputText value="#{item.id}"/>
-                        </p:column>
+                        
                         <f:facet name="footer">
                             <p:commandButton id="createButton" icon="ui-icon-plus"   value="Create new Category" actionListener="#{consumableCategoryController.prepareCreate}" update=":ConsumableCategoryCreateForm" oncomplete="PF('ConsumableCategoryCreateDialog').show()"/>
                             <p:commandButton id="viewButton"   icon="ui-icon-search" value="View Selected Category" update=":ConsumableCategoryViewForm" oncomplete="PF('ConsumableCategoryViewDialog').show()" disabled="#{empty consumableCategoryController.selected}"/>
