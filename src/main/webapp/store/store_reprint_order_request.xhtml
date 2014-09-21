@@ -22,7 +22,7 @@
                                                           or (storeBillSearch.bill.referenceBill.creater ne null
                                                           and storeBillSearch.bill.referenceBill.cancelled eq false)}">
                                 <f:setPropertyActionListener value="#{storeBillSearch.bill}" target="#{storePurchaseOrderRequestController.currentBill}"/>
-                                <f:setPropertyActionListener value="#{storeBillSearch.bill.billItems}" target="#{storePurchaseOrderRequestController.billItems}"/>
+                                <f:setPropertyActionListener value="#{storeBillSearch.billItems}" target="#{storePurchaseOrderRequestController.billItems}"/>
                             </p:commandButton>
                         </f:facet>
 
