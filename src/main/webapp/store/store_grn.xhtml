@@ -322,11 +322,11 @@
                             <h:outputLabel value=""/>
                             <h:outputLabel ></h:outputLabel>
 
-                            <p:selectOneMenu id="cmbParent" value="#{storeGrnController.parentBillItem}" converter="temBillItemConverter"  >
+<!--                            <p:selectOneMenu id="cmbParent" value="#{storeGrnController.parentBillItem}" converter="temBillItemConverter"  >
                                 <f:selectItem itemLabel="Select Parent Item" />
                                 <f:selectItems   value="#{storeGrnController.billItems}" var="bi" itemValue="#{bi}" itemLabel="#{bi.item.name}" />
                                 <f:ajax event="change" execute="@this" /> 
-                            </p:selectOneMenu>
+                            </p:selectOneMenu>-->
 
                             <p:selectOneMenu id="cmbMake" value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.make}" >
                                 <f:selectItem itemLabel="Select a Make" ></f:selectItem>

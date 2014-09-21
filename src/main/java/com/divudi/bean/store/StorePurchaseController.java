@@ -43,7 +43,6 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
-import sun.org.mozilla.javascript.NativeIterator;
 
 /**
  *
