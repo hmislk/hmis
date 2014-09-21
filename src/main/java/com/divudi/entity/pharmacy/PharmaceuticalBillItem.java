@@ -4,8 +4,10 @@
  */
 package com.divudi.entity.pharmacy;
 
+import com.divudi.bean.common.TimeUtils;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
+import com.divudi.entity.Institution;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -18,6 +20,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import java.math.BigDecimal;
+import javax.persistence.Lob;
 
 /**
  *
@@ -55,6 +58,150 @@ public class PharmaceuticalBillItem implements Serializable {
     Category make;
     String model;
     String code;
+    String serialNo;
+    @Lob
+    String description;
+    String barcode;
+    String registrationNo;
+    String chassisNo;
+    String engineNo;
+    String colour;
+    int numberOfAccessories;
+    String warrentyCertificateNumber;
+    long warrentyDuration;
+    double totalAcquicitionCost;
+    double deprecitionRate;
+    @Lob
+    String otherNotes;
+    
+    @ManyToOne
+    Institution manufacturer;
+
+    public String getSerialNo() {
+        return serialNo;
+    }
+
+    public void setSerialNo(String serialNo) {
+        this.serialNo = serialNo;
+    }
+
+    
+    
+    public String getWarrentyCertificateNumber() {
+        return warrentyCertificateNumber;
+    }
+
+    public void setWarrentyCertificateNumber(String warrentyCertificateNumber) {
+        this.warrentyCertificateNumber = warrentyCertificateNumber;
+    }
+
+    public long getWarrentyDuration() {
+        return warrentyDuration;
+    }
+
+    public String getWarrentyDurationInYearsAndDays() {
+        return TimeUtils.millisToYearsAndDates(warrentyDuration);
+    }
+    
+    public void setWarrentyDuration(long warrentyDuration) {
+        this.warrentyDuration = warrentyDuration;
+    }
+
+    public double getTotalAcquicitionCost() {
+        return totalAcquicitionCost;
+    }
+
+    public void setTotalAcquicitionCost(double totalAcquicitionCost) {
+        this.totalAcquicitionCost = totalAcquicitionCost;
+    }
+
+    public double getDeprecitionRate() {
+        return deprecitionRate;
+    }
+
+    public void setDeprecitionRate(double deprecitionRate) {
+        this.deprecitionRate = deprecitionRate;
+    }
+
+    public String getOtherNotes() {
+        return otherNotes;
+    }
+
+    public void setOtherNotes(String otherNotes) {
+        this.otherNotes = otherNotes;
+    }
+
+    public Institution getManufacturer() {
+        return manufacturer;
+    }
+
+    public void setManufacturer(Institution manufacturer) {
+        this.manufacturer = manufacturer;
+    }
+
+    
+    
+    public String getRegistrationNo() {
+        return registrationNo;
+    }
+
+    public void setRegistrationNo(String registrationNo) {
+        this.registrationNo = registrationNo;
+    }
+
+    public String getChassisNo() {
+        return chassisNo;
+    }
+
+    public void setChassisNo(String chassisNo) {
+        this.chassisNo = chassisNo;
+    }
+
+    public String getEngineNo() {
+        return engineNo;
+    }
+
+    public void setEngineNo(String engineNo) {
+        this.engineNo = engineNo;
+    }
+
+    public String getColour() {
+        return colour;
+    }
+
+    public void setColour(String colour) {
+        this.colour = colour;
+    }
+
+    public int getNumberOfAccessories() {
+        return numberOfAccessories;
+    }
+
+    public void setNumberOfAccessories(int numberOfAccessories) {
+        this.numberOfAccessories = numberOfAccessories;
+    }
+
+    
+    
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
+    
+    
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    
 
     public String getCode() {
         return code;

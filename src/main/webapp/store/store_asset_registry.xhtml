@@ -111,6 +111,22 @@
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
+                                
+                                
+                                <p:column headerText="View" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="View"/>                                     
+                                    </f:facet>
+                                    #{i.id}<br/>
+                                    #{i.childStocks.size()}<br/>
+                                    #{i.childStocks}<br/>
+                                    <p:commandButton value="Fixed Asset Addition Form" ajax="false" action="report_fixed_asset_addition_form">
+                                        <f:setPropertyActionListener value="#{i}" target="#{storeReportsStock.selectedInventoryStock}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </p:column>
+                                
+                                
+                                
                                 <p:columnGroup type="footer">
                                     <p:row>
                                         <p:column colspan="6" footerText="Total">
