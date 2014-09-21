@@ -9,6 +9,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberController;
@@ -382,13 +383,73 @@ public class StoreGrnController implements Serializable {
 
                 bi.setPharmaceuticalBillItem(ph);
 
-                storePurchaseController.addItem(bi, null, getBillItems());
+                addBillItem(bi);
                 storePurchaseController.createSerialNumber(bi);
                 //  getBillItems().r
                 System.out.println("getBillItems() = " + getBillItems());
             }
 
         }
+    }
+
+    public void addBillItem(BillItem billItem) {
+        if (billItem.getItem() == null) {
+            UtilityController.addErrorMessage("Please Select Item");
+            return;
+        }
+        if (billItem.getItem().getCategory() == null) {
+            UtilityController.addErrorMessage("Please Select Category");
+            return;
+        }
+
+        if (billItem.getPharmaceuticalBillItem().getPurchaseRate() <= 0 && getParentBillItem() == null) {
+            UtilityController.addErrorMessage("Please enter Purchase Rate");
+            return;
+        }
+
+        if (billItem.getPharmaceuticalBillItem().getRetailRate() == 0) {
+            UtilityController.addErrorMessage("Please enter Retail Rate");
+            return;
+        }
+
+        if (billItem.getPharmaceuticalBillItem().getRetailRate() < billItem.getPharmaceuticalBillItem().getPurchaseRate()) {
+            UtilityController.addErrorMessage("Please check Retail Rate");
+            return;
+        }
+
+        if (billItem.getPharmaceuticalBillItem().getQty() <= 0) {
+            UtilityController.addErrorMessage("Please enter Purchase QTY");
+            return;
+        }
+
+        if (billItem.getItem().getDepartmentType() == DepartmentType.Inventry) {
+            if (billItem.getPharmaceuticalBillItem().getQty() != 1) {
+                UtilityController.addErrorMessage("Please Qty must be 1 for Asset");
+                return;
+            }
+        }
+
+//        if (billItem.getPharmaceuticalBillItem().getPurchaseRate() > billItem.getPharmaceuticalBillItem().getRetailRate()) {
+//            UtilityController.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
+//            return;
+//        }
+        if (billItem.getPharmaceuticalBillItem().getRetailRate() <= 0) {
+            billItem.getPharmaceuticalBillItem().setRetailRate(billItem.getPharmaceuticalBillItem().getPurchaseRate() * (1 + (.01 * billItem.getItem().getCategory().getSaleMargin())));
+        }
+
+        if (billItem.getPharmaceuticalBillItem().getDoe() == null) {
+            billItem.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
+        }
+
+        billItem.setParentBillItem(getParentBillItem());
+
+        billItem.setSearialNo(getBillItems().size() + 1);
+        billItem.setId(billItem.getSearialNoInteger().longValue());
+
+//        billItem.setSearialNo(getBillItems().size() + 1);        
+        getBillItems().add(billItem);
+//
+//        getBillItemController().setItems(getBillItems());
     }
 
     public void createGrn() {
@@ -773,7 +834,7 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addItem() {
-        storePurchaseController.addItem(getCurrentBillItem(), getParentBillItem(), getBillItems());
+        addBillItem(getCurrentBillItem());
         currentBillItem = null;
         calTotal();
     }
@@ -787,7 +848,7 @@ public class StoreGrnController implements Serializable {
             currentBillItem = new BillItem();
             PharmaceuticalBillItem cuPharmaceuticalBillItem = new PharmaceuticalBillItem();
             currentBillItem.setPharmaceuticalBillItem(cuPharmaceuticalBillItem);
-            cuPharmaceuticalBillItem. setBillItem(currentBillItem);
+            cuPharmaceuticalBillItem.setBillItem(currentBillItem);
         }
         return currentBillItem;
     }
