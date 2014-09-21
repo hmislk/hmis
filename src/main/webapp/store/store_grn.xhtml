@@ -48,7 +48,7 @@
                     </p:column>
 
                     <p:column >
-                        <p:commandButton   value="Add" process="@this" 
+                        <p:commandButton   value="Add Accessories" process="@this" 
                                            style="float: right;" 
                                            actionListener="#{storeGrnController.addChildItemListener(bi)}"
                                            oncomplete="PF('dlgAdd').show();">                        
@@ -257,6 +257,83 @@
                     </p:panelGrid>
                     <p:dialog id="dialogChannelAdded" header="Add Chiled Item" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
+
+
+
+                        <h:panelGroup id="panelInventoryItemDetails" >
+
+                            <p:panelGrid styleClass="alignTop"  columns="7" rendered="#{storePurchaseController.currentBillItem.item.departmentType eq 'Inventry'}" >
+
+
+                                <h:outputLabel value="Make"/>
+                                <h:outputLabel value="Model"/>
+                                <h:outputLabel value="Inventory Code"></h:outputLabel>
+                                <h:outputLabel value="Description"></h:outputLabel>
+                                <h:outputLabel value="Barcode No"/>
+                                <h:outputLabel value="Serial No"/>
+                                <h:outputLabel value="Serial No"/>
+
+                                <h:outputLabel value="Serial No"/>
+
+                                <p:selectOneMenu id="cmbMake" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.make}" >
+                                    <f:selectItem itemLabel="Select a Make" ></f:selectItem>
+                                    <f:selectItems value="#{makeController.items}" var="make" itemLabel="#{make.name}" itemValue="#{make}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                <p:inputText value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.model}" ></p:inputText>
+                                <p:inputText id="txtInventoryCode" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.code}" ></p:inputText>
+                                <p:inputTextarea id="txtInventoryDescription" 
+                                                 value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.description}" >
+                                </p:inputTextarea>
+                                <p:inputText id="txtBarcode" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.barcode}" ></p:inputText>
+                                <p:inputText id="txtSerialNo" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.serialNo}" ></p:inputText>
+
+
+                                <h:outputLabel value="Registration No"/>
+                                <h:outputLabel value="Chassis No"/>
+                                <h:outputLabel value="Engine No"/>
+                                <h:outputLabel value="Colour"></h:outputLabel>
+                                <h:outputLabel value="Warranty Certification No"></h:outputLabel>
+                                <h:outputLabel value="Warranty Duration"/>
+                                <h:outputLabel value="Depreciation Rate"/>
+
+
+                                <p:inputText id="txtRegNo" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.registrationNo}" ></p:inputText>
+                                <p:inputText id="txtChassisNo" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.chassisNo}" ></p:inputText>
+                                <p:inputText id="txtEngineNo" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.engineNo}" ></p:inputText>
+                                <p:inputText id="txtColour" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.colour}" ></p:inputText>
+                                <p:inputText id="txtWarrentyCertificateNo" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.warrentyCertificateNumber}" ></p:inputText>
+                                <p:outputLabel id="lblWarrantyDuration" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" ></p:outputLabel>
+                                <p:inputText id="txtDepreciationRate" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.deprecitionRate}" ></p:inputText>
+
+
+                                <h:outputLabel value="Manufacturer"/>
+                                <h:outputLabel value="Other Notes"/>
+                                <h:outputLabel value=""/>
+                                <h:outputLabel value=""></h:outputLabel>
+                                <h:outputLabel value=""></h:outputLabel>
+                                <h:outputLabel value=""/>
+                                <h:outputLabel value=""/>
+
+
+                                <p:autoComplete id="acManufacturer" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.manufacturer}"
+                                                completeMethod="#{manufacturerController.completeManu}" 
+                                                var="manufacturer"
+                                                itemLabel="#{manufacturer.name}"
+                                                itemValue="#{manufacturer}" ></p:autoComplete>
+                                <p:inputTextarea id="txtOtherNotes" 
+                                                 value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.otherNotes}" >
+                                </p:inputTextarea>
+
+
+
+                            </p:panelGrid>
+
+
+                        </h:panelGroup>
+
+
+
+
                         <p:panelGrid id="itemSelectgrid1" columns="8">                       
                             <h:outputLabel value="Select Item"/>
                             <h:outputLabel value="Qty"/>
