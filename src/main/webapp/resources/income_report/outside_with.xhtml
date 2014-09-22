@@ -7,8 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core">
 
     <!-- INTERFACE -->
-    <cc:interface>
-        <cc:attribute name="professional"/>
+    <cc:interface>       
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -31,7 +30,7 @@
                     <f:convertNumber pattern="#,000.00"/>
                 </h:outputLabel>
             </p:column>  
-            <p:column style="text-align: right;" rendered="#{cc.attrs.professional eq true}">
+            <p:column style="text-align: right;" >
                 <f:facet name="header">
                     <h:outputLabel value="Professional Fee"/>
                 </f:facet>

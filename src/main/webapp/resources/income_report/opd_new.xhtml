@@ -55,7 +55,7 @@
                 </f:facet>
             
             </p:column>
-            <p:column headerText="Professional Fee"  styleClass="numberCol" rendered="#{cc.attrs.professional eq true}">
+            <p:column headerText="Professional Fee"  styleClass="numberCol" rendered="#{cc.attrs.professional eq true}" >
                 <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
                 <p:outputLabel value="#{sr.proFee}" rendered="#{!sr.catRow}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
