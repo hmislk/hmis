@@ -960,20 +960,20 @@ public class ReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
+        m.put("bt", BillType.PharmacyTransferReceive);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
-            sql = "select b from Bill b where b.department=:fdept"
-                    + " and b.toDepartment=:tdept and b.createdAt between :fd "
+            sql = "select b from Bill b where b.fromDepartment=:fdept"
+                    + " and b.department=:tdept and b.createdAt between :fd "
                     + "and :td and b.billType=:bt order by b.id";
         } else if (fromDepartment == null && toDepartment != null) {
             m.put("tdept", toDepartment);
-            sql = "select b from Bill b where b.toDepartment=:tdept and b.createdAt "
+            sql = "select b from Bill b where b.department=:tdept and b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         } else if (fromDepartment != null && toDepartment == null) {
             m.put("fdept", fromDepartment);
-            sql = "select b from Bill b where b.department=:fdept and b.createdAt "
+            sql = "select b from Bill b where b.fromDepartment=:fdept and b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         } else {
             sql = "select b from Bill b where b.createdAt "

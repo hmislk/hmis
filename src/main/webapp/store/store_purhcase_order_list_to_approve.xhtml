@@ -44,13 +44,15 @@
 
 
                 <p:dataTable id="tbl" value="#{searchController.bills}" var="b">
-                    <p:column headerText="Requested at"  >
-                        <h:commandLink action="store_reprint_order_request" >
-                            <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
-                            </h:outputLabel>
+                    <p:column>
+                        <p:commandButton ajax="false" value="View Request" action="store_reprint_order_request">
                             <f:setPropertyActionListener value="#{b}" target="#{storeBillSearch.bill}"/>
-                        </h:commandLink>
+                        </p:commandButton>
+                    </p:column>
+                    <p:column headerText="Requested at"  >                        
+                        <h:outputLabel value="#{b.createdAt}" >
+                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                        </h:outputLabel>
                         <br/>
                         <h:panelGroup rendered="#{b.cancelled}" >
                             <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -61,12 +63,9 @@
                         </h:panelGroup>                       
                     </p:column> 
 
-                    <p:column headerText="Requested by" >
-                        <h:commandLink action="store_reprint_order_request" >
-                            <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
-                            </h:outputLabel>
-                            <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
-                        </h:commandLink>
+                    <p:column headerText="Requested by" >                      
+                        <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
+                        </h:outputLabel>
                         <br/>
                         <h:panelGroup rendered="#{b.cancelled}" >
                             <h:outputLabel style="color: red;" value="Cancelled by " />
@@ -76,18 +75,12 @@
                         </h:panelGroup>
                     </p:column>    
 
-                    <p:column headerText="Distributor" >
-                        <h:commandLink action="store_reprint_order_request" >
-                            #{b.toInstitution.name}
-                            <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b}"/>
-                        </h:commandLink>
+                    <p:column headerText="Distributor" >                        
+                        #{b.toInstitution.name}
                     </p:column>
 
-                    <p:column headerText="Requested Deprtment" >
-                        <h:commandLink action="store_reprint_order_request" >
-                            #{b.department.name}
-                            <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b}"/>
-                        </h:commandLink>
+                    <p:column headerText="Requested Deprtment" >                     
+                        #{b.department.name}                     
                     </p:column> 
 
                     <p:column headerText="Requested Value" >
@@ -96,11 +89,9 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column headerText="Approved Person"  >
-                        <h:commandLink action="store_reprint_order_request" 
-                                       value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"  rendered="#{b.referenceBill.cancelled eq false}" >                        
-                            <f:setPropertyActionListener target="#{storeBillSearch.bill}" value="#{b}"/>
-                        </h:commandLink>
+                    <p:column headerText="Approved Person"  >                        
+                        <h:outputLabel    value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"  rendered="#{b.referenceBill.cancelled eq false}" />                        
+
                     </p:column>
 
                     <p:column headerText="PO Number" >                       

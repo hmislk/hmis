@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="AssetCategoryEditDlg" widgetVar="AssetCategoryEditDialog" 
+                  modal="true" resizable="false" appendTo="@(body)" header="Edit Asset Category">
+            <h:form id="AssetCategoryEditForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{assetCategoryController.selected != null}">
+                        <p:outputLabel value="Name" for="name" />
+                        <p:inputText id="name" value="#{assetCategoryController.selected.name}" 
+                                     title="Name" />
+                        <p:outputLabel value="Parant Category" for="parentCategory" />
+                        <p:selectOneMenu id="parentCategory" value="#{assetCategoryController.selected.parentCategory}" >
+                            <f:selectItem itemLabel="Select a parent category"/>
+                            <f:selectItems value="#{assetCategoryController.itemsAvailableSelectOne}"
+                                           var="parentCategoryItem"
+                                           itemValue="#{parentCategoryItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="Code" for="code" />
+                        <p:inputText id="code" value="#{assetCategoryController.selected.code}" 
+                                     title="Code" />
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{assetCategoryController.update}" value="Save" update="display,:AssetCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args, 'AssetCategoryEditDialog');"/>
+                    <p:commandButton value="Cancel" onclick="AssetCategoryEditDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

@@ -190,8 +190,8 @@ public class TransferReceiveController implements Serializable {
             getReceivedBill().getBillItems().add(i);
         }
 
-        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReceivedBill(), BillType.StoreTransferReceive, BillNumberSuffix.STTI));
-        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReceivedBill(), BillType.StoreTransferReceive, BillNumberSuffix.STTI));
+        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReceivedBill(), BillType.PharmacyTransferReceive, BillNumberSuffix.PHTI));
+        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReceivedBill(), BillType.PharmacyTransferReceive, BillNumberSuffix.PHTI));
 
         getReceivedBill().setInstitution(getSessionController().getInstitution());
         getReceivedBill().setDepartment(getSessionController().getDepartment());

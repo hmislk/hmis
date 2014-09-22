@@ -41,6 +41,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Lob;
 import javax.persistence.TemporalType;
 
 /**
@@ -192,7 +193,7 @@ public class StoreCalculation {
         System.err.println("GETTING Billed QTY " + value);
         return value;
     }
-    
+
     public double getCancelledIssuedByRequestedItem(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
                 + "  p.creater is not null and type(p.bill)=:class and "
@@ -265,10 +266,10 @@ public class StoreCalculation {
 
     public double calQty(PharmaceuticalBillItem po) {
 
-        double billed = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
-        double cancelled = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());;
-        double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-        double returnedC = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
+        double billed = getTotalQty(po.getBillItem(), BillType.StoreGrnBill, new BilledBill());
+        double cancelled = getTotalQty(po.getBillItem(), BillType.StoreGrnBill, new CancelledBill());;
+        double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
+        double returnedC = getReturnedTotalQty(po.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
 
         double recieveNet = Math.abs(billed) - Math.abs(cancelled);
         double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
@@ -285,8 +286,8 @@ public class StoreCalculation {
 
     public double calQtyInTwoSql(PharmaceuticalBillItem po) {
 
-        double grns = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill);
-        double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn);
+        double grns = getTotalQty(po.getBillItem(), BillType.StoreGrnBill);
+        double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.StoreGrnReturn);
 
         double netQty = grns - grnReturn;
 
@@ -299,7 +300,7 @@ public class StoreCalculation {
 
     public double calQty2(BillItem bil) {
 
-        double returnBill = getTotalQty(bil, BillType.PharmacySale, new RefundBill());
+        double returnBill = getTotalQty(bil, BillType.StoreSale, new RefundBill());
 
         //System.err.println("RETURN " + returnBill);
         return bil.getQty() - returnBill;
@@ -307,7 +308,7 @@ public class StoreCalculation {
 
     public double calQty3(BillItem bil) {
 
-        double returnBill = getTotalQty(bil, BillType.PharmacyPre, new RefundBill());
+        double returnBill = getTotalQty(bil, BillType.StorePre, new RefundBill());
 
         //System.err.println("RETURN " + returnBill);
         return bil.getQty() - returnBill;
@@ -471,49 +472,60 @@ public class StoreCalculation {
 
     public ItemBatch saveItemBatch(BillItem tmp) {
         //System.err.println("Save Item Batch");
-        ItemBatch itemBatch = new ItemBatch();
+        ItemBatch ib = new ItemBatch();
         Item itm = tmp.getItem();
+        PharmaceuticalBillItem pbi =tmp.getPharmaceuticalBillItem();
 
         if (itm instanceof Ampp) {
             itm = ((Ampp) itm).getAmp();
         }
 
-        double purchase = tmp.getPharmaceuticalBillItem().getPurchaseRateInUnit();
-        double retail = tmp.getPharmaceuticalBillItem().getRetailRateInUnit();
+        double purchase = pbi.getPurchaseRateInUnit();
+        double retail = pbi.getRetailRateInUnit();
 
         //System.err.println("Puchase :  " + purchase);
         //System.err.println("Puchase :  " + retail);
-        itemBatch.setDateOfExpire(tmp.getPharmaceuticalBillItem().getDoe());
-        itemBatch.setBatchNo(tmp.getPharmaceuticalBillItem().getStringValue());
-        itemBatch.setPurcahseRate(purchase);
-        itemBatch.setRetailsaleRate(retail);
+        ib.setDateOfExpire(pbi.getDoe());
+        ib.setBatchNo(pbi.getStringValue());
+        ib.setPurcahseRate(purchase);
+        ib.setRetailsaleRate(retail);
 
         HashMap hash = new HashMap();
         String sql;
 
-        itemBatch.setItem(itm);
+        ib.setItem(itm);
         sql = "Select p from ItemBatch p where  p.item=:itm "
                 + " and p.dateOfExpire= :doe and p.retailsaleRate=:ret "
                 + " and p.purcahseRate=:pur";
 
-        hash.put("doe", itemBatch.getDateOfExpire());
-        hash.put("itm", itemBatch.getItem());
-        hash.put("ret", itemBatch.getRetailsaleRate());
-        hash.put("pur", itemBatch.getPurcahseRate());
+        hash.put("doe", ib.getDateOfExpire());
+        hash.put("itm", ib.getItem());
+        hash.put("ret", ib.getRetailsaleRate());
+        hash.put("pur", ib.getPurcahseRate());
         List<ItemBatch> i = getItemBatchFacade().findBySQL(sql, hash, TemporalType.TIMESTAMP);
-        //System.err.println("Size " + i.size());
         if (i.size() > 0) {
-//            //System.err.println("Edit");
-//            i.get(0).setBatchNo(i.get(0).getBatchNo());
-//            i.get(0).setDateOfExpire(i.get(0).getDateOfExpire());
-            return i.get(0);
+            ib = i.get(0);
         } else {
-            //System.err.println("Create");
-            getItemBatchFacade().create(itemBatch);
+            getItemBatchFacade().create(ib);
         }
-
-        //System.err.println("ItemBatc Id " + itemBatch.getId());
-        return itemBatch;
+        ib.setBatchNo(pbi.getCode());
+        ib.setMake(pbi.getMake());
+        ib.setModal(pbi.getModel());
+        ib.setDescription(pbi.getDescription());
+        ib.setBarcode(pbi.getBarcode());
+        ib.setRegistrationNo(pbi.getRegistrationNo());
+        ib.setChassisNo(pbi.getChassisNo());
+        ib.setEngineNo(pbi.getEngineNo());
+        ib.setColour(pbi.getColour());
+        ib.setWarrentyCertificateNumber(pbi.getWarrentyCertificateNumber());
+        ib.setWarrentyDuration(pbi.getWarrentyDuration());
+        ib.setTotalAcquicitionCost(pbi.getTotalAcquicitionCost());
+        ib.setDeprecitionRate(pbi.getDeprecitionRate());
+        ib.setOtherNotes(pbi.getOtherNotes());
+        ib.setLastPurchaseBillItem(tmp);
+        ib.setSerialNo(tmp.getPharmaceuticalBillItem().getSerialNo());
+        getItemBatchFacade().edit(ib);
+        return ib;
     }
 
     public List<Item> findItem(Amp tmp, List<Item> items) {
@@ -670,9 +682,9 @@ public class StoreCalculation {
         for (BillItem i : list) {
             if (i.getPharmaceuticalBillItem().getQty() != 0.0) {
                 if (i.getPharmaceuticalBillItem().getDoe() == null || i.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
-                    
+
                     i.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
-                    
+
                     return false;
                 }
                 if (i.getPharmaceuticalBillItem().getPurchaseRate() > i.getPharmaceuticalBillItem().getRetailRate()) {

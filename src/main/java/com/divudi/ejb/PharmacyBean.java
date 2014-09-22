@@ -6,6 +6,7 @@ package com.divudi.ejb;
 
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemBatchQty;
 import com.divudi.data.StockQty;
 import com.divudi.entity.Bill;
@@ -615,14 +616,16 @@ public class PharmacyBean {
         hm.put("dep", department);
         Stock s = getStockFacade().findFirstBySQL(sql, hm);
 //        //System.err.println("ss" + s);
-        if (s == null) {
+        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType()== DepartmentType.Inventry ) {
             s = new Stock();
             s.setDepartment(department);
+            s.setCode(pharmaceuticalBillItem.getCode());
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
         }
         if (s.getId() == null || s.getId() == 0) {
             //System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() + qty);
+            s.setCode(pharmaceuticalBillItem.getCode());
             //System.err.println("Initial Stock After Updation" + s.getStock());
             getStockFacade().create(s);
             addToStockHistoryInitial(pharmaceuticalBillItem, s, department);

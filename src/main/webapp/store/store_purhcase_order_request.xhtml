@@ -12,32 +12,31 @@
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCreation')}" >
                 You are NOT authorized
             </h:panelGroup>
-            <p:defaultCommand target="btnSupAdd" ></p:defaultCommand>
             <p:panel rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" >
                 <f:facet name="header">
 
                     <p:outputLabel value="Purchase order Request Order"/>
                     <p:commandButton ajax="false" value="Request" 
                                      action="#{storePurchaseOrderRequestController.request}"/>
-                    <p:commandButton ajax="false"  value="New Order"  action="#{storePurchaseOrderRequestController.recreate}"/>
+                    <p:commandButton ajax="false"  value="New Order" 
+                                     action="#{storePurchaseOrderRequestController.recreate}"/>
                 </f:facet>
-                <h:panelGrid columns="4">
-                    <h:panelGrid columns="1">                        
-                        <f:facet name="header">
-                            Distributor
-                        </f:facet>
-                        <p:autoComplete converter="deal" value="#{storePurchaseOrderRequestController.currentBill.toInstitution}"  
+
+                <p:tabView>
+                    <p:tab title=" Distributor">                                               
+                        <p:autoComplete converter="deal" 
+                                        value="#{storePurchaseOrderRequestController.currentBill.toInstitution}"  
                                         forceSelection="true"
                                         completeMethod="#{storeDealorController.completeDealor}"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                            <f:ajax event="itemSelect" execute="@this" render="itemList" listener="#{storePurchaseOrderRequestController.setInsListener}"/>
+                            <f:ajax event="itemSelect" execute="@this" render=":#{p:component('itemList')}" listener="#{storePurchaseOrderRequestController.setInsListener}"/>
                         </p:autoComplete>
                         <h:panelGroup>                            
                             <p:commandButton ajax="false" value="Fill with Item" action="#{storePurchaseOrderRequestController.createOrderWithItems}" disabled="#{storePurchaseOrderRequestController.currentBill.id ne null}"/>
                         </h:panelGroup>
-                    </h:panelGrid>
+                    </p:tab>
 
-                    <p:panel header="Add Dealors Item ">
+                    <p:tab title="Add Dealors Item ">
                         <p:autoComplete id="exDItem" value="#{storePurchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
                                         completeMethod="#{itemController.completeDealorItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
@@ -52,18 +51,14 @@
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton id="btnSupAdd"
-                                         value="Add Item" 
-                                         action="#{storePurchaseOrderRequestController.addItem}" 
-                                         process="exDItem @this" 
-                                         update="exDItem itemList tot" />
+                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:component('itemList')} tot" />
 
-                    </p:panel>
+                    </p:tab>
 
-                    <p:panel header="Add Extra Item ">
+                    <p:tab title="Add Extra Item ">
                         <p:autoComplete id="exItem" value="#{storePurchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
-                                        completeMethod="#{itemController.completeStoreInventryItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                        completeMethod="#{itemController.completeStoreItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             <p:column headerText="Item" >
                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
                             </p:column>
@@ -75,32 +70,35 @@
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton value="Add Item" 
-                                         action="#{storePurchaseOrderRequestController.addItem}" 
-                                         process="exItem @this" 
-                                         update="exItem itemList tot" />
+                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:component('itemList')} tot" />
 
-                    </p:panel>
-                    <h:panelGrid columns="1" style="min-width: 100%;">
+                    </p:tab>
+                    <p:tab title="Payment Method + Qutation">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Select Payment Method"/>
+                            <p:selectOneMenu   id="cmbPs" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">    
+                                <f:selectItem itemLabel="SelectPayment method"/>
+                                <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Total "/>
+                            <p:outputLabel id="tot" style="font-weight: bold;" value="#{storePurchaseOrderRequestController.currentBill.netTotal}">
+                                <f:convertNumber pattern="#,000.00"/>
+                            </p:outputLabel>
+                            <h:outputLabel value="Qutation Number"/>
+                            <p:inputText value="#{storePurchaseOrderRequestController.currentBill.qutationNumber}"/>
+                        </h:panelGrid>
+                    </p:tab>
 
-                        <p:selectOneMenu   id="cmbPs" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">    
-                            <f:selectItem itemLabel="SelectPayment method"/>
-                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
-                        </p:selectOneMenu>
-                        <p:outputLabel id="tot" style="font-weight: bold;" value="#{storePurchaseOrderRequestController.currentBill.netTotal}">
-                            <f:convertNumber pattern="#,000.00"/>
-                        </p:outputLabel>
-                    </h:panelGrid>
+                </p:tabView>
 
-
-                </h:panelGrid>
-                <p:dataTable styleClass="noBorder" rowIndexVar="i" var="bi" scrollable="true" rowKey="#{bi.searialNo}"
+                <p:dataTable styleClass="noBorder" rowIndexVar="i" 
+                             var="bi" scrollable="true" rowKey="#{bi.searialNo}"
                              scrollHeight="250" value="#{storePurchaseOrderRequestController.billItems}" 
                              selection="#{storePurchaseOrderRequestController.selectedBillItems}"
                              id="itemList" >  
 
                     <f:facet name="header">  
-                        <h:outputLabel  value="Pharmacy Bill Item"/>
+                        <h:outputLabel  value="Store Bill Item"/>
                         <p:commandButton ajax="false" value="Remove All" action="#{storePurchaseOrderRequestController.removeSelected()}"/>
                     </f:facet>  
 
@@ -117,9 +115,9 @@
 
                     <p:column headerText="Qty" style="width:20%"> 
                         <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">                       
-                            <f:ajax event="keyup" render="total :#{p:component('tot')} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
+                            <f:ajax event="blur" render="@this total :#{p:component('tot')} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                             <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
-                        </p:inputText>
+                            </p:inputText>
                     </p:column>  
                     <p:column headerText="Purchase Price" style="width:20%">  
                         <h:panelGroup id="price">
@@ -144,6 +142,7 @@
                 </p:dataTable>  
                 <p:spacer height="50"/>
                 <ph:history/>
+
             </p:panel>            
         </h:form>
     </ui:define>  

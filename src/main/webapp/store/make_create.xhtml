@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="MakeCreateDlg" widgetVar="MakeCreateDialog" modal="true" resizable="false" appendTo="@(body)" header="Create Make">
+            <h:form id="MakeCreateForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{makeController.selected != null}">
+                        <p:outputLabel value="Create Make" for="name" />
+                        <p:inputText id="name" value="#{makeController.selected.name}" title="Make Name" />
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{makeController.create}" value="Save" update="display,:MakeListForm:datalist,:growl" oncomplete="handleSubmit(args,'MakeCreateDialog');"/>
+                    <p:commandButton value="Cancel" onclick="MakeCreateDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>
