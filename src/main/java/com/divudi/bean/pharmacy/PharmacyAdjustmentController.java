@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -328,8 +329,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
         ph.setBillItem(tbi);
         getPharmaceuticalBillItemFacade().edit(ph);
-//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
-//        getDeptAdjustmentPreBill().getBillItems().add(tbi);
+        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+        getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
 
@@ -375,10 +376,12 @@ public class PharmacyAdjustmentController implements Serializable {
 
     private boolean errorCheck() {
         if (getStock() == null) {
+            UtilityController.addErrorMessage("Please Select Stocke");
             return true;
         }
 
         if (getStock().getItemBatch() == null) {
+            UtilityController.addErrorMessage("Select Item Batch");
             return true;
         }
 
