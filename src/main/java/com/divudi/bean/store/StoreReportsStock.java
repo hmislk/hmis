@@ -15,6 +15,7 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.Staff;
@@ -55,6 +56,7 @@ public class StoreReportsStock implements Serializable {
     Staff staff;
     Institution institution;
     private Category category;
+    Item item;
     List<Stock> stocks;
     double stockSaleValue;
     double stockPurchaseValue;
@@ -63,7 +65,7 @@ public class StoreReportsStock implements Serializable {
     Date toDate;
     Date fromDateE;
     Date toDateE;
-    
+
     Stock selectedInventoryStock;
 
     /**
@@ -89,8 +91,19 @@ public class StoreReportsStock implements Serializable {
         Map m = new HashMap();
         String sql;
         sql = "select s from Stock s where s.department=:d"
-                + " and s.itemBatch.item.departmentType=:depty"
-                + " order by s.itemBatch.item.name";
+                + " and s.itemBatch.item.departmentType=:depty";
+
+        if (category != null) {
+            sql += " and s.itemBatch.item.category=:cat ";
+            m.put("cat", category);
+        }
+
+        if (item != null) {
+            sql += " and s.itemBatch.item=:item ";
+            m.put("item", item);
+        }
+
+        sql += " order by s.itemBatch.item.name,s.itemBatch.serialNo ";
 
         m.put("depty", DepartmentType.Store);
         m.put("d", department);
@@ -234,13 +247,13 @@ public class StoreReportsStock implements Serializable {
                 flg = true;
             }
 
-         //   System.out.println("calculated History Qty " + calculatedStk);
+            //   System.out.println("calculated History Qty " + calculatedStk);
             if (flg == true && b.getStockHistory().getStockQty() != calculatedStk) {
                 stockSet.add(b.getStock());
                 //   System.out.println("TRUE");
             }
 
-         //   System.out.println("#########");
+            //   System.out.println("#########");
         }
 
         stocks = new ArrayList<>();
@@ -344,7 +357,7 @@ public class StoreReportsStock implements Serializable {
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {
-                 //   System.out.println("Itm " + ph.getBillItem().getItem().getName());
+                    //   System.out.println("Itm " + ph.getBillItem().getItem().getName());
                     //   System.out.println("Prv History Qty " + preHistoryQty);
                     //   System.out.println("Prv Qty " + previousPh.getQtyInUnit());
                     //   System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
@@ -729,6 +742,12 @@ public class StoreReportsStock implements Serializable {
         this.selectedInventoryStock = selectedInventoryStock;
     }
 
-    
-    
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
 }
