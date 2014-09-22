@@ -393,7 +393,7 @@ public class PharmacyController implements Serializable {
 
     }
 
-    public List<Object[]> calDepartmentBhtIssue(Institution institution) {
+    public List<Object[]> calDepartmentBhtIssue(Institution institution,BillType billType) {
         Item item;
 
         if (pharmacyItem instanceof Ampp) {
@@ -408,7 +408,7 @@ public class PharmacyController implements Serializable {
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", BillType.PharmacyBhtPre);
+        m.put("btp", billType);
         sql = "select i.bill.department,"
                 + " sum(i.netValue),"
                 + " sum(i.pharmaceuticalBillItem.qty) "
@@ -690,7 +690,7 @@ public class PharmacyController implements Serializable {
             List<DepartmentSale> list = new ArrayList<>();
             double totalValue = 0;
             double totalQty = 0;
-            List<Object[]> objs = calDepartmentBhtIssue(ins);
+            List<Object[]> objs = calDepartmentBhtIssue(ins,BillType.PharmacyBhtPre);
 
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();

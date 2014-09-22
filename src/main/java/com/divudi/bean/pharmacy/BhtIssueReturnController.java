@@ -137,7 +137,7 @@ public class BhtIssueReturnController implements Serializable {
 
         getReturnBill().copy(getBill());
 
-        getReturnBill().setBillType(BillType.PharmacyBhtPre);
+        getReturnBill().setBillType(getBill().getBillType());
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
@@ -152,10 +152,10 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
         getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getInstitution(), new RefundBill(), BillType.PharmacyBhtPre, BillNumberSuffix.PHISSRET));
+                getSessionController().getInstitution(), new RefundBill(), getBill().getBillType(), BillNumberSuffix.PHISSRET));
 
         getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getDepartment(), new RefundBill(), BillType.PharmacyBhtPre, BillNumberSuffix.PHISSRET));
+                getSessionController().getDepartment(), new RefundBill(), getBill().getBillType(), BillNumberSuffix.PHISSRET));
 
         //   getReturnBill().setInsId(getBill().getInsId());
         if (getReturnBill().getId() == null) {
@@ -314,7 +314,7 @@ public class BhtIssueReturnController implements Serializable {
             tmp.setBillItem(bi);
             tmp.copy(i);
 
-            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PharmacyBhtPre);
+            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), getBill().getBillType());
 
             System.err.println("Refund " + rFund);
             double tmpQty = (Math.abs(i.getQtyInUnit())) - Math.abs(rFund);
