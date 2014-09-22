@@ -17,10 +17,34 @@
 
                     <p:panel header="Department Stock Report by Batch" >
 
-                        <h:panelGrid columns="5" >
+                        <h:panelGrid columns="6" >
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="dep" >
                             </p:autoComplete>
+                            <h:outputLabel value="Item" ></h:outputLabel>
+                            <p:autoComplete  id="lstitem"   size="10" value="#{storeReportsStock.item}" 
+                                             forceSelection="true"
+                                             style="min-width: 223px" completeMethod="#{itemController.completeStoreItem}" 
+                                             var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                                <p:column headerText="Item">
+                                    <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Code">
+                                    <h:outputLabel value="#{myItem.code}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Barcode">
+                                    <h:outputLabel value="#{myItem.barcode}" ></h:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+                            <h:outputLabel value="Item Category"/>
+                            <p:autoComplete  value="#{storeReportsStock.category}" 
+                                             forceSelection="true"
+                                             completeMethod="#{storeItemCategoryController.completeCategory}" 
+                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                            </p:autoComplete>
+
+                        </h:panelGrid>
+                        <p:panel>
                             <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillDepartmentStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -31,7 +55,7 @@
                                              facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
                                              fontName="Courier New" />
                             </p:commandButton>
-                        </h:panelGrid>
+                        </p:panel>
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
 
@@ -39,7 +63,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="#{storeReportsStock.department.name} Stock"/>                                     
                                 </f:facet> 
-                                
+
                                 <p:column>
                                     <h:outputLabel value="#{ii+1}" />
                                 </p:column>
@@ -122,7 +146,7 @@
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{storeReportsStock.stockPurchaseValue}" >
                                                     <f:convertNumber parent="#,##0.00" />
-                                                 </h:outputLabel>
+                                                </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column></p:column>
