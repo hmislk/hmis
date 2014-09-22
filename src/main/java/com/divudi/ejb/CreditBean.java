@@ -123,7 +123,7 @@ public class CreditBean {
         return lst;
     }
 
-    public List<Institution> getCreditCompanyFromBht(boolean lessThan,PaymentMethod paymentMethod) {
+    public List<Institution> getCreditCompanyFromBht(boolean lessThan, PaymentMethod paymentMethod) {
         String sql;
         HashMap hm;
         sql = "Select distinct(b.creditCompany) "
@@ -198,29 +198,26 @@ public class CreditBean {
 
     }
 
-    public List<Institution> getDealorFromReturnBills(Date frmDate, Date toDate, InstitutionType institutionType) {
+    public List<Institution> getDealorFromReturnBills(Date frmDate, Date toDate, List<BillType> billTypes) {
         String sql;
         HashMap hm;
         sql = "Select distinct(b.toInstitution) From BilledBill b "
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
-                + " and b.toInstitution.institutionType=:insTp"
                 + " and b.createdAt between :frm and :to "
-                + " and (b.billType=:tp1 or b.billType=:tp2)"
+                + " and b.billType in :bts"
                 + " order by b.toInstitution.name  ";
         hm = new HashMap();
         hm.put("frm", frmDate);
         hm.put("to", toDate);
         hm.put("pm", PaymentMethod.Credit);
-        hm.put("insTp", institutionType);
-        hm.put("tp1", BillType.PharmacyGrnReturn);
-        hm.put("tp2", BillType.PurchaseReturn);
+        hm.put("bts", billTypes);
         return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
-    public List<Bill> getBills(Institution institution, Date frmDate, Date toDate) {
+    public List<Bill> getBills(Institution institution, Date frmDate, Date toDate, List<BillType> billTypes) {
         String sql;
         HashMap hm = new HashMap();
         sql = "Select b From BilledBill b"
@@ -230,35 +227,33 @@ public class CreditBean {
                 + " and b.createdAt  between :frm and :to"
                 + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
                 + " and (b.fromInstitution=:ins ) "
-                + " and (b.billType=:tp1 or b.billType=:tp2)";
+                + " and b.billType in :bts";
         hm.put("frm", frmDate);
         hm.put("to", toDate);
         hm.put("val", 0.1);
         hm.put("ins", institution);
         hm.put("pm", PaymentMethod.Credit);
-        hm.put("tp1", BillType.PharmacyGrnBill);
-        hm.put("tp2", BillType.PharmacyPurchaseBill);
+        hm.put("bts", billTypes);
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
-    public double getGrnReturnValue(Bill refBill) {
+    public double getGrnReturnValue(Bill refBill, List<BillType> billTypes) {
         String sql = "select sum(b.netTotal) from"
                 + " Bill b where "
                 + " b.retired=false "
                 + " and b.paymentMethod=:pm "
                 + " and b.referenceBill=:refBill "
-                + " and (b.billType=:bType1 or b.billType=:bType2 )";
+                + " and b.billType in :bts";
 
         HashMap hm = new HashMap();
         hm.put("refBill", refBill);
         hm.put("pm", PaymentMethod.Credit);
-        hm.put("bType1", BillType.PharmacyGrnReturn);
-        hm.put("bType2", BillType.PurchaseReturn);
+        hm.put("bts", billTypes);
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
-    public List<Institution> getDealorFromBills(InstitutionType institutionType) {
+    public List<Institution> getDealorFromBills(List<BillType> billTypes) {
         String sql;
         HashMap hm;
         sql = "Select distinct(b.fromInstitution)"
@@ -266,15 +261,12 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
-                + " and b.fromInstitution.institutionType=:insTp "
                 + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
-                + " and (b.billType=:tp1 or b.billType=:tp2) ";
+                + " and b.billType in :bts ";
         hm = new HashMap();
         hm.put("val", 0.1);
         hm.put("pm", PaymentMethod.Credit);
-        hm.put("insTp", institutionType);
-        hm.put("tp1", BillType.PharmacyPurchaseBill);
-        hm.put("tp2", BillType.PharmacyGrnBill);
+        hm.put("bts", billTypes);
         return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -320,7 +312,7 @@ public class CreditBean {
 
     }
 
-    public List<Institution> getDealorFromReturnBills(InstitutionType institutionType) {
+    public List<Institution> getDealorFromReturnBills(List<BillType> billTypes) {
         String sql;
         HashMap hm;
         sql = "Select distinct(b.toInstitution) "
@@ -328,19 +320,16 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
-                + " and b.toInstitution.institutionType=:insTp "
-                + " and (b.billType=:tp1 or b.billType=:tp2)"
+                + " and b.billType in :bts "
                 + " order by b.toInstitution.name  ";
         hm = new HashMap();
         hm.put("pm", PaymentMethod.Credit);
-        hm.put("insTp", institutionType);
-        hm.put("tp1", BillType.PharmacyGrnReturn);
-        hm.put("tp2", BillType.PurchaseReturn);
+        hm.put("bts", billTypes);
         return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
-    public List<Bill> getBills(Institution institution) {
+    public List<Bill> getBills(Institution institution, List<BillType> billTypes) {
         String sql;
         HashMap hm = new HashMap();
         sql = "Select b From BilledBill b "
@@ -350,13 +339,12 @@ public class CreditBean {
                 + " and b.createdAt is not null "
                 + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
                 + " and (b.fromInstitution=:ins ) "
-                + " and (b.billType=:tp1 or b.billType=:tp2)";
+                + " and b.billType in :bts";
 
         hm.put("val", 0.1);
         hm.put("ins", institution);
         hm.put("pm", PaymentMethod.Credit);
-        hm.put("tp1", BillType.PharmacyGrnBill);
-        hm.put("tp2", BillType.PharmacyPurchaseBill);
+        hm.put("bts", billTypes);
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
@@ -386,7 +374,7 @@ public class CreditBean {
 
     }
 
-    public List<PatientEncounter> getCreditPatientEncounters(Institution institution, boolean lessThan,PaymentMethod paymentMethod) {
+    public List<PatientEncounter> getCreditPatientEncounters(Institution institution, boolean lessThan, PaymentMethod paymentMethod) {
         String sql;
         HashMap hm = new HashMap();
         sql = "Select b From PatientEncounter b "
@@ -407,7 +395,7 @@ public class CreditBean {
         return getPatientEncounterFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
-    public List<Institution> getDealorFromBills(Date frmDate, Date toDate, InstitutionType institutionType) {
+    public List<Institution> getDealorFromBills(Date frmDate, Date toDate, List<BillType> billTypes) {
         String sql;
         HashMap hm;
         sql = "Select distinct(b.fromInstitution) "
@@ -415,18 +403,15 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
-                + " and b.fromInstitution.institutionType=:insTp"
                 + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
                 + " and b.createdAt between :frm and :to "
-                + " and (b.billType=:tp1 or b.billType=:tp2) ";
+                + " and b.billType in :bts";
         hm = new HashMap();
         hm.put("frm", frmDate);
         hm.put("to", toDate);
         hm.put("val", 0.1);
         hm.put("pm", PaymentMethod.Credit);
-        hm.put("insTp", institutionType);
-        hm.put("tp1", BillType.PharmacyPurchaseBill);
-        hm.put("tp2", BillType.PharmacyGrnBill);
+        hm.put("bts", billTypes);
         return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }

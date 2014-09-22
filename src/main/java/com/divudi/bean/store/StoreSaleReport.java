@@ -121,7 +121,7 @@ public class StoreSaleReport implements Serializable {
         m.put("fd", fd);
         m.put("td", td);
         m.put("cl", bill.getClass());
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         sql = "select sum(i.netTotal) from Bill i where i.referenceBill.department=:d "
                 + " and i.billType=:btp and type(i)=:cl and i.createdAt between :fd and :td order by i.deptId ";
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -255,7 +255,7 @@ public class StoreSaleReport implements Serializable {
         m.put("pm", paymentMethod);
         m.put("class", bill.getClass());
         //  m.put("btp", BillType.PharmacyPre);
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         sql = "select sum(i.netTotal) from Bill i where i.paymentMethod=:pm and "
                 + " i.referenceBill.department=:d and type(i)=:class "
                 + " and i.billType=:btp and i.createdAt between :fd and :td order by i.deptId ";
@@ -277,7 +277,7 @@ public class StoreSaleReport implements Serializable {
         m.put("td", td);
         m.put("pm", paymentMethod);
         m.put("class", bill.getClass());
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         sql = "select sum(i.netTotal) from Bill i where type(i)=:class and i.paymentMethod=:pm and "
                 + " i.referenceBill.department=:d and i.billType=:btp and i.createdAt between :fd and :td ";
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -316,7 +316,7 @@ public class StoreSaleReport implements Serializable {
         m.put("fd", fd);
         m.put("td", td);
         m.put("cl", bill.getClass());
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         sql = "select sum(i.discount) from Bill i where i.referenceBill.department=:d "
                 + " and i.billType=:btp and type(i)=:cl and i.createdAt between :fd and :td ";
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -336,7 +336,7 @@ public class StoreSaleReport implements Serializable {
         m.put("td", td);
         // m.put("btp", BillType.PharmacyPre);
         m.put("class", bill.getClass());
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         sql = "select i from Bill i where i.referenceBill.department=:d  "
                 + " and i.billType=:btp and type(i)=:class and"
                 + " i.createdAt between :fd and :td order by i.deptId ";
@@ -352,7 +352,7 @@ public class StoreSaleReport implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("cl", PreBill.class);
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
 
         sql = "select sum(i.netTotal) from Bill i where i.referenceBill.department=:d "
                 + " and i.billType=:btp and type(i)!=:cl and i.createdAt between :fd and :td ";
@@ -369,7 +369,7 @@ public class StoreSaleReport implements Serializable {
         m.put("toDate", getToDate());
         m.put("class", bill.getClass());
         // m.put("btp", BillType.PharmacyPre);
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         sql = "select sum(i.netTotal) from Bill i where i.referenceBill.department=:d and"
                 + " i.billType=:btp and type(i)=:class "
                 + " and i.createdAt between :fromDate and :toDate ";
@@ -518,7 +518,7 @@ public class StoreSaleReport implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("class", bill.getClass());
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         sql = "select sum(i.netTotal) from Bill i where type(i)=:class and i.paymentMethod=:pm and "
                 + " i.referenceBill.department=:d and i.billType=:btp and i.createdAt between :fromDate and :toDate ";
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -534,7 +534,7 @@ public class StoreSaleReport implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("class", PreBill.class);
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         sql = "select sum(i.netTotal) from Bill i where type(i)!=:class and i.paymentMethod=:pm and "
                 + " i.referenceBill.department=:d and i.billType=:btp and i.createdAt between :fromDate and :toDate ";
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -548,7 +548,7 @@ public class StoreSaleReport implements Serializable {
         m.put("d", getDepartment());
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         m.put("class", bill.getClass());
         sql = "select sum(i.discount) from Bill i where type(i)=:class and"
                 + " i.referenceBill.department=:d and  "
@@ -564,7 +564,7 @@ public class StoreSaleReport implements Serializable {
         m.put("d", getDepartment());
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-        m.put("btp", BillType.PharmacySale);
+        m.put("btp", BillType.StoreSale);
         m.put("class", PreBill.class);
         sql = "select sum(i.discount) from Bill i where type(i)!=:class and"
                 + " i.referenceBill.department=:d and "
@@ -963,7 +963,7 @@ public class StoreSaleReport implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("cl", PreBill.class);
-        m.put("btp", BillType.PharmacyTransferIssue);
+        m.put("btp", BillType.StoreTransferIssue);
 
         sql = "select sum(i.netTotal) from Bill i where i.department=:d "
                 + " and i.billType=:btp and type(i)!=:cl and i.createdAt between :fd and :td ";

@@ -32,6 +32,8 @@ import javax.inject.Inject;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  *
@@ -84,7 +86,7 @@ public class PharmacyDealorBill implements Serializable {
 
         for (BillItem b : getBillItems()) {
             if (b.getReferenceBill() != null && b.getReferenceBill().getFromInstitution() != null) {
-                if (getCurrentBillItem().getReferenceBill().getFromInstitution().getId() != b.getReferenceBill().getFromInstitution().getId()) {
+                if (!Objects.equals(getCurrentBillItem().getReferenceBill().getFromInstitution().getId(), b.getReferenceBill().getFromInstitution().getId())) {
                     UtilityController.addErrorMessage("U can add only one type Credit companies at Once");
                     return true;
                 }
@@ -126,10 +128,15 @@ public class PharmacyDealorBill implements Serializable {
         Institution ins = institution;
         makeNull();
 
-        List<Bill> list = getBillController().getDealorBills(ins);
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn, BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+
+        List<Bill> list = getBillController().getDealorBills(ins, billTypesListBilled);
         for (Bill b : list) {
             getCurrentBillItem().setReferenceBill(b);
-            double returned = Math.abs(getCreditBean().getGrnReturnValue(getCurrentBillItem().getReferenceBill()));
+            double returned = Math.abs(getCreditBean().getGrnReturnValue(getCurrentBillItem().getReferenceBill(), billTypesListReturn));
             getCurrentBillItem().getReferenceBill().setTmpReturnTotal(returned);
 
             selectListener();
@@ -170,8 +177,23 @@ public class PharmacyDealorBill implements Serializable {
     }
 
     public void calTotal() {
+
         double n = 0.0;
         for (BillItem b : billItems) {
+            n += b.getNetValue();
+        }
+        getCurrent().setNetTotal(0 - n);
+        // //System.out.println("AAA : " + n);
+    }
+
+    public void calTotalBySelectedBillTems() {
+        if (selectedBillItems == null) {
+            getCurrent().setNetTotal(0);
+            return;
+        }
+
+        double n = 0.0;
+        for (BillItem b : selectedBillItems) {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(0 - n);
@@ -283,8 +305,33 @@ public class PharmacyDealorBill implements Serializable {
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
-        saveBill(BillType.GrnPayment);
+        saveBill(BillType.GrnPaymentPre);
         saveBillItem();
+
+        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+
+        UtilityController.addSuccessMessage("Bill Saved");
+        printPreview = true;
+    }
+
+    public void settleBillAll() {
+        if (errorCheck()) {
+            return;
+        }
+
+        if (getSelectedBillItems() == null || getSelectedBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("There is No Bills seected to settle");
+            return;
+        }
+
+        calTotalBySelectedBillTems();
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+
+        getCurrent().setTotal(getCurrent().getNetTotal());
+
+        saveBill(BillType.GrnPaymentPre);
+        saveBillItemBySelectedItems();
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -295,6 +342,23 @@ public class PharmacyDealorBill implements Serializable {
 
     private void saveBillItem() {
         for (BillItem tmp : getBillItems()) {
+            tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            tmp.setCreater(getSessionController().getLoggedUser());
+            tmp.setBill(getCurrent());
+            tmp.setNetValue(0 - tmp.getNetValue());
+
+            if (tmp.getId() == null) {
+                getBillItemFacade().create(tmp);
+            }
+
+            updateReferenceBill(tmp);
+
+        }
+
+    }
+
+    private void saveBillItemBySelectedItems() {
+        for (BillItem tmp : getSelectedBillItems()) {
             tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getCurrent());

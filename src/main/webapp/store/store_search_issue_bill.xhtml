@@ -12,7 +12,7 @@
                 <h:form>
                     <p:panel header="Search Issue Bills" >
                         <f:facet name="header" >                          
-                            <h:outputLabel value="PHARMACY ISSUE BILL SEARCH"/>                         
+                            <h:outputLabel value="STORE ISSUE BILL SEARCH"/>                         
                             <h:panelGrid columns="5" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
@@ -47,8 +47,8 @@
 
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill"
-                                                 action="/pharmacy/pharmacy_reprint_bill_unit_issue">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>   
+                                                 action="store_reprint_bill_unit_issue">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>   
                                 </p:commandButton>
                             </p:column>
 

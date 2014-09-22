@@ -185,8 +185,8 @@ public class StorePurchaseOrderController implements Serializable {
         getAprovedBill().setReferenceBill(getRequestedBill());
         getAprovedBill().setBackwardReferenceBill(getRequestedBill());
 
-        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
-        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
+        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
+        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
 
         getAprovedBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getAprovedBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -254,7 +254,7 @@ public class StorePurchaseOrderController implements Serializable {
     public Bill getAprovedBill() {
         if (aprovedBill == null) {
             aprovedBill = new BilledBill();
-            aprovedBill.setBillType(BillType.PharmacyOrderApprove);
+            aprovedBill.setBillType(BillType.StoreOrderApprove);
         }
         return aprovedBill;
     }

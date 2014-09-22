@@ -110,6 +110,7 @@ public class Bill implements Serializable {
     BillItem singleBillItem;
     @ManyToOne
     BillSession singleBillSession;
+    String qutationNumber;
 
     //Values
     double total;
@@ -1461,6 +1462,14 @@ public class Bill implements Serializable {
 
     public void setPaidAt(Date paidAt) {
         this.paidAt = paidAt;
+    }
+
+    public String getQutationNumber() {
+        return qutationNumber;
+    }
+
+    public void setQutationNumber(String qutationNumber) {
+        this.qutationNumber = qutationNumber;
     }
 
  

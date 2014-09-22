@@ -11,19 +11,20 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
+import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -34,9 +35,11 @@ import javax.inject.Inject;
 public class ShiftTableController implements Serializable {
 
     Date fromDate;
-    Date toDate;
+    Date toDate;    
     Long dateRange;
     Roster roster;
+    Shift shift;
+    StaffShift staffShift;
     List<ShiftTable> shiftTables;
     @EJB
     HumanResourceBean humanResourceBean;
@@ -303,5 +306,23 @@ public class ShiftTableController implements Serializable {
     public void setStaffShiftHistoryFacade(StaffShiftHistoryFacade staffShiftHistoryFacade) {
         this.staffShiftHistoryFacade = staffShiftHistoryFacade;
     }
+
+    public Shift getShift() {
+        return shift;
+    }
+
+    public void setShift(Shift shift) {
+        this.shift = shift;
+    }
+
+    public StaffShift getStaffShift() {
+        return staffShift;
+    }
+
+    public void setStaffShift(StaffShift staffShift) {
+        this.staffShift = staffShift;
+    }
+    
+    
 
 }

@@ -546,7 +546,7 @@ public class BookKeepingSummery implements Serializable {
             long count = 0l;
             try {
                 count = Long.valueOf(r[2].toString());
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 System.out.println("e = " + e);
                 count = 0l;
             }

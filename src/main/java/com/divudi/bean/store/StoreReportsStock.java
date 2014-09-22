@@ -63,6 +63,8 @@ public class StoreReportsStock implements Serializable {
     Date toDate;
     Date fromDateE;
     Date toDateE;
+    
+    Stock selectedInventoryStock;
 
     /**
      * Managed Beans
@@ -182,8 +184,8 @@ public class StoreReportsStock implements Serializable {
         hm.put("td", date);
         hm.put("fd", cl.getTime());
         hm.put("dep", department);
-        hm.put("btp1", BillType.PharmacyGrnBill);
-        hm.put("btp2", BillType.PharmacyPurchaseBill);
+        hm.put("btp1", BillType.StoreGrnBill);
+        hm.put("btp2", BillType.StorePurchase);
         return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
@@ -396,8 +398,8 @@ public class StoreReportsStock implements Serializable {
         String sql;
         sql = "select s from Stock s where s.department=:d and s.stock > 0 and s.itemBatch.item not in (select bi.item FROM BillItem bi where  bi.bill.department=:d and (bi.bill.billType=:t1 or bi.bill.billType=:t2) and bi.bill.billDate between :fd and :td group by bi.item having SUM(bi.qty) > 0 ) order by s.itemBatch.dateOfExpire";
         m.put("d", department);
-        m.put("t1", BillType.PharmacyTransferIssue);
-        m.put("t2", BillType.PharmacyPre);
+        m.put("t1", BillType.StoreTransferIssue);
+        m.put("t2", BillType.StorePre);
         m.put("fd", getFromDateE());
         m.put("td", getToDateE());
         stocks = getStockFacade().findBySQL(sql, m);
@@ -719,4 +721,14 @@ public class StoreReportsStock implements Serializable {
         this.stockHistoryFacade = stockHistoryFacade;
     }
 
+    public Stock getSelectedInventoryStock() {
+        return selectedInventoryStock;
+    }
+
+    public void setSelectedInventoryStock(Stock selectedInventoryStock) {
+        this.selectedInventoryStock = selectedInventoryStock;
+    }
+
+    
+    
 }

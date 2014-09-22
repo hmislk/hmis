@@ -153,7 +153,7 @@ public class StoreStoreController implements Serializable {
         m.put("i", i);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", BillType.PharmacyTransferIssue);
+        m.put("btp", BillType.StoreTransferIssue);
         //   m.put("refType", BillType.PharmacySale);
         sql = "select sum(i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate*i.pharmaceuticalBillItem.qty) "
                 + "from BillItem i where i.bill.toInstitution=:toIns and i.bill.fromInstitution=:frmIns "
@@ -171,7 +171,7 @@ public class StoreStoreController implements Serializable {
         m.put("i", i);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", BillType.PharmacyTransferIssue);
+        m.put("btp", BillType.StoreTransferIssue);
         //   m.put("refType", BillType.PharmacySale);
         sql = "select sum(i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate*i.pharmaceuticalBillItem.qty) "
                 + " from BillItem i where i.bill.toDepartment=:tDep and i.bill.fromDepartment=:fDep "
@@ -189,7 +189,7 @@ public class StoreStoreController implements Serializable {
         m.put("i", i);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", BillType.PharmacyTransferIssue);
+        m.put("btp", BillType.StoreTransferIssue);
         //   m.put("refType", BillType.PharmacySale);
         sql = "select sum(i.pharmaceuticalBillItem.qty) from BillItem i where i.bill.toDepartment=:tDep"
                 + " and  i.bill.fromDepartment=:fDep"
@@ -207,7 +207,7 @@ public class StoreStoreController implements Serializable {
         m.put("i", i);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", BillType.PharmacyTransferIssue);
+        m.put("btp", BillType.StoreTransferIssue);
         //   m.put("refType", BillType.PharmacySale);
         sql = "select sum(i.pharmaceuticalBillItem.qty) from BillItem i where "
                 + " i.bill.toInstitution=:tIns and i.bill.fromInstitution=:fIns "
@@ -295,7 +295,7 @@ public class StoreStoreController implements Serializable {
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", BillType.PharmacyTransferIssue);
+        m.put("btp", BillType.StoreTransferIssue);
         //   m.put("refType", BillType.PharmacySale);
         sql = "select i.bill.toDepartment,sum(i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate*i.pharmaceuticalBillItem.qty),"
                 + " sum(i.pharmaceuticalBillItem.qty) "
@@ -322,7 +322,7 @@ public class StoreStoreController implements Serializable {
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", BillType.PharmacyTransferReceive);
+        m.put("btp", BillType.StoreTransferReceive);
         //   m.put("refType", BillType.PharmacySale);
         sql = "select i.bill.fromDepartment,sum(i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate*i.pharmaceuticalBillItem.qty),"
                 + " sum(i.pharmaceuticalBillItem.qty) "
@@ -348,8 +348,8 @@ public class StoreStoreController implements Serializable {
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", BillType.PharmacyPre);
-        m.put("refType", BillType.PharmacySale);
+        m.put("btp", BillType.StorePre);
+        m.put("refType", BillType.StoreSale);
         sql = "select i.bill.department,sum(i.netValue),sum(i.pharmaceuticalBillItem.qty) "
                 + " from BillItem i where i.bill.department.institution=:ins"
                 + " and i.bill.referenceBill.billType=:refType "
@@ -372,8 +372,8 @@ public class StoreStoreController implements Serializable {
         m.put("dep", department);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", BillType.PharmacyPre);
-        m.put("refType", BillType.PharmacySale);
+        m.put("btp", BillType.StorePre);
+        m.put("refType", BillType.StoreSale);
         sql = "select sum(i.pharmaceuticalBillItem.qty) "
                 + " from BillItem i where i.bill.department=:dep"
                 + " and i.bill.referenceBill.billType=:refType "
@@ -673,7 +673,7 @@ public class StoreStoreController implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", BilledBill.class);
-        hm.put("btp", BillType.PharmacyGrnBill);
+        hm.put("btp", BillType.StoreGrnBill);
 
         grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
@@ -689,7 +689,7 @@ public class StoreStoreController implements Serializable {
         hm.put("i", pharmacyItem);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
-        hm.put("btp", BillType.PharmacyPurchaseBill);
+        hm.put("btp", BillType.StorePurchase);
         hm.put("class", BilledBill.class);
         directPurchase = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
@@ -707,7 +707,7 @@ public class StoreStoreController implements Serializable {
                 + " and b.bill.billType=:btp and b.createdAt between :frm and :to order by b.id desc";
         HashMap hm = new HashMap();
         hm.put("i", pharmacyItem);
-        hm.put("btp", BillType.PharmacyOrderApprove);
+        hm.put("btp", BillType.StoreOrderApprove);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", BilledBill.class);
@@ -734,7 +734,7 @@ public class StoreStoreController implements Serializable {
                 + " b.referanceBillItem=:ref";
         HashMap hm = new HashMap();
         hm.put("ref", b);
-        hm.put("btp", BillType.PharmacyGrnBill);
+        hm.put("btp", BillType.StoreGrnBill);
         double value = getBillFacade().findDoubleByJpql(sql, hm);
 
 //        if (pharmacyItem instanceof Ampp) {
