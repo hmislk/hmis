@@ -121,38 +121,38 @@ public class InwardStaffPaymentBillController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = "select bf from BillFee bf "
+        sql = "select bf.paidForBillFee from BillItem bf "
                 + " where bf.retired=false "
                 + " and bf.bill.billType=:btp"
-                + " and (bf.billItem.paidForBillFee.bill.billType=:refBtp1"
-                + " or bf.billItem.paidForBillFee.bill.billType=:refBtp2)";
+                + " and (bf.paidForBillFee.bill.billType=:refBtp1"
+                + " or bf.paidForBillFee.bill.billType=:refBtp2)";
 
         if (dischargeDate) {
-            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter";
+            sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
         } else {
             sql += " and bf.createdAt between :fd and :td ";
         }
 
         if (speciality != null) {
-            sql += " and bf.staff.speciality=:s ";
+            sql += " and bf.paidForBillFee.staff.speciality=:s ";
             m.put("s", speciality);
         }
 
         if (currentStaff != null) {
-            sql += " and bf.staff=:cs";
+            sql += " and bf.paidForBillFee.staff=:cs";
             m.put("cs", currentStaff);
         }
 
         if (admissionType != null) {
-            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
+            sql += " and bf.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
             m.put("admTp", admissionType);
         }
         if (paymentMethod != null) {
-            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
+            sql += " and bf.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
             m.put("pm", paymentMethod);
         }
         if (institution != null) {
-            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
+            sql += " and bf.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
             m.put("cd", institution);
         }
 
@@ -187,38 +187,40 @@ public class InwardStaffPaymentBillController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = "select bf.staff,sum(bf.feeValue) "
-                + " from BillFee bf"
+        sql = "select bf.paidForBillFee.staff,"
+                + " sum(bf.paidForBillFee.feeValue) "
+                + " from BillItem bf"
                 + " where bf.retired=false "
                 + " and bf.bill.billType=:btp"
-                + " and (bf.billItem.paidForBillFee.bill.billType=:refBtp1"
-                + " or bf.billItem.paidForBillFee.bill.billType=:refBtp2)";
+                + " and (bf.paidForBillFee.bill.billType=:refBtp1"
+                + " or bf.paidForBillFee.bill.billType=:refBtp2)";
 
         if (dischargeDate) {
-            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter";
+            sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
         } else {
             sql += " and bf.createdAt between :fd and :td ";
         }
 
         if (speciality != null) {
-            sql += " and bf.staff.speciality=:s ";
+            sql += " and bf.paidForBillFee.staff.speciality=:s ";
             m.put("s", speciality);
         }
 
         if (admissionType != null) {
-            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
+            sql += " and bf.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
             m.put("admTp", admissionType);
         }
         if (paymentMethod != null) {
-            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
+            sql += " and bf.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
             m.put("pm", paymentMethod);
         }
         if (institution != null) {
-            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
+            sql += " and bf.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
             m.put("cd", institution);
         }
 
-        sql += " group by bf.staff order by bf.staff.person.name ";
+        sql += " group by bf.paidForBillFee.staff "
+                + " order by bf.paidForBillFee.staff.person.name ";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
