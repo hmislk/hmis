@@ -15,10 +15,11 @@ import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
-import com.divudi.entity.PaymentScheme;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -90,10 +91,10 @@ public class InwardStaffPaymentBillController implements Serializable {
     List<String1Value1> list;
     List<String2Value1> list1;
     List<BillFee> docPayingBillFee;
-    
-    public void makenull(){
-        currentStaff=null;
-        speciality=null;
+
+    public void makenull() {
+        currentStaff = null;
+        speciality = null;
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -104,14 +105,33 @@ public class InwardStaffPaymentBillController implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
-    public void fillDocPayingBillFee() {
+    AdmissionType admissionType;
+    Institution institution;
+
+    public void fillDocPayingBillFeeByCreatedDate() {
+        fillDocPayingBillFee(false);
+    }
+
+    public void fillDocPayingBillFeeByDischargeDate() {
+        fillDocPayingBillFee(true);
+    }
+
+    public void fillDocPayingBillFee(boolean dischargeDate) {
 
         String sql;
         Map m = new HashMap();
 
-        sql = "select bf from BillFee bf where bf.createdAt between :fd "
-                + " and :td and bf.retired=false "
-                + " and (bf.bill.billType=:btp or bf.bill.billType=:btp2) ";
+        sql = "select bf from BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.bill.billType=:btp"
+                + " and (bf.billItem.paidForBillFee.bill.billType=:refBtp1"
+                + " or bf.billItem.paidForBillFee.bill.billType=:refBtp2)";
+
+        if (dischargeDate) {
+            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter";
+        } else {
+            sql += " and bf.createdAt between :fd and :td ";
+        }
 
         if (speciality != null) {
             sql += " and bf.staff.speciality=:s ";
@@ -123,44 +143,89 @@ public class InwardStaffPaymentBillController implements Serializable {
             m.put("cs", currentStaff);
         }
 
+        if (admissionType != null) {
+            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
+            m.put("admTp", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
+            m.put("pm", paymentMethod);
+        }
+        if (institution != null) {
+            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
+            m.put("cd", institution);
+        }
+
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("btp", BillType.InwardProfessional);
-        m.put("btp2", BillType.InwardBill);
+        m.put("btp", BillType.PaymentBill);
+        m.put("refBtp1", BillType.InwardBill);
+        m.put("refBtp2", BillType.InwardProfessional);
 
         docPayingBillFee = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         totalPaying = 0.0;
+        if (docPayingBillFee == null) {
+            return;
+        }
         for (BillFee dFee : docPayingBillFee) {
             totalPaying += dFee.getFeeValue();
         }
 
     }
 
-    public void fillDocPayingBillFeeSummery() {
+    public void fillDocPayingBillFeeSummeryCreatedDate() {
+        fillDocPayingBillFeeSummery(false);
+    }
+
+    public void fillDocPayingBillFeeSummeryDischargeDate() {
+        fillDocPayingBillFeeSummery(true);
+    }
+
+    private void fillDocPayingBillFeeSummery(boolean dischargeDate) {
 
         String sql;
         Map m = new HashMap();
 
-        sql = "select bf.staff,sum(bf.feeValue) from BillFee bf where bf.createdAt between :fd "
-                + " and :td and bf.retired=false "
-        //                + " and bf.staff.retired=false "
-                +" and (bf.bill.billType=:btp or bf.bill.billType=:btp2) ";
+        sql = "select bf.staff,sum(bf.feeValue) "
+                + " from BillFee bf"
+                + " where bf.retired=false "
+                + " and bf.bill.billType=:btp"
+                + " and (bf.billItem.paidForBillFee.bill.billType=:refBtp1"
+                + " or bf.billItem.paidForBillFee.bill.billType=:refBtp2)";
+
+        if (dischargeDate) {
+            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter";
+        } else {
+            sql += " and bf.createdAt between :fd and :td ";
+        }
 
         if (speciality != null) {
-            sql += " and bf.speciality=:s ";
+            sql += " and bf.staff.speciality=:s ";
             m.put("s", speciality);
+        }
+
+        if (admissionType != null) {
+            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
+            m.put("admTp", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
+            m.put("pm", paymentMethod);
+        }
+        if (institution != null) {
+            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
+            m.put("cd", institution);
         }
 
         sql += " group by bf.staff order by bf.staff.person.name ";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("btp", BillType.InwardProfessional);
-        m.put("btp2", BillType.InwardBill);
+        m.put("btp", BillType.PaymentBill);
+        m.put("refBtp1", BillType.InwardBill);
+        m.put("refBtp2", BillType.InwardProfessional);
 
-//        docPayingBillFee = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-//        docPayingBillFee = new ArrayList<>();
         list1 = new ArrayList<>();
         List<Object[]> objs = getBillFeeFacade().findAggregates(sql, m);
         for (Object[] objc : objs) {
@@ -177,17 +242,13 @@ public class InwardStaffPaymentBillController implements Serializable {
         }
 
     }
-    
-    
-    
-    
 
     public List<BillComponent> getBillComponents() {
         if (getCurrent() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
             billComponents = getBillComponentFacade().findBySQL(sql);
             if (billComponents == null) {
-                billComponents = new ArrayList<BillComponent>();
+                billComponents = new ArrayList<>();
             }
         }
         return billComponents;
@@ -200,7 +261,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
                 billFees = getBillFeeFacade().findBySQL(sql);
                 if (billFees == null) {
-                    billFees = new ArrayList<BillFee>();
+                    billFees = new ArrayList<>();
                 }
             }
         }
@@ -734,5 +795,21 @@ public class InwardStaffPaymentBillController implements Serializable {
     public void setSelectedItems(List<Speciality> selectedItems) {
         this.selectedItems = selectedItems;
     }
-    
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
 }

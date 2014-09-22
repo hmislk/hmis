@@ -200,9 +200,17 @@ public class SearchController implements Serializable {
     }
 
     public void createReturnBhtBills() {
+        createReturnBhtBills(BillType.PharmacyBhtPre);
+    }
+    
+      public void createReturnBhtBillsStore() {
+        createReturnBhtBills(BillType.StoreBhtPre);
+    }
+
+    private void createReturnBhtBills(BillType billType) {
 
         Map m = new HashMap();
-        m.put("bt", BillType.PharmacyBhtPre);
+        m.put("bt", billType);
         m.put("billedClass", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
@@ -1376,11 +1384,11 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getReturnBill(b,BillType.PharmacyGrnReturn));
+            b.setListOfBill(getReturnBill(b, BillType.PharmacyGrnReturn));
         }
 
     }
-    
+
     public void createGrnTableStore() {
         bills = null;
         String sql;
@@ -1401,7 +1409,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getReturnBill(b,BillType.StoreGrnReturn));
+            b.setListOfBill(getReturnBill(b, BillType.StoreGrnReturn));
         }
 
     }
@@ -1425,11 +1433,11 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getReturnBill(b,BillType.PharmacyGrnReturn));
+            b.setListOfBill(getReturnBill(b, BillType.PharmacyGrnReturn));
         }
 
     }
-    
+
     public void createGrnTableAllInsStore() {
         bills = null;
         String sql;
@@ -1449,12 +1457,12 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getReturnBill(b,BillType.StoreGrnReturn));
+            b.setListOfBill(getReturnBill(b, BillType.StoreGrnReturn));
         }
 
     }
 
-    private List<Bill> getReturnBill(Bill b,BillType bt) {
+    private List<Bill> getReturnBill(Bill b, BillType bt) {
         String sql = "Select b From BilledBill b where b.retired=false and b.creater is not null"
                 + " and  b.billType=:btp and "
                 + " b.referenceBill=:ref";
@@ -1465,14 +1473,14 @@ public class SearchController implements Serializable {
     }
 
     public void createPoTablePharmacy() {
-        createPoTable(InstitutionType.Dealer,BillType.PharmacyOrderApprove,BillType.PharmacyGrnBill);
+        createPoTable(InstitutionType.Dealer, BillType.PharmacyOrderApprove, BillType.PharmacyGrnBill);
     }
 
     public void createPoTableStore() {
-        createPoTable(InstitutionType.StoreDealor,BillType.StoreOrderApprove,BillType.StoreGrnBill);
+        createPoTable(InstitutionType.StoreDealor, BillType.StoreOrderApprove, BillType.StoreGrnBill);
     }
 
-    public void createPoTable(InstitutionType institutionType,BillType bt,BillType referenceBillType ){
+    public void createPoTable(InstitutionType institutionType, BillType bt, BillType referenceBillType) {
         bills = null;
         String sql;
         HashMap tmp = new HashMap();
@@ -1509,12 +1517,12 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getGrns(b,referenceBillType));
+            b.setListOfBill(getGrns(b, referenceBillType));
         }
 
     }
 
-    private List<Bill> getGrns(Bill b,BillType billType) {
+    private List<Bill> getGrns(Bill b, BillType billType) {
         String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
                 + " and b.billType=:btp and "
                 + " b.referenceBill=:ref";

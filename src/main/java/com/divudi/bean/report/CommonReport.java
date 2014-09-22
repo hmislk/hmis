@@ -109,6 +109,9 @@ public class CommonReport implements Serializable {
     private BillsTotals PharmacyBhtPreBilled;
     private BillsTotals PharmacyBhtPreCancelled;
     private BillsTotals PharmacyBhtPreRefunded;
+    private BillsTotals StoreBhtPreBilled;
+    private BillsTotals StoreBhtPreCancelled;
+    private BillsTotals StoreBhtPreRefunded;
     BillsTotals cashInBills;
     BillsTotals cashInBillsCancel;
     BillsTotals cashOutBills;
@@ -1585,7 +1588,7 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
 
     }
-    
+
     public void createGrnDetailTableStore() {
         recreteModal();
 
@@ -1642,6 +1645,31 @@ public class CommonReport implements Serializable {
         //Pharmacy Bht Refunded Bill
         getPharmacyBhtPreRefunded().setBills(getBills(new RefundBill(), BillType.PharmacyBhtPre, getDepartment()));
         getPharmacyBhtPreRefunded().setCash(calValue(new RefundBill(), BillType.PharmacyBhtPre, getDepartment()));
+
+    }
+
+    public void createBhtIssueTableStore() {
+        recreteModal();
+
+        StoreBhtPreBilled = new BillsTotals();
+        StoreBhtPreCancelled = new BillsTotals();
+        StoreBhtPreRefunded = new BillsTotals();
+
+        if (getDepartment() == null) {
+            return;
+        }
+
+        //Pharmacy Bht Billed Bills
+        getPharmacyBhtPreBilled().setBills(getBills(new PreBill(), BillType.StoreBhtPre, getDepartment()));
+        getPharmacyBhtPreBilled().setCash(calValue(new PreBill(), BillType.StoreBhtPre, getDepartment()));
+
+        //Pharmacy Bht Cancelled Bill
+        getPharmacyBhtPreCancelled().setBills(getBills(new CancelledBill(), BillType.StoreBhtPre, getDepartment()));
+        getPharmacyBhtPreCancelled().setCash(calValue(new CancelledBill(), BillType.StoreBhtPre, getDepartment()));
+
+        //Pharmacy Bht Refunded Bill
+        getPharmacyBhtPreRefunded().setBills(getBills(new RefundBill(), BillType.StoreBhtPre, getDepartment()));
+        getPharmacyBhtPreRefunded().setCash(calValue(new RefundBill(), BillType.StoreBhtPre, getDepartment()));
 
     }
 
@@ -1741,7 +1769,7 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
     }
-    
+
     public void createPurchaseDetailTableStore() {
         recreteModal();
 
@@ -1809,7 +1837,7 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
     }
-    
+
     public void createGrnDetailTableByDealorStore() {
         recreateList();
 
@@ -2845,6 +2873,30 @@ public class CommonReport implements Serializable {
 
     public void setReferenceInstitution(Institution referenceInstitution) {
         this.referenceInstitution = referenceInstitution;
+    }
+
+    public BillsTotals getStoreBhtPreBilled() {
+        return StoreBhtPreBilled;
+    }
+
+    public void setStoreBhtPreBilled(BillsTotals StoreBhtPreBilled) {
+        this.StoreBhtPreBilled = StoreBhtPreBilled;
+    }
+
+    public BillsTotals getStoreBhtPreCancelled() {
+        return StoreBhtPreCancelled;
+    }
+
+    public void setStoreBhtPreCancelled(BillsTotals StoreBhtPreCancelled) {
+        this.StoreBhtPreCancelled = StoreBhtPreCancelled;
+    }
+
+    public BillsTotals getStoreBhtPreRefunded() {
+        return StoreBhtPreRefunded;
+    }
+
+    public void setStoreBhtPreRefunded(BillsTotals StoreBhtPreRefunded) {
+        this.StoreBhtPreRefunded = StoreBhtPreRefunded;
     }
 
 }

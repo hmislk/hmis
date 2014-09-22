@@ -538,19 +538,29 @@ public class mdInwardReportController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public void listInBhtBillItems() {
+    private void listInBhtBillItems(BillType billType) {
 
         Map m = new HashMap();
         String jpql;
-        jpql = "select b from BillItem b where"
-                + " b.bill.department =:dept"
+        jpql = "select b from BillItem b"
+                + " where b.bill.department =:dept"
                 + " and  b.bill.billType=:biTy "
                 + " and b.createdAt between :fd and :td";
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("dept", dept);
-        m.put("biTy", BillType.PharmacyBhtPre);
+        m.put("biTy", billType);
         billItem = getBillItemFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void listInBhtBillItems() {
+        listInBhtBillItems(BillType.PharmacyBhtPre);
+
+    }
+
+    public void listInBhtBillItemsStore() {
+        listInBhtBillItems(BillType.StoreBhtPre);
 
     }
 
@@ -1451,10 +1461,10 @@ public class mdInwardReportController implements Serializable {
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("out");
-        
-        total=0.0;
+
+        total = 0.0;
         for (BillFee bf : billfees) {
-            total+=bf.getFee().getFee();
+            total += bf.getFee().getFee();
             System.out.println("total = " + total);
         }
 
@@ -1524,13 +1534,13 @@ public class mdInwardReportController implements Serializable {
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("out");
-        
-        total=0.0;
+
+        total = 0.0;
         for (BillFee bf : billfees) {
-            total+=bf.getFee().getFee();
+            total += bf.getFee().getFee();
             System.out.println("total = " + total);
         }
-        
+
     }
 
     public List<ItemWithFee> getItemWithFees() {
