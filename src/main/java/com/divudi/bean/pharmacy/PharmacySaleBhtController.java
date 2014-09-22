@@ -163,6 +163,22 @@ public class PharmacySaleBhtController implements Serializable {
         getBillBean().updateBatchBill(getBatchBill());
 
     }
+    
+     public void settleSurgeryBhtIssueStore() {
+        if (getBatchBill() == null) {
+            return;
+        }
+
+        if (getBatchBill().getProcedure() == null) {
+            return;
+        }
+
+        settleBhtIssue(BillType.StoreBhtPre, getBatchBill().getFromDepartment(), BillNumberSuffix.PHISSUE);
+
+        getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
+        getBillBean().updateBatchBill(getBatchBill());
+
+    }
 
     public void makeNull() {
         selectedAlternative = null;
@@ -534,6 +550,13 @@ public class PharmacySaleBhtController implements Serializable {
         }
         settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
     }
+    
+      public void settleStoreBhtIssue() {
+        if (errorCheck()) {
+            return;
+        }
+        settleBhtIssue(BillType.StoreBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
+    }
 
     private boolean errorCheck() {
         if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
@@ -559,14 +582,7 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
-    public void settleStoreBhtIssue() {
-        if (errorCheck()) {
-            return;
-        }
-
-        settleBhtIssue(BillType.StoreBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.STISSUE);
-    }
-
+  
     private void settleBhtIssue(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {

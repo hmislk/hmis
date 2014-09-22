@@ -205,9 +205,17 @@ public class SearchController implements Serializable {
     }
 
     public void createReturnBhtBills() {
+        createReturnBhtBills(BillType.PharmacyBhtPre);
+    }
+    
+      public void createReturnBhtBillsStore() {
+        createReturnBhtBills(BillType.StoreBhtPre);
+    }
+
+    private void createReturnBhtBills(BillType billType) {
 
         Map m = new HashMap();
-        m.put("bt", BillType.PharmacyBhtPre);
+        m.put("bt", billType);
         m.put("billedClass", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
