@@ -393,8 +393,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
         saveDeptAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
-        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
-        getBillFacade().edit(getDeptAdjustmentPreBill());
+//        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
+//        getBillFacade().edit(getDeptAdjustmentPreBill());
         setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
         getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
