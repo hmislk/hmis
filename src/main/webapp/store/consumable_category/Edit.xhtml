@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="ConsumableCategoryEditDlg" widgetVar="ConsumableCategoryEditDialog" modal="true" resizable="false" appendTo="@(body)" header="Edit Consumable Category">
+            <h:form id="ConsumableCategoryEditForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{consumableCategoryController.selected != null}">
+                        <p:outputLabel value="Name" for="name" />
+                        <p:inputText id="name" value="#{consumableCategoryController.selected.name}" title="name" />
+                        <p:outputLabel value="Parent Category" for="parentCategory" />
+                        <p:selectOneMenu id="parentCategory" value="#{consumableCategoryController.selected.parentCategory}" >
+                            <f:selectItem itemLabel="Select a parent category"/>
+                            <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}"
+                                           var="parentCategoryItem"
+                                           itemValue="#{parentCategoryItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="Code" for="code" />
+                        <p:inputText id="code" value="#{consumableCategoryController.selected.code}" title="Code" />
+                        
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{consumableCategoryController.update}" value="Save" update="display,:ConsumableCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args, 'ConsumableCategoryEditDialog');"/>
+                    <p:commandButton value="Cancel" onclick="ConsumableCategoryEditDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

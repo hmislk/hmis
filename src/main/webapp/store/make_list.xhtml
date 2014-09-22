@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition template="/resources/template/template.xhtml">
+
+        <ui:define name="content">
+            <h:outputStylesheet library="css" name="jsfcrud.css"/>
+            <p:growl id="growl" autoUpdate="false" ></p:growl>
+            <h:form id="MakeListForm">
+                <p:panel header="Makes">
+                    <p:dataTable id="datalist" value="#{makeController.items}" var="item"
+                                 selectionMode="single" selection="#{makeController.selected}"
+                                 paginator="true"
+                                 rowKey="#{item.id}"
+                                 rows="10"
+                                 rowsPerPageTemplate="10,20,30,40,50"
+                                 >
+
+                        <p:ajax event="rowSelect"   update="createButton viewButton editButton deleteButton"/>
+                        <p:ajax event="rowUnselect" update="createButton viewButton editButton deleteButton"/>
+
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Make Name"/>
+                            </f:facet>
+                            <h:outputText value="#{item.name}"/>
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton id="createButton" icon="ui-icon-plus"   value="Create" actionListener="#{makeController.prepareCreate}" update=":MakeCreateForm" oncomplete="PF('MakeCreateDialog').show()"/>
+                            <p:commandButton id="viewButton"   icon="ui-icon-search" value="View" update=":MakeViewForm" oncomplete="PF('MakeViewDialog').show()" disabled="#{empty makeController.selected}"/>
+                            <p:commandButton id="editButton"   icon="ui-icon-pencil" value="Edit" update=":MakeEditForm" oncomplete="PF('MakeEditDialog').show()" disabled="#{empty makeController.selected}"/>
+                            <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="Delete" actionListener="#{makeController.destroy}" update=":growl,datalist" disabled="#{empty makeController.selected}"/>
+                        </f:facet>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+            <ui:include src="make_create.xhtml"/>
+            <ui:include src="make_edit.xhtml"/>
+            <ui:include src="make_view.xhtml"/>
+        </ui:define>
+    </ui:composition>
+
+</html>
