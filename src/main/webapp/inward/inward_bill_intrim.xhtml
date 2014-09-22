@@ -374,6 +374,79 @@
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
+                        
+                        <p:tab title="Store Issue">                          
+                            <p:dataTable value="#{bhtSummeryController.storeIssues}" var="iss" scrollable="true"
+                                         scrollHeight="300"
+                                         rowStyleClass="#{((iss.billClass eq 'class com.divudi.entity.PreBill')
+                                                          or 
+                                                          (iss.billedBill ne null 
+                                                          and iss.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}">
+                                <p:column headerText="Bill No">
+                                    <h:outputLabel value="#{iss.deptId}"/>                                    
+                                </p:column>                               
+                                <p:column headerText="Bill Total" style="text-align: right;">
+                                    <h:outputLabel  value="#{iss.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Billed Date">
+                                    <h:outputLabel value="#{iss.createdAt}">
+                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                    </h:outputLabel>                                                   
+                                    <br/>
+                                    <h:panelGroup rendered="#{iss.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" rendered="#{iss.cancelled}" 
+                                                       value="#{iss.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="dd MMM yyyy"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Billed Time" >
+                                    <h:outputLabel value="#{iss.createdAt}">
+                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                    </h:outputLabel>                                                   
+                                    <br/>
+                                    <h:panelGroup rendered="#{iss.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" rendered="#{iss.cancelled}" 
+                                                       value="#{iss.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="hh mm ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Billed By">
+                                    <h:outputLabel value="#{iss.creater.webUserPerson.name}"/>     
+                                    <br/>
+                                    <h:panelGroup rendered="#{iss.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled By " />
+                                        <h:outputLabel style="color: red;" rendered="#{iss.cancelled}" 
+                                                       value="#{iss.cancelledBill.creater.webUserPerson.name}" >                                       
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>  
+                                <p:column headerText="Checked By">
+                                    <h:outputLabel value="#{iss.checkedBy.webUserPerson.name}"/>     
+                                </p:column>  
+                                <p:column headerText="Checked At">
+                                    <h:outputLabel value="#{iss.checkeAt}">
+                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                    </h:outputLabel>      
+                                </p:column>  
+                                <p:column>
+                                    <p:commandButton ajax="false" action="pharmacy_reprint_bill_sale_bht" 
+                                                     rendered="#{iss.billClass eq 'class com.divudi.entity.PreBill'}" value="View Issue" onclick="onSubmitButton();" >                                              
+                                        <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false" action="pharmacy_reprint_bill_return_bht" 
+                                                     rendered="#{iss.billClass eq 'class com.divudi.entity.RefundBill'}"
+                                                     value="View Return" onclick="onSubmitButton();" >                                              
+                                        <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:tab>
 
                         <p:tab title="Store Issue" rendered="false">
                             <p:dataTable value="#{bhtSummeryController.storeIssues}"
