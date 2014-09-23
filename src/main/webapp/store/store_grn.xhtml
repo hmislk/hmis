@@ -34,7 +34,7 @@
 
                 <p:dataTable var="bi" styleClass="noBorder" 
                              value="#{storeGrnController.billItems}" 
-                             scrollable="true" scrollHeight="250"
+                             scrollable="true" scrollHeight="250"                             
                              id="itemList" editable="true">  
 
                     <f:facet name="header">  
@@ -49,7 +49,9 @@
                     </p:column>
 
                     <p:column >
-                        <p:commandButton   value="Add Detail" process="@this" 
+                        <p:commandButton   value="Add Detail"
+                                           process="@this" 
+                                           update=":#{p:component('dialogChannelDetail')}"
                                            style="float: right;" 
                                            actionListener="#{storeGrnController.addDetailItemListener(bi)}"
                                            oncomplete="PF('dlgDetail').show();">                        
@@ -58,7 +60,8 @@
 
                     <p:column >
                         <p:commandButton   value="Add Accessories" process="@this" 
-                                           style="float: right;" 
+                                            update=":#{p:component('dialogChannelDetail')}"
+                                           style="float: right;"                                            
                                            actionListener="#{storeGrnController.addChildItemListener(bi)}"
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
@@ -78,7 +81,7 @@
 
                     </p:column>  
 
-                    <p:column headerText="Inventory Code" style="width: 150px!important;">  
+                    <p:column headerText="Inventory Code" >  
                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.code}"/>
                     </p:column>  
 
@@ -307,8 +310,7 @@
                                              value="#{storeGrnController.currentBillItem.tmpQty}" style="width:100%" />  
                                 <h:outputLabel value="Free"/>
                                 <p:inputText autocomplete="off" styleClass="numericTxt" 
-                                             value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.freeQty}" style="width:100%" 
-                                             disabled="#{storeGrnController.currentBillItem.parentBillItem eq null}" /> 
+                                             value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.freeQty}" style="width:100%" /> 
                                 <h:outputLabel value="Purchase Rate"/>
                                 <p:inputText autocomplete="off"  styleClass="numericTxt" 
                                              value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
@@ -320,7 +322,7 @@
                                              value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.retailRate}"  />  
                                 <h:outputLabel value="DOE(dd mm yy)/Warrenty Date"/>
                                 <p:calendar navigator="true" pattern="dd MM yy" value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.doe}"   >
-                                    <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storeGrnController.setBatch()}"/>
+                                    <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storeGrnController.batchListener()}"/>
                                 </p:calendar> 
                                 <h:outputLabel value="Bathch No"/>
                                 <p:inputText id="tmp" autocomplete="off"  styleClass="numericTxt" 
@@ -377,52 +379,55 @@
 
                     </p:dialog>  
                     
-                    <p:dialog id="dialogChannelDetail" header="Add Detail" widgetVar="dlgDetail" 
+                    <p:dialog id="dialogChannelDetail"  widgetVar="dlgDetail" 
                               modal="true" height="400" width="600">
-
+                        <f:facet name="header">                            
+                            <h:outputLabel value="Add Detail"/>
+                            <p:commandButton  value="Update" process="dialogChannelDetail" update="itemList"/>
+                                             
+                        </f:facet>
                         <h:panelGroup>
 
                             <p:panelGrid styleClass="alignTop"  columns="2" >
 
                                 <h:outputLabel value="Make"/>
-                                <p:selectOneMenu value="#{storeGrnController.currentPharmaciuticalBillItem.make}" >
+                                <p:selectOneMenu value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.make}" >
                                     <f:selectItem itemLabel="Select a Make" ></f:selectItem>
-                                    <f:selectItems value="#{makeController.items}" var="make" itemLabel="#{make.name}" itemValue="#{make}" ></f:selectItems>
+                                    <f:selectItems value="#{makeController.items}" var="make" itemLabel="#{make.name}" itemValue="#{make}" ></f:selectItems>                                    
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Model"/>
-                                <p:inputText value="#{storeGrnController.currentPharmaciuticalBillItem.model}" />
+                                <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.model}" />
                                 <h:outputLabel value="Inventory Code"/>
-                                <p:inputText  value="#{storeGrnController.currentPharmaciuticalBillItem.code}" />                                
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.code}" />                                
                                 <h:outputLabel value="Description"/>
-                                <p:inputTextarea value="#{storeGrnController.currentPharmaciuticalBillItem.description}" />
+                                <p:inputTextarea value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.description}" />
                                 <h:outputLabel value="Barcode No"/>
-                                <p:inputText  value="#{storeGrnController.currentPharmaciuticalBillItem.barcode}" />
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.barcode}" />
                                 <h:outputLabel value="Serial No"/>
-                                <p:inputText  value="#{storeGrnController.currentPharmaciuticalBillItem.serialNo}" />
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.serialNo}" />
                                 <h:outputLabel value="Registration No"/>
-                                <p:inputText  value="#{storeGrnController.currentPharmaciuticalBillItem.registrationNo}" ></p:inputText>
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.registrationNo}" ></p:inputText>
                                 <h:outputLabel value="Chassis No"/>
-                                <p:inputText  value="#{storeGrnController.currentPharmaciuticalBillItem.chassisNo}" ></p:inputText>
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.chassisNo}" ></p:inputText>
                                 <h:outputLabel value="Engine No"/>
-                                <p:inputText value="#{storeGrnController.currentPharmaciuticalBillItem.engineNo}" ></p:inputText>
+                                <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.engineNo}" ></p:inputText>
                                 <h:outputLabel value="Colour"/>
-                                <p:inputText  value="#{storeGrnController.currentPharmaciuticalBillItem.colour}" ></p:inputText>
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.colour}" ></p:inputText>
                                 <h:outputLabel value="Warranty Certification No"/>
-                                <p:inputText value="#{storeGrnController.currentPharmaciuticalBillItem.warrentyCertificateNumber}" ></p:inputText>
+                                <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyCertificateNumber}" ></p:inputText>
                                 <h:outputLabel value="Warranty Duration"/>
-                                <p:outputLabel  value="#{storeGrnController.currentPharmaciuticalBillItem.warrentyDuration}" ></p:outputLabel>
+                                <p:outputLabel  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" ></p:outputLabel>
                                 <h:outputLabel value="Depreciation Rate"/>
-                                <p:inputText value="#{storeGrnController.currentPharmaciuticalBillItem.deprecitionRate}" ></p:inputText>
+                                <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.deprecitionRate}" ></p:inputText>
                                 <h:outputLabel value="Manufacturer"/>
-                                <p:autoComplete  value="#{storeGrnController.currentPharmaciuticalBillItem.manufacturer}"
+                                <p:autoComplete  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.manufacturer}"
                                                 completeMethod="#{manufacturerController.completeManu}" 
                                                 var="manufacturer"
                                                 itemLabel="#{manufacturer.name}"
                                                 itemValue="#{manufacturer}" ></p:autoComplete>
                                 <h:outputLabel value="Other Notes"/>
-                                <p:inputTextarea  value="#{storeGrnController.currentPharmaciuticalBillItem.otherNotes}" >
+                                <p:inputTextarea  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.otherNotes}" >
                                 </p:inputTextarea>
-                                <p:commandButton value="update" action="#{storeGrnController.update}" ajax="false" ></p:commandButton>
 
                             </p:panelGrid>
 

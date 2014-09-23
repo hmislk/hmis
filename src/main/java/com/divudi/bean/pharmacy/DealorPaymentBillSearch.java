@@ -95,6 +95,10 @@ public class DealorPaymentBillSearch implements Serializable {
     WebUser user;
 
     public void approve() {
+        if (getBill().getReferenceBill() != null) {
+         UtilityController.addErrorMessage("Already Approved");
+            return;
+        }
         BilledBill newBill = new BilledBill();
         newBill.copy(getBill());
         newBill.copyValue(getBill());
@@ -102,6 +106,7 @@ public class DealorPaymentBillSearch implements Serializable {
         newBill.setCreater(sessionController.getLoggedUser());
         newBill.setInstitution(sessionController.getInstitution());
         newBill.setDepartment(sessionController.getDepartment());
+        newBill.setBillType(BillType.GrnPayment);
         billFacade.create(newBill);
 
         bill.setReferenceBill(newBill);
@@ -119,6 +124,8 @@ public class DealorPaymentBillSearch implements Serializable {
             billItemFacede.edit(bi);
 
         }
+        
+        UtilityController.addSuccessMessage("Succesfully Approved");
     }
 
     public WebUser getUser() {
