@@ -4,7 +4,8 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form id="form">  
@@ -19,6 +20,7 @@
                     <f:selectItems value="#{rosterController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
                     <f:ajax event="change" execute="@this"  listener="#{staffShiftController.selectRosterListener()}"/>
                 </p:selectOneMenu>
+                <h:outputLabel value="Shift"/>
                 <p:autoComplete value="#{staffShiftController.reportKeyWord.shift}"
                                 autocomplete="off"
                                 forceSelection="true"     
@@ -29,7 +31,18 @@
                                 itemLabel="#{mys.name}" 
                                 itemValue="#{mys}">                                  
                 </p:autoComplete>
-       
+                <h:outputLabel value="Leaved Staff"/>
+                <hr:completeRosterStaff value="#{staffShiftController.reportKeyWord.staff}"/>
+                <h:outputLabel/>
+                <p:commandButton ajax="false" value="Process Leaved Shift" 
+                                 action="#{staffShiftController.fetchLeavedStaffShift()}"/>
+                <h:outputLabel value="Staff Leave Shift"/>
+                <p:selectManyButton value="#{staffShiftController.reportKeyWord.staffShift}"   >
+                    <f:selectItems value="#{staffShiftController.staffShifts}" var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                </p:selectManyButton>
+                <h:outputLabel value="Replacing Staff"/>
+                <hr:completeRosterStaff value="#{staffShiftController.reportKeyWord.replacingStaff}"/>
+                <p:commandButton ajax="false" value="Replace" action="#{staffShiftController.replace()}"/>
             </h:panelGrid>
 
 

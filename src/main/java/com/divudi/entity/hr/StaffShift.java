@@ -791,4 +791,30 @@ public class StaffShift implements Serializable {
         this.fingerPrintRecordList = fingerPrintRecordList;
     }
 
+    public StaffShift getReferenceStaffShift() {
+        return referenceStaffShift;
+    }
+
+    public void setReferenceStaffShift(StaffShift referenceStaffShift) {
+        this.referenceStaffShift = referenceStaffShift;
+    }
+
+    public double getWorkedTimeLogged() {
+        return workedTimeLogged;
+    }
+
+    public void setWorkedTimeLogged(double workedTimeLogged) {
+        this.workedTimeLogged = workedTimeLogged;
+    }
+
+    public double getWorkedTimeVarified() {
+        return workedTimeVarified;
+    }
+
+    public void setWorkedTimeVarified(double workedTimeVarified) {
+        this.workedTimeVarified = workedTimeVarified;
+    }
+    
+    
+
 }
