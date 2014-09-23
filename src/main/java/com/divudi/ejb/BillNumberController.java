@@ -402,8 +402,14 @@ public class BillNumberController {
             return "";
         }
 
-        String sql = "SELECT count(b.id) FROM BilledBill b where b.retired=false AND "
-                + " b.institution=:ins and b.toDepartment=:tDep and b.billType=:btp and type(b)=:class";
+        String sql = "SELECT count(b.id) "
+                + " FROM BilledBill b "
+                + " where b.retired=false "
+                + " and b.insId is not null"
+                + " AND  b.institution=:ins "
+                + " and b.toDepartment=:tDep"
+                + " and b.billType=:btp "
+                + " and type(b)=:class";
         String result;
         HashMap hm = new HashMap();
         hm.put("ins", ins);
@@ -451,6 +457,17 @@ public class BillNumberController {
 
     }
 
+    public void institutionBillNumberGeneratorAndSave(Institution ins, Department toDept, Bill bill, BillType billType, 
+            BillNumberSuffix billNumberSuffix) {
+        String insId = institutionBillNumberGenerator(ins, toDept, bill, billType, billNumberSuffix);
+        bill.setInsId(insId);
+        if (bill.getId() == null) {
+            billFacade.create(bill);
+        } else {
+            billFacade.edit(bill);
+        }
+    }
+
     public String departmentBillNumberGenerator(Department dep, BillType billType, BillNumberSuffix billNumberSuffix) {
 
         if (dep == null || dep.getId() == null) {
@@ -475,8 +492,11 @@ public class BillNumberController {
 
     public String departmentBillNumberGenerator(Department dep, Department toDept, BillType billType) {
 
-        String sql = "SELECT count(b) FROM BilledBill b where b.billType=:bTp and"
-                + " b.retired=false AND (b.department=:dep "
+        String sql = "SELECT count(b) FROM BilledBill b "
+                + " where b.billType=:bTp "
+                + " and b.retired=false"
+                + " and b.deptId is not null "
+                + " AND (b.department=:dep "
                 + " AND b.toDepartment=:tDep)";
         HashMap hm = new HashMap();
         hm.put("bTp", billType);
@@ -501,6 +521,16 @@ public class BillNumberController {
             return result;
         }
 
+    }
+
+    public void departmentBillNumberGeneratorAndSave(Bill bill, Department dep, Department toDept, BillType billType) {
+        String deptId = departmentBillNumberGenerator(dep, toDept, billType);
+        bill.setDeptId(deptId);
+        if (bill.getId() == null) {
+            billFacade.create(bill);
+        } else {
+            billFacade.edit(bill);
+        }
     }
 
     public String departmentCancelledBill(Department dep, BillType type, BillNumberSuffix billNumberSuffix) {
@@ -728,7 +758,7 @@ public class BillNumberController {
         this.itemFacade = itemFacade;
     }
 
-    public Long inventoryItemSerialNumberGenerater(Institution ins,  Item item) {
+    public Long inventoryItemSerialNumberGenerater(Institution ins, Item item) {
         if (ins == null) {
             System.out.println("Ins null");
             return 0l;
@@ -747,6 +777,5 @@ public class BillNumberController {
         System.out.println("In Bill Num Gen" + b);
         return b;
     }
-
 
 }

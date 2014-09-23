@@ -591,8 +591,8 @@ public class BillController implements Serializable {
 
     private Bill saveBill(Department bt, BilledBill temp) {
 
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), bt, BillType.OpdBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), bt, new BilledBill(), BillType.OpdBill, BillNumberSuffix.NONE));
+        getBillNumberBean().departmentBillNumberGeneratorAndSave(temp, getSessionController().getDepartment(), bt, BillType.OpdBill);
+        getBillNumberBean().institutionBillNumberGeneratorAndSave(getSessionController().getInstitution(), bt, temp, BillType.OpdBill, BillNumberSuffix.NONE);
         temp.setBillType(BillType.OpdBill);
 
         temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -619,7 +619,11 @@ public class BillController implements Serializable {
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(temp);
+        if (temp.getId() == null) {
+            getFacade().create(temp);
+        } else {
+            billFacade.edit(temp);
+        }
         return temp;
 
     }

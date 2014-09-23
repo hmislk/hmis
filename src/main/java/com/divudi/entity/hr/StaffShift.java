@@ -78,7 +78,6 @@ public class StaffShift implements Serializable {
     StaffShift nextStaffShift;
     @ManyToOne
     StaffShift referenceStaffShift;
-    
 
     double earlyInLogged;
     double earlyOutLogged;
@@ -153,7 +152,7 @@ public class StaffShift implements Serializable {
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
             earlyOutLogged = inSecond;
         }
-        
+
         //Calculate Late Out Logged
         if (getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
             fromCalendar.setTime(getShiftEndTime());
@@ -560,7 +559,9 @@ public class StaffShift implements Serializable {
         this.setEndRecord(staffShift.getEndRecord());
         this.setPreviousStaffShift(staffShift.getPreviousStaffShift());
         this.setNextStaffShift(staffShift.getNextStaffShift());
-        // stf.setShiftEndTime(ss.getShiftEndTime());
+        this.setShiftDate(staffShift.getShiftDate());
+        this.setShiftStartTime(staffShift.getShiftStartTime());
+        this.setShiftEndTime(staffShift.getShiftEndTime());
         this.setSleepingDay(staffShift.isSleepingDay());
         this.setStaff(staffShift.getStaff());
         this.setWorkingType(staffShift.getWorkingType());
@@ -814,7 +815,5 @@ public class StaffShift implements Serializable {
     public void setWorkedTimeVarified(double workedTimeVarified) {
         this.workedTimeVarified = workedTimeVarified;
     }
-    
-    
 
 }

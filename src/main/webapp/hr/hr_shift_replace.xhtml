@@ -18,10 +18,10 @@
                 <p:selectOneMenu id="roster" value="#{staffShiftController.reportKeyWord.roster}">
                     <f:selectItem itemLabel="Select Roster"/>
                     <f:selectItems value="#{rosterController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
-                    <f:ajax event="change" execute="@this"  listener="#{staffShiftController.selectRosterListener()}"/>
+                    <f:ajax event="change" execute="@this"  render="shift" listener="#{staffShiftController.selectRosterListener()}"/>
                 </p:selectOneMenu>
                 <h:outputLabel value="Shift"/>
-                <p:autoComplete value="#{staffShiftController.reportKeyWord.shift}"
+                <p:autoComplete id="shift" value="#{staffShiftController.reportKeyWord.shift}"
                                 autocomplete="off"
                                 forceSelection="true"     
                                 styleClass="autoComplete75px"
@@ -37,9 +37,10 @@
                 <p:commandButton ajax="false" value="Process Leaved Shift" 
                                  action="#{staffShiftController.fetchLeavedStaffShift()}"/>
                 <h:outputLabel value="Staff Leave Shift"/>
-                <p:selectManyButton value="#{staffShiftController.reportKeyWord.staffShift}"   >
+                <p:selectOneMenu value="#{staffShiftController.reportKeyWord.staffShift}"   >
+                    <f:selectItem itemLabel="Select Staff Shift"/>
                     <f:selectItems value="#{staffShiftController.staffShifts}" var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
-                </p:selectManyButton>
+                </p:selectOneMenu>
                 <h:outputLabel value="Replacing Staff"/>
                 <hr:completeRosterStaff value="#{staffShiftController.reportKeyWord.replacingStaff}"/>
                 <p:commandButton ajax="false" value="Replace" action="#{staffShiftController.replace()}"/>
