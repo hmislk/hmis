@@ -13,8 +13,6 @@ import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -238,8 +236,10 @@ public class ReportsTransfer implements Serializable {
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
-            sql = "select bi from BillItem bi where bi.bill.fromDepartment=:fdept"
-                    + " and bi.bill.department=:tdept and bi.bill.createdAt between :fd "
+            sql = "select bi from BillItem bi "
+                    + " where bi.bill.fromDepartment=:fdept"
+                    + " and bi.bill.department=:tdept "
+                    + " and bi.bill.createdAt between :fd "
                     + "and :td and bi.bill.billType=:bt order by bi.id";
         } else if (fromDepartment == null && toDepartment != null) {
             m.put("tdept", toDepartment);
@@ -814,7 +814,7 @@ public class ReportsTransfer implements Serializable {
 
     public void fillItemCountsBhtStore() {
 
-        List<Object[]> list = fetchBillItem(BillType.StoreBhtIssue);
+        List<Object[]> list = fetchBillItem(BillType.StoreBhtPre);
 
         if (list == null) {
             return;
@@ -835,9 +835,9 @@ public class ReportsTransfer implements Serializable {
             row.setDiscount((Double) obj[3]);
             row.setNet((Double) obj[4]);
 
-            Double pre = calCount(row.getItemBatch(), BillType.StoreBhtIssue, new PreBill());
-            Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreBhtIssue, new PreBill());
-            Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtIssue, new RefundBill());
+            Double pre = calCount(row.getItemBatch(), BillType.StoreBhtPre, new PreBill());
+            Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreBhtPre, new PreBill());
+            Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
             System.err.println("Return " + returned);
@@ -853,10 +853,10 @@ public class ReportsTransfer implements Serializable {
             itemCounts.add(row);
         }
 
-        billTotal = fetchBillTotal(BillType.StoreBhtIssue);
-        billMargin = fetchBillMargin(BillType.StoreBhtIssue);
-        billDiscount = fetchBillDiscount(BillType.StoreBhtIssue);
-        billNetTotal = fetchBillNetTotal(BillType.StoreBhtIssue);
+        billTotal = fetchBillTotal(BillType.StoreBhtPre);
+        billMargin = fetchBillMargin(BillType.StoreBhtPre);
+        billDiscount = fetchBillDiscount(BillType.StoreBhtPre);
+        billNetTotal = fetchBillNetTotal(BillType.StoreBhtPre);
 
     }
 
@@ -960,20 +960,20 @@ public class ReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
+        m.put("bt", BillType.PharmacyTransferReceive);
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
-            sql = "select b from Bill b where b.department=:fdept"
-                    + " and b.toDepartment=:tdept and b.createdAt between :fd "
+            sql = "select b from Bill b where b.fromDepartment=:fdept"
+                    + " and b.department=:tdept and b.createdAt between :fd "
                     + "and :td and b.billType=:bt order by b.id";
         } else if (fromDepartment == null && toDepartment != null) {
             m.put("tdept", toDepartment);
-            sql = "select b from Bill b where b.toDepartment=:tdept and b.createdAt "
+            sql = "select b from Bill b where b.department=:tdept and b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         } else if (fromDepartment != null && toDepartment == null) {
             m.put("fdept", fromDepartment);
-            sql = "select b from Bill b where b.department=:fdept and b.createdAt "
+            sql = "select b from Bill b where b.fromDepartment=:fdept and b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         } else {
             sql = "select b from Bill b where b.createdAt "

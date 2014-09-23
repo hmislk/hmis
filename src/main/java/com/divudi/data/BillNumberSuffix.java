@@ -90,4 +90,5 @@ public enum BillNumberSuffix {
     ISSCAN,//Department Issue Cancel
     STTRQ,//transper request
     STTI,//transfer issue
+    STTR,//transfer Recive
 }

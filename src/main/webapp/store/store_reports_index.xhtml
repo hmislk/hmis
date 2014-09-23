@@ -15,7 +15,7 @@
                         <p:panelGrid columns="4" styleClass="alignTop">
                             <p:panel header="Stock Reports" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Department Stock By Batch" action="store_report_department_stock_by_batch" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Department Stock By Batch" action="store_report_department_stock_by_batch" ajax="false"></p:commandButton>                            
                                     <p:commandButton value="Department Stock By Expiary" action="store_report_department_stock_by_batch_expiary" ajax="false" ></p:commandButton>                                                               
                                     <p:commandButton value="Staff Stock By Batch" action="store_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="Suppliers' Stock" action="store_report_supplier_stock_by_batch" ajax="false" ></p:commandButton>       
@@ -24,6 +24,15 @@
                                     <p:commandButton value="Department Stock By Batch minus" action="store_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>                            
                                 </p:panelGrid>
                             </p:panel>
+
+
+                            <p:panel header="Inventory Report" >
+                                <p:panelGrid columns="1" styleClass="alignTop">
+                                    <p:commandButton value="Department Assets" action="inventory_report_department_assets" ajax="false" ></p:commandButton>
+                                </p:panelGrid>
+                            </p:panel>
+
+
                             <p:panel header="Purchase Reports" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton value="Department Stock By Batch" action="store_department_stock_report_by_batch" ajax="false" ></p:commandButton>
@@ -66,10 +75,9 @@
                                 </p:panelGrid>
                             </p:panel>
 
-                            <p:panel header="Inventry Stock Reports" >
+                            <p:panel header="Asset Registry" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Department Stock By Batch" action="store_inventry_report_department_stock_by_batch" ajax="false" ></p:commandButton>                            
-
+                                    <p:commandButton value="Department Asset Registry" action="store_asset_registry" ajax="false" ></p:commandButton>                            
                                 </p:panelGrid>
                             </p:panel>
 

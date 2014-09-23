@@ -216,9 +216,9 @@ public class StoreAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getDeptAdjustmentPreBill(), BillType.PharmacyAdjustment, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getDeptAdjustmentPreBill(), BillType.PharmacyAdjustment, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustment);
+        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getDeptAdjustmentPreBill(), BillType.StoreAdjustment, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getDeptAdjustmentPreBill(), BillType.StoreAdjustment, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setBillType(BillType.StoreAdjustment);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -478,7 +478,7 @@ public class StoreAdjustmentController implements Serializable {
     public Bill getDeptAdjustmentPreBill() {
         if (deptAdjustmentPreBill == null) {
             deptAdjustmentPreBill = new PreBill();
-            deptAdjustmentPreBill.setBillType(BillType.PharmacyAdjustment);
+            deptAdjustmentPreBill.setBillType(BillType.StoreAdjustment);
         }
         return deptAdjustmentPreBill;
     }

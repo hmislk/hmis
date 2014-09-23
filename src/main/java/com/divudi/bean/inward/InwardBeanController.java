@@ -216,16 +216,14 @@ public class InwardBeanController implements Serializable {
 
     }
 
-    public List<BillItem> getIssueBillItemByInwardChargeType(PatientEncounter patientEncounter) {
+    public List<BillItem> getIssueBillItemByInwardChargeType(PatientEncounter patientEncounter, BillType billType) {
         String sql = "Select s From BillItem s"
                 + " where s.retired=false"
-                + " and (s.bill.billType=:btp1"
-                + " or s.bill.billType=:btp2)"
+                + " and s.bill.billType=:btp"
                 + " and s.bill.patientEncounter=:pe ";
 
         HashMap hm = new HashMap();
-        hm.put("btp1", BillType.PharmacyBhtPre);
-        hm.put("btp2", BillType.StoreBhtPre);
+        hm.put("btp", billType);
         hm.put("pe", patientEncounter);
 
         return getBillItemFacade().findBySQL(sql, hm);
@@ -276,18 +274,16 @@ public class InwardBeanController implements Serializable {
 
     }
 
-    public double calCostOfMadicine(PatientEncounter patientEncounter) {
+    public double calCostOfIssue(PatientEncounter patientEncounter, BillType billType) {
         String sql;
         HashMap hm;
         sql = "SELECT  sum(b.grossValue+b.marginValue)"
                 + " FROM BillItem b "
                 + " WHERE b.retired=false "
-                + " and (b.bill.billType=:btp1 "
-                + " or  b.bill.billType=:btp2) "
+                + " and b.bill.billType=:btp "
                 + " and  b.bill.patientEncounter=:pe";
         hm = new HashMap();
-        hm.put("btp1", BillType.PharmacyBhtPre);
-        hm.put("btp2", BillType.StoreBhtPre);
+        hm.put("btp", billType);
         hm.put("pe", patientEncounter);
         return getBillItemFacade().findDoubleByJpql(sql, hm);
 
@@ -445,7 +441,7 @@ public class InwardBeanController implements Serializable {
         //System.out.println("Size : " + profesionallFee.size());
     }
 
-    public List<Bill> fetchIssueTable(PatientEncounter patientEncounter) {
+    public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType) {
         List<Bill> list = new ArrayList<>();
         String sql;
         HashMap hm;
@@ -456,7 +452,7 @@ public class InwardBeanController implements Serializable {
                 + " and  b.patientEncounter=:pe"
                 + " and (type(b)=:class) ";
         hm = new HashMap();
-        hm.put("btp", BillType.PharmacyBhtPre);
+        hm.put("btp", billType);
         hm.put("class", PreBill.class);
         hm.put("pe", patientEncounter);
 
@@ -470,7 +466,7 @@ public class InwardBeanController implements Serializable {
                 + " and  b.patientEncounter=:pe"
                 + " and (type(b)=:class) ";
         hm = new HashMap();
-        hm.put("btp", BillType.PharmacyBhtPre);
+        hm.put("btp", billType);
         hm.put("class", RefundBill.class);
         hm.put("billedClass", PreBill.class);
         hm.put("pe", patientEncounter);
@@ -483,7 +479,7 @@ public class InwardBeanController implements Serializable {
         return list;
     }
 
-    public List<BillItem> fetchPharmacyIssueBillItem(PatientEncounter patientEncounter) {
+    public List<BillItem> fetchPharmacyIssueBillItem(PatientEncounter patientEncounter, BillType billType) {
         List<BillItem> grantList = new ArrayList<>();
         String sql;
         HashMap hm;
@@ -493,7 +489,7 @@ public class InwardBeanController implements Serializable {
                 + " and  b.bill.patientEncounter=:pe"
                 + " and (type(b.bill)=:class) ";
         hm = new HashMap();
-        hm.put("btp", BillType.PharmacyBhtPre);
+        hm.put("btp", billType);
         hm.put("class", PreBill.class);
         hm.put("pe", patientEncounter);
 
@@ -506,7 +502,7 @@ public class InwardBeanController implements Serializable {
                 + " and  b.bill.patientEncounter=:pe"
                 + " and (type(b.bill)=:class) ";
         hm = new HashMap();
-        hm.put("btp", BillType.PharmacyBhtPre);
+        hm.put("btp", billType);
         hm.put("class", RefundBill.class);
         hm.put("pe", patientEncounter);
 
@@ -633,7 +629,7 @@ public class InwardBeanController implements Serializable {
 
     }
 
-    public List<BillItem> createIssueItemTable(PatientEncounter patientEncounter) {
+    public List<BillItem> createIssueItemTable(PatientEncounter patientEncounter,BillType billType) {
         List<BillItem> grantList = new ArrayList<>();
         String sql;
         HashMap hm;
@@ -644,7 +640,7 @@ public class InwardBeanController implements Serializable {
                 + " and  b.bill.patientEncounter=:pe"
                 + " and (type(b.bill)=:class) ";
         hm = new HashMap();
-        hm.put("btp", BillType.PharmacyBhtPre);
+        hm.put("btp", billType);
         hm.put("class", PreBill.class);
         hm.put("pe", patientEncounter);
 
@@ -658,7 +654,7 @@ public class InwardBeanController implements Serializable {
                 + " and  b.bill.patientEncounter=:pe"
                 + " and (type(b.bill)=:class) ";
         hm = new HashMap();
-        hm.put("btp", BillType.PharmacyBhtPre);
+        hm.put("btp", billType);
         hm.put("class", RefundBill.class);
         hm.put("billedClass", PreBill.class);
         hm.put("pe", patientEncounter);
@@ -899,7 +895,7 @@ public class InwardBeanController implements Serializable {
                 + " and b.bill.cancelled=false "
                 + " and (b.refunded is null "
                 + " or b.refunded=false) "
-//                + " and b.bill.billedBill is null "
+                //                + " and b.bill.billedBill is null "
                 + " and b.bill.refundedBill is null "
                 + " and b.bill.checkedBy is null"
                 + " and b.bill.billType=:bt"

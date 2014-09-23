@@ -109,6 +109,15 @@ public class StoreBillSearch implements Serializable {
     @Inject
     private WebUserController webUserController;
 
+    public void calBillItemsTotal() {
+        if (billItems == null) {
+            return;
+        }
+        for (BillItem b : billItems) {
+            b.setTmpQty(b.getPharmaceuticalBillItem().getQty());
+        }
+    }
+
     public void editBill() {
         if (errorCheckForEdit()) {
             return;
@@ -219,7 +228,7 @@ public class StoreBillSearch implements Serializable {
     public void createTable() {
         lazyBills = null;
         Map m = new HashMap();
-        m.put("bt", BillType.PharmacySale);
+        m.put("bt", BillType.StoreSale);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         String sql;
@@ -238,7 +247,7 @@ public class StoreBillSearch implements Serializable {
     public void createReturnSaleBills() {
         lazyBills = null;
         Map m = new HashMap();
-        m.put("bt", BillType.PharmacySale);
+        m.put("bt", BillType.StoreSale);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         String sql;
@@ -682,21 +691,21 @@ public class StoreBillSearch implements Serializable {
             return true;
         }
 
-        if (getBill().getBillType() == BillType.PharmacyOrderApprove) {
+        if (getBill().getBillType() == BillType.StoreOrderApprove) {
             if (checkGrn()) {
                 UtilityController.addErrorMessage("Grn already head been Come u can't bill ");
                 return true;
             }
         }
 
-        if (getBill().getBillType() == BillType.PharmacyGrnBill) {
+        if (getBill().getBillType() == BillType.StoreGrnBill) {
             if (checkGrnReturn()) {
                 UtilityController.addErrorMessage("Grn had been Returned u can't cancell bill ");
                 return true;
             }
         }
 
-        if (getBill().getBillType() == BillType.PharmacyTransferIssue) {
+        if (getBill().getBillType() == BillType.StoreTransferIssue) {
             if (getBill().checkActiveForwardReference()) {
                 UtilityController.addErrorMessage("Item for this bill already recieve");
                 return true;
@@ -717,7 +726,7 @@ public class StoreBillSearch implements Serializable {
                 + " b.referenceBill=:ref and b.referenceBill.cancelled=false ";
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
-        hm.put("btp", BillType.PharmacyGrnBill);
+        hm.put("btp", BillType.StoreGrnBill);
         List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
 
         if (!tmp.isEmpty()) {
@@ -733,7 +742,7 @@ public class StoreBillSearch implements Serializable {
                 + " b.referenceBill=:ref and b.referenceBill.cancelled=false";
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
-        hm.put("btp", BillType.PharmacyGrnReturn);
+        hm.put("btp", BillType.StoreGrnReturn);
         List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
 
         if (!tmp.isEmpty()) {
@@ -765,7 +774,6 @@ public class StoreBillSearch implements Serializable {
         return cb;
     }
 
-
     private void pharmacyCancelBillItemsAddStock(CancelledBill can) {
         for (BillItem nB : getBill().getBillItems()) {
             BillItem b = new BillItem();
@@ -773,7 +781,7 @@ public class StoreBillSearch implements Serializable {
             b.copy(nB);
             b.invertValue(nB);
 
-            if (can.getBillType() == BillType.PharmacyGrnBill || can.getBillType() == BillType.PharmacyGrnReturn) {
+            if (can.getBillType() == BillType.StoreGrnBill || can.getBillType() == BillType.StoreGrnReturn) {
                 b.setReferanceBillItem(nB.getReferanceBillItem());
             } else {
                 b.setReferanceBillItem(nB);
@@ -817,7 +825,7 @@ public class StoreBillSearch implements Serializable {
             b.copy(nB);
             b.invertValue(nB);
 
-            if (can.getBillType() == BillType.PharmacyGrnBill || can.getBillType() == BillType.PharmacyGrnReturn) {
+            if (can.getBillType() == BillType.StoreGrnBill || can.getBillType() == BillType.StoreGrnReturn) {
                 b.setReferanceBillItem(nB.getReferanceBillItem());
             } else {
                 b.setReferanceBillItem(nB);
@@ -958,7 +966,7 @@ public class StoreBillSearch implements Serializable {
             b.copy(nB);
             b.invertValue(nB);
 
-            if (can.getBillType() == BillType.PharmacyGrnBill || can.getBillType() == BillType.PharmacyGrnReturn) {
+            if (can.getBillType() == BillType.StoreGrnBill || can.getBillType() == BillType.StoreGrnReturn) {
                 b.setReferanceBillItem(nB.getReferanceBillItem());
             } else {
                 b.setReferanceBillItem(nB);
@@ -1183,7 +1191,7 @@ public class StoreBillSearch implements Serializable {
                 return;
             }
 
-            if (getBill().getReferenceBill().getBillType() != BillType.PharmacyPre) {
+            if (getBill().getReferenceBill().getBillType() != BillType.StorePre) {
                 return;
             }
 
@@ -1222,7 +1230,7 @@ public class StoreBillSearch implements Serializable {
     }
 
     public void pharmacyRetailCancelBillWithStockBht() {
-        if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+        if (getBill().getBillType() != BillType.StoreBhtPre) {
             return;
         }
 
@@ -1237,7 +1245,7 @@ public class StoreBillSearch implements Serializable {
 
         CancelBillWithStockBht(BillNumberSuffix.STTISSUECAN);
     }
-    
+
     public void storeRetailCancelBillWithStockBhtIssue() {
         if (getBill().getBillType() != BillType.StoreIssue) {
             System.out.println("Bill Type incorrect");
@@ -1287,7 +1295,7 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-         //   System.out.print(getBill().isCancelled());
+            //   System.out.print(getBill().isCancelled());
 
 //            if (getBill().getReferenceBill() != null) {
 //                getBill().getReferenceBill().setReferenceBill(null);
@@ -1301,8 +1309,6 @@ public class StoreBillSearch implements Serializable {
             UtilityController.addErrorMessage("No Bill to cancel");
         }
     }
-
-   
 
     public void pharmacyPoCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
@@ -1389,7 +1395,7 @@ public class StoreBillSearch implements Serializable {
 
         return false;
     }
-    
+
     public void markAsChecked() {
         if (bill == null) {
             return;
@@ -1408,7 +1414,7 @@ public class StoreBillSearch implements Serializable {
 
         getBillFacade().edit(bill);
     }
-    
+
     public void pharmacyReturnBhtCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
@@ -1443,7 +1449,7 @@ public class StoreBillSearch implements Serializable {
             UtilityController.addErrorMessage("No Bill to cancel");
         }
     }
-    
+
     private RefundBill pharmacyCreateRefundCancelBill() {
         RefundBill cb = new RefundBill();
 
@@ -1484,8 +1490,6 @@ public class StoreBillSearch implements Serializable {
                 return;
             }
 
-            
-            
             CancelledBill cb = pharmacyCreateCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb, cb.getBillType(), BillNumberSuffix.GRNCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb, cb.getBillType(), BillNumberSuffix.GRNCAN));
@@ -1733,9 +1737,9 @@ public class StoreBillSearch implements Serializable {
     public List<Bill> getPos() {
         if (bills == null) {
             if (txtSearch == null || txtSearch.trim().equals("")) {
-                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacyOrder);
+                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.StoreOrder);
             } else {
-                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacyOrder);
+                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.StoreOrder);
             }
             if (bills == null) {
                 bills = new ArrayList<>();
@@ -1747,9 +1751,9 @@ public class StoreBillSearch implements Serializable {
     public List<Bill> getSales() {
         if (bills == null) {
             if (txtSearch == null || txtSearch.trim().equals("")) {
-                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacySale);
+                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.StoreSale);
             } else {
-                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacySale);
+                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.StoreSale);
             }
             if (bills == null) {
                 bills = new ArrayList<>();
@@ -1761,7 +1765,7 @@ public class StoreBillSearch implements Serializable {
     public List<Bill> getPreBills() {
         if (bills == null) {
 //            if (txtSearch == null || txtSearch.trim().equals("")) {
-            bills = getBillBean().billsForTheDay2(getFromDate(), getToDate(), BillType.PharmacyPre);
+            bills = getBillBean().billsForTheDay2(getFromDate(), getToDate(), BillType.StorePre);
 //            } else {
 //                bills = getBillBean().billsFromSearch2(txtSearch, getFromDate(), getToDate(), BillType.PharmacySale);
 //            }
@@ -1779,8 +1783,8 @@ public class StoreBillSearch implements Serializable {
         sql = "select b from PreBill b where b.billType = :billType and b.referenceBill.billType=:refBillType "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false order by b.id desc ";
 
-        temMap.put("billType", BillType.PharmacyPre);
-        temMap.put("refBillType", BillType.PharmacySale);
+        temMap.put("billType", BillType.StorePre);
+        temMap.put("refBillType", BillType.StoreSale);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
@@ -1822,7 +1826,7 @@ public class StoreBillSearch implements Serializable {
             sql = "select b from RefundBill b where b.billType = :billType"
                     + " and b.createdAt between :fromDate and :toDate and b.retired=false order by b.id desc ";
 
-            temMap.put("billType", BillType.PharmacyPre);
+            temMap.put("billType", BillType.StorePre);
             // temMap.put("refBillType", BillType.PharmacySale);
             temMap.put("toDate", toDate);
             temMap.put("fromDate", fromDate);
@@ -1837,9 +1841,9 @@ public class StoreBillSearch implements Serializable {
     public List<Bill> getRequests() {
         if (bills == null) {
             if (txtSearch == null || txtSearch.trim().equals("")) {
-                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
+                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.StoreTransferRequest);
             } else {
-                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
+                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.StoreTransferRequest);
             }
             if (bills == null) {
                 bills = new ArrayList<>();
@@ -1851,9 +1855,9 @@ public class StoreBillSearch implements Serializable {
     public List<Bill> getGrns() {
         if (bills == null) {
             if (txtSearch == null || txtSearch.trim().equals("")) {
-                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacyGrnBill);
+                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.StoreGrnBill);
             } else {
-                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacyGrnBill);
+                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.StoreGrnBill);
             }
             if (bills == null) {
                 bills = new ArrayList<>();
@@ -1973,7 +1977,7 @@ public class StoreBillSearch implements Serializable {
         bill = getBillFacade().find(bill.getId());
         //System.out.println("bill.getBillItems() = " + bill.getBillItems());
         double tmp = 0;
-        if (bill.getBillType() == BillType.PharmacyTransferIssue) {
+        if (bill.getBillType() == BillType.StoreTransferIssue) {
             for (BillItem b : bill.getBillItems()) {
                 tmp += (b.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate() * b.getPharmaceuticalBillItem().getQtyInUnit());
             }
@@ -1983,6 +1987,8 @@ public class StoreBillSearch implements Serializable {
                 getBillFacade().edit(bill);
             }
         }
+
+        createBillItems();
 
     }
 
@@ -1995,22 +2001,17 @@ public class StoreBillSearch implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
-        String sql = "";
-        if (getBill() != null) {
-            if (getBill().getRefundedBill() == null) {
-                sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            } else {
-                sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getRefundedBill().getId();
-            }
-            billItems = getBillItemFacede().findBySQL(sql);
-            // //System.out.println("sql for bill item search is " + sql);
-            // //System.out.println("results for bill item search is " + billItems);
-            if (billItems == null) {
-                billItems = new ArrayList<>();
-            }
-        }
-
         return billItems;
+    }
+
+    public void createBillItems() {
+        HashMap hm = new HashMap();
+        String sql = "SELECT b FROM BillItem b "
+                + " WHERE b.retired=false "
+                + " and b.bill=:b";
+        hm.put("b", getBill());
+        billItems = billItemFacede.findBySQLWithoutCache(sql, hm);
+
     }
 
     public List<PharmaceuticalBillItem> getPharmacyBillItems() {

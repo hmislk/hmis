@@ -98,7 +98,6 @@ public class InwardReportController1 implements Serializable {
     public InwardReportController1() {
     }
 
-
     public Double[] fetchRoomValues() {
         HashMap hm = new HashMap();
         String sql = "SELECT"
@@ -118,7 +117,7 @@ public class InwardReportController1 implements Serializable {
                 + " sum(pr.discountMedicalCareCharge) "
                 + " FROM PatientRoom pr "
                 + " where pr.retired=false"
-//                + " and pr.patientEncounter.paymentFinalized=true "
+                //                + " and pr.patientEncounter.paymentFinalized=true "
                 + " and pr.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
 
         if (admissionType != null) {
@@ -449,7 +448,7 @@ public class InwardReportController1 implements Serializable {
                 + " FROM PatientEncounter pe"
                 + " where pe.retired=false "
                 + " and pe.discharged=true "
-//                + " and pe.paymentFinalized=true "
+                //                + " and pe.paymentFinalized=true "
                 + " and pe.dateOfDischarge between :fd and :td  ";
 
         Admission a = new Admission();
@@ -558,7 +557,7 @@ public class InwardReportController1 implements Serializable {
 
     }
 
-    public Double[] fetchMadicine() {
+    public Double[] fetchIssue(BillType billType) {
         String sql;
         HashMap hm = new HashMap();
         sql = "SELECT  sum(b.grossValue),"
@@ -567,8 +566,7 @@ public class InwardReportController1 implements Serializable {
                 + " sum(b.netValue) "
                 + " FROM BillItem b "
                 + " WHERE b.retired=false "
-                + " and (b.bill.billType=:btp1 "
-                + " or  b.bill.billType=:btp2)"
+                + " and b.bill.billType=:btp "
                 + " and b.bill.patientEncounter.discharged=true "
                 + " and b.bill.patientEncounter.dateOfDischarge between :fd and :td ";
 
@@ -590,8 +588,7 @@ public class InwardReportController1 implements Serializable {
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
-        hm.put("btp1", BillType.PharmacyBhtPre);
-        hm.put("btp2", BillType.StoreBhtPre);
+        hm.put("btp", billType);
 
         Object obj[] = billFeeFacade.findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
 //        System.err.println("OBJ " + obj);
@@ -600,17 +597,14 @@ public class InwardReportController1 implements Serializable {
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
-            dbl[3] = 0.0;            
+            dbl[3] = 0.0;
             return dbl;
         } else {
             return Arrays.copyOf(obj, obj.length, Double[].class);
         }
 
-
     }
 
-
-   
     public void createInwardService() {
         inwardCharges = new ArrayList<>();
 
@@ -620,15 +614,27 @@ public class InwardReportController1 implements Serializable {
         string1Value3.setValue1(admissionGross);
         string1Value3.setValue3(admissionDiscount);
         string1Value3.setValue4(admissionNetValue);
-
         inwardGross += string1Value3.getValue1();
         inwardDiscount += string1Value3.getValue3();
         inwardNetValue += string1Value3.getValue4();
         inwardCharges.add(string1Value3);
 
         string1Value3 = new String2Value4();
-        Double[] dbl=fetchMadicine();
+        Double[] dbl = fetchIssue(BillType.PharmacyBhtPre);
         string1Value3.setString(InwardChargeType.Medicine.getLabel());
+        string1Value3.setValue1(dbl[0]);
+        string1Value3.setValue2(dbl[1]);
+        string1Value3.setValue3(dbl[2]);
+        string1Value3.setValue4(dbl[3]);
+        inwardGross += string1Value3.getValue1();
+        inwardMargin += string1Value3.getValue2();
+        inwardDiscount += string1Value3.getValue3();
+        inwardNetValue += string1Value3.getValue4();
+        inwardCharges.add(string1Value3);
+
+        string1Value3 = new String2Value4();
+        dbl = fetchIssue(BillType.StoreBhtPre);
+        string1Value3.setString(InwardChargeType.GeneralIssuing.getLabel());
         string1Value3.setValue1(dbl[0]);
         string1Value3.setValue2(dbl[1]);
         string1Value3.setValue3(dbl[2]);

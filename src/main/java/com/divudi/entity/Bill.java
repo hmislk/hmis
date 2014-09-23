@@ -110,6 +110,7 @@ public class Bill implements Serializable {
     BillItem singleBillItem;
     @ManyToOne
     BillSession singleBillSession;
+    String qutationNumber;
 
     //Values
     double total;
@@ -261,7 +262,7 @@ public class Bill implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date appointmentAt;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date paidAt;  
+    Date paidAt;
     @ManyToOne
     Bill paidBill;
 
@@ -1268,7 +1269,7 @@ public class Bill implements Serializable {
 //            System.err.println("1 " + b);
 //            System.err.println("2 " + b.getBillClass());
 //            System.err.println("3 " + b.getBillType());
-            if (b instanceof RefundBill && b.getBillType() == BillType.PharmacyBhtPre) {
+            if (b instanceof RefundBill && (b.getBillType() == BillType.PharmacyBhtPre || b.getBillType() == BillType.StoreBhtPre)) {
                 bills.add(b);
             }
         }
@@ -1463,6 +1464,12 @@ public class Bill implements Serializable {
         this.paidAt = paidAt;
     }
 
- 
-    
+    public String getQutationNumber() {
+        return qutationNumber;
+    }
+
+    public void setQutationNumber(String qutationNumber) {
+        this.qutationNumber = qutationNumber;
+    }
+
 }

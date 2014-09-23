@@ -56,6 +56,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -239,27 +240,26 @@ public class BillController implements Serializable {
         List<Bill> a = null;
         String sql;
         HashMap hash = new HashMap();
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         if (qry != null) {
             sql = "select c from BilledBill c "
                     + "where  abs(c.netTotal)-abs(c.paidAmount)>:val "
-                    + " and (c.billType= :btp1 or c.billType= :btp2  )"
+                    + " and c.billType in :bts "
                     + " and c.createdAt is not null "
                     + " and c.deptId is not null "
                     + " and c.cancelledBill is null "
                     + " and c.retired=false "
                     + " and c.paymentMethod=:pm  "
-                    + " and c.fromInstitution.institutionType=:insTp  "
                     + " and ((upper(c.deptId) like :q ) "
                     + " or (upper(c.fromInstitution.name)  like :q ))"
                     + " order by c.fromInstitution.name";
-            hash.put("btp1", BillType.PharmacyGrnBill);
-            hash.put("btp2", BillType.PharmacyPurchaseBill);
+            hash.put("bts", billTypesListBilled);
             hash.put("pm", PaymentMethod.Credit);
-            hash.put("insTp", InstitutionType.Dealer);
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
             //     hash.put("pm", PaymentMethod.Credit);
-            a = getFacade().findBySQL(sql, hash, 10);
+            a = getFacade().findBySQL(sql, hash, 20);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -322,13 +322,13 @@ public class BillController implements Serializable {
         return tmps;
     }
 
-    public List<Bill> getDealorBills(Institution institution) {
+    public List<Bill> getDealorBills(Institution institution, List<BillType> billTypes) {
         String sql;
         HashMap hash = new HashMap();
 
         sql = "select c from BilledBill c where "
                 + " abs(c.netTotal)-abs(c.paidAmount)>:val"
-                + " and (c.billType= :btp1 or c.billType= :btp2 )"
+                + " and c.billType in :bts"
                 + " and c.createdAt is not null "
                 + " and c.deptId is not null "
                 + " and c.cancelled=false"
@@ -336,8 +336,7 @@ public class BillController implements Serializable {
                 + " and c.paymentMethod=:pm  "
                 + " and c.fromInstitution=:ins "
                 + " order by c.id ";
-        hash.put("btp1", BillType.PharmacyGrnBill);
-        hash.put("btp2", BillType.PharmacyPurchaseBill);
+        hash.put("bts", billTypes);
         hash.put("pm", PaymentMethod.Credit);
         hash.put("val", 0.1);
         hash.put("ins", institution);
@@ -510,7 +509,7 @@ public class BillController implements Serializable {
 
         saveBatchBill();
         saveBillItemSessions();
-        
+
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             staffBean.updateStaffCredit(toStaff, netTotal);
             UtilityController.addSuccessMessage("User Credit Updated");
@@ -519,7 +518,7 @@ public class BillController implements Serializable {
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
-    
+
     @EJB
     StaffBean staffBean;
 

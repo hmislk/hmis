@@ -78,7 +78,7 @@ public class mdInwardReportController implements Serializable {
     Admission current;
     Institution institution;
     double total = 0.0;
-
+    List<BillFee> billfees;
     ////////////////////////////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -538,19 +538,29 @@ public class mdInwardReportController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public void listInBhtBillItems() {
+    private void listInBhtBillItems(BillType billType) {
 
         Map m = new HashMap();
         String jpql;
-        jpql = "select b from BillItem b where"
-                + " b.bill.department =:dept"
+        jpql = "select b from BillItem b"
+                + " where b.bill.department =:dept"
                 + " and  b.bill.billType=:biTy "
                 + " and b.createdAt between :fd and :td";
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("dept", dept);
-        m.put("biTy", BillType.PharmacyBhtPre);
+        m.put("biTy", billType);
         billItem = getBillItemFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void listInBhtBillItems() {
+        listInBhtBillItems(BillType.PharmacyBhtPre);
+
+    }
+
+    public void listInBhtBillItemsStore() {
+        listInBhtBillItems(BillType.StoreBhtPre);
 
     }
 
@@ -1254,27 +1264,59 @@ public class mdInwardReportController implements Serializable {
                     //                    + " and  bi.bill.institution=:ins "
                     + " and  bi.bill.billType= :bTp  "
                     + " and  bi.bill.createdAt between :fromDate and :toDate ";
+            if (institution != null) {
+                sql += " and  bi.item.institution=:ins ";
+                temMap.put("ins", institution);
+            }
+            if (dept != null) {
+                sql += " and  bi.item.department=:dept ";
+                temMap.put("dept", dept);
+            }
+            if (category != null) {
+                sql += " and  bi.item.category=:cat ";
+                temMap.put("cat", category);
+            }
+            if (item != null) {
+                sql += " and  bi.item=:item ";
+                temMap.put("item", item);
+            }
         } else {
             sql = "select distinct(bi.item) "
                     + " FROM BillItem bi"
                     + " where bi.bill.billType= :bTp  "
                     + " and  bi.bill.createdAt between :fromDate and :toDate "
                     + " and bi.bill.paymentMethod=:p ";
+            if (institution != null) {
+                sql += " and  bi.item.institution=:ins ";
+                temMap.put("ins", institution);
+            }
+            if (dept != null) {
+                sql += " and  bi.item.department=:dept ";
+                temMap.put("dept", dept);
+            }
+            if (category != null) {
+                sql += " and  bi.item.category=:cat ";
+                temMap.put("cat", category);
+            }
+            if (item != null) {
+                sql += " and  bi.item=:item ";
+                temMap.put("item", item);
+            }
 
             temMap.put("p", getPaymentMethod());
         }
 
         tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-//        for (Item i : tmp) {
-//            ItemWithFee iwf = new ItemWithFee();
-//            iwf.setItem(i);
-//            setCount(iwf);
-//            setFee(iwf);
-//            //   //System.out.println("ss " + itemWithFees.size());
-//            //      //System.out.println("ss " + iwf.getItem());
-//            itemWithFees.add(iwf);
-//        }
+        for (Item i : tmp) {
+            ItemWithFee iwf = new ItemWithFee();
+            iwf.setItem(i);
+            setCount(iwf);
+            setFee(iwf);
+            System.out.println("ss " + itemWithFees.size());
+            System.out.println("ss " + iwf.getItem());
+            itemWithFees.add(iwf);
+        }
     }
 
     public void createItemWithFeeByDischargeDate() {
@@ -1320,7 +1362,7 @@ public class mdInwardReportController implements Serializable {
                     + " where bi.bill.billType= :bTp  "
                     + " and  bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
                     + " and bi.bill.paymentMethod=:p ";
-            
+
             if (institution != null) {
                 sql += " and  bi.item.institution=:ins ";
                 temMap.put("ins", institution);
@@ -1351,6 +1393,152 @@ public class mdInwardReportController implements Serializable {
             //   //System.out.println("ss " + itemWithFees.size());
             //      //System.out.println("ss " + iwf.getItem());
             itemWithFees.add(iwf);
+        }
+
+    }
+
+    public void createItemWithFeeByAddedDate1() {
+        makeListNull();
+        String sql;
+        Map temMap = new HashMap();
+        billItem = new ArrayList<>();
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bTp", BillType.InwardBill);
+
+        System.out.println("in");
+
+        if (getPaymentMethod() == null) {
+            sql = "select bi "
+                    + " FROM BillFee bi "
+                    + " where bi.retired=false "
+                    + " and bi.bill.retired=false "
+                    + " and bi.billItem.retired=false"
+                    //                    + " and  bi.bill.institution=:ins "
+                    + " and  bi.bill.billType= :bTp  "
+                    + " and  bi.bill.createdAt between :fromDate and :toDate ";
+            if (institution != null) {
+                sql += " and  bi.billItem.item.institution=:ins ";
+                temMap.put("ins", institution);
+            }
+            if (dept != null) {
+                sql += " and  bi.billItem.item.department=:dept ";
+                temMap.put("dept", dept);
+            }
+            if (category != null) {
+                sql += " and  bi.billItem.item.category=:cat ";
+                temMap.put("cat", category);
+            }
+            if (item != null) {
+                sql += " and  bi.billItem.item=:item ";
+                temMap.put("item", item);
+            }
+        } else {
+            sql = "select bi "
+                    + " FROM BillFee bi"
+                    + " where bi.bill.billType= :bTp  "
+                    + " and  bi.bill.createdAt between :fromDate and :toDate "
+                    + " and bi.bill.paymentMethod=:p ";
+            if (institution != null) {
+                sql += " and  bi.billItem.item.institution=:ins ";
+                temMap.put("ins", institution);
+            }
+            if (dept != null) {
+                sql += " and  bi.billItem.item.department=:dept ";
+                temMap.put("dept", dept);
+            }
+            if (category != null) {
+                sql += " and  bi.billItem.item.category=:cat ";
+                temMap.put("cat", category);
+            }
+            if (item != null) {
+                sql += " and  bi.billItem.item=:item ";
+                temMap.put("item", item);
+            }
+
+            temMap.put("p", getPaymentMethod());
+        }
+
+        billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("out");
+
+        total = 0.0;
+        for (BillFee bf : billfees) {
+            total += bf.getFee().getFee();
+            System.out.println("total = " + total);
+        }
+
+    }
+
+    public void createItemWithFeeByDischargeDate1() {
+        makeListNull();
+        String sql;
+        billItem = new ArrayList<>();
+        Map temMap = new HashMap();
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bTp", BillType.InwardBill);
+        System.out.println("in");
+        if (getPaymentMethod() == null) {
+            sql = "select bi "
+                    + " FROM BillFee bi "
+                    + " where bi.retired=false "
+                    + " and bi.bill.retired=false "
+                    + " and bi.billItem.retired=false"
+                    //                    + " and  bi.bill.institution=:ins "
+                    + " and  bi.bill.billType= :bTp  "
+                    + " and  bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+
+            if (institution != null) {
+                sql += " and  bi.billItem.item.institution=:ins ";
+                temMap.put("ins", institution);
+            }
+            if (dept != null) {
+                sql += " and  bi.billItem.item.department=:dept ";
+                temMap.put("dept", dept);
+            }
+            if (category != null) {
+                sql += " and  bi.billItem.item.category=:cat ";
+                temMap.put("cat", category);
+            }
+            if (item != null) {
+                sql += " and  bi.billItem.item=:item ";
+                temMap.put("item", item);
+            }
+        } else {
+            sql = "select bi "
+                    + " FROM BillFee bi"
+                    + " where bi.bill.billType= :bTp  "
+                    + " and  bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                    + " and bi.bill.paymentMethod=:p ";
+            if (institution != null) {
+                sql += " and  bi.billItem.item.institution=:ins ";
+                temMap.put("ins", institution);
+            }
+            if (dept != null) {
+                sql += " and  bi.billItem.item.department=:dept ";
+                temMap.put("dept", dept);
+            }
+            if (category != null) {
+                sql += " and  bi.billItem.item.category=:cat ";
+                temMap.put("cat", category);
+            }
+            if (item != null) {
+                sql += " and  bi.billItem.item=:item ";
+                temMap.put("item", item);
+            }
+
+            temMap.put("p", getPaymentMethod());
+        }
+
+        billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("out");
+
+        total = 0.0;
+        for (BillFee bf : billfees) {
+            total += bf.getFee().getFee();
+            System.out.println("total = " + total);
         }
 
     }
@@ -1830,6 +2018,14 @@ public class mdInwardReportController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public List<BillFee> getBillfees() {
+        return billfees;
+    }
+
+    public void setBillfees(List<BillFee> billfees) {
+        this.billfees = billfees;
     }
 
 }

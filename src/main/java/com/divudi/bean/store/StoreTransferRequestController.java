@@ -62,7 +62,7 @@ public class StoreTransferRequestController implements Serializable {
     private BillItem currentBillItem;
     private List<BillItem> billItems;
     @Inject
-    private PharmacyCalculation pharmacyBillBean;
+    StoreCalculation storeCalculation;
     private boolean printPreview;
 
     public void recreate() {
@@ -264,7 +264,7 @@ public class StoreTransferRequestController implements Serializable {
     public Bill getBill() {
         if (bill == null) {
             bill = new BilledBill();
-            bill.setBillType(BillType.PharmacyTransferRequest);
+            bill.setBillType(BillType.StoreTransferRequest);
         }
         return bill;
     }
@@ -303,14 +303,6 @@ public class StoreTransferRequestController implements Serializable {
 
     public void setItemsDistributorsFacade(ItemsDistributorsFacade itemsDistributorsFacade) {
         this.itemsDistributorsFacade = itemsDistributorsFacade;
-    }
-
-    public PharmacyCalculation getPharmacyBillBean() {
-        return pharmacyBillBean;
-    }
-
-    public void setPharmacyBillBean(PharmacyCalculation pharmacyBillBean) {
-        this.pharmacyBillBean = pharmacyBillBean;
     }
 
     public PharmacyController getPharmacyController() {
