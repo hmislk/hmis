@@ -19,7 +19,7 @@
                         <h:panelGrid columns="15"  >                           
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   id="cmbPs" value="#{saleReturnController.returnBill.paymentMethod}">                                                                     
-                                <p:selectOneMenu   id="cmbPs" value="#{pharmacyPreSettleController.preBill.paymentMethod}" >   
+                                <p:selectOneMenu   value="#{pharmacyPreSettleController.preBill.paymentMethod}" >   
                                     <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
 
                                 </p:selectOneMenu>
