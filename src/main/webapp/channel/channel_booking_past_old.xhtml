@@ -1,0 +1,429 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html">
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGrid columns="4" id="spec">     
+                <p:panel header="Speciality">       
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingPastController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                            <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
+                            <f:ajax  event="change" execute="@this" render="scStaff tbl bSession "  /> 
+                        </p:selectOneListbox>
+
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:panel header="Consultant">       
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingPastController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                            <f:selectItems value="#{bookingPastController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
+                            <f:ajax  event="change" execute="@this" render="tbl bSession"  /> 
+                        </p:selectOneListbox>
+                    </h:panelGrid>
+                </p:panel>
+
+                <p:panel header="Session">  
+                    <p:calendar id="date" value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
+                        <f:ajax event="dateSelect" execute="scStaff"  render="tbl bSession"/>
+                    </p:calendar>
+                    <h:panelGrid columns="1">
+                        <p:selectOneListbox converter="sscon" id="tbl" value="#{bookingPastController.selectedServiceSession}"
+                                            style="height: 150px; width: 300px; padding: 2px; margin: auto;" >
+
+                            <f:selectItems value="#{bookingPastController.serviceSessions}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
+                            <f:ajax  event="change" execute="@this scStaff date" render=":#{p:component('bSession')} "  /> 
+                        </p:selectOneListbox>
+                    </h:panelGrid>
+
+                </p:panel>
+
+                <p:panel>
+                    <p:dataTable id="bSession" value="#{bookingPastController.billSessions}" var='bs'
+                                 selectionMode="single" rowKey="#{bs.id}"
+                                 selection="#{bookingPastController.selectedBillSession}">
+                        <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />  
+
+                        <p:column headerText="No">#{bs.serialNo}</p:column>
+                        <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                        <p:column headerText="Paid or Not">
+                            <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+                            <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                        </p:column>
+                        <p:column headerText="C/R">
+                            <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                            <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                        </p:column>   
+                        <p:column headerText="Agent">
+                            <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>                          
+                        </p:column> 
+                        <p:column headerText="P/A">                           
+                            <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                        </p:column> 
+                    </p:dataTable>                    
+                </p:panel>   
+
+            </h:panelGrid>
+            <h:panelGrid columns="2">               
+                <p:panel>
+                    <p:tabView id="detail">
+                        <p:tab title="Booking" id="booking">
+                            <h:panelGrid columns="2">
+                                <p:outputLabel value="Patient Name"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
+                                <p:outputLabel value="Booking Id"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.bookingId}"/>
+                                <p:outputLabel value="Payment Method"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.paymentMethod}"/>
+                                <p:outputLabel value="Agent" rendered="#{bookingPastController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingPastController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="Agent Ref No" rendered="#{bookingPastController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingPastController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                <p:outputLabel value="Booking User"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+                                <p:outputLabel value="Booked At"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.createdAt}"/>
+                                <p:outputLabel value="Consultant"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
+                                <p:outputLabel value="Appointment Date"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.sessionDate}"/>
+                                <p:outputLabel value="Appointment Time"/>
+                                <p:outputLabel value="#{bookingPastController.selectedBillSession.serviceSession.sessionTime}"/>
+
+                            </h:panelGrid>                            
+                        </p:tab>
+
+
+                        <p:tab title="Reprint" id="print"></p:tab>
+
+
+                        <p:tab title="Cancel" id="cancel">
+                            <p:panelGrid columns="3">
+                                <p:outputLabel/>
+                                <p:outputLabel value="Paid Amount"/>
+                                <p:outputLabel value="Previous Repay"/>                              
+
+                                <p:outputLabel value="Doctor Fee"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue}"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.prevFee.feeValue}"/>
+
+
+                                <p:outputLabel value="Institution"/>
+                                <p:outputLabel value="#{channelBillController.hospitalFee.billedFee.feeValue}"/>
+                                <p:outputLabel value="#{channelBillController.hospitalFee.prevFee.feeValue}"/>                                                               
+
+                                <p:outputLabel value="Tax" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.tax.billedFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.tax.prevFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>                                                               
+
+                                <p:outputLabel value="Agent" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.agentPay.billedFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.agentPay.prevFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/> 
+
+                                <p:outputLabel value="Total"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue
+                                                        +channelBillController.hospitalFee.billedFee.feeValue
+                                                        +channelBillController.tax.billedFee.feeValue
+                                                        +channelBillController.agentPay.billedFee.feeValue}"/>
+
+                                <p:outputLabel  value="#{channelBillController.doctorFee.prevFee.feeValue
+                                                         +channelBillController.hospitalFee.prevFee.feeValue
+                                                         +channelBillController.tax.prevFee.feeValue
+                                                         +channelBillController.agentPay.prevFee.feeValue}" />
+
+
+                            </p:panelGrid>
+                            <p:commandButton ajax="false" value="Cancel" action="#{channelBillController.cancel}" disabled="#{channelBillController.billSession.bill.refunded==true
+                                                                                   or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
+                        </p:tab>
+
+
+                        <p:tab title="Refund" id="refund">
+                            <p:panelGrid columns="4">
+                                <p:outputLabel/>
+                                <p:outputLabel value="Paid Amount"/>
+                                <p:outputLabel value="Previous Repay"/>
+                                <p:outputLabel value="Repayment"/>
+
+                                <p:outputLabel value="Doctor Fee"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue}"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.prevFee.feeValue}"/>
+                                <p:inputText autocomplete="off"  id="doc" value="#{channelBillController.doctorFee.repayment.feeValue}" disabled="#{channelBillController.billSession.serviceSession.refundable != true}">
+                                    <f:ajax event="keyup" execute="@this hos tax age" render="tot"/>
+                                </p:inputText>
+
+                                <p:outputLabel value="Institution"/>
+                                <p:outputLabel value="#{channelBillController.hospitalFee.billedFee.feeValue}"/>
+                                <p:outputLabel value="#{channelBillController.hospitalFee.prevFee.feeValue}"/>                               
+                                <p:outputLabel id="hos" value="#{channelBillController.hospitalFee.repayment.feeValue}"/>                                    
+
+                                <p:outputLabel value="Tax" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.tax.billedFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.tax.prevFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>                               
+                                <p:inputText autocomplete="off" id="tax" value="#{channelBillController.tax.repayment.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}">
+                                    <f:ajax event="keyup" execute="doc hos @this age" render="tot"/>
+                                </p:inputText>
+
+                                <p:outputLabel value="Agent" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.agentPay.billedFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                <p:outputLabel value="#{channelBillController.agentPay.prevFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/> 
+                                <p:inputText autocomplete="off" id="age" value="#{channelBillController.agentPay.repayment.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}">
+                                    <f:ajax event="keyup" execute="doc hos tax @this" render="tot"/>
+                                </p:inputText>
+
+                                <p:outputLabel value="Total"/>
+                                <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue
+                                                        +channelBillController.hospitalFee.billedFee.feeValue
+                                                        +channelBillController.tax.billedFee.feeValue
+                                                        +channelBillController.agentPay.billedFee.feeValue}"/>
+
+                                <p:outputLabel  value="#{channelBillController.doctorFee.prevFee.feeValue
+                                                         +channelBillController.hospitalFee.prevFee.feeValue
+                                                         +channelBillController.tax.prevFee.feeValue
+                                                         +channelBillController.agentPay.prevFee.feeValue}" />
+
+                                <p:outputLabel id="tot" value="#{channelBillController.doctorFee.repayment.feeValue
+                                                                 +channelBillController.hospitalFee.repayment.feeValue
+                                                                 +channelBillController.tax.repayment.feeValue
+                                                                 +channelBillController.agentPay.repayment.feeValue}" />
+                            </p:panelGrid>
+                            <p:commandButton ajax="false" value="Refund" action="#{channelBillController.refund}" disabled="#{channelBillController.billSession.bill.refunded==true
+                                                                                   or channelBillController.billSession.bill.cancelled==true
+                                                                                   or channelBillController.billSession.bill.billType eq 'ChannelCredit'}" onclick="onSubmitButton();"/>
+
+
+                        </p:tab>
+
+
+                        <p:tab title="Settle" id="settle">
+                            <p:panel  id="set">
+                                <h:panelGrid columns="1">
+                                    <p:panelGrid columns="2">
+                                        <p:outputLabel/>
+                                        <p:outputLabel value="To Pay"/>                                
+
+                                        <p:outputLabel value="Doctor Fee"/>
+                                        <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue}"/>
+
+                                        <p:outputLabel value="Institution"/>
+                                        <p:outputLabel value="#{channelBillController.hospitalFee.billedFee.feeValue}"/>
+
+                                        <p:outputLabel value="Tax" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+                                        <p:outputLabel value="#{channelBillController.tax.billedFee.feeValue}" rendered="#{channelBillController.tax.billedFee.feeValue!=0.0}"/>
+
+                                        <p:outputLabel value="Agent" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+                                        <p:outputLabel value="#{channelBillController.agentPay.billedFee.feeValue}" rendered="#{channelBillController.agentPay.billedFee.feeValue!=0.0}"/>
+
+                                        <p:outputLabel value="Total"/>
+                                        <p:outputLabel value="#{channelBillController.doctorFee.billedFee.feeValue
+                                                                +channelBillController.hospitalFee.billedFee.feeValue
+                                                                +channelBillController.tax.billedFee.feeValue
+                                                                +channelBillController.agentPay.billedFee.feeValue}"/>
+
+
+                                    </p:panelGrid>
+
+
+                                </h:panelGrid>
+                                <p:commandButton id="setBtn" ajax="false" value="Settle Credit" action="#{channelBillController.settleCredit}" disabled="#{channelBillController.billSession.bill.billType ne 'ChannelCredit' 
+                                                                                                          or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
+
+
+                            </p:panel>
+
+                        </p:tab>
+
+
+                        <p:tab title="Change" id="change">
+                            <h:panelGrid columns="2">
+                                <p:outputLabel value="Name"/>
+                                <p:inputText autocomplete="off" value="#{bookingPastController.selectedBillSession.bill.patient.person.name}" />
+                                <p:outputLabel value="Patient"/>
+                                <p:inputText autocomplete="off" value="#{bookingPastController.selectedBillSession.bill.patient.person.phone}"/>
+                                <p:outputLabel value="Mark As Absent"/>
+                                <p:selectBooleanCheckbox value="#{bookingPastController.selectedBillSession.absent}" >
+                                </p:selectBooleanCheckbox>
+                                <p:outputLabel/>
+                                <p:commandButton ajax="false" value="Update" action="#{bookingPastController.updatePatient}"
+                                                 disabled="#{bookingPastController.selectedBillSession.bill.cancelled==true
+                                                             or bookingPastController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+
+                            </h:panelGrid>
+
+
+
+                        </p:tab>
+
+
+                        <p:tab title="Search">
+                            <p:calendar id="cal"  value="#{channelsearch.date}" pattern="dd MMMM yyyy" >   
+                                <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
+                            </p:calendar>
+                            <p:dataTable id="bSessionSearch" value="#{channelsearch.billSessions}" var='bs'
+                                         filteredValue="#{channelsearch.filteredbillSessions}">
+
+
+                                <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"> #{bs.bill.bookingId}
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column>
+                                <p:column headerText="Sepeciality" filterBy="#{bs.serviceSession.staff.speciality.name}" filterMatchMode="contains">
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}">#{bs.serviceSession.staff.speciality.name}
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column>
+                                <p:column headerText="Consultant" filterBy="#{bs.serviceSession.staff.person.nameWithTitle}" filterMatchMode="contains">
+
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}">  #{bs.serviceSession.staff.person.nameWithTitle}
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column>
+                                <p:column headerText="Session Name" filterBy="#{bs.serviceSession.name}" filterMatchMode="contains">
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}">  #{bs.serviceSession.name}
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column>
+                                <p:column headerText="No" filterBy="#{bs.serialNo}" filterMatchMode="contains">
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"> #{bs.serialNo}
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}"  value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column>
+                                <p:column headerText="Patient Name" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"> #{bs.bill.patient.person.nameWithTitle}
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column>
+                                <p:column headerText="Paid or Not" filterBy="#{bs.bill.billType}" filterMatchMode="contains">
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"> <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column>
+                                <p:column headerText="C/R" filterBy="#{bs.bill.billClass}" filterMatchMode="contains">
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}">  <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}">  <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column>   
+                                <p:column headerText="Agent" filterBy="#{bs.bill.fromInstitution.institutionCode}" filterMatchMode="contains">
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"> <p:outputLabel value="#{bs.bill.fromInstitution.institutionCode}"/>      
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column> 
+                                <p:column headerText="Agent Ref No" filterBy="#{bs.billItem.agentRefNo}" filterMatchMode="contains">
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"><p:outputLabel value="#{bs.billItem.agentRefNo}"/>     
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column> 
+                                <p:column headerText="P/A" filterBy="#{bs.absent}" filterMatchMode="contains">                                      
+                                    <h:commandLink action="channel_booking_past" actionListener="#{bookingPastController.makeNull}"> <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                                        <f:setPropertyActionListener target="#{bookingPastController.speciality}" value="#{bs.serviceSession.staff.speciality}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.staff}" value="#{bs.serviceSession.staff}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession}" value="#{bs.serviceSession}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedBillSession}" value="#{bs}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.selectedServiceSession.sessionAt}" value="#{bs.sessionDate}"/>
+                                        <f:setPropertyActionListener target="#{bookingPastController.date}" value="#{bs.sessionDate}"/>
+                                    </h:commandLink>
+                                </p:column> 
+                            </p:dataTable> 
+                        </p:tab>
+
+
+                        <p:tab title="Views">
+
+                            <p:panel header="Selected Session">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton value="Nurse View " action="#{bookingPastController.nurse}" onclick="onSubmitButton();"  >                                       
+                                    </p:commandButton>
+                                    <p:commandButton value="Doctor View " action="#{bookingPastController.doctor}" ajax="false" onclick="onSubmitButton();">                                        
+                                    </p:commandButton>
+                                    <p:commandButton value="Session View " action="#{bookingPastController.session}" ajax="false" onclick="onSubmitButton();">                                        
+                                    </p:commandButton>
+                                    <p:commandButton value="Phone View " action="#{bookingPastController.phone}" ajax="false" onclick="onSubmitButton();">                                        
+                                    </p:commandButton>
+                                    <p:commandButton value="User View " action="#{bookingPastController.user}" ajax="false" onclick="onSubmitButton();">                                        
+                                    </p:commandButton>
+                                </h:panelGrid>
+
+                            </p:panel>
+
+
+
+                        </p:tab>
+                    </p:tabView>
+                </p:panel>
+            </h:panelGrid>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

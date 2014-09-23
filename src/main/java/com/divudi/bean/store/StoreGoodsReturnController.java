@@ -61,6 +61,8 @@ public class StoreGoodsReturnController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
+    @Inject
+    StoreCalculation storeCalculation;
 
     public Bill getBill() {
         return bill;
@@ -72,12 +74,13 @@ public class StoreGoodsReturnController implements Serializable {
         this.bill = bill;
         generateBillComponent();
         getReturnBill().setToInstitution(bill.getFromInstitution());
+        getReturnBill().setPaymentMethod(bill.getPaymentMethod());
     }
 
     public Bill getReturnBill() {
         if (returnBill == null) {
             returnBill = new BilledBill();
-            returnBill.setBillType(BillType.PharmacyGrnReturn);
+            returnBill.setBillType(BillType.StoreGrnReturn);
 
         }
 
@@ -96,13 +99,10 @@ public class StoreGoodsReturnController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    @Inject
-    private PharmacyCalculation pharmacyRecieveBean;
-
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > getPharmacyRecieveBean().calQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
+        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > storeCalculation.calQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpQty(0.0);
             UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
         }
@@ -124,8 +124,8 @@ public class StoreGoodsReturnController implements Serializable {
         getReturnBill().setToInstitution(getBill().getFromInstitution());
         getReturnBill().setToDepartment(getBill().getFromDepartment());
         getReturnBill().setFromInstitution(getBill().getToInstitution());
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReturnBill(), BillType.PharmacyGrnReturn, BillNumberSuffix.GRNRET));
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReturnBill(), BillType.PharmacyGrnReturn, BillNumberSuffix.GRNRET));
+        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReturnBill(), BillType.StoreGrnReturn, BillNumberSuffix.GRNRET));
+        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReturnBill(), BillType.StoreGrnReturn, BillNumberSuffix.GRNRET));
 
         getReturnBill().setInstitution(getSessionController().getInstitution());
         getReturnBill().setDepartment(getSessionController().getDepartment());
@@ -160,12 +160,12 @@ public class StoreGoodsReturnController implements Serializable {
 
             boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
 
-            if(!returnFlag){
+            if (!returnFlag) {
                 i.setTmpQty(0);
                 getBillItemFacade().edit(i);
                 getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
             }
-            
+
             getReturnBill().getBillItems().add(i);
 
         }
@@ -217,7 +217,6 @@ public class StoreGoodsReturnController implements Serializable {
         printPreview = true;
         UtilityController.addSuccessMessage("Successfully Returned");
 
-      
     }
 
     private void calTotal() {
@@ -247,8 +246,8 @@ public class StoreGoodsReturnController implements Serializable {
             retPh.copy(grnPh);
             retPh.setBillItem(bi);
 
-            double rBilled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-            double rCacnelled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
+            double rBilled = storeCalculation.getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new BilledBill());
+            double rCacnelled = storeCalculation.getTotalQty(grnPh.getBillItem(), BillType.StoreGrnReturn, new CancelledBill());
 
             double netQty = Math.abs(rBilled) - Math.abs(rCacnelled);
 
@@ -352,14 +351,6 @@ public class StoreGoodsReturnController implements Serializable {
 
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
-    }
-
-    public PharmacyCalculation getPharmacyRecieveBean() {
-        return pharmacyRecieveBean;
-    }
-
-    public void setPharmacyRecieveBean(PharmacyCalculation pharmacyRecieveBean) {
-        this.pharmacyRecieveBean = pharmacyRecieveBean;
     }
 
     public List<BillItem> getBillItems() {

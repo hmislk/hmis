@@ -486,9 +486,23 @@ public class SurgeryBillController implements Serializable {
     }
 
     private List<BillItem> pharmacyIssues;
+    List<BillItem> storeIssues;
+
+    public List<BillItem> getStoreIssues() {
+        return storeIssues;
+    }
+
+    public void setStoreIssues(List<BillItem> storeIssues) {
+        this.storeIssues = storeIssues;
+    }
 
     public void createIssueTable() {
-        pharmacyIssues = new ArrayList<>();
+        pharmacyIssues = createIssueTable(BillType.PharmacyBhtPre);
+        storeIssues = createIssueTable(BillType.StoreBhtPre);
+
+    }
+
+    private List<BillItem> createIssueTable(BillType billType) {
         String sql;
         HashMap hm;
         sql = "SELECT  b FROM BillItem b "
@@ -500,7 +514,7 @@ public class SurgeryBillController implements Serializable {
                 + " order by b.item.name ";
         hm = new HashMap();
         hm.put("bil", getBatchBill());
-        hm.put("btp", BillType.PharmacyBhtPre);
+        hm.put("btp", billType);
         hm.put("class", PreBill.class);
 
         List<BillItem> billItems = getBillItemFacade().findBySQL(sql, hm);
@@ -514,7 +528,7 @@ public class SurgeryBillController implements Serializable {
                 + " and (type(b.bill)=:class)"
                 + " order by b.item.name ";
         hm = new HashMap();
-        hm.put("btp", BillType.PharmacyBhtPre);
+        hm.put("btp", billType);
         hm.put("class", RefundBill.class);
         hm.put("billedClass", PreBill.class);
         hm.put("bil", getBatchBill());
@@ -522,8 +536,9 @@ public class SurgeryBillController implements Serializable {
 
         List<BillItem> billItems1 = getBillItemFacade().findBySQL(sql, hm);
 
-        pharmacyIssues.addAll(billItems);
-        pharmacyIssues.addAll(billItems1);
+        billItems.addAll(billItems1);
+
+        return billItems;
 
     }
 

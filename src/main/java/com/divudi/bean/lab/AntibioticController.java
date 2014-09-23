@@ -272,11 +272,21 @@ public  class AntibioticController implements Serializable {
     private AntibioticFacade getFacade() {
         return ejbFacade;
     }
-
+    
     public List<Antibiotic> getItems() {
-        items = getFacade().findAll("name", true);
+        String sql;
+        
+        sql = "select an from Antibiotic an where an.retired=false order by an.name";
+        
+        items=getFacade().findBySQL(sql);
+        
         return items;
     }
+
+//    public List<Antibiotic> getItems() {
+//        items = getFacade().findAll("name", true);
+//        return items;
+//    }
 
     public SpecialityFacade getSpecialityFacade() {
         return specialityFacade;

@@ -68,31 +68,34 @@
                                             <p:inputText autocomplete="off"  value="#{storeAmpController.current.code}"  ></p:inputText>
                                             <p:outputLabel  value="Bar Code" ></p:outputLabel>
                                             <p:inputText autocomplete="off"  value="#{storeAmpController.current.barcode}"  ></p:inputText>
-                                            
+
                                             <p:outputLabel  value="Measurment Unit" ></p:outputLabel>
                                             <p:selectOneMenu value="#{storeAmpController.current.measurementUnit}" >
                                                 <f:selectItem itemLabel="Select Measurment Unit" ></f:selectItem>
                                                 <f:selectItems value="#{measurementUnitController.items}" var="mu" 
                                                                itemValue="#{mu}" itemLabel="#{mu.name}" ></f:selectItems>
                                             </p:selectOneMenu>
-                                            
+
                                             <p:outputLabel  value="Manufacturer" ></p:outputLabel>
                                             <p:autoComplete  converter="ManuFacCon" completeMethod="#{manufacturerController.completeManu}"
                                                              var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{storeAmpController.current.institution}" ></p:autoComplete>
-                                            
+
                                             <h:outputLabel value="Item Category"/>
-                                            <p:autoComplete  value="#{storeAmpController.current.category}" 
-                                                             forceSelection="true"
-                                                             completeMethod="#{storeItemCategoryController.completeCategory}" 
-                                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                            </p:autoComplete> 
-                                            
+                                            <p:selectOneMenu id="parentCategory" 
+                                                             value="#{storeAmpController.current.category}" >
+                                                <f:selectItem itemLabel="Select Category"/>
+                                                <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}"
+                                                               var="parentCategoryItem"
+                                                               itemValue="#{parentCategoryItem}"/>
+                                            </p:selectOneMenu>
+
+
                                             <p:outputLabel value="" ></p:outputLabel>
                                             <p:selectBooleanCheckbox value="#{storeAmpController.current.discountAllowed}" itemLabel="Discount Allowed"/>                                          
 
                                             <h:outputLabel value="Creator"/>
                                             <h:outputLabel value="#{storeAmpController.current.creater.webUserPerson.nameWithTitle}"/>
-                                            
+
                                         </p:panelGrid>
                                     </p:panel>
 

@@ -115,8 +115,13 @@ public class IssueReturnController implements Serializable {
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
+        
+        if (tmp.getQty()==null){
+            UtilityController.addErrorMessage("Qty Null");
+            return;
+        }
 
-        if (tmp.getQty() > getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem())) {
+        if (tmp.getQty() > tmp.getPharmaceuticalBillItem().getQty()) {
             tmp.setQty(0.0);
             UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
         }
@@ -152,10 +157,10 @@ public class IssueReturnController implements Serializable {
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
         getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getInstitution(), new RefundBill(), BillType.PharmacyBhtPre, BillNumberSuffix.PHISSRET));
+                getSessionController().getInstitution(), new RefundBill(), BillType.PharmacyIssue, BillNumberSuffix.PHISSRET));
 
         getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getDepartment(), new RefundBill(), BillType.PharmacyBhtPre, BillNumberSuffix.PHISSRET));
+                getSessionController().getDepartment(), new RefundBill(), BillType.PharmacyIssue, BillNumberSuffix.PHISSRET));
 
         //   getReturnBill().setInsId(getBill().getInsId());
         if (getReturnBill().getId() == null) {
@@ -315,7 +320,7 @@ public class IssueReturnController implements Serializable {
             tmp.setBillItem(bi);
             tmp.copy(i);
 
-            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PharmacyBhtPre);
+            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PharmacyIssue);
 
             System.err.println("Refund " + rFund);
             double tmpQty = (Math.abs(i.getQtyInUnit())) - Math.abs(rFund);

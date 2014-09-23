@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="form">  
+            <h:panelGrid columns="2">
+                <h:outputLabel value="Date"/>
+                <p:calendar id="frmDate" value="#{staffShiftController.fromDate}" pattern="dd MMMM yyyy" />
+                <h:outputLabel value="To Date"/>
+                <p:calendar id="toDate" value="#{staffShiftController.toDate}" pattern="dd MMMM yyyy" />
+                <h:outputLabel value="Roster"/>
+                <p:selectOneMenu id="roster" value="#{staffShiftController.reportKeyWord.roster}">
+                    <f:selectItem itemLabel="Select Roster"/>
+                    <f:selectItems value="#{rosterController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
+                    <f:ajax event="change" execute="@this"  listener="#{staffShiftController.selectRosterListener()}"/>
+                </p:selectOneMenu>
+                <p:autoComplete value="#{staffShiftController.reportKeyWord.shift}"
+                                autocomplete="off"
+                                forceSelection="true"     
+                                styleClass="autoComplete75px"
+                                completeMethod="#{shiftController.completeShift}"
+                                var="mys" 
+                                size="50"
+                                itemLabel="#{mys.name}" 
+                                itemValue="#{mys}">                                  
+                </p:autoComplete>
+       
+            </h:panelGrid>
+
+
+        </h:form>  
+
+
+
+    </ui:define>
+
+
+
+</ui:composition>

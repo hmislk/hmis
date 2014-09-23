@@ -176,6 +176,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                         ss.setStartRecord(fpr);
 //                        staffShiftFacade.edit(ss);
 
+                        if (ss.getPreviousStaffShift() != null) {
+//                            System.err.println("PREV");
+                            ss.getStartRecord().setComments("(NEW PREV)");
+                            ss.getStartRecord().setRecordTimeStamp(ss.getShiftStartTime());
+                        }
+
                     }
 
                     if (ss.getEndRecord() == null) {
@@ -184,6 +190,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                         list.add(fpr);
                         ss.setEndRecord(fpr);
 //                        staffShiftFacade.edit(ss);
+
+                        if (ss.getNextStaffShift() != null) {
+//                            System.err.println("NEXT");
+                            ss.getEndRecord().setComments("(NEW NEXT)");
+                            ss.getEndRecord().setRecordTimeStamp(ss.getShiftEndTime());
+                        }
                     }
 
                     ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
@@ -255,23 +267,23 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 if (ss.getPreviousStaffShift() == null) {
                     if (ss.getStartRecord() == null) {
                         System.err.println("SS " + ss.getId());
-                        UtilityController.addErrorMessage(" 1 Some Starting Records Has"
+                        UtilityController.addErrorMessage(" Some Starting Records Has"
                                 + " No Starting Record");
                         return true;
                     }
                     if (ss.getStartRecord().getRecordTimeStamp() == null) {
-                        UtilityController.addErrorMessage(" 2 Some Starting Records Has No Time ");
+                        UtilityController.addErrorMessage(" Some Starting Records Has No Time ");
                         return true;
                     }
                 }
 
                 if (ss.getNextStaffShift() == null) {
                     if (ss.getEndRecord() == null) {
-                        UtilityController.addErrorMessage(" 3 Some End Records Has No Starting Record");
+                        UtilityController.addErrorMessage(" Some End Records Has No Starting Record");
                         return true;
                     }
                     if (ss.getEndRecord().getRecordTimeStamp() == null) {
-                        UtilityController.addErrorMessage(" 4 Some End Records Has No Time ");
+                        UtilityController.addErrorMessage(" Some End Records Has No Time ");
                         return true;
                     }
                 }
@@ -288,6 +300,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             UtilityController.addErrorMessage("Empty List");
             return;
         }
+        
 //        System.err.println("2");
         if (errorCheckForSave()) {
 //            UtilityController.addErrorMessage("Staff Shift Not Updated");
@@ -316,11 +329,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     getFingerPrintRecordFacade().create(endRecord);
                 }
 
-//                System.err.println("1 " + ss.getStartRecord().getRecordTimeStamp());
-//                System.err.println("2 " + ss.getEndRecord().getRecordTimeStamp());
-//                System.err.println("3 " + ss.getShiftDate());
-//                System.err.println("4 " + ss.getStaff().getCode());
-//                System.err.println("5 " + ss.getShift().getName());
+                //UPDATE Staff Shift Time Only if working days
+                ss.calCulateTimes();
+                
+                //Update Staff Shift OT time if DayOff or Sleeping Day
+                if(ss.getShift().getDayType()==DayType.DayOff|| ss.getShift().getDayType()==DayType.SleepingDay){
+                    ss.calOverTimeAll();
+                }
+                
                 getStaffShiftFacade().edit(ss);
             }
         }

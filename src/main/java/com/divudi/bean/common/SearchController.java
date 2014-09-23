@@ -8,6 +8,7 @@ package com.divudi.bean.common;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.CommonFunctions;
@@ -21,6 +22,7 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -32,6 +34,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -87,6 +90,9 @@ public class SearchController implements Serializable {
     private BillBeanController billBean;
     @Inject
     private PharmacyBean pharmacyBean;
+    ServiceSession selectedServiceSession;
+    Staff currentStaff;
+      List<BillItem> billItem;
     //////////
     @Inject
     private SessionController sessionController;
@@ -199,9 +205,17 @@ public class SearchController implements Serializable {
     }
 
     public void createReturnBhtBills() {
+        createReturnBhtBills(BillType.PharmacyBhtPre);
+    }
+    
+      public void createReturnBhtBillsStore() {
+        createReturnBhtBills(BillType.StoreBhtPre);
+    }
+
+    private void createReturnBhtBills(BillType billType) {
 
         Map m = new HashMap();
-        m.put("bt", BillType.PharmacyBhtPre);
+        m.put("bt", billType);
         m.put("billedClass", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
@@ -407,6 +421,10 @@ public class SearchController implements Serializable {
         listPharmacyPreBills(BillType.PharmacyIssue);
     }
 
+    public void listStoreIssue() {
+        listPharmacyPreBills(BillType.StoreIssue);
+    }
+
     public void listPharmacyCancelled() {
         listPharmacyCancelledBills(BillType.PharmacyIssue);
     }
@@ -429,6 +447,22 @@ public class SearchController implements Serializable {
 
     public void listPharmacyReturnedBills(BillType bt) {
         listPharmacyBills(bt, RefundBill.class);
+    }
+
+    public ServiceSession getSelectedServiceSession() {
+        return selectedServiceSession;
+    }
+
+    public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
+        this.selectedServiceSession = selectedServiceSession;
+    }
+
+    public Staff getCurrentStaff() {
+        return currentStaff;
+    }
+
+    public void setCurrentStaff(Staff currentStaff) {
+        this.currentStaff = currentStaff;
     }
 
     public void listPharmacyBills(BillType bt, Class bc) {
@@ -553,6 +587,43 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("dep", getSessionController().getDepartment());
         tmp.put("bTp", BillType.PharmacyTransferIssue);
+        sql = "Select b From BilledBill b where b.retired=false and "
+                + " b.toDepartment=:dep and b.billType= :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.deptId) like :billNo )";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(b.toStaff.person.name) like :stf )";
+            tmp.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  (upper(b.department.name) like :fDep )";
+            tmp.put("fDep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setTmpRefBill(getRefBill(b));
+
+        }
+
+    }
+
+    public void createIssueTableStore() {
+        String sql;
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bTp", BillType.StoreTransferIssue);
         sql = "Select b From BilledBill b where b.retired=false and "
                 + " b.toDepartment=:dep and b.billType= :bTp "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -777,6 +848,39 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createRequestTableStore() {
+        String sql;
+
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("toDep", getSessionController().getDepartment());
+        tmp.put("bTp", BillType.StoreTransferRequest);
+
+        sql = "Select b From Bill b where "
+                + " b.retired=false and  b.toDepartment=:toDep"
+                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.deptId) like :billNo )";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            sql += " and  (upper(b.department.name) like :dep )";
+            tmp.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getIssudBills(b));
+        }
+
+    }
+
     public void createListToCashRecieve() {
         String sql;
 
@@ -910,6 +1014,53 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createStoreIssueBillItemTable() {
+        //  searchBillItems = null;
+        String sql;
+        Map m = new HashMap();
+        m.put("toDate", toDate);
+        m.put("fromDate", fromDate);
+        m.put("bType", BillType.StoreIssue);
+        m.put("ins", getSessionController().getInstitution());
+        m.put("class", PreBill.class);
+
+        sql = "select bi from BillItem bi"
+                + " where  type(bi.bill)=:class "
+                + " and bi.bill.institution=:ins"
+                + " and bi.bill.billType=:bType "
+                + " and bi.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(bi.bill.toDepartment.name) like :deptName )";
+            m.put("deptName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(bi.bill.deptId) like :billNo )";
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(bi.netValue) like :total )";
+            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (upper(bi.item.name) like :itm )";
+            m.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
+            sql += " and  (upper(bi.item.code) like :cde )";
+            m.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by bi.id desc  ";
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
+
+    }
+
     public void createPharmacyAdjustmentBillItemTable() {
         //  searchBillItems = null;
         String sql;
@@ -986,6 +1137,13 @@ public class SearchController implements Serializable {
         createBillItemTableBht(BillType.StoreBhtPre);
     }
 
+    public List<BillItem> getBillItem() {
+        return billItem;
+    }
+
+    public void setBillItem(List<BillItem> billItem) {
+        this.billItem = billItem;
+    }
     public void createBillItemTableBht(BillType btp) {
         //  searchBillItems = null;
         String sql;
@@ -1039,14 +1197,14 @@ public class SearchController implements Serializable {
     }
 
     public void createPoRequestedAndApprovedPharmacy() {
-        createPoRequestedAndApproved(InstitutionType.Dealer);
+        createPoRequestedAndApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
     }
 
     public void createPoRequestedAndApprovedStore() {
-        createPoRequestedAndApproved(InstitutionType.StoreDealor);
+        createPoRequestedAndApproved(InstitutionType.StoreDealor, BillType.StoreOrder);
     }
 
-    public void createPoRequestedAndApproved(InstitutionType institutionType) {
+    public void createPoRequestedAndApproved(InstitutionType institutionType, BillType bt) {
         bills = null;
         String sql = "";
         HashMap tmp = new HashMap();
@@ -1064,20 +1222,20 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("insTp", institutionType);
-        tmp.put("bTp", BillType.PharmacyOrder);
-        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+        tmp.put("bTp", bt);
+        bills = getBillFacade().findBySQLWithoutCache(sql, tmp, TemporalType.TIMESTAMP, maxResult);
 
     }
 
     public void createApprovedPharmacy() {
-        createApproved(InstitutionType.Dealer);
+        createApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
     }
 
     public void createApprovedStore() {
-        createApproved(InstitutionType.StoreDealor);
+        createApproved(InstitutionType.StoreDealor, BillType.StoreOrder);
     }
 
-    public void createApproved(InstitutionType institutionType) {
+    public void createApproved(InstitutionType institutionType, BillType bt) {
         bills = null;
         String sql = "";
         HashMap tmp = new HashMap();
@@ -1097,20 +1255,20 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("insTp", institutionType);
-        tmp.put("bTp", BillType.PharmacyOrder);
+        tmp.put("bTp", bt);
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, maxResult);
 
     }
 
     public void createNotApprovedPharmacy() {
-        createNotApproved(InstitutionType.Dealer);
+        createNotApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
     }
 
     public void createNotApprovedStore() {
-        createNotApproved(InstitutionType.StoreDealor);
+        createNotApproved(InstitutionType.StoreDealor, BillType.StoreOrder);
     }
 
-    public void createNotApproved(InstitutionType institutionType) {
+    public void createNotApproved(InstitutionType institutionType, BillType bt) {
         bills = null;
         String sql = "";
         HashMap tmp = new HashMap();
@@ -1128,7 +1286,7 @@ public class SearchController implements Serializable {
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("insTp", institutionType);
-        tmp.put("bTp", BillType.PharmacyOrder);
+        tmp.put("bTp", bt);
         List<Bill> lst1 = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, maxResult);
 
         sql = "Select b From BilledBill b where "
@@ -1254,7 +1412,32 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getReturnBill(b));
+            b.setListOfBill(getReturnBill(b, BillType.PharmacyGrnReturn));
+        }
+
+    }
+
+    public void createGrnTableStore() {
+        bills = null;
+        String sql;
+        HashMap tmp = new HashMap();
+
+        sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
+                + " and b.institution=:ins and"
+                + " b.createdAt between :fromDate and :toDate ";
+
+        sql += keysForGrnReturn(tmp);
+
+        sql += " order by b.createdAt desc  ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("ins", getSessionController().getInstitution());
+        tmp.put("bTp", BillType.StoreGrnBill);
+        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getReturnBill(b, BillType.StoreGrnReturn));
         }
 
     }
@@ -1278,30 +1461,54 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getReturnBill(b));
+            b.setListOfBill(getReturnBill(b, BillType.PharmacyGrnReturn));
         }
 
     }
 
-    private List<Bill> getReturnBill(Bill b) {
+    public void createGrnTableAllInsStore() {
+        bills = null;
+        String sql;
+        HashMap tmp = new HashMap();
+
+        sql = "Select b From BilledBill b where  b.retired=false and b.billType= :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        sql += keysForGrnReturn(tmp);
+
+        sql += " order by b.createdAt desc  ";
+
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        // tmp.put("ins", getSessionController().getInstitution());
+        tmp.put("bTp", BillType.StoreGrnBill);
+        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getReturnBill(b, BillType.StoreGrnReturn));
+        }
+
+    }
+
+    private List<Bill> getReturnBill(Bill b, BillType bt) {
         String sql = "Select b From BilledBill b where b.retired=false and b.creater is not null"
                 + " and  b.billType=:btp and "
                 + " b.referenceBill=:ref";
         HashMap hm = new HashMap();
         hm.put("ref", b);
-        hm.put("btp", BillType.PharmacyGrnReturn);
+        hm.put("btp", bt);
         return getBillFacade().findBySQL(sql, hm);
     }
 
     public void createPoTablePharmacy() {
-        createPoTable(InstitutionType.Dealer);
+        createPoTable(InstitutionType.Dealer, BillType.PharmacyOrderApprove, BillType.PharmacyGrnBill);
     }
 
     public void createPoTableStore() {
-        createPoTable(InstitutionType.StoreDealor);
+        createPoTable(InstitutionType.StoreDealor, BillType.StoreOrderApprove, BillType.StoreGrnBill);
     }
 
-    public void createPoTable(InstitutionType institutionType) {
+    public void createPoTable(InstitutionType institutionType, BillType bt, BillType referenceBillType) {
         bills = null;
         String sql;
         HashMap tmp = new HashMap();
@@ -1334,22 +1541,22 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("insTp", institutionType);
         tmp.put("ins", getSessionController().getInstitution());
-        tmp.put("bTp", BillType.PharmacyOrderApprove);
+        tmp.put("bTp", bt);
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
 
         for (Bill b : bills) {
-            b.setListOfBill(getGrns(b));
+            b.setListOfBill(getGrns(b, referenceBillType));
         }
 
     }
 
-    private List<Bill> getGrns(Bill b) {
+    private List<Bill> getGrns(Bill b, BillType billType) {
         String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
                 + " and b.billType=:btp and "
                 + " b.referenceBill=:ref";
         HashMap hm = new HashMap();
         hm.put("ref", b);
-        hm.put("btp", BillType.PharmacyGrnBill);
+        hm.put("btp", billType);
         return getBillFacade().findBySQL(sql, hm);
     }
 
@@ -2124,7 +2331,37 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createGrnPaymentTableAll() {
+    public void createPharmacyPayment() {
+        InstitutionType[] institutionTypes = {InstitutionType.Dealer};
+        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPayment);
+    }
+
+    public void createStorePayment() {
+        InstitutionType[] institutionTypes = {InstitutionType.StoreDealor};
+        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPayment);
+    }
+
+    public void createStorePaharmacyPayment() {
+        InstitutionType[] institutionTypes = {InstitutionType.Dealer, InstitutionType.StoreDealor};
+        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPayment);
+    }
+
+    public void createPharmacyPaymentPre() {
+        InstitutionType[] institutionTypes = {InstitutionType.Dealer};
+        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
+    }
+
+    public void createStorePaymentPre() {
+        InstitutionType[] institutionTypes = {InstitutionType.StoreDealor};
+        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
+    }
+
+    public void createStorePaharmacyPaymentPre() {
+        InstitutionType[] institutionTypes = {InstitutionType.Dealer, InstitutionType.StoreDealor};
+        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
+    }
+
+    private void createGrnPaymentTable(List<InstitutionType> institutionTypes, BillType billType) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -2132,7 +2369,7 @@ public class SearchController implements Serializable {
         sql = "select b from BilledBill b "
                 + " where b.billType = :billType "
                 + " and b.createdAt between :fromDate and :toDate "
-                + " and b.toInstitution.institutionType=:insTp "
+                + " and b.toInstitution.institutionType in :insTp "
                 + " and b.retired=false ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -2162,8 +2399,8 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.GrnPayment);
-        temMap.put("insTp", InstitutionType.Dealer);
+        temMap.put("billType", billType);
+        temMap.put("insTp", institutionTypes);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
       //  temMap.put("ins", getSessionController().getInstitution());
@@ -2354,11 +2591,11 @@ public class SearchController implements Serializable {
                 + " (b.insId=:insId or b.deptId=:deptId) "
                 + " and (type(b)!=:class)"
                 + " order by b.insId ";
-        
+
         m.put("insId", getSearchKeyword().getInsId());
         m.put("deptId", getSearchKeyword().getDeptId());
         m.put("class", PreBill.class);
-        bills=getBillFacade().findBySQL(sql, m);
+        bills = getBillFacade().findBySQL(sql, m);
     }
 
     public void createSearchAll() {
@@ -2636,7 +2873,7 @@ public class SearchController implements Serializable {
 
     }
 
-    public List<Bill> getChannelPaymentBills() {
+    public List<Bill> getChannelPaymentBillsOld() {
         if (bills == null) {
             String sql;
             Map temMap = new HashMap();
@@ -2661,8 +2898,24 @@ public class SearchController implements Serializable {
         return bills;
 
     }
+  
+    public void channelPaymentBills(){
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
+                + " and bi.bill.billType=:bt"
+                + " and bi.createdAt between :fromDate and :toDate ";
+        
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.ChannelProPayment);
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        
+    }
 
-    public void createChannelDueBillFee() {
+    public void createChannelDueBillFeeOld() {
 
         String sql;
         Map temMap = new HashMap();
@@ -2678,6 +2931,46 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.ChannelCredit);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createChannelDueBillFee() {
+        selectedServiceSession=null;
+        
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = " SELECT b FROM BillFee b "
+                + "  where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.bill.refunded=false "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt ";
+
+        HashMap hm = new HashMap();
+        if (getFromDate() != null && getToDate() != null) {
+            sql += " and b.bill.appointmentAt between :frm and  :to";
+            hm.put("frm", getFromDate());
+            hm.put("to", getToDate());
+        }
+
+        if (getSelectedServiceSession() != null) {
+            sql += " and bs.serviceSession=:ss";
+            hm.put("ss", getSelectedServiceSession());
+        }
+
+        if (getCurrentStaff() != null) {
+            sql += " and b.staff=:stf ";
+            hm.put("stf", getCurrentStaff());
+        }
+
+        //hm.put("ins", sessionController.getInstitution());
+        hm.put("bt", bts);
+        hm.put("ftp", FeeType.Staff);
+        hm.put("class", BilledBill.class);
+        billFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -2755,8 +3048,8 @@ public class SearchController implements Serializable {
             sql += " and  (upper(b.bill.netTotal) like :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
-        
-         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
             sql += " and  (upper(b.item.name) like :item )";
             temMap.put("item", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
@@ -3086,8 +3379,6 @@ public class SearchController implements Serializable {
             sql += " and  (upper(b.total) like :total )";
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
-        
-     
 
         sql += " order by b.insId desc  ";
 

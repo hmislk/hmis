@@ -16,7 +16,15 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Purchase Order Request Reprint" ></h:outputLabel>                           
                             <p:commandButton ajax="false" value="Cancel" action="/pharmacy/pharmacy_cancel_bill" disabled="#{storeBillSearch.bill.cancelled or storeBillSearch.bill.referenceBill.creater ne null}">                           
-                            </p:commandButton>                          
+                            </p:commandButton>      
+                            <p:commandButton  ajax="false" value="Edit Request" action="store_purhcase_order_request"
+                                              actionListener="#{storeBillSearch.calBillItemsTotal}"
+                                              disabled="#{storeBillSearch.bill.cancelled 
+                                                          or (storeBillSearch.bill.referenceBill.creater ne null
+                                                          and storeBillSearch.bill.referenceBill.cancelled eq false)}">
+                                <f:setPropertyActionListener value="#{storeBillSearch.bill}" target="#{storePurchaseOrderRequestController.currentBill}"/>
+                                <f:setPropertyActionListener value="#{storeBillSearch.billItems}" target="#{storePurchaseOrderRequestController.billItems}"/>
+                            </p:commandButton>
                         </f:facet>
 
                         <p:panel>

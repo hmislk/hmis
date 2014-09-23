@@ -192,12 +192,13 @@ public class BillBeanController implements Serializable {
         return b;
     }
 
-    public List<Bill> fetchInwardPaymentBills(AdmissionType admissionType, Date fromDate, Date toDate, Institution institution) {
+    public List<Bill> fetchInwardPaymentBills(AdmissionType admissionType, PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
         String sql;
         sql = "SELECT b FROM Bill b"
                 + " WHERE b.retired=false "
                 + " and b.billType = :bTp "
-                + " and b.patientEncounter.admissionType=:adm  "
+                + " and b.patientEncounter.admissionType=:adm "
+                + " and b.patientEncounter.paymentMethod=:pm  "
                 + " and b.institution=:ins"
                 + " and b.createdAt between :fromDate and :toDate "
                 + " order by b.id";
@@ -205,6 +206,7 @@ public class BillBeanController implements Serializable {
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
         temMap.put("bTp", BillType.InwardPaymentBill);
+        temMap.put("pm", paymentMethod);
         temMap.put("adm", admissionType);
         temMap.put("ins", institution);
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -250,8 +252,8 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-     public double calFeeValue(FeeType feeType, Bill bill) {
+
+    public double calFeeValue(FeeType feeType, Bill bill) {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.fee.feeType=:ftp "
@@ -510,7 +512,7 @@ public class BillBeanController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
-    public List<Object[]> calInwardPaymentTotal(AdmissionType admissionType, Date fromDate, Date toDate, Institution institution) {
+    public List<Object[]> calInwardPaymentTotalOld(AdmissionType admissionType, Date fromDate, Date toDate, Institution institution) {
         String sql;
         sql = "SELECT b.patientEncounter.admissionType,"
                 + " sum(b.netTotal) "
@@ -529,7 +531,29 @@ public class BillBeanController implements Serializable {
         return getBillFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
     }
 
-    public double calInwardPaymentTotal(Date fromDate, Date toDate, Institution institution) {
+    public List<Object[]> calInwardPaymentTotal(Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        sql = "SELECT b.patientEncounter.admissionType,"
+                + " b.patientEncounter.paymentMethod,"
+                + " sum(b.netTotal) "
+                + " FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType = :bTp "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " group by b.patientEncounter.admissionType,"
+                + " b.patientEncounter.paymentMethod "
+                + " order by b.patientEncounter.admissionType.name,"
+                + " b.patientEncounter.paymentMethod ";
+        Map temMap = new HashMap();
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("bTp", BillType.InwardPaymentBill);
+        temMap.put("ins", institution);
+        return getBillFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public double calInwardPaymentTotalValue(Date fromDate, Date toDate, Institution institution) {
         String sql;
         sql = "SELECT sum(b.netTotal) "
                 + " FROM Bill b "
@@ -832,7 +856,6 @@ public class BillBeanController implements Serializable {
         } else {
             sql += " and b.patientEncounter is not null ";
         }
-
 
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);

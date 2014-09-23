@@ -10,7 +10,7 @@
         <h:form>
             <p:panel>
 
-                <p:panel>                    
+                <p:panel header="Item Report (Count)">                    
                     <h:outputLabel value="From"/>
                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
