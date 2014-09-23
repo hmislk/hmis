@@ -12,4 +12,5 @@
     </jdbc-connection-pool>
     <jdbc-resource enabled="true" jndi-name="live1" object-type="user" pool-name="mysql_hmis_rootPool"/>
     <jdbc-resource enabled="true" jndi-name="live2" object-type="user" pool-name="mysql_hmis_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="live3" object-type="user" pool-name="mysql_hmis_rootPool"/>
 </resources>
