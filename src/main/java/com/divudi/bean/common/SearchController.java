@@ -8,6 +8,7 @@ package com.divudi.bean.common;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.CommonFunctions;
@@ -21,6 +22,7 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -88,6 +90,9 @@ public class SearchController implements Serializable {
     private BillBeanController billBean;
     @Inject
     private PharmacyBean pharmacyBean;
+    ServiceSession selectedServiceSession;
+    Staff currentStaff;
+      List<BillItem> billItem;
     //////////
     @Inject
     private SessionController sessionController;
@@ -442,6 +447,22 @@ public class SearchController implements Serializable {
 
     public void listPharmacyReturnedBills(BillType bt) {
         listPharmacyBills(bt, RefundBill.class);
+    }
+
+    public ServiceSession getSelectedServiceSession() {
+        return selectedServiceSession;
+    }
+
+    public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
+        this.selectedServiceSession = selectedServiceSession;
+    }
+
+    public Staff getCurrentStaff() {
+        return currentStaff;
+    }
+
+    public void setCurrentStaff(Staff currentStaff) {
+        this.currentStaff = currentStaff;
     }
 
     public void listPharmacyBills(BillType bt, Class bc) {
@@ -1116,6 +1137,13 @@ public class SearchController implements Serializable {
         createBillItemTableBht(BillType.StoreBhtPre);
     }
 
+    public List<BillItem> getBillItem() {
+        return billItem;
+    }
+
+    public void setBillItem(List<BillItem> billItem) {
+        this.billItem = billItem;
+    }
     public void createBillItemTableBht(BillType btp) {
         //  searchBillItems = null;
         String sql;
@@ -2845,7 +2873,7 @@ public class SearchController implements Serializable {
 
     }
 
-    public List<Bill> getChannelPaymentBills() {
+    public List<Bill> getChannelPaymentBillsOld() {
         if (bills == null) {
             String sql;
             Map temMap = new HashMap();
@@ -2870,8 +2898,24 @@ public class SearchController implements Serializable {
         return bills;
 
     }
+  
+    public void channelPaymentBills(){
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
+                + " and bi.bill.billType=:bt"
+                + " and bi.createdAt between :fromDate and :toDate ";
+        
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.ChannelProPayment);
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        
+    }
 
-    public void createChannelDueBillFee() {
+    public void createChannelDueBillFeeOld() {
 
         String sql;
         Map temMap = new HashMap();
@@ -2887,6 +2931,46 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.ChannelCredit);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createChannelDueBillFee() {
+        selectedServiceSession=null;
+        
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = " SELECT b FROM BillFee b "
+                + "  where type(b.bill)=:class "
+                + " and b.bill.retired=false "
+                + " and b.bill.paidAmount!=0 "
+                + " and b.bill.refunded=false "
+                + " and b.fee.feeType=:ftp"
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.billType in :bt ";
+
+        HashMap hm = new HashMap();
+        if (getFromDate() != null && getToDate() != null) {
+            sql += " and b.bill.appointmentAt between :frm and  :to";
+            hm.put("frm", getFromDate());
+            hm.put("to", getToDate());
+        }
+
+        if (getSelectedServiceSession() != null) {
+            sql += " and bs.serviceSession=:ss";
+            hm.put("ss", getSelectedServiceSession());
+        }
+
+        if (getCurrentStaff() != null) {
+            sql += " and b.staff=:stf ";
+            hm.put("stf", getCurrentStaff());
+        }
+
+        //hm.put("ins", sessionController.getInstitution());
+        hm.put("bt", bts);
+        hm.put("ftp", FeeType.Staff);
+        hm.put("class", BilledBill.class);
+        billFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
