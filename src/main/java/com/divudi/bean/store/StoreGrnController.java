@@ -233,8 +233,7 @@ public class StoreGrnController implements Serializable {
                 continue;
             }
 
-            createSerialNumber(i);
-
+//            createSerialNumber(i);
             PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
             ph.setDoe(applicationController.getStoresExpiery());
             i.setPharmaceuticalBillItem(null);
@@ -423,7 +422,7 @@ public class StoreGrnController implements Serializable {
             return;
         }
         System.out.println("In");
-        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
+        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
         b = b + 1;
         for (BillItem bi : getBillItems()) {
             if (bi.getItem().equals(billItem.getItem())) {
@@ -466,6 +465,8 @@ public class StoreGrnController implements Serializable {
 
         System.err.println("3");
         billItem.setParentBillItem(getParentBillItem());
+
+        System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
 
         billItem.setSearialNo(getBillItems().size());
         billItem.setId(billItem.getSearialNoInteger().longValue());
@@ -851,8 +852,14 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addDetailItemListener(BillItem bi) {
+        System.err.println("Add Detasils " + bi.getId());
+
+        
         parentBillItem = null;
+        currentBillItem = null;
+        currentPharmaciuticalBillItem = null;
         currentBillItem = bi;
+        currentPharmaciuticalBillItem = bi.getPharmaceuticalBillItem();
     }
 
     public void setBillExpenses(List<BillItem> billExpenses) {
@@ -911,6 +918,9 @@ public class StoreGrnController implements Serializable {
                 return;
             }
         }
+        System.out.println("****Inventory Code 1****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
+        createSerialNumber(getCurrentBillItem());
+        System.out.println("****Inventory Code 2****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
 
         addBillItem(getCurrentBillItem());
         currentBillItem = null;
@@ -918,6 +928,17 @@ public class StoreGrnController implements Serializable {
     }
 
     BillItem currentBillItem;
+    PharmaceuticalBillItem currentPharmaciuticalBillItem;
+
+    public void update() {
+
+        currentBillItem.setPharmaceuticalBillItem(currentPharmaciuticalBillItem);
+        getBillItems().add(getCurrentBillItem().getSearialNo(), getCurrentBillItem());
+        currentBillItem = null;
+        currentPharmaciuticalBillItem = null;
+        UtilityController.addSuccessMessage("Save Details");
+
+    }
 
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
@@ -975,6 +996,17 @@ public class StoreGrnController implements Serializable {
 
     public void setParentBillItem(BillItem parentBillItem) {
         this.parentBillItem = parentBillItem;
+    }
+
+    public PharmaceuticalBillItem getCurrentPharmaciuticalBillItem() {
+        if (currentPharmaciuticalBillItem == null) {
+            currentPharmaciuticalBillItem = new PharmaceuticalBillItem();
+        }
+        return currentPharmaciuticalBillItem;
+    }
+
+    public void setCurrentPharmaciuticalBillItem(PharmaceuticalBillItem currentPharmaciuticalBillItem) {
+        this.currentPharmaciuticalBillItem = currentPharmaciuticalBillItem;
     }
 
 }
