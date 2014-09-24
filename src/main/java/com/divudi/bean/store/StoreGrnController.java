@@ -30,6 +30,7 @@ import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -136,8 +137,8 @@ public class StoreGrnController implements Serializable {
         System.out.println("clear");
 
     }
-    
-    public void batchListener(){
+
+    public void batchListener() {
         batchListener(getCurrentBillItem());
     }
 
@@ -279,6 +280,17 @@ public class StoreGrnController implements Serializable {
             getGrnBill().getBillItems().add(i);
         }
 
+        //Save Parent Stock
+        for (BillItem i : getBillItems()) {
+
+            if (i.getParentBillItem() != null) {
+                i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
+                i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                stockFacade.edit(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                stockFacade.edit(i.getPharmaceuticalBillItem().getStock());
+            }
+        }
+
         for (BillItem i : getBillExpenses()) {
             i.setExpenseBill(getGrnBill());
             getBillItemFacade().create(i);
@@ -315,6 +327,9 @@ public class StoreGrnController implements Serializable {
 
     }
 
+    @EJB
+    StockFacade stockFacade;
+    
     public String viewPoList() {
         clearList();
 
@@ -858,7 +873,6 @@ public class StoreGrnController implements Serializable {
     public void addDetailItemListener(BillItem bi) {
         System.err.println("Add Detasils " + bi.getId());
         System.err.println("Pharmacy " + bi.getPharmaceuticalBillItem().getCode());
-        
 
         parentBillItem = null;
         currentBillItem = null;
