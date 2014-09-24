@@ -15,7 +15,7 @@ import javax.persistence.InheritanceType;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public class StaffShiftAmendment extends StaffShift implements Serializable {
+public class StaffShiftReplace extends StaffShift implements Serializable {
   
       
     

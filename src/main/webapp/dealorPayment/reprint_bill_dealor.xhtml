@@ -20,8 +20,10 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Approve"
-                                              action="#{dealorPaymentBillSearch.approve()}"
-                                              disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment' or dealorPaymentBillSearch.bill.cancelled}">                           
+                                             action="#{dealorPaymentBillSearch.approve()}"
+                                             disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment' 
+                                                         or dealorPaymentBillSearch.bill.cancelled
+                                                         or dealorPaymentBillSearch.bill.referenceBill eq null }">                           
                             </p:commandButton>
                         </f:facet>
 

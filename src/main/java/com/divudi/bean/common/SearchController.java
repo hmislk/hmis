@@ -1551,9 +1551,11 @@ public class SearchController implements Serializable {
     }
 
     private List<Bill> getGrns(Bill b, BillType billType) {
-        String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
-                + " and b.billType=:btp and "
-                + " b.referenceBill=:ref";
+        String sql = "Select b From BilledBill b "
+                + " where b.retired=false "
+                + " and b.creater is not null"
+                + " and b.billType=:btp"
+                + " and b.referenceBill=:ref";
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", billType);
