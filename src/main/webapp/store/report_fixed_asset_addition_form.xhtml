@@ -201,8 +201,21 @@
 
 
 
-                            <h:panelGrid columns="5"  >
-                                Payment Details NOT available
+                            <h:panelGrid columns="1"  >                              
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Payment Detail of "/>
+                                        <h:outputLabel value="#{storeReportsStock.grnbill.deptId}"/>
+                                    </f:facet>
+                                    <p:dataTable value="#{storeReportsStock.paymentbills}" var="pm">
+                                        <p:column headerText="Bill No">
+                                            #{pm.insId}
+                                        </p:column>
+                                        <p:column headerText="Value">
+                                            #{pm.netTotal}
+                                        </p:column>                                        
+                                    </p:dataTable>
+                                </p:panel>
                             </h:panelGrid>
 
 

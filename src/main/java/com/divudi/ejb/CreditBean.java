@@ -184,6 +184,20 @@ public class CreditBean {
 
     }
 
+    public List<Bill> getPaidBills(Bill b, BillType billType) {
+        String sql = "Select b.bill From BillItem b "
+                + " where b.retired=false "
+                + " and b.referenceBill=:rB "
+                + " and b.bill.billType=:btp ";
+
+        HashMap hm = new HashMap();
+        hm.put("rB", b);
+        hm.put("btp", billType);
+
+        return getBillItemFacade().findBySQL(sql, hm);
+
+    }
+
     public double getPaidAmount(PatientEncounter p, BillType billType) {
         String sql = "Select sum(b.netValue) From BillItem b "
                 + " where b.retired=false "
@@ -251,6 +265,21 @@ public class CreditBean {
         hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public List<Bill> getGrnReturnBills(Bill refBill, List<BillType> billTypes) {
+        String sql = "select b from"
+                + " Bill b where "
+                + " b.retired=false "
+                + " and b.paymentMethod=:pm "
+                + " and b.referenceBill=:refBill "
+                + " and b.billType in :bts";
+
+        HashMap hm = new HashMap();
+        hm.put("refBill", refBill);
+        hm.put("pm", PaymentMethod.Credit);
+        hm.put("bts", billTypes);
+        return getBillFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
     public List<Institution> getDealorFromBills(List<BillType> billTypes) {
