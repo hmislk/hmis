@@ -176,7 +176,7 @@ public enum BillType {
             case StoreTransferRequest:
                 return "Store Transfer Request";
             case StoreTransferIssue:
-                return "Pharmacy Transfer Issue";
+                return "Store Transfer Issue";
 
         }
 
