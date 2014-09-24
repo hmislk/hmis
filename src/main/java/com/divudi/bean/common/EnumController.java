@@ -156,6 +156,26 @@ public class EnumController implements Serializable {
 
         return b;
     }
+    
+    public BillType[] getStoreBillTypes(){
+    
+       BillType[] b={
+           BillType.StoreGrnBill,
+           BillType.StoreGrnReturn,
+           BillType.StoreOrder,
+           BillType.StoreOrderApprove,
+           BillType.StorePre,
+           BillType.StorePurchase,
+           BillType.StoreSale,
+           BillType.StoreAdjustment,
+           BillType.StorePurchaseReturn,
+           BillType.StoreTransferRequest,
+           BillType.StoreTransferIssue,
+       };
+           
+       
+       return b;
+    }
 
     public BillType[] getPharmacyBillTypes() {
         BillType[] b = {
