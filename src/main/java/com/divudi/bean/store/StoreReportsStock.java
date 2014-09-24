@@ -10,6 +10,8 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.StockReportRecord;
+import com.divudi.ejb.CreditBean;
+import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
@@ -30,6 +32,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,6 +64,9 @@ public class StoreReportsStock implements Serializable {
     double stockSaleValue;
     double stockPurchaseValue;
     List<StockReportRecord> records;
+    Bill grnbill;
+    List<Bill> grnReturnbills;
+    List<Bill> paymentbills;
     Date fromDate;
     Date toDate;
     Date fromDateE;
@@ -695,6 +701,44 @@ public class StoreReportsStock implements Serializable {
         return fromDateE;
     }
 
+    public void makeBillsNull() {
+        grnbill = null;
+        grnReturnbills = null;
+        paymentbills = null;
+    }
+
+    public Bill getGrnbill() {
+        return grnbill;
+    }
+
+    public void setGrnbill(Bill grnbill) {
+        this.grnbill = grnbill;
+    }
+
+    public List<Bill> getGrnReturnbills() {
+        return grnReturnbills;
+    }
+
+    public void setGrnReturnbills(List<Bill> grnReturnbills) {
+        this.grnReturnbills = grnReturnbills;
+    }
+
+    public List<Bill> getPaymentbills() {
+        return paymentbills;
+    }
+
+    public void setPaymentbills(List<Bill> paymentbills) {
+        this.paymentbills = paymentbills;
+    }
+
+    public CreditBean getCreditBean() {
+        return creditBean;
+    }
+
+    public void setCreditBean(CreditBean creditBean) {
+        this.creditBean = creditBean;
+    }
+
     public void setFromDateE(Date fromDateE) {
         this.fromDateE = fromDateE;
     }
@@ -738,8 +782,37 @@ public class StoreReportsStock implements Serializable {
         return selectedInventoryStock;
     }
 
+    @EJB
+    CreditBean creditBean;
+
+    private void fetchGrnReturnAndPayments() {
+        if (selectedInventoryStock == null) {
+            return;
+        }
+
+        if (selectedInventoryStock.getItemBatch() == null) {
+            return;
+        }
+
+        if (selectedInventoryStock.getItemBatch().getLastPurchaseBillItem() == null) {
+            return;
+        }
+
+        BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn, BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+
+        grnbill = selectedInventoryStock.getItemBatch().getLastPurchaseBillItem().getBill();
+
+        grnReturnbills = creditBean.getGrnReturnBills(grnbill, billTypesListReturn);
+        paymentbills = creditBean.getPaidBills(grnbill, BillType.GrnPayment);
+    }
+    
+    
+
     public void setSelectedInventoryStock(Stock selectedInventoryStock) {
+        makeBillsNull();
         this.selectedInventoryStock = selectedInventoryStock;
+        fetchGrnReturnAndPayments();
     }
 
     public Item getItem() {
@@ -750,4 +823,6 @@ public class StoreReportsStock implements Serializable {
         this.item = item;
     }
 
+    
+    
 }

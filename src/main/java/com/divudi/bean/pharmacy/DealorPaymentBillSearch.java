@@ -115,6 +115,7 @@ public class DealorPaymentBillSearch implements Serializable {
         for (BillItem bi : getBill().getBillItems()) {
             BillItem newBi = new BillItem();
             newBi.copy(bi);
+            newBi.setBill(newBill);
             newBi.setCreatedAt(new Date());
             newBi.setCreater(sessionController.getLoggedUser());
             newBi.setReferanceBillItem(bi);
