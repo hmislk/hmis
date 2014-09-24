@@ -403,7 +403,7 @@ public class BillNumberController {
         }
 
         String sql = "SELECT count(b.id) "
-                + " FROM BilledBill b "
+                + " FROM Bill b "
                 + " where b.retired=false "
                 + " and b.insId is not null"
                 + " AND  b.institution=:ins "

@@ -83,7 +83,7 @@ public class StaffShiftController implements Serializable {
 
     }
 
-    public void completeStaffShiftDateRoster(String qry) {
+    public List<StaffShift> completeStaffShiftDateRoster(String qry) {
         HashMap hm = new HashMap();
         String sql = "select c from"
                 + " StaffShift c,StaffLeave s"
@@ -102,7 +102,8 @@ public class StaffShiftController implements Serializable {
         hm.put("q", "%" + qry.toUpperCase() + "%");
         System.err.println("Qry " + qry);
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-        System.err.println("Staff Shift "+staffShifts);
+
+        return staffShifts;
     }
 
     @EJB
