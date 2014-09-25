@@ -142,6 +142,7 @@ public class PharmacyDealorBill implements Serializable {
             selectListener();
             addToBill();
         }
+        calTotalBySelectedBillTems();
     }
 
     public void addToBill() {

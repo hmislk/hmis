@@ -22,85 +22,86 @@
                                     <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                         <f:ajax event="dateSelect" execute="tblBills"  render="tblBills toDate fromDate"/>
                                     </p:calendar>
-                                </h:panelGrid>                        
+                                </h:panelGrid>
+                                <p:commandButton ajax="false" value="Search" action="#{searchController.channelPaymentBills()}"/>
                             </h:panelGroup>
                         </f:facet>
 
-                        <p:dataTable id="tblBills" value="#{searchController.channelPaymentBills}" var="bill"  
-                              sortBy="#{bf.billClass}">
+                        <p:dataTable id="tblBills" value="#{searchController.billItems}" var="billItem"  
+                              sortBy="#{billItem.bill.billClass}">
 
                             <p:column headerText="Bill No" >
-                                <h:commandLink action="payment_bill_reprint" value="#{bill.insId}">
+                                <h:commandLink action="payment_bill_reprint" value="#{billItem.bill.insId}">
                                     <h:outputLabel  ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
 
                             <p:column headerText="Bill Date" >
                                 <h:commandLink action="payment_bill_reprint" >
-                                    <h:outputLabel value="#{bill.billDate}" >
+                                    <h:outputLabel value="#{billItem.bill.billDate}" >
                                         <f:convertDateTime pattern="dd MM yyyy"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{billItem}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             
                             <p:column headerText="Bill Time" >
                                 <h:commandLink action="payment_bill_reprint" >
-                                    <h:outputLabel value="#{bill.billTime}" >
+                                    <h:outputLabel value="#{billItem.bill.billTime}" >
                                         <f:convertDateTime pattern="hh:mm:ss a"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             
                             <p:column headerText="Consultant" >
                                 <h:commandLink action="payment_bill_reprint" >
-                                    <h:outputLabel value="#{bill.staff.person.nameWithTitle}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <h:outputLabel value="#{billItem.bill.staff.person.nameWithTitle}" ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             
                             <p:column headerText="Doctor Phone No"  >
                                 <h:commandLink action="payment_bill_reprint" >
-                                    <h:outputLabel value="#{bill.staff.person.phone}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <h:outputLabel value="#{billItem.bill.staff.person.phone}" ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             
                             <p:column headerText="Billed By" >
                                 <h:commandLink action="payment_bill_reprint" >
-                                    <h:outputLabel value="#{bill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <h:outputLabel value="#{billItem.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>   
                             
                             <p:column headerText="Net Value" >
                                 <h:commandLink action="payment_bill_reprint" >
-                                    <h:outputLabel value="#{bill.netTotal}" >
+                                    <h:outputLabel value="#{billItem.bill.netTotal}" >
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             
                             <p:column headerText="Cancellation Details">
                                 <h:commandLink action="payment_bill_reprint" >
-                                    <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <h:outputLabel rendered="#{billItem.bill.cancelled}" value="#{billItem.bill.cancelledBill.creater.webUserPerson.name}" ></h:outputLabel>
+                                    <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                                 <h:commandLink action="payment_bill_reprint" >
-                                    <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                    <h:outputLabel rendered="#{billItem.bill.cancelled}" value="#{billItem.bill.cancelledBill.createdAt}" >
                                         <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             
                             <p:column headerText="Comments">
-                                <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
+                                <h:outputLabel rendered="#{billItem.bill.refundedBill ne null}" value="#{billItem.bill.refundedBill.comments}" >
                                 </h:outputLabel>
-                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                <h:outputLabel  rendered="#{billItem.bill.cancelledBill ne null}" value="#{billItem.bill.cancelledBill.comments}" >
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>

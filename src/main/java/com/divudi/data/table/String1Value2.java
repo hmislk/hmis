@@ -6,6 +6,7 @@
 package com.divudi.data.table;
 
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Speciality;
 
 /**
  *
@@ -16,8 +17,19 @@ public class String1Value2 {
     private String string;
     private double value1;
     private double value2;
+    Speciality speciality;
     private boolean summery;
     BillItem billItem;
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+    
+    
 
     public BillItem getBillItem() {
         return billItem;

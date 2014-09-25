@@ -787,7 +787,8 @@ public class HumanResourceBean {
         String sql = "Select s From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st"
-                + " and s.leaveDate between :frm and :to ";
+                + " and (s.fromDate between :frm and :to "
+                + " or s.toDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
         hm.put("frm", frmDate);

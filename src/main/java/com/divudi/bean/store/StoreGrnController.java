@@ -30,6 +30,7 @@ import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -137,7 +138,11 @@ public class StoreGrnController implements Serializable {
 
     }
 
-    public void setBatch(BillItem pid) {
+    public void batchListener() {
+        batchListener(getCurrentBillItem());
+    }
+
+    public void batchListener(BillItem pid) {
 
         if (pid.getPharmaceuticalBillItem().getDoe() == null) {
             pid.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
@@ -233,8 +238,7 @@ public class StoreGrnController implements Serializable {
                 continue;
             }
 
-            createSerialNumber(i);
-
+//            createSerialNumber(i);
             PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
             ph.setDoe(applicationController.getStoresExpiery());
             i.setPharmaceuticalBillItem(null);
@@ -276,6 +280,17 @@ public class StoreGrnController implements Serializable {
             getGrnBill().getBillItems().add(i);
         }
 
+        //Save Parent Stock
+        for (BillItem i : getBillItems()) {
+
+            if (i.getParentBillItem() != null) {
+                i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
+                i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                stockFacade.edit(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                stockFacade.edit(i.getPharmaceuticalBillItem().getStock());
+            }
+        }
+
         for (BillItem i : getBillExpenses()) {
             i.setExpenseBill(getGrnBill());
             getBillItemFacade().create(i);
@@ -312,6 +327,9 @@ public class StoreGrnController implements Serializable {
 
     }
 
+    @EJB
+    StockFacade stockFacade;
+    
     public String viewPoList() {
         clearList();
 
@@ -423,7 +441,7 @@ public class StoreGrnController implements Serializable {
             return;
         }
         System.out.println("In");
-        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
+        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
         b = b + 1;
         for (BillItem bi : getBillItems()) {
             if (bi.getItem().equals(billItem.getItem())) {
@@ -466,6 +484,8 @@ public class StoreGrnController implements Serializable {
 
         System.err.println("3");
         billItem.setParentBillItem(getParentBillItem());
+
+        System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
 
         billItem.setSearialNo(getBillItems().size());
         billItem.setId(billItem.getSearialNoInteger().longValue());
@@ -851,8 +871,14 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addDetailItemListener(BillItem bi) {
+        System.err.println("Add Detasils " + bi.getId());
+        System.err.println("Pharmacy " + bi.getPharmaceuticalBillItem().getCode());
+
         parentBillItem = null;
+        currentBillItem = null;
         currentBillItem = bi;
+        currentBillItem.setPharmaceuticalBillItem(bi.getPharmaceuticalBillItem());
+
     }
 
     public void setBillExpenses(List<BillItem> billExpenses) {
@@ -911,6 +937,9 @@ public class StoreGrnController implements Serializable {
                 return;
             }
         }
+        System.out.println("****Inventory Code 1****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
+        createSerialNumber(getCurrentBillItem());
+        System.out.println("****Inventory Code 2****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
 
         addBillItem(getCurrentBillItem());
         currentBillItem = null;

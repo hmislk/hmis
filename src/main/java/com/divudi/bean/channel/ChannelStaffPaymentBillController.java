@@ -4,6 +4,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.CommonFunctions;
@@ -260,6 +261,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + "  where type(b.bill)=:class "
                 + " and b.bill.retired=false "
                 + " and b.bill.paidAmount!=0 "
+                + " and b.fee.feeType=:ftp"
                 + " and b.bill.refunded=false"
                 + " and b.bill.cancelled=false "
                 + " and (b.feeValue - b.paidValue) > 0 "
@@ -274,14 +276,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
 
         if (getSelectedServiceSession() != null) {
-            sql += " and bs.serviceSession=:ss";
+            sql += " and b.serviceSession=:ss";
             hm.put("ss", getSelectedServiceSession());
         }
 
         hm.put("stf", getCurrentStaff());
         //hm.put("ins", sessionController.getInstitution());
         hm.put("bt", bts);
-
+        hm.put("ftp", FeeType.Staff);
         hm.put("class", BilledBill.class);
         dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
