@@ -20,6 +20,7 @@ import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.facade.StaffFacade;
 import com.divudi.entity.Staff;
+import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffDesignation;
 import com.divudi.entity.hr.StaffEmployeeStatus;
 import com.divudi.entity.hr.StaffEmployment;
@@ -93,21 +94,21 @@ public class StaffController implements Serializable {
 
     public void createStaffListWithOutSpecility() {
 
-        String sql="select s from Staff s where "
+        String sql = "select s from Staff s where "
                 + " s.retired=false "
                 + " and s.speciality is null "
                 + " order by s.person.name ";
-        
-        staffWithCode=getEjbFacade().findBySQL(sql);
+
+        staffWithCode = getEjbFacade().findBySQL(sql);
     }
-    
+
     public void createStaffListWithOutSpecilityAll() {
 
-        String sql="select s from Staff s where "
+        String sql = "select s from Staff s where "
                 + " s.retired=false "
                 + " order by s.person.name ";
-        
-        staffWithCode=getEjbFacade().findBySQL(sql);
+
+        staffWithCode = getEjbFacade().findBySQL(sql);
     }
 
     public void createStaffWithCode() {
@@ -199,6 +200,44 @@ public class StaffController implements Serializable {
             hm.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findBySQL(sql, hm, 20);
         }
+        return suggestions;
+    }
+    Roster roster;
+
+    public List<Staff> getSuggestions() {
+        return suggestions;
+    }
+
+    public void setSuggestions(List<Staff> suggestions) {
+        this.suggestions = suggestions;
+    }
+
+    public Roster getRoster() {
+        return roster;
+    }
+
+    public void setRoster(Roster roster) {
+        this.roster = roster;
+    }
+    
+    
+
+    public List<Staff> completeRosterStaff(String query) {
+
+        String sql;
+
+        sql = "select p from Staff p "
+                + " where p.retired=false "
+                + " and p.roster=:rs "
+                + " and (upper(p.person.name) like :q "
+                + " or  upper(p.code) like :q )"
+                + " order by p.person.name";
+        //System.out.println(sql);
+        HashMap hm = new HashMap();
+        hm.put("rs", roster);
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        suggestions = getFacade().findBySQL(sql, hm, 20);
+
         return suggestions;
     }
 
@@ -438,7 +477,7 @@ public class StaffController implements Serializable {
             UtilityController.addErrorMessage("Nothing to save");
             return;
         }
-        if (current.getSpeciality()==null) {
+        if (current.getSpeciality() == null) {
             UtilityController.addErrorMessage("Plaese Select Speciality.");
             return;
         }

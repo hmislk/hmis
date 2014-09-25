@@ -16,6 +16,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +48,7 @@ public class StockHistoryRecorder {
     @SuppressWarnings("unused")
 //    @Schedule(minute = "1", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "1", persistent = false)
 //    @Schedule(minute = "*", second = "10", dayOfMonth = "*", month = "*", year = "*", hour = "*", persistent = false)
-    @Schedule(minute = "59", second = "59", hour = "23", dayOfMonth = "Last", info = "2nd Scheduled Timer",persistent = false)
+    @Schedule(minute = "59", second = "59", hour = "23", dayOfMonth = "Last", info = "2nd Scheduled Timer", persistent = false)
 //    @Schedule(second="*/1", minute="*",hour="*", persistent=false)
     public void myTimer() {
         Date startTime = new Date();
@@ -62,6 +63,15 @@ public class StockHistoryRecorder {
                         h.setDepartment(d);
                         h.setItem(amp);
                         h.setStockQty(getStockQty(amp, d));
+                        
+                        //SET DATE DATAS
+                        h.setHxDate(Calendar.getInstance().get(Calendar.DATE));
+                        h.setHxMonth(Calendar.getInstance().get(Calendar.MONTH));
+                        h.setHxWeek(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
+                        h.setHxYear(Calendar.getInstance().get(Calendar.YEAR));
+                        h.setStockAt(new Date());
+                        h.setCreatedAt(new Date());
+
                         getStockHistoryFacade().create(h);
                     }
                 }

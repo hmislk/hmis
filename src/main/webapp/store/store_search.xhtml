@@ -23,7 +23,7 @@
                                 </p:calendar>
                                 <p:selectOneMenu value="#{searchController.billType}">
                                     <f:selectItem itemLabel="Select Bill Type"/>
-                                    <f:selectItems value="#{enumController.pharmacyBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
+                                    <f:selectItems value="#{enumController.storeBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
                                     <f:ajax  event="change" execute="@this" render="detail" listener="#{searchController.makeNull}"/>
                                 </p:selectOneMenu>
                                 <p:inputText autocomplete="off" value="#{searchController.maxResult}" />
@@ -33,49 +33,49 @@
                             <p:defaultCommand target="btnSearch"/>
                         </f:facet>
                         <h:panelGroup id="detail">
-                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyGrnBill'}" >
+                            <h:panelGroup rendered="#{searchController.billType eq 'StoreGrnBill'}" >
                                 <se:grn/>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyGrnReturn'}" >
+                            <h:panelGroup rendered="#{searchController.billType eq 'StoreGrnReturn'}" >
                                 <se:grn_return />
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyOrder'}" >
+                            <h:panelGroup rendered="#{searchController.billType eq 'StoreOrder'}" >
                                 <se:po_request />
                             </h:panelGroup>
                             
-                               <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferRequest'}" >
+                               <h:panelGroup rendered="#{searchController.billType eq 'StoreTransferRequest'}" >
                                 <se:transfer_request />
                             </h:panelGroup>
                             
-                               <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferIssue'}" >
+                               <h:panelGroup rendered="#{searchController.billType eq 'StoreTransferIssue'}" >
                                 <se:transfer_issue />
                             </h:panelGroup>
                             
                             
 
-                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyOrderApprove'}" >
+                            <h:panelGroup rendered="#{searchController.billType eq 'StoreOrderApprove'}" >
                                 <se:po_approve />
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyPre'}" >
+                            <h:panelGroup rendered="#{searchController.billType eq 'StorePre'}" >
                                 <se:pre_bill />
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyPurchaseBill'}" >
+                            <h:panelGroup rendered="#{searchController.billType eq 'StorePurchase'}" >
                                 <se:purchase />
                             </h:panelGroup>
                             
-                            <h:panelGroup rendered="#{searchController.billType eq 'PurchaseReturn'}" >
+                            <h:panelGroup rendered="#{searchController.billType eq 'StorePurchaseReturn'}" >
                                 <se:purchase_return />
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacySale'}" >
+                            <h:panelGroup rendered="#{searchController.billType eq 'StoreSale'}" >
                                 <se:sale />
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{searchController.billType eq 'PharmacyAdjustment'}" >
+                            <h:panelGroup rendered="#{searchController.billType eq 'StoreAdjustment'}" >
                                 <se:adjustment />
                             </h:panelGroup>
                         </h:panelGroup>
