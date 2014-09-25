@@ -16,6 +16,7 @@
                         <p:inputText id="name" value="#{consumableCategoryController.selected.name}" title="Name" />
                         <p:outputLabel value="Parent Category" for="parentCategory" />
                         <p:selectOneMenu id="parentCategory" value="#{consumableCategoryController.selected.parentCategory}" >
+                            <f:selectItem itemLabel="Select Parent Ctegory"/>
                             <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}"
                                            var="parentCategoryItem"
                                            itemValue="#{parentCategoryItem}"/>
