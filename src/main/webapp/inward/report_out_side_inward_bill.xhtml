@@ -125,6 +125,27 @@
                                 <f:convertNumber pattern="#,000.00" />
                             </h:outputLabel>
                         </p:column>
+                        <p:column headerText="Paid" style="text-align: right;">
+                            <f:facet name="header">
+                                <p:outputLabel value="Paid" />
+                            </f:facet>
+                            <p:outputLabel value="Paid" rendered="#{bill.bill.paid eq true}"/>
+                            <p:outputLabel value="Not Paid" rendered="#{bill.bill.paid eq false or bill.bill.paid eq null}"/>
+                        </p:column>
+                        <p:column headerText="Paid" style="text-align: right;">
+                            <f:facet name="header">
+                                <p:outputLabel value="Paid" />
+                            </f:facet>
+                            <p:selectBooleanCheckbox value="#{bill.bill.paid}" ></p:selectBooleanCheckbox>
+                        </p:column>
+                        <p:column headerText="Update" style="text-align: right;">
+                            <f:facet name="header">
+                                <p:outputLabel value="Update" />
+                            </f:facet>
+                            <p:commandButton value="Update" action="#{mdInwardReportController.update()}" ajax="false">
+                                <f:setPropertyActionListener value="#{bill.bill}" target="#{mdInwardReportController.bill}" />
+                            </p:commandButton>
+                        </p:column>
                         <p:columnGroup type="footer">
                             <p:row>
                                 <p:column colspan="8" footerText="Total">

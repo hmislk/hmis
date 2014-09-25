@@ -5,6 +5,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -21,7 +22,6 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -79,6 +78,7 @@ public class mdInwardReportController implements Serializable {
     Institution institution;
     double total = 0.0;
     List<BillFee> billfees;
+    Bill bill;
     ////////////////////////////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -265,6 +265,16 @@ public class mdInwardReportController implements Serializable {
 
         }
 
+    }
+
+    public void updateOutSideBill() {
+        System.out.println("In");
+        System.out.println("Bill ID -"+getBill().getId());
+        getBill().setEditor(getSessionController().getLoggedUser());
+        getBill().setEditedAt(new Date());
+        getBillFacade().edit(getBill());
+        UtilityController.addSuccessMessage("Updated");
+        System.out.println("Out");
     }
 
     public void createOutSideBillsByAddedDate() {
@@ -2026,6 +2036,14 @@ public class mdInwardReportController implements Serializable {
 
     public void setBillfees(List<BillFee> billfees) {
         this.billfees = billfees;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
     }
 
 }
