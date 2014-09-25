@@ -23,6 +23,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.Speciality;
+import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.PatientRoom;
@@ -98,7 +99,6 @@ public class InwardReportController1 implements Serializable {
     public InwardReportController1() {
     }
 
-
     public Double[] fetchRoomValues() {
         HashMap hm = new HashMap();
         String sql = "SELECT"
@@ -118,7 +118,7 @@ public class InwardReportController1 implements Serializable {
                 + " sum(pr.discountMedicalCareCharge) "
                 + " FROM PatientRoom pr "
                 + " where pr.retired=false"
-//                + " and pr.patientEncounter.paymentFinalized=true "
+                //                + " and pr.patientEncounter.paymentFinalized=true "
                 + " and pr.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
 
         if (admissionType != null) {
@@ -280,11 +280,12 @@ public class InwardReportController1 implements Serializable {
         List<Object[]> list = fetchDoctorPaymentInwardModified();
         System.err.println("Professional " + list);
         for (Object[] obj : list) {
-            Speciality speciality = (Speciality) obj[0];
+            Speciality sp = (Speciality) obj[0];
             double dbl = (Double) obj[1];
 
             String1Value2 string1Value2 = new String1Value2();
-            string1Value2.setString(speciality.getName());
+            string1Value2.setSpeciality(sp);
+            string1Value2.setString(sp.getName());
             string1Value2.setValue1(dbl);
 
             professionalGross += string1Value2.getValue1();
@@ -449,7 +450,7 @@ public class InwardReportController1 implements Serializable {
                 + " FROM PatientEncounter pe"
                 + " where pe.retired=false "
                 + " and pe.discharged=true "
-//                + " and pe.paymentFinalized=true "
+                //                + " and pe.paymentFinalized=true "
                 + " and pe.dateOfDischarge between :fd and :td  ";
 
         Admission a = new Admission();
@@ -558,7 +559,7 @@ public class InwardReportController1 implements Serializable {
 
     }
 
-    public Double[] fetchMadicine() {
+    public Double[] fetchIssue(BillType billType) {
         String sql;
         HashMap hm = new HashMap();
         sql = "SELECT  sum(b.grossValue),"
@@ -567,8 +568,7 @@ public class InwardReportController1 implements Serializable {
                 + " sum(b.netValue) "
                 + " FROM BillItem b "
                 + " WHERE b.retired=false "
-                + " and (b.bill.billType=:btp1 "
-                + " or  b.bill.billType=:btp2)"
+                + " and b.bill.billType=:btp "
                 + " and b.bill.patientEncounter.discharged=true "
                 + " and b.bill.patientEncounter.dateOfDischarge between :fd and :td ";
 
@@ -590,8 +590,7 @@ public class InwardReportController1 implements Serializable {
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
-        hm.put("btp1", BillType.PharmacyBhtPre);
-        hm.put("btp2", BillType.StoreBhtPre);
+        hm.put("btp", billType);
 
         Object obj[] = billFeeFacade.findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
 //        System.err.println("OBJ " + obj);
@@ -600,17 +599,14 @@ public class InwardReportController1 implements Serializable {
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
-            dbl[3] = 0.0;            
+            dbl[3] = 0.0;
             return dbl;
         } else {
             return Arrays.copyOf(obj, obj.length, Double[].class);
         }
 
-
     }
 
-
-   
     public void createInwardService() {
         inwardCharges = new ArrayList<>();
 
@@ -620,15 +616,27 @@ public class InwardReportController1 implements Serializable {
         string1Value3.setValue1(admissionGross);
         string1Value3.setValue3(admissionDiscount);
         string1Value3.setValue4(admissionNetValue);
-
         inwardGross += string1Value3.getValue1();
         inwardDiscount += string1Value3.getValue3();
         inwardNetValue += string1Value3.getValue4();
         inwardCharges.add(string1Value3);
 
         string1Value3 = new String2Value4();
-        Double[] dbl=fetchMadicine();
+        Double[] dbl = fetchIssue(BillType.PharmacyBhtPre);
         string1Value3.setString(InwardChargeType.Medicine.getLabel());
+        string1Value3.setValue1(dbl[0]);
+        string1Value3.setValue2(dbl[1]);
+        string1Value3.setValue3(dbl[2]);
+        string1Value3.setValue4(dbl[3]);
+        inwardGross += string1Value3.getValue1();
+        inwardMargin += string1Value3.getValue2();
+        inwardDiscount += string1Value3.getValue3();
+        inwardNetValue += string1Value3.getValue4();
+        inwardCharges.add(string1Value3);
+
+        string1Value3 = new String2Value4();
+        dbl = fetchIssue(BillType.StoreBhtPre);
+        string1Value3.setString(InwardChargeType.GeneralIssuing.getLabel());
         string1Value3.setValue1(dbl[0]);
         string1Value3.setValue2(dbl[1]);
         string1Value3.setValue3(dbl[2]);
@@ -1086,6 +1094,96 @@ public class InwardReportController1 implements Serializable {
         }
 
         return "report_income_by_caregories_and_bht";
+    }
+
+    public String processProfessionalFees() {
+
+        String sql;
+        Map m = new HashMap();
+        sql = "select bf "
+                + " from BillFee bf "
+                + " where bf.bill.patientEncounter.discharged=true "
+                + " and bf.retired=false "
+                + " and bf.billItem.retired=false "
+                + " and bf.fee.feeType=:ftp ";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("ftp", FeeType.Staff);
+        m.put("billType1", BillType.InwardBill);
+        m.put("billType2", BillType.InwardProfessional);
+        sql = sql + " and (bf.bill.billType=:billType1"
+                + " or bf.bill.billType=:billType2)"
+                + " and bf.bill.patientEncounter.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql = sql + " and bf.bill.patientEncounter.admissionType=:at ";
+            m.put("at", admissionType);
+
+        }
+
+        if (speciality != null) {
+            sql = sql + " and bf.staff.speciality=:sp";
+            m.put("sp", speciality);
+        }
+
+        if (staff != null) {
+            sql = sql + " and bf.staff=:stf";
+            m.put("sp", staff);
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and bf.bill.patientEncounter.paymentMethod=:bt ";
+            m.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and bf.bill.patientEncounter.creditCompany=:cc ";
+            m.put("cc", institution);
+        }
+
+        sql = sql + " order by bf.bill.patientEncounter.bhtNo";
+        billFees = billFeeFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+//        PatientEncounter pe = new PatientEncounter();
+//        pe.getBhtNo();
+        if (billFees == null) {
+            billFees = new ArrayList<>();
+        }
+
+        billFreeGross = 0.0;
+        billFeeDiscount = 0.0;
+        billFeeMargin = 0.0;
+        billFeeNet = 0.0;
+
+        for (BillFee f : billFees) {
+            if (f.getFeeGrossValue() != null) {
+                billFreeGross += f.getFeeGrossValue();
+            }
+            billFeeDiscount += f.getFeeDiscount();
+            billFeeMargin += f.getFeeMargin();
+            billFeeNet += f.getFeeValue();
+        }
+
+        return "report_income_by_professional_fees_and_bht";
+    }
+
+    Speciality speciality;
+    Staff staff;
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
     }
 
     public void processPatientRooms() {

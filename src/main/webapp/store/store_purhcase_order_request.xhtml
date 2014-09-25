@@ -18,7 +18,8 @@
                     <p:outputLabel value="Purchase order Request Order"/>
                     <p:commandButton ajax="false" value="Request" 
                                      action="#{storePurchaseOrderRequestController.request}"/>
-                    <p:commandButton ajax="false"  value="New Order"  action="#{storePurchaseOrderRequestController.recreate}"/>
+                    <p:commandButton ajax="false"  value="New Order" 
+                                     action="#{storePurchaseOrderRequestController.recreate}"/>
                 </f:facet>
 
                 <p:tabView>
@@ -90,7 +91,8 @@
 
                 </p:tabView>
 
-                <p:dataTable styleClass="noBorder" rowIndexVar="i" var="bi" scrollable="true" rowKey="#{bi.searialNo}"
+                <p:dataTable styleClass="noBorder" rowIndexVar="i" 
+                             var="bi" scrollable="true" rowKey="#{bi.searialNo}"
                              scrollHeight="250" value="#{storePurchaseOrderRequestController.billItems}" 
                              selection="#{storePurchaseOrderRequestController.selectedBillItems}"
                              id="itemList" >  

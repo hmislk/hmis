@@ -109,6 +109,15 @@ public class StoreBillSearch implements Serializable {
     @Inject
     private WebUserController webUserController;
 
+    public void calBillItemsTotal() {
+        if (billItems == null) {
+            return;
+        }
+        for (BillItem b : billItems) {
+            b.setTmpQty(b.getPharmaceuticalBillItem().getQty());
+        }
+    }
+
     public void editBill() {
         if (errorCheckForEdit()) {
             return;
@@ -765,7 +774,6 @@ public class StoreBillSearch implements Serializable {
         return cb;
     }
 
-
     private void pharmacyCancelBillItemsAddStock(CancelledBill can) {
         for (BillItem nB : getBill().getBillItems()) {
             BillItem b = new BillItem();
@@ -1237,7 +1245,7 @@ public class StoreBillSearch implements Serializable {
 
         CancelBillWithStockBht(BillNumberSuffix.STTISSUECAN);
     }
-    
+
     public void storeRetailCancelBillWithStockBhtIssue() {
         if (getBill().getBillType() != BillType.StoreIssue) {
             System.out.println("Bill Type incorrect");
@@ -1287,7 +1295,7 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-         //   System.out.print(getBill().isCancelled());
+            //   System.out.print(getBill().isCancelled());
 
 //            if (getBill().getReferenceBill() != null) {
 //                getBill().getReferenceBill().setReferenceBill(null);
@@ -1301,8 +1309,6 @@ public class StoreBillSearch implements Serializable {
             UtilityController.addErrorMessage("No Bill to cancel");
         }
     }
-
-   
 
     public void pharmacyPoCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
@@ -1389,7 +1395,7 @@ public class StoreBillSearch implements Serializable {
 
         return false;
     }
-    
+
     public void markAsChecked() {
         if (bill == null) {
             return;
@@ -1408,7 +1414,7 @@ public class StoreBillSearch implements Serializable {
 
         getBillFacade().edit(bill);
     }
-    
+
     public void pharmacyReturnBhtCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
@@ -1443,7 +1449,7 @@ public class StoreBillSearch implements Serializable {
             UtilityController.addErrorMessage("No Bill to cancel");
         }
     }
-    
+
     private RefundBill pharmacyCreateRefundCancelBill() {
         RefundBill cb = new RefundBill();
 
@@ -1484,8 +1490,6 @@ public class StoreBillSearch implements Serializable {
                 return;
             }
 
-            
-            
             CancelledBill cb = pharmacyCreateCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb, cb.getBillType(), BillNumberSuffix.GRNCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb, cb.getBillType(), BillNumberSuffix.GRNCAN));
@@ -1984,6 +1988,8 @@ public class StoreBillSearch implements Serializable {
             }
         }
 
+        createBillItems();
+
     }
 
     public List<BillEntry> getBillEntrys() {
@@ -1995,22 +2001,17 @@ public class StoreBillSearch implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
-        String sql = "";
-        if (getBill() != null) {
-            if (getBill().getRefundedBill() == null) {
-                sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            } else {
-                sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getRefundedBill().getId();
-            }
-            billItems = getBillItemFacede().findBySQL(sql);
-            // //System.out.println("sql for bill item search is " + sql);
-            // //System.out.println("results for bill item search is " + billItems);
-            if (billItems == null) {
-                billItems = new ArrayList<>();
-            }
-        }
-
         return billItems;
+    }
+
+    public void createBillItems() {
+        HashMap hm = new HashMap();
+        String sql = "SELECT b FROM BillItem b "
+                + " WHERE b.retired=false "
+                + " and b.bill=:b";
+        hm.put("b", getBill());
+        billItems = billItemFacede.findBySQLWithoutCache(sql, hm);
+
     }
 
     public List<PharmaceuticalBillItem> getPharmacyBillItems() {

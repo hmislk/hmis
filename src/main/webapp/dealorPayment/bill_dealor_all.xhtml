@@ -44,10 +44,8 @@
                         </h:panelGrid>
                     </f:facet>
                     <h:panelGrid columns="2" style="min-width: 100%;">
-                        <h:panelGrid columns="3">
-                            <h:outputLabel value="Type GRN No or Dealor Name"/>
-                            <h:outputLabel value="Paying Amount"/>
-                            <h:outputLabel/>
+                        <h:panelGrid columns="1">
+                            <h:outputLabel value="Type GRN No or Dealor Name"/>                           
                             <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
                                             value="#{pharmacyDealorBill.institution}"
                                             completeMethod="#{institutionController.completeSupplier}"
@@ -62,30 +60,39 @@
                                 <f:ajax event="itemSelect" execute="@this" 
                                         render=" :#{p:component('itms')} total" 
                                         listener="#{pharmacyDealorBill.selectInstitutionListener()}"/>
-                            </p:autoComplete>                            
+                            </p:autoComplete>  
+                            <p:panel  id="total" style="min-width: 100%;">
+
+                                <p:panelGrid  columns="2" >
+                                    <p:outputLabel value="Net Total" />
+                                    <p:outputLabel  value="#{pharmacyDealorBill.current.netTotal}">
+                                        <f:convertNumber pattern="#,000.00" />
+                                    </p:outputLabel>
+
+                                    <p:outputLabel value="Description"/>
+                                    <p:inputTextarea value="#{pharmacyDealorBill.current.comments}"/>                                                         
+                                </p:panelGrid>
+                            </p:panel>
 
                         </h:panelGrid>
 
                         <p:dataTable  value="#{pharmacyDealorBill.billItems}"
                                       selection="#{pharmacyDealorBill.selectedBillItems}" 
-                                      var="b" id="itms" rowKey="#{b.searialNo}">
+                                      var="b" id="itms" rowKey="#{b.searialNo}" 
+                                      selectionMode="multiple"
+                                      scrollable="true"
+                                      scrollHeight="300">
                             <f:facet name="header">
                                 <h:outputLabel value="Paying Institution : "/>
                                 <h:outputLabel value="#{pharmacyDealorBill.current.toInstitution.name}"/>
                                 <p:commandButton ajax="false" action="#{pharmacyDealorBill.removeAll()}" value="Remove Selected"/>
                             </f:facet>
 
-                            <p:ajax event="rowSelect" process="@this" 
+                            <p:ajax event="rowSelect"  process="@this" 
                                     update=":#{p:component('total')}"
                                     listener="#{pharmacyDealorBill.calTotalBySelectedBillTems()}" />  
 
-                            <p:column selectionMode="multiple" />                                        
-                            <p:column >  
-                                <f:facet name="header">
-                                    <h:outputLabel value="Index No"/>                                  
-                                </f:facet>                              
-                                #{b.searialNo}
-                            </p:column> 
+
                             <p:column >  
                                 <f:facet name="header">
                                     <h:outputLabel value="GRN No"/>                                  
@@ -128,18 +135,7 @@
                         </p:dataTable>
 
                     </h:panelGrid>
-                    <p:panel  id="total" style="min-width: 100%;">
 
-                        <p:panelGrid  columns="2" >
-                            <p:outputLabel value="Net Total" />
-                            <p:outputLabel  value="#{pharmacyDealorBill.current.netTotal}">
-                                <f:convertNumber pattern="#,000.00" />
-                            </p:outputLabel>
-
-                            <p:outputLabel value="Description"/>
-                            <p:inputTextarea value="#{pharmacyDealorBill.current.comments}"/>                                                         
-                        </p:panelGrid>
-                    </p:panel>
                 </p:panel>
 
 

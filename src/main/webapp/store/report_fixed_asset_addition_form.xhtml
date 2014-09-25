@@ -1,0 +1,294 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+
+                    <p:panel  >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Fixed Asset Addition Form" ></h:outputLabel>
+                            <p:commandButton value="Print" ajax="false" >
+                                <p:printer target="panelForm" ></p:printer>
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:panel id="panelForm" >
+                            <f:facet name="header" >
+                                <h:panelGrid columns="1" style="text-align: center" >
+                                    <h1>
+                                        <p:outputLabel value="#{sessionController.institution.name}" ></p:outputLabel>
+                                    </h1>
+                                    <h2>
+                                        <p:outputLabel value="Fixed Asset Addition Form" ></p:outputLabel>
+                                    </h2>
+                                </h:panelGrid>
+                            </f:facet>
+
+                            <h:panelGrid columns="5"  >
+
+                                <p:outputLabel value="Inventory No." ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.code}" ></p:outputLabel>
+
+                                <p:outputLabel value="Tag Serial No." ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.batchNo}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Asset Item" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.item}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Department" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.department.name}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Location" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="Not Recorded" ></p:outputLabel>
+
+                            </h:panelGrid>
+
+                            <h4>
+                                <u>
+                                    Fixed Asset Particulars
+                                </u>
+                            </h4>
+
+
+
+
+                            <h:panelGrid columns="5"  >
+
+                                <p:outputLabel value="Asset Category" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.item.category.name}" ></p:outputLabel>
+
+                                <p:outputLabel value="Asset Description" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.description}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Brand" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.make.name}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Model" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.modal}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Barcode No" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.barcode}" ></p:outputLabel>
+
+
+
+
+                                <p:outputLabel value="Serial No" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.batchNo}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Registration No" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.registrationNo}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Chassis No" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.chassisNo}" ></p:outputLabel>
+
+
+
+
+                                <p:outputLabel value="Engine No" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.engineNo}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Colour" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.colour}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Number of Accessories" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.childStocks.size()}" ></p:outputLabel>
+
+                                <p:spacer width="10" ></p:spacer>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:spacer width="10" ></p:spacer>
+                                
+                                <p:dataTable value="#{storeReportsStock.selectedInventoryStock.childStocks}" var="cs" 
+                                             emptyMessage="No Accessories">
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            Description
+                                        </f:facet>
+                                        #{cs.itemBatch.item.name}
+                                    </p:column>
+                                    
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            View
+                                        </f:facet>
+                                        <p:commandLink value="View Details" action="#" ajax="false" >
+                                            <f:setPropertyActionListener value="#{cs}" target="#{storeReportsStock.selectedInventoryStock}" ></f:setPropertyActionListener>
+                                        </p:commandLink>
+                                    </p:column>
+                                    
+                                </p:dataTable>
+                                
+
+
+                            </h:panelGrid>
+
+
+
+                            <h4>
+                                <u>
+                                    Payment Details
+                                </u>
+                            </h4>
+
+
+
+
+                            <h:panelGrid columns="1"  >                              
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Payment Detail of "/>
+                                        <h:outputLabel value="#{storeReportsStock.grnbill.deptId}"/>
+                                    </f:facet>
+                                    <p:dataTable value="#{storeReportsStock.paymentbills}" var="pm">
+                                        <p:column headerText="Bill No">
+                                            #{pm.insId}
+                                        </p:column>
+                                        <p:column headerText="Value">
+                                            #{pm.netTotal}
+                                        </p:column>                                        
+                                    </p:dataTable>
+                                </p:panel>
+                            </h:panelGrid>
+
+
+
+                            <h4>
+                                <u>
+                                    Supplier Information
+                                </u>
+                            </h4>
+
+
+
+
+                            <h:panelGrid columns="5"  >
+
+                                <p:outputLabel value="Manufacturer" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.manufacturer.name}" ></p:outputLabel>
+
+                                <p:outputLabel value="Supplier Name" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Supplier Address" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.lastPurchaseBillItem.bill.fromInstitution.address}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Supplier Phone No" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.lastPurchaseBillItem.bill.fromInstitution.phone}" ></p:outputLabel>
+
+
+                                <p:outputLabel value="Supplier Mobile No" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.lastPurchaseBillItem.bill.fromInstitution.mobile}" ></p:outputLabel>
+
+                                <p:outputLabel value="Supplier Email" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.lastPurchaseBillItem.bill.fromInstitution.email}" ></p:outputLabel>
+
+                                <p:outputLabel value="Supplier Contact" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:spacer width="10" ></p:spacer>
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.lastPurchaseBillItem.bill.fromInstitution.descreption}" ></p:outputLabel>
+
+
+                            </h:panelGrid>
+
+                        </p:panel>
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -62,7 +62,7 @@ public class BillSearch implements Serializable {
     private boolean printPreview = false;
     private double refundAmount;
     String txtSearch;
-    BilledBill bill;
+    Bill bill;
     PaymentMethod paymentMethod;
     private RefundBill billForRefund;
     @Temporal(TemporalType.TIME)
@@ -110,7 +110,7 @@ public class BillSearch implements Serializable {
     private PharmacyPreSettleController pharmacyPreSettleController;
     private SearchKeyword searchKeyword;
 
-    Bill billSearch;
+    
 
     public BillSearch() {
     }
@@ -121,20 +121,20 @@ public class BillSearch implements Serializable {
 
     public void updateBill() {
 
-        billSearch.setEditedAt(new Date());
-        billSearch.setEditor(sessionController.getLoggedUser());
-        billFacade.edit(billSearch);
+        bill.setEditedAt(new Date());
+        bill.setEditor(sessionController.getLoggedUser());
+        billFacade.edit(bill);
         UtilityController.addSuccessMessage("Bill Upadted");
 
     }
 
     public void updateBillRetierd() {
 
-        billSearch.setRetiredAt(new Date());
-        billSearch.setRetirer(sessionController.getLoggedUser());
-        billSearch.setEditedAt(new Date());
-        billSearch.setEditor(sessionController.getLoggedUser());
-        billFacade.edit(billSearch);
+        bill.setRetiredAt(new Date());
+        bill.setRetirer(sessionController.getLoggedUser());
+        bill.setEditedAt(new Date());
+        bill.setEditor(sessionController.getLoggedUser());
+        billFacade.edit(bill);
         UtilityController.addSuccessMessage("Bill Retired");
 
     }
@@ -549,7 +549,7 @@ public class BillSearch implements Serializable {
         rb.setPaymentMethod(paymentMethod);
 
         rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), new RefundBill(), BillType.OpdBill, BillNumberSuffix.RF));
-        rb.setDeptId(getBillNumberBean().departmentRefundBill(getSessionController().getLoggedUser().getDepartment(), getBill().getToDepartment(), BillNumberSuffix.RF));
+        rb.setDeptId(getBillNumberBean().departmentRefundBill(getSessionController().getDepartment(), getBill().getToDepartment(), BillNumberSuffix.RF));
 
         rb.setTotal(0 - refundTotal);
         rb.setDiscount(0 - refundDiscount);
@@ -1056,7 +1056,7 @@ public class BillSearch implements Serializable {
         }
     }
 
-    private void cancelPaymentItems(BilledBill pb) {
+    private void cancelPaymentItems(Bill pb) {
         List<BillItem> pbis;
         pbis = getBillItemFacede().findBySQL("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + pb.getId());
         for (BillItem pbi : pbis) {
@@ -1343,12 +1343,12 @@ public class BillSearch implements Serializable {
         //    recreateModel();
     }
 
-    public BilledBill getBill() {
+    public Bill getBill() {
         //recreateModel();
         return bill;
     }
 
-    public void setBill(BilledBill bill) {
+    public void setBill(Bill bill) {
         recreateModel();
         System.err.println("Bill " + bill);
         this.bill = bill;
@@ -1781,15 +1781,15 @@ public class BillSearch implements Serializable {
     }
 
     public Bill getBillSearch() {
-        return billSearch;
+        return bill;
     }
 
-    public void setBillSearch(Bill billSearch) {
+    public void setBillSearch(Bill bill) {
 
         recreateModel();
         System.err.println("Bill " + bill);
-        this.billSearch = billSearch;
-        paymentMethod = billSearch.getPaymentMethod();
+        this.bill = bill;
+        paymentMethod = bill.getPaymentMethod();
         createBillItemsForRetire();
     }
 

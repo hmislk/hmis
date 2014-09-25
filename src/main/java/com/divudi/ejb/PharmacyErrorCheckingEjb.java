@@ -14,6 +14,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -196,31 +197,52 @@ public class PharmacyErrorCheckingEjb {
 
     public List<BillItem> allBillItemsByDateOnlyStock(Item item, Department department, Date fromDate, Date toDate) {
         String sql;
+        BillType[] bArr = {BillType.PharmacyPurchaseBill,
+            BillType.PharmacyGrnBill,
+            BillType.PharmacyGrnReturn,
+            BillType.PurchaseReturn,
+            BillType.PharmacyPre,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyTransferReceive,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre};
+        List<BillType> billTypes = Arrays.asList(bArr);
+        return allBillItemsByDateOnlyStock(item, department, fromDate, toDate, billTypes);
+    }
+
+    public List<BillItem> allBillItemsByDateOnlyStockStore(Item item, Department department, Date fromDate, Date toDate) {
+        String sql;
+        BillType[] bArr = {BillType.StorePurchase,
+            BillType.StoreGrnBill,
+            BillType.StoreGrnReturn,
+            BillType.StorePurchaseReturn,
+            BillType.StorePre,
+            BillType.StoreTransferIssue,
+            BillType.StoreTransferReceive,
+            BillType.StoreAdjustment,
+            BillType.StoreIssue,
+            BillType.StoreBhtPre};
+        List<BillType> billTypes = Arrays.asList(bArr);
+        return allBillItemsByDateOnlyStock(item, department, fromDate, toDate, billTypes);
+    }
+
+    public List<BillItem> allBillItemsByDateOnlyStock(Item item, Department department, Date fromDate, Date toDate, List<BillType> billTypes) {
+        String sql;
         Map m = new HashMap();
         m.put("d", department);
         m.put("i", item);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("btp1", BillType.PharmacyPurchaseBill);
-        m.put("btp2", BillType.PharmacyGrnBill);
-        m.put("btp3", BillType.PharmacyGrnReturn);
-        m.put("btp4", BillType.PurchaseReturn);
-        m.put("btp5", BillType.PharmacyPre);
-        m.put("btp6", BillType.PharmacyTransferIssue);
-        m.put("btp7", BillType.PharmacyTransferReceive);
-        m.put("btp8", BillType.PharmacyAdjustment);
-        m.put("btp9", BillType.PharmacyIssue);
-        m.put("btp10", BillType.PharmacyBhtPre);
+        m.put("bts", billTypes);
 
-        sql = "select bi from BillItem bi where bi.item=:i"
+        sql = "select bi from BillItem bi "
+                + " where bi.item=:i"
                 + " and bi.bill.department=:d "
                 + " and bi.createdAt between :fd and :td "
-                + " and (bi.bill.billType=:btp1 or bi.bill.billType=:btp2 or "
-                + " bi.bill.billType=:btp3 or bi.bill.billType=:btp4 or "
-                + " bi.bill.billType=:btp5 or bi.bill.billType=:btp6 or"
-                + " bi.bill.billType=:btp7  or bi.bill.billType=:btp8 "
-                + " or bi.bill.billType=:btp9 or bi.bill.billType=:btp10  ) "
-                + " order by bi.pharmaceuticalBillItem.stock.id,bi.createdAt ";
+                + " and bi.bill.billType in :bts "
+                + " order by bi.pharmaceuticalBillItem.stock.id,"
+                + " bi.createdAt ";
         return getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
 
