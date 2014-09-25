@@ -241,7 +241,7 @@ public class StoreReportsTransfer implements Serializable {
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
     }
-    
+
     public void fillDepartmentUnitIssueByBillStore() {
         Map m = new HashMap();
         String sql;
@@ -266,7 +266,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
     }
-    
+
     public void fillFromDepartmentUnitIssueByBillStore() {
         Map m = new HashMap();
         String sql;
@@ -277,7 +277,7 @@ public class StoreReportsTransfer implements Serializable {
 //        m.put("tdept", toDepartment);
         sql = "select b from Bill b where "
                 + " b.fromDepartment=:fdept and "
-//                + " b.toDepartment=:tdept and "
+                //                + " b.toDepartment=:tdept and "
                 + " b.createdAt "
                 + " between :fd and :td and "
                 + " b.billType=:bt order by b.id";
@@ -291,7 +291,7 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
     }
-    
+
     public void createDepartmentIssueStore() {
         listz = new ArrayList<>();
 
@@ -349,7 +349,6 @@ public class StoreReportsTransfer implements Serializable {
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
     }
-    
 
     public void fillDepartmentTransfersIssueByBill() {
         Map m = new HashMap();
@@ -620,6 +619,61 @@ public class StoreReportsTransfer implements Serializable {
 
     public void setBillBeanController(BillBeanController billBeanController) {
         this.billBeanController = billBeanController;
+    }
+
+    public class DepartmentBillItemBillListRow {
+
+        Department department;
+        Bill bill;
+        List<ItemBillRow> itemBillRows;
+
+        public DepartmentBillItemBillListRow() {
+        }
+
+        public DepartmentBillItemBillListRow(Department department, List<ItemBillRow> itemBillRows) {
+            this.department = department;
+            this.itemBillRows = itemBillRows;
+        }
+
+        public DepartmentBillItemBillListRow(Department department, List<ItemBillRow> itemBillRows, Double netTotal) {
+            this.department = department;
+            this.itemBillRows = itemBillRows;
+            bill = new Bill();
+            bill.setNetTotal(netTotal);
+        }
+
+    }
+
+    public class ItemBillRow {
+
+        Item item;
+        Bill bill;
+
+        public ItemBillRow() {
+        }
+
+        public ItemBillRow(Item item, Double netTotal) {
+            this.item = item;
+            bill = new Bill();
+            bill.setNetTotal(netTotal);
+        }
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public Bill getBill() {
+            return bill;
+        }
+
+        public void setBill(Bill bill) {
+            this.bill = bill;
+        }
+
     }
 
 }
