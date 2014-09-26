@@ -39,7 +39,7 @@
                             <p:defaultCommand target="btnSettle"/>
 
                             <p:commandButton value="New Bill" ajax="false" action="#{pharmacyDealorBill.makeNull()}" >
-                            </p:commandButton>
+                            </p:commandButton>#{pharmacyDealorBill.current.createdAt}
 
                         </h:panelGrid>
                     </f:facet>
@@ -137,18 +137,25 @@
                     </h:panelGrid>
 
                 </p:panel>
-
-
-
-                <p:panel rendered="#{pharmacyDealorBill.printPreview}" >
-                    <p:commandButton value="New Bill" ajax="false" action="#{pharmacyDealorBill.makeNull()}" >
+               
+                <p:panel rendered="#{pharmacyDealorBill.printPreview}">                                
+            <p:commandButton value="Print" ajax="false" action="#" >
+                <p:printer target="gpBillPreview" ></p:printer>
+            </p:commandButton>
+            <p:commandButton value="New Bill" ajax="false" action="#{pharmacyDealorBill.makeNull()}" >
                     </p:commandButton>
-                    <bi:insRecieve billController ="#{pharmacyDealorBill}"  bill="#{pharmacyDealorBill.current}" dup="false" rendered="false"/>                       
-                </p:panel>
+            <p:panel   id="gpBillPreview"   >
+
+                <bi:grn_payment bill="#{pharmacyDealorBill.current}"/>
+
+            </p:panel>
+        </p:panel>
 
             </h:form>
         </h:panelGroup>
-
+        
+        
+        
     </ui:define>
 
 </ui:composition>

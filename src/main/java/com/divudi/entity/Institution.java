@@ -47,6 +47,7 @@ public class Institution implements Serializable {
     String phone;
     String mobile;
     String web;
+    String chequePrintingName;
 
     @Lob
     String labBillHeading;
@@ -323,6 +324,16 @@ public class Institution implements Serializable {
     public void setAllowedCredit(double allowedCredit) {
         this.allowedCredit = allowedCredit;
     }
+
+    public String getChequePrintingName() {
+        return chequePrintingName;
+    }
+
+    public void setChequePrintingName(String chequePrintingName) {
+        this.chequePrintingName = chequePrintingName;
+    }
+    
+    
 
     public List<Institution> getBranch() {
         return branch;

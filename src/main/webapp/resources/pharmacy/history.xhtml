@@ -27,7 +27,7 @@
                 <p:calendar id="toDate" value="#{pharmacyController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                     <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
                 </p:calendar>
-                <p:commandButton update=":#{p:component('grn')} :#{p:component('po')} :#{p:component('dp')}" 
+                <p:commandButton update=":#{p:component('grn')} :#{p:component('po')} :#{p:component('dp')} :#{p:component ('depIssue')}" 
                                  action="#{pharmacyController.createTable()}" value="View Detail"/>
             </h:panelGrid>
             <p:tabView  style="min-height: 250px;"   activeIndex="0" >

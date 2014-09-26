@@ -810,7 +810,7 @@ public class PharmacyController implements Serializable {
             List<DepartmentSale> list = new ArrayList<>();
             double totalValue = 0;
             double totalQty = 0;
-            List<Object[]> objs = calDepartmentTransferIssue(ins);
+            List<Object[]> objs = calDepartmentIssue(ins);
 
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
@@ -888,6 +888,8 @@ public class PharmacyController implements Serializable {
         createGrnTable();
         createPoTable();
         createDirectPurchaseTable();
+        createInstitutionIssue();
+        
 
     }
 
@@ -907,6 +909,23 @@ public class PharmacyController implements Serializable {
         grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+//    public void createPhrmacyIssueTable() {
+//
+//        // //System.err.println("Getting GRNS : ");
+//        String sql = "Select b From BillItem b where type(b.bill)=:class and b.bill.creater is not null "
+//                + " and b.bill.cancelled=false and b.retired=false and b.item=:i "
+//                + " and b.bill.billType=:btp and b.createdAt between :frm and :to order by b.id desc ";
+//        HashMap hm = new HashMap();
+//        hm.put("i", pharmacyItem);
+//        hm.put("frm", getFromDate());
+//        hm.put("to", getToDate());
+//        hm.put("class", BilledBill.class);
+//        hm.put("btp", BillType.PharmacyIssue);
+//
+//        institutionIssue = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+//
+//    }
 
     public void createDirectPurchaseTable() {
 
