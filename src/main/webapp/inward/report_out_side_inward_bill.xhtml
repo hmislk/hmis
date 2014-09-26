@@ -142,7 +142,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Update" />
                             </f:facet>
-                            <p:commandButton value="Update" action="#{mdInwardReportController.update()}" ajax="false">
+                            <p:commandButton value="Update" action="#{mdInwardReportController.updateOutSideBill()}" ajax="false">
                                 <f:setPropertyActionListener value="#{bill.bill}" target="#{mdInwardReportController.bill}" />
                             </p:commandButton>
                         </p:column>

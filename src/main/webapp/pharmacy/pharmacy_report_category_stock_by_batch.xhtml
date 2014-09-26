@@ -21,7 +21,7 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" value="#{reportsStock.department}" converter="dep"/>
-                            
+
                             <h:outputLabel value="Category" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.category}" >
@@ -41,30 +41,35 @@
                                     <h:outputLabel value="Stock in #{reportsStock.department.name} "/>   <br/>                                 
                                     <h:outputLabel value="for #{reportsStock.category.name}"/>                                    
                                 </f:facet> 
-                                
+
                                 <p:column headerText="Item">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Code">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Stock Quentity">
                                     <f:facet name="header">
                                         <h:outputLabel value="Stock Quantity"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.stock}"  >
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                    </h:outputLabel>                                  
+                                    </h:outputLabel>      
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{reportsStock.totalQty}" >
+                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-                                
+
                                 <p:column headerText="Expiry">
                                     <f:facet name="header">
                                         <h:outputLabel value="Expiry"/>    
@@ -73,9 +78,9 @@
                                         <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-                                
-                              
-                                
+
+
+
                                 <p:column headerText="Purchase Rate" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Rate"/>    
@@ -83,8 +88,13 @@
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{reportsStock.totalPurchaseRate}" >
+                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-                                
+
                                 <p:column headerText="Purchase Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>    
@@ -106,8 +116,13 @@
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{reportsStock.totalRetailSaleRate}" >
+                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-                                
+
                                 <p:column headerText="Retail Sale Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Value"/>    
@@ -121,8 +136,8 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:columnGroup type="footer">
-                                <p:row>
+<!--                                <p:columnGroup type="footer">
+                                    <p:row>
                                         <p:column colspan="9" >
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="Printed At " ></h:outputLabel>
@@ -132,9 +147,10 @@
                                             </f:facet>
                                         </p:column>
                                     </p:row>
-                                </p:columnGroup>
+                                </p:columnGroup>-->
                             </p:dataTable>
                         </h:panelGroup>
+                        <h:outputLabel value="#{sessionController.currentDate}" ></h:outputLabel>
                     </p:panel>
                 </h:form>
 
