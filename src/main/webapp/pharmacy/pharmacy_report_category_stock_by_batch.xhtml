@@ -136,21 +136,26 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-<!--                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column colspan="9" >
-                                            <f:facet name="footer" >
-                                                <h:outputLabel value="Printed At " ></h:outputLabel>
-                                                <h:outputLabel value="#{sessionController.currentDate}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>-->
+                                <!--                                <p:columnGroup type="footer">
+                                                                    <p:row>
+                                                                        <p:column colspan="9" >
+                                                                            <f:facet name="footer" >
+                                                                                <h:outputLabel value="Printed At " ></h:outputLabel>
+                                                                                <h:outputLabel value="#{sessionController.currentDate}" >
+                                                                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
+                                                                                </h:outputLabel>
+                                                                            </f:facet>
+                                                                        </p:column>
+                                                                    </p:row>
+                                                                </p:columnGroup>-->
                             </p:dataTable>
                         </h:panelGroup>
-                        <h:outputLabel value="#{sessionController.currentDate}" ></h:outputLabel>
+                        <p:panel>
+                            <h:outputLabel value="Printed At " ></h:outputLabel>
+                            <h:outputLabel value="#{sessionController.currentDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </p:panel>
                     </p:panel>
                 </h:form>
 
