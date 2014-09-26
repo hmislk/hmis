@@ -15,7 +15,10 @@
 
     <cc:implementation>
         <p:dataTable  value="#{bhtSummeryFinalizedController.billItems}" var="bi"
-                      sortBy="#{bi.inwardChargeType}">                               
+                      sortBy="#{bi.inwardChargeType}">    
+            <f:facet name="header">
+                <h:outputLabel value="Inward Services"/>
+            </f:facet>
             <p:column headerText="Item Name">
                 #{bi.item.name}
             </p:column>

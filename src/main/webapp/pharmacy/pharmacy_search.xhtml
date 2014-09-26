@@ -28,7 +28,7 @@
                                 </p:selectOneMenu>
                                 <p:inputText autocomplete="off" value="#{searchController.maxResult}" />
                                 <p:commandButton id="btnSearch" ajax="false" value="Search Current" action="#{searchController.createTableByBillType}"/>
-                                <p:commandButton ajax="false" value="Search in All Department" action="#{searchController.createTableByBillTypeAllDepartment}"/>                                
+                                <p:commandButton ajax="false" value="Search in All Department" action="#{searchController.createTableByBillTypeAllDepartment}" rendered="false"/>                                
                             </h:panelGrid>
                             <p:defaultCommand target="btnSearch"/>
                         </f:facet>

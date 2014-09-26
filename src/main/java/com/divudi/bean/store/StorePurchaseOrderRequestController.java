@@ -127,12 +127,12 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void onEdit(BillItem bi) {
-        if (bi.getItem().getDepartmentType() == DepartmentType.Inventry) {
-            if (bi.getTmpQty() != 1) {
-                bi.setTmpQty(1);
-                UtilityController.addErrorMessage("Asset Item Count Reset to 1");
-            }
-        }
+//        if (bi.getItem().getDepartmentType() == DepartmentType.Inventry) {
+//            if (bi.getTmpQty() != 1) {
+//                bi.setTmpQty(1);
+//                UtilityController.addErrorMessage("Asset Item Count Reset to 1");
+//            }
+//        }
 
         bi.setNetValue(bi.getPharmaceuticalBillItem().getQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
 
