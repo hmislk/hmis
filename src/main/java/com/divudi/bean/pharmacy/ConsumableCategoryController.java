@@ -1,11 +1,16 @@
 package com.divudi.bean.pharmacy;
 
+import com.divudi.entity.Category;
 import com.divudi.entity.pharmacy.ConsumableCategory;
+import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.ConsumableCategoryFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.facade.util.JsfUtil.PersistAction;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +22,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.persistence.TemporalType;
 
 @Named("consumableCategoryController")
 @SessionScoped
@@ -45,7 +51,7 @@ public class ConsumableCategoryController implements Serializable {
     protected void initializeEmbeddableKey() {
     }
 
-    private ConsumableCategoryFacade getFacade() {
+    public ConsumableCategoryFacade getFacade() {
         return ejbFacade;
     }
 
@@ -120,6 +126,28 @@ public class ConsumableCategoryController implements Serializable {
     public List<ConsumableCategory> getItemsAvailableSelectOne() {
         return getFacade().findAll();
     }
+    
+    public List<ConsumableCategory> completeConsumableCategory(String qry) {
+        List<ConsumableCategory> cc;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select c from Category c"
+                + "  where c.retired=false"
+                + " and (type(c)= :parm ) "
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+
+        temMap.put("parm", ConsumableCategory.class);
+        temMap.put("q", "%" + qry.toUpperCase() + "%");
+
+        cc = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        if (cc == null) {
+            cc = new ArrayList<>();
+        }
+        return cc;
+    }
 
     @FacesConverter(forClass = ConsumableCategory.class)
     public static class ConsumableCategoryControllerConverter implements Converter {
@@ -161,5 +189,49 @@ public class ConsumableCategoryController implements Serializable {
         }
 
     }
+    
+    /**
+     *
+     */
+    @FacesConverter("consumableCategoryConverter")
+    public static class CategoryConverter implements Converter {
 
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            ConsumableCategoryController controller = (ConsumableCategoryController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "ConsumableCategoryController");
+            return controller.getFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof ConsumableCategory) {
+                ConsumableCategory o = (ConsumableCategory) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + ConsumableCategoryController.class.getName());
+            }
+        }
+    }
 }
+
+

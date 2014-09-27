@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:st="http://java.sun.com/jsf/composite/store">
 
     <body>
 
@@ -24,7 +24,7 @@
                                 <h:outputLabel value="Item" ></h:outputLabel>
                                 <p:autoComplete   forceSelection="true"  id="acStock" value="#{storeAdjustmentController.stock}" 
                                                   converter="stockCon" 
-                                                  completeMethod="#{storeStoreController.completeAllStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
+                                                  completeMethod="#{storeController.completeAllStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
                                     <p:column headerText="Item">
                                         <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                     </p:column>
@@ -92,7 +92,7 @@
 
                     <p:panel rendered="#{storeAdjustmentController.printPreview}">
                         <p:commandButton ajax="false" action="#{storeAdjustmentController.makeNull()}" value="New Adjustment"/>
-                        <ph:adjustmentBill bill="#{storeAdjustmentController.bill}" />
+                        <st:adjustmentBill bill="#{storeAdjustmentController.bill}" />
                     </p:panel>
 
                 </h:form>

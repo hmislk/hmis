@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -590,14 +591,9 @@ public class BillController implements Serializable {
     }
 
     private Bill saveBill(Department bt, BilledBill temp) {
-
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), bt, BillType.OpdBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), bt, new BilledBill(), BillType.OpdBill, BillNumberSuffix.NONE));
         temp.setBillType(BillType.OpdBill);
-
-        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
+        temp.setDepartment(getSessionController().getDepartment());
+        temp.setInstitution(getSessionController().getInstitution());
         temp.setToDepartment(bt);
         temp.setToInstitution(bt.getInstitution());
 
@@ -619,7 +615,15 @@ public class BillController implements Serializable {
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(temp);
+
+        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
+        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE));
+
+        if (temp.getId() == null) {
+            getFacade().create(temp);
+        } else {
+            billFacade.edit(temp);
+        }
         return temp;
 
     }

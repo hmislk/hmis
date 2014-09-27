@@ -81,6 +81,7 @@
                                         <p:outputLabel value="Count" />
                                     </f:facet>
                                     <h:commandLink value="#{rec.count}" action="#{inwardReportController1.processCategoryBillItems}" >
+                                        <f:setPropertyActionListener value="#{rec.category}" target="#{inwardReportController1.category}" />
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Gross"  style="text-align: right; padding: 5px;" >   
@@ -262,8 +263,12 @@
                                 <p:column headerText="Speciality">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Speciality" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{pro.string}"/>
+                                    </f:facet>                                
+                                    <h:commandLink value="#{pro.speciality.name}"
+                                                   action="#{inwardReportController1.processProfessionalFees}" >
+                                        <f:setPropertyActionListener value="#{pro.speciality}" 
+                                                                     target="#{inwardReportController1.speciality}" />
+                                    </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Gross" style="text-align: right; padding: 5px;">
                                     <f:facet name="header" >

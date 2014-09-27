@@ -11,12 +11,13 @@
         <p:dialog id="AssetCategoryCreateDlg" widgetVar="AssetCategoryCreateDialog" modal="true" resizable="false" appendTo="@(body)" header="Create Asset Category">
             <h:form id="AssetCategoryCreateForm">
                 <h:panelGroup id="display">
-                    <h1>#{assetCategoryController.selected != null}</h1>
+                    
                     <p:panelGrid columns="2" rendered="#{assetCategoryController.selected != null}">
                         <p:outputLabel value="Name" for="name" />
                         <p:inputText id="name" value="#{assetCategoryController.selected.name}" title="Name" />
                         <p:outputLabel value="Parent Category" for="parentCategory" />
                         <p:selectOneMenu id="parentCategory" value="#{assetCategoryController.selected.parentCategory}" >
+                            <f:selectItem itemLabel="Select Parent Category"/>
                             <f:selectItems value="#{assetCategoryController.itemsAvailableSelectOne}"
                                            var="parentCategoryItem"
                                            itemValue="#{parentCategoryItem}"/>

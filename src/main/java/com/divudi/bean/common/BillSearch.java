@@ -549,7 +549,7 @@ public class BillSearch implements Serializable {
         rb.setPaymentMethod(paymentMethod);
 
         rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), new RefundBill(), BillType.OpdBill, BillNumberSuffix.RF));
-        rb.setDeptId(getBillNumberBean().departmentRefundBill(getSessionController().getLoggedUser().getDepartment(), getBill().getToDepartment(), BillNumberSuffix.RF));
+        rb.setDeptId(getBillNumberBean().departmentRefundBill(getSessionController().getDepartment(), getBill().getToDepartment(), BillNumberSuffix.RF));
 
         rb.setTotal(0 - refundTotal);
         rb.setDiscount(0 - refundDiscount);

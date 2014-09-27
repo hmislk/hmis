@@ -105,6 +105,50 @@
                             </p:column> 
                         </p:dataTable>
                     </p:panel>
+                    <p:panel header="Store Issue">         
+                        <p:commandButton ajax="false" value="Print Store Issue" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();">
+                            <p:printer target="pharmacyIssue" />
+                        </p:commandButton>  
+                        <p:commandButton value="Export Excel" ajax="false" 
+                                         styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="storeIssue" 
+                                         fileName="store_Issue"/>
+                        </p:commandButton>
+                        <p:dataTable id="storeIssue" value="#{bhtSummeryFinalizedController.storeItems}" 
+                                     var="iss" 
+                                     sortBy="#{iss.bill.billClass}"
+                                     rowStyleClass="#{(iss.grossValue+iss.marginValue ne 0 )? '':'noDisplayRow'}">
+                            <p:column headerText="Bill No">
+                                <h:outputLabel value="#{iss.bill.deptId}"/>                                
+                            </p:column>   
+                            <p:column headerText="Item Name">
+                                <h:outputLabel value="#{iss.item.name}"/>                                
+                            </p:column>   
+                            <p:column headerText="Qty" style="text-align: right;">
+                                <h:outputLabel value="#{iss.qty}"/>                                
+                            </p:column> 
+                            <p:column headerText="Total Value" style="text-align: right;">
+                                <h:outputLabel value="#{iss.grossValue+iss.marginValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="Discount Value" style="text-align: right;">
+                                <h:outputLabel value="#{iss.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column> 
+                            <p:column headerText="Net Value" style="text-align: right;">
+                                <h:outputLabel value="#{iss.netValue}">
+                                      <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column> 
+                              <p:column headerText="Adjusted Value" style="text-align: right;">
+                                  <h:outputLabel value="#{iss.adjustedValue}">
+                                      <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column> 
+                        </p:dataTable>
+                    </p:panel>
                     <p:spacer height="30"/>
                     <breakDown:professionalFee/>
                 </p:panel>

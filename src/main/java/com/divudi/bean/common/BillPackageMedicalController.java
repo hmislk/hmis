@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -66,7 +67,7 @@ import org.primefaces.event.TabChangeEvent;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -341,8 +342,6 @@ public class BillPackageMedicalController implements Serializable {
 
     private Bill saveBill(Department bt, BilledBill temp) {
 
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), bt, BillType.OpdBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), bt, new BilledBill(), BillType.OpdBill, BillNumberSuffix.PACK));
         //getCurrent().setCashBalance(cashBalance); 
         //getCurrent().setCashPaid(cashPaid);
         //  temp.setBillType(bt);
@@ -374,7 +373,12 @@ public class BillPackageMedicalController implements Serializable {
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(temp);
+        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
+        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.PACK));
+
+        if (temp.getId() == null) {
+            getFacade().create(temp);
+        }
         return temp;
 
     }
@@ -414,7 +418,7 @@ public class BillPackageMedicalController implements Serializable {
             return true;
         }
 
-        if (getPaymentMethod()== null) {
+        if (getPaymentMethod() == null) {
             return true;
         }
 
