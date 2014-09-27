@@ -358,6 +358,10 @@ public class StoreReportsTransfer implements Serializable {
                     + " between :fd and :td and bi.bill.billType=:bt ";
         }
         sql += " order by bi.bill.toDepartment.name, bi.item.category.name, bi.item.name, bi.id";
+        
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        
         transferItems = getBillItemFacade().findBySQL(sql, m);
         purchaseValue = 0.0;
         saleValue = 0.0;
@@ -369,14 +373,25 @@ public class StoreReportsTransfer implements Serializable {
         DepartmentBillRow dbr = null;
         CategoryBillRow cbr = null;
         ItemBillRow ibr = null;
+        
+        System.out.println("transferItems = " + transferItems);
+        
         for (BillItem ts : transferItems) {
+            System.out.println("ts = " + ts);
+            
             if (dept != null && dept.equals(ts.getBill().getToDepartment())) {
-
+                System.out.println("old dept");
+                
+                
                 if (cat != null && cat.equals(ts.getItem().getCategory())) {
-
+                    System.out.println("old cat");
+                    
                     if (item != null && item.equals(ts.getItem())) {
+                        System.out.println("old item");
 
                     } else {
+                        System.out.println("new item");
+                        
                         ibr.setItem(ts.getItem());
 
                         item = ts.getItem();
@@ -386,6 +401,8 @@ public class StoreReportsTransfer implements Serializable {
                         cbr.getItemBillRows().add(ibr);
                     }
                 } else {
+                    System.out.println("new cat");
+                    
                     cbr = new CategoryBillRow();
                     ibr = new ItemBillRow();
 
@@ -400,6 +417,9 @@ public class StoreReportsTransfer implements Serializable {
                 }
 
             } else {
+                
+                System.out.println("new dept");
+                
                 dbr = new DepartmentBillRow();
                 cbr = new CategoryBillRow();
                 ibr = new ItemBillRow();
@@ -415,6 +435,7 @@ public class StoreReportsTransfer implements Serializable {
                 dbr.getCategoryBillRows().add(cbr);
                 cbr.getItemBillRows().add(ibr);
                 drows.add(dbr);
+                System.out.println("drows = " + drows);
             }
 
             ibr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());
