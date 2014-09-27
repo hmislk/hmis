@@ -38,7 +38,7 @@ import javax.inject.Inject;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -271,7 +271,7 @@ public class InwardRefundController implements Serializable {
 
         if (getCurrent().getPatientEncounter().getCreditLimit() != 0) {
             paidAmount = (paidByPatient + netCredit) - Math.abs(b.getNetTotal());
-        } 
+        }
     }
 
     public double getPaidAmount() {

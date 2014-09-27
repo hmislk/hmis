@@ -1054,8 +1054,13 @@ public class BookKeepingSummery implements Serializable {
         collections2Hos.add(dd);
         //////////////////
         dd = new String1Value2();
-        dd.setString("Credit Company Collections ");
+        dd.setString("Credit Company Opd Collections ");
         dd.setValue1(creditCompanyTotal);
+        collections2Hos.add(dd);
+        //////////////////
+        dd = new String1Value2();
+        dd.setString("Credit Company Inward Collections ");
+        dd.setValue1(creditCompanyTotalInward);
         collections2Hos.add(dd);
         /////////////////
         dd = new String1Value2();
@@ -1346,7 +1351,8 @@ public class BookKeepingSummery implements Serializable {
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
-        creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, fromDate, toDate, institution);
+        creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
+        creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
         createCollections2HosMonth();
         createDoctorPaymentInward();

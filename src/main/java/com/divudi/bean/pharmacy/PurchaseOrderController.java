@@ -132,9 +132,7 @@ public class PurchaseOrderController implements Serializable {
 
         saveBill();
         saveBillComponent();
-        
-        
-
+    
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         billFacade.edit(getAprovedBill());
