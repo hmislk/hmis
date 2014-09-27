@@ -13,6 +13,7 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
+                
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
@@ -87,7 +88,7 @@
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                               
+                                
                                 <p:column headerText="Worked Time Logged">
                                     <h:outputLabel value="#{(ss.workedWithinTimeFrameLogged+ss.workedOutSideTimeFrameLogged)/60}">
                                         <f:convertNumber pattern="#0.00"/>

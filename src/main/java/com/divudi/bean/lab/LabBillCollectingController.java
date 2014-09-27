@@ -17,6 +17,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.facade.BillFacade;
@@ -62,7 +63,7 @@ import org.primefaces.event.TabChangeEvent;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -406,8 +407,7 @@ public class LabBillCollectingController implements Serializable {
     }
 
     private Bill saveBill(Department bt, BilledBill temp) {
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), bt, BillType.LabBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), temp, BillType.LabBill, BillNumberSuffix.NONE));
+
         //getCurrent().setCashBalance(cashBalance); 
         //getCurrent().setCashPaid(cashPaid);
         //  temp.setBillType(bt);
@@ -439,7 +439,11 @@ public class LabBillCollectingController implements Serializable {
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(temp);
+        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, bt, BillClassType.BilledBill));
+        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp,bt,BillClassType.BilledBill, BillNumberSuffix.NONE));
+        if (temp.getId() == null) {
+            getFacade().create(temp);
+        }
         return temp;
 
     }
@@ -552,7 +556,7 @@ public class LabBillCollectingController implements Serializable {
                             dis = 0.0;
                             bf.getBillItem().setDiscount(0.0);
                         } else {
-                        //    bf.setFeeValue(bf.getFee().getFee() / 100 * (100 - getPaymentScheme().getDiscountPercent()));
+                            //    bf.setFeeValue(bf.getFee().getFee() / 100 * (100 - getPaymentScheme().getDiscountPercent()));
                             //     dis += (bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
                             //              bf.getBillItem().setDiscount(bf.getBillItem().getDiscount() + bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
                         }
