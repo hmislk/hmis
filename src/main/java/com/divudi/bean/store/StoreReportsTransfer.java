@@ -68,7 +68,6 @@ public class StoreReportsTransfer implements Serializable {
     List<StockReportRecord> movementRecordsQty;
     List<String1Value3> listz;
 
-    
     ArrayList<DepartmentBillRow> drows;
     /**
      * EJBs
@@ -305,9 +304,6 @@ public class StoreReportsTransfer implements Serializable {
         this.drows = drows;
     }
 
-    
-    
-    
     public void createDepartmentIssueStore() {
         listz = new ArrayList<>();
 
@@ -338,30 +334,23 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt", BillType.StoreTransferIssue);
-        if (fromDepartment != null && toDepartment != null) {
+        m.put("bt1", BillType.StoreTransferIssue);
+        m.put("bt2", BillType.StoreIssue);
+
+        if (fromDepartment != null) {
             m.put("fdept", fromDepartment);
-            m.put("tdept", toDepartment);
-            sql = "select bi from BillItem bi where bi.bill.department=:fdept"
-                    + " and bi.bill.toDepartment=:tdept and bi.bill.createdAt between :fd "
-                    + "and :td and bi.bill.billType=:bt ";
-        } else if (fromDepartment == null && toDepartment != null) {
-            m.put("tdept", toDepartment);
-            sql = "select bi from BillItem bi where bi.bill.toDepartment=:tdept and bi.bill.createdAt "
-                    + " between :fd and :td and bi.bill.billType=:bt ";
-        } else if (fromDepartment != null && toDepartment == null) {
-            m.put("fdept", fromDepartment);
-            sql = "select bi from BillItem bi where bi.bill.department=:fdept and bi.bill.createdAt "
-                    + " between :fd and :td and bi.bill.billType=:bt ";
+            sql = "select bi from BillItem bi where bi.bill.department=:fdept "
+                    + " and  bi.bill.createdAt between :fd "
+                    + " and :td and  (bi.bill.billType=:bt1 or bi.bill.billType=:bt2)  ";
         } else {
             sql = "select bi from BillItem bi where bi.bill.createdAt "
-                    + " between :fd and :td and bi.bill.billType=:bt ";
+                    + " between :fd and :td and (bi.bill.billType=:bt1 or bi.bill.billType=:bt2) ";
         }
         sql += " order by bi.bill.toDepartment.name, bi.item.category.name, bi.item.name, bi.id";
-        
+
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        
+
         transferItems = getBillItemFacade().findBySQL(sql, m);
         purchaseValue = 0.0;
         saleValue = 0.0;
@@ -373,25 +362,26 @@ public class StoreReportsTransfer implements Serializable {
         DepartmentBillRow dbr = null;
         CategoryBillRow cbr = null;
         ItemBillRow ibr = null;
-        
+
         System.out.println("transferItems = " + transferItems);
-        
+
+        System.out.println("transferItems.size() = " + transferItems.size());
+
         for (BillItem ts : transferItems) {
             System.out.println("ts = " + ts);
-            
+
             if (dept != null && dept.equals(ts.getBill().getToDepartment())) {
                 System.out.println("old dept");
-                
-                
+
                 if (cat != null && cat.equals(ts.getItem().getCategory())) {
                     System.out.println("old cat");
-                    
+
                     if (item != null && item.equals(ts.getItem())) {
                         System.out.println("old item");
 
                     } else {
                         System.out.println("new item");
-                        
+
                         ibr.setItem(ts.getItem());
 
                         item = ts.getItem();
@@ -402,7 +392,7 @@ public class StoreReportsTransfer implements Serializable {
                     }
                 } else {
                     System.out.println("new cat");
-                    
+
                     cbr = new CategoryBillRow();
                     ibr = new ItemBillRow();
 
@@ -417,9 +407,9 @@ public class StoreReportsTransfer implements Serializable {
                 }
 
             } else {
-                
+
                 System.out.println("new dept");
-                
+
                 dbr = new DepartmentBillRow();
                 cbr = new CategoryBillRow();
                 ibr = new ItemBillRow();
@@ -427,7 +417,7 @@ public class StoreReportsTransfer implements Serializable {
                 cbr.setCategory(ts.getItem().getCategory());
                 ibr.setItem(ts.getItem());
                 dbr.setDepartment(ts.getBill().getToDepartment());
-                
+
                 cat = ts.getItem().getCategory();
                 item = ts.getItem();
                 dept = ts.getBill().getToDepartment();
@@ -440,17 +430,19 @@ public class StoreReportsTransfer implements Serializable {
 
             ibr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());
             ibr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() + ts.getQty());
-            
+
             cbr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());
             cbr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() + ts.getQty());
-            
+
             dbr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());
             dbr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() + ts.getQty());
-            
 
-            purchaseValue = purchaseValue + (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
-            saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            if (ts.getPharmaceuticalBillItem() != null && ts.getPharmaceuticalBillItem().getItemBatch() != null ) {
+                purchaseValue = purchaseValue + (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+                saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            }
         }
+
     }
 
     public void fillDepartmentTransfersIssueByBill() {
@@ -740,7 +732,7 @@ public class StoreReportsTransfer implements Serializable {
         }
 
         public Bill getBill() {
-            if(bill==null){
+            if (bill == null) {
                 bill = new Bill();
             }
             return bill;
@@ -815,7 +807,7 @@ public class StoreReportsTransfer implements Serializable {
         }
 
         public Bill getBill() {
-            if(bill==null){
+            if (bill == null) {
                 bill = new Bill();
             }
             return bill;
@@ -850,7 +842,7 @@ public class StoreReportsTransfer implements Serializable {
         }
 
         public Bill getBill() {
-            if(bill==null){
+            if (bill == null) {
                 bill = new Bill();
             }
             return bill;
