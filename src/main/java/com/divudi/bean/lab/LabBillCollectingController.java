@@ -18,7 +18,7 @@ import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.data.BillClassType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.facade.BillFacade;
 import com.divudi.entity.Bill;
@@ -112,8 +112,8 @@ public class LabBillCollectingController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     private BillComponentFacade billComponentFacade;
     @EJB
@@ -883,11 +883,11 @@ public class LabBillCollectingController implements Serializable {
         this.patientFacade = patientFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
 
     }

@@ -70,8 +70,8 @@ public class StoreCalculation {
     private CategoryFacade categoryFacade;
     @EJB
     private BillFacade billFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @Inject
     ApplicationController applicationController;
 
@@ -786,11 +786,11 @@ public class StoreCalculation {
         this.billFacade = billFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

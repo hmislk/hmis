@@ -19,11 +19,9 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.ejb.BillNumberController;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -95,7 +93,7 @@ public class BillController implements Serializable {
     @Inject
     PaymentSchemeController paymentSchemeController;
     @EJB
-    BillNumberGenerator BillNumberGenerator;
+    BillNumberGenerator billNumberGenerator;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -144,8 +142,6 @@ public class BillController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
-    @Inject
-    private BillNumberController billNumberBean;
     @EJB
     private BillComponentFacade billComponentFacade;
     @EJB
@@ -163,7 +159,7 @@ public class BillController implements Serializable {
     private CashTransactionBean cashTransactionBean;
 
     public BillNumberGenerator getBillNumberGenerator() {
-        return BillNumberGenerator;
+        return billNumberGenerator;
     }
 
     public StaffBean getStaffBean() {
@@ -464,7 +460,7 @@ public class BillController implements Serializable {
         }
     }
 
-    public void putToBills() {
+    public boolean putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
@@ -472,8 +468,12 @@ public class BillController implements Serializable {
         }
 
         for (Department d : billDepts) {
-            BilledBill myBill = new BilledBill();
-            saveBill(d, myBill);
+            Bill myBill = new BilledBill();
+            myBill = saveBill(d, myBill);
+
+            if (myBill == null) {
+                return false;
+            }
 
             List<BillEntry> tmp = new ArrayList<>();
 
@@ -491,6 +491,8 @@ public class BillController implements Serializable {
             getBillBean().calculateBillItems(myBill, tmp);
             bills.add(myBill);
         }
+
+        return true;
     }
 
     public void settleBill() {
@@ -504,6 +506,10 @@ public class BillController implements Serializable {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
 
+            if (b == null) {
+                return;
+            }
+
             List<BillItem> list = new ArrayList<>();
             for (BillEntry billEntry : getLstBillEntries()) {
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
@@ -516,7 +522,10 @@ public class BillController implements Serializable {
             getBills().add(b);
 
         } else {
-            putToBills();
+            boolean result = putToBills();
+            if (result == false) {
+                return;
+            }
         }
 
         saveBatchBill();
@@ -601,7 +610,7 @@ public class BillController implements Serializable {
 
     }
 
-    private Bill saveBill(Department bt, BilledBill temp) {
+    private Bill saveBill(Department bt, Bill temp) {
         temp.setBillType(BillType.OpdBill);
         temp.setDepartment(getSessionController().getDepartment());
         temp.setInstitution(getSessionController().getInstitution());
@@ -627,19 +636,23 @@ public class BillController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
 
-        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
+        //SETTING INS ID
+        recurseCount = 0;
+        String insId = generateBillNumberInsId(temp);
 
-//        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
-
-        if (temp.getId() == null) {
-            getFacade().create(temp);
-        } else {
-            getFacade().edit(temp);
+        if (insId.equals("")) {
+            return null;
         }
+        temp.setInsId(insId);
 
-        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE));
+        //SETTING DEPT ID
+        recurseCount = 0;
+        String deptId = generateBillNumberDeptId(temp);
 
-//        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE));
+        if (deptId.equals("")) {
+            return null;
+        }
+        temp.setDeptId(deptId);
 
         if (temp.getId() == null) {
             getFacade().create(temp);
@@ -648,6 +661,36 @@ public class BillController implements Serializable {
         }
         return temp;
 
+    }
+
+    int recurseCount = 0;
+
+    private String generateBillNumberInsId(Bill bill) {
+        String insId = "";
+        try {
+            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
+        } catch (Exception e) {
+            if (recurseCount < 50) {
+                insId = generateBillNumberInsId(bill);
+                recurseCount++;
+            }
+        }
+
+        return insId;
+    }
+
+    private String generateBillNumberDeptId(Bill bill) {
+        String deptId = "";
+        try {
+            deptId = getBillNumberGenerator().departmentBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill);
+        } catch (Exception e) {
+            if (recurseCount < 50) {
+                deptId = generateBillNumberDeptId(bill);
+                recurseCount++;
+            }
+        }
+
+        return deptId;
     }
 
     private boolean checkPatientAgeSex() {
@@ -1327,15 +1370,6 @@ public class BillController implements Serializable {
 
     public void setPatientFacade(PatientFacade patientFacade) {
         this.patientFacade = patientFacade;
-    }
-
-    public BillNumberController getBillNumberBean() {
-        return billNumberBean;
-    }
-
-    public void setBillNumberBean(BillNumberController billNumberBean) {
-        this.billNumberBean = billNumberBean;
-
     }
 
     public BillComponentFacade getBillComponentFacade() {

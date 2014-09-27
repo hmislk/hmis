@@ -9,7 +9,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
@@ -38,8 +38,8 @@ public class DrawerAdjustmentController implements Serializable {
 ////////////////////////
     @EJB
     private BillFacade billFacade;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
     @EJB
     CashTransactionBean cashTransactionBean;
     /////////////////////////
@@ -250,11 +250,11 @@ public class DrawerAdjustmentController implements Serializable {
         this.comment = comment;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

@@ -14,7 +14,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -41,8 +41,8 @@ import javax.inject.Inject;
 public class InwardAdditionalChargeController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     private InwardChargeType inwardChargeType;
     //////////////
     @EJB
@@ -218,11 +218,11 @@ public class InwardAdditionalChargeController implements Serializable {
         this.current = current;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

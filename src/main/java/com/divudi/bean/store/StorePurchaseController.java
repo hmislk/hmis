@@ -12,7 +12,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
@@ -56,9 +56,7 @@ public class StorePurchaseController implements Serializable {
     private SessionController sessionController;
     private BilledBill bill;
     @EJB
-    private BillFacade billFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    private BillFacade billFacade;   
     @Inject
     private PharmacyBean pharmacyBean;
     @EJB
@@ -99,8 +97,8 @@ public class StorePurchaseController implements Serializable {
 
     @EJB
     private CommonFunctions commonFunctions;
-    @Inject
-    private BillNumberController billNumberController;
+    @EJB
+    private BillNumberGenerator billNumberGenerator;
 
     Date frmDate;
     Date toDate;
@@ -364,7 +362,7 @@ public class StorePurchaseController implements Serializable {
 
     public void createSerialNumber(BillItem billItem) {
         System.out.println("In");
-        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
+        long b = billNumberGenerator.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
         b = b + 1;
         for (BillItem bi : getBillItems()) {
             if (bi.getItem().equals(billItem.getItem())) {
@@ -494,8 +492,8 @@ public class StorePurchaseController implements Serializable {
 
     public void saveBill() {
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
+        getBill().setDeptId(billNumberGenerator.institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
+        getBill().setInsId(billNumberGenerator.institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
 
         getBill().setInstitution(getSessionController().getInstitution());
         getBill().setDepartment(getSessionController().getDepartment());
@@ -586,13 +584,7 @@ public class StorePurchaseController implements Serializable {
         this.billFacade = billFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
-        return billNumberBean;
-    }
-
-    public void setBillNumberBean(BillNumberController billNumberBean) {
-        this.billNumberBean = billNumberBean;
-    }
+   
 
     public SessionController getSessionController() {
         return sessionController;
@@ -728,13 +720,15 @@ public class StorePurchaseController implements Serializable {
         this.total = total;
     }
 
-    public BillNumberController getBillNumberController() {
-        return billNumberController;
+    public BillNumberGenerator getBillNumberGenerator() {
+        return billNumberGenerator;
     }
 
-    public void setBillNumberController(BillNumberController billNumberController) {
-        this.billNumberController = billNumberController;
+    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
+        this.billNumberGenerator = billNumberGenerator;
     }
+
+  
 
     public StockFacade getStockFacade() {
         return stockFacade;
