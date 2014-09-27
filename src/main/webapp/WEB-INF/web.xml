@@ -42,7 +42,7 @@
         </filter-class>
         <init-param>
             <param-name>uploadDirectory</param-name>
-            <param-value>/tmp/</param-value>
+            <param-value>/</param-value>
         </init-param>
     </filter>
 
