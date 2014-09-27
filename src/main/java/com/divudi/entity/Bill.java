@@ -265,6 +265,8 @@ public class Bill implements Serializable {
     Date paidAt;
     @ManyToOne
     Bill paidBill;
+    
+    private boolean paid;
 
     public Bill getPaidBill() {
         return paidBill;
@@ -1472,4 +1474,12 @@ public class Bill implements Serializable {
         this.qutationNumber = qutationNumber;
     }
 
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+    }
+    
 }

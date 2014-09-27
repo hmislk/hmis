@@ -436,14 +436,14 @@
                                     </h:outputLabel>      
                                 </p:column>  
                                 <p:column>
-                                    <p:commandButton ajax="false" action="pharmacy_reprint_bill_sale_bht" 
+                                    <p:commandButton ajax="false" action="store_reprint_bill_sale_bht" 
                                                      rendered="#{iss.billClass eq 'class com.divudi.entity.PreBill'}" value="View Issue" onclick="onSubmitButton();" >                                              
-                                        <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
+                                        <f:setPropertyActionListener value="#{iss}" target="#{storeBillSearch.bill}"/>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" action="pharmacy_reprint_bill_return_bht" 
+                                    <p:commandButton ajax="false" action="store_reprint_bill_return_bht" 
                                                      rendered="#{iss.billClass eq 'class com.divudi.entity.RefundBill'}"
                                                      value="View Return" onclick="onSubmitButton();" >                                              
-                                        <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
+                                        <f:setPropertyActionListener value="#{iss}" target="#{storeBillSearch.bill}"/>
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>

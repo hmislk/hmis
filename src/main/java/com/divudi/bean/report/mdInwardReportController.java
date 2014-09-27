@@ -5,6 +5,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -21,7 +22,6 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -79,6 +78,7 @@ public class mdInwardReportController implements Serializable {
     Institution institution;
     double total = 0.0;
     List<BillFee> billfees;
+    Bill bill;
     ////////////////////////////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -267,72 +267,7 @@ public class mdInwardReportController implements Serializable {
 
     }
 
-    public void createOutSideBillsByAddedDate() {
-        makeListNull();
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from BillItem b"
-                + " where b.bill.billType = :billType "
-                + " and b.bill.createdAt between :fromDate and :toDate "
-                + " and b.retired=false "
-                + " and b.bill.retired=false ";
-
-        if (institution != null) {
-            sql += " and b.bill.fromInstitution=:ins ";
-            temMap.put("ins", institution);
-        }
-
-        temMap.put("billType", BillType.InwardOutSideBill);
-        temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
-
-        billItem = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
-        if (billItem == null) {
-            billItem = new ArrayList<>();
-
-        }
-
-        total = 0.0;
-        for (BillItem b : billItem) {
-            total += b.getBill().getNetTotal();
-        }
-
-    }
-
-    public void createOutSideBillsByDischargeDate() {
-        makeListNull();
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from BillItem b"
-                + " where b.bill.billType = :billType "
-                + " and b.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-                + " and b.retired=false "
-                + " and b.bill.retired=false ";
-
-        if (institution != null) {
-            sql += " and b.bill.fromInstitution=:ins ";
-            temMap.put("ins", institution);
-        }
-
-        temMap.put("billType", BillType.InwardOutSideBill);
-        temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
-
-        billItem = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
-        if (billItem == null) {
-            billItem = new ArrayList<>();
-
-        }
-
-        total = 0.0;
-        for (BillItem b : billItem) {
-            total += b.getBill().getNetTotal();
-        }
-
-    }
-
+    
     public List<Bill> getBills() {
         return bills;
     }
@@ -2026,6 +1961,14 @@ public class mdInwardReportController implements Serializable {
 
     public void setBillfees(List<BillFee> billfees) {
         this.billfees = billfees;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
     }
 
 }

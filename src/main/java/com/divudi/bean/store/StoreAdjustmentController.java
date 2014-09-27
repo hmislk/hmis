@@ -7,6 +7,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -18,6 +19,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
@@ -271,11 +273,16 @@ public class StoreAdjustmentController implements Serializable {
         tbi.setCreater(getSessionController().getLoggedUser());
 
         ph.setBillItem(null);
-        getPharmaceuticalBillItemFacade().create(ph);
+
+        if (ph.getId() == null) {
+            getPharmaceuticalBillItemFacade().create(ph);
+        }
 
         tbi.setPharmaceuticalBillItem(ph);
 
-        getBillItemFacade().create(tbi);
+        if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        }
 
         ph.setBillItem(tbi);
         getPharmaceuticalBillItemFacade().edit(ph);
@@ -294,7 +301,9 @@ public class StoreAdjustmentController implements Serializable {
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
 
         ph.setBillItem(null);
-        ph.setPurchaseRate(pr);
+        ItemBatch ib = itemBatchFacade.find(getStock().getItemBatch().getId());
+        ph.setPurchaseRate(ib.getPurcahseRate());
+        ph.setRetailRate(ib.getRetailsaleRate());
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setRate(pr);
         //pharmaceutical Bill Item
@@ -310,14 +319,18 @@ public class StoreAdjustmentController implements Serializable {
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
-        getPharmaceuticalBillItemFacade().create(ph);
+        if (ph.getId() == null) {
+            getPharmaceuticalBillItemFacade().create(ph);
+        }
         tbi.setPharmaceuticalBillItem(ph);
 
-        getBillItemFacade().create(tbi);
+        if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        }
 
         ph.setBillItem(tbi);
         getPharmaceuticalBillItemFacade().edit(ph);
-//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
@@ -326,9 +339,10 @@ public class StoreAdjustmentController implements Serializable {
         billItem = null;
         BillItem tbi = getBillItem();
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
-
+        ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
         ph.setBillItem(null);
-        ph.setPurchaseRate(rsr);
+        ph.setPurchaseRate(itemBatch.getPurcahseRate());
+        ph.setRetailRate(itemBatch.getRetailsaleRate());
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setRate(rsr);
         //pharmaceutical Bill Item
@@ -344,10 +358,15 @@ public class StoreAdjustmentController implements Serializable {
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
-        getPharmaceuticalBillItemFacade().create(ph);
+
+        if (ph.getId() == null) {
+            getPharmaceuticalBillItemFacade().create(ph);
+        }
         tbi.setPharmaceuticalBillItem(ph);
 
-        getBillItemFacade().create(tbi);
+        if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        }
 
         ph.setBillItem(tbi);
         getPharmaceuticalBillItemFacade().edit(ph);
@@ -358,10 +377,12 @@ public class StoreAdjustmentController implements Serializable {
 
     private boolean errorCheck() {
         if (getStock() == null) {
+            UtilityController.addErrorMessage("Please Select Stocke");
             return true;
         }
 
         if (getStock().getItemBatch() == null) {
+            UtilityController.addErrorMessage("Select Item Batch");
             return true;
         }
 
@@ -376,9 +397,9 @@ public class StoreAdjustmentController implements Serializable {
 
         saveDeptAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
-        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
-        getBillFacade().edit(getDeptAdjustmentPreBill());
-     //   setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
+//        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
+//        getBillFacade().edit(getDeptAdjustmentPreBill());
+        setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
         getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
         printPreview = true;
@@ -389,8 +410,11 @@ public class StoreAdjustmentController implements Serializable {
         savePrAdjustmentBillItems();
         getStock().getItemBatch().setPurcahseRate(pr);
         getItemBatchFacade().edit(getStock().getItemBatch());
-        clearBill();
-        clearBillItem();
+        deptAdjustmentPreBill = billFacade.find(getDeptAdjustmentPreBill().getId());
+
+//        clearBill();
+//        clearBillItem();
+        printPreview = true;
     }
 
     public void adjustRetailRate() {
@@ -398,8 +422,10 @@ public class StoreAdjustmentController implements Serializable {
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
-        clearBill();
-        clearBillItem();
+        bill = billFacade.find(getDeptAdjustmentPreBill().getId());
+//        clearBill();
+//        clearBillItem();
+        printPreview = true;
     }
 
     private void clearBill() {
@@ -602,6 +628,5 @@ public class StoreAdjustmentController implements Serializable {
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
-    
 
 }

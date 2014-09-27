@@ -66,6 +66,11 @@ public class ReportsStock implements Serializable {
     Date toDate;
     Date fromDateE;
     Date toDateE;
+    double totalQty;
+    double totalPurchaseRate;
+    double totalPurchaseValue;
+    double totalRetailSaleRate;
+    double totalRetailSaleValue;
 
     /**
      * Managed Beans
@@ -453,6 +458,11 @@ public class ReportsStock implements Serializable {
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            totalQty+=ts.getStock();
+            totalPurchaseRate+=ts.getItemBatch().getPurcahseRate();
+            totalRetailSaleRate+=ts.getItemBatch().getRetailsaleRate();
+            totalPurchaseValue+=ts.getItemBatch().getPurcahseRate() * ts.getStock();
+            totalRetailSaleValue+=ts.getItemBatch().getRetailsaleRate() * ts.getStock();
         }
 
     }
@@ -697,6 +707,46 @@ public class ReportsStock implements Serializable {
 
     public void setStockHistoryFacade(StockHistoryFacade stockHistoryFacade) {
         this.stockHistoryFacade = stockHistoryFacade;
+    }
+
+    public double getTotalQty() {
+        return totalQty;
+    }
+
+    public void setTotalQty(double totalQty) {
+        this.totalQty = totalQty;
+    }
+
+    public double getTotalPurchaseRate() {
+        return totalPurchaseRate;
+    }
+
+    public void setTotalPurchaseRate(double totalPurchaseRate) {
+        this.totalPurchaseRate = totalPurchaseRate;
+    }
+
+    public double getTotalPurchaseValue() {
+        return totalPurchaseValue;
+    }
+
+    public void setTotalPurchaseValue(double totalPurchaseValue) {
+        this.totalPurchaseValue = totalPurchaseValue;
+    }
+
+    public double getTotalRetailSaleRate() {
+        return totalRetailSaleRate;
+    }
+
+    public void setTotalRetailSaleRate(double totalRetailSaleRate) {
+        this.totalRetailSaleRate = totalRetailSaleRate;
+    }
+
+    public double getTotalRetailSaleValue() {
+        return totalRetailSaleValue;
+    }
+
+    public void setTotalRetailSaleValue(double totalRetailSaleValue) {
+        this.totalRetailSaleValue = totalRetailSaleValue;
     }
 
 }

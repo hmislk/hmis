@@ -306,6 +306,7 @@ public class StoreSaleBhtController implements Serializable {
         getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
+        patientEncounter=null;
         billPreview = false;
 
     }
