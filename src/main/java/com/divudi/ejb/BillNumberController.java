@@ -468,24 +468,31 @@ public class BillNumberController {
         //System.err.println("fff " + b);
 
         result += bill.getInstitution().getInstitutionCode();
-
+        System.err.println("R1 " + result);
         if (toDepartment != null) {
             result += toDepartment.getDepartmentCode();
+            System.err.println("R1 " + result);
         }
 
         if (BillNumberSuffix.NONE != billNumberSuffix) {
             result += billNumberSuffix;
+            System.err.println("R1 " + result);
         }
 
         result += "/";
 
+        System.err.println("R1 " + result);
         b++;
 
         result += b;
+        System.err.println("R1 " + result);
 
+        System.err.println("3 " + billNumber.getLastBillNumber());
         billNumber.setLastBillNumber(b);
+        System.err.println("4 " + billNumber.getLastBillNumber());
         billNumberFacade.edit(billNumber);
-
+        System.err.println("5 " + billNumber.getLastBillNumber());
+        System.err.println("Bill Num " + result);
         return result;
 
     }
@@ -675,6 +682,7 @@ public class BillNumberController {
         hm.put("tDep", toDepartment);
         BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
 
+        System.err.println("1 " + billNumber);
         if (billNumber == null) {
             billNumber = new BillNumber();
             billNumber.setBillType(billType);
@@ -685,7 +693,6 @@ public class BillNumberController {
             sql = "SELECT count(b) FROM Bill b "
                     + " where b.billType=:bTp "
                     + " and b.retired=false"
-                    + " and b.deptId is not null "
                     + " and type(b)=:class"
                     + " and b.institution=:ins "
                     + " and b.toDepartment=:tDep";
@@ -716,6 +723,7 @@ public class BillNumberController {
             }
 
             billNumber.setLastBillNumber(dd);
+            System.err.println("2 " + billNumber.getLastBillNumber());
 
             billNumberFacade.create(billNumber);
         }
