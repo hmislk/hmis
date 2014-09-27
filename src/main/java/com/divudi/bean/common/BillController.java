@@ -20,6 +20,7 @@ import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.ServiceSessionBean;
@@ -94,6 +95,8 @@ public class BillController implements Serializable {
     @Inject
     PaymentSchemeController paymentSchemeController;
     @EJB
+    BillNumberGenerator BillNumberGenerator;
+    @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
@@ -158,6 +161,14 @@ public class BillController implements Serializable {
     private PaymentMethodData paymentMethodData;
     @EJB
     private CashTransactionBean cashTransactionBean;
+
+    public BillNumberGenerator getBillNumberGenerator() {
+        return BillNumberGenerator;
+    }
+
+    public StaffBean getStaffBean() {
+        return staffBean;
+    }
 
     public void searchPatientListener() {
         System.err.println("1");
@@ -616,13 +627,24 @@ public class BillController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
 
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE));
+        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
+
+//        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
 
         if (temp.getId() == null) {
             getFacade().create(temp);
         } else {
-            billFacade.edit(temp);
+            getFacade().edit(temp);
+        }
+
+        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE));
+
+//        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE));
+
+        if (temp.getId() == null) {
+            getFacade().create(temp);
+        } else {
+            getFacade().edit(temp);
         }
         return temp;
 

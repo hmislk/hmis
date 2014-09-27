@@ -62,6 +62,5 @@ Any value defined here will override the pom.xml file value but is only applicab
         <org-netbeans-spi-editor-hints-projects.text.x-java.Javac_5f_DEPRECATED.enabled>true</org-netbeans-spi-editor-hints-projects.text.x-java.Javac_5f_DEPRECATED.enabled>
         <org-netbeans-spi-editor-hints-projects.text.x-java.org_2e_netbeans_2e_modules_2e_java_2e_hints_2e_encapsulation_2e_ParamEncapsulation_2e_array.enabled>true</org-netbeans-spi-editor-hints-projects.text.x-java.org_2e_netbeans_2e_modules_2e_java_2e_hints_2e_encapsulation_2e_ParamEncapsulation_2e_array.enabled>
         <org-netbeans-spi-editor-hints-projects.text.x-java.Javac_5f_SERIALIZATION.enabled>true</org-netbeans-spi-editor-hints-projects.text.x-java.Javac_5f_SERIALIZATION.enabled>
-        <netbeans.hint.jdkPlatform>JDK_1.7</netbeans.hint.jdkPlatform>
     </properties>
 </project-shared-configuration>
