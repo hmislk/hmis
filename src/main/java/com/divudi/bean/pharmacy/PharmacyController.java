@@ -362,7 +362,7 @@ public class PharmacyController implements Serializable {
                 + " and i.createdAt between :frm and :to"
                 + " group by i.bill.toDepartment";
 
-        return getBillItemFacade().findAggregates(sql, m);
+        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
 
     }
 

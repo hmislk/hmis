@@ -6,6 +6,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.bean.inward.AdmissionController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -91,8 +92,6 @@ public class CashRecieveBillController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
-    
 
     @Inject
     private AdmissionController admissionController;
@@ -415,7 +414,7 @@ public class CashRecieveBillController implements Serializable {
 
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        
+
         getCurrent().setComments(comment);
 
         getCurrent().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -498,7 +497,7 @@ public class CashRecieveBillController implements Serializable {
 
     private Bill saveBhtPaymentBill(BillItem b) {
         Bill tmp = new BilledBill();
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.InwardPaymentBill));
+
         tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), tmp, tmp.getBillType(), BillNumberSuffix.INWPAY));
 
         tmp.setBillType(BillType.InwardPaymentBill);
@@ -506,9 +505,15 @@ public class CashRecieveBillController implements Serializable {
         tmp.setPatient(b.getPatientEncounter().getPatient());
         tmp.setPaymentScheme(getCurrent().getPaymentScheme());
         tmp.setPaymentMethod(getCurrent().getPaymentMethod());
+        tmp.setInstitution(sessionController.getInstitution());
+        tmp.setDepartment(sessionController.getDepartment());
         tmp.setNetTotal(b.getNetValue());
         tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
+
+        getBillNumberBean().departmentBillNumberGenerator(tmp, BillClassType.BilledBill);
+        getBillNumberBean().institutionBillNumberGenerator(tmp,BillClassType.BilledBill, BillNumberSuffix.INWPAY);
+
         getBillFacade().create(tmp);
 
         return tmp;
@@ -612,7 +617,7 @@ public class CashRecieveBillController implements Serializable {
         paymentMethodData = null;
         billItems = null;
         selectedBillItems = null;
-        comment=null;
+        comment = null;
     }
 
     public String prepareNewBill() {
