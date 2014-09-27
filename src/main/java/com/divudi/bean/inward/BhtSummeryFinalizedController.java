@@ -250,6 +250,19 @@ public class BhtSummeryFinalizedController implements Serializable {
 
         }
     }
+    
+    public void calculateStore() {
+        billItemGrossPharmacy = 0;
+        billItemMarginPharmacy = 0;
+        billItemDiscountPharmacy = 0;
+
+        for (BillItem b : storeItems) {
+            billItemGrossPharmacy += b.getGrossValue();
+            billItemMarginPharmacy += b.getMarginValue();
+            billItemDiscountPharmacy += b.getDiscount();
+
+        }
+    }
 
     public void delete(BillFee bf) {
         bf.setRetired(true);

@@ -11,10 +11,14 @@ import java.util.TimeZone;
 import com.divudi.data.DepartmentType;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.entity.Department;
+import com.divudi.entity.pharmacy.Stock;
+import com.divudi.facade.StockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named; import javax.ejb.EJB;
@@ -43,6 +47,8 @@ public  class StoreController implements Serializable {
     private Department current;
     private List<Department> items = null;
     String selectText = "";
+    @EJB
+    StockFacade stockFacade;
 
     public List<Department> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Store and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -83,6 +89,22 @@ public  class StoreController implements Serializable {
         recreateModel();
         getItems();
     }
+    
+    public List<Stock> completeAllStocks(String qry) {
+        List<Stock> items;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        double d = 0.0;
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        sql = "select i from Stock i where i.department=:d and "
+                + " (upper(i.itemBatch.item.name) like :n  or "
+                + " upper(i.itemBatch.item.code) like :n  or  "
+                + " upper(i.itemBatch.item.barcode) like :n ) ";
+        items = getStockFacade().findBySQL(sql, m, 20);
+
+        return items;
+    }
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;
@@ -103,6 +125,16 @@ public  class StoreController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
+
+    public StockFacade getStockFacade() {
+        return stockFacade;
+    }
+
+    public void setStockFacade(StockFacade stockFacade) {
+        this.stockFacade = stockFacade;
+    }
+    
+    
 
     public StoreController() {
     }

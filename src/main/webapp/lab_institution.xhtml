@@ -57,10 +57,15 @@
                                     <h:panelGrid id="gpDetailText" columns="2">
                                         <h:outputText id="lblName" value="Name" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtName" value="#{institutionController.current.name}"  ></h:inputText>
+                                        
+                                        <h:outputText id="lblChqPrnName" value="Cheque Printing Name" ></h:outputText>
+                                        <h:inputText autocomplete="off" id="txtChqPrnName" value="#{institutionController.current.chequePrintingName}"  ></h:inputText>
+                                        
                                         <h:outputText value="Code" >                                        
                                         </h:outputText>
                                         <h:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}"  >
                                         </h:inputText> 
+                                        
                                         <h:outputText value="Descreption" >                                        
                                         </h:outputText>
                                         <h:inputTextarea  value="#{institutionController.current.descreption}"  >

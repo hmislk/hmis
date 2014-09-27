@@ -5,17 +5,22 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.AdmissionTypeFacade;
+import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -62,6 +67,15 @@ public class InwardReportController implements Serializable {
     @EJB
     AdmissionTypeFacade admissionTypeFacade;
     List<PatientEncounter> patientEncounters;
+
+    Bill bill;
+    @Inject
+    SessionController sessionController;
+    List<BillItem> billItems;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillItemFacade billItemFacade;
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -333,6 +347,87 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         calTotalDischarged();
+    }
+    
+    public  void makeListNull(){
+        billItems=null;
+    }
+
+    public void updateOutSideBill() {
+        System.out.println("In");
+        System.out.println("Bill ID -" + getBill().getId());
+        System.out.println("Bill Creater -" + getSessionController().getLoggedUser());
+        getBill().setEditor(getSessionController().getLoggedUser());
+        getBill().setEditedAt(new Date());
+        getBillFacade().edit(getBill());
+        UtilityController.addSuccessMessage("Updated");
+        System.out.println("Out");
+    }
+
+    public void createOutSideBillsByAddedDate() {
+        makeListNull();
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BillItem b"
+                + " where b.bill.billType = :billType "
+                + " and b.bill.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.bill.retired=false ";
+
+        if (institution != null) {
+            sql += " and b.bill.fromInstitution=:ins ";
+            temMap.put("ins", institution);
+        }
+
+        temMap.put("billType", BillType.InwardOutSideBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+
+        }
+
+        total = 0.0;
+        for (BillItem b : billItems) {
+            total += b.getBill().getNetTotal();
+        }
+
+    }
+
+    public void createOutSideBillsByDischargeDate() {
+        makeListNull();
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BillItem b"
+                + " where b.bill.billType = :billType "
+                + " and b.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.bill.retired=false ";
+
+        if (institution != null) {
+            sql += " and b.bill.fromInstitution=:ins ";
+            temMap.put("ins", institution);
+        }
+
+        temMap.put("billType", BillType.InwardOutSideBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+
+        }
+
+        total = 0.0;
+        for (BillItem b : billItems) {
+            total += b.getBill().getNetTotal();
+        }
+
     }
 
     public BhtSummeryController getBhtSummeryController() {
@@ -797,4 +892,44 @@ public class InwardReportController implements Serializable {
         this.commonFunctions = commonFunctions;
     }
 
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public BillFacade getBillFacade() {
+        return billFacade;
+    }
+
+    public void setBillFacade(BillFacade billFacade) {
+        this.billFacade = billFacade;
+    }
+
+    public BillItemFacade getBillItemFacade() {
+        return billItemFacade;
+    }
+
+    public void setBillItemFacade(BillItemFacade billItemFacade) {
+        this.billItemFacade = billItemFacade;
+    }
+    
 }
