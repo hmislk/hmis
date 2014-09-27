@@ -644,14 +644,14 @@ public class BillController implements Serializable {
             return null;
         }
         temp.setInsId(insId);
-
-        //SETTING DEPT ID
-        recurseCount = 0;
-        String deptId = generateBillNumberDeptId(temp);
-
-        if (deptId.equals("")) {
-            return null;
+        if (temp.getId() == null) {
+            getFacade().create(temp);
+        } else {
+            getFacade().edit(temp);
         }
+
+        //Department ID (DEPT ID)
+        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill);
         temp.setDeptId(deptId);
 
         if (temp.getId() == null) {
@@ -677,20 +677,6 @@ public class BillController implements Serializable {
         }
 
         return insId;
-    }
-
-    private String generateBillNumberDeptId(Bill bill) {
-        String deptId = "";
-        try {
-            deptId = getBillNumberGenerator().departmentBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill);
-        } catch (Exception e) {
-            if (recurseCount < 50) {
-                deptId = generateBillNumberDeptId(bill);
-                recurseCount++;
-            }
-        }
-
-        return deptId;
     }
 
     private boolean checkPatientAgeSex() {
