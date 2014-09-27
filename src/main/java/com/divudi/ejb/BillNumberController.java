@@ -10,8 +10,6 @@ import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillNumber;
-import static com.divudi.entity.Bill_.billClassType;
-import static com.divudi.entity.Bill_.billType;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
