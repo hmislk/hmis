@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form>
+
+                    <h:panelGrid columns="3"  >
+                        <h:panelGrid columns="1">
+                            <f:facet name="header">
+                                <p:outputLabel value="Cashier"/>
+                            </f:facet>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Detailed Report" action="report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Summery" action="report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
+                            
+                            <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summery Detail " action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summery " action="report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>                            
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Bills by Cashier" action="/opd_search_user_bills.xhtml"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Fee Type" action="/lab/report_investigation_summery_by_feetype"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Regent Fee" action="/lab/report_investigation_summery_by_regent_fee"/>
+                        </h:panelGrid>                     
+
+                      
+
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Lab Hand Over" />
+                            </f:facet>                           
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Handover Report" action="/reportIncome/report_income_without_credit_by_institution"/>                                
+                             <p:commandButton styleClass="linkButton" ajax="false" value="Handover Report By Date" action="/reportLab/report_lab_hand_over_by_date_summery"/>                                
+
+                        </h:panelGrid>
+                        
+                        
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Petty,Agent,OPD" />
+                            </f:facet>                           
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Summery By Bill Type" action="report_cashier_detailed_user_by_billType"/>                                
+
+                        </h:panelGrid>
+                        
+                 
+                    </h:panelGrid>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

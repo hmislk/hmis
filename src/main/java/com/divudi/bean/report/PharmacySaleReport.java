@@ -8,6 +8,7 @@ package com.divudi.bean.report;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.DatedBills;
 import com.divudi.data.dataStructure.PharmacyDetail;
@@ -273,6 +274,45 @@ public class PharmacySaleReport implements Serializable {
         m.put("btp", BillType.PharmacyBhtPre);
         sql = "select sum(i.netTotal) from Bill i where i.referenceBill.department=:d "
                 + " and i.billType=:btp and type(i)=:cl and i.createdAt between :fd and :td order by i.deptId ";
+        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return saleValue;
+
+    }
+    
+    private double calBillFee(Date date, FeeType fTy) {
+
+        String sql;
+       
+        sql = "select sum(f.feeValue) "
+                + " from BillFee f "
+                + " where f.bill.retired=false "
+                + " and f.bill.billType = :billType "
+                + " and (f.bill.paymentMethod = :pm1 "
+                + " or f.bill.paymentMethod = :pm2 "
+                + " or f.bill.paymentMethod = :pm3 "
+                + " or f.bill.paymentMethod = :pm4) "
+                + " and f.bill.createdAt between :fd and :td "
+                + " and f.bill.toInstitution=:ins "
+                + " and f.fee.feeType=:ft";
+
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+
+        System.err.println("From " + fd);
+        System.err.println("To " + td);
+
+        Map m = new HashMap();
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("pm1", PaymentMethod.Cash);
+        m.put("pm2", PaymentMethod.Card);
+        m.put("pm3", PaymentMethod.Cheque);
+        m.put("pm4", PaymentMethod.Slip);
+        m.put("billType", BillType.OpdBill);
+        m.put("ins", institution);
+       m.put("ft", fTy);
+        //    m.put("ins", getSessionController().getInstitution());
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return saleValue;
@@ -1194,6 +1234,62 @@ public class PharmacySaleReport implements Serializable {
         hm.put("td", getToDate());
 
         return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+    
+    public void createLabReportByDate() {
+        billedSummery = new PharmacySummery();
+
+        billedSummery.setBills(new ArrayList<String1Value3>());
+
+        Date nowDate = getFromDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowDate);
+        
+        double hospitalFeeTot=0.0;
+            double profeTotal=0.0;
+            double regentTot=0.0;
+            
+           
+
+        while (nowDate.before(getToDate())) {
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(nowDate);
+
+            String1Value3 newRow = new String1Value3();
+            newRow.setString(formattedDate);
+
+            double hospitalFee = calBillFee(nowDate,FeeType.OwnInstitution);
+            
+            double proTot = calBillFee(nowDate,FeeType.Staff);
+
+            double regentFee = calBillFee(nowDate,FeeType.Chemical);
+            
+            
+
+            
+
+            newRow.setValue1(hospitalFee);
+            newRow.setValue2(regentFee);
+            newRow.setValue3(proTot);
+            
+            hospitalFeeTot+=hospitalFee;
+            profeTotal+=proTot;
+            regentTot+=regentFee;
+
+            billedSummery.getBills().add(newRow);
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+
+        billedSummery.setBilledTotal(hospitalFeeTot);
+        billedSummery.setCancelledTotal(profeTotal);
+        billedSummery.setRefundedTotal(regentTot);
+
     }
 
     public double calValue(BillType billType, Department department, Bill bill) {

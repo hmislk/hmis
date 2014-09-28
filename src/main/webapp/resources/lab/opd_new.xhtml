@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="professional"/>
+        <cc:attribute name="reagent"/>
+        <cc:attribute name="hospital"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" >
+            <p:column  headerText="Category">
+                <p:outputLabel value="#{sr.categoryName}" rendered="#{sr.catRow}" ></p:outputLabel>
+            </p:column>
+            <p:column headerText="Item/Service" >
+                #{sr.itemName}
+            </p:column>
+            <p:column headerText="Count" >
+                <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
+                
+
+            </p:column>
+            <p:column headerText="Hospital Fee" styleClass="numberCol" rendered="#{cc.attrs.hospital eq true}">
+                <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                <p:outputLabel value="#{sr.hosFee}" rendered="#{!sr.catRow}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                <f:facet name="footer" rendered="#{cc.attrs.hospital eq true}">
+                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </f:facet>
+            
+            </p:column>
+            <p:column headerText="Professional Fee"  styleClass="numberCol" rendered="#{cc.attrs.professional eq true}">
+                <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                <p:outputLabel value="#{sr.proFee}" rendered="#{!sr.catRow}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+            </p:column>
+            
+            <p:column headerText="Rate"  styleClass="numberCol" rendered="#{cc.attrs.reagent eq true}">
+                <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                <p:outputLabel value="#{sr.reagentFee / sr.catCount}" rendered="#{!sr.catRow}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+            </p:column>
+            
+            <p:column headerText="Reagent Fee"  styleClass="numberCol" rendered="#{cc.attrs.reagent eq true}">
+                <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                <p:outputLabel value="#{sr.reagentFee}" rendered="#{!sr.catRow}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+            </p:column>
+            
+            <p:column  headerText="Total Fee"  styleClass="numberCol" rendered="#{cc.attrs.professional eq true}">
+                <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" />
+                <p:outputLabel value="#{sr.hosFee+sr.proFee+sr.reagentFee}" rendered="#{!sr.catRow}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                <f:facet name="footer">
+                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
+                        <f:convertNumber pattern="#,000.00"/>
+                    </h:outputLabel>
+                </f:facet>
+            </p:column>
+        </p:dataTable>
+    </cc:implementation>
+</html>
