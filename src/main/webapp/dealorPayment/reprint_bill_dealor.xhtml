@@ -46,8 +46,7 @@
                     </p:commandButton>                    
                     <p:panel   id="gpBillPreview"   >
 
-                        <bi:grn_payment bill="#{dealorPaymentBillSearch.bill.billedBill}"/>
-                        
+                        <bi:grn_payment billController="#{dealorPaymentBillSearch}" bill="#{dealorPaymentBillSearch.bill}" />  
                        
 
                     </p:panel>
