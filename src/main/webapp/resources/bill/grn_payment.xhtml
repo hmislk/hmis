@@ -9,7 +9,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
-        <cc:attribute name="billController" />
+        <cc:attribute name="billItems" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -40,19 +40,14 @@
                 
                 <div>
                     
-                    <p:dataTable value="#{cc.attrs.billController.selectedBillItems}" var="bi" sortBy="#{bi.referenceBill.invoiceNumber}">
+                    <p:dataTable value="#{cc.attrs.billItems}" var="bi" sortBy="#{bi.referenceBill.invoiceNumber}">
                         
                         <p:column headerText="Po Approve">
-                            <p:outputLabel value="#{bi.referenceBill.backwardReferenceBill.approveAt}" style="text-align: center;">
+                            <p:outputLabel value="#{bi.referenceBill.referenceBill.createdAt}" style="text-align: center;">
                             <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>                                
                             </p:outputLabel>
-                        </p:column>
-                        
-                        <p:column headerText="Grn Approve">
-                            <p:outputLabel value="#{bi.referenceBill.approveAt}" style="text-align: center;">
-                            <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>                                
-                            </p:outputLabel>
-                        </p:column>
+                        </p:column>                   
+
                         
                         <p:column headerText="Grn Date">
                             <p:outputLabel value="#{bi.referenceBill.createdAt}" style="text-align: center;">
@@ -72,7 +67,9 @@
                         </p:column>
                         
                         <p:column headerText="Amount">
-                            <p:outputLabel value="#{bi.referenceBill.netTotal}" style="text-align: right;"/>
+                            <p:outputLabel value="#{0-bi.referenceBill.netTotal}" style="text-align: right;">
+                            <f:convertNumber pattern="#,000.00" />
+                            </p:outputLabel>
                         </p:column>
                         
                     </p:dataTable>
@@ -82,11 +79,11 @@
                 <div>
                     <br></br>
                     <h:outputLabel value="Prepared By :" /> 
-                    <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" style="text-align: right!important;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" style="text-align: right!important;text-decoration: underline; text-decoration-style: dotted;"/>
                     <br></br>                
                     <br></br>         
                     <h:outputLabel value="Approved By :"/>
-                    <h:outputLabel value="................................................................."/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
                     <br></br>                                      
                     <br></br>
                     <h:outputLabel value="Authorized By :"/>
@@ -96,7 +93,7 @@
 
                     <h:outputLabel value="Cheque No :"/>
                     <h:outputLabel value="...................................................................."/>
-                    <h:outputLabel value="Amount : Rs. #{cc.attrs.bill.netTotal} " style="position: absolute; left: 70%;"/>
+                    <h:outputLabel value="Amount : Rs. #{0-cc.attrs.bill.netTotal} " style="position: absolute; left: 70%;"/>
                     <br></br>
                     <br></br>                    
                     <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. Ruhunu Pharmaceuticals &amp; Services (Pvt) Ltd : "/>

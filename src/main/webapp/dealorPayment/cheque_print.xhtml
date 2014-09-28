@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:outputStylesheet library="css" name="cheque.css" />
+                <h:form>
+                    <p:commandButton value="Print" ajax="false" action="#">
+                        <p:printer target="printCheque"/>
+                    </p:commandButton>
+                    <div class="cheque">
+                        <p:panel id="printCheque">
+                        <div class="amount">
+                            <p:outputLabel value="**#{0-dealorPaymentBillSearch.bill.netTotal}**">
+                                <f:convertNumber pattern="#,000.00" />
+                            </p:outputLabel>
+                        </div>
+                        
+                        <div class="balanceCf">
+                            <p:outputLabel value="**#{0-dealorPaymentBillSearch.bill.netTotal}**">
+                                 <f:convertNumber pattern="#,000.00" />
+                            </p:outputLabel>
+                        </div>
+                        
+                        <div class="pay">
+                            <p:outputLabel value="**#{dealorPaymentBillSearch.bill.toInstitution.name}**"/>
+                        </div>
+                        
+                        <div>
+                            <p:outputLabel value="**#{dealorPaymentBillSearch.bill.toInstitution.name}**"/>
+                        </div>
+                        
+                        <div class="tblGrn">
+                            <h:dataTable value="#{dealorPaymentBillSearch.billItems}" var="bi">
+                                <h:column>
+                                    <h:outputLabel value="#{bi.referenceBill.insId}"/>
+                                </h:column>
+                            </h:dataTable>
+                            
+                        </div>
+                        
+                        <div class="insName">
+                            <p:outputLabel value="#{dealorPaymentBillSearch.bill.institution.name}"/>
+                        </div>
+                        
+                        <div class="insCode">
+                            <p:outputLabel value="#{dealorPaymentBillSearch.bill.institution.institutionCode}"/>
+                        </div>
+                            
+                        </p:panel>
+                        
+                    </div>                    
+                    
+                    <p:panel>                                
+                    <p:commandButton value="Print" ajax="false" action="#" disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPaymentPre'}" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>                    
+                    <p:panel   id="gpBillPreview"   >
+
+                        <bi:grn_payment billItems="#{dealorPaymentBillSearch.billItems}" bill="#{dealorPaymentBillSearch.bill}"/>  
+                       
+
+                    </p:panel>
+                </p:panel>
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>
