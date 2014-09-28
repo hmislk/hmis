@@ -651,7 +651,7 @@ public class BillController implements Serializable {
         }
 
         //Department ID (DEPT ID)
-        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill);
+        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill);
         temp.setDeptId(deptId);
 
         if (temp.getId() == null) {

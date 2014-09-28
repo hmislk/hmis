@@ -34,11 +34,24 @@
 
                     <h:panelGroup >
                         <p:commandButton value="Print" ajax="false" action="#" disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPaymentPre'}" >
-                            <p:printer target="gpBillPreview" ></p:printer>
+                            <p:printer target="gpBillPreview1" ></p:printer>
                         </p:commandButton>
 
-                        <bi:insRecieve id="gpBillPreview" billController ="#{dealorPaymentBillSearch}"  bill="#{dealorPaymentBillSearch.bill}" dup="true"/>                       
+                        <bi:insRecieve id="gpBillPreview1" billController ="#{dealorPaymentBillSearch}"  bill="#{dealorPaymentBillSearch.bill}" dup="true"/>                       
                     </h:panelGroup>
+                    
+                    <p:panel>                                
+                    <p:commandButton value="Print" ajax="false" action="#" disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPaymentPre'}" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>                    
+                    <p:panel   id="gpBillPreview"   >
+
+                        <bi:grn_payment bill="#{dealorPaymentBillSearch.bill.billedBill}"/>
+                        
+                       
+
+                    </p:panel>
+                </p:panel>
 
 
                 </h:form>

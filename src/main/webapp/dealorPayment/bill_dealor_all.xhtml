@@ -146,7 +146,9 @@
                     </p:commandButton>
             <p:panel   id="gpBillPreview"   >
 
-                <bi:grn_payment bill="#{pharmacyDealorBill.current}"/>
+                <bi:grn_payment billController="#{pharmacyDealorBill}" bill="#{pharmacyDealorBill.current}"/>
+                
+               
 
             </p:panel>
         </p:panel>

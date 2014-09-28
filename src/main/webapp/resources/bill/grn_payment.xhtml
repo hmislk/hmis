@@ -9,6 +9,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
+        <cc:attribute name="billController" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -39,8 +40,11 @@
                 
                 <div>
                     
-                    <p:dataTable value="#{cc.attrs.bill.billItem}" var="bi">
-                        <p:column 
+                    <p:dataTable value="#{cc.attrs.billController.current.billItems}" var="bi">
+                        
+                        <p:column headerText="Grn Number">
+                            <p:outputLabel value="#{bi.referenceBill.insId}"/>
+                        </p:column>
                         
                     </p:dataTable>
                     
