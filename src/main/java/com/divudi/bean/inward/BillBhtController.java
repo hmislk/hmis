@@ -19,7 +19,7 @@ import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.FeeType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -106,8 +106,8 @@ public class BillBhtController implements Serializable {
     private BillBeanController billBean;
     @EJB
     CommonFunctions commonFunctions;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     ///////////////////
     private double total;
     private double discount;
@@ -918,11 +918,11 @@ public class BillBhtController implements Serializable {
         this.patientFacade = patientFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
 
     }

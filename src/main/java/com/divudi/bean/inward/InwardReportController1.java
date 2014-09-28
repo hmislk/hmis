@@ -664,7 +664,8 @@ public class InwardReportController1 implements Serializable {
                 + " sum(bf.feeDiscount),"
                 + " sum(bf.feeMargin),"
                 + " sum(bf.feeGrossValue),"
-                + " sum(bf.feeValue)"
+                + " sum(bf.feeValue),"
+                + " sum(bf.billItem.qty)"
                 + " from BillFee bf "
                 + " where bf.retired=false "
                 + " and bf.bill.patientEncounter.discharged=true "
@@ -694,7 +695,9 @@ public class InwardReportController1 implements Serializable {
             m.put("cc", institution);
         }
 
-        sql = sql + " group by bf.billItem.item.category order by bf.billItem.item.category.name";
+        sql = sql + " group by bf.billItem.item.category,"
+                + " bf.billItem.bill.billClassType"
+                + "  order by bf.billItem.item.category.name";
         return billFeeFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
 
@@ -749,7 +752,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         opdServices = new ArrayList<>();
-        System.err.println("Call");
+
         for (Object[] objs : results) {
 
             OpdService row = new OpdService();
@@ -758,17 +761,18 @@ public class InwardReportController1 implements Serializable {
             row.setMargin((double) objs[2]);
             row.setGrossValue((double) objs[3]);
             row.setNetValue((double) objs[4]);
+            row.setCount((Long) objs[5]);
 //            System.err.println("objs 1 = ");
-            try {
-                long billed = calFee(row.getCategory(), new BilledBill());
-//                System.err.println("objs 2 = ");
-                long cancel = calFee(row.getCategory(), new CancelledBill());
-//                System.err.println("objs 3 = ");
-                long ret = calFee(row.getCategory(), new RefundBill());
-                row.setCount(billed - (cancel + ret));
-            } catch (Exception e) {
-                row.setCount(0l);
-            }
+//            try {
+//                long billed = calFee(row.getCategory(), new BilledBill());
+////                System.err.println("objs 2 = ");
+//                long cancel = calFee(row.getCategory(), new CancelledBill());
+////                System.err.println("objs 3 = ");
+//                long ret = calFee(row.getCategory(), new RefundBill());
+//                row.setCount(billed - (cancel + ret));
+//            } catch (Exception e) {
+//                row.setCount(0l);
+//            }
             opdSrviceGross += row.getGrossValue();
             opdServiceMargin += row.getMargin();
             opdServiceDiscount += row.getDiscount();

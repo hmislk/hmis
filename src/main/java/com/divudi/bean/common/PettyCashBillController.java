@@ -10,7 +10,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -42,8 +42,8 @@ public class PettyCashBillController implements Serializable {
 
     private Bill current;
     private boolean printPreview = false;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @Inject
     private SessionController sessionController;
     @EJB
@@ -253,11 +253,11 @@ public class PettyCashBillController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

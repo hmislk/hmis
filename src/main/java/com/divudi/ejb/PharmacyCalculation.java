@@ -68,8 +68,8 @@ public class PharmacyCalculation implements Serializable {
     private CategoryFacade categoryFacade;
     @EJB
     private BillFacade billFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
 
 //    public void editBill(Bill bill, Bill ref, SessionController sc) {
 //
@@ -780,11 +780,11 @@ public class PharmacyCalculation implements Serializable {
         this.billFacade = billFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 }

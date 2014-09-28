@@ -13,7 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.DepartmentBillItems;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -72,8 +72,8 @@ public class SurgeryBillController implements Serializable {
     private EncounterComponentFacade encounterComponentFacade;
     @EJB
     private PatientItemFacade patientItemFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @Inject
@@ -669,11 +669,11 @@ public class SurgeryBillController implements Serializable {
         this.encounterComponentFacade = encounterComponentFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

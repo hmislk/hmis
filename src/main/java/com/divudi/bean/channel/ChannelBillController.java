@@ -11,7 +11,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
@@ -104,8 +104,8 @@ public class ChannelBillController implements Serializable {
     private SessionController sessionController;
     @Inject
     private BookingController bookingController;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     private ChannelBean channelBean;
     List<BillItem> billItems;
@@ -1201,11 +1201,11 @@ public class ChannelBillController implements Serializable {
         this.serviceSessionBean = serviceSessionBean;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

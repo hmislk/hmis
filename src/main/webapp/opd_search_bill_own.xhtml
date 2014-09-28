@@ -62,6 +62,9 @@
                                 <h:outputLabel value="#{bill.createdAt}" >
                                     <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
                                 </h:outputLabel>
+                                <h:outputLabel value="#{bill.createdAt.time}" >
+                                    
+                                </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />

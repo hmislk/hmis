@@ -100,16 +100,16 @@ public class PharmacyBean {
     StockHistoryFacade stockHistoryFacade;
     @EJB
     private UserStockFacade userStockFacade;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

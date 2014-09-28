@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.enterprise.context.ApplicationScoped;
+import javax.ejb.Singleton;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -37,8 +37,8 @@ import javax.persistence.TemporalType;
  * @author Dr. M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Named
-@ApplicationScoped
-public class BillNumberController {
+@Singleton
+public class BillNumberGenerator {
 
     @EJB
     private DepartmentFacade depFacade;

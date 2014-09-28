@@ -10,7 +10,7 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.PaymentMethod;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.EjbApplication;
@@ -71,7 +71,7 @@ public class InwardSearch implements Serializable {
     @Inject
     private BillBeanController billBean;
     @Inject
-    private BillNumberController billNumberBean;
+    private BillNumberGenerator billNumberBean;
     @EJB
     PatientEncounterFacade patientEncounterFacade;
     @EJB
@@ -1167,11 +1167,11 @@ public class InwardSearch implements Serializable {
     public InwardSearch() {
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 
