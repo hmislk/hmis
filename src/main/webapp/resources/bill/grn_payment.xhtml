@@ -9,6 +9,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
+        <cc:attribute name="billController" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -39,8 +40,40 @@
                 
                 <div>
                     
-                    <p:dataTable value="#{cc.attrs.bill.billItem}" var="bi">
-                        <p:column 
+                    <p:dataTable value="#{cc.attrs.billController.selectedBillItems}" var="bi" sortBy="#{bi.referenceBill.invoiceNumber}">
+                        
+                        <p:column headerText="Po Approve">
+                            <p:outputLabel value="#{bi.referenceBill.backwardReferenceBill.approveAt}" style="text-align: center;">
+                            <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>                                
+                            </p:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Grn Approve">
+                            <p:outputLabel value="#{bi.referenceBill.approveAt}" style="text-align: center;">
+                            <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>                                
+                            </p:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Grn Date">
+                            <p:outputLabel value="#{bi.referenceBill.createdAt}" style="text-align: center;">
+                            <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>
+                                
+                            </p:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Grn Number" >
+                            <p:outputLabel value="#{bi.referenceBill.insId}" style="text-align: center;"/>
+                        </p:column>
+                        
+                        
+                        
+                        <p:column headerText="Invoice Number" >
+                            <p:outputLabel value="#{bi.referenceBill.invoiceNumber}" style="text-align: center;"/>
+                        </p:column>
+                        
+                        <p:column headerText="Amount">
+                            <p:outputLabel value="#{bi.referenceBill.netTotal}" style="text-align: right;"/>
+                        </p:column>
                         
                     </p:dataTable>
                     
