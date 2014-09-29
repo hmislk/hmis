@@ -699,7 +699,7 @@ public class StoreItemExcelManager implements Serializable {
                 getStorePurchaseController().addItem();
             }
             UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
-            return "/pharmacy/pharmacy_purchase";
+            return "/store/store_purchase";
         } catch (IOException | BiffException ex) {
             UtilityController.addErrorMessage(ex.getMessage());
             return "";
