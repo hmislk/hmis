@@ -12,9 +12,10 @@
             <p>Please make sure the following order of Columns.</p>
             <p>Leave First Row for Row Headings.</p>
             <p>Leave First Column for a serial number.</p>
+            <p>Red Labeled columns are not needed any data, but leave the column intact.</p>
             <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
             <p:panelGrid columns="13" style="border: 1px solid blue;" >
-                <h:outputLabel value ="0. Serial No" ></h:outputLabel>
+                <h:outputLabel value ="0. Serial No" style="color: red;" ></h:outputLabel>
                 <h:outputLabel value ="1. Category" ></h:outputLabel>
                 <h:outputLabel value ="2. Product" ></h:outputLabel>
                 <h:outputLabel value ="3. Code" ></h:outputLabel>
@@ -35,8 +36,8 @@
                 <h:outputLabel value ="18. Sale Price" ></h:outputLabel>
             </p:panelGrid>
 
-            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
-            <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importToExcelWithStock}"/>
+            <p:fileUpload value="#{storeItemExcelManager.file}" mode="simple"/>
+            <h:commandButton value="Submit" action="#{storeItemExcelManager.importToExcelWithStock}"/>
         </h:form>
 
        
