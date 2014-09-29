@@ -15,6 +15,7 @@ public enum FeeType {
     Outpatient,
     OtherInstitution,
     OwnInstitution,
+    Chemical,
     Department,
     Tax,
     @Deprecated
@@ -30,6 +31,8 @@ public enum FeeType {
                 return "Hospital Fee ";
             case OtherInstitution:
                 return "Out Side Fee ";
+            case Chemical:
+                return "Regent Fee";
             default:
                 return this.toString();
         }

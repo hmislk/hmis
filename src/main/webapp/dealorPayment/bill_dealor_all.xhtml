@@ -146,11 +146,12 @@
                     </p:commandButton>
             <p:panel   id="gpBillPreview"   >
 
-                <bi:grn_payment bill="#{pharmacyDealorBill.current}"/>
+                <bi:grn_payment billItems="#{pharmacyDealorBill.selectedBillItems}" bill="#{pharmacyDealorBill.current}"/>
+                
+               
 
             </p:panel>
         </p:panel>
-
             </h:form>
         </h:panelGroup>
         

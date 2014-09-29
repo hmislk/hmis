@@ -44,70 +44,97 @@
 
                         <h:panelGroup id="gpBillPreview">
 
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{storeReportsTransfer.drows}" var="i"  >
-                                <f:facet name="header">
-                                    <h:outputLabel value="Department Issue Report "/>
-                                    <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
 
-                                    <br/>
+                            <table >
+                                <tr>
+                                    <th colspan="6" >
+                                        <h:outputLabel value="Department Issue Report "/>
+                                        <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
+                                        <br/>
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{storeReportsTransfer.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{storeReportsTransfer.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </th>
+                                </tr>
 
-                                    <h:outputLabel value="From  "/>
-                                    <h:outputLabel value="#{storeReportsTransfer.fromDate}">
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                    <h:outputLabel value="To  "/>
-                                    <h:outputLabel value="#{storeReportsTransfer.toDate}">
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                    </h:outputLabel>
+                                <tr>
+                                    <th>
+                                        Category
+                                    </th>
+                                    <th>
+                                        Item
+                                    </th>
+                                    <th>
+                                        Rate
+                                    </th>
+                                    <th>
+                                        Qty
+                                    </th>
+                                    <th>
+                                        Total
+                                    </th>
+                                </tr>
 
-                                </f:facet>
+                                <ui:repeat value="#{storeReportsTransfer.drows}" var="i"  >
 
-                                <p:columnGroup type="header">
-                                    <p:row>
-                                        <p:column headerText="Department" />
-                                        <p:column headerText="Category" />
-                                        <p:column headerText="Item" />
-                                        <p:column headerText="Rate" />
-                                        <p:column headerText="Total" />
-                                    </p:row>
-                                </p:columnGroup>
-
-                                <p:subTable value="#{i.categoryBillRows}" var="cbr" >
-                                    <f:facet name="header">
-                                        <h:outputText value="#{i.department.name}" />
-                                    </f:facet>
-                                    <p:column >
-
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText value="#{cbr.category.name}" />
-                                    </p:column>
-
-                                    <p:column>
-                                        <p:dataTable value="#{cbr.itemBillRows}" var="ibr" >
-                                            <p:column>
-                                                <h:outputText value="#{ibr.item.name}" />
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputText value="#{ibr.bill.netTotal}" />
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputText value="#{ibr.bill.grantTotal}" />
-                                            </p:column>
-                                        </p:dataTable>
-                                    </p:column>
-
-                                    <p:columnGroup type="footer">
-                                        <p:row>
-                                            <p:column footerText="Totals: " style="text-align:right"/>
-                                            <p:column footerText="#{cbr.bill.netTotal}" />
-                                        </p:row>
-                                    </p:columnGroup>
-
-                                </p:subTable>
+                                    <tr>
+                                        <th colspan="6" >
+                                            #{i.department.name}
+                                        </th>
+                                    </tr>
 
 
-                            </p:dataTable>
+                                    <ui:repeat value="#{i.categoryBillRows}" var="cbr" >
+
+                                        <tr>
+                                            <td >
+                                                #{cbr.category.name}
+                                            </td>
+
+                                        </tr>
+
+                                        <ui:repeat value="#{cbr.itemBillRows}" var="ibr" >
+                                            <tr>
+                                                <td>
+                                                    
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{ibr.item.name}" />
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{ibr.bill.netTotal / ibr.bill.grantTotal}" />
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{ibr.bill.grantTotal}" />
+                                                </td>
+                                                 <td>
+                                                    <h:outputText value="#{ibr.bill.netTotal}" />
+                                                </td>
+                                            </tr>
+
+                                            
+                                        </ui:repeat>
+
+
+                                    </ui:repeat>
+
+
+
+                                    <tr>
+                                        <tf colspan="5" >
+                                            #{i.bill.netTotal}
+                                        </tf>
+                                    </tr>
+
+                                </ui:repeat>
+
+
+                            </table>
 
 
                         </h:panelGroup>
