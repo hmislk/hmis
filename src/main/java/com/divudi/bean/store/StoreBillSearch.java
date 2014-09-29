@@ -64,6 +64,7 @@ public class StoreBillSearch implements Serializable {
     Bill bill;
     PaymentMethod paymentMethod;
     PaymentScheme paymentScheme;
+    BillItem currentBillItem;
     private RefundBill billForRefund;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
@@ -128,6 +129,20 @@ public class StoreBillSearch implements Serializable {
     public void editBill(Bill bill) {
 
         getBillFacade().edit(bill);
+    }
+
+    public BillItem getCurrentBillItem() {
+        if (currentBillItem == null) {
+            currentBillItem = new BillItem();
+            PharmaceuticalBillItem cuPharmaceuticalBillItem = new PharmaceuticalBillItem();
+            currentBillItem.setPharmaceuticalBillItem(cuPharmaceuticalBillItem);
+            cuPharmaceuticalBillItem.setBillItem(currentBillItem);
+        }
+        return currentBillItem;
+    }
+
+    public void setCurrentBillItem(BillItem currentBillItem) {
+        this.currentBillItem = currentBillItem;
     }
 
     private boolean errorCheckForEdit() {
@@ -1795,6 +1810,28 @@ public class StoreBillSearch implements Serializable {
         lazyBills = new LazyBill(lst);
 
     }
+    
+    public void updatePhIem(){
+        if(currentBillItem==null)return;
+        
+        if(currentBillItem.getPharmaceuticalBillItem()==null)return;
+        
+        pharmaceuticalBillItemFacade.edit(currentBillItem.getPharmaceuticalBillItem());
+        //Update Successfull
+        
+        
+    }
+
+    public void addDetailItemListener(BillItem bi) {
+        System.err.println("Add Detasils " + bi.getId());
+        System.err.println("Pharmacy " + bi.getPharmaceuticalBillItem().getCode());
+    
+        
+        currentBillItem = null;
+        currentBillItem = bi;
+        currentBillItem.setPharmaceuticalBillItem(bi.getPharmaceuticalBillItem());
+
+    }
 
     public void makeNull() {
         refundAmount = 0;
@@ -2311,7 +2348,6 @@ public class StoreBillSearch implements Serializable {
     public void setStoreBean(StoreBean StoreBean) {
         this.StoreBean = StoreBean;
     }
-
 
     public ItemBatchFacade getItemBatchFacade() {
         return itemBatchFacade;
