@@ -34,7 +34,7 @@
 
                 <p:dataTable var="bi" styleClass="noBorder" 
                              value="#{storeGrnController.billItems}" 
-                             scrollable="true" scrollHeight="250"
+                             scrollable="true" scrollHeight="250"                             
                              id="itemList" editable="true">  
 
                     <f:facet name="header">  
@@ -49,7 +49,9 @@
                     </p:column>
 
                     <p:column >
-                        <p:commandButton   value="Add Detail" process="@this" 
+                        <p:commandButton   value="Add Detail"
+                                           process="@this" 
+                                           update=":#{p:component('dialogChannelDetail')}"
                                            style="float: right;" 
                                            actionListener="#{storeGrnController.addDetailItemListener(bi)}"
                                            oncomplete="PF('dlgDetail').show();">                        
@@ -58,7 +60,8 @@
 
                     <p:column >
                         <p:commandButton   value="Add Accessories" process="@this" 
-                                           style="float: right;" 
+                                            update=":#{p:component('dialogChannelDetail')}"
+                                           style="float: right;"                                            
                                            actionListener="#{storeGrnController.addChildItemListener(bi)}"
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
@@ -319,7 +322,7 @@
                                              value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.retailRate}"  />  
                                 <h:outputLabel value="DOE(dd mm yy)/Warrenty Date"/>
                                 <p:calendar navigator="true" pattern="dd MM yy" value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.doe}"   >
-                                    <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storeGrnController.setBatch()}"/>
+                                    <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storeGrnController.batchListener()}"/>
                                 </p:calendar> 
                                 <h:outputLabel value="Bathch No"/>
                                 <p:inputText id="tmp" autocomplete="off"  styleClass="numericTxt" 
@@ -376,9 +379,13 @@
 
                     </p:dialog>  
                     
-                    <p:dialog id="dialogChannelDetail" header="Add Detail" widgetVar="dlgDetail" 
+                    <p:dialog id="dialogChannelDetail"  widgetVar="dlgDetail" 
                               modal="true" height="400" width="600">
-
+                        <f:facet name="header">                            
+                            <h:outputLabel value="Add Detail"/>
+                            <p:commandButton  value="Update" process="dialogChannelDetail" update="itemList"/>
+                                             
+                        </f:facet>
                         <h:panelGroup>
 
                             <p:panelGrid styleClass="alignTop"  columns="2" >
@@ -386,7 +393,7 @@
                                 <h:outputLabel value="Make"/>
                                 <p:selectOneMenu value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.make}" >
                                     <f:selectItem itemLabel="Select a Make" ></f:selectItem>
-                                    <f:selectItems value="#{makeController.items}" var="make" itemLabel="#{make.name}" itemValue="#{make}" ></f:selectItems>
+                                    <f:selectItems value="#{makeController.items}" var="make" itemLabel="#{make.name}" itemValue="#{make}" ></f:selectItems>                                    
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Model"/>
                                 <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.model}" />

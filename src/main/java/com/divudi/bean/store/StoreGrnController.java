@@ -12,7 +12,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
@@ -30,6 +30,7 @@ import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -56,8 +57,8 @@ public class StoreGrnController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -137,7 +138,11 @@ public class StoreGrnController implements Serializable {
 
     }
 
-    public void setBatch(BillItem pid) {
+    public void batchListener() {
+        batchListener(getCurrentBillItem());
+    }
+
+    public void batchListener(BillItem pid) {
 
         if (pid.getPharmaceuticalBillItem().getDoe() == null) {
             pid.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
@@ -233,8 +238,7 @@ public class StoreGrnController implements Serializable {
                 continue;
             }
 
-            createSerialNumber(i);
-
+//            createSerialNumber(i);
             PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
             ph.setDoe(applicationController.getStoresExpiery());
             i.setPharmaceuticalBillItem(null);
@@ -276,6 +280,17 @@ public class StoreGrnController implements Serializable {
             getGrnBill().getBillItems().add(i);
         }
 
+        //Save Parent Stock
+        for (BillItem i : getBillItems()) {
+
+            if (i.getParentBillItem() != null) {
+                i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
+                i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                stockFacade.edit(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                stockFacade.edit(i.getPharmaceuticalBillItem().getStock());
+            }
+        }
+
         for (BillItem i : getBillExpenses()) {
             i.setExpenseBill(getGrnBill());
             getBillItemFacade().create(i);
@@ -311,6 +326,9 @@ public class StoreGrnController implements Serializable {
         printPreview = true;
 
     }
+
+    @EJB
+    StockFacade stockFacade;
 
     public String viewPoList() {
         clearList();
@@ -373,6 +391,33 @@ public class StoreGrnController implements Serializable {
         }
     }
 
+    private void createBillItems(PharmaceuticalBillItem i, double qty) {
+        BillItem bi = new BillItem();
+        bi.setSearialNo(getBillItems().size());
+        bi.setItem(i.getBillItem().getItem());
+        bi.setReferanceBillItem(i.getBillItem());
+        bi.setQty(qty);
+        bi.setTmpQty(qty);
+        //Set Suggession
+//                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
+
+        PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+        ph.setBillItem(bi);
+        double tmpQty = bi.getQty();
+        ph.setQtyInUnit((double) tmpQty);
+        ph.setPurchaseRate(i.getPurchaseRate());
+        ph.setRetailRate(i.getRetailRate());
+        ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
+
+        bi.setPharmaceuticalBillItem(ph);
+
+        addBillItem(bi);
+        createSerialNumber(bi);
+        //  getBillItems().r
+        System.out.println("getBillItems() = " + getBillItems());
+
+    }
+
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
@@ -382,29 +427,13 @@ public class StoreGrnController implements Serializable {
             System.err.println("Tot GRN Qty : " + remains);
 //            System.err.println("QTY : " + i.getQtyInUnit());
             if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
-                BillItem bi = new BillItem();
-                bi.setSearialNo(getBillItems().size());
-                bi.setItem(i.getBillItem().getItem());
-                bi.setReferanceBillItem(i.getBillItem());
-                bi.setQty(i.getQtyInUnit() - remains);
-                bi.setTmpQty(i.getQtyInUnit() - remains);
-                //Set Suggession
-//                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
-
-                PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
-                ph.setBillItem(bi);
-                double tmpQty = bi.getQty();
-                ph.setQtyInUnit((double) tmpQty);
-                ph.setPurchaseRate(i.getPurchaseRate());
-                ph.setRetailRate(i.getRetailRate());
-                ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
-
-                bi.setPharmaceuticalBillItem(ph);
-
-                addBillItem(bi);
-                createSerialNumber(bi);
-                //  getBillItems().r
-                System.out.println("getBillItems() = " + getBillItems());
+                if (i.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
+                    for (int index = (int) remains; index > 0; index++) {
+                        createBillItems(i, 1);
+                    }
+                } else {
+                    createBillItems(i, (i.getQtyInUnit() - remains));
+                }
             }
 
         }
@@ -423,7 +452,7 @@ public class StoreGrnController implements Serializable {
             return;
         }
         System.out.println("In");
-        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
+        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
         b = b + 1;
         for (BillItem bi : getBillItems()) {
             if (bi.getItem().equals(billItem.getItem())) {
@@ -466,6 +495,8 @@ public class StoreGrnController implements Serializable {
 
         System.err.println("3");
         billItem.setParentBillItem(getParentBillItem());
+
+        System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
 
         billItem.setSearialNo(getBillItems().size());
         billItem.setId(billItem.getSearialNoInteger().longValue());
@@ -660,11 +691,11 @@ public class StoreGrnController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 
@@ -851,8 +882,14 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addDetailItemListener(BillItem bi) {
+        System.err.println("Add Detasils " + bi.getId());
+        System.err.println("Pharmacy " + bi.getPharmaceuticalBillItem().getCode());
+
         parentBillItem = null;
+        currentBillItem = null;
         currentBillItem = bi;
+        currentBillItem.setPharmaceuticalBillItem(bi.getPharmaceuticalBillItem());
+
     }
 
     public void setBillExpenses(List<BillItem> billExpenses) {
@@ -911,6 +948,9 @@ public class StoreGrnController implements Serializable {
                 return;
             }
         }
+        System.out.println("****Inventory Code 1****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
+        createSerialNumber(getCurrentBillItem());
+        System.out.println("****Inventory Code 2****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
 
         addBillItem(getCurrentBillItem());
         currentBillItem = null;

@@ -17,7 +17,7 @@
                 <p:panel>
 
                     <f:facet name="header" > 
-                        <h:panelGrid columns="6"  >
+                        <h:panelGrid columns="8"  >
                             <h:outputText value="Store Purchase" />                     
                             <p:selectOneMenu   id="cmbPs" value="#{storePurchaseController.bill.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}" />
@@ -265,7 +265,22 @@
                         <p:commandButton ajax="false" value="Remove" action="#{storePurchaseController.remove(ph)}"/>
 
                     </p:column>
-                </p:dataTable>  
+                </p:dataTable> 
+                
+                <p:panelGrid columns="2">
+                
+                <p:panelGrid columns="4">
+                    
+                    <p:panelGrid columns="2">
+                        <p:outputLabel value="Invoice No : "/>
+                        <p:inputText autocomplete="off" value="#{storePurchaseController.bill.invoiceNumber}" />
+                        <p:outputLabel value="Invoice Date"/>
+                        <p:calendar  value="#{storePurchaseController.bill.invoiceDate}"   navigator="true" pattern="dd/MM/yy hh:mm:ss" /> 
+                        <h:outputLabel value="Qutation Number"/>
+                        <p:inputText value="#{storePurchaseController.bill.qutationNumber}"/>                    
+                    </p:panelGrid>
+                    
+                </p:panelGrid>
 
 
                 <p:panel header="Bill Expenses" >
@@ -304,6 +319,7 @@
                         </p:column>
                     </p:dataTable>
                 </p:panel>
+                </p:panelGrid>
 
                 <p:panel>
                     <p:panelGrid columns="2" id="tot" style="min-width: 100%">

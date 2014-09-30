@@ -14,6 +14,7 @@ import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.entity.pharmacy.MeasurementUnit;
+import com.divudi.entity.pharmacy.Vmp;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -139,6 +140,11 @@ public class Item implements Serializable {
     Date effectiveFrom;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date effectiveTo;
+    
+    //Matara Phrmacy Sale Autocomplete
+    
+    @ManyToOne
+    private Vmp vmp;
 
     public Date getEffectiveFrom() {
         return effectiveFrom;
@@ -733,6 +739,14 @@ public class Item implements Serializable {
         this.comments = comments;
     }
 
+    public Vmp getVmp() {
+        return vmp;
+    }
+
+    public void setVmp(Vmp vmp) {
+        this.vmp = vmp;
+    }
+    
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override

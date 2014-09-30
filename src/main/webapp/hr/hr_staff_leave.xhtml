@@ -31,7 +31,8 @@
                                     converter="stfcon"   >   
                         <f:ajax execute="@this frmDate toDate" render="lst" event="itemSelect" listener="#{staffLeaveController.createLeave()}"/>
                     </p:autoComplete>
-                    <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{staffLeaveController.save}"/>
+                    <p:commandButton id="btnAdd" ajax="false" value="Add" 
+                                     action="#{staffLeaveController.save}"/>
                     <p:defaultCommand target="btnAdd"/>
 
                     <p:commandButton ajax="false" value="Clear" action="#{staffLeaveController.clear}"/>

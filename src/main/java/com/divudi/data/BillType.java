@@ -155,6 +155,28 @@ public enum BillType {
                 return "Channel On Call";
             case ChannelStaff:
                 return "Channel Staff";
+           case StoreOrder:
+                return "Store Order Request";
+            case StoreOrderApprove:
+                return "Store Order Aproved";
+            case StoreGrnBill:
+                return "Store Good Receive Note";
+            case StoreGrnReturn:
+                return "Store Good Receive Note Return";
+            case StorePurchase:
+                return "Store Purchase";
+            case StorePurchaseReturn:
+                return "Store Purchase Return";
+            case StoreSale:
+                return "Store Sale Bill";
+            case StorePre:
+                return "Store Pre Bill";
+            case StoreAdjustment:
+                return "Store Adjustment Bill";
+            case StoreTransferRequest:
+                return "Store Transfer Request";
+            case StoreTransferIssue:
+                return "Store Transfer Issue";
 
         }
 

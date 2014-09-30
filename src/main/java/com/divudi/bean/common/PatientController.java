@@ -5,7 +5,7 @@ import com.divudi.bean.clinical.PracticeBookingController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.clinical.ClinicalSearch;
 import com.divudi.entity.Bill;
@@ -67,8 +67,8 @@ public class PatientController implements Serializable {
     @Inject
     PatientEncounterController PatientEncounterController;
 
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
     @EJB
     CommonFunctions commonFunctions;
     
@@ -368,11 +368,11 @@ public class PatientController implements Serializable {
         this.dob = dob;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

@@ -37,7 +37,7 @@
             <div class="headingBill">
                 <h:outputLabel value="Sale Bill"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.billedBill ne null}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
             <div class="billline">
@@ -81,7 +81,9 @@
                         <td>:</td>
                         <td style="width: 30%;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  >
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  rendered="#{cc.attrs.bill.cancelled eq false}">
+                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}"  rendered="#{cc.attrs.bill.cancelled eq true}">
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >

@@ -5,15 +5,15 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
@@ -21,19 +21,22 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
-import java.io.Serializable;
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
-import javax.ejb.EJB;
-import javax.inject.Inject;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -53,8 +56,8 @@ public class PharmacyDealorBill implements Serializable {
     private List<BillItem> billItems;
     private List<BillItem> selectedBillItems;
     //EJB
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -142,6 +145,7 @@ public class PharmacyDealorBill implements Serializable {
             selectListener();
             addToBill();
         }
+        calTotalBySelectedBillTems();
     }
 
     public void addToBill() {
@@ -314,7 +318,7 @@ public class PharmacyDealorBill implements Serializable {
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
-
+    
     public void settleBillAll() {
         if (errorCheck()) {
             return;
@@ -450,11 +454,11 @@ public class PharmacyDealorBill implements Serializable {
         this.billItems = billItems;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

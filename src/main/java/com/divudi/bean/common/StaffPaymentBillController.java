@@ -4,7 +4,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -81,8 +81,8 @@ public class StaffPaymentBillController implements Serializable {
     List<BillFee> payingBillFees;
     double totalDue;
     double totalPaying;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
     private Boolean printPreview = false;
     PaymentMethod paymentMethod;
     Speciality speciality;
@@ -208,11 +208,11 @@ public class StaffPaymentBillController implements Serializable {
         return suggestions;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

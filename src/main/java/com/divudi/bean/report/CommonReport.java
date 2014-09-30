@@ -1366,6 +1366,33 @@ public class CommonReport implements Serializable {
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip, webUser));
 
     }
+    
+    public void createLabCashierSummeryReport(){
+        //Opd Billed Bills
+        getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser()));
+        getBilledBills().setCard(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser()));
+        getBilledBills().setCash(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser()));
+        getBilledBills().setCheque(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser()));
+        getBilledBills().setCredit(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser()));
+        getBilledBills().setSlip(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser()));
+
+        //Opd Cancelled Bill
+        getCancellededBills().setBills(userBillsOwn(new CancelledBill(), BillType.OpdBill, getWebUser()));
+        getCancellededBills().setCard(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser()));
+        getCancellededBills().setCash(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser()));
+        getCancellededBills().setCheque(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser()));
+        getCancellededBills().setCredit(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser()));
+        getCancellededBills().setSlip(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser()));
+
+        //Opd Refunded Bill
+        getRefundedBills().setBills(userBillsOwn(new RefundBill(), BillType.OpdBill, getWebUser()));
+        getRefundedBills().setCard(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser()));
+        getRefundedBills().setCash(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser()));
+        getRefundedBills().setCheque(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser()));
+        getRefundedBills().setCredit(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser()));
+        getRefundedBills().setSlip(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser()));        
+
+    }
 
     public void createCashierTableByUser() {
         recreteModal();
@@ -1588,7 +1615,7 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
 
     }
-
+    
     public void createGrnDetailTableStore() {
         recreteModal();
 
@@ -1622,6 +1649,40 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
 
     }
+
+//    public void createGrnDetailTableStore() {
+//        recreteModal();
+//
+//        grnBilled = new BillsTotals();
+//        grnCancelled = new BillsTotals();
+//        grnReturn = new BillsTotals();
+//        grnReturnCancel = new BillsTotals();
+//
+//        if (getDepartment() == null) {
+//            return;
+//        }
+//
+//        //GRN Billed Bills
+//        getGrnBilled().setBills(getBills(new BilledBill(), BillType.StoreGrnBill, getDepartment()));
+//        getGrnBilled().setCash(calValue(new BilledBill(), BillType.StoreGrnBill, PaymentMethod.Cash, getDepartment()));
+//        getGrnBilled().setCredit(calValue(new BilledBill(), BillType.StoreGrnBill, PaymentMethod.Credit, getDepartment()));
+//
+//        //GRN Cancelled Bill
+//        getGrnCancelled().setBills(getBills(new CancelledBill(), BillType.StoreGrnBill, getDepartment()));
+//        getGrnCancelled().setCash(calValue(new CancelledBill(), BillType.StoreGrnBill, PaymentMethod.Cash, getDepartment()));
+//        getGrnCancelled().setCredit(calValue(new CancelledBill(), BillType.StoreGrnBill, PaymentMethod.Credit, getDepartment()));
+//
+//        //GRN Refunded Bill
+//        getGrnReturn().setBills(getBills(new BilledBill(), BillType.StoreGrnReturn, getDepartment()));
+//        getGrnReturn().setCash(calValue(new BilledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
+//        getGrnReturn().setCredit(calValue(new BilledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
+//
+//        //GRN Refunded Bill Cancel
+//        getGrnReturnCancel().setBills(getBills(new CancelledBill(), BillType.StoreGrnReturn, getDepartment()));
+//        getGrnReturnCancel().setCash(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
+//        getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
+//
+//    }
 
     public void createBhtIssueTable() {
         recreteModal();
@@ -1769,7 +1830,7 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
     }
-
+    
     public void createPurchaseDetailTableStore() {
         recreteModal();
 
@@ -1804,6 +1865,40 @@ public class CommonReport implements Serializable {
 
     }
 
+//    public void createPurchaseDetailTableStore() {
+//        recreteModal();
+//
+//        purchaseBilled = new BillsTotals();
+//        purchaseCancelled = new BillsTotals();
+//        purchaseReturn = new BillsTotals();
+//        purchaseReturnCancel = new BillsTotals();
+//
+//        if (getDepartment() == null) {
+//            return;
+//        }
+//
+//        //Purchase Billed Bills
+//        getPurchaseBilled().setBills(getBills(new BilledBill(), BillType.StorePurchase, getDepartment()));
+//        getPurchaseBilled().setCash(calValue(new BilledBill(), BillType.StorePurchase, PaymentMethod.Cash, getDepartment()));
+//        getPurchaseBilled().setCredit(calValue(new BilledBill(), BillType.StorePurchase, PaymentMethod.Credit, getDepartment()));
+//
+//        //Purchase Cancelled Bill
+//        getPurchaseCancelled().setBills(getBills(new CancelledBill(), BillType.StorePurchase, getDepartment()));
+//        getPurchaseCancelled().setCash(calValue(new CancelledBill(), BillType.StorePurchase, PaymentMethod.Cash, getDepartment()));
+//        getPurchaseCancelled().setCredit(calValue(new CancelledBill(), BillType.StorePurchase, PaymentMethod.Credit, getDepartment()));
+//
+//        //Purchase Refunded Bill
+//        getPurchaseReturn().setBills(getBills(new BilledBill(), BillType.PurchaseReturn, getDepartment()));
+//        getPurchaseReturn().setCash(calValue(new BilledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
+//        getPurchaseReturn().setCredit(calValue(new BilledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
+//
+//        //Purchase Refunded Bill Cancel
+//        getPurchaseReturnCancel().setBills(getBills(new CancelledBill(), BillType.PurchaseReturn, getDepartment()));
+//        getPurchaseReturnCancel().setCash(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
+//        getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
+//
+//    }
+
     public void createGrnDetailTableByDealor() {
         recreateList();
 
@@ -1837,7 +1932,7 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
     }
-
+    
     public void createGrnDetailTableByDealorStore() {
         recreateList();
 
@@ -1871,6 +1966,40 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
     }
+
+//    public void createGrnDetailTableByDealorStore() {
+//        recreateList();
+//
+//        grnBilled = new BillsTotals();
+//        grnCancelled = new BillsTotals();
+//        grnReturn = new BillsTotals();
+//        grnReturnCancel = new BillsTotals();
+//
+//        if (getDepartment() == null || getInstitution() == null) {
+//            return;
+//        }
+//
+//        //GRN Billed Bills
+//        getGrnBilled().setBills(grnBills(new BilledBill(), BillType.StoreGrnBill, getDepartment(), getInstitution()));
+//        getGrnBilled().setCash(calValue(new BilledBill(), BillType.StoreGrnBill, PaymentMethod.Cash, getDepartment(), getInstitution()));
+//        getGrnBilled().setCredit(calValue(new BilledBill(), BillType.StoreGrnBill, PaymentMethod.Credit, getDepartment(), getInstitution()));
+//
+//        //GRN Cancelled Bill
+//        getGrnCancelled().setBills(grnBills(new CancelledBill(), BillType.StoreGrnBill, getDepartment(), getInstitution()));
+//        getGrnCancelled().setCash(calValue(new CancelledBill(), BillType.StoreGrnBill, PaymentMethod.Cash, getDepartment(), getInstitution()));
+//        getGrnCancelled().setCredit(calValue(new CancelledBill(), BillType.StoreGrnBill, PaymentMethod.Credit, getDepartment(), getInstitution()));
+//
+//        //GRN Refunded Bill
+//        getGrnReturn().setBills(grnBills(new BilledBill(), BillType.StoreGrnReturn, getDepartment(), getInstitution()));
+//        getGrnReturn().setCash(calValue(new BilledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment(), getInstitution()));
+//        getGrnReturn().setCredit(calValue(new BilledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
+//
+//        //GRN Refunded Bill Cancel
+//        getGrnReturnCancel().setBills(grnBills(new CancelledBill(), BillType.StoreGrnReturn, getDepartment(), getInstitution()));
+//        getGrnReturnCancel().setCash(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment(), getInstitution()));
+//        getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
+//
+//    }
 
     private void recreateList() {
         billedBills = null;

@@ -11,7 +11,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -83,11 +83,11 @@ public class AmpController implements Serializable {
         this.listToRemove = listToRemove;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 
@@ -257,8 +257,8 @@ public class AmpController implements Serializable {
         }
         return ampList;
     }
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
 
     public void prepareAdd() {
         current = new Amp();

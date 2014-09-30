@@ -15,6 +15,9 @@
 
     <cc:implementation>
         <p:dataTable value="#{bhtSummeryFinalizedController.patientItems}" var="ti">
+            <f:facet name="header">
+                <h:outputLabel value="Timed Services"/>
+            </f:facet>
             <p:column headerText="Service Name">
                 #{ti.item.name}
             </p:column>
