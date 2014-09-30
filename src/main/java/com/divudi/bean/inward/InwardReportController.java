@@ -389,8 +389,8 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         m.put("billType", BillType.InwardBill);
 
-        sql = sql + " group by pe, category, bf.billItem.item.inwardChargeType ";
-        sql = sql + " order by pe, bf.billItem.item.inwardChargeType, category";
+        sql = sql + " group by pe.id, category.name, bf.billItem.item.inwardChargeType ";
+        sql = sql + " order by pe.id, bf.billItem.item.inwardChargeType, category.name";
 
 //        Item item;
 //        item.getInwardChargeType()
