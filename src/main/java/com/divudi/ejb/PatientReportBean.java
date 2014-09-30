@@ -262,6 +262,8 @@ public class PatientReportBean {
                     sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
                             + " and i.investigationItem=:inv ";
                     HashMap hm = new HashMap();
+//                    ReportItem r = new ReportItem();
+//                    r.isRetired()
                     hm.put("ptRp", ptReport);
                     hm.put("inv", ii);
                     val = getPtRivFacade().findFirstBySQL(sql, hm);
@@ -328,9 +330,11 @@ public class PatientReportBean {
     public InvestigationItem investigationItemForAntibiotic(Antibiotic a, Investigation i) {
         Map m = new HashMap();
         String sql;
-        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a ";
+        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a and ii.retired=false and ii.ixItemType=:iit and ii.investigationItemValueType=:iivt";
         m.put("i", i);
         m.put("a", a.getName());
+        m.put("iit", InvestigationItemType.Value);
+        m.put("iivt", InvestigationItemValueType.Varchar);
         InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
         if (ii == null) {
             System.out.println("ii is null");
