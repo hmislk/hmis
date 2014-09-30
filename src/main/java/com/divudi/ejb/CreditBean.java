@@ -194,7 +194,7 @@ public class CreditBean {
         hm.put("rB", b);
         hm.put("btp", billType);
 
-        return getBillItemFacade().findBySQL(sql, hm);
+        return billFacade.findBySQL(sql, hm);
 
     }
 
