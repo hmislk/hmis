@@ -137,8 +137,9 @@ public class BookingController implements Serializable {
 
     public void updatePatient() {
         getBillSessionFacade().edit(getSelectedBillSession());
+        System.out.println(getSelectedBillSession().getBill().getPatient());
 
-        getPatientFacade().edit(getSelectedBillSession().getBill().getPatient());
+        getPersonFacade().edit(getSelectedBillSession().getBill().getPatient().getPerson());
         UtilityController.addSuccessMessage("Patient Updated");
     }
 
