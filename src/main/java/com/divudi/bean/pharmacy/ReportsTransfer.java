@@ -86,7 +86,7 @@ public class ReportsTransfer implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFacade BillFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
 
     /**

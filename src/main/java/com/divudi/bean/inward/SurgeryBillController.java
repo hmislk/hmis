@@ -76,7 +76,7 @@ public class SurgeryBillController implements Serializable {
     private BillNumberGenerator billNumberBean;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     //////
     @Inject

@@ -98,7 +98,7 @@ public class PharmacySaleController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
@@ -915,6 +915,7 @@ public class PharmacySaleController implements Serializable {
     }
 
     private void savePreBillFinally(Patient pt) {
+        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getInstitution(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
 
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -928,6 +929,8 @@ public class PharmacySaleController implements Serializable {
 
         getPreBill().setComments(comment);
 
+        
+
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
         getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -937,7 +940,6 @@ public class PharmacySaleController implements Serializable {
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
-        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getInstitution(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
         getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getDepartment(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
@@ -1431,7 +1433,7 @@ public class PharmacySaleController implements Serializable {
 
 //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
-        //   System.out.println("bill item discount rate");
+     //   System.out.println("bill item discount rate");
         //   System.out.println("getPaymentScheme() = " + getPaymentScheme());
         if (bi == null) {
             //   System.out.println("bi is null");

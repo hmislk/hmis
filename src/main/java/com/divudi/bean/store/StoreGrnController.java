@@ -71,7 +71,7 @@ public class StoreGrnController implements Serializable {
     private CategoryFacade categoryFacade;
     @EJB
     private ItemBatchFacade itemBatchFacade;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private AmpFacade ampFacade;
