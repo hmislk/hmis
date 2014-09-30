@@ -15,7 +15,7 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 public class AdjustmentCategoryFacade extends AbstractFacade<AdjustmentCategory> {
-    @PersistenceContext(unitName = "hmisPU")
+    @PersistenceContext(unitName = "hmisPU")    
     private EntityManager em;
 
     @Override
