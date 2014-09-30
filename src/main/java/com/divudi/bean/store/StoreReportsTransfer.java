@@ -78,7 +78,7 @@ public class StoreReportsTransfer implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFacade BillFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
     @Inject
     BillBeanController billBeanController;

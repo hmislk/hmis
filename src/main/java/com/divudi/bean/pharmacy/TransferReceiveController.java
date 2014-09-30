@@ -62,7 +62,7 @@ public class TransferReceiveController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     ////
-   @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillNumberGenerator billNumberBean;

@@ -308,9 +308,14 @@ public class BillNumberGenerator {
 
     public String institutionBillNumberGeneratorByPayment(Department dep, Bill bill, BillType billType, BillNumberSuffix billNumberSuffix) {
 
-        String sql = "SELECT count(b) FROM Bill b where type(b)=:type and b.retired=false AND "
-                + " b.department=:dep and b.createdAt is not null AND b.billType=:btp "
-                + " and b.billDate is not null and (b.netTotal >0 or b.total >0) ";
+        String sql = "SELECT count(b) FROM Bill b "
+                + " where type(b)=:type"
+                + " and b.retired=false "
+                + " AND b.department=:dep "
+                + " and b.createdAt is not null "
+                + " AND b.billType=:btp "
+                + " and b.billDate is not null";
+//                + " and (b.netTotal >0 or b.total >0) ";
         String result = "";
         HashMap hm = new HashMap();
         hm.put("dep", dep);

@@ -98,7 +98,7 @@ public class PharmacySaleController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
@@ -929,7 +929,7 @@ public class PharmacySaleController implements Serializable {
 
         getPreBill().setComments(comment);
 
-        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getDepartment(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
+        
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
@@ -940,6 +940,7 @@ public class PharmacySaleController implements Serializable {
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
+        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getDepartment(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
         }

@@ -50,7 +50,7 @@ import javax.persistence.TemporalType;
 @ApplicationScoped
 public class PharmacyCalculation implements Serializable {
 
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;

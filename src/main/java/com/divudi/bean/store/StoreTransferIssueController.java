@@ -62,7 +62,7 @@ public class StoreTransferIssueController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     ////
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @Inject
     StoreCalculation storeCalculation;
