@@ -52,6 +52,8 @@
                                                 .ui-autocomplete-input {width:350px!important;display: block;}
                                                 .ui-autocomplete{display: block!important;}
                                             </style>
+                                           
+                                            
                                             <p:autoComplete accesskey="i"    id="acStock" 
                                                             value="#{pharmacySaleController.stock}" 
                                                             converter="stockCon" 
@@ -87,6 +89,8 @@
                                                 <p:ajax event="itemSelect"   listener="#{pharmacySaleController.handleSelect}"  update="txtQty txtRate focusQty :#{p:component('lstReplaceableBatch')}" ></p:ajax>
                                                 <p:ajax event="query" update=":#{p:component('tabI')}" process="acStock"></p:ajax>
                                             </p:autoComplete>
+
+                                            
                                         </h:panelGrid>
 
                                         <h:panelGrid columns="1" >
@@ -163,6 +167,8 @@
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                                 </h:outputLabel>
+                                                
+                                                
 
                                             </p:column>
                                             <p:column headerText="Remove">
