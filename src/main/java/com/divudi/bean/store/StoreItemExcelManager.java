@@ -108,7 +108,7 @@ public class StoreItemExcelManager implements Serializable {
     MeasurementUnitFacade muFacade;
     @EJB
     PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
-    @Inject
+    @EJB
     private StoreBean storeBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;
@@ -500,17 +500,16 @@ public class StoreItemExcelManager implements Serializable {
                     continue;
                 }
                 System.out.println("cat = " + cat.getName());
-                
-                 //Category
+
+                //Sub-Category
                 cell = sheet.getCell(catCol, i);
                 strSubCat = cell.getContents();
                 System.out.println("strSubCat is " + strSubCat);
                 subCat = getStoreBean().getStoreItemCategoryByName(strSubCat);
-                if (subCat == null) {
-                    continue;
+                if (subCat != null) {
+                    subCat.setParentCategory(cat);
+                    System.out.println("sub cat = " + subCat.getName());
                 }
-                subCat.setParentCategory(cat);
-                System.out.println("sub cat = " + subCat.getName());
 
                 //Strength Unit
                 cell = sheet.getCell(strengthUnitCol, i);
@@ -585,7 +584,7 @@ public class StoreItemExcelManager implements Serializable {
 
                 //Vmp
                 vmp = null;
-                
+
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
@@ -600,7 +599,11 @@ public class StoreItemExcelManager implements Serializable {
                         amp.setName(strAmp);
                         amp.setMeasurementUnit(strengthUnit);
                         amp.setDblValue((double) strengthUnitsPerIssueUnit);
-                        amp.setCategory(cat);
+                        if (subCat == null) {
+                            amp.setCategory(subCat);
+                        } else {
+                            amp.setCategory(cat);
+                        }
                         amp.setVmp(vmp);
                         getAmpFacade().create(amp);
                     } else {
@@ -675,8 +678,8 @@ public class StoreItemExcelManager implements Serializable {
                 } catch (Exception e) {
                     pp = 0;
                 }
-                if(pp==0.0){
-                    pp=1.0;
+                if (pp == 0.0) {
+                    pp = 1.0;
                 }
 
                 cell = sheet.getCell(saleRateCol, i);
@@ -687,10 +690,10 @@ public class StoreItemExcelManager implements Serializable {
                     sp = 0;
                 }
 
-                if(sp==0.0){
-                    sp=pp;
+                if (sp == 0.0) {
+                    sp = pp;
                 }
-                
+
                 cell = sheet.getCell(batchCol, i);
                 batch = cell.getContents();
 

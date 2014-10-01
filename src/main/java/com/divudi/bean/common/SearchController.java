@@ -88,7 +88,7 @@ public class SearchController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     ServiceSession selectedServiceSession;
     Staff currentStaff;

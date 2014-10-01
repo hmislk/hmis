@@ -57,7 +57,7 @@ public class StorePurchaseController implements Serializable {
     private BilledBill bill;
     @EJB
     private BillFacade billFacade;   
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;

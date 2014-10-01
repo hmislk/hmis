@@ -61,7 +61,7 @@ public class TransferIssueController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     ////
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @Inject
     private PharmacyCalculation pharmacyCalculation;
