@@ -80,7 +80,7 @@ import org.primefaces.model.UploadedFile;
 /**
  *
  * @author Buddhika
- * 
+ *
  * TO check pull is working
  */
 @Named
@@ -110,7 +110,7 @@ public class StoreItemExcelManager implements Serializable {
     MeasurementUnitFacade muFacade;
     @EJB
     PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
-    @EJB
+    @Inject
     private StoreBean storeBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;
@@ -594,13 +594,17 @@ public class StoreItemExcelManager implements Serializable {
                 m = new HashMap();
                 m.put("v", vmp);
                 m.put("n", strAmp);
+                m.put("t", DepartmentType.Store);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v AND c.departmentType=:t", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
+                        amp.setDepartmentType(DepartmentType.Store);
                         amp.setMeasurementUnit(strengthUnit);
                         amp.setDblValue((double) strengthUnitsPerIssueUnit);
+                        amp.setCreatedAt(new Date());
+                        amp.setCreater(getSessionController().getLoggedUser());
                         if (subCat == null) {
                             amp.setCategory(subCat);
                         } else {
@@ -704,7 +708,12 @@ public class StoreItemExcelManager implements Serializable {
                 try {
                     doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
                 } catch (Exception e) {
-                    doe = new Date();
+                    temStr = "12/31/2020";
+                    try {
+                        doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
+                    } catch (Exception ex1) {
+                        doe = new Date();
+                    }
                 }
 
                 getStorePurchaseController().getCurrentBillItem().setItem(amp);

@@ -21,6 +21,7 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PaymentScheme;
@@ -40,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
@@ -49,8 +50,10 @@ import javax.persistence.TemporalType;
  * @author safrin
  */
 @Named
-@RequestScoped
+@SessionScoped
 public class PharmacySaleReport implements Serializable {
+
+    Category category;
 
     private Date fromDate;
     private Date toDate;
@@ -141,8 +144,17 @@ public class PharmacySaleReport implements Serializable {
     PaymentScheme paymentScheme;
     PaymentMethod paymentMethod;
 
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
     public void makeNull() {
         fromDate = null;
+        category = null;
         toDate = null;
         department = null;
         grantNetTotal = 0;
@@ -193,13 +205,79 @@ public class PharmacySaleReport implements Serializable {
         m.put("td", td);
         m.put("cl", bill.getClass());
         m.put("btp", BillType.PharmacySale);
-        sql = "select sum(i.netTotal) from Bill i "
-                + "where i.referenceBill.department=:d "
-                + " and i.billType=:btp "
-                + "and type(i)=:cl "
-                + "and i.createdAt between :fd and :td "
-                + "order by i.deptId ";
+        sql = "select sum(i.bill.netTotal) from BillItem i "
+                + "where i.bill.referenceBill.department=:d "
+                + " and i.bill.billType=:btp "
+                + "and type(i.bill)=:cl "
+                + "and i.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        sql += "  order by i.bill.deptId ";
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return saleValue;
+
+    }
+
+    private double getSaleValueByDepartment(Date date) {
+
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", fd);
+        m.put("td", td);
+//        m.put("cl", bill.getClass());
+        m.put("btp", BillType.PharmacySale);
+        sql = "select sum(i.bill.netTotal) "
+                + " from BillItem i "
+                + "where i.bill.referenceBill.department=:d "
+                + " and i.bill.billType=:btp "
+                //                + "and type(i.bill)=:cl "
+                + "and i.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+//
+//        sql += "  order by i.bill.deptId ";
+        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return saleValue;
+
+    }
+
+    private List<Object[]> getSaleValueByDepartmentCategoryWise() {
+
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+//        m.put("cl", bill.getClass());
+        m.put("btp", BillType.PharmacySale);
+        sql = "select i.item.category,sum(i.netValue) "
+                + " from BillItem i "
+                + "where i.bill.referenceBill.department=:d "
+                + " and i.bill.billType=:btp "
+                //                + "and type(i.bill)=:cl "
+                + " and i.bill.createdAt between :fd and :td "
+                + " group by i.item.category.name"
+                + " order by i.item.category.name ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+//
+//        sql += "  order by i.bill.deptId ";
+        List<Object[]> saleValue = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
         return saleValue;
 
@@ -279,11 +357,11 @@ public class PharmacySaleReport implements Serializable {
         return saleValue;
 
     }
-    
+
     private double calBillFee(Date date, FeeType fTy) {
 
         String sql;
-       
+
         sql = "select sum(f.feeValue) "
                 + " from BillFee f "
                 + " where f.bill.retired=false "
@@ -311,7 +389,7 @@ public class PharmacySaleReport implements Serializable {
         m.put("pm4", PaymentMethod.Slip);
         m.put("billType", BillType.OpdBill);
         m.put("ins", institution);
-       m.put("ft", fTy);
+        m.put("ft", fTy);
         //    m.put("ins", getSessionController().getInstitution());
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
@@ -576,7 +654,7 @@ public class PharmacySaleReport implements Serializable {
                 + " and type(i)=:class and "
                 + " i.createdAt between :fd and :td "
                 + " order by i.deptId ";
-        
+
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -645,8 +723,17 @@ public class PharmacySaleReport implements Serializable {
         m.put("cl", PreBill.class);
         m.put("btp", BillType.PharmacySale);
 
-        sql = "select sum(i.netTotal) from Bill i where i.referenceBill.department=:d "
-                + " and i.billType=:btp and type(i)!=:cl and i.createdAt between :fd and :td ";
+        sql = "select sum(i.netValue) from BillItem i "
+                + " where i.bill.referenceBill.department=:d "
+                + " and i.bill.billType=:btp "
+                + " and type(i.bill)!=:cl ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        sql += " and i.bill.createdAt between :fd and :td ";
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -741,13 +828,47 @@ public class PharmacySaleReport implements Serializable {
         m.put("class", bill.getClass());
         // m.put("btp", BillType.PharmacyPre);
         m.put("btp", BillType.PharmacySale);
-        sql = "select sum(i.netTotal) from Bill i where i.referenceBill.department=:d and"
-                + " i.billType=:btp and type(i)=:class "
-                + " and i.createdAt between :fromDate and :toDate ";
+        sql = "select sum(i.bill.netTotal)"
+                + " from BillItem i "
+                + " where i.bill.referenceBill.department=:d "
+                + " and i.bill.billType=:btp "
+                + " and type(i.bill)=:class ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat ";
+            m.put("cat", category);
+        }
+
+        sql += " and i.bill.createdAt between :fromDate and :toDate ";
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
+//    private double calGrantNetTotalByDepartment() {
+//        //   List<Stock> billedSummery;
+//        String sql;
+//        Map m = new HashMap();
+//        m.put("d", getDepartment());
+//        m.put("fromDate", getFromDate());
+//        m.put("toDate", getToDate());
+////        m.put("class", bill.getClass());
+//        // m.put("btp", BillType.PharmacyPre);
+//        m.put("btp", BillType.PharmacySale);
+//        sql = "select sum(i.bill.netTotal)"
+//                + " from BillItem i "
+//                + " where i.bill.referenceBill.department=:d "
+//                + " and i.bill.billType=:btp ";
+////                + " and type(i.bill)=:class ";
+//
+//        if (category != null) {
+//            sql += " and i.item.category=:cat ";
+//            m.put("cat", category);
+//        }
+//
+//        sql += " and i.bill.createdAt between :fromDate and :toDate ";
+//        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+//
+//    }
     private double calGrantNetTotalByDepartmentPaymentScheme(Bill bill) {
         //   List<Stock> billedSummery;
         String sql;
@@ -1091,6 +1212,67 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    public void createSaleReportByDate2() {
+        billedSummery = new PharmacySummery();
+
+        billedSummery.setBills(new ArrayList<String1Value3>());
+
+        Date nowDate = getFromDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowDate);
+
+        while (nowDate.before(getToDate())) {
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(nowDate);
+
+            String1Value3 newRow = new String1Value3();
+            newRow.setString(formattedDate);
+            newRow.setValue1(getSaleValueByDepartment(nowDate));
+
+            billedSummery.getBills().add(newRow);
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+//
+//        billedSummery.setBilledTotal(calGrantNetTotalByDepartment(new BilledBill()));
+//        billedSummery.setCancelledTotal(calGrantNetTotalByDepartment(new CancelledBill()));
+//        billedSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill()));
+
+        grantNetTotal = calGrantNetTotalByDepartment();
+
+    }
+
+    List<String1Value3> string1Value3s;
+
+    public List<String1Value3> getString1Value3s() {
+        return string1Value3s;
+    }
+
+    public void setString1Value3s(List<String1Value3> string1Value3s) {
+        this.string1Value3s = string1Value3s;
+    }
+
+    public void createSaleReportByDate3() {
+
+        List<Object[]> list = getSaleValueByDepartmentCategoryWise();
+        string1Value3s = new ArrayList<>();
+
+        for (Object[] obj : list) {
+            String1Value3 string1Value3 = new String1Value3();
+            string1Value3.setString(((Category) obj[0]).toString());
+            string1Value3.setValue1((Double) obj[1]);
+            string1Value3s.add(string1Value3);
+
+        }
+        grantNetTotal = calGrantNetTotalByDepartment();
+
+    }
+
     public void createIssueReportByDate() {
         billedSummery = new PharmacySummery();
 
@@ -1127,8 +1309,6 @@ public class PharmacySaleReport implements Serializable {
         grantNetTotal = calGrantNetTotalIssue();
 
     }
-    
-    
 
     public void createLabHadnOverReportByDate() {
         billedSummery = new PharmacySummery();
@@ -1235,7 +1415,7 @@ public class PharmacySaleReport implements Serializable {
 
         return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
-    
+
     public void createLabReportByDate() {
         billedSummery = new PharmacySummery();
 
@@ -1244,12 +1424,10 @@ public class PharmacySaleReport implements Serializable {
         Date nowDate = getFromDate();
         Calendar cal = Calendar.getInstance();
         cal.setTime(nowDate);
-        
-        double hospitalFeeTot=0.0;
-            double profeTotal=0.0;
-            double regentTot=0.0;
-            
-           
+
+        double hospitalFeeTot = 0.0;
+        double profeTotal = 0.0;
+        double regentTot = 0.0;
 
         while (nowDate.before(getToDate())) {
 
@@ -1259,23 +1437,19 @@ public class PharmacySaleReport implements Serializable {
             String1Value3 newRow = new String1Value3();
             newRow.setString(formattedDate);
 
-            double hospitalFee = calBillFee(nowDate,FeeType.OwnInstitution);
-            
-            double proTot = calBillFee(nowDate,FeeType.Staff);
+            double hospitalFee = calBillFee(nowDate, FeeType.OwnInstitution);
 
-            double regentFee = calBillFee(nowDate,FeeType.Chemical);
-            
-            
+            double proTot = calBillFee(nowDate, FeeType.Staff);
 
-            
+            double regentFee = calBillFee(nowDate, FeeType.Chemical);
 
             newRow.setValue1(hospitalFee);
             newRow.setValue2(regentFee);
             newRow.setValue3(proTot);
-            
-            hospitalFeeTot+=hospitalFee;
-            profeTotal+=proTot;
-            regentTot+=regentFee;
+
+            hospitalFeeTot += hospitalFee;
+            profeTotal += proTot;
+            regentTot += regentFee;
 
             billedSummery.getBills().add(newRow);
 
@@ -1967,7 +2141,7 @@ public class PharmacySaleReport implements Serializable {
         grantDiscount = calGrantDiscountByDepartment();
 
     }
-    
+
     public void createSaleReportByDateDetailPaymentScheme() {
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
@@ -2790,7 +2964,5 @@ public class PharmacySaleReport implements Serializable {
     public void setTotalUnitIssueNC(double totalUnitIssueNC) {
         this.totalUnitIssueNC = totalUnitIssueNC;
     }
-    
-    
 
 }

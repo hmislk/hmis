@@ -276,7 +276,7 @@ public class PharmacyController implements Serializable {
                 + " group by i.department"
                 + " having sum(i.stock) > 0 ";
 
-        return getBillItemFacade().findAggregates(sql, m);
+        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
 
     }
 
@@ -329,7 +329,7 @@ public class PharmacyController implements Serializable {
                 + " and i.createdAt between :frm and :to"
                 + " group by i.bill.toDepartment";
 
-        return getBillItemFacade().findAggregates(sql, m);
+        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
 
     }
 
@@ -344,23 +344,35 @@ public class PharmacyController implements Serializable {
 
         String sql;
         Map m = new HashMap();
-        m.put("curr", getSessionController().getDepartment());
+//        m.put("curr", getSessionController().getDepartment());
         m.put("i", item);
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
         m.put("btp", BillType.PharmacyIssue);
         //   m.put("refType", BillType.PharmacySale);
-        sql = "select i.bill.toDepartment,"
-                + " sum(i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate*i.pharmaceuticalBillItem.qty),"
-                + " sum(i.pharmaceuticalBillItem.qty) "
-                + " from BillItem i "
-                + " where i.bill.toDepartment.institution=:ins "
-                + " and i.bill.department=:curr "
-                + " and i.item=:i"
-                + " and i.bill.billType=:btp "
-                + " and i.createdAt between :frm and :to"
-                + " group by i.bill.toDepartment";
+//        sql = "select i.bill.toDepartment,"
+//                + " sum(i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate*i.pharmaceuticalBillItem.qty),"
+//                + " sum(i.pharmaceuticalBillItem.qty) "
+//                + " from BillItem i "
+//                + " where i.bill.toDepartment.institution=:ins "
+//                + " and i.bill.department=:curr "
+//                + " and i.item=:i"
+//                + " and i.bill.billType=:btp "
+//                + " and i.createdAt between :frm and :to"
+//                + " group by i.bill.toDepartment";
+        
+         sql = "select i.billItem.bill.toDepartment,"
+                + " sum(i.stock.itemBatch.purcahseRate*i.qty),"
+                + " sum(i.qty) "
+                + " from PharmaceuticalBillItem i "
+                + " where i.billItem.bill.toDepartment.institution=:ins "
+//                + " and i.billItem.bill.department=:curr "
+                + " and i.billItem.item=:i"
+                + " and i.billItem.bill.billType=:btp "
+                + " and i.billItem.createdAt between :frm and :to"
+                + " group by i.billItem.bill.toDepartment";
+         
 
         return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
 
@@ -389,7 +401,7 @@ public class PharmacyController implements Serializable {
                 + " from BillItem i where i.bill.fromDepartment.institution=:ins and i.bill.department=:dep "
                 + " and i.item=:i and i.bill.billType=:btp and i.createdAt between :frm and :to group by i.bill.fromDepartment";
 
-        return getBillItemFacade().findAggregates(sql, m);
+        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
 
     }
 
@@ -419,7 +431,7 @@ public class PharmacyController implements Serializable {
                 + " and i.createdAt between :frm and :to  "
                 + " group by i.bill.department";
 
-        return getBillItemFacade().findAggregates(sql, m);
+        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
 
     }
 
@@ -451,7 +463,7 @@ public class PharmacyController implements Serializable {
                 + " and i.createdAt between :frm and :to  "
                 + " group by i.bill.department";
 
-        return getBillItemFacade().findAggregates(sql, m);
+        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
 
     }
 

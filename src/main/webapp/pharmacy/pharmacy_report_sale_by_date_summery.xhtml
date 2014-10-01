@@ -20,12 +20,16 @@
                     <h:outputLabel value="Department"/>
                     <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
-                    
+
+<!--                    <h:outputLabel value="Category"/>
+                    <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
+                                    itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{pharmacySaleReport.category}" >
+                    </p:autoComplete>-->
                 </h:panelGrid>
-                
+
                 <h:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleReportByDate()}"/>
-                    <p:commandButton ajax="false" value="Excel" actionListener="#{pharmacySaleReport.createSaleReportByDate()}" styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                     </p:commandButton>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
@@ -51,7 +55,7 @@
                     <f:facet name="header">
                         <p:outputLabel value="Sales Summery Report By Date" />
                     </f:facet>
-                    
+
                     <p:column headerText="Date">
                         <f:facet name="header">
                             <h:outputLabel value="Date" />

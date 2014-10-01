@@ -568,9 +568,11 @@
                                             </div>
 
                                             <div class="paymentPrinting" >
-                                                <h:outputLabel value="#{bill.paymentMethod}">
-
-                                                </h:outputLabel>
+                                                <h:panelGroup>
+                                                    <h:outputLabel value="#{bill.paymentMethod}" />
+                                                    <h:outputLabel value=" : "/>
+                                                    <h:outputLabel value="#{bill.chequeRefNo}" />
+                                                </h:panelGroup>
                                             </div>
 
                                             <div class="billtimePrinting" >
