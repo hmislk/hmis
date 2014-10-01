@@ -33,7 +33,13 @@
                         <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                     </h:panelGrid>
 
-
+                    <h:outputLabel value="Category" />
+                        <p:autoComplete completeMethod="#{categoryController.completeConsumableAndAssetCategory}" 
+                                        var="cat" itemLabel="#{cat.name}"
+                                        itemValue="#{cat}" forceSelection="true" 
+                                        value="#{reportsTransfer.category}" converter="categoryConverter" >
+                        </p:autoComplete>
+                    
                     <p:commandButton ajax="false" value="Fill" 
                                      action="#{reportsTransfer.fillItemCountsStore}" />
 

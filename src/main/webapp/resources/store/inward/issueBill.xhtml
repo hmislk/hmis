@@ -81,7 +81,9 @@
                         <td>:</td>
                         <td style="width: 30%;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  >
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  rendered="#{cc.attrs.bill.cancelled eq false}">
+                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}"  rendered="#{cc.attrs.bill.cancelled eq true}">
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >

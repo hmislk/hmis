@@ -17,7 +17,7 @@ import com.divudi.data.Title;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.ejb.PharmacyBean;
 
@@ -78,6 +78,29 @@ import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
 /**
@@ -110,7 +133,7 @@ public class PharmacySaleBhtController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
@@ -118,8 +141,8 @@ public class PharmacySaleBhtController implements Serializable {
     private PatientFacade patientFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -158,6 +181,22 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         settleBhtIssue(BillType.PharmacyBhtPre, getBatchBill().getFromDepartment(), BillNumberSuffix.PHISSUE);
+
+        getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
+        getBillBean().updateBatchBill(getBatchBill());
+
+    }
+    
+     public void settleSurgeryBhtIssueStore() {
+        if (getBatchBill() == null) {
+            return;
+        }
+
+        if (getBatchBill().getProcedure() == null) {
+            return;
+        }
+
+        settleBhtIssue(BillType.StoreBhtPre, getBatchBill().getFromDepartment(), BillNumberSuffix.PHISSUE);
 
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
@@ -534,6 +573,13 @@ public class PharmacySaleBhtController implements Serializable {
         }
         settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
     }
+    
+      public void settleStoreBhtIssue() {
+        if (errorCheck()) {
+            return;
+        }
+        settleBhtIssue(BillType.StoreBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
+    }
 
     private boolean errorCheck() {
         if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
@@ -559,14 +605,7 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
-    public void settleStoreBhtIssue() {
-        if (errorCheck()) {
-            return;
-        }
-
-        settleBhtIssue(BillType.StoreBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.STISSUE);
-    }
-
+  
     private void settleBhtIssue(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
@@ -960,11 +999,11 @@ public class PharmacySaleBhtController implements Serializable {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

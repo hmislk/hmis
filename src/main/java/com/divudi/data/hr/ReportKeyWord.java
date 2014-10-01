@@ -17,6 +17,7 @@ import com.divudi.entity.hr.Designation;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffCategory;
+import com.divudi.entity.hr.StaffShift;
 
 /**
  *
@@ -24,6 +25,7 @@ import com.divudi.entity.hr.StaffCategory;
  */
 public class ReportKeyWord {
     Staff staff;
+    Staff replacingStaff;
     Department department;
     StaffCategory staffCategory;
     Designation designation;
@@ -34,6 +36,17 @@ public class ReportKeyWord {
     Institution institution;
     PaymentMethod paymentMethod;
     Item item;
+    StaffShift staffShift;
+
+    public StaffShift getStaffShift() {
+        return staffShift;
+    }
+
+    public void setStaffShift(StaffShift staffShift) {
+        this.staffShift = staffShift;
+    }
+    
+    
     
     
 
@@ -129,6 +142,14 @@ public class ReportKeyWord {
 
     public void setShift(Shift shift) {
         this.shift = shift;
+    }
+
+    public Staff getReplacingStaff() {
+        return replacingStaff;
+    }
+
+    public void setReplacingStaff(Staff replacingStaff) {
+        this.replacingStaff = replacingStaff;
     }
     
     

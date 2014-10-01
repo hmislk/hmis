@@ -50,7 +50,7 @@ import javax.persistence.TemporalType;
 @ApplicationScoped
 public class PharmacyCalculation implements Serializable {
 
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -68,8 +68,8 @@ public class PharmacyCalculation implements Serializable {
     private CategoryFacade categoryFacade;
     @EJB
     private BillFacade billFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
 
 //    public void editBill(Bill bill, Bill ref, SessionController sc) {
 //
@@ -518,6 +518,8 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("ItemBatc Id " + itemBatch.getId());
         return itemBatch;
     }
+    
+    
 
     public List<Item> findItem(Amp tmp, List<Item> items) {
 
@@ -778,11 +780,11 @@ public class PharmacyCalculation implements Serializable {
         this.billFacade = billFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 }

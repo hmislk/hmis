@@ -6,10 +6,11 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.bean.inward.AdmissionController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
@@ -43,8 +44,8 @@ public class CashRecieveBillController implements Serializable {
 
     private Bill current;
     private boolean printPreview = false;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @Inject
     private SessionController sessionController;
     @EJB
@@ -91,8 +92,6 @@ public class CashRecieveBillController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
-    
 
     @Inject
     private AdmissionController admissionController;
@@ -415,7 +414,7 @@ public class CashRecieveBillController implements Serializable {
 
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        
+
         getCurrent().setComments(comment);
 
         getCurrent().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -498,7 +497,7 @@ public class CashRecieveBillController implements Serializable {
 
     private Bill saveBhtPaymentBill(BillItem b) {
         Bill tmp = new BilledBill();
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.InwardPaymentBill));
+
         tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), tmp, tmp.getBillType(), BillNumberSuffix.INWPAY));
 
         tmp.setBillType(BillType.InwardPaymentBill);
@@ -506,9 +505,15 @@ public class CashRecieveBillController implements Serializable {
         tmp.setPatient(b.getPatientEncounter().getPatient());
         tmp.setPaymentScheme(getCurrent().getPaymentScheme());
         tmp.setPaymentMethod(getCurrent().getPaymentMethod());
+        tmp.setInstitution(sessionController.getInstitution());
+        tmp.setDepartment(sessionController.getDepartment());
         tmp.setNetTotal(b.getNetValue());
         tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
+
+        getBillNumberBean().departmentBillNumberGenerator(tmp, BillClassType.BilledBill,BillNumberSuffix.NONE);
+        getBillNumberBean().institutionBillNumberGenerator(tmp,BillClassType.BilledBill, BillNumberSuffix.INWPAY);
+
         getBillFacade().create(tmp);
 
         return tmp;
@@ -612,7 +617,7 @@ public class CashRecieveBillController implements Serializable {
         paymentMethodData = null;
         billItems = null;
         selectedBillItems = null;
-        comment=null;
+        comment = null;
     }
 
     public String prepareNewBill() {
@@ -639,11 +644,11 @@ public class CashRecieveBillController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

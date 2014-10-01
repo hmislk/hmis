@@ -15,7 +15,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Appointment;
 import com.divudi.facade.BillFacade;
@@ -75,8 +75,8 @@ public class AppointmentController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     private BillComponentFacade billComponentFacade;
     @EJB
@@ -385,11 +385,11 @@ public class AppointmentController implements Serializable {
         this.patientFacade = patientFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
 
     }

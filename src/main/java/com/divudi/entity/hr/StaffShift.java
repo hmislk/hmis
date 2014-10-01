@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -78,7 +79,6 @@ public class StaffShift implements Serializable {
     StaffShift nextStaffShift;
     @ManyToOne
     StaffShift referenceStaffShift;
-    
 
     double earlyInLogged;
     double earlyOutLogged;
@@ -87,19 +87,25 @@ public class StaffShift implements Serializable {
     double workedWithinTimeFrameLogged;
     double workedOutSideTimeFrameLogged;
     double workedTimeLogged;
-    double overTimeFromStartRecordLogged;
-    double overTimeFromEndRecordLogged;
-    double overTimeCompleteRecordLogged;
     double workedWithinTimeFrameVarified;
     double workedOutSideTimeFrameVarified;
     double workedTimeVarified;
-    double overTimeFromStartRecordVarified;
-    double overTimeFromEndRecordVarified;
-    double overTimeCompleteRecordVarified;
     double lateInVarified;
     double lateOutVarified;
     double lateInLogged;
     double lateOutLogged;
+    @Column(name = "overTimeFromStartRecordLogged")
+    double extraTimeFromStartRecordLogged;
+    @Column(name = "overTimeFromEndRecordLogged")
+    double extraTimeFromEndRecordLogged;
+    @Column(name = "overTimeCompleteRecordLogged")
+    double extraTimeCompleteRecordLogged;
+    @Column(name = "overTimeFromStartRecordVarified")
+    double extraTimeFromStartRecordVarified;
+    @Column(name = "overTimeFromEndRecordVarified")
+    double extraTimeFromEndRecordVarified;
+    @Column(name = "overTimeCompleteRecordVarified")
+    double extraTimeCompleteRecordVarified;
 
     private boolean dayOff;
     private boolean sleepingDay;
@@ -153,7 +159,7 @@ public class StaffShift implements Serializable {
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
             earlyOutLogged = inSecond;
         }
-        
+
         //Calculate Late Out Logged
         if (getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
             fromCalendar.setTime(getShiftEndTime());
@@ -257,7 +263,7 @@ public class StaffShift implements Serializable {
         Calendar toCalendar = Calendar.getInstance();
         Long inSecond = 0l;
         //Over Time From Start Record Logged 
-        overTimeFromStartRecordLogged = 0;
+        extraTimeFromStartRecordLogged = 0;
         if (getStartRecord().isAllowedOverTime()
                 && getStartRecord().getLoggedRecord() != null
                 && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null) {
@@ -266,12 +272,12 @@ public class StaffShift implements Serializable {
                 fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-                overTimeFromStartRecordLogged = inSecond;
+                extraTimeFromStartRecordLogged = inSecond;
             }
         }
 
         //Over Time From End Record Logged 
-        overTimeFromEndRecordLogged = 0;
+        extraTimeFromEndRecordLogged = 0;
         if (getEndRecord().isAllowedOverTime()
                 && getEndRecord().getLoggedRecord() != null
                 && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null) {
@@ -280,31 +286,31 @@ public class StaffShift implements Serializable {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-                overTimeFromEndRecordLogged = inSecond;
+                extraTimeFromEndRecordLogged = inSecond;
             }
         }
 
         //Over Time From Start Record Varified 
-        overTimeFromStartRecordVarified = 0;
+        extraTimeFromStartRecordVarified = 0;
         if (getStartRecord().isAllowedOverTime()) {
 
             if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-                overTimeFromStartRecordVarified = inSecond;
+                extraTimeFromStartRecordVarified = inSecond;
             }
         }
 
         //Over Time From End Record Varified
-        overTimeFromEndRecordVarified = 0;
+        extraTimeFromEndRecordVarified = 0;
         if (getEndRecord().isAllowedOverTime()) {
 
             if (getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-                overTimeFromEndRecordVarified = inSecond;
+                extraTimeFromEndRecordVarified = inSecond;
             }
         }
 
@@ -326,7 +332,7 @@ public class StaffShift implements Serializable {
             fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
             toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-            overTimeCompleteRecordLogged = inSecond;
+            extraTimeCompleteRecordLogged = inSecond;
         }
 
         //Varified 
@@ -337,7 +343,7 @@ public class StaffShift implements Serializable {
             fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
             toCalendar.setTime(getEndRecord().getRecordTimeStamp());
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-            overTimeCompleteRecordVarified = inSecond;
+            extraTimeCompleteRecordVarified = inSecond;
         }
 
     }
@@ -426,52 +432,52 @@ public class StaffShift implements Serializable {
         this.workedOutSideTimeFrameVarified = workedOutSideTimeFrameVarified;
     }
 
-    public double getOverTimeFromStartRecordLogged() {
-        return overTimeFromStartRecordLogged;
+    public double getExtraTimeFromStartRecordLogged() {
+        return extraTimeFromStartRecordLogged;
     }
 
-    public void setOverTimeFromStartRecordLogged(double overTimeFromStartRecordLogged) {
-        this.overTimeFromStartRecordLogged = overTimeFromStartRecordLogged;
+    public void setExtraTimeFromStartRecordLogged(double extraTimeFromStartRecordLogged) {
+        this.extraTimeFromStartRecordLogged = extraTimeFromStartRecordLogged;
     }
 
-    public double getOverTimeFromEndRecordLogged() {
-        return overTimeFromEndRecordLogged;
+    public double getExtraTimeFromEndRecordLogged() {
+        return extraTimeFromEndRecordLogged;
     }
 
-    public void setOverTimeFromEndRecordLogged(double overTimeFromEndRecordLogged) {
-        this.overTimeFromEndRecordLogged = overTimeFromEndRecordLogged;
+    public void setExtraTimeFromEndRecordLogged(double extraTimeFromEndRecordLogged) {
+        this.extraTimeFromEndRecordLogged = extraTimeFromEndRecordLogged;
     }
 
-    public double getOverTimeCompleteRecordLogged() {
-        return overTimeCompleteRecordLogged;
+    public double getExtraTimeCompleteRecordLogged() {
+        return extraTimeCompleteRecordLogged;
     }
 
-    public void setOverTimeCompleteRecordLogged(double overTimeCompleteRecordLogged) {
-        this.overTimeCompleteRecordLogged = overTimeCompleteRecordLogged;
+    public void setExtraTimeCompleteRecordLogged(double extraTimeCompleteRecordLogged) {
+        this.extraTimeCompleteRecordLogged = extraTimeCompleteRecordLogged;
     }
 
-    public double getOverTimeFromStartRecordVarified() {
-        return overTimeFromStartRecordVarified;
+    public double getExtraTimeFromStartRecordVarified() {
+        return extraTimeFromStartRecordVarified;
     }
 
-    public void setOverTimeFromStartRecordVarified(double overTimeFromStartRecordVarified) {
-        this.overTimeFromStartRecordVarified = overTimeFromStartRecordVarified;
+    public void setExtraTimeFromStartRecordVarified(double extraTimeFromStartRecordVarified) {
+        this.extraTimeFromStartRecordVarified = extraTimeFromStartRecordVarified;
     }
 
-    public double getOverTimeFromEndRecordVarified() {
-        return overTimeFromEndRecordVarified;
+    public double getExtraTimeFromEndRecordVarified() {
+        return extraTimeFromEndRecordVarified;
     }
 
-    public void setOverTimeFromEndRecordVarified(double overTimeFromEndRecordVarified) {
-        this.overTimeFromEndRecordVarified = overTimeFromEndRecordVarified;
+    public void setExtraTimeFromEndRecordVarified(double extraTimeFromEndRecordVarified) {
+        this.extraTimeFromEndRecordVarified = extraTimeFromEndRecordVarified;
     }
 
-    public double getOverTimeCompleteRecordVarified() {
-        return overTimeCompleteRecordVarified;
+    public double getExtraTimeCompleteRecordVarified() {
+        return extraTimeCompleteRecordVarified;
     }
 
-    public void setOverTimeCompleteRecordVarified(double overTimeCompleteRecordVarified) {
-        this.overTimeCompleteRecordVarified = overTimeCompleteRecordVarified;
+    public void setExtraTimeCompleteRecordVarified(double extraTimeCompleteRecordVarified) {
+        this.extraTimeCompleteRecordVarified = extraTimeCompleteRecordVarified;
     }
 
     public double getLateInVarified() {
@@ -560,7 +566,9 @@ public class StaffShift implements Serializable {
         this.setEndRecord(staffShift.getEndRecord());
         this.setPreviousStaffShift(staffShift.getPreviousStaffShift());
         this.setNextStaffShift(staffShift.getNextStaffShift());
-        // stf.setShiftEndTime(ss.getShiftEndTime());
+        this.setShiftDate(staffShift.getShiftDate());
+        this.setShiftStartTime(staffShift.getShiftStartTime());
+        this.setShiftEndTime(staffShift.getShiftEndTime());
         this.setSleepingDay(staffShift.isSleepingDay());
         this.setStaff(staffShift.getStaff());
         this.setWorkingType(staffShift.getWorkingType());
@@ -789,6 +797,30 @@ public class StaffShift implements Serializable {
 
     public void setFingerPrintRecordList(List<FingerPrintRecord> fingerPrintRecordList) {
         this.fingerPrintRecordList = fingerPrintRecordList;
+    }
+
+    public StaffShift getReferenceStaffShift() {
+        return referenceStaffShift;
+    }
+
+    public void setReferenceStaffShift(StaffShift referenceStaffShift) {
+        this.referenceStaffShift = referenceStaffShift;
+    }
+
+    public double getWorkedTimeLogged() {
+        return workedTimeLogged;
+    }
+
+    public void setWorkedTimeLogged(double workedTimeLogged) {
+        this.workedTimeLogged = workedTimeLogged;
+    }
+
+    public double getWorkedTimeVarified() {
+        return workedTimeVarified;
+    }
+
+    public void setWorkedTimeVarified(double workedTimeVarified) {
+        this.workedTimeVarified = workedTimeVarified;
     }
 
 }

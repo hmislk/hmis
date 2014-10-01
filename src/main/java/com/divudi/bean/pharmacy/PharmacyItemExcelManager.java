@@ -120,7 +120,7 @@ public class PharmacyItemExcelManager implements Serializable {
     MeasurementUnitFacade muFacade;
     @EJB
     PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;

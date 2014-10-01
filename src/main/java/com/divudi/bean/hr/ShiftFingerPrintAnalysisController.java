@@ -18,6 +18,7 @@ import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.entity.hr.StaffShiftReplace;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
@@ -100,6 +101,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
         return false;
     }
+    DayType dayType;
 
     public void createShiftTable() {
         if (errorCheck()) {
@@ -300,7 +302,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             UtilityController.addErrorMessage("Empty List");
             return;
         }
-        
+
 //        System.err.println("2");
         if (errorCheckForSave()) {
 //            UtilityController.addErrorMessage("Staff Shift Not Updated");
@@ -331,12 +333,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 //UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();
-                
+
                 //Update Staff Shift OT time if DayOff or Sleeping Day
-                if(ss.getShift().getDayType()==DayType.DayOff|| ss.getShift().getDayType()==DayType.SleepingDay){
+                if (ss.getShift().getDayType() == DayType.DayOff
+                        || ss.getShift().getDayType() == DayType.SleepingDay
+                        || ss instanceof StaffShiftReplace) {
                     ss.calOverTimeAll();
                 }
-                
+
                 getStaffShiftFacade().edit(ss);
             }
         }

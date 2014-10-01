@@ -6,11 +6,12 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -64,7 +65,7 @@ public class PharmacyAdjustmentController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
@@ -72,8 +73,8 @@ public class PharmacyAdjustmentController implements Serializable {
     private PatientFacade patientFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
     @EJB
     ItemBatchFacade itemBatchFacade;
 /////////////////////////
@@ -328,8 +329,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
         ph.setBillItem(tbi);
         getPharmaceuticalBillItemFacade().edit(ph);
-//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
-//        getDeptAdjustmentPreBill().getBillItems().add(tbi);
+        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+        getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
 
@@ -375,10 +376,12 @@ public class PharmacyAdjustmentController implements Serializable {
 
     private boolean errorCheck() {
         if (getStock() == null) {
+            UtilityController.addErrorMessage("Please Select Stocke");
             return true;
         }
 
         if (getStock().getItemBatch() == null) {
+            UtilityController.addErrorMessage("Select Item Batch");
             return true;
         }
 
@@ -393,8 +396,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
         saveDeptAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
-        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
-        getBillFacade().edit(getDeptAdjustmentPreBill());
+//        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
+//        getBillFacade().edit(getDeptAdjustmentPreBill());
         setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
         getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
@@ -525,11 +528,11 @@ public class PharmacyAdjustmentController implements Serializable {
         this.comment = comment;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

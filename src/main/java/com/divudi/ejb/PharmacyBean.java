@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -70,8 +71,7 @@ import javax.persistence.TemporalType;
  *
  * @author Buddhika
  */
-@Named
-@ApplicationScoped
+@Singleton
 public class PharmacyBean {
 
     @EJB
@@ -100,16 +100,16 @@ public class PharmacyBean {
     StockHistoryFacade stockHistoryFacade;
     @EJB
     private UserStockFacade userStockFacade;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

@@ -14,7 +14,6 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
-import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PatientItem;
@@ -56,6 +55,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     List<BillItem> billItems;
     List<BillFee> billFees;
     List<BillItem> pharmacyItems;
+    List<BillItem> storeItems;
     List<BillFee> proBillFee;
     List<BillFee> assistBillFee;
     List<Bill> outSideBills;
@@ -250,6 +250,19 @@ public class BhtSummeryFinalizedController implements Serializable {
 
         }
     }
+    
+    public void calculateStore() {
+        billItemGrossPharmacy = 0;
+        billItemMarginPharmacy = 0;
+        billItemDiscountPharmacy = 0;
+
+        for (BillItem b : storeItems) {
+            billItemGrossPharmacy += b.getGrossValue();
+            billItemMarginPharmacy += b.getMarginValue();
+            billItemDiscountPharmacy += b.getDiscount();
+
+        }
+    }
 
     public void delete(BillFee bf) {
         bf.setRetired(true);
@@ -432,7 +445,8 @@ public class BhtSummeryFinalizedController implements Serializable {
         proBillFee = getInwardBean().createProfesionallFee(getPatientEncounter());
         assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter());
         paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter());
-        pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter());
+        pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(),BillType.PharmacyBhtPre);
+        storeItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(),BillType.StoreBhtPre);
 
     }
 
@@ -590,14 +604,14 @@ public class BhtSummeryFinalizedController implements Serializable {
     @Inject
     BillBeanController billBeanController;
 
-    public void changeDiscountListener(double discount, double total, PatientEncounter patientEncounter) {
+    public void changeDiscountListener(double discount, double total, PatientEncounter patientEncounter,BillType billType) {
         System.err.println("BillItem Total " + total);
         System.err.println("BillItem Discount " + discount);
         double discountPercent = (discount * 100) / total;
         System.err.println("Discount Percent " + discountPercent);
         double disValue = 0;
 
-        disValue = updateIssueBillFees(discountPercent, patientEncounter);
+        disValue = updateIssueBillFees(discountPercent, patientEncounter,billType);
 
         System.err.println("Calculated Discount  " + disValue);
 
@@ -675,8 +689,8 @@ public class BhtSummeryFinalizedController implements Serializable {
 //        }
     }
 
-    private double updateIssueBillFees(double discountPercent, PatientEncounter patientEncounter) {
-        List<BillItem> listBillItems = getInwardBean().getIssueBillItemByInwardChargeType(patientEncounter);
+    private double updateIssueBillFees(double discountPercent, PatientEncounter patientEncounter,BillType billType) {
+        List<BillItem> listBillItems = getInwardBean().getIssueBillItemByInwardChargeType(patientEncounter,billType);
         double disTot = 0;
         if (listBillItems == null || listBillItems.isEmpty()) {
             return disTot;
@@ -919,4 +933,53 @@ public class BhtSummeryFinalizedController implements Serializable {
         this.billFeeNetValue = billFeeNetValue;
     }
 
+    public List<BillItem> getStoreItems() {
+        return storeItems;
+    }
+
+    public void setStoreItems(List<BillItem> storeItems) {
+        this.storeItems = storeItems;
+    }
+
+    public PatientRoomFacade getPatientRoomFacade() {
+        return patientRoomFacade;
+    }
+
+    public void setPatientRoomFacade(PatientRoomFacade patientRoomFacade) {
+        this.patientRoomFacade = patientRoomFacade;
+    }
+
+    public ItemFeeFacade getItemFeeFacade() {
+        return itemFeeFacade;
+    }
+
+    public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
+        this.itemFeeFacade = itemFeeFacade;
+    }
+
+    public BhtIssueReturnController getBhtIssueReturnController() {
+        return bhtIssueReturnController;
+    }
+
+    public void setBhtIssueReturnController(BhtIssueReturnController bhtIssueReturnController) {
+        this.bhtIssueReturnController = bhtIssueReturnController;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public PatientItemFacade getPatientItemFacade() {
+        return patientItemFacade;
+    }
+
+    public void setPatientItemFacade(PatientItemFacade patientItemFacade) {
+        this.patientItemFacade = patientItemFacade;
+    }
+
+    
 }

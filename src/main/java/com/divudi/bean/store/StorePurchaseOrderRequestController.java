@@ -11,9 +11,8 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -30,7 +29,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -47,15 +45,15 @@ public class StorePurchaseOrderRequestController implements Serializable {
     private SessionController sessionController;
     @EJB
     private ItemFacade itemFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
@@ -129,12 +127,12 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void onEdit(BillItem bi) {
-        if (bi.getItem().getDepartmentType() == DepartmentType.Inventry) {
-            if (bi.getTmpQty() != 1) {
-                bi.setTmpQty(1);
-                UtilityController.addErrorMessage("Asset Item Count Reset to 1");
-            }
-        }
+//        if (bi.getItem().getDepartmentType() == DepartmentType.Inventry) {
+//            if (bi.getTmpQty() != 1) {
+//                bi.setTmpQty(1);
+//                UtilityController.addErrorMessage("Asset Item Count Reset to 1");
+//            }
+//        }
 
         bi.setNetValue(bi.getPharmaceuticalBillItem().getQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
 
@@ -274,11 +272,11 @@ public class StorePurchaseOrderRequestController implements Serializable {
         getItemController().setInstituion(getCurrentBill().getToInstitution());
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

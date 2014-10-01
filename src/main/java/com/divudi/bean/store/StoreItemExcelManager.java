@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -13,7 +12,7 @@ import com.divudi.data.DepartmentType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.dataStructure.PharmacyImportCol;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.ejb.PharmacyBean;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -59,11 +58,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -107,10 +108,10 @@ public class StoreItemExcelManager implements Serializable {
     MeasurementUnitFacade muFacade;
     @EJB
     PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
-    @Inject
-    private PharmacyBean pharmacyBean;
     @EJB
-            StoreItemCategoryFacade storeItemCategoryFacade;
+    private StoreBean storeBean;
+    @EJB
+    StoreItemCategoryFacade storeItemCategoryFacade;
 
     List<PharmacyImportCol> itemNotPresent;
     List<String> itemsWithDifferentGenericName;
@@ -121,23 +122,7 @@ public class StoreItemExcelManager implements Serializable {
      * Values of Excel Columns
      *
      */
-//        Category      0
-//        Item Name     1
-//        Code          2
-//        Trade Name    3
-//        Generic Name  4
-//        Generic Product  5            
-//        Strength      6
-//        Strength Unit 7
-//        Pack Size     8
-//        Issue Unit    9
-//        Pack Unit     10	
-//        Manufacturer  11
-//        Importer      12
-    /**
-     * Values of Excel Columns
-     */
-    int number = 0;
+    int numberCol = 0;
     int catCol = 1;
     int ampCol = 2;
     int codeCol = 3;
@@ -151,6 +136,12 @@ public class StoreItemExcelManager implements Serializable {
     int distributorCol = 11;
     int manufacturerCol = 12;
     int importerCol = 13;
+    int doeCol = 14;
+    int batchCol = 15;
+    int stockQtyCol = 16;
+    int pruchaseRateCol = 17;
+    int saleRateCol = 18;
+
     int startRow = 1;
     /**
      * DataModals
@@ -173,11 +164,11 @@ public class StoreItemExcelManager implements Serializable {
     }
 
     public int getNumber() {
-        return number;
+        return numberCol;
     }
 
     public void setNumber(int number) {
-        this.number = number;
+        this.numberCol = number;
     }
 
     public int getDistributorCol() {
@@ -345,7 +336,7 @@ public class StoreItemExcelManager implements Serializable {
             //   System.err.println("index " + ind++);
             //    System.err.println("Bill  " + i);
             if (i.getPaymentScheme() != null) {
-               // i.setPaymentMethod(i.getPaymentScheme().getPaymentMethod());
+                // i.setPaymentMethod(i.getPaymentScheme().getPaymentMethod());
                 getBillFacade().edit(i);
             }
         }
@@ -369,6 +360,376 @@ public class StoreItemExcelManager implements Serializable {
 //        }
 //
 //    }
+    @Inject
+    StorePurchaseController storePurchaseController;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
+
+    public int getDoeCol() {
+        return doeCol;
+    }
+
+    public void setDoeCol(int doeCol) {
+        this.doeCol = doeCol;
+    }
+
+    public int getBatchCol() {
+        return batchCol;
+    }
+
+    public void setBatchCol(int batchCol) {
+        this.batchCol = batchCol;
+    }
+
+    public int getStockQtyCol() {
+        return stockQtyCol;
+    }
+
+    public void setStockQtyCol(int stockQtyCol) {
+        this.stockQtyCol = stockQtyCol;
+    }
+
+    public int getPruchaseRateCol() {
+        return pruchaseRateCol;
+    }
+
+    public void setPruchaseRateCol(int pruchaseRateCol) {
+        this.pruchaseRateCol = pruchaseRateCol;
+    }
+
+    public int getSaleRateCol() {
+        return saleRateCol;
+    }
+
+    public void setSaleRateCol(int saleRateCol) {
+        this.saleRateCol = saleRateCol;
+    }
+
+    public BillNumberGenerator getBillNumberGenerator() {
+        return billNumberGenerator;
+    }
+
+    public StorePurchaseController getStorePurchaseController() {
+        return storePurchaseController;
+    }
+
+    public void setStorePurchaseController(StorePurchaseController storePurchaseController) {
+        this.storePurchaseController = storePurchaseController;
+    }
+
+    public String importToExcelWithStock() {
+        System.out.println("importing to excel");
+        String strCat;
+        String strSubCat;
+        String strAmp;
+        String strCode;
+        String strBarcode;
+        String strGenericName;
+        String strStrength;
+        String strStrengthUnit;
+        String strPackSize;
+        String strIssueUnit;
+        String strPackUnit;
+        String strDistributor;
+        String strManufacturer;
+        String strImporter;
+
+        StoreItemCategory cat;
+        StoreItemCategory subCat;
+        Vtm vtm;
+        Atm atm;
+        Vmp vmp;
+        Amp amp;
+        Ampp ampp;
+        Vmpp vmpp;
+        VtmsVmps vtmsvmps;
+        MeasurementUnit issueUnit;
+        MeasurementUnit strengthUnit;
+        MeasurementUnit packUnit;
+        double strengthUnitsPerIssueUnit;
+        double issueUnitsPerPack;
+        Institution distributor;
+        Institution manufacturer;
+        Institution importer;
+
+        double stockQty;
+        double pp;
+        double sp;
+        String batch;
+        Date doe;
+
+        File inputWorkbook;
+        Workbook w;
+        Cell cell;
+        InputStream in;
+        UtilityController.addSuccessMessage(file.getFileName());
+        try {
+            UtilityController.addSuccessMessage(file.getFileName());
+            in = file.getInputstream();
+            File f;
+            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
+            FileOutputStream out = new FileOutputStream(f);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+
+            inputWorkbook = new File(f.getAbsolutePath());
+
+            UtilityController.addSuccessMessage("Excel File Opened");
+            w = Workbook.getWorkbook(inputWorkbook);
+            Sheet sheet = w.getSheet(0);
+
+            getStorePurchaseController().makeNull();
+
+            for (int i = startRow; i < sheet.getRows(); i++) {
+
+                Map m = new HashMap();
+
+                //Category
+                cell = sheet.getCell(numberCol, i);
+                System.out.println("numberCol = " + numberCol);
+                strCat = cell.getContents();
+                System.out.println("strCat is " + strCat);
+                cat = getStoreBean().getStoreItemCategoryByName(strCat);
+                if (cat == null) {
+                    continue;
+                }
+                System.out.println("cat = " + cat.getName());
+
+                //Sub-Category
+                cell = sheet.getCell(catCol, i);
+                strSubCat = cell.getContents();
+                System.out.println("strSubCat is " + strSubCat);
+                subCat = getStoreBean().getStoreItemCategoryByName(strSubCat);
+                if (subCat != null) {
+                    subCat.setParentCategory(cat);
+                    System.out.println("sub cat = " + subCat.getName());
+                }
+
+                //Strength Unit
+                cell = sheet.getCell(strengthUnitCol, i);
+                strStrengthUnit = cell.getContents();
+                System.out.println("strStrengthUnit is " + strengthUnitCol);
+                strengthUnit = getStoreBean().getUnitByName(strStrengthUnit);
+                if (strengthUnit == null) {
+                    continue;
+                }
+                System.out.println("strengthUnit = " + strengthUnit.getName());
+                //Pack Unit
+                cell = sheet.getCell(packUnitCol, i);
+                strPackUnit = cell.getContents();
+                System.out.println("strPackUnit = " + strPackUnit);
+                packUnit = getStoreBean().getUnitByName(strPackUnit);
+                if (packUnit == null) {
+                    packUnit = strengthUnit;
+                }
+                System.out.println("packUnit = " + packUnit.getName());
+                //Issue Unit
+                cell = sheet.getCell(issueUnitCol, i);
+                strIssueUnit = cell.getContents();
+                System.out.println("strIssueUnit is " + strIssueUnit);
+                issueUnit = getStoreBean().getUnitByName(strIssueUnit);
+                if (issueUnit == null) {
+                    issueUnit = strengthUnit;
+                }
+                //StrengthOfAnMeasurementUnit
+                cell = sheet.getCell(strengthOfIssueUnitCol, i);
+                strStrength = cell.getContents();
+                System.out.println("strStrength = " + strStrength);
+                if (!strStrength.equals("")) {
+                    try {
+                        strengthUnitsPerIssueUnit = Double.parseDouble(strStrength);
+                    } catch (NumberFormatException e) {
+                        strengthUnitsPerIssueUnit = 1.0;
+                    }
+                } else {
+                    strengthUnitsPerIssueUnit = 1.0;
+                }
+                if (strengthUnitsPerIssueUnit == 0.0) {
+                    strengthUnitsPerIssueUnit = 1.0;
+                }
+
+                //Issue Units Per Pack
+                cell = sheet.getCell(issueUnitsPerPackCol, i);
+                strPackSize = cell.getContents();
+                System.out.println("strPackSize = " + strPackSize);
+                if (!strPackSize.equals("")) {
+                    try {
+                        issueUnitsPerPack = Double.parseDouble(strPackSize);
+                    } catch (NumberFormatException e) {
+                        issueUnitsPerPack = 1.0;
+                    }
+                } else {
+                    issueUnitsPerPack = 1.0;
+                }
+                if (issueUnitsPerPack == 0.0) {
+                    issueUnitsPerPack = 1.0;
+                }
+
+                //Vtm
+                cell = sheet.getCell(vtmCol, i);
+                strGenericName = cell.getContents();
+                System.out.println("strGenericName = " + strGenericName);
+                if (!strGenericName.equals("")) {
+                    vtm = getStoreBean().getVtmByName(strGenericName);
+                } else {
+                    System.out.println("vtm is null");
+                    vtm = null;
+                }
+
+                //Vmp
+                vmp = null;
+
+                //Amp
+                cell = sheet.getCell(ampCol, i);
+                strAmp = cell.getContents();
+                System.out.println("strAmp = " + strAmp);
+                m = new HashMap();
+                m.put("v", vmp);
+                m.put("n", strAmp);
+                if (!strCat.equals("")) {
+                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    if (amp == null) {
+                        amp = new Amp();
+                        amp.setName(strAmp);
+                        amp.setMeasurementUnit(strengthUnit);
+                        amp.setDblValue((double) strengthUnitsPerIssueUnit);
+                        if (subCat == null) {
+                            amp.setCategory(subCat);
+                        } else {
+                            amp.setCategory(cat);
+                        }
+                        amp.setVmp(vmp);
+                        getAmpFacade().create(amp);
+                    } else {
+                        amp.setRetired(false);
+                        getAmpFacade().edit(amp);
+                    }
+                } else {
+                    amp = null;
+                    System.out.println("amp is null");
+                }
+                if (amp == null) {
+                    continue;
+                }
+                System.out.println("amp = " + amp.getName());
+                //Ampp
+                ampp = getStoreBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+
+                //Code
+                cell = sheet.getCell(codeCol, i);
+                strCode = cell.getContents();
+                if (strCode == null || strCode.trim().equals("")) {
+                    getBillNumberGenerator().storeItemNumberGenerator();
+                }
+                System.out.println("strCode = " + strCode);
+                amp.setCode(strCode);
+                getAmpFacade().edit(amp);
+                //Code
+                cell = sheet.getCell(barcodeCol, i);
+                strBarcode = cell.getContents();
+                System.out.println("strBarCode = " + strBarcode);
+                amp.setCode(strBarcode);
+                getAmpFacade().edit(amp);
+                //Distributor
+                cell = sheet.getCell(distributorCol, i);
+                strDistributor = cell.getContents();
+                distributor = getInstitutionController().getInstitutionByName(strDistributor, InstitutionType.Dealer);
+                if (distributor != null) {
+                    System.out.println("distributor = " + distributor.getName());
+                    ItemsDistributors id = new ItemsDistributors();
+                    id.setInstitution(distributor);
+                    id.setItem(amp);
+                    id.setOrderNo(0);
+                    getItemsDistributorsFacade().create(id);
+                } else {
+                    System.out.println("distributor is null");
+                }
+                //Manufacture
+                cell = sheet.getCell(manufacturerCol, i);
+                strManufacturer = cell.getContents();
+                manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
+                amp.setManufacturer(manufacturer);
+                //Importer
+                cell = sheet.getCell(importerCol, i);
+                strImporter = cell.getContents();
+                importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
+                amp.setManufacturer(importer);
+                //
+                String temStr;
+
+                cell = sheet.getCell(stockQtyCol, i);
+                temStr = cell.getContents();
+                try {
+                    stockQty = Double.valueOf(temStr);
+                } catch (Exception e) {
+                    stockQty = 0;
+                }
+
+                cell = sheet.getCell(pruchaseRateCol, i);
+                temStr = cell.getContents();
+                try {
+                    pp = Double.valueOf(temStr);
+                } catch (Exception e) {
+                    pp = 0;
+                }
+                if (pp == 0.0) {
+                    pp = 1.0;
+                }
+
+                cell = sheet.getCell(saleRateCol, i);
+                temStr = cell.getContents();
+                try {
+                    sp = Double.valueOf(temStr);
+                } catch (Exception e) {
+                    sp = 0;
+                }
+
+                if (sp == 0.0) {
+                    sp = pp;
+                }
+
+                cell = sheet.getCell(batchCol, i);
+                batch = cell.getContents();
+
+                cell = sheet.getCell(doeCol, i);
+                temStr = cell.getContents();
+                try {
+                    doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
+                } catch (Exception e) {
+                    doe = new Date();
+                }
+
+                getStorePurchaseController().getCurrentBillItem().setItem(amp);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setItem(amp) = " + getStorePurchaseController().getCurrentBillItem().getItem());
+                getStorePurchaseController().getCurrentBillItem().setTmpQty(stockQty);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty) = " + getStorePurchaseController().getCurrentBillItem().getTmpQty());
+                getStorePurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp); = " + getStorePurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate());
+                getStorePurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp); = " + getStorePurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate());
+                getStorePurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe) = " + getStorePurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getDoe());
+                if (batch == null || batch.trim().equals("")) {
+                    getStorePurchaseController().setBatch();
+                } else {
+                    getStorePurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(batch);
+                }
+                getStorePurchaseController().addItem();
+            }
+            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            return "/store/store_purchase";
+        } catch (IOException | BiffException ex) {
+            UtilityController.addErrorMessage(ex.getMessage());
+            return "";
+        }
+    }
+
     public void resetGrnReference() {
         String sql;
         Map temMap = new HashMap();
@@ -620,16 +981,16 @@ public class StoreItemExcelManager implements Serializable {
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             if (sh != null) {
                 System.err.println("Prev History Id " + sh.getId());
-             //   System.out.println("Previuos Stock " + sh.getStockQty());
-             //   System.out.println("Ph Qty " + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit());
-             //   System.out.println("Acc Qty " + (sh.getStockQty() + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit()));
+                //   System.out.println("Previuos Stock " + sh.getStockQty());
+                //   System.out.println("Ph Qty " + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit());
+                //   System.out.println("Acc Qty " + (sh.getStockQty() + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit()));
                 b.getStockHistory().setStockQty((sh.getStockQty() + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit()));
             } else if (phi != null) {
                 b.getStockHistory().setStockQty(phi.getQtyInUnit() + phi.getFreeQtyInUnit());
             } else {
                 b.getStockHistory().setStockQty(0.0);
             }
-         //   System.out.println("#########");
+            //   System.out.println("#########");
             getStockHistoryFacade().edit(b.getStockHistory());
 
         }
@@ -637,7 +998,7 @@ public class StoreItemExcelManager implements Serializable {
     }
 
     public String importToExcel() {
-        //System.out.println("importing to excel");
+        System.out.println("importing to excel");
         String strCat;
         String strAmp;
         String strCode;
@@ -702,43 +1063,43 @@ public class StoreItemExcelManager implements Serializable {
                 //Category
                 cell = sheet.getCell(catCol, i);
                 strCat = cell.getContents();
-                //System.out.println("strCat is " + strCat);
-                cat = getPharmacyBean().getPharmaceuticalCategoryByName(strCat);
+                System.out.println("strCat is " + strCat);
+                cat = getStoreBean().getPharmaceuticalCategoryByName(strCat);
                 if (cat == null) {
                     continue;
                 }
-                //System.out.println("cat = " + cat.getName());
+                System.out.println("cat = " + cat.getName());
 
                 //Strength Unit
                 cell = sheet.getCell(strengthUnitCol, i);
                 strStrengthUnit = cell.getContents();
-                //System.out.println("strStrengthUnit is " + strengthUnitCol);
-                strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
+                System.out.println("strStrengthUnit is " + strengthUnitCol);
+                strengthUnit = getStoreBean().getUnitByName(strStrengthUnit);
                 if (strengthUnit == null) {
                     continue;
                 }
-                //System.out.println("strengthUnit = " + strengthUnit.getName());
+                System.out.println("strengthUnit = " + strengthUnit.getName());
                 //Pack Unit
                 cell = sheet.getCell(packUnitCol, i);
                 strPackUnit = cell.getContents();
-                //System.out.println("strPackUnit = " + strPackUnit);
-                packUnit = getPharmacyBean().getUnitByName(strPackUnit);
+                System.out.println("strPackUnit = " + strPackUnit);
+                packUnit = getStoreBean().getUnitByName(strPackUnit);
                 if (packUnit == null) {
                     continue;
                 }
-                //System.out.println("packUnit = " + packUnit.getName());
+                System.out.println("packUnit = " + packUnit.getName());
                 //Issue Unit
                 cell = sheet.getCell(issueUnitCol, i);
                 strIssueUnit = cell.getContents();
-                //System.out.println("strIssueUnit is " + strIssueUnit);
-                issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
+                System.out.println("strIssueUnit is " + strIssueUnit);
+                issueUnit = getStoreBean().getUnitByName(strIssueUnit);
                 if (issueUnit == null) {
                     continue;
                 }
                 //StrengthOfAnMeasurementUnit
                 cell = sheet.getCell(strengthOfIssueUnitCol, i);
                 strStrength = cell.getContents();
-                //System.out.println("strStrength = " + strStrength);
+                System.out.println("strStrength = " + strStrength);
                 if (!strStrength.equals("")) {
                     try {
                         strengthUnitsPerIssueUnit = Double.parseDouble(strStrength);
@@ -752,7 +1113,7 @@ public class StoreItemExcelManager implements Serializable {
                 //Issue Units Per Pack
                 cell = sheet.getCell(issueUnitsPerPackCol, i);
                 strPackSize = cell.getContents();
-                //System.out.println("strPackSize = " + strPackSize);
+                System.out.println("strPackSize = " + strPackSize);
                 if (!strPackSize.equals("")) {
                     try {
                         issueUnitsPerPack = Double.parseDouble(strPackSize);
@@ -766,25 +1127,25 @@ public class StoreItemExcelManager implements Serializable {
                 //Vtm
                 cell = sheet.getCell(vtmCol, i);
                 strGenericName = cell.getContents();
-                //System.out.println("strGenericName = " + strGenericName);
+                System.out.println("strGenericName = " + strGenericName);
                 if (!strGenericName.equals("")) {
-                    vtm = getPharmacyBean().getVtmByName(strGenericName);
+                    vtm = getStoreBean().getVtmByName(strGenericName);
                 } else {
-                    //System.out.println("vtm is null");
+                    System.out.println("vtm is null");
                     vtm = null;
                 }
 
                 //Vmp
-                vmp = getPharmacyBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
+                vmp = getStoreBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
                 if (vmp == null) {
-                    //System.out.println("vmp is null");
+                    System.out.println("vmp is null");
                     continue;
                 }
-                //System.out.println("vmp = " + vmp.getName());
+                System.out.println("vmp = " + vmp.getName());
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
-                //System.out.println("strAmp = " + strAmp);
+                System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("v", vmp);
                 m.put("n", strAmp);
@@ -804,25 +1165,25 @@ public class StoreItemExcelManager implements Serializable {
                     }
                 } else {
                     amp = null;
-                    //System.out.println("amp is null");
+                    System.out.println("amp is null");
                 }
                 if (amp == null) {
                     continue;
                 }
-                //System.out.println("amp = " + amp.getName());
+                System.out.println("amp = " + amp.getName());
                 //Ampp
-                ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+                ampp = getStoreBean().getAmpp(amp, issueUnitsPerPack, packUnit);
 
                 //Code
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
-                //System.out.println("strCode = " + strCode);
+                System.out.println("strCode = " + strCode);
                 amp.setCode(strCode);
                 getAmpFacade().edit(amp);
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
-                //System.out.println("strBarCode = " + strBarcode);
+                System.out.println("strBarCode = " + strBarcode);
                 amp.setCode(strBarcode);
                 getAmpFacade().edit(amp);
                 //Distributor
@@ -830,14 +1191,14 @@ public class StoreItemExcelManager implements Serializable {
                 strDistributor = cell.getContents();
                 distributor = getInstitutionController().getInstitutionByName(strDistributor, InstitutionType.Dealer);
                 if (distributor != null) {
-                    //System.out.println("distributor = " + distributor.getName());
+                    System.out.println("distributor = " + distributor.getName());
                     ItemsDistributors id = new ItemsDistributors();
                     id.setInstitution(distributor);
                     id.setItem(amp);
                     id.setOrderNo(0);
                     getItemsDistributorsFacade().create(id);
                 } else {
-                    //System.out.println("distributor is null");
+                    System.out.println("distributor is null");
                 }
             }
 
@@ -907,7 +1268,7 @@ public class StoreItemExcelManager implements Serializable {
                     continue;
                 }
 
-                cat = getPharmacyBean().getStoreItemCategoryByName(catName);
+                cat = getStoreBean().getStoreItemCategoryByName(catName);
                 if (cat == null) {
                     cat = new StoreItemCategory();
                     cat.setName(catName);
@@ -954,7 +1315,7 @@ public class StoreItemExcelManager implements Serializable {
     }
 
     public String detectMismatch() {
-     //   System.out.println("dictecting mismatch");
+        //   System.out.println("dictecting mismatch");
         String itemName;
         String itemCode;
         String genericName;
@@ -1004,11 +1365,11 @@ public class StoreItemExcelManager implements Serializable {
 
                 String sql;
                 m.put("strAmp", itemName.toUpperCase());
-             //   System.out.println("m = " + m);
+                //   System.out.println("m = " + m);
                 sql = "Select amp from Amp amp where amp.retired=false and upper(amp.name)=:strAmp";
-             //   System.out.println("sql = " + sql);
+                //   System.out.println("sql = " + sql);
                 Amp amp = getAmpFacade().findFirstBySQL(sql, m);
-             //   System.out.println("amp = " + amp);
+                //   System.out.println("amp = " + amp);
                 if (amp != null) {
                     if (amp.getCode() != null) {
                         if (!amp.getCode().equalsIgnoreCase(itemCode)) {
@@ -1021,7 +1382,7 @@ public class StoreItemExcelManager implements Serializable {
                         }
                     }
                 } else {
-                 //   System.out.println("added to list");
+                    //   System.out.println("added to list");
                     PharmacyImportCol npi = new PharmacyImportCol();
                     long l;
                     double d;
@@ -1035,7 +1396,7 @@ public class StoreItemExcelManager implements Serializable {
                         d = Double.parseDouble(sheet.getCell(5, i).getContents());
                     } catch (NumberFormatException e) {
                         d = 0.0;
-                     //   System.out.println("e = " + e);
+                        //   System.out.println("e = " + e);
                     }
                     npi.setItem6_StrengthOfIssueUnit(d);
 
@@ -1045,7 +1406,7 @@ public class StoreItemExcelManager implements Serializable {
                         d = Double.parseDouble(sheet.getCell(7, i).getContents());
                     } catch (NumberFormatException e) {
                         d = 0.0;
-                     //   System.out.println("e = " + e);
+                        //   System.out.println("e = " + e);
                     }
                     npi.setItem8_IssueUnitsPerPack(d);
 
@@ -1060,14 +1421,14 @@ public class StoreItemExcelManager implements Serializable {
             UtilityController.addSuccessMessage("Succesful. All Mismatches listed below.");
             return "";
         } catch (IOException | BiffException ex) {
-         //   System.out.println("ex = " + ex);
+            //   System.out.println("ex = " + ex);
             UtilityController.addErrorMessage(ex.getMessage());
             return "";
         }
     }
 
     public String importToExcelBarcode() {
-        //System.out.println("importing to excel");
+        System.out.println("importing to excel");
 
         String strAmp;
         String strBarcode;
@@ -1108,7 +1469,7 @@ public class StoreItemExcelManager implements Serializable {
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
-                //System.out.println("strAmp = " + strAmp);
+                System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp);
 
@@ -1150,7 +1511,7 @@ public class StoreItemExcelManager implements Serializable {
     }
 
     public String importToExcelCategoriOnly() {
-        //System.out.println("importing to excel");
+        System.out.println("importing to excel");
         String strCat;
         String strAmp = null;
 
@@ -1190,12 +1551,12 @@ public class StoreItemExcelManager implements Serializable {
                 //Category
                 cell = sheet.getCell(catCol, i);
                 strCat = cell.getContents();
-                //System.out.println("strCat is " + strCat);
-                cat = getPharmacyBean().getPharmaceuticalCategoryByName(strCat);
+                System.out.println("strCat is " + strCat);
+                cat = getStoreBean().getPharmaceuticalCategoryByName(strCat);
                 if (cat == null) {
                     continue;
                 }
-                //System.out.println("cat = " + cat.getName());
+                System.out.println("cat = " + cat.getName());
                 if (!strCat.equals("")) {
                     amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
@@ -1210,7 +1571,7 @@ public class StoreItemExcelManager implements Serializable {
                     }
                 } else {
                     amp = null;
-                    //System.out.println("amp is null");
+                    System.out.println("amp is null");
                 }
                 if (amp == null) {
                     continue;
@@ -1459,12 +1820,12 @@ public class StoreItemExcelManager implements Serializable {
         this.vtms = vtms;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
+    public StoreBean getStoreBean() {
+        return storeBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
+    public void setStoreBean(StoreBean storeBean) {
+        this.storeBean = storeBean;
     }
 
     public int getCodeCol() {
@@ -1578,7 +1939,5 @@ public class StoreItemExcelManager implements Serializable {
     public void setStoreItemCategoryFacade(StoreItemCategoryFacade storeItemCategoryFacade) {
         this.storeItemCategoryFacade = storeItemCategoryFacade;
     }
-
-
 
 }

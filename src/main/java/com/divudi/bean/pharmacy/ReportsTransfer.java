@@ -13,8 +13,7 @@ import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -68,6 +67,7 @@ public class ReportsTransfer implements Serializable {
     double marginValue;
     double netTotalValues;
     double retailValue;
+    Category category;
 
     List<BillItem> transferItems;
     List<Bill> transferBills;
@@ -86,7 +86,7 @@ public class ReportsTransfer implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFacade BillFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
 
     /**
@@ -109,6 +109,16 @@ public class ReportsTransfer implements Serializable {
     public void setBillBeanController(BillBeanController billBeanController) {
         this.billBeanController = billBeanController;
     }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+    
+    
 
     public void fillMovingWithStock() {
         String sql;
@@ -238,8 +248,10 @@ public class ReportsTransfer implements Serializable {
         if (fromDepartment != null && toDepartment != null) {
             m.put("fdept", fromDepartment);
             m.put("tdept", toDepartment);
-            sql = "select bi from BillItem bi where bi.bill.fromDepartment=:fdept"
-                    + " and bi.bill.department=:tdept and bi.bill.createdAt between :fd "
+            sql = "select bi from BillItem bi "
+                    + " where bi.bill.fromDepartment=:fdept"
+                    + " and bi.bill.department=:tdept "
+                    + " and bi.bill.createdAt between :fd "
                     + "and :td and bi.bill.billType=:bt order by bi.id";
         } else if (fromDepartment == null && toDepartment != null) {
             m.put("tdept", toDepartment);
@@ -489,6 +501,12 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
+        
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+            
+        }
 
         sql += " and b.bill.createdAt between :fd and :td"
                 + " and b.bill.billType=:bt"
@@ -542,17 +560,23 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", billType);
         m.put("fdept", fromDepartment);
 
-        sql = "select sum(b.total)"
-                + " from Bill b "
-                + " where b.department=:fdept ";
+        sql = "select sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept ";
 
         if (toDepartment != null) {
-            sql += " and b.toDepartment=:tdept ";
+            sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
+        }
+        
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+            
         }
 
         sql += " and b.createdAt between :fd and :td"
-                + " and b.billType=:bt";
+                + " and b.bill.billType=:bt";
 
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
@@ -565,17 +589,23 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", billType);
         m.put("fdept", fromDepartment);
 
-        sql = "select sum(b.margin)"
-                + " from Bill b "
-                + " where b.department=:fdept ";
+        sql = "select sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept ";
 
         if (toDepartment != null) {
-            sql += " and b.toDepartment=:tdept ";
+            sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
+        }
+        
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+            
         }
 
         sql += " and b.createdAt between :fd and :td"
-                + " and b.billType=:bt";
+                + " and b.bill.billType=:bt";
 
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
@@ -588,17 +618,23 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", billType);
         m.put("fdept", fromDepartment);
 
-        sql = "select sum(b.discount)"
-                + " from Bill b "
-                + " where b.department=:fdept ";
+        sql = "select sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept ";
 
         if (toDepartment != null) {
-            sql += " and b.toDepartment=:tdept ";
+            sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
+        }
+        
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+            
         }
 
         sql += " and b.createdAt between :fd and :td"
-                + " and b.billType=:bt";
+                + " and b.bill.billType=:bt";
 
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
@@ -611,17 +647,23 @@ public class ReportsTransfer implements Serializable {
         m.put("bt", billType);
         m.put("fdept", fromDepartment);
 
-        sql = "select sum(b.netTotal)"
-                + " from Bill b "
-                + " where b.department=:fdept ";
+        sql = "select sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.bill.department=:fdept ";
 
         if (toDepartment != null) {
-            sql += " and b.toDepartment=:tdept ";
+            sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
+        }
+        
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+            
         }
 
         sql += " and b.createdAt between :fd and :td"
-                + " and b.billType=:bt";
+                + " and b.bill.billType=:bt";
 
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
@@ -814,7 +856,7 @@ public class ReportsTransfer implements Serializable {
 
     public void fillItemCountsBhtStore() {
 
-        List<Object[]> list = fetchBillItem(BillType.StoreBhtIssue);
+        List<Object[]> list = fetchBillItem(BillType.StoreBhtPre);
 
         if (list == null) {
             return;
@@ -835,9 +877,9 @@ public class ReportsTransfer implements Serializable {
             row.setDiscount((Double) obj[3]);
             row.setNet((Double) obj[4]);
 
-            Double pre = calCount(row.getItemBatch(), BillType.StoreBhtIssue, new PreBill());
-            Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreBhtIssue, new PreBill());
-            Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtIssue, new RefundBill());
+            Double pre = calCount(row.getItemBatch(), BillType.StoreBhtPre, new PreBill());
+            Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreBhtPre, new PreBill());
+            Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
             System.err.println("Return " + returned);
@@ -853,10 +895,10 @@ public class ReportsTransfer implements Serializable {
             itemCounts.add(row);
         }
 
-        billTotal = fetchBillTotal(BillType.StoreBhtIssue);
-        billMargin = fetchBillMargin(BillType.StoreBhtIssue);
-        billDiscount = fetchBillDiscount(BillType.StoreBhtIssue);
-        billNetTotal = fetchBillNetTotal(BillType.StoreBhtIssue);
+        billTotal = fetchBillTotal(BillType.StoreBhtPre);
+        billMargin = fetchBillMargin(BillType.StoreBhtPre);
+        billDiscount = fetchBillDiscount(BillType.StoreBhtPre);
+        billNetTotal = fetchBillNetTotal(BillType.StoreBhtPre);
 
     }
 
@@ -887,6 +929,13 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
+        
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+            
+        }
+        
 
         sql += " and b.bill.createdAt between :fd and :td"
                 + " and b.bill.billType=:bt";
@@ -917,6 +966,12 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
+        
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+            
+        }
 
         sql += " and b.bill.createdAt between :fd and :td"
                 + " and b.bill.billType=:bt";
@@ -946,6 +1001,12 @@ public class ReportsTransfer implements Serializable {
         if (toDepartment != null) {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
+        }
+        
+        if (category != null) {
+            sql += " and b.item.category=:cat";
+            m.put("cat", category);
+            
         }
 
         sql += " and b.bill.createdAt between :fd and :td"
