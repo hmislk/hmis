@@ -48,9 +48,9 @@ import javax.persistence.TemporalType;
  */
 @Named
 @ApplicationScoped
-public class PharmacyCalculation implements Serializable{
+public class PharmacyCalculation implements Serializable {
 
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -68,8 +68,8 @@ public class PharmacyCalculation implements Serializable{
     private CategoryFacade categoryFacade;
     @EJB
     private BillFacade billFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
 
 //    public void editBill(Bill bill, Bill ref, SessionController sc) {
 //
@@ -100,7 +100,7 @@ public class PharmacyCalculation implements Serializable{
                 + " and i.item.retired=false"
                 + " and i.institution=:ins "
                 + " order by i.item.name ";
-        tmp = getItemFacade().findBySQL(temSql,hm);
+        tmp = getItemFacade().findBySQL(temSql, hm);
 
         if (tmp == null) {
             tmp = new ArrayList<>();
@@ -505,15 +505,21 @@ public class PharmacyCalculation implements Serializable{
 //            //System.err.println("Edit");
 //            i.get(0).setBatchNo(i.get(0).getBatchNo());
 //            i.get(0).setDateOfExpire(i.get(0).getDateOfExpire());
+            itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
+            itemBatch.setModal(tmp.getPharmaceuticalBillItem().getModel());
             return i.get(0);
         } else {
             //System.err.println("Create");
+            itemBatch.setMake(tmp.getPharmaceuticalBillItem().getMake());
+            itemBatch.setModal(tmp.getPharmaceuticalBillItem().getModel());
             getItemBatchFacade().create(itemBatch);
         }
 
         //System.err.println("ItemBatc Id " + itemBatch.getId());
         return itemBatch;
     }
+    
+    
 
     public List<Item> findItem(Amp tmp, List<Item> items) {
 
@@ -648,6 +654,10 @@ public class PharmacyCalculation implements Serializable{
             msg = "Please Fill Batch deatail and Sale Price to All Item";
         }
 
+        if (b.getReferenceInstitution() == null) {
+            msg = "Please Fill Reference Institution";
+        }
+
         return msg;
     }
 
@@ -770,11 +780,11 @@ public class PharmacyCalculation implements Serializable{
         this.billFacade = billFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 }

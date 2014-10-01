@@ -5,9 +5,11 @@
 package com.divudi.entity;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -38,6 +40,8 @@ public class ServiceSession extends Item implements Serializable {
     
     @OneToOne
     ServiceSession afterSession;
+    @ManyToOne
+    SessionNumberGenerator sessionNumberGenerator;
     @OneToOne(mappedBy = "afterSession")
     ServiceSession beforeSession;
     /////Newly Added
@@ -48,10 +52,28 @@ public class ServiceSession extends Item implements Serializable {
     double displayPercent;
     double duration;
     int roomNo;
+    int durationIncrementCount =1;
+    boolean showAppointmentCount = true;
+    boolean oncallBookingsAllowed = true;
+    long advanceAppointmentPeriod = 10;
+    int advanceAPpointmentPeriodUnit = Calendar.DATE;
+    boolean showAppointmentTime = true;
+   
+    
     
     
     @Transient
     ServiceSession originatingSession;
+
+    public SessionNumberGenerator getSessionNumberGenerator() {
+        return sessionNumberGenerator;
+    }
+
+    public void setSessionNumberGenerator(SessionNumberGenerator sessionNumberGenerator) {
+        this.sessionNumberGenerator = sessionNumberGenerator;
+    }
+    
+    
 
     public ServiceSession getOriginatingSession() {
         return originatingSession;

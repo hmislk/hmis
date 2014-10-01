@@ -57,4 +57,25 @@ public class JsfUtil {
         return converter.getAsObject(FacesContext.getCurrentInstance(), component, theId);
     }
 
+    public static enum PersistAction {
+
+        CREATE,
+        DELETE,
+        UPDATE
+    }
+
+    public static boolean isValidationFailed() {
+        return FacesContext.getCurrentInstance().isValidationFailed();
+    }
+    
+    
+    
+    
+    
+    
+  
+  
+    
+    
+
 }

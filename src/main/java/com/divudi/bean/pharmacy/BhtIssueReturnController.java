@@ -9,7 +9,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
@@ -56,10 +56,10 @@ public class BhtIssueReturnController implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
-    private BillNumberController billNumberBean;
+    private BillNumberGenerator billNumberBean;
     @EJB
     private BillFacade billFacade;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -137,7 +137,7 @@ public class BhtIssueReturnController implements Serializable {
 
         getReturnBill().copy(getBill());
 
-        getReturnBill().setBillType(BillType.PharmacyBhtPre);
+        getReturnBill().setBillType(getBill().getBillType());
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
@@ -152,10 +152,10 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
         getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getInstitution(), new RefundBill(), BillType.PharmacyBhtPre, BillNumberSuffix.PHISSRET));
+                getSessionController().getInstitution(), new RefundBill(), getBill().getBillType(), BillNumberSuffix.PHISSRET));
 
         getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getDepartment(), new RefundBill(), BillType.PharmacyBhtPre, BillNumberSuffix.PHISSRET));
+                getSessionController().getDepartment(), new RefundBill(), getBill().getBillType(), BillNumberSuffix.PHISSRET));
 
         //   getReturnBill().setInsId(getBill().getInsId());
         if (getReturnBill().getId() == null) {
@@ -314,7 +314,7 @@ public class BhtIssueReturnController implements Serializable {
             tmp.setBillItem(bi);
             tmp.copy(i);
 
-            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PharmacyBhtPre);
+            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), getBill().getBillType());
 
             System.err.println("Refund " + rFund);
             double tmpQty = (Math.abs(i.getQtyInUnit())) - Math.abs(rFund);
@@ -378,11 +378,11 @@ public class BhtIssueReturnController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

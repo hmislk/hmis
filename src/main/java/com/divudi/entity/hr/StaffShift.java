@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.hr;
 
+import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -12,6 +13,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -60,29 +62,483 @@ public class StaffShift implements Serializable {
     private int repeatedCount;
     @Enumerated(EnumType.STRING)
     private WorkingType workingType;
-    private boolean consideredForOt;
-    boolean consideredForSalary;
-    boolean consideredForExtraDuty;
+//    private boolean consideredForOt;
+//    boolean consideredForSalary;
+//    boolean consideredForExtraDuty;
 
     @ManyToOne
     StaffSalary staffSalary;
     @ManyToOne
     FingerPrintRecord startRecord;
     @ManyToOne
-    FingerPrintRecord endRecord;    
-    
+    FingerPrintRecord endRecord;
 
     @ManyToOne
     StaffShift previousStaffShift;
     @ManyToOne
     StaffShift nextStaffShift;
+    @ManyToOne
+    StaffShift referenceStaffShift;
+
+    double earlyInLogged;
+    double earlyOutLogged;
+    double earlyInVarified;
+    double earlyOutVarified;
+    double workedWithinTimeFrameLogged;
+    double workedOutSideTimeFrameLogged;
+    double workedTimeLogged;
+    double workedWithinTimeFrameVarified;
+    double workedOutSideTimeFrameVarified;
+    double workedTimeVarified;
+    double lateInVarified;
+    double lateOutVarified;
+    double lateInLogged;
+    double lateOutLogged;
+    @Column(name = "overTimeFromStartRecordLogged")
+    double extraTimeFromStartRecordLogged;
+    @Column(name = "overTimeFromEndRecordLogged")
+    double extraTimeFromEndRecordLogged;
+    @Column(name = "overTimeCompleteRecordLogged")
+    double extraTimeCompleteRecordLogged;
+    @Column(name = "overTimeFromStartRecordVarified")
+    double extraTimeFromStartRecordVarified;
+    @Column(name = "overTimeFromEndRecordVarified")
+    double extraTimeFromEndRecordVarified;
+    @Column(name = "overTimeCompleteRecordVarified")
+    double extraTimeCompleteRecordVarified;
 
     private boolean dayOff;
     private boolean sleepingDay;
     @Transient
     boolean transFirstColumn;
+    @Transient
+    Date transTime;
+    @Enumerated(EnumType.STRING)
+    LeaveType leaveType;
+    double qty;
 
-    
+    private void calLoggedStartRecord() {
+        Calendar fromCalendar = Calendar.getInstance();
+        Calendar toCalendar = Calendar.getInstance();
+        Long inSecond = 0l;
+        if (getStartRecord().getLoggedRecord() == null
+                || getStartRecord().getLoggedRecord().getRecordTimeStamp() == null) {
+            return;
+        }
+
+        //Calculate Early In Logged
+        if (getStartRecord().getLoggedRecord().getRecordTimeStamp().before(getShiftStartTime())) {
+            fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
+            toCalendar.setTime(getShiftStartTime());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            earlyInLogged = inSecond;
+        }
+
+        //Calculate Late In Logged
+        if (getShiftStartTime().before(getStartRecord().getLoggedRecord().getRecordTimeStamp())) {
+            fromCalendar.setTime(getShiftStartTime());
+            toCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            lateInLogged = inSecond;
+        }
+    }
+
+    private void calLoggedEndRecord() {
+        Calendar fromCalendar = Calendar.getInstance();
+        Calendar toCalendar = Calendar.getInstance();
+        Long inSecond = 0l;
+        if (getEndRecord().getLoggedRecord() == null
+                || getEndRecord().getLoggedRecord().getRecordTimeStamp() == null) {
+            return;
+        }
+
+        //Calculate Early Out Logged
+        if (getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
+            fromCalendar.setTime(getShiftEndTime());
+            toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            earlyOutLogged = inSecond;
+        }
+
+        //Calculate Late Out Logged
+        if (getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
+            fromCalendar.setTime(getShiftEndTime());
+            toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            lateOutLogged = inSecond;
+        }
+
+    }
+
+    private void calWorkedTimeLogged() {
+
+        if (getStartRecord().getLoggedRecord() == null
+                || getStartRecord().getLoggedRecord().getRecordTimeStamp() == null
+                || getEndRecord().getLoggedRecord() == null
+                || getEndRecord().getLoggedRecord().getRecordTimeStamp() == null) {
+            return;
+
+        }
+        Calendar fromCalendar = Calendar.getInstance();
+        Calendar toCalendar = Calendar.getInstance();
+        double inSecond = 0.0;
+        fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
+        toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
+
+        //Worked Time Within Time Frame Looged
+        inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+        inSecond = inSecond - (earlyInLogged + lateOutLogged);
+        workedWithinTimeFrameLogged = inSecond;
+
+        //Worked Out Side Time Frame Looged        
+        inSecond = earlyInLogged + lateOutLogged;
+        workedOutSideTimeFrameLogged = inSecond;
+
+        //Worked Time Logged
+        inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+        workedTimeLogged = inSecond;
+
+    }
+
+    private void calWorkedTimeVarified() {
+        Calendar fromCalendar = Calendar.getInstance();
+        Calendar toCalendar = Calendar.getInstance();
+        double inSecond = 0.0;
+        fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
+        toCalendar.setTime(getEndRecord().getRecordTimeStamp());
+
+        //Worked Time Within Time Frame Varified
+        inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+        inSecond = inSecond - (earlyInVarified + lateOutVarified);
+        workedWithinTimeFrameVarified = inSecond;
+
+        //Worked Out Side Time Frame Varified        
+        inSecond = earlyInVarified + lateOutVarified;
+        workedOutSideTimeFrameVarified = inSecond;
+
+        //Worked Time Varified
+        inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+        workedTimeVarified = inSecond;
+
+    }
+
+    private void calVarifiedRecord() {
+        Calendar fromCalendar = Calendar.getInstance();
+        Calendar toCalendar = Calendar.getInstance();
+        Long inSecond = 0l;
+        //Calculate Early In Varified
+        if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
+            fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
+            toCalendar.setTime(getShiftStartTime());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            earlyInVarified = inSecond;
+        }
+
+        //Calculate Early Out Varified
+        if (getEndRecord().getRecordTimeStamp().before(getShiftEndTime())) {
+            fromCalendar.setTime(getEndRecord().getRecordTimeStamp());
+            toCalendar.setTime(getShiftEndTime());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            earlyOutVarified = inSecond;
+        }
+        //Calculate Late In Varified
+        if (getShiftStartTime().before(getStartRecord().getRecordTimeStamp())) {
+            fromCalendar.setTime(getShiftStartTime());
+            toCalendar.setTime(getStartRecord().getRecordTimeStamp());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            lateInVarified = inSecond;
+        }
+        //Calculate Late Out Varified
+        if (getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
+            fromCalendar.setTime(getShiftEndTime());
+            toCalendar.setTime(getEndRecord().getRecordTimeStamp());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            lateOutVarified = inSecond;
+        }
+
+    }
+
+    private void calOverTime() {
+        Calendar fromCalendar = Calendar.getInstance();
+        Calendar toCalendar = Calendar.getInstance();
+        Long inSecond = 0l;
+        //Over Time From Start Record Logged 
+        extraTimeFromStartRecordLogged = 0;
+        if (getStartRecord().isAllowedOverTime()
+                && getStartRecord().getLoggedRecord() != null
+                && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null) {
+
+            if (getStartRecord().getLoggedRecord().getRecordTimeStamp().before(getShiftStartTime())) {
+                fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
+                toCalendar.setTime(getShiftStartTime());
+                inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+                extraTimeFromStartRecordLogged = inSecond;
+            }
+        }
+
+        //Over Time From End Record Logged 
+        extraTimeFromEndRecordLogged = 0;
+        if (getEndRecord().isAllowedOverTime()
+                && getEndRecord().getLoggedRecord() != null
+                && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null) {
+
+            if (getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
+                fromCalendar.setTime(getShiftEndTime());
+                toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
+                inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+                extraTimeFromEndRecordLogged = inSecond;
+            }
+        }
+
+        //Over Time From Start Record Varified 
+        extraTimeFromStartRecordVarified = 0;
+        if (getStartRecord().isAllowedOverTime()) {
+
+            if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
+                fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
+                toCalendar.setTime(getShiftStartTime());
+                inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+                extraTimeFromStartRecordVarified = inSecond;
+            }
+        }
+
+        //Over Time From End Record Varified
+        extraTimeFromEndRecordVarified = 0;
+        if (getEndRecord().isAllowedOverTime()) {
+
+            if (getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
+                fromCalendar.setTime(getShiftEndTime());
+                toCalendar.setTime(getEndRecord().getRecordTimeStamp());
+                inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+                extraTimeFromEndRecordVarified = inSecond;
+            }
+        }
+
+    }
+
+    public void calOverTimeAll() {
+
+        Calendar fromCalendar = Calendar.getInstance();
+        Calendar toCalendar = Calendar.getInstance();
+        Long inSecond = 0l;
+
+        //Logged 
+        if (getStartRecord().getLoggedRecord() != null
+                && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null
+                && getStartRecord().getLoggedRecord().isAllowedOverTime()
+                && getEndRecord().getLoggedRecord() != null
+                && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null
+                && getEndRecord().getLoggedRecord().isAllowedOverTime()) {
+            fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
+            toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            extraTimeCompleteRecordLogged = inSecond;
+        }
+
+        //Varified 
+        if (getStartRecord().getRecordTimeStamp() != null
+                && getStartRecord().isAllowedOverTime()
+                && getEndRecord().getRecordTimeStamp() != null
+                && getEndRecord().isAllowedOverTime()) {
+            fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
+            toCalendar.setTime(getEndRecord().getRecordTimeStamp());
+            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+            extraTimeCompleteRecordVarified = inSecond;
+        }
+
+    }
+
+    public void calCulateTimes() {
+        if (getStartRecord() == null || getEndRecord() == null) {
+            return;
+        }
+
+        if (getShiftStartTime() == null
+                || getShiftEndTime() == null
+                || getStartRecord().getRecordTimeStamp() == null
+                || getEndRecord().getRecordTimeStamp() == null) {
+            return;
+        }
+
+        calVarifiedRecord();
+        calLoggedStartRecord();
+        calLoggedEndRecord();
+        calWorkedTimeLogged();
+        calWorkedTimeVarified();
+        calOverTime();
+    }
+
+    public double getEarlyInLogged() {
+        return earlyInLogged;
+    }
+
+    public void setEarlyInLogged(double earlyInLogged) {
+        this.earlyInLogged = earlyInLogged;
+    }
+
+    public double getEarlyOutLogged() {
+        return earlyOutLogged;
+    }
+
+    public void setEarlyOutLogged(double earlyOutLogged) {
+        this.earlyOutLogged = earlyOutLogged;
+    }
+
+    public double getEarlyInVarified() {
+        return earlyInVarified;
+    }
+
+    public void setEarlyInVarified(double earlyInVarified) {
+        this.earlyInVarified = earlyInVarified;
+    }
+
+    public double getEarlyOutVarified() {
+        return earlyOutVarified;
+    }
+
+    public void setEarlyOutVarified(double earlyOutVarified) {
+        this.earlyOutVarified = earlyOutVarified;
+    }
+
+    public double getWorkedWithinTimeFrameLogged() {
+        return workedWithinTimeFrameLogged;
+    }
+
+    public void setWorkedWithinTimeFrameLogged(double workedWithinTimeFrameLogged) {
+        this.workedWithinTimeFrameLogged = workedWithinTimeFrameLogged;
+    }
+
+    public double getWorkedOutSideTimeFrameLogged() {
+        return workedOutSideTimeFrameLogged;
+    }
+
+    public void setWorkedOutSideTimeFrameLogged(double workedOutSideTimeFrameLogged) {
+        this.workedOutSideTimeFrameLogged = workedOutSideTimeFrameLogged;
+    }
+
+    public double getWorkedWithinTimeFrameVarified() {
+        return workedWithinTimeFrameVarified;
+    }
+
+    public void setWorkedWithinTimeFrameVarified(double workedWithinTimeFrameVarified) {
+        this.workedWithinTimeFrameVarified = workedWithinTimeFrameVarified;
+    }
+
+    public double getWorkedOutSideTimeFrameVarified() {
+        return workedOutSideTimeFrameVarified;
+    }
+
+    public void setWorkedOutSideTimeFrameVarified(double workedOutSideTimeFrameVarified) {
+        this.workedOutSideTimeFrameVarified = workedOutSideTimeFrameVarified;
+    }
+
+    public double getExtraTimeFromStartRecordLogged() {
+        return extraTimeFromStartRecordLogged;
+    }
+
+    public void setExtraTimeFromStartRecordLogged(double extraTimeFromStartRecordLogged) {
+        this.extraTimeFromStartRecordLogged = extraTimeFromStartRecordLogged;
+    }
+
+    public double getExtraTimeFromEndRecordLogged() {
+        return extraTimeFromEndRecordLogged;
+    }
+
+    public void setExtraTimeFromEndRecordLogged(double extraTimeFromEndRecordLogged) {
+        this.extraTimeFromEndRecordLogged = extraTimeFromEndRecordLogged;
+    }
+
+    public double getExtraTimeCompleteRecordLogged() {
+        return extraTimeCompleteRecordLogged;
+    }
+
+    public void setExtraTimeCompleteRecordLogged(double extraTimeCompleteRecordLogged) {
+        this.extraTimeCompleteRecordLogged = extraTimeCompleteRecordLogged;
+    }
+
+    public double getExtraTimeFromStartRecordVarified() {
+        return extraTimeFromStartRecordVarified;
+    }
+
+    public void setExtraTimeFromStartRecordVarified(double extraTimeFromStartRecordVarified) {
+        this.extraTimeFromStartRecordVarified = extraTimeFromStartRecordVarified;
+    }
+
+    public double getExtraTimeFromEndRecordVarified() {
+        return extraTimeFromEndRecordVarified;
+    }
+
+    public void setExtraTimeFromEndRecordVarified(double extraTimeFromEndRecordVarified) {
+        this.extraTimeFromEndRecordVarified = extraTimeFromEndRecordVarified;
+    }
+
+    public double getExtraTimeCompleteRecordVarified() {
+        return extraTimeCompleteRecordVarified;
+    }
+
+    public void setExtraTimeCompleteRecordVarified(double extraTimeCompleteRecordVarified) {
+        this.extraTimeCompleteRecordVarified = extraTimeCompleteRecordVarified;
+    }
+
+    public double getLateInVarified() {
+        return lateInVarified;
+    }
+
+    public void setLateInVarified(double lateInVarified) {
+        this.lateInVarified = lateInVarified;
+    }
+
+    public double getLateOutVarified() {
+        return lateOutVarified;
+    }
+
+    public void setLateOutVarified(double lateOutVarified) {
+        this.lateOutVarified = lateOutVarified;
+    }
+
+    public double getLateInLogged() {
+        return lateInLogged;
+    }
+
+    public void setLateInLogged(double lateInLogged) {
+        this.lateInLogged = lateInLogged;
+    }
+
+    public double getLateOutLogged() {
+        return lateOutLogged;
+    }
+
+    public void setLateOutLogged(double lateOutLogged) {
+        this.lateOutLogged = lateOutLogged;
+    }
+
+    public StaffShift() {
+        qty = 1;
+    }
+
+    public double getQty() {
+        return qty;
+    }
+
+    public void setQty(double qty) {
+        this.qty = qty;
+    }
+
+    public Date getTransTime() {
+        return transTime;
+    }
+
+    public void setTransTime(Date transTime) {
+        this.transTime = transTime;
+    }
+
+    public LeaveType getLeaveType() {
+        return leaveType;
+    }
+
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
+    }
 
     public boolean isTransFirstColumn() {
         return transFirstColumn;
@@ -94,14 +550,6 @@ public class StaffShift implements Serializable {
 
     public void setTransFirstColumn(boolean transFirstColumn) {
         this.transFirstColumn = transFirstColumn;
-    }
-
-    public boolean isConsideredForExtraDuty() {
-        return consideredForExtraDuty;
-    }
-
-    public void setConsideredForExtraDuty(boolean consideredForExtraDuty) {
-        this.consideredForExtraDuty = consideredForExtraDuty;
     }
 
     public StaffSalary getStaffSalary() {
@@ -118,35 +566,13 @@ public class StaffShift implements Serializable {
         this.setEndRecord(staffShift.getEndRecord());
         this.setPreviousStaffShift(staffShift.getPreviousStaffShift());
         this.setNextStaffShift(staffShift.getNextStaffShift());
-        // stf.setShiftEndTime(ss.getShiftEndTime());
+        this.setShiftDate(staffShift.getShiftDate());
+        this.setShiftStartTime(staffShift.getShiftStartTime());
+        this.setShiftEndTime(staffShift.getShiftEndTime());
         this.setSleepingDay(staffShift.isSleepingDay());
         this.setStaff(staffShift.getStaff());
         this.setWorkingType(staffShift.getWorkingType());
 
-    }
-
-    public boolean isConsideredForOt() {
-        return consideredForOt;
-    }
-
-    public boolean getConsideredForOt() {
-        return consideredForOt;
-    }
-
-    public void setConsideredForOt(boolean consideredForOt) {
-        this.consideredForOt = consideredForOt;
-    }
-
-    public boolean isConsideredForSalary() {
-        return consideredForSalary;
-    }
-
-    public boolean getConsideredForSalary() {
-        return consideredForSalary;
-    }
-
-    public void setConsideredForSalary(boolean consideredForSalary) {
-        this.consideredForSalary = consideredForSalary;
     }
 
     public FingerPrintRecord getStartRecord() {
@@ -371,6 +797,30 @@ public class StaffShift implements Serializable {
 
     public void setFingerPrintRecordList(List<FingerPrintRecord> fingerPrintRecordList) {
         this.fingerPrintRecordList = fingerPrintRecordList;
+    }
+
+    public StaffShift getReferenceStaffShift() {
+        return referenceStaffShift;
+    }
+
+    public void setReferenceStaffShift(StaffShift referenceStaffShift) {
+        this.referenceStaffShift = referenceStaffShift;
+    }
+
+    public double getWorkedTimeLogged() {
+        return workedTimeLogged;
+    }
+
+    public void setWorkedTimeLogged(double workedTimeLogged) {
+        this.workedTimeLogged = workedTimeLogged;
+    }
+
+    public double getWorkedTimeVarified() {
+        return workedTimeVarified;
+    }
+
+    public void setWorkedTimeVarified(double workedTimeVarified) {
+        this.workedTimeVarified = workedTimeVarified;
     }
 
 }

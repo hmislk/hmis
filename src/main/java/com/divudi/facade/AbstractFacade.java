@@ -30,6 +30,15 @@ public abstract class AbstractFacade<T> {
         getEntityManager().flush();
     }
 
+    public List<T> findRange(int[] range) {
+        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+        cq.select(cq.from(entityClass));
+        javax.persistence.Query q = getEntityManager().createQuery(cq);
+        q.setMaxResults(range[1] - range[0] + 1);
+        q.setFirstResult(range[0]);
+        return q.getResultList();
+    }
+
     public T findFirstBySQL(String temSQL, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
@@ -64,6 +73,8 @@ public abstract class AbstractFacade<T> {
     public void create(T entity) {
         getEntityManager().persist(entity);
         //getEntityManager().flush();
+        
+        
     }
 
     public void refresh(T entity) {
@@ -84,7 +95,15 @@ public abstract class AbstractFacade<T> {
     }
 
     public List<T> findAll(boolean withoutRetired) {
-        return findAll(null, null, withoutRetired);
+        javax.persistence.criteria.CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        javax.persistence.criteria.CriteriaQuery<T> cq = cb.createQuery(entityClass);
+        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
+        ParameterExpression<String> p = cb.parameter(String.class);
+        Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), false);
+        if (withoutRetired) {
+            cq.where(predicateRetired);
+        }
+        return getEntityManager().createQuery(cq).getResultList();
     }
 
     public List<T> findAll() {
@@ -217,6 +236,26 @@ public abstract class AbstractFacade<T> {
     public List<Object> findObjectBySQL(String temSQL) {
         TypedQuery<Object> qry = getEntityManager().createQuery(temSQL, Object.class);
         return qry.getResultList();
+    }
+
+    public Object[] findAggregateModified(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<Object[]> qry = getEntityManager().createQuery(temSQL, Object[].class);
+        setParameterObjectList(qry, parameters, tt);
+
+        try {
+            Object[] obj = qry.getSingleResult();
+
+            for (Object o : obj) {
+                if (o == null) {
+                    return null;
+                }
+            }
+
+            return obj;
+        } catch (Exception e) {
+            System.err.println("Aggregate " + e.getMessage());
+            return null;
+        }
     }
 
     public double findDoubleByJpql(String temSQL, Map<String, Object> parameters, TemporalType tt) {

@@ -37,7 +37,7 @@
                         <h:outputLabel  value="Supplier"  ></h:outputLabel>
                         <p:autoComplete converter="deal" 
                                         value="#{commonReport.institution}"
-                                        completeMethod="#{dealerController.completeDealor}"
+                                        completeMethod="#{storeDealorController.completeDealor}"
                                          forceSelection="true" rendered="true"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
@@ -48,10 +48,10 @@
                     <h:panelGrid columns="3">
                         <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
                                          styleClass="noPrintButton" 
-                                         actionListener="#{commonReport.createPurchaseDetailTable()}"
+                                         actionListener="#{commonReport.createPurchaseDetailTableStore()}"
                                          style="float: right;" /> 
                         
-                        <p:commandButton actionListener="#{commonReport.createPurchaseDetailTable()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton actionListener="#{commonReport.createPurchaseDetailTableStore()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <pe:exporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum," fileName="report_grn_detail_by_supplier"  />
                             </p:commandButton>
 

@@ -5,15 +5,15 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
@@ -21,17 +21,22 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
-import java.io.Serializable;
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
-import javax.ejb.EJB;
-import javax.inject.Inject;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TimeZone;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -51,8 +56,8 @@ public class PharmacyDealorBill implements Serializable {
     private List<BillItem> billItems;
     private List<BillItem> selectedBillItems;
     //EJB
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -84,7 +89,7 @@ public class PharmacyDealorBill implements Serializable {
 
         for (BillItem b : getBillItems()) {
             if (b.getReferenceBill() != null && b.getReferenceBill().getFromInstitution() != null) {
-                if (getCurrentBillItem().getReferenceBill().getFromInstitution().getId() != b.getReferenceBill().getFromInstitution().getId()) {
+                if (!Objects.equals(getCurrentBillItem().getReferenceBill().getFromInstitution().getId(), b.getReferenceBill().getFromInstitution().getId())) {
                     UtilityController.addErrorMessage("U can add only one type Credit companies at Once");
                     return true;
                 }
@@ -126,15 +131,21 @@ public class PharmacyDealorBill implements Serializable {
         Institution ins = institution;
         makeNull();
 
-        List<Bill> list = getBillController().getDealorBills(ins);
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        BillType[] billTypesArrayReturn = {BillType.PharmacyGrnReturn, BillType.PurchaseReturn, BillType.StoreGrnReturn, BillType.StorePurchaseReturn};
+        List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
+
+        List<Bill> list = getBillController().getDealorBills(ins, billTypesListBilled);
         for (Bill b : list) {
             getCurrentBillItem().setReferenceBill(b);
-            double returned = Math.abs(getCreditBean().getGrnReturnValue(getCurrentBillItem().getReferenceBill()));
+            double returned = Math.abs(getCreditBean().getGrnReturnValue(getCurrentBillItem().getReferenceBill(), billTypesListReturn));
             getCurrentBillItem().getReferenceBill().setTmpReturnTotal(returned);
 
             selectListener();
             addToBill();
         }
+        calTotalBySelectedBillTems();
     }
 
     public void addToBill() {
@@ -170,8 +181,23 @@ public class PharmacyDealorBill implements Serializable {
     }
 
     public void calTotal() {
+
         double n = 0.0;
         for (BillItem b : billItems) {
+            n += b.getNetValue();
+        }
+        getCurrent().setNetTotal(0 - n);
+        // //System.out.println("AAA : " + n);
+    }
+
+    public void calTotalBySelectedBillTems() {
+        if (selectedBillItems == null) {
+            getCurrent().setNetTotal(0);
+            return;
+        }
+
+        double n = 0.0;
+        for (BillItem b : selectedBillItems) {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(0 - n);
@@ -283,8 +309,33 @@ public class PharmacyDealorBill implements Serializable {
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
-        saveBill(BillType.GrnPayment);
+        saveBill(BillType.GrnPaymentPre);
         saveBillItem();
+
+        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+
+        UtilityController.addSuccessMessage("Bill Saved");
+        printPreview = true;
+    }
+    
+    public void settleBillAll() {
+        if (errorCheck()) {
+            return;
+        }
+
+        if (getSelectedBillItems() == null || getSelectedBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("There is No Bills seected to settle");
+            return;
+        }
+
+        calTotalBySelectedBillTems();
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+
+        getCurrent().setTotal(getCurrent().getNetTotal());
+
+        saveBill(BillType.GrnPaymentPre);
+        saveBillItemBySelectedItems();
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -295,6 +346,23 @@ public class PharmacyDealorBill implements Serializable {
 
     private void saveBillItem() {
         for (BillItem tmp : getBillItems()) {
+            tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            tmp.setCreater(getSessionController().getLoggedUser());
+            tmp.setBill(getCurrent());
+            tmp.setNetValue(0 - tmp.getNetValue());
+
+            if (tmp.getId() == null) {
+                getBillItemFacade().create(tmp);
+            }
+
+            updateReferenceBill(tmp);
+
+        }
+
+    }
+
+    private void saveBillItemBySelectedItems() {
+        for (BillItem tmp : getSelectedBillItems()) {
             tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getCurrent());
@@ -386,11 +454,11 @@ public class PharmacyDealorBill implements Serializable {
         this.billItems = billItems;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

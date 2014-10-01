@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="ConsumableCategoryCreateDlg" widgetVar="ConsumableCategoryCreateDialog" modal="true" resizable="false" appendTo="@(body)" header="Cerate Comsumable Category">
+            <h:form id="ConsumableCategoryCreateForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{consumableCategoryController.selected != null}">
+                        <p:outputLabel value="Name" for="name" />
+                        <p:inputText id="name" value="#{consumableCategoryController.selected.name}" title="Name" />
+                        <p:outputLabel value="Parent Category" for="parentCategory" />
+                        <p:selectOneMenu id="parentCategory" value="#{consumableCategoryController.selected.parentCategory}" >
+                            <f:selectItem itemLabel="Select Parent Ctegory"/>
+                            <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}"
+                                           var="parentCategoryItem"
+                                           itemValue="#{parentCategoryItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="Code" for="code" />
+                        <p:inputText id="code" value="#{consumableCategoryController.selected.code}" title="#{bundle.CreateConsumableCategoryTitle_code}" />
+                        <p:outputLabel value="ID" for="id" />
+                        <p:inputText id="id" value="#{consumableCategoryController.selected.id}" title="#{bundle.CreateConsumableCategoryTitle_id}" />
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{consumableCategoryController.create}" value="Save" update="display,:ConsumableCategoryListForm:datalist,:growl" oncomplete="handleSubmit(args,'ConsumableCategoryCreateDialog');"/>
+                    <p:commandButton value="Cancel" onclick="ConsumableCategoryCreateDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

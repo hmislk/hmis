@@ -11,7 +11,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.facade.AmpFacade;
 import com.divudi.entity.pharmacy.Amp;
 import java.io.Serializable;
@@ -56,8 +56,8 @@ public class StoreAmpController implements Serializable {
         this.itemsByCode = itemsByCode;
     }
 
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
 
     public void prepareAdd() {
         current = null;
@@ -79,7 +79,7 @@ public class StoreAmpController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
-        recreateModel();
+        items=null;
         // getItems();
     }
 

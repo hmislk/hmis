@@ -1,0 +1,209 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Bill Session Report" />
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From : " />
+                            <p:calendar value="#{channelReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="To : " />
+                            <p:calendar value="#{channelReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="Specialtiy : "/>
+                            <hr:completeSpeciality value="#{channelReportController.reportKeyWord.speciality}"/>
+                            <h:outputLabel value="Staff : "/>
+                            <hr:completeStaff value="#{channelReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Agency : "/>
+                            <hr:completeAgency value="#{channelReportController.reportKeyWord.institution}"/>                            
+                        </h:panelGrid>
+                        <p:commandButton ajax="false" value="Process Paid" action="#{channelReportController.createBillSession_report_1()}"/>
+                        <p:commandButton ajax="false" value="Clear" action="#{channelReportController.makeNull()}"/>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" />
+                        </p:commandButton>
+                        <p:panel id="gpBillPreview" >                     
+                            <p:dataTable value="#{channelReportController.billSessionsBilled}" var="bs">
+                                <p:column headerText="Booking ID">
+                                    #{bs.bill.bookingId}
+                                </p:column>
+                                <p:column headerText="Booking At">
+                                    #{bs.bill.createdAt}
+                                </p:column>
+                                <p:column headerText="Appointment At">
+                                    #{bs.bill.appointmentAt}
+                                </p:column>
+                                <p:column headerText="User">
+                                    #{bs.bill.creater.webUserPerson.nameWithTitle}
+                                </p:column>
+                                <p:column headerText="Person">
+                                    #{bs.bill.person.nameWithTitle}
+                                </p:column>
+                                <p:column headerText="Staff">
+                                    #{bs.staff.person.nameWithTitle}
+                                </p:column>
+                                <p:column headerText="Session Name">
+                                    #{bs.serviceSession.name}
+                                </p:column>
+                                <p:column headerText="Doctor Fee">
+                                    #{bs.billItem.staffFee}
+                                </p:column>
+                                <p:column headerText="Hospital Fee">
+                                    #{bs.billItem.hospitalFee}
+                                </p:column>
+                                <p:column headerText="Payment Method">
+                                    #{bs.bill.paymentMethod}
+                                </p:column>
+                                <p:column headerText="Status">
+                                    <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
+                                    <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
+                                    <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportController.netTotal}">
+                                        <f:convertNumber pattern="#,###.##" />
+                                    </p:outputLabel>
+                                </f:facet>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:dataTable value="#{channelReportController.billSessionsCancelled}"  var="bs">
+                                <p:column headerText="Booking ID">
+                                    #{bs.bill.bookingId}
+                                </p:column>
+                                <p:column headerText="Booking At">
+                                    #{bs.bill.createdAt}
+                                </p:column>
+                                <p:column headerText="Appointment At">
+                                    #{bs.bill.appointmentAt}
+                                </p:column>
+                                <p:column headerText="User">
+                                    #{bs.bill.creater.webUserPerson.nameWithTitle}
+                                </p:column>
+                                <p:column headerText="Person">
+                                    #{bs.bill.person.nameWithTitle}
+                                </p:column>
+                                <p:column headerText="Staff">
+                                    #{bs.staff.person.nameWithTitle}
+                                </p:column>
+                                <p:column headerText="Session Name">
+                                    #{bs.serviceSession.name}
+                                </p:column>
+                                <p:column headerText="Doctor Fee">
+                                    #{bs.billItem.staffFee}
+                                </p:column>
+                                <p:column headerText="Hospital Fee">
+                                    #{bs.billItem.hospitalFee}
+                                </p:column>
+                                <p:column headerText="Payment Method">
+                                    #{bs.bill.paymentMethod}
+                                </p:column>
+                                <p:column headerText="Status">
+                                    <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
+                                    <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.cancelTotal}">
+                                            <f:convertNumber pattern="#,###.##" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:dataTable value="#{channelReportController.billSessionsReturn}" var="bs">
+                                <p:column headerText="Booking ID">
+                                    #{bs.bill.bookingId}
+                                </p:column>
+                                <p:column headerText="Booking At">
+                                    #{bs.bill.createdAt}
+                                </p:column>
+                                <p:column headerText="Appointment At">
+                                    #{bs.bill.appointmentAt}
+                                </p:column>
+                                <p:column headerText="User">
+                                    #{bs.bill.creater.webUserPerson.nameWithTitle}
+                                </p:column>
+                                <p:column headerText="Person">
+                                    #{bs.bill.person.nameWithTitle}
+                                </p:column>
+                                <p:column headerText="Staff">
+                                    #{bs.staff.person.nameWithTitle}
+                                </p:column>
+                                <p:column headerText="Session Name">
+                                    #{bs.serviceSession.name}
+                                </p:column>
+                                <p:column headerText="Doctor Fee">
+                                    #{bs.billItem.staffFee}
+                                </p:column>
+                                <p:column headerText="Hospital Fee">
+                                    #{bs.billItem.hospitalFee}
+                                </p:column>
+                                <p:column headerText="Payment Method">
+                                    #{bs.bill.paymentMethod}
+                                </p:column>
+                                <p:column headerText="Status">
+                                    <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
+                                    <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.refundTotal}">
+                                            <f:convertNumber pattern="#,###.##" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+
+
+                            <p:dataTable value="#{channelReportController.valueList}" var="ls">
+                                <p:column headerText="BillType">
+                                    #{ls.string}
+                                </p:column>
+                                <p:column headerText="Billed">
+                                    #{ls.value1}
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.totalBilled}">
+                                            <f:convertNumber pattern="#,###" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Cancelled">
+                                    #{ls.value2}
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.totalCancel}">
+                                            <f:convertNumber pattern="#,###" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Refund">
+                                    #{ls.value3}
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{channelReportController.totalRefund}">
+                                            <f:convertNumber pattern="#,###" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:cc="http://java.sun.com/jsf/composite">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable value="#{cc.attrs.bill.billFees}" var="bi">
+
+            <p:column headerText="Fee Name">
+                <p:outputLabel value="#{bi.fee.name}"/>
+            </p:column>
+            <p:column headerText="Fee Type">
+                <p:outputLabel value="#{bi.fee.feeType}"/>
+            </p:column>
+            <p:column headerText="Fee Value">
+                <p:outputLabel value="#{bi.feeValue}"/> 
+            </p:column>
+            <p:column headerText="Paid Value">
+                <p:outputLabel value="#{bi.paidValue}"/>
+            </p:column>
+
+        </p:dataTable>
+    </cc:implementation>
+</html>

@@ -20,17 +20,17 @@
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="dep" >
+                                            value="#{storeReportsTransfer.fromDepartment}" converter="dep" >
                             </p:autoComplete>
                             
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss a" ></p:calendar>
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.fillDepartmentUnitIssueByBillStore}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillFromDepartmentUnitIssueByBillStore()}" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -43,18 +43,18 @@
 
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{reportsTransfer.transferBills}" var="i"  >
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{storeReportsTransfer.transferBills}" var="i"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="Unit Issue From "/>
-                                    <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
+                                    <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
                                     
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
-                                        <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                        <h:outputLabel value="#{storeReportsTransfer.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
-                                        <h:outputLabel value="#{reportsTransfer.toDate}">
+                                        <h:outputLabel value="#{storeReportsTransfer.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </h:panelGrid>
@@ -101,9 +101,9 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column style="text-align: right;"  footerText="#{reportsTransfer.netTotalValues}" >
+                                        <p:column style="text-align: right;"  footerText="#{storeReportsTransfer.netTotalValues}" >
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsTransfer.netTotalValues}" >
+                                                <h:outputLabel value="#{storeReportsTransfer.netTotalValues}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>

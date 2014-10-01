@@ -57,7 +57,7 @@ public class Bill implements Serializable {
 
     @Enumerated(EnumType.STRING)
     BillClassType billClassType;
-    
+
     @ManyToOne
     BatchBill batchBill;
 
@@ -108,6 +108,10 @@ public class Bill implements Serializable {
     PaymentMethod paymentMethod;
     @ManyToOne
     BillItem singleBillItem;
+    @ManyToOne
+    BillSession singleBillSession;
+    String qutationNumber;
+
     //Values
     double total;
     double margin;
@@ -129,7 +133,6 @@ public class Bill implements Serializable {
     double expenseTotal;
     //with minus tax and discount
     double grnNetTotal;
-    
 
     //Institution
     @ManyToOne
@@ -144,6 +147,8 @@ public class Bill implements Serializable {
     Institution toInstitution;
     @ManyToOne
     Institution creditCompany;
+    @ManyToOne
+    Institution referenceInstitution;
     //Departments
     @ManyToOne
     Department referringDepartment;
@@ -253,6 +258,24 @@ public class Bill implements Serializable {
     private WebUser fromWebUser;
     double claimableTotal;
 
+    //Denormalization
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date appointmentAt;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date paidAt;
+    @ManyToOne
+    Bill paidBill;
+    
+    private boolean paid;
+
+    public Bill getPaidBill() {
+        return paidBill;
+    }
+
+    public void setPaidBill(Bill paidBill) {
+        this.paidBill = paidBill;
+    }
+
     public BillClassType getBillClassType() {
         return billClassType;
     }
@@ -316,7 +339,28 @@ public class Bill implements Serializable {
         saleValue = 0 - bill.getSaleValue();
         freeValue = 0 - bill.getFreeValue();
         grantTotal = 0 - bill.getGrantTotal();
-        
+        staffFee = 0 - bill.getStaffFee();
+        hospitalFee = 0 - bill.getHospitalFee();
+
+    }
+
+    public void invertValue() {
+        staffFee = 0 - getStaffFee();
+        performInstitutionFee = 0 - getPerformInstitutionFee();
+        billerFee = 0 - getBillerFee();
+        discount = 0 - getDiscount();
+        netTotal = 0 - getNetTotal();
+        total = 0 - getTotal();
+        discountPercent = 0 - getDiscountPercent();
+        paidAmount = 0 - getPaidAmount();
+        balance = 0 - getBalance();
+        cashPaid = 0 - getCashPaid();
+        cashBalance = 0 - getCashBalance();
+        saleValue = 0 - getSaleValue();
+        freeValue = 0 - getFreeValue();
+        grantTotal = 0 - getGrantTotal();
+        staffFee = 0 - getStaffFee();
+        hospitalFee = 0 - getHospitalFee();
 
     }
 
@@ -327,7 +371,7 @@ public class Bill implements Serializable {
         creditCompany = bill.getCreditCompany();
         staff = bill.getStaff();
         toStaff = bill.getToStaff();
-        fromStaff=bill.getFromStaff();
+        fromStaff = bill.getFromStaff();
         toDepartment = bill.getToDepartment();
         toInstitution = bill.getToInstitution();
         fromDepartment = bill.getFromDepartment();
@@ -342,8 +386,10 @@ public class Bill implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
         bank = bill.getBank();
-       chequeDate = bill.getChequeDate();
-
+        chequeDate = bill.getChequeDate();
+        referenceInstitution = bill.getReferenceInstitution();
+        bookingId = bill.getBookingId();
+        appointmentAt = bill.getAppointmentAt();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -352,6 +398,8 @@ public class Bill implements Serializable {
         this.discount = (bill.getDiscount());
         this.netTotal = (bill.getNetTotal());
         this.total = (bill.getTotal());
+        this.staffFee = bill.getStaffFee();
+        this.hospitalFee = bill.getHospitalFee();
     }
 
     public List<BillComponent> getBillComponents() {
@@ -819,16 +867,14 @@ public class Bill implements Serializable {
     }
 
     public void setGrnNetTotal(double grnNetTotal) {
-        this.grnNetTotal =grnNetTotal;
-        
-        
+        this.grnNetTotal = grnNetTotal;
+
     }
-    public void calGrnNetTotal(){
-       this.grnNetTotal = total + tax + discount;
-        
+
+    public void calGrnNetTotal() {
+        this.grnNetTotal = total + tax + discount;
+
     }
-    
-    
 
     public double getPaidAmount() {
         return paidAmount;
@@ -1225,7 +1271,7 @@ public class Bill implements Serializable {
 //            System.err.println("1 " + b);
 //            System.err.println("2 " + b.getBillClass());
 //            System.err.println("3 " + b.getBillType());
-            if (b instanceof RefundBill && b.getBillType() == BillType.PharmacyBhtPre) {
+            if (b instanceof RefundBill && (b.getBillType() == BillType.PharmacyBhtPre || b.getBillType() == BillType.StoreBhtPre)) {
                 bills.add(b);
             }
         }
@@ -1387,7 +1433,53 @@ public class Bill implements Serializable {
     public void setMargin(double margin) {
         this.margin = margin;
     }
-    
-    
 
+    public Institution getReferenceInstitution() {
+        return referenceInstitution;
+    }
+
+    public void setReferenceInstitution(Institution referenceInstitution) {
+        this.referenceInstitution = referenceInstitution;
+    }
+
+    public BillSession getSingleBillSession() {
+        return singleBillSession;
+    }
+
+    public void setSingleBillSession(BillSession singleBillSession) {
+        this.singleBillSession = singleBillSession;
+    }
+
+    public Date getAppointmentAt() {
+        return appointmentAt;
+    }
+
+    public void setAppointmentAt(Date appointmentAt) {
+        this.appointmentAt = appointmentAt;
+    }
+
+    public Date getPaidAt() {
+        return paidAt;
+    }
+
+    public void setPaidAt(Date paidAt) {
+        this.paidAt = paidAt;
+    }
+
+    public String getQutationNumber() {
+        return qutationNumber;
+    }
+
+    public void setQutationNumber(String qutationNumber) {
+        this.qutationNumber = qutationNumber;
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+    }
+    
 }

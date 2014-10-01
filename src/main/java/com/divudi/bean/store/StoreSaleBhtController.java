@@ -17,7 +17,7 @@ import com.divudi.data.Title;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.ejb.PharmacyBean;
 
@@ -72,6 +72,22 @@ import org.primefaces.event.SelectEvent;import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
 /**
@@ -104,7 +120,7 @@ public class StoreSaleBhtController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
@@ -112,8 +128,8 @@ public class StoreSaleBhtController implements Serializable {
     private PatientFacade patientFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -306,6 +322,7 @@ public class StoreSaleBhtController implements Serializable {
         getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
+        patientEncounter=null;
         billPreview = false;
 
     }
@@ -912,11 +929,11 @@ public class StoreSaleBhtController implements Serializable {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

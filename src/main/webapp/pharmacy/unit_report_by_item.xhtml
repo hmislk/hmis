@@ -31,6 +31,12 @@
                         <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                         <h:outputLabel value="To" ></h:outputLabel>
                         <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <h:outputLabel value="Item Category"/>
+                        <p:autoComplete  value="#{reportsTransfer.category}" 
+                                         forceSelection="true"
+                                         completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
+                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                        </p:autoComplete> 
                     </h:panelGrid>
 
 
@@ -47,12 +53,12 @@
                         </p:column>
                         <p:column headerText="Purchase Rate" style="text-align: right;">
                             <h:outputLabel value="#{i.itemBatch.purcahseRate}">
-                                 <f:convertNumber  pattern="#0.00"/>
+                                <f:convertNumber  pattern="#0.00"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Retail Rate" style="text-align: right;">
-                             <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
-                                 <f:convertNumber  pattern="#0.00"/>
+                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
+                                <f:convertNumber  pattern="#0.00"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Count" style="text-align: right;">

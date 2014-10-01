@@ -56,51 +56,73 @@
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:panelGrid columns="2" style="width: 100%;">
                                 <p:panel header="Summery" style="text-align: center;">
-                                <p:panel style="text-align: left;">
-                                    <h:panelGrid columns="4"  style="min-width: 100%;">
-                                        <h:outputLabel value=" &nbsp;"/>
-                                        <h:outputLabel value="Report Total">
-                                        </h:outputLabel>                                      
-                                        <h:outputLabel value="Final Bill Total" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Diffreance" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Gross &nbsp;"/>
-                                        <h:outputLabel value="#{inwardReportControllerBht.total}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                      
-                                        <h:outputLabel value="#{inwardReportControllerBht.finalBill.grantTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="#{inwardReportControllerBht.total-inwardReportControllerBht.finalBill.grantTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                    <p:panel header="Bill Summery" style="text-align: center;">
+                                        <h:panelGrid columns="4"  style="min-width: 100%;">
+                                            <h:outputLabel value=" &nbsp;"/>
+                                            <h:outputLabel value="Report Total">
+                                            </h:outputLabel>                                      
+                                            <h:outputLabel value="Final Bill Total" >
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Diffreance" >
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Gross &nbsp;"/>
+                                            <h:outputLabel value="#{inwardReportControllerBht.total}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>                                      
+                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.grantTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="#{inwardReportControllerBht.total-inwardReportControllerBht.finalBill.grantTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
 
-                                        <h:outputLabel value="Discount &nbsp;"/>
-                                        <h:outputLabel value="#{inwardReportControllerBht.discount}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                      
-                                        <h:outputLabel value="#{inwardReportControllerBht.finalBill.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="#{inwardReportControllerBht.discount-inwardReportControllerBht.finalBill.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        
-                                        <h:outputLabel value="NetTotal &nbsp;"/>
-                                        <h:outputLabel value="#{inwardReportControllerBht.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                      
-                                        <h:outputLabel value="#{inwardReportControllerBht.finalBill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="#{inwardReportControllerBht.netTotal-inwardReportControllerBht.finalBill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </h:panelGrid>
+                                            <h:outputLabel value="Discount &nbsp;"/>
+                                            <h:outputLabel value="#{inwardReportControllerBht.discount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>                                      
+                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.discount}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="#{inwardReportControllerBht.discount-inwardReportControllerBht.finalBill.discount}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
 
+                                            <h:outputLabel value="NetTotal &nbsp;"/>
+                                            <h:outputLabel value="#{inwardReportControllerBht.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>                                      
+                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="#{inwardReportControllerBht.netTotal-inwardReportControllerBht.finalBill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </h:panelGrid>
+
+                                    </p:panel>
+                                    <p:panel header=" Payment Summery" style="text-align: center;">
+                                        <h:panelGrid columns="4"  style="min-width: 100%;">
+                                            <h:outputLabel value="Payment &nbsp;"/>
+                                            <h:outputLabel value="Final Bill Total">
+                                            </h:outputLabel>                                      
+                                            <h:outputLabel value="Paid By Patent" >
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Due Amount" >
+                                            </h:outputLabel>
+                                            <h:outputLabel value=""/>
+                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>                                      
+                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.paidAmount}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.netTotal-inwardReportControllerBht.finalBill.paidAmount}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </h:panelGrid>
+
+                                    </p:panel>
                                 </p:panel>
-                            </p:panel>
                                 <p:panel header="Patient Detail">
                                     <p:panelGrid columns="2" rendered="#{inwardReportControllerBht.patientEncounter ne null}">
                                         <h:outputLabel value="Room "/>
@@ -201,7 +223,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>        
-                                <p:column headerText="Additional" style="text-align: right; padding: 5px;">
+                                <p:column headerText="Additional" style="text-align: right; padding: 5px;" rendered="false">
                                     <h:outputLabel value="#{rm.addition}"/>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportControllerBht.roomAddition}">

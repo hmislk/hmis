@@ -12,7 +12,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.BillType;
 import com.divudi.data.inward.PatientEncounterType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.Bill;
@@ -108,8 +108,8 @@ public class PracticeBookingController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private ChannelBean channelBean;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     ServiceSessionBean serviceSessionBean;
     @EJB
@@ -745,11 +745,11 @@ public class PracticeBookingController implements Serializable {
      *
      * @return
      */
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

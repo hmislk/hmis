@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel header="Cannel Agent Reperence Book">
+                
+                <p:panelGrid columns="2" >
+                    <p:outputLabel value="Agent Name" />
+                    <p:autoComplete converter="deal" value="#{agentReferenceBookController.agentReferenceBook.institution}" 
+                                            forceSelection="true"
+                                            completeMethod="#{agentReferenceBookController.completeAgent}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                    <p:outputLabel value="Book Number" />
+                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" />
+                    <p:outputLabel value="Strarting Reference Number" />
+                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" />
+                    <p:outputLabel value="Ending Reference Number" />
+                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" />
+                    <p:commandButton action="#{agentReferenceBookController.saveAgentBook}" value="Save" ajax="false" ></p:commandButton> 
+                    <p:commandButton action="#{agentReferenceBookController.makeNull}" value="Clear" ajax="false" ></p:commandButton> 
+                    
+                </p:panelGrid>
+                
+            </p:panel>
+            
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

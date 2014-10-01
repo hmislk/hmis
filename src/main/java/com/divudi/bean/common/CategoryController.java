@@ -8,16 +8,17 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.facade.CategoryFacade;
 import com.divudi.entity.Category;
-import com.divudi.entity.ConsumableCategory;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.inward.TimedItemCategory;
 import com.divudi.entity.lab.InvestigationCategory;
+import com.divudi.entity.pharmacy.AssetCategory;
+import com.divudi.entity.pharmacy.ConsumableCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.entity.pharmacy.StoreItemCategory;
+import com.divudi.facade.CategoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,14 +26,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -341,6 +342,29 @@ public class CategoryController implements Serializable {
 
     public void setCurrent(Category current) {
         this.current = current;
+    }
+    
+    public List<Category> completeConsumableAndAssetCategory(String qry) {
+        List<Category> cc;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select c from Category c"
+                + "  where c.retired=false"
+                + " and (type(c)= :parm or type(c)=:assetcat)"
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+
+        temMap.put("parm", ConsumableCategory.class);
+        temMap.put("assetcat",AssetCategory.class);
+        temMap.put("q", "%" + qry.toUpperCase() + "%");
+
+        cc = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        if (cc == null) {
+            cc = new ArrayList<>();
+        }
+        return cc;
     }
 
     public void delete() {

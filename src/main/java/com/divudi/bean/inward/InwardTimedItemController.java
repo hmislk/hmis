@@ -13,7 +13,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -41,11 +41,12 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -81,14 +82,18 @@ public class InwardTimedItemController implements Serializable {
     BillFacade billFacade;
     @EJB
     EncounterComponentFacade encounterComponentFacade;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
 
-    public BillNumberController getBillNumberBean() {
+    Date frmDate;
+    Date toDate;
+    double total;
+
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 
@@ -157,6 +162,32 @@ public class InwardTimedItemController implements Serializable {
 
     public void setItems(List<PatientItem> items) {
         this.items = items;
+    }
+
+    public void createTimeServiceList() {
+        
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select i from PatientItem i where "
+                + " i.patientEncounter.dateOfDischarge between :fd and :td "
+                + " and i.retired=false ";
+
+        if (getCurrent().getItem() != null) {
+            
+            sql+=" and i.item=:item";
+            m.put("item", getCurrent().getItem());
+        }
+        
+        m.put("fd", frmDate);
+        m.put("td", toDate);
+        
+        items=getPatientItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        total=0.0;
+        for (PatientItem pi : items) {
+            total+=pi.getServiceValue();
+        }
     }
 
     private boolean generalChecking() {
@@ -598,6 +629,36 @@ public class InwardTimedItemController implements Serializable {
 
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
+    }
+
+    public Date getFrmDate() {
+        if (frmDate == null) {
+            frmDate =commonFunctions.getStartOfMonth(new Date());
+        }
+        return frmDate;
+    }
+
+    public void setFrmDate(Date frmDate) {
+        this.frmDate = frmDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = new Date();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
     }
 
 }

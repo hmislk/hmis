@@ -17,8 +17,9 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.FeeType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -105,8 +106,8 @@ public class BillBhtController implements Serializable {
     private BillBeanController billBean;
     @EJB
     CommonFunctions commonFunctions;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     ///////////////////
     private double total;
     private double discount;
@@ -371,8 +372,6 @@ public class BillBhtController implements Serializable {
 
     private Bill saveBill(Department bt, BilledBill temp, Department matrixDepartment) {
 
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), bt, BillType.InwardBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), temp, BillType.InwardBill, BillNumberSuffix.INWSER));
         //getCurrent().setCashBalance(cashBalance);
         //getCurrent().setCashPaid(cashPaid);
         temp.setBillType(BillType.InwardBill);
@@ -395,11 +394,14 @@ public class BillBhtController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
 
-//        if (temp.getId() == null) {
-        getFacade().create(temp);
-//        } else {
-//            getFacade().edit(temp);
-//        }
+        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
+        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.INWSER));
+
+        if (temp.getId() == null) {
+            getFacade().create(temp);
+        } else {
+            getFacade().edit(temp);
+        }
 
         return temp;
 
@@ -916,11 +918,11 @@ public class BillBhtController implements Serializable {
         this.patientFacade = patientFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
 
     }

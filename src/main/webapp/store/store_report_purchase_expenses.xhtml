@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Bill Expencess" >
+
+                        <p:panel>
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{storePurchaseController.frmDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{storePurchaseController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <h:outputLabel value="" ></h:outputLabel>
+                            <p:autoComplete id="acExpense"   value="#{storePurchaseController.currentExpense.item}" 
+                                            forceSelection="true"
+                                            completeMethod="#{itemController.completeExpenseItem}" 
+                                            var="ex" itemLabel="#{ex.name}" itemValue="#{ex}" >
+                            </p:autoComplete>
+                            <p:commandButton ajax="false" value="Process" actionListener="#{storePurchaseController.createPurchaseExpencess}" ></p:commandButton>
+
+                        </p:panel>
+
+                        <p:panel id="gpBillPreview">
+                            <f:facet name="header" class="nonPrintBlock" >
+                                <h:panelGrid columns="2" >
+                                    <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" >
+                                        <p:printer target="tblVals" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton value="Excel" ajax="false" >
+                                        <p:dataExporter  target="tblVals" type="xls" fileName="store_report_purchase_expenses"></p:dataExporter>
+                                    </p:commandButton>
+                                </h:panelGrid>
+                            </f:facet>
+
+                            <p:dataTable id="tblVals"  value="#{storePurchaseController.billExpenses}" var="i">
+
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill Expencess"/>
+                                </f:facet>
+
+                                <p:column headerText="Item"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.item.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Discription" style="text-align: right; padding: 5px;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discription"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.descreption}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Bill No" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.expenseBill.deptId}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Expencess Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Expencess Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.netValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Creater" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Creater"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.expenseBill.creater.webUserPerson.nameWithTitle}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Created Time" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Created Time"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.expenseBill.createdAt}"  >
+                                        <f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss a" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total" colspan="3">
+                                            <f:facet name="footer" >
+                                                <p:outputLabel value="Total"></p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column footerText="#{storePurchaseController.total}">
+                                            <f:facet name="footer" >
+                                                <p:outputLabel value="#{storePurchaseController.total}">
+                                                    <f:convertNumber pattern="#,000.00" />
+                                                </p:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

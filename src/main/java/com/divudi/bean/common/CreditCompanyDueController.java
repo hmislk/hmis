@@ -15,9 +15,11 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.inward.Admission;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.AdmissionFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.PatientEncounterFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -45,6 +47,7 @@ public class CreditCompanyDueController implements Serializable {
     ////////////
     private List<InstitutionBills> items;
     private List<InstitutionEncounters> institutionEncounters;
+    List<PatientEncounter> patientEncounters;
     private List<String1Value5> creditCompanyAge;
     private List<String1Value5> filteredList;
     @EJB
@@ -55,6 +58,14 @@ public class CreditCompanyDueController implements Serializable {
     private CommonFunctions commonFunctions;
     @EJB
     AdmissionFacade admissionFacade;
+
+    public List<PatientEncounter> getPatientEncounters() {
+        return patientEncounters;
+    }
+
+    public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
+        this.patientEncounters = patientEncounters;
+    }
 
     public void makeNull() {
         fromDate = null;
@@ -431,29 +442,112 @@ public class CreditCompanyDueController implements Serializable {
         }
 
     }
+    
+    AdmissionType admissionType;
+    PaymentMethod paymentMethod;
+    @EJB
+    PatientEncounterFacade patientEncounterFacade;
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public PatientEncounterFacade getPatientEncounterFacade() {
+        return patientEncounterFacade;
+    }
+
+    public void setPatientEncounterFacade(PatientEncounterFacade patientEncounterFacade) {
+        this.patientEncounterFacade = patientEncounterFacade;
+    }
+    
+    
+    
 
     public void createInwardCashDue() {
-        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Cash, true);
-        System.err.println("Size  Ins " + setIns.size());
-        institutionEncounters = new ArrayList<>();
-        for (Institution ins : setIns) {
-            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(), PaymentMethod.Cash, true);
+        HashMap m = new HashMap();
+        String sql = " Select b from PatientEncounter b"
+                + " where b.retired=false "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td "
+                + " and (abs(b.finalBill.netTotal)-(abs(b.finalBill.paidAmount)+abs(b.creditPaidAmount))) !=0.1";
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
 
-            System.err.println("Size  Pe " + lst.size());
-            InstitutionEncounters newIns = new InstitutionEncounters();
-            newIns.setInstitution(ins);
-            newIns.setPatientEncounters(lst);
+        if (institution != null) {
+            sql += " and b.creditCompany =:ins ";
+            m.put("ins", institution);
+        }
 
-            for (PatientEncounter b : lst) {
-                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
-            }
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
 
-            institutionEncounters.add(newIns);
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = patientEncounterFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        if (patientEncounters == null) {
+            return;
+        }
+        billed = 0;
+        paidByPatient = 0;
+        paidByCompany = 0;
+        for (PatientEncounter p : patientEncounters) {
+            billed += p.getFinalBill().getNetTotal();
+            paidByPatient += p.getFinalBill().getPaidAmount();            
+            paidByCompany += p.getPaidByCreditCompany();
+            
+
         }
 
     }
 
+    double billed;
+    double  paidByPatient;
+    double paidByCompany;
+
+    public double getBilled() {
+        return billed;
+    }
+
+    public void setBilled(double billed) {
+        this.billed = billed;
+    }
+
+    public double getPaidByPatient() {
+        return paidByPatient;
+    }
+
+    public void setPaidByPatient(double paidByPatient) {
+        this.paidByPatient = paidByPatient;
+    }
+
+    public double getPaidByCompany() {
+        return paidByCompany;
+    }
+
+    public void setPaidByCompany(double paidByCompany) {
+        this.paidByCompany = paidByCompany;
+    }
+    
+    
     public void createInwardCreditAccess() {
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Credit, false);
 

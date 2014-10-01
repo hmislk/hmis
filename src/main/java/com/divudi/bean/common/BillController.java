@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -18,10 +19,9 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -56,6 +56,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -91,6 +92,8 @@ public class BillController implements Serializable {
     SessionController sessionController;
     @Inject
     PaymentSchemeController paymentSchemeController;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -139,8 +142,6 @@ public class BillController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
-    @Inject
-    private BillNumberController billNumberBean;
     @EJB
     private BillComponentFacade billComponentFacade;
     @EJB
@@ -156,6 +157,14 @@ public class BillController implements Serializable {
     private PaymentMethodData paymentMethodData;
     @EJB
     private CashTransactionBean cashTransactionBean;
+
+    public BillNumberGenerator getBillNumberGenerator() {
+        return billNumberGenerator;
+    }
+
+    public StaffBean getStaffBean() {
+        return staffBean;
+    }
 
     public void searchPatientListener() {
         System.err.println("1");
@@ -239,27 +248,26 @@ public class BillController implements Serializable {
         List<Bill> a = null;
         String sql;
         HashMap hash = new HashMap();
+        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
+        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         if (qry != null) {
             sql = "select c from BilledBill c "
                     + "where  abs(c.netTotal)-abs(c.paidAmount)>:val "
-                    + " and (c.billType= :btp1 or c.billType= :btp2  )"
+                    + " and c.billType in :bts "
                     + " and c.createdAt is not null "
                     + " and c.deptId is not null "
                     + " and c.cancelledBill is null "
                     + " and c.retired=false "
                     + " and c.paymentMethod=:pm  "
-                    + " and c.fromInstitution.institutionType=:insTp  "
                     + " and ((upper(c.deptId) like :q ) "
                     + " or (upper(c.fromInstitution.name)  like :q ))"
                     + " order by c.fromInstitution.name";
-            hash.put("btp1", BillType.PharmacyGrnBill);
-            hash.put("btp2", BillType.PharmacyPurchaseBill);
+            hash.put("bts", billTypesListBilled);
             hash.put("pm", PaymentMethod.Credit);
-            hash.put("insTp", InstitutionType.Dealer);
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
             //     hash.put("pm", PaymentMethod.Credit);
-            a = getFacade().findBySQL(sql, hash, 10);
+            a = getFacade().findBySQL(sql, hash, 20);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -307,7 +315,7 @@ public class BillController implements Serializable {
                 + " where b.billType = :billType "
                 + " and b.cancelled=false "
                 + " and b.retired=false "
-                + " and b.patientEncounter.paymentFinalized=false ";
+                + " and b.patientEncounter.discharged=false ";
 
         sql += " and  ((upper(b.patientEncounter.patient.person.name) like :q )";
         sql += " or  (upper(b.patientEncounter.bhtNo) like :q )";
@@ -322,13 +330,13 @@ public class BillController implements Serializable {
         return tmps;
     }
 
-    public List<Bill> getDealorBills(Institution institution) {
+    public List<Bill> getDealorBills(Institution institution, List<BillType> billTypes) {
         String sql;
         HashMap hash = new HashMap();
 
         sql = "select c from BilledBill c where "
                 + " abs(c.netTotal)-abs(c.paidAmount)>:val"
-                + " and (c.billType= :btp1 or c.billType= :btp2 )"
+                + " and c.billType in :bts"
                 + " and c.createdAt is not null "
                 + " and c.deptId is not null "
                 + " and c.cancelled=false"
@@ -336,8 +344,7 @@ public class BillController implements Serializable {
                 + " and c.paymentMethod=:pm  "
                 + " and c.fromInstitution=:ins "
                 + " order by c.id ";
-        hash.put("btp1", BillType.PharmacyGrnBill);
-        hash.put("btp2", BillType.PharmacyPurchaseBill);
+        hash.put("bts", billTypes);
         hash.put("pm", PaymentMethod.Credit);
         hash.put("val", 0.1);
         hash.put("ins", institution);
@@ -453,7 +460,7 @@ public class BillController implements Serializable {
         }
     }
 
-    public void putToBills() {
+    public boolean putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
@@ -461,8 +468,12 @@ public class BillController implements Serializable {
         }
 
         for (Department d : billDepts) {
-            BilledBill myBill = new BilledBill();
-            saveBill(d, myBill);
+            Bill myBill = new BilledBill();
+            myBill = saveBill(d, myBill);
+
+            if (myBill == null) {
+                return false;
+            }
 
             List<BillEntry> tmp = new ArrayList<>();
 
@@ -480,6 +491,8 @@ public class BillController implements Serializable {
             getBillBean().calculateBillItems(myBill, tmp);
             bills.add(myBill);
         }
+
+        return true;
     }
 
     public void settleBill() {
@@ -493,6 +506,10 @@ public class BillController implements Serializable {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
 
+            if (b == null) {
+                return;
+            }
+
             List<BillItem> list = new ArrayList<>();
             for (BillEntry billEntry : getLstBillEntries()) {
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
@@ -505,12 +522,15 @@ public class BillController implements Serializable {
             getBills().add(b);
 
         } else {
-            putToBills();
+            boolean result = putToBills();
+            if (result == false) {
+                return;
+            }
         }
 
         saveBatchBill();
         saveBillItemSessions();
-        
+
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             staffBean.updateStaffCredit(toStaff, netTotal);
             UtilityController.addSuccessMessage("User Credit Updated");
@@ -519,7 +539,7 @@ public class BillController implements Serializable {
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
-    
+
     @EJB
     StaffBean staffBean;
 
@@ -590,15 +610,10 @@ public class BillController implements Serializable {
 
     }
 
-    private Bill saveBill(Department bt, BilledBill temp) {
-
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), bt, BillType.OpdBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), bt, new BilledBill(), BillType.OpdBill, BillNumberSuffix.NONE));
+    private Bill saveBill(Department bt, Bill temp) {
         temp.setBillType(BillType.OpdBill);
-
-        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
+        temp.setDepartment(getSessionController().getDepartment());
+        temp.setInstitution(getSessionController().getInstitution());
         temp.setToDepartment(bt);
         temp.setToInstitution(bt.getInstitution());
 
@@ -620,9 +635,48 @@ public class BillController implements Serializable {
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(temp);
+
+        //SETTING INS ID
+        recurseCount = 0;
+        String insId = generateBillNumberInsId(temp);
+
+        if (insId.equals("")) {
+            return null;
+        }
+        temp.setInsId(insId);
+        if (temp.getId() == null) {
+            getFacade().create(temp);
+        } else {
+            getFacade().edit(temp);
+        }
+
+        //Department ID (DEPT ID)
+        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill);
+        temp.setDeptId(deptId);
+
+        if (temp.getId() == null) {
+            getFacade().create(temp);
+        } else {
+            getFacade().edit(temp);
+        }
         return temp;
 
+    }
+
+    int recurseCount = 0;
+
+    private String generateBillNumberInsId(Bill bill) {
+        String insId = "";
+        try {
+            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
+        } catch (Exception e) {
+            if (recurseCount < 50) {
+                insId = generateBillNumberInsId(bill);
+                recurseCount++;
+            }
+        }
+
+        return insId;
     }
 
     private boolean checkPatientAgeSex() {
@@ -1302,15 +1356,6 @@ public class BillController implements Serializable {
 
     public void setPatientFacade(PatientFacade patientFacade) {
         this.patientFacade = patientFacade;
-    }
-
-    public BillNumberController getBillNumberBean() {
-        return billNumberBean;
-    }
-
-    public void setBillNumberBean(BillNumberController billNumberBean) {
-        this.billNumberBean = billNumberBean;
-
     }
 
     public BillComponentFacade getBillComponentFacade() {

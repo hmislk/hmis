@@ -5,13 +5,16 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
+import com.divudi.bean.common.BillItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.BillItem;
@@ -25,6 +28,7 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -34,9 +38,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -50,10 +56,8 @@ public class StorePurchaseController implements Serializable {
     private SessionController sessionController;
     private BilledBill bill;
     @EJB
-    private BillFacade billFacade;
-    @Inject
-    private BillNumberController billNumberBean;
-    @Inject
+    private BillFacade billFacade;   
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
@@ -61,10 +65,26 @@ public class StorePurchaseController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private AmpFacade ampFacade;
+    @EJB
+    StockFacade stockFacade;
+    
+    
+    
     @Inject
-    PharmacyCalculation pharmacyBillBean;
+    StoreCalculation storeCalculation;
     @Inject
     ApplicationController applicationController;
+    @Inject
+    BillItemController billItemController;
+
+    public BillItemController getBillItemController() {
+        return billItemController;
+    }
+
+    public void setBillItemController(BillItemController billItemController) {
+        this.billItemController = billItemController;
+    }
+
     ////////////
     private BillItem currentBillItem;
     BillItem currentExpense;
@@ -72,9 +92,55 @@ public class StorePurchaseController implements Serializable {
     private boolean printPreview;
     ///////////
     //  private List<PharmacyItemData> pharmacyItemDatas;
-List<BillItem> billExpenses;
-    
-    
+    List<BillItem> billExpenses;
+    BillItem parentBillItem;
+
+    @EJB
+    private CommonFunctions commonFunctions;
+    @EJB
+    private BillNumberGenerator billNumberGenerator;
+
+    Date frmDate;
+    Date toDate;
+    double total;
+
+    public BillItem getParentBillItem() {
+        return parentBillItem;
+    }
+
+    public void setParentBillItem(BillItem parentBillItem) {
+        this.parentBillItem = parentBillItem;
+    }
+
+    public void createPurchaseExpencess() {
+
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select bi from BillItem bi where "
+                + " bi.expenseBill.createdAt between :fd and :td "
+                + " and bi.expenseBill.retired=false and "
+                + " (bi.expenseBill.billType=:bt1 or bi.expenseBill.billType=:bt2)";
+
+        if (currentExpense.getItem() != null) {
+            sql += " and bi.item=:item ";
+            m.put("item", currentExpense.getItem());
+        }
+
+        m.put("fd", frmDate);
+        m.put("td", toDate);
+        m.put("bt1", BillType.StoreGrnBill);
+        m.put("bt2", BillType.StorePurchase);
+
+        billExpenses = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        for (BillItem bi : billExpenses) {
+            total += bi.getNetValue();
+        }
+
+    }
+
     public void makeNull() {
         //  currentPharmacyItemData = null;
         printPreview = false;
@@ -90,14 +156,6 @@ List<BillItem> billExpenses;
 
     public void remove(BillItem b) {
         getBillItems().remove(b.getSearialNo());
-    }
-
-    public PharmacyCalculation getPharmacyBillBean() {
-        return pharmacyBillBean;
-    }
-
-    public void setPharmacyBillBean(PharmacyCalculation pharmacyBillBean) {
-        this.pharmacyBillBean = pharmacyBillBean;
     }
 
     public StorePurchaseController() {
@@ -133,7 +191,6 @@ List<BillItem> billExpenses;
 //                //    return;
 //            }
 //        }
-
         calTotal();
     }
 
@@ -149,7 +206,7 @@ List<BillItem> billExpenses;
     }
 
     public void setBatch() {
-        if(getCurrentBillItem().getPharmaceuticalBillItem().getDoe()==null){
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getDoe() == null) {
             getCurrentBillItem().getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
         }
         Date date = getCurrentBillItem().getPharmaceuticalBillItem().getDoe();
@@ -189,6 +246,22 @@ List<BillItem> billExpenses;
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    public void saveParentBillItem(BillItem billItem) {
+
+        if (billItem == null) {
+            return;
+        }
+
+        if (billItem.getParentBillItem() != null) {
+            saveParentBillItem(billItem.getParentBillItem());
+        }
+
+        if (billItem.getId() == null) {
+            billItemFacade.create(billItem);
+        }
+
+    }
+
     public void settle() {
 
         if (getBill().getFromInstitution() == null) {
@@ -205,7 +278,12 @@ List<BillItem> billExpenses;
 
         saveBill();
         //   saveBillComponent();
-        getPharmacyBillBean().calSaleFreeValue(getBill());
+        storeCalculation.calSaleFreeValue(getBill());
+
+        //Restting IDs
+        for (BillItem i : getBillItems()) {
+            i.setId(null);
+        }
 
         for (BillItem i : getBillItems()) {
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
@@ -217,14 +295,19 @@ List<BillItem> billExpenses;
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getBill());
-            getBillItemFacade().create(i);
+
+            saveParentBillItem(i.getParentBillItem());
+
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            }
 
             getPharmaceuticalBillItemFacade().create(tmpPh);
 
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
 
-            ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
+            ItemBatch itemBatch = storeCalculation.saveItemBatch(i);
             double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
 
             tmpPh.setItemBatch(itemBatch);
@@ -236,12 +319,22 @@ List<BillItem> billExpenses;
             getBill().getBillItems().add(i);
         }
 
+        for (BillItem i : getBillItems()) {
+
+            if (i.getParentBillItem() != null) {
+                i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
+                i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                getStockFacade().edit(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
+                getStockFacade().edit(i.getPharmaceuticalBillItem().getStock());
+            }
+        }
+
         for (BillItem i : getBillExpenses()) {
             i.setExpenseBill(getBill());
             getBillItemFacade().create(i);
             getBill().getBillExpenses().add(i);
         }
-        
+
         getBillFacade().edit(getBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
@@ -249,83 +342,162 @@ List<BillItem> billExpenses;
 
         UtilityController.addSuccessMessage("Successfully Billed");
         printPreview = true;
-        
+
     }
 
     private List<BillItem> billItems;
-    
 
-    public void addItem() {
-
-        if (getBill().getId() == null) {
-            getBillFacade().create(getBill());
+    public void createInventoryItemCode() {
+        if (getCurrentBillItem() == null) {
+            return;
+        }
+        if (getCurrentBillItem().getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        if (getCurrentBillItem().getItem() == null) {
+            return;
         }
 
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
+    }
+
+    public void createSerialNumber(BillItem billItem) {
+        System.out.println("In");
+        long b = billNumberGenerator.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), getCurrentBillItem().getItem());
+        b = b + 1;
+        for (BillItem bi : getBillItems()) {
+            if (bi.getItem().equals(billItem.getItem())) {
+                b++;
+            }
+        }
+        System.out.println("b = " + b);
+        String code = "";
+        code += getSessionController().getInstitution().getInstitutionCode();
+        code += "/";
+        code += getSessionController().getDepartment().getDepartmentCode();
+        code += "/";
+        if (billItem != null && billItem.getItem() != null && billItem.getItem().getCategory() != null) {
+            code += billItem.getItem().getCategory().getCode();
+            code += "/";
+        }
+        if (billItem != null && billItem.getItem() != null) {
+            code += billItem.getItem().getCode();
+            code += "/";
+        }
+        code += b;
+        System.out.println("code = " + code);
+        billItem.getPharmaceuticalBillItem().setCode(code);
+    }
+
+    public void createSerialNumber() {
+        createSerialNumber(getCurrentBillItem());
+    }
+
+    public void addBillItem() {
+        if (getCurrentBillItem().getItem().getCategory() == null) {
+            UtilityController.addErrorMessage("Please Select Category");
+            return;
+        }
+
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0 && getParentBillItem() == null) {
             UtilityController.addErrorMessage("Please enter Purchase Rate");
             return;
         }
 
-        
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() == 0) {
+            UtilityController.addErrorMessage("Please enter Retail Rate");
+            return;
+        }
+
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() < getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) {
+            UtilityController.addErrorMessage("Please check Retail Rate");
+            return;
+        }
 
         if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0) {
             UtilityController.addErrorMessage("Please enter Purchase QTY");
             return;
         }
 
-//        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() > getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate()) {
+        if (getCurrentBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
+            if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() != 1) {
+                UtilityController.addErrorMessage("Please Qty must be 1 for Asset");
+                return;
+            }
+        }
+
+//        if (billItem.getPharmaceuticalBillItem().getPurchaseRate() > billItem.getPharmaceuticalBillItem().getRetailRate()) {
 //            UtilityController.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
 //            return;
 //        }
-
         if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() <= 0) {
             getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() * (1 + (.01 * getCurrentBillItem().getItem().getCategory().getSaleMargin())));
         }
-        
-        getCurrentBillItem().getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
-//        setBatch();
 
-        getCurrentBillItem().setSearialNo(getBillItems().size());
-        getBillItems().add(currentBillItem);
+        if (getCurrentBillItem().getPharmaceuticalBillItem().getDoe() == null) {
+            getCurrentBillItem().getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
+        }
 
+        getCurrentBillItem().setParentBillItem(getParentBillItem());
+
+        getCurrentBillItem().setSearialNo(getBillItems().size() + 1);
+        getCurrentBillItem().setId(getCurrentBillItem().getSearialNoInteger().longValue());
+
+//        billItem.setSearialNo(getBillItems().size() + 1);        
+        getBillItems().add(getCurrentBillItem());
+
+        getBillItemController().setItems(getBillItems());
+    }
+
+    public void addItem() {
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        }
+
+        addBillItem();
         currentBillItem = null;
-
         calTotal();
+    }
+
+    public void purchaseRateListener(PharmaceuticalBillItem pharmaceuticalBillItem) {
+        pharmaceuticalBillItem.setRetailRate(pharmaceuticalBillItem.getPurchaseRate());
+    }
+
+    public void itemListner(BillItem bi) {
+        getCurrentBillItem().setParentBillItem(bi);
     }
 
     public void addExpense() {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
-        if(getCurrentExpense().getItem()==null){
+        if (getCurrentExpense().getItem() == null) {
             JsfUtil.addErrorMessage("Expense ?");
             return;
         }
-        if(currentExpense.getQty()==null || currentExpense.getQty().equals(0.0)){
+        if (currentExpense.getQty() == null || currentExpense.getQty().equals(0.0)) {
             currentExpense.setQty(1.0);
         }
-        if(currentExpense.getNetRate()==0.0){
+        if (currentExpense.getNetRate() == 0.0) {
             currentExpense.setNetRate(currentExpense.getRate());
         }
-        
-        currentExpense.setNetValue(currentExpense.getNetRate()*currentExpense.getQty());
-        currentExpense.setGrossValue(currentExpense.getRate()*currentExpense.getQty());
-        
+
+        currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
+        currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
+
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
         currentExpense = null;
         calTotal();
     }
 
-    
     public void saveBill() {
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.PharmacyPurchaseBill, BillNumberSuffix.PHPUR));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.PharmacyPurchaseBill, BillNumberSuffix.PHPUR));
+        getBill().setDeptId(billNumberGenerator.institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
+        getBill().setInsId(billNumberGenerator.institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
 
         getBill().setInstitution(getSessionController().getInstitution());
         getBill().setDepartment(getSessionController().getDepartment());
-
+        getBill().setBillType(BillType.StorePurchase);
         getBill().setCreatedAt(new Date());
         getBill().setCreater(getSessionController().getLoggedUser());
 
@@ -347,7 +519,7 @@ List<BillItem> billExpenses;
         tmp.setBillItem(b);
         //   tmp.setQty(getPharmacyBean().getPurchaseRate(b.getItem(), getSessionController().getDepartment()));
         //     tmp.setPurchaseRate(getPharmacyBean().getPurchaseRate(b.getItem(), getSessionController().getDepartment()));
-        tmp.setRetailRate(getPharmacyBillBean().calRetailRate(tmp));
+        tmp.setRetailRate(storeCalculation.calRetailRate(tmp));
 //        if (b.getId() == null || b.getId() == 0) {
 //            getPharmaceuticalBillItemFacade().create(tmp);
 //        } else {
@@ -366,33 +538,36 @@ List<BillItem> billExpenses;
 
     public void calTotal() {
         double tot = 0.0;
-        double exp=0.0;
+        double exp = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
             p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
-            p.setSearialNo(serialNo++);
-            double netValue = p.getQty() * p.getRate();
-            p.setNetValue(0 - netValue);
-            tot += p.getNetValue();
+            serialNo++;
+            p.setSearialNo(serialNo);
+            if (p.getParentBillItem() == null) {
+                double netValue = p.getQty() * p.getRate();
+                p.setNetValue(0 - netValue);
+                tot += p.getNetValue();
+            }
         }
 
-        for(BillItem e:getBillExpenses()){
+        for (BillItem e : getBillExpenses()) {
             double nv = e.getNetRate() * e.getQty();
-            e.setNetValue(0-nv);
-            exp+= e.getNetValue();
+            e.setNetValue(0 - nv);
+            exp += e.getNetValue();
         }
-        
+
         getBill().setExpenseTotal(exp);
         getBill().setTotal(tot);
-        getBill().setNetTotal(tot+exp);
+        getBill().setNetTotal(tot + exp);
 
     }
 
     public BilledBill getBill() {
         if (bill == null) {
             bill = new BilledBill();
-            bill.setBillType(BillType.PharmacyPurchaseBill);
+            bill.setBillType(BillType.StorePurchase);
         }
         return bill;
     }
@@ -409,13 +584,7 @@ List<BillItem> billExpenses;
         this.billFacade = billFacade;
     }
 
-    public BillNumberController getBillNumberBean() {
-        return billNumberBean;
-    }
-
-    public void setBillNumberBean(BillNumberController billNumberBean) {
-        this.billNumberBean = billNumberBean;
-    }
+   
 
     public SessionController getSessionController() {
         return sessionController;
@@ -466,7 +635,7 @@ List<BillItem> billExpenses;
     }
 
     public BillItem getCurrentExpense() {
-        if(currentExpense==null){
+        if (currentExpense == null) {
             currentExpense = new BillItem();
             currentExpense.setQty(1.0);
         }
@@ -477,8 +646,6 @@ List<BillItem> billExpenses;
         this.currentExpense = currentExpense;
     }
 
-    
-    
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
@@ -494,7 +661,7 @@ List<BillItem> billExpenses;
     }
 
     public List<BillItem> getBillExpenses() {
-        if(billExpenses==null){
+        if (billExpenses == null) {
             billExpenses = new ArrayList<>();
         }
         return billExpenses;
@@ -503,8 +670,6 @@ List<BillItem> billExpenses;
     public void setBillExpenses(List<BillItem> billExpenses) {
         this.billExpenses = billExpenses;
     }
-    
-    
 
     public List<BillItem> getBillItems() {
         if (billItems == null) {
@@ -524,7 +689,59 @@ List<BillItem> billExpenses;
     public void setApplicationController(ApplicationController applicationController) {
         this.applicationController = applicationController;
     }
-    
-    
+
+    public Date getFrmDate() {
+        if (frmDate == null) {
+            frmDate = commonFunctions.getStartOfMonth(new Date());
+        }
+        return frmDate;
+    }
+
+    public void setFrmDate(Date frmDate) {
+        this.frmDate = frmDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = new Date();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public BillNumberGenerator getBillNumberGenerator() {
+        return billNumberGenerator;
+    }
+
+    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
+        this.billNumberGenerator = billNumberGenerator;
+    }
+
+  
+
+    public StockFacade getStockFacade() {
+        return stockFacade;
+    }
+
+    public StoreCalculation getStoreCalculation() {
+        return storeCalculation;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+
 
 }

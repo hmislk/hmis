@@ -35,7 +35,7 @@
                                      slip:slip,
                                      cheque:cheque,
                                      finalSum"
-                                     fileName="Book_Keeping_Summery_without_pro_day_by_category_day_end"
+                                     fileName="Book_Keeping_Summery_with_pro_day"
                                      facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                      fontName="Courier New"  />
                     </p:commandButton>
@@ -61,12 +61,12 @@
             </p:panel>
             <!--            <p:spacer height="30" />-->
 
-            <in:opd_new id="opd_new" professional="true"/>
+            <in:opd_new_with id="opd_new" />
 
 
             <p:spacer height="30"/>
 
-            <in:outside id="outside" professional="true"/>
+            <in:outside_with id="outside" />
 
             <p:spacer height="30"/>
 
@@ -80,25 +80,17 @@
 
             <in:agent_collection id="agent_collection"/>
             
-            <p:spacer height="30"/>
+           <p:spacer height="30"/>
 
-            <in:credit_collection 
-                title=" - OPD"
-                total="#{bookKeepingSummery.creditCompanyTotal}"
-                list="#{bookKeepingSummery.creditCompanyCollections}"
+            <in:credit_collection_opd 
                 id="credit_collection"/>
 
             <p:spacer height="30"/>
 
-            <in:credit_collection 
-                title=" - Inward"
-                total="#{bookKeepingSummery.creditCompanyTotalInward}"
-                list="#{bookKeepingSummery.creditCompanyCollectionsInward}"
+            <in:credit_collection_inward                 
                 id="credit_collection_inward"/>
 
-            <p:spacer height="30"/>
-
-
+            
 
             <p:spacer height="30"/>
 

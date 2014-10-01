@@ -9,7 +9,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -41,14 +41,14 @@ public class IntrimPrintController implements Serializable {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
     

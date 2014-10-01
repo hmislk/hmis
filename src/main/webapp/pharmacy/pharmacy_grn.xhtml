@@ -13,14 +13,17 @@
 
             <h:panelGroup rendered="#{!grnController.printPreview}">
 
-                <h:panelGrid columns="5" style="min-width: 100%;">
+                <h:panelGrid columns="7" style="min-width: 100%;">
                     <h:outputLabel value="DEALOR"/>
                     <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
                                     completeMethod="#{dealerController.completeDealor}" 
                                     forceSelection="true"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-
-
+                    <h:outputLabel value="GRN Institution"/>
+                    <p:autoComplete converter="institutionConverter" value="#{grnController.grnBill.referenceInstitution}"
+                                    completeMethod="#{institutionController.completeCompany}" 
+                                    forceSelection="true"
+                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                     <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
                         <f:selectItem itemLabel="SelectPayment method"/>
                         <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     

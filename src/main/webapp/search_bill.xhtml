@@ -19,8 +19,10 @@
 
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
-                                <h:outputLabel value="Bill No(Ins ID/Dept ID)"/>
+                                <h:outputLabel value="Bill No(Ins ID)"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" />
+                                <h:outputLabel value="Bill No(Dept ID)"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.deptId}" />
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createSearchBill()}"/>
                                 
                             </h:panelGrid>
@@ -32,7 +34,7 @@
                         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill"  style="min-width: 100%;"  >
                             <p:column headerText="View" styleClass="alignTop">
                                 <p:commandButton value="View Bill" action="bill_all_view" ajax="false">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}" />
                                 </p:commandButton>
                             </p:column>
 

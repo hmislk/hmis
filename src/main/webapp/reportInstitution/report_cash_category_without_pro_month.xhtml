@@ -17,7 +17,6 @@
                     <h:outputLabel value="Book Keeping Summery Without Pro (Month)"  styleClass="noPrintButton" />
                     <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
                                      action="#{bookKeepingSummery.createCashCategoryWithoutProMonth}"/>
-
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
@@ -27,7 +26,6 @@
                                      pharmacy:pharmacy,
                                      inward:inward,                                     
                                      col,
-                                     opd_professional:opd_professional,
                                      inward_professional:inward_professional,                                     
                                      finalSum" 
                                      fileName="Book_Keeping_Summery_without_pro_month_by_category_month_end"

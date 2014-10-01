@@ -10,10 +10,11 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -33,15 +34,15 @@ import javax.inject.Inject;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
 public class InwardAdditionalChargeController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     private InwardChargeType inwardChargeType;
     //////////////
     @EJB
@@ -118,14 +119,17 @@ public class InwardAdditionalChargeController implements Serializable {
 
     private void saveBill() {
         getCurrent().setBillType(BillType.InwardOutSideBill);
-        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.InwardBill));
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent(), getCurrent().getBillType(), BillNumberSuffix.INWSER));
+        getCurrent().setDepartment(getSessionController().getDepartment());
+        getCurrent().setInstitution(getSessionController().getInstitution());
 
         getCurrent().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         getCurrent().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         getCurrent().setNetTotal(getCurrent().getTotal());
         getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         getCurrent().setCreater(getSessionController().getLoggedUser());
+
+        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getCurrent(), BillClassType.BilledBill,BillNumberSuffix.NONE));
+        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getCurrent(),  BillClassType.BilledBill, BillNumberSuffix.INWSER));
 
         if (getCurrent().getId() == null) {
             getBilledBillFacade().create(getCurrent());
@@ -214,11 +218,11 @@ public class InwardAdditionalChargeController implements Serializable {
         this.current = current;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

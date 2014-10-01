@@ -46,8 +46,11 @@
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
                                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.paymentMethod}" ></h:outputLabel>
-
+                                        <h:panelGroup>
+                                            <h:outputLabel value="#{billSearch.bill.paymentMethod}" />
+                                            <h:outputLabel value=" : "/>
+                                            <h:outputLabel value="#{billSearch.bill.chequeRefNo}" />
+                                        </h:panelGroup>
                                         <h:outputLabel value="Total :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
                                         <h:outputLabel value="Discount :" ></h:outputLabel>
@@ -86,7 +89,7 @@
                                         <f:facet name="header">Fee Name</f:facet>
                                         <h:outputLabel value="#{bip.fee.name}"/>
                                     </p:column> 
-                                      <p:column>
+                                    <p:column>
                                         <f:facet name="header">Speciality</f:facet>
                                         <h:outputLabel value="#{bip.fee.speciality.name}"/>
                                     </p:column> 
@@ -162,13 +165,18 @@
                                                 </div>
 
                                                 <div class="paymentPrinting">
-                                                    <h:outputLabel value="#{billSearch.bill.cancelledBill.paymentMethod}" 
+<!--                                                    <h:outputLabel value="#{billSearch.bill.cancelledBill.paymentMethod}" 
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}" />
                                                     <h:outputLabel value="#{billSearch.bill.refundedBill.paymentMethod}" 
                                                                    rendered="#{billSearch.bill.refundedBill.insId ne null}"/>
                                                     <h:outputLabel value="#{billSearch.bill.paymentMethod}" 
                                                                    rendered="#{billSearch.bill.refundedBill.insId eq null and 
-                                                                               billSearch.bill.cancelledBill.insId eq null }"/>
+                                                                billSearch.bill.cancelledBill.insId eq null }"/>-->
+                                                    <h:panelGroup>
+                                                        <h:outputLabel value="#{billSearch.bill.paymentMethod}" />
+                                                        <h:outputLabel value=" : "/>
+                                                        <h:outputLabel value="#{billSearch.bill.chequeRefNo}" />
+                                                    </h:panelGroup>
                                                 </div>
 
                                                 <div class="billtimePrinting">

@@ -7,7 +7,7 @@ package com.divudi.bean.common;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.entity.Bill;
@@ -53,8 +53,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     List<BillFee> billFees;
     PaymentMethod paymentMethod;
 
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     CancelledBillFacade cancelledBillFacade;
     @EJB
@@ -426,11 +426,11 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public AgentPaymentReceiveSearchController() {
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

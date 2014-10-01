@@ -8,12 +8,16 @@
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
     <h:head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>#{labels.topic}</title>
-        <a href="template.xhtml"></a>
+
+        <ui:insert name="title"   >
+            <title>#{labels.topic}</title>
+        </ui:insert>
         <h:outputStylesheet library="css" name="maincss.css" />
         <h:outputStylesheet library="css" name="css1.css" />
         <h:outputStylesheet library="css" name="summery.css" />
         <h:outputStylesheet library="css" name="printing.css" />
+
+        <h:outputScript library="js" name="jsfcrud.js"/>
     </h:head>
     <h:body  >
         <p:panel styleClass="fullSpread" >
@@ -191,14 +195,11 @@
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_adjustment_bill_item"  value="Search Adjustment Bills"  ></p:menuitem>
                                     </p:submenu>
                                     <p:submenu label="Dealor Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}">
-                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_dealor_due"  value="Dealor Due Search"  rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" ></p:menuitem>
-                                        <p:menuitem ajax="false" action="/pharmacy/pharmacy_search_dealor_due_age" actionListener="#{dealorDueController.makeNull}" value="Dealor Due By Age" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>
-                                        <p:submenu label="Payment">
-                                            <p:menuitem ajax="false" action="/pharmacy/pharmacy_bill_dealor" value="By Grn " rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
-                                            <p:menuitem ajax="false" action="/pharmacy/pharmacy_bill_dealor_all" value="By Dealor" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
-                                        </p:submenu>
-                                        <p:menuitem ajax="false" action="/pharmacy/pharmacy_search_dealor_payment" value="GRN Payment Done Search"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
-
+                                        <p:menuitem  ajax="false" action="/dealorPayment/dealor_due"  value="Dealor Due Search"  rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" ></p:menuitem>
+                                        <p:menuitem ajax="false" action="/dealorPayment/dealor_due_age" actionListener="#{dealorDueController.makeNull}" value="Dealor Due By Age" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>
+                                        <p:menuitem ajax="false" action="/dealorPayment/bill_dealor_all" value="Dealor Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
+                                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment_pre" value="GRN Payment Approve"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
+                                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment" value="GRN Payment Done Search"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
                                     </p:submenu>
                                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacySearch')}" ></p:menuitem>                                  
                                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index"  value="Reports" rendered="#{webUserController.hasPrivilege('PharmacyReports')}" ></p:menuitem>
@@ -245,13 +246,14 @@
                                                      value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('StoreIssueBillItems')}"/>                                       
                                     </p:submenu>
                                     <p:submenu label="Unit Issue" rendered="#{webUserController.hasPrivilege('StoreIssue')}">
-                                        <p:menuitem ajax="false" action="/store/store_issue"  value="Issue"
-                                                    rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}" 
-                                                    actionListener="#{storeIssueController.resetAll()}" />
-                                        <p:menuitem  ajax="false" action="/store/store_search_sale_bill_issue"
-                                                     actionListener="#{searchController.makeListNull}"  value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('StoreIssueSearchBill')}"/>
-                                        <p:menuitem  ajax="false" action="/store/store_search_sale_bill_item_issue" actionListener="#{searchController.makeListNull}"   
-                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('StoreIssueBillItems')}"/>                                       
+                                        <p:menuitem  ajax="false" action="/store/store_issue"  
+                                                     value="Issue" actionListener="#{pharmacyIssueController.resetAll()}"  ></p:menuitem>                                       
+                                        <p:menuitem  ajax="false" action="/store/store_search_issue_bill" actionListener="#{searchController.makeListNull}" 
+                                                     value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                        <p:menuitem  ajax="false" action="/store/store_search_issue_bill_item" actionListener="#{searchController.makeListNull}"   
+                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                        <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager"    
+                                                     value="Unit Issue Margin" />
                                     </p:submenu>
                                     <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('StorePurchase')}">
                                         <p:menuitem  ajax="false" action="/store/store_purhcase_order_request"  value="Purchase Orders" rendered="#{webUserController.hasPrivilege('StorePurchaseOrder')}" ></p:menuitem>
@@ -263,7 +265,7 @@
                                                      actionListener="#{storePurchaseController.makeNull()}" ></p:menuitem>
                                     </p:submenu>
                                     <p:submenu label="Transfer" rendered="#{webUserController.hasPrivilege('StoreTransfer')}">
-                                        <p:menuitem  ajax="false" action="/store/store_transfer_request"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferRequest')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/store/store_transfer_request"  value="Request" actionListener="#{storeTransferRequestController.recreate}" rendered="#{webUserController.hasPrivilege('StoreTransferRequest')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/store/store_transfer_request_list"  value="Issue" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferIssue')}" ></p:menuitem>                                           
                                         <p:menuitem  ajax="false" action="/store/store_transfer_issued_list"  value="Recieve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferRecive')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/store/store_report_transfer"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StoreTransferReport')}" ></p:menuitem>
@@ -273,15 +275,15 @@
                                         <p:menuitem  ajax="false" action="/store/store_adjustment_staff"  value="Staff Stock Adjustment" rendered="#{webUserController.hasPrivilege('StoreAdjustmentStaffStock')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/store/store_adjustment_purchase_rate"  value="Purchase Rate" rendered="#{webUserController.hasPrivilege('StoreAdjustmentPurchaseRate')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/store/store_adjustment_retail_sale_rate"  value="Sale Rate" rendered="#{webUserController.hasPrivilege('StoreAdjustmentSaleRate')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/store/store_search_adjustment_bill_item"  value="Search Adjustment Bills"  ></p:menuitem>
                                     </p:submenu>
+
                                     <p:submenu label="Dealor Payment" rendered="#{webUserController.hasPrivilege('StoreDealorPayment')}">
-                                        <p:menuitem  ajax="false" action="/store/store_search_dealor_due"  value="Dealor Due Search" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentDueSearch')}" ></p:menuitem>
-                                        <p:menuitem ajax="false" action="/store/store_search_dealor_due_age" actionListener="#{dealorDueController.makeNull}" value="Dealor Due By Age" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentDueByAge')}"/>
-                                        <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentPayment')}">
-                                            <p:menuitem ajax="false" action="/store/store_bill_dealor" value="GRN Payment" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentPaymentGRN')}"/>   
-                                            <p:menuitem ajax="false" action="/store/store_bill_dealor_all" value="GRN Payment(Select)" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentPaymentGRNSelect')}"/>   
-                                        </p:submenu>
-                                        <p:menuitem ajax="false" action="/store/store_search_dealor_payment" value="GRN Payment Done Search"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentGRNDoneSearch')}"/>   
+                                        <p:menuitem  ajax="false" action="/dealorPayment/dealor_due"  value="Dealor Due Search" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentDueSearch')}" ></p:menuitem>
+                                        <p:menuitem ajax="false" action="/dealorPayment/dealor_due_age" actionListener="#{dealorDueController.makeNull}" value="Dealor Due By Age" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentDueByAge')}"/>
+                                        <p:menuitem ajax="false" action="/dealorPayment/bill_dealor_all" value="Dealor Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
+                                        <p:menuitem ajax="false"  action="/dealorPayment/search_dealor_payment_pre" value="GRN Payment Approve"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentGRNDoneSearch')}"/>   
+                                        <p:menuitem ajax="false"  action="/dealorPayment/search_dealor_payment" value="GRN Payment Done Search"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentGRNDoneSearch')}"/>   
                                     </p:submenu>
                                     <p:menuitem  ajax="false" action="/store/store_search"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('StoreSearch')}" ></p:menuitem>                                  
                                     <p:menuitem  ajax="false" action="/store/store_reports_index"  value="Reports" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
@@ -299,13 +301,16 @@
                                     <p:menuitem  ajax="false"  value="Channel Sheduling"  action="/channel/channel_shedule" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee" rendered="#{webUserController.hasPrivilege('ChannellingChannelAgentFee')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingDoctorSessionView')}"></p:menuitem>
-
+                                    <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports"/>
                                     <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
                                         <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  value="Payment Due Search"  action="/channel/channel_payments_due_search" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"  ></p:menuitem>
                                         <p:menuitem  ajax="false"  value="Payment Done Search"  action="/channel/channel_payment_bill_search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" ></p:menuitem>
                                     </p:submenu>  
-
+                                    <p:submenu label="Channel Books">
+                                        <p:menuitem  ajax="false"  value="Channel Books"  action="/channel/channel_agent_referece_book"></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Channel Books Report"  action="/channel/channel_report_agent_referece_book"></p:menuitem>
+                                    </p:submenu>
                                 </p:submenu>
                                 <p:submenu label="Payment"  rendered="#{webUserController.hasPrivilege('Payment')}">
                                     <p:submenu label="OPD">
@@ -385,14 +390,17 @@
                                             <p:menuitem  ajax="false"  action="/hr/hr_staff_loan_installment" value="Manage Staff Loan Individual" actionListener="#{staffLoanController.makeNull}"  />                                                                                                           
                                         </p:submenu>                                    
                                         <p:menuitem  ajax="false"  action="/hr/hr_staff_basic_list" value="Staff Basic List" actionListener="#{staffBasicController.makeItemNul()}"  ></p:menuitem>
-                                        <p:menuitem  ajax="false"  action="/hr/hr_ph_date" value="Public Holiday"  ></p:menuitem>
+                                        <p:menuitem  ajax="false"  action="/hr/hr_ph_date" value="Public Holiday"  />
+
                                         <p:menuitem  ajax="false"  action="/hr/hr_paysheet_component" value="Paysheet Component Name"  />
                                         <p:menuitem  ajax="false"  action="/hr/hr_hrm_variables" value="HRM Variable"  />
                                     </p:submenu>
 
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"   
                                                  actionListener="#{staffSalaryController.clear}"/>
+                                    <p:menuitem  ajax="false"  action="/hr/hr_reports" value="Reports"  />
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_leave" value="Staff Leave"  ></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/hr/hr_reports" value="Report"></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/hr/hr_admin" value="Administration"  ></p:menuitem>
                                 </p:submenu>
                                 <p:submenu label="Clinicals"  rendered="#{webUserController.hasPrivilege('Clinical')}">
@@ -482,7 +490,7 @@
                                 </p:submenu>
                                 <p:submenu label="Search" rendered="#{webUserController.hasPrivilege('Search')}">
                                     <p:menuitem  ajax="false"  action="/search_all" value="Grand Search" rendered="#{webUserController.hasPrivilege('SearchGrand')}"></p:menuitem>
-                                    <p:menuitem  ajax="false"  action="/search_bill" value="Bill Search" rendered="#{webUserController.hasPrivilege('SearchGrand')}"></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/search_bill" value="Bill Search" rendered="#{webUserController.hasPrivilege('Developers')}"></p:menuitem>
                                 </p:submenu>
 
                             </p:menubar>

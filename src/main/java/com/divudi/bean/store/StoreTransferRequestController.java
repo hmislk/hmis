@@ -9,7 +9,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
@@ -45,15 +45,15 @@ public class StoreTransferRequestController implements Serializable {
     private SessionController sessionController;
     @EJB
     private ItemFacade itemFacade;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
@@ -62,7 +62,7 @@ public class StoreTransferRequestController implements Serializable {
     private BillItem currentBillItem;
     private List<BillItem> billItems;
     @Inject
-    private PharmacyCalculation pharmacyBillBean;
+    StoreCalculation storeCalculation;
     private boolean printPreview;
 
     public void recreate() {
@@ -172,8 +172,8 @@ public class StoreTransferRequestController implements Serializable {
 
         saveBill();
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.PharmacyTransferRequest, BillNumberSuffix.PHTRQ));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.PharmacyTransferRequest, BillNumberSuffix.PHTRQ));
+        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.StoreTransferRequest, BillNumberSuffix.STTRQ));
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.StoreTransferRequest, BillNumberSuffix.STTRQ));
 
         getBill().setCreater(getSessionController().getLoggedUser());
         getBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -229,11 +229,11 @@ public class StoreTransferRequestController implements Serializable {
         this.dealor = dealor;
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 
@@ -264,7 +264,7 @@ public class StoreTransferRequestController implements Serializable {
     public Bill getBill() {
         if (bill == null) {
             bill = new BilledBill();
-            bill.setBillType(BillType.PharmacyTransferRequest);
+            bill.setBillType(BillType.StoreTransferRequest);
         }
         return bill;
     }
@@ -303,14 +303,6 @@ public class StoreTransferRequestController implements Serializable {
 
     public void setItemsDistributorsFacade(ItemsDistributorsFacade itemsDistributorsFacade) {
         this.itemsDistributorsFacade = itemsDistributorsFacade;
-    }
-
-    public PharmacyCalculation getPharmacyBillBean() {
-        return pharmacyBillBean;
-    }
-
-    public void setPharmacyBillBean(PharmacyCalculation pharmacyBillBean) {
-        this.pharmacyBillBean = pharmacyBillBean;
     }
 
     public PharmacyController getPharmacyController() {

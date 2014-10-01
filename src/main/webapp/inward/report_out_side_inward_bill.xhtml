@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Out Side Service Bill reoprt" />
+                </f:facet>
+                <h:panelGrid columns="1" style="min-width: 100%;">                    
+                    <p:panel>
+                        <h:outputLabel value="From"/>
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{inwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                            <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{inwardReportController.makeBillNull}"/>
+                        </p:calendar>
+                        <h:outputLabel value="To"/>
+                        <p:calendar id="toDate" value="#{inwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                            <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{inwardReportController.makeBillNull}"/>
+                        </p:calendar>
+                        <p:autoComplete id="ins" value="#{inwardReportController.institution}"
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                        </p:autoComplete>
+                        
+                        <p:commandButton ajax="false" value="Process By Added Date" 
+                                         action="#{inwardReportController.createOutSideBillsByAddedDate()}"
+                                         style="float: right;" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Process By Discharge Date" 
+                                         action="#{inwardReportController.createOutSideBillsByDischargeDate()}"
+                                         style="float: right;" onclick="onSubmitButton();" />
+                        <p:watermark for="ins" value="Institution" />
+                    </p:panel>
+
+
+                    <p:panel>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+
+                        <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController.createOutSideBillsByAddedDate()}">
+                            <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_discharge" />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController.createOutSideBillsByDischargeDate()}">
+                            <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_admit" />
+                        </p:commandButton>
+                    </p:panel>
+                </h:panelGrid>   
+
+                <p:panel id="gpBillPreview">
+                    <p:dataTable id="tbl" value="#{inwardReportController.billItems}" rowIndexVar="i" var="bi">
+                        <f:facet name="header">
+                            <p:outputLabel value="Out Side Service Bill reoprt" />
+                        </f:facet>
+                        <p:column headerText="Serial No">
+                            <f:facet name="header">
+                                <p:outputLabel value="Serial No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column headerText="Institution">
+                            <f:facet name="header">
+                                <p:outputLabel value="Institution" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.fromInstitution.name}" />
+                        </p:column>
+                        <p:column headerText="Discription">
+                            <f:facet name="header">
+                                <p:outputLabel value="Discription" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.comments}" />
+                        </p:column>                   
+                        <p:column headerText="Cancelled/Refunded" >    
+                            <f:facet name="header">
+                                <p:outputLabel value="Cancelled/Refunded" />
+                            </f:facet>
+                            <p:outputLabel value="Refunded" rendered="#{bi.bill.class eq 'class com.divudi.entity.RefundBill'}"/>
+                            <p:outputLabel value="Cancelled" rendered="#{bi.bill.class eq 'class com.divudi.entity.CancelledBill'}"/>
+                        </p:column>
+                        <p:column headerText="Inward Charge Type">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Inward Charge Type" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.inwardChargeType}" />
+                        </p:column>
+                        <p:column headerText="Added Date">
+                            <f:facet name="header">
+                                <p:outputLabel value="Added Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Creater Name">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Creater Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.creater.webUserPerson.nameWithTitle}" />
+                        </p:column>
+                        <p:column headerText="Paid Date">
+                            <f:facet name="header">
+                                <p:outputLabel value="Paid Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.editedAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Payer Name">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Payer Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.editor.webUserPerson.nameWithTitle}" />
+                        </p:column>
+                        <p:column headerText="Name">
+                            <f:facet name="header">
+                                <p:outputLabel value="Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.patient.person.name}" />
+                        </p:column>
+                        <p:column headerText="BHT No">
+                            <f:facet name="header">
+                                <p:outputLabel value="BHT No" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.patientEncounter.bhtNo}" />
+                        </p:column>
+                        <p:column headerText="Total" style="text-align: right;">
+                            <f:facet name="header">
+                                <p:outputLabel value="Total" />
+                            </f:facet>
+                            <h:outputLabel value="#{bi.bill.netTotal}" style="text-align: right;">
+                                <f:convertNumber pattern="#,000.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Paid" style="text-align: right;">
+                            <f:facet name="header">
+                                <p:outputLabel value="Paid" />
+                            </f:facet>
+                            <p:outputLabel value="Paid" rendered="#{bi.bill.paid eq true}"/>
+                            <p:outputLabel value="Not Paid" rendered="#{bi.bill.paid eq false}"/>
+                        </p:column>
+                        <p:column headerText="Paid" style="text-align: right;">
+                            <f:facet name="header">
+                                <p:outputLabel value="Paid" />
+                            </f:facet>
+                            <p:selectBooleanCheckbox value="#{bi.bill.paid}" ></p:selectBooleanCheckbox>
+                        </p:column>
+                        <p:column headerText="Update" style="text-align: right;">
+                            <f:facet name="header">
+                                <p:outputLabel value="Update" />
+                            </f:facet>
+                            <p:commandButton value="Update" action="#{inwardReportController.updateOutSideBill()}" ajax="false">
+                                <f:setPropertyActionListener value="#{bi.bill}" target="#{inwardReportController.bill}" />
+                            </p:commandButton>
+                        </p:column>
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column colspan="8" footerText="Total">
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="Total" />
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{inwardReportController.total}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.total}">
+                                            <f:convertNumber pattern="#,000.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                    </p:dataTable>
+                </p:panel>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

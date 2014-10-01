@@ -5,48 +5,23 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
-
     <body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
+                <p:panel header="" >
+                    <h:form >
 
-                <p:panel header="Add Staff Signature" >
+                        <p:pickList id="pickList" 
+                                    value="#{specialityController}" 
+                                    var="cities" 
+                                    itemLabel="#{cities}" 
+                                    itemValue="#{cities}" />
 
-                    <h:form enctype="multipart/form-data" >
-
-                        <h:panelGrid columns="3" >
-
-                            <h:outputLabel value="Select the staff" >
-                            </h:outputLabel>
-
-                            <p:autoComplete forceSelection="true" converter="stfcon"  value="#{staffController.current}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
-                            </p:autoComplete>                           
-                            <h:commandButton value="Refresh" />
-                            
-                            <p:fileUpload value="#{staffImageController.file}" mode="simple"/>
-                            
-                            <h:commandButton id="btnSave" value="Save" action="#{staffImageController.saveSignature()}"/>
-                            <p:defaultCommand target="btnSave"/>
-                            
-                            <p:graphicImage  value="#{staffImageController.signatureById}" >
-                                    <f:param name="id" value="#{staffController.current.id}" />
-                                </p:graphicImage>
-                        </h:panelGrid>
 
 
                     </h:form>
-
-              
-
                 </p:panel>
-
-
             </ui:define>
-
-
         </ui:composition>
-
     </body>
 </html>

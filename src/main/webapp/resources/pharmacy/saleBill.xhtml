@@ -18,7 +18,10 @@
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="posbill">
 
-            <div class="institutionName">
+            <div class="institutionName" style="text-align: center!important;
+    font-weight: bold!important;
+    font-size: 15px!important;
+    font-weight: bold;">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
             <div class="institutionContact" >
@@ -366,7 +369,7 @@
             <div class="footer">
                 <br/>
                 THANK YOU. PLEASE COME AGAIN<br/>
-                Returns Accepted only within 3 days<br/>
+                #{labels.pharmacyBillMessage1}No Return Accepted<br/>
                 Software by www.lakmedi.com - 0776285007<br/>
             </div>
 

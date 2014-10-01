@@ -11,7 +11,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.ejb.BillNumberController;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.CreditBean;
@@ -68,8 +68,8 @@ public class DealorPaymentBillSearch implements Serializable {
     List<Bill> bills;
     @EJB
     private CommonFunctions commonFunctions;
-    @Inject
-    private BillNumberController billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberBean;
     @EJB
     CancelledBillFacade cancelledBillFacade;
     @EJB
@@ -93,6 +93,43 @@ public class DealorPaymentBillSearch implements Serializable {
     private Date toDate;
     private String comment;
     WebUser user;
+
+    public void approve() {
+        if (getBill().getReferenceBill() != null) {
+         UtilityController.addErrorMessage("Already Approved");
+            return;
+        }
+        BilledBill newBill = new BilledBill();
+        newBill.copy(getBill());
+        newBill.copyValue(getBill());
+        newBill.setCreatedAt(new Date());
+        newBill.setComments(comment);
+        newBill.setCreater(sessionController.getLoggedUser());
+        newBill.setInstitution(sessionController.getInstitution());
+        newBill.setDepartment(sessionController.getDepartment());
+        newBill.setBillType(BillType.GrnPayment);
+        billFacade.create(newBill);
+        
+
+        bill.setReferenceBill(newBill);
+        billFacade.edit(bill);
+
+        for (BillItem bi : getBill().getBillItems()) {
+            BillItem newBi = new BillItem();
+            newBi.copy(bi);
+            newBi.setBill(newBill);
+            newBi.setCreatedAt(new Date());
+            newBi.setCreater(sessionController.getLoggedUser());
+            newBi.setReferanceBillItem(bi);
+            billItemFacede.create(newBi);
+
+            bi.setReferanceBillItem(newBi);
+            billItemFacede.edit(bi);
+
+        }
+        
+        UtilityController.addSuccessMessage("Succesfully Approved");
+    }
 
     public WebUser getUser() {
         return user;
@@ -596,11 +633,11 @@ public class DealorPaymentBillSearch implements Serializable {
     public DealorPaymentBillSearch() {
     }
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 

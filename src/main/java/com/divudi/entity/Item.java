@@ -14,6 +14,7 @@ import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.entity.pharmacy.MeasurementUnit;
+import com.divudi.entity.pharmacy.Vmp;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,6 +136,24 @@ public class Item implements Serializable {
     @Transient
     double transCheckedCount;
 
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date effectiveFrom;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date effectiveTo;
+    
+    //Matara Phrmacy Sale Autocomplete
+    
+    @ManyToOne
+    private Vmp vmp;
+
+    public Date getEffectiveFrom() {
+        return effectiveFrom;
+    }
+
+    public void setEffectiveFrom(Date effectiveFrom) {
+        this.effectiveFrom = effectiveFrom;
+    }
+
     public double getTransCheckedCount() {
         return transCheckedCount;
     }
@@ -232,7 +251,7 @@ public class Item implements Serializable {
     public void setItemFees(List<ItemFee> itemFees) {
         this.itemFees = itemFees;
     }
-    
+
     public double getTaxFee() {
         return taxFee;
     }
@@ -280,9 +299,7 @@ public class Item implements Serializable {
     public void setTotalFfee(double totalFfee) {
         this.totalFfee = totalFfee;
     }
-    
-    
-    
+
     @Transient
     ItemFee itemFee;
 
@@ -722,6 +739,14 @@ public class Item implements Serializable {
         this.comments = comments;
     }
 
+    public Vmp getVmp() {
+        return vmp;
+    }
+
+    public void setVmp(Vmp vmp) {
+        this.vmp = vmp;
+    }
+    
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override

@@ -27,6 +27,7 @@ import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,16 +80,27 @@ public class InwardReportControllerBht implements Serializable {
 
     Bill finalBill;
 
-    public double fetchPatientRoom_AdminCalculated() {
+    public Double[] fetchRoomValues() {
         HashMap hm = new HashMap();
         String sql = "SELECT"
-                + " sum(pr.calculatedAdministrationCharge-pr.addedAdministrationCharge) "
+                + " sum(pr.calculatedRoomCharge),"
+                + " sum(pr.discountRoomCharge),"
+                + " sum(pr.calculatedMaintainCharge), "
+                + " sum(pr.discountMaintainCharge), "
+                + " sum(pr.calculatedMoCharge), "
+                + " sum(pr.discountMoCharge), "
+                + " sum(pr.calculatedNursingCharge), "
+                + " sum(pr.discountNursingCharge), "
+                + " sum(pr.calculatedLinenCharge), "
+                + " sum(pr.discountLinenCharge), "
+                + " sum(pr.calculatedAdministrationCharge), "
+                + " sum(pr.discountAdministrationCharge), "
+                + " sum(pr.calculatedMedicalCareCharge), "
+                + " sum(pr.discountMedicalCareCharge) "
                 + " FROM PatientRoom pr "
                 + " where pr.retired=false"
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
+                //                + " and pr.patientEncounter.paymentFinalized=true
+                + " and pr.patientEncounter=:pe ";
 
         if (admissionType != null) {
             sql = sql + " and pr.patientEncounter.admissionType=:at ";
@@ -104,606 +116,31 @@ public class InwardReportControllerBht implements Serializable {
             sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
             hm.put("cc", institution);
         }
+        hm.put("pe", patientEncounter);
 
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+        Object obj[] = patientRoomFacade.findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
+        System.err.println("OBJ " + obj);
+        if (obj == null) {
+            Double[] dbl = new Double[14];
+            dbl[0] = 0.0;
+            dbl[1] = 0.0;
+            dbl[2] = 0.0;
+            dbl[3] = 0.0;
+            dbl[4] = 0.0;
+            dbl[5] = 0.0;
+            dbl[6] = 0.0;
+            dbl[7] = 0.0;
+            dbl[8] = 0.0;
+            dbl[9] = 0.0;
+            dbl[10] = 0.0;
+            dbl[11] = 0.0;
+            dbl[12] = 0.0;
+            dbl[13] = 0.0;
 
-    }
-
-    public double fetchPatientRoom_AdminDiscount() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.discountAdministrationCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
+            return dbl;
+        } else {
+            return Arrays.copyOf(obj, obj.length, Double[].class);
         }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_AdminAddition() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.addedAdministrationCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_MedicalCalculated() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.calculatedMedicalCareCharge-pr.addedMedicalCareCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_MedicalDiscount() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.discountMedicalCareCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_MedicalAddition() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.addedMedicalCareCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_LinenCalculated() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.calculatedLinenCharge-pr.addedLinenCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_LinenDiscount() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.discountLinenCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-//        if (paymentMethod != null) {
-//            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-//            hm.put("bt", paymentMethod);
-//        }
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_LinenAddition() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.addedLinenCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-//        if (paymentMethod != null) {
-//            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-//            hm.put("bt", paymentMethod);
-//        }
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_NursingCalculated() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                ////////////////
-                + " sum(pr.calculatedNursingCharge-pr.addedNursingCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_NursingDiscount() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.discountNursingCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_NursingAddition() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.addedNursingCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_MoDiscount() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.discountMoCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_MoAddition() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.addedMoCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_MoCalculated() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                ////////////////////
-                + " sum(pr.calculatedMoCharge-pr.addedMoCharge)"
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_MaintainDiscount() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.discountMaintainCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_MaintainAddition() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.addedMaintainCharge) "
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_MaintainCalculated() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.calculatedMaintainCharge-pr.addedMaintainCharge)"
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-
-        hm.put("bhtno", patientEncounter);
-
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_RoomDiscount() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.discountRoomCharge)"
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_RoomAddition() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.addedRoomCharge)"
-                ////////////////
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public double fetchPatientRoom_RoomCalculated() {
-        HashMap hm = new HashMap();
-        String sql = "SELECT"
-                + " sum(pr.calculatedRoomCharge-pr.addedRoomCharge)"
-                + " FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.paymentFinalized=true "
-                + " and pr.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-
-        if (admissionType != null) {
-            sql = sql + " and pr.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return patientRoomFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -714,7 +151,7 @@ public class InwardReportControllerBht implements Serializable {
                 + " FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
-                + " and b.paidForBillFee.bill.patientEncounter.paymentFinalized=true "
+                + " and b.paidForBillFee.bill.patientEncounter.discharged=true "
                 + " and(b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2 )"
                 + " and b.paidForBillFee.bill.patientEncounter=:bhtno ";
@@ -752,7 +189,7 @@ public class InwardReportControllerBht implements Serializable {
                 + " sum(b.feeValue) "
                 + " FROM BillFee b "
                 + " where b.retired=false "
-                + " and b.bill.patientEncounter.paymentFinalized=true "
+                + " and b.bill.patientEncounter.discharged=true "
                 + " and(b.bill.billType=:refType1 "
                 + " or b.bill.billType=:refType2 )"
                 + " and b.bill.patientEncounter=:bhtno ";
@@ -802,7 +239,7 @@ public class InwardReportControllerBht implements Serializable {
         }
 
     }
-    
+
     public void createTimedService() {
         HashMap hm = new HashMap();
         String sql = "SELECT i.item,"
@@ -810,7 +247,7 @@ public class InwardReportControllerBht implements Serializable {
                 + " sum(i.discount) "
                 + " FROM PatientItem i "
                 + " where i.retired=false "
-                + " and i.patientEncounter.paymentFinalized=true "
+                + " and i.patientEncounter.discharged=true "
                 + " and i.patientEncounter=:bhtno ";
         hm.put("bhtno", patientEncounter);
 
@@ -857,16 +294,15 @@ public class InwardReportControllerBht implements Serializable {
 
     @EJB
     BillItemFacade billItemFacade;
-    
-   
+
     public void updateBillItem(BillItem billItem) {
         billItem.setNetValue((billItem.getGrossValue() + billItem.getMarginValue()) - billItem.getDiscount());
 
         billItemFacade.edit(billItem);
     }
-    
-    public void updatePatientBillItem(PatientItem patientItem){
-    
+
+    public void updatePatientBillItem(PatientItem patientItem) {
+
         patientItemFacade.edit(patientItem);
     }
 
@@ -876,89 +312,19 @@ public class InwardReportControllerBht implements Serializable {
         billFeeFacade.edit(billFee);
     }
 
-    public double fetchAdmissionFeeDiscount() {
+    public Double[] fetchAdmissionFeeValues() {
         Bill b = inwardBeanController.fetchFinalBill(patientEncounter);
         HashMap hm = new HashMap();
         hm.put("inwTp", InwardChargeType.AdmissionFee);
         hm.put("btp", BillType.InwardFinalBill);
-        String sql = "SELECT  sum(i.discount)"
+        String sql = "SELECT  sum(i.grossValue),"
+                + " sum(i.discount),"
+                + " sum(i.netValue) "
                 + " FROM BillItem i "
                 + " where i.retired=false"
                 + " and i.inwardChargeType=:inwTp"
                 + " and i.bill.billType=:btp "
-                + " and i.bill.patientEncounter.paymentFinalized=true "
-                + " and i.bill.patientEncounter=:bhtno "
-                + " and i.bill=:b ";
-        hm.put("bhtno", patientEncounter);
-        hm.put("b", b);
-
-        if (admissionType != null) {
-            sql = sql + " and i.bill.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and i.bill.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and i.bill.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
-
-    }
-
-    public double fetchAdmissionFeeNetValue() {
-        Bill b = inwardBeanController.fetchFinalBill(patientEncounter);
-        HashMap hm = new HashMap();
-        hm.put("inwTp", InwardChargeType.AdmissionFee);
-        hm.put("btp", BillType.InwardFinalBill);
-        String sql = "SELECT  sum(i.netValue)"
-                + " FROM BillItem i "
-                + " where i.retired=false"
-                + " and i.inwardChargeType=:inwTp"
-                + " and i.bill.billType=:btp "
-                + " and i.bill.patientEncounter.paymentFinalized=true "
-                + " and i.bill.patientEncounter=:bhtno "
-                + " and i.bill=:b ";
-        hm.put("bhtno", patientEncounter);
-        hm.put("b", b);
-
-        if (admissionType != null) {
-            sql = sql + " and i.bill.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and i.bill.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and i.bill.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
-
-    }
-
-    public double fetchAdmissionFeeGross() {
-        Bill b = inwardBeanController.fetchFinalBill(patientEncounter);
-        HashMap hm = new HashMap();
-        hm.put("inwTp", InwardChargeType.AdmissionFee);
-        hm.put("btp", BillType.InwardFinalBill);
-        String sql = "SELECT  sum(i.grossValue)"
-                + " FROM BillItem i "
-                + " where i.retired=false"
-                + " and i.inwardChargeType=:inwTp"
-                + " and i.bill.billType=:btp "
-                + " and i.bill.patientEncounter.paymentFinalized=true "
+                + " and i.bill.patientEncounter.discharged=true "
                 + " and i.bill.patientEncounter=:bhtno "
                 + " and i.bill=:b ";
         hm.put("bhtno", patientEncounter);
@@ -979,7 +345,17 @@ public class InwardReportControllerBht implements Serializable {
             hm.put("cc", institution);
         }
 
-        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        Object obj[] = billFeeFacade.findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
+//        System.err.println("OBJ " + obj);
+        if (obj == null) {
+            Double[] dbl = new Double[3];
+            dbl[0] = 0.0;
+            dbl[1] = 0.0;
+            dbl[2] = 0.0;
+            return dbl;
+        } else {
+            return Arrays.copyOf(obj, obj.length, Double[].class);
+        }
 
     }
 
@@ -991,7 +367,7 @@ public class InwardReportControllerBht implements Serializable {
                 + " FROM Bill i "
                 + " where i.retired=false"
                 + " and i.billType=:btp "
-                + " and i.patientEncounter.paymentFinalized=true "
+                + " and i.patientEncounter.discharged=true "
                 + " and i.patientEncounter=:bhtno ";
         hm.put("bhtno", patientEncounter);
 
@@ -1020,7 +396,7 @@ public class InwardReportControllerBht implements Serializable {
         String sql = "SELECT  sum(i.admissionType.admissionFee)"
                 + " FROM PatientEncounter i "
                 + " where i.retired=false "
-                + " and i.paymentFinalized=true "
+                + " and i.discharged=true "
                 + " and i..bhtno=:bhtno ";
         hm.put("bhtno", patientEncounter);
 
@@ -1044,17 +420,18 @@ public class InwardReportControllerBht implements Serializable {
 
     }
 
-    public double fetchMadicineGross() {
+    public Double[] fetchIssue(BillType billType) {
         String sql;
         HashMap hm = new HashMap();
-        sql = "SELECT  sum(b.grossValue)"
+        sql = "SELECT  sum(b.grossValue),"
+                + " sum(b.marginValue),"
+                + " sum(b.discount),"
+                + " sum(b.netValue) "
                 + " FROM BillItem b "
                 + " WHERE b.retired=false "
-                + " and (b.bill.billType=:btp1 "
-                + " or  b.bill.billType=:btp2)"
-                + " and b.bill.patientEncounter.paymentFinalized=true "
-                + " and b.bill.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
+                + " and b.bill.billType=:btp "
+                + " and b.bill.patientEncounter.discharged=true "
+                + " and b.bill.patientEncounter=:pe ";
 
         if (admissionType != null) {
             sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
@@ -1072,137 +449,57 @@ public class InwardReportControllerBht implements Serializable {
             hm.put("cc", institution);
         }
 
-        hm.put("btp1", BillType.PharmacyBhtPre);
-        hm.put("btp2", BillType.StoreBhtPre);
+        hm.put("pe", patientEncounter);
+        hm.put("btp", billType);
 
-        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
-
-    }
-
-    public double fetchMadicineMargin() {
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "SELECT  sum(b.marginValue)"
-                + " FROM BillItem b "
-                + " WHERE b.retired=false "
-                + " and (b.bill.billType=:btp1 "
-                + " or  b.bill.billType=:btp2)"
-                + " and b.bill.patientEncounter.paymentFinalized=true "
-                + " and b.bill.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-
-        if (admissionType != null) {
-            sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-
+        Object obj[] = billFeeFacade.findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
+//        System.err.println("OBJ " + obj);
+        if (obj == null) {
+            Double[] dbl = new Double[4];
+            dbl[0] = 0.0;
+            dbl[1] = 0.0;
+            dbl[2] = 0.0;
+            dbl[3] = 0.0;
+            return dbl;
+        } else {
+            return Arrays.copyOf(obj, obj.length, Double[].class);
         }
-
-        if (paymentMethod != null) {
-            sql = sql + " and b.bill.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        hm.put("btp1", BillType.PharmacyBhtPre);
-        hm.put("btp2", BillType.StoreBhtPre);
-
-        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
-
-    }
-
-    public double fetchMadicineDiscount() {
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "SELECT  sum(b.discount)"
-                + " FROM BillItem b "
-                + " WHERE b.retired=false "
-                + " and (b.bill.billType=:btp1 "
-                + " or  b.bill.billType=:btp2)"
-                + " and b.bill.patientEncounter.paymentFinalized=true "
-                + " and b.bill.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-
-        if (admissionType != null) {
-            sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and b.bill.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        hm.put("btp1", BillType.PharmacyBhtPre);
-        hm.put("btp2", BillType.StoreBhtPre);
-
-        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
-
-    }
-
-    public double fetchMadicineNetValue() {
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "SELECT  sum(b.netValue)"
-                + " FROM BillItem b "
-                + " WHERE b.retired=false "
-                + " and (b.bill.billType=:btp1 "
-                + " or  b.bill.billType=:btp2)"
-                + " and b.bill.patientEncounter.paymentFinalized=true "
-                + " and b.bill.patientEncounter=:bhtno ";
-        hm.put("bhtno", patientEncounter);
-
-        if (admissionType != null) {
-            sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
-            hm.put("at", admissionType);
-
-        }
-
-        if (paymentMethod != null) {
-            sql = sql + " and b.bill.patientEncounter.paymentMethod=:bt ";
-            hm.put("bt", paymentMethod);
-        }
-
-        if (institution != null) {
-            sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
-            hm.put("cc", institution);
-        }
-
-        hm.put("btp1", BillType.PharmacyBhtPre);
-        hm.put("btp2", BillType.StoreBhtPre);
-
-        return billFeeFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
 
     }
 
     public void createInwardService() {
         inwardCharges = new ArrayList<>();
-
+        Double[] dbl = fetchAdmissionFeeValues();
         String2Value4 string1Value3 = new String2Value4();
         string1Value3.setString(InwardChargeType.AdmissionFee.getLabel());
-        string1Value3.setValue1(fetchAdmissionFeeGross());
-        string1Value3.setValue3(fetchAdmissionFeeDiscount());
-        string1Value3.setValue4(fetchAdmissionFeeNetValue());
+        string1Value3.setValue1(dbl[0]);
+        string1Value3.setValue3(dbl[1]);
+        string1Value3.setValue4(dbl[2]);
         inwardGross += string1Value3.getValue1();
         inwardDiscount += string1Value3.getValue3();
         inwardNetValue += string1Value3.getValue4();
         inwardCharges.add(string1Value3);
 
         string1Value3 = new String2Value4();
+        dbl = fetchIssue(BillType.PharmacyBhtPre);
         string1Value3.setString(InwardChargeType.Medicine.getLabel());
-        string1Value3.setValue1(fetchMadicineGross());
-        string1Value3.setValue2(fetchMadicineMargin());
-        string1Value3.setValue3(fetchMadicineDiscount());
-        string1Value3.setValue4(fetchMadicineNetValue());
+        string1Value3.setValue1(dbl[0]);
+        string1Value3.setValue2(dbl[1]);
+        string1Value3.setValue3(dbl[2]);
+        string1Value3.setValue4(dbl[3]);
+        inwardGross += string1Value3.getValue1();
+        inwardMargin += string1Value3.getValue2();
+        inwardDiscount += string1Value3.getValue3();
+        inwardNetValue += string1Value3.getValue4();
+        inwardCharges.add(string1Value3);
+
+        string1Value3 = new String2Value4();
+        dbl = fetchIssue(BillType.StoreBhtPre);
+        string1Value3.setString(InwardChargeType.GeneralIssuing.getLabel());
+        string1Value3.setValue1(dbl[0]);
+        string1Value3.setValue2(dbl[1]);
+        string1Value3.setValue3(dbl[2]);
+        string1Value3.setValue4(dbl[3]);
         inwardGross += string1Value3.getValue1();
         inwardMargin += string1Value3.getValue2();
         inwardDiscount += string1Value3.getValue3();
@@ -1229,7 +526,7 @@ public class InwardReportControllerBht implements Serializable {
                 + " sum(bf.feeValue)"
                 + " from BillFee bf "
                 + " where bf.retired=false "
-                + " and bf.bill.patientEncounter.paymentFinalized=true "                
+                + " and bf.bill.patientEncounter.discharged=true "
                 + " and bf.billItem.retired=false "
                 + " and bf.fee.feeType!=:ftp "
                 + " and bf.bill.patientEncounter=:bhtno ";
@@ -1271,14 +568,13 @@ public class InwardReportControllerBht implements Serializable {
         for (Object[] objs : results) {
 
             OpdService row = new OpdService();
-            
+
             row.setCategory((Category) objs[0]);
             row.setDiscount((Double) objs[1]);
             row.setMargin((Double) objs[2]);
             row.setGrossValue((Double) objs[3]);
             row.setNetValue((Double) objs[4]);
 
-            
             opdSrviceGross += row.getGrossValue();
             opdServiceMargin += row.getMargin();
             opdServiceDiscount += row.getDiscount();
@@ -1299,7 +595,7 @@ public class InwardReportControllerBht implements Serializable {
                 + " sum(bi.grossValue),"
                 + " sum(bi.netValue)"
                 + " from BillItem bi join BillFee bf on bi.id=bf.billItem.id "
-                + " where bi.bill.patientEncounter.paymentFinalized=true "
+                + " where bi.bill.patientEncounter.discharged=true "
                 + " and bi.retired=false "
                 + " and bi.bill.retired=false "
                 + " and bi.bill.patientEncounter=:bhtno "
@@ -1361,12 +657,14 @@ public class InwardReportControllerBht implements Serializable {
     public void createRoomTable() {
         roomChargeInwards = new ArrayList<>();
 
+        Double[] dbl = fetchRoomValues();
+
         RoomChargeInward row = new RoomChargeInward();
         row.setInwardChargeType(InwardChargeType.RoomCharges);
 
-        row.setCalculated(fetchPatientRoom_RoomCalculated());
-        row.setDiscount(fetchPatientRoom_RoomDiscount());
-        row.setAddition(fetchPatientRoom_RoomAddition());
+        row.setCalculated(dbl[0]);
+        row.setDiscount(dbl[1]);
+//        row.setAddition(fetchPatientRoom_RoomAddition());
         roomGross += row.getCalculated();
         roomDiscount += row.getDiscount();
         roomAddition += row.getAddition();
@@ -1374,9 +672,9 @@ public class InwardReportControllerBht implements Serializable {
         ///////////////
         row = new RoomChargeInward();
         row.setInwardChargeType(InwardChargeType.MaintainCharges);
-        row.setCalculated(fetchPatientRoom_MaintainCalculated());
-        row.setDiscount(fetchPatientRoom_MaintainDiscount());
-        row.setAddition(fetchPatientRoom_MaintainAddition());
+        row.setCalculated(dbl[2]);
+        row.setDiscount(dbl[3]);
+//        row.setAddition(fetchPatientRoom_MaintainAddition());
         roomGross += row.getCalculated();
         roomDiscount += row.getDiscount();
         roomAddition += row.getAddition();
@@ -1384,9 +682,9 @@ public class InwardReportControllerBht implements Serializable {
         ///////////////
         row = new RoomChargeInward();
         row.setInwardChargeType(InwardChargeType.MOCharges);
-        row.setCalculated(fetchPatientRoom_MoCalculated());
-        row.setDiscount(fetchPatientRoom_MoDiscount());
-        row.setAddition(fetchPatientRoom_MoAddition());
+        row.setCalculated(dbl[4]);
+        row.setDiscount(dbl[5]);
+//        row.setAddition(fetchPatientRoom_MoAddition());
         roomGross += row.getCalculated();
         roomDiscount += row.getDiscount();
         roomAddition += row.getAddition();
@@ -1394,9 +692,9 @@ public class InwardReportControllerBht implements Serializable {
         ///////////////
         row = new RoomChargeInward();
         row.setInwardChargeType(InwardChargeType.NursingCharges);
-        row.setCalculated(fetchPatientRoom_NursingCalculated());
-        row.setDiscount(fetchPatientRoom_NursingDiscount());
-        row.setAddition(fetchPatientRoom_NursingAddition());
+        row.setCalculated(dbl[6]);
+        row.setDiscount(dbl[7]);
+//        row.setAddition(fetchPatientRoom_NursingAddition());
         roomGross += row.getCalculated();
         roomDiscount += row.getDiscount();
         roomAddition += row.getAddition();
@@ -1404,9 +702,9 @@ public class InwardReportControllerBht implements Serializable {
         ///////////////
         row = new RoomChargeInward();
         row.setInwardChargeType(InwardChargeType.LinenCharges);
-        row.setCalculated(fetchPatientRoom_LinenCalculated());
-        row.setDiscount(fetchPatientRoom_LinenDiscount());
-        row.setAddition(fetchPatientRoom_LinenAddition());
+        row.setCalculated(dbl[8]);
+        row.setDiscount(dbl[9]);
+//        row.setAddition(fetchPatientRoom_LinenAddition());
         roomGross += row.getCalculated();
         roomDiscount += row.getDiscount();
         roomAddition += row.getAddition();
@@ -1414,9 +712,9 @@ public class InwardReportControllerBht implements Serializable {
         ///////////////
         row = new RoomChargeInward();
         row.setInwardChargeType(InwardChargeType.AdministrationCharge);
-        row.setCalculated(fetchPatientRoom_AdminCalculated());
-        row.setDiscount(fetchPatientRoom_AdminDiscount());
-        row.setAddition(fetchPatientRoom_AdminAddition());
+        row.setCalculated(dbl[10]);
+        row.setDiscount(dbl[11]);
+//        row.setAddition(fetchPatientRoom_AdminAddition());
         roomGross += row.getCalculated();
         roomDiscount += row.getDiscount();
         roomAddition += row.getAddition();
@@ -1424,9 +722,9 @@ public class InwardReportControllerBht implements Serializable {
         ///////////////
         row = new RoomChargeInward();
         row.setInwardChargeType(InwardChargeType.MedicalCareICU);
-        row.setCalculated(fetchPatientRoom_MedicalCalculated());
-        row.setDiscount(fetchPatientRoom_MedicalDiscount());
-        row.setAddition(fetchPatientRoom_MedicalAddition());
+        row.setCalculated(dbl[12]);
+        row.setDiscount(dbl[13]);
+//        row.setAddition(fetchPatientRoom_MedicalAddition());
         roomGross += row.getCalculated();
         roomDiscount += row.getDiscount();
         roomAddition += row.getAddition();
@@ -1852,7 +1150,7 @@ public class InwardReportControllerBht implements Serializable {
     public void setPatientItemFacade(PatientItemFacade patientItemFacade) {
         this.patientItemFacade = patientItemFacade;
     }
-    
+
     public double getTotal() {
         return total;
     }

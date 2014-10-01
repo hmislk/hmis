@@ -45,6 +45,7 @@ public class FingerPrintRecord implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date recordTimeStamp;
+    boolean allowedOverTime;
 
     @ManyToOne
     private StaffShift staffShift;
@@ -66,6 +67,7 @@ public class FingerPrintRecord implements Serializable {
     private Times times;
     @Enumerated(EnumType.STRING)
     DayType dayType;
+    String comments = "";
 
     public DayType getDayType() {
         return dayType;
@@ -74,8 +76,6 @@ public class FingerPrintRecord implements Serializable {
     public void setDayType(DayType dayType) {
         this.dayType = dayType;
     }
-    
-    
 
     public void copy(FingerPrintRecord fingerPrintRecord) {
         if (fingerPrintRecord == null) {
@@ -106,7 +106,19 @@ public class FingerPrintRecord implements Serializable {
 
         }
 
+        if (comments != null) {
+            output += comments;
+        }
+
         return output;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     public FingerPrintRecord getVerifiedRecord() {
@@ -244,6 +256,14 @@ public class FingerPrintRecord implements Serializable {
 
     public void setTimes(Times times) {
         this.times = times;
+    }
+
+    public boolean isAllowedOverTime() {
+        return allowedOverTime;
+    }
+
+    public void setAllowedOverTime(boolean allowedOverTime) {
+        this.allowedOverTime = allowedOverTime;
     }
 
 }

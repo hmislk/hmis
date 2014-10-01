@@ -69,8 +69,8 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculateService()}"/>
-                            <p:commandButton ajax="false" value="Update BillItems" action="#{bhtSummeryFinalizedController.updateAllBillItems()}"/>
-                            <p:commandButton ajax="false" value="Update BillFess" action="#{bhtSummeryFinalizedController.updateAllBillFees()}"/>
+                            <p:commandButton ajax="false" value="Update BillItems" action="#{bhtSummeryFinalizedController.updateAllBillItems()}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                            <p:commandButton ajax="false" value="Update BillFess" action="#{bhtSummeryFinalizedController.updateAllBillFees()}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
 
                             <p:panelGrid columns="6" styleClass="Border normalFont">
                                 <h:outputLabel value=""/>
@@ -220,10 +220,10 @@
                                     </p:dataTable>
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton ajax="false" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(bi)}"/>
+                                    <p:commandButton ajax="false" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(bi)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton ajax="false" value="Create Bill Fee" action="#{inwardReportControllerBht.createBillFee(bi)}"/>
+                                    <p:commandButton ajax="false" value="Create Bill Fee" action="#{inwardReportControllerBht.createBillFee(bi)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                 </p:column>
                                 <p:column exportable="false" >
                                     <p:dataTable value="#{bi.billFees}" var="bf">
@@ -236,7 +236,7 @@
                                             </h:outputLabel>
                                         </p:column>                                       
                                         <p:column>
-                                            <p:commandButton ajax="false" value="Update Bill Fee" action="#{inwardReportControllerBht.updateBillFee(bf)}"/>
+                                            <p:commandButton ajax="false" value="Update Bill Fee" action="#{inwardReportControllerBht.updateBillFee(bf)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                         </p:column>
                                     </p:dataTable>
                                 </p:column>
@@ -324,7 +324,90 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton ajax="false" process="@this" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(iss)}"/>
+                                    <p:commandButton ajax="false" process="@this" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(iss)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </p:tab>
+                        
+                         <p:tab title="Store Issue">
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             >
+                                <pe:exporter type="xlsx"
+                                             target="pharmacy" fileName="Madicine_Issue"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+
+                             <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculateStore()}"/>
+
+                            <p:panelGrid columns="6" styleClass="Border normalFont">
+                                <h:outputLabel value=""/>
+                                <h:outputLabel value="Gross Value"/>
+                                <h:outputLabel value="Margin"/>
+                                <h:outputLabel value="Gross+Margin"/>
+                                <h:outputLabel value="Discount"/>
+                                <h:outputLabel value="Net Total"/>
+
+                                <h:outputLabel value="BillItem"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy+bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel value="#{(bhtSummeryFinalizedController.billItemGrossPharmacy
+                                                        +bhtSummeryFinalizedController.billItemMarginPharmacy)
+                                                        -bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+
+
+                            </p:panelGrid>
+
+                            <p:dataTable id="Store" value="#{bhtSummeryFinalizedController.storeItems}" var="iss" 
+                                         sortBy="#{iss.bill.deptId}">
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="ID No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{iss.id}"/>                                    
+                                </p:column>                  
+                                <p:column headerText="Item Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{iss.item.name}">
+
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Total Value">
+                                    <h:outputLabel  value="#{iss.grossValue}">
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Margin Value">
+                                    <h:inputText  value="#{iss.marginValue}"/>
+                                </p:column>
+                                <p:column headerText="Gross Value" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Gross Value"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{iss.grossValue+iss.marginValue}">
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Discount Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discount Value"/>
+                                    </f:facet>
+                                    <h:inputText  value="#{iss.discount}"/>
+                                </p:column>
+                                <p:column headerText="Net Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Value"/>
+                                    </f:facet>
+                                    <h:outputLabel  value="#{iss.netValue}">
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton ajax="false" process="@this" value="Update Bill Item" action="#{inwardReportControllerBht.updateBillItem(iss)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
@@ -397,7 +480,7 @@
                                     <h:outputLabel value="#{pt.item.inwardChargeType}"/>                                        
                                 </p:column>   
                                  <p:column>
-                                     <p:commandButton ajax="false" process="@this" value="Update Bill Item" action="#{inwardReportControllerBht.updatePatientBillItem(pt)}"/>
+                                     <p:commandButton ajax="false" process="@this" value="Update Bill Item" action="#{inwardReportControllerBht.updatePatientBillItem(pt)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
@@ -691,7 +774,7 @@
                                     </h:panelGrid>
                                 </p:column>   
                                 <p:column>
-                                    <p:commandButton ajax="false" value="Update" action="#{bhtSummeryFinalizedController.updateRoom(rm)}"></p:commandButton>
+                                    <p:commandButton ajax="false" value="Update" action="#{bhtSummeryFinalizedController.updateRoom(rm)}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>

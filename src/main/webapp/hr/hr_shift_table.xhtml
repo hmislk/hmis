@@ -44,22 +44,11 @@
                     <p:column headerText="Staff Code" rendered="#{data.flag eq true}" >                        
                         <h:outputLabel value="#{sts.staff.code}"/>
                     </p:column>
-                    <!--
-                                        <p:column>
-                                            <p:panelGrid columns="2">
-                                                <h:outputLabel value="ID"/>
-                                                <h:outputLabel value="#{sts.id}"/>
-                                                <h:outputLabel value="Prev"/>
-                                                <h:outputLabel value="#{sts.previousStaffShift.id}"/>
-                                                <h:outputLabel value="Next"/>
-                                                <h:outputLabel value="#{sts.nextStaffShift.id}"/>
-                                            </p:panelGrid>
-                                        </p:column>-->
-
+                  
                     <p:column rendered="#{data.date ne null}">
                         <f:facet name="header">                            
                             <h:outputLabel value="#{data.date}" >
-                                <f:convertDateTime pattern="dd MM yyyy"/>
+                                <f:convertDateTime pattern="dd MM yyyy E"/>
                             </h:outputLabel>
                         </f:facet>
 

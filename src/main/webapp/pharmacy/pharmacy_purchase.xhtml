@@ -25,6 +25,11 @@
                             <p:autoComplete converter="deal" value="#{pharmacyPurchaseController.bill.fromInstitution}" 
                                             forceSelection="true"
                                             completeMethod="#{dealerController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                            <h:outputLabel value="Purchasing Institution"/>
+                            <p:autoComplete converter="institutionConverter" value="#{pharmacyPurchaseController.bill.referenceInstitution}"
+                                            completeMethod="#{institutionController.completeCompany}" 
+                                            forceSelection="true"
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                             <p:commandButton  value="Settle" action="#{pharmacyPurchaseController.settle}"
                                               onclick="onSubmitButton();"
                                               ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">

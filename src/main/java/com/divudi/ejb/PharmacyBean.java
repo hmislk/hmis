@@ -6,6 +6,7 @@ package com.divudi.ejb;
 
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemBatchQty;
 import com.divudi.data.StockQty;
 import com.divudi.entity.Bill;
@@ -60,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -69,9 +71,7 @@ import javax.persistence.TemporalType;
  *
  * @author Buddhika
  */
-
-@Named
-@ApplicationScoped
+@Singleton
 public class PharmacyBean {
 
     @EJB
@@ -100,16 +100,16 @@ public class PharmacyBean {
     StockHistoryFacade stockHistoryFacade;
     @EJB
     private UserStockFacade userStockFacade;
-    @Inject
-    BillNumberController billNumberBean;
+    @EJB
+    BillNumberGenerator billNumberBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;
 
-    public BillNumberController getBillNumberBean() {
+    public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
 
-    public void setBillNumberBean(BillNumberController billNumberBean) {
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
 
@@ -185,7 +185,7 @@ public class PharmacyBean {
         us.setCreater(webUser);
         us.setCreatedAt(new Date());
         us.setUserStockContainer(userStockContainer);
-     //   System.out.println("2");
+        //   System.out.println("2");
         if (us.getId() == null) {
             getUserStockFacade().create(us);
         } else {
@@ -249,11 +249,11 @@ public class PharmacyBean {
         }
 
     }
-    
+
     @EJB
     IssueRateMarginsFacade issueRateMarginsFacade;
-    
-     public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
+
+    public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
         String sql;
         HashMap hm = new HashMap();
         sql = "select m from IssueRateMargins m "
@@ -364,9 +364,8 @@ public class PharmacyBean {
 //        if (bill.getBillItems().isEmpty() || bill.isCancelled()) {
 //            return null;
 //        }
-        
         //@Safrin
-         if (bill.isCancelled()) {
+        if (bill.isCancelled()) {
             return null;
         }
 
@@ -610,7 +609,6 @@ public class PharmacyBean {
 
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Department department) {
         //System.err.println("Adding Stock : ");
-
         String sql;
         HashMap hm = new HashMap();
         sql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
@@ -618,15 +616,16 @@ public class PharmacyBean {
         hm.put("dep", department);
         Stock s = getStockFacade().findFirstBySQL(sql, hm);
 //        //System.err.println("ss" + s);
-        if (s == null) {
+        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType()== DepartmentType.Inventry ) {
             s = new Stock();
             s.setDepartment(department);
+            s.setCode(pharmaceuticalBillItem.getCode());
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
         }
-
         if (s.getId() == null || s.getId() == 0) {
             //System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() + qty);
+            s.setCode(pharmaceuticalBillItem.getCode());
             //System.err.println("Initial Stock After Updation" + s.getStock());
             getStockFacade().create(s);
             addToStockHistoryInitial(pharmaceuticalBillItem, s, department);

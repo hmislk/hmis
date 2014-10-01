@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:panel >
+                    <f:facet name="header" >
+                        <h:panelGrid columns="10"  >
+                            <h:outputLabel value="Inward Timed Service" />
+
+
+                        </h:panelGrid>
+                    </f:facet>
+                    <p:panel>
+                        <h:outputLabel value="From" ></h:outputLabel>
+                        <p:calendar id="fd" value="#{inwardTimedItemController.frmDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                        <h:outputLabel value="From" ></h:outputLabel>
+                        <p:calendar id="td" value="#{inwardTimedItemController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                        <p:autoComplete converter="timedIt" id="it" forceSelection="false" 
+                                        value="#{inwardTimedItemController.current.item}"
+                                        completeMethod="#{timedItemController.completeInvest}" var="ix" 
+                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.total}
+                            </p:column>
+
+                        </p:autoComplete>
+                        <p:watermark for="it" value="Timed Item"/>
+                        <p:commandButton ajax="false" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}" onclick="onSubmitButton();"  />
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardTimedItemController.createTimeServiceList}">
+                            <pe:exporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
+                        </p:commandButton>
+                    </p:panel>
+                    <p:panel header="Timed Sevice" id="gpBillPreview">                          
+                        <p:dataTable id="tbl" value="#{inwardTimedItemController.items}" var="ti">
+                            <p:column headerText="BHT Number">
+                                <p:outputLabel value="#{ti.patientEncounter.bhtNo}" />
+                            </p:column>
+                            <p:column headerText="Service Name">
+                                <p:outputLabel value="#{ti.item.name}" />
+                            </p:column>
+                            <p:column headerText="Inward Charge Type">
+                                <p:outputLabel value="#{ti.item.inwardChargeType}" />
+                            </p:column>
+                            <p:column headerText="Start Time">
+                                <h:outputLabel value="#{ti.fromTime}"   >
+                                    <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
+                                </h:outputLabel>
+                            </p:column>                               
+                            <p:column headerText="Stopped Time">
+                                <h:outputLabel value="#{ti.toTime}"   >
+                                    <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Discount">
+                                <h:outputLabel  value="#{ti.discount}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Adjusted Value">
+                                <h:outputLabel  value="#{ti.adjustedValue}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Total">
+                                <h:outputLabel  value="#{ti.serviceValue}">
+                                    <f:convertNumber pattern="#,000.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Creater">
+                                <h:outputLabel value="#{ti.creater.webUserPerson.name}"/>     
+                                <br/>
+                                <h:panelGroup rendered="#{ti.retired}" >
+                                    <h:outputLabel style="color: red;" value="Deleted By " />
+                                    <h:outputLabel style="color: red;"  value="#{ti.retirer.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>  
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column footerText="Total" colspan="6">
+                                        <f:facet name="footer" >
+                                            <p:outputLabel value="Total"></p:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="#{inwardTimedItemController.total}">
+                                        <f:facet name="footer" >
+                                            <p:outputLabel value="#{inwardTimedItemController.total}">
+                                                <f:convertNumber pattern="#,000.00" />
+                                            </p:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+
+                        </p:dataTable>
+                    </p:panel>
+
+
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

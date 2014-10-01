@@ -52,7 +52,7 @@ import org.primefaces.event.TabChangeEvent;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -61,6 +61,9 @@ public class AdmissionController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+
+    @Inject
+    InwardStaffPaymentBillController inwardStaffPaymentBillController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -129,7 +132,7 @@ public class AdmissionController implements Serializable {
             sql = "select c from Admission c "
                     + " where abs(c.creditUsedAmount)-abs(c.creditPaidAmount) >:val  "
                     + " and c.paymentMethod= :pm "
-                    + " and c.paymentFinalized=true "
+                    + " and c.discharged=true "
                     + " and c.retired=false "
                     + " and (upper(c.bhtNo) like :q"
                     + " or upper(c.patient.person.name) like :q "
@@ -154,7 +157,7 @@ public class AdmissionController implements Serializable {
         sql = "select c from PatientEncounter c "
                 + " where c.retired=false "
                 + " and abs(c.creditUsedAmount)-abs(c.creditPaidAmount) >:val "
-                + " and c.paymentFinalized=true "
+                + " and c.discharged=true "
                 + " and c.paymentMethod=:pm  "
                 + " and c.creditCompany=:ins ";
 
@@ -256,7 +259,7 @@ public class AdmissionController implements Serializable {
 
         return suggestions;
     }
-   
+
     public List<Admission> completePatientFinaled(String query) {
         List<Admission> suggestions;
         String sql;
@@ -486,6 +489,16 @@ public class AdmissionController implements Serializable {
             }
         }
 
+        if (getCurrent().getReferringDoctor() == null) {
+            UtilityController.addErrorMessage("Please Select Referring Doctor");
+            return true;
+        }
+
+//        if (inwardStaffPaymentBillController.referringDoctorSpeciality == null) {
+//            UtilityController.addErrorMessage("Please Select Referring Doctor Speciality");
+//            return true;
+//        }
+
         if (getPatientTabId().toString().equals("tabNewPt")) {
             if ("".equals(getAgeText())) {
                 UtilityController.addErrorMessage("Patient Age Should be Typed");
@@ -624,25 +637,23 @@ public class AdmissionController implements Serializable {
     public void setParentAdmission(Admission parentAdmission) {
         this.parentAdmission = parentAdmission;
     }
-    
-    public void createChildAdmission(){
-        if(parentAdmission==null){
+
+    public void createChildAdmission() {
+        if (parentAdmission == null) {
             UtilityController.addErrorMessage("Please select the mother encounter");
             return;
         }
-        if(parentAdmission.getParentEncounter()!=null){
+        if (parentAdmission.getParentEncounter() != null) {
             UtilityController.addErrorMessage("This mother encounter already has another Mother ENcounter, which is NOT possible. Select some other encounter");
             return;
         }
-        
-        current=null;
+
+        current = null;
         getCurrent();
-        
+
         current.setAdmissionType(parentAdmission.getAdmissionType());
-        
-        
+
     }
-    
 
     public void setCurrent(Admission current) {
         this.current = current;

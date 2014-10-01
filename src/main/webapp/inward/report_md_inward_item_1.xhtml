@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+
+                <p:panel header="Item Report">                    
+                    <h:outputLabel value="From"/>
+                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                        <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:calendar>
+
+                    <h:outputLabel value="To"/>
+                    <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                        <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:calendar>
+                    <h:panelGrid columns="2" >
+                        <p:autoComplete id="ins" value="#{mdInwardReportController.institution}"
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                        </p:autoComplete>
+                        <p:autoComplete id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}" converter="dep" >
+                        </p:autoComplete>
+                        <p:autoComplete value="#{mdInwardReportController.category}" id="ct" 
+                                        forceSelection="true"
+                                        completeMethod="#{categoryController.completeCategoryService}"
+                                        converter="categoryConverter"
+                                        var="cat" itemLabel="#{cat.name}" 
+                                        itemValue="#{cat}" >
+                            <p:column headerText="Category">
+                                <h:outputLabel value="#{cat.name}"/>
+                            </p:column>
+                            <p:column headerText="Parent Category">
+                                <h:outputLabel value="#{cat.parentCategory.name}"/>
+                            </p:column> 
+                            <p:column headerText="TYPE">
+                                <h:outputLabel value="Parent Category" 
+                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
+                                <h:outputLabel value="Child Category" 
+                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
+
+                            </p:column> 
+
+                        </p:autoComplete>
+                        <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
+                                         value="#{mdInwardReportController.item}"
+                                         completeMethod="#{itemController.completeInwardItemsCategory}"
+                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
+                                         size="30"  style="width: 400px;">
+                            <p:column>
+                                <h:outputLabel value="#{ix.name}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{ix.department.name}"/>
+                            </p:column>  
+                            <p:column>
+                                <h:outputLabel value="#{ix.total}" 
+                                               rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
+                                    <f:convertNumber pattern="#,000.00" />
+                                </h:outputLabel>
+                            </p:column>  
+                            <p:ajax event="itemSelect" process="acIx ct" update="@all" />
+                            <p:ajax event="focus" process="ct"/>
+                        </p:autoComplete>
+                        <p:watermark for="ct" value="Category"/>
+                        <p:watermark for="acIx" value="Item"/>
+                        <p:watermark for="dept" value="Department"/>
+                        <p:watermark for="ins" value="Institution"/>
+                        <p:commandButton ajax="false" value="Process by Added Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeByAddedDate1}" style="float: right;" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Process by Discharge Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" style="float: right;" onclick="onSubmitButton();" />
+                    </h:panelGrid>
+
+                </p:panel>   
+
+                <p:dataTable id="tbl" value="#{mdInwardReportController.billfees}"  var="i" rowIndexVar="j">
+                    <p:column headerText="No">
+                        <h:outputLabel value="#{j+1}"/>
+                    </p:column>
+                    <p:column headerText="Institution" >
+                        <h:outputLabel value="#{i.billItem.item.institution.name}"/>
+                    </p:column>
+                    <p:column headerText="Department" >
+                        <h:outputLabel value="#{i.billItem.item.department.name}"/>
+                    </p:column>    
+                    <p:column headerText="Parent Categoy" >
+                        <h:outputLabel value="#{i.billItem.item.category.parentCategory.name}"/>
+                    </p:column>   
+                    <p:column headerText="Categoy" >
+                        <h:outputLabel value="#{i.billItem.item.category.name}"/>
+                    </p:column>   
+                    <p:column headerText="Name" >
+                        <h:outputLabel value="#{i.billItem.item.name}"/>
+                    </p:column>
+                    <p:column headerText="Hospital Fee">
+                        <h:outputLabel value="#{i.fee.fee}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{mdInwardReportController.total}">
+                                <f:convertNumber pattern="#,000.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+<!--                    <p:column headerText="Total">
+                        <h:outputLabel value="#{i.fee.professionalFee+i.fee.hospitalFee}">
+                            <f:convertNumber pattern="#,000.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal}">
+                                <f:convertNumber pattern="#,000.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>                 -->
+                </p:dataTable>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>
