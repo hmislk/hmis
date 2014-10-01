@@ -24,13 +24,14 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
-import javax.inject.Named;
+import com.divudi.facade.ItemFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -43,6 +44,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -1255,6 +1257,26 @@ public class PharmacySaleReport implements Serializable {
 
     public void setString1Value3s(List<String1Value3> string1Value3s) {
         this.string1Value3s = string1Value3s;
+    }
+
+    List<CategoryMovementReportRow> categoryMovementReportRows;
+
+    public void createCategoryMovementReport() {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select a from Amp a where ";
+        List<Object[]> objs = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
+        for(Object o : objs){
+            
+        }
+    }
+
+    public List<CategoryMovementReportRow> getCategoryMovementReportRows() {
+        return categoryMovementReportRows;
+    }
+
+    public void setCategoryMovementReportRows(List<CategoryMovementReportRow> categoryMovementReportRows) {
+        this.categoryMovementReportRows = categoryMovementReportRows;
     }
 
     public void createSaleReportByDate3() {
@@ -2963,6 +2985,83 @@ public class PharmacySaleReport implements Serializable {
 
     public void setTotalUnitIssueNC(double totalUnitIssueNC) {
         this.totalUnitIssueNC = totalUnitIssueNC;
+    }
+
+    public class CategoryMovementReportRow {
+
+        Item item;
+        double opdSale;
+        double inwardIssue;
+        double departmentIssue;
+        double total;
+        double purchaseValue;
+        double marginValue;
+        double transfer;
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public double getOpdSale() {
+            return opdSale;
+        }
+
+        public void setOpdSale(double opdSale) {
+            this.opdSale = opdSale;
+        }
+
+        public double getInwardIssue() {
+            return inwardIssue;
+        }
+
+        public void setInwardIssue(double inwardIssue) {
+            this.inwardIssue = inwardIssue;
+        }
+
+        public double getDepartmentIssue() {
+            return departmentIssue;
+        }
+
+        public void setDepartmentIssue(double departmentIssue) {
+            this.departmentIssue = departmentIssue;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+
+        public void setTotal(double total) {
+            this.total = total;
+        }
+
+        public double getPurchaseValue() {
+            return purchaseValue;
+        }
+
+        public void setPurchaseValue(double purchaseValue) {
+            this.purchaseValue = purchaseValue;
+        }
+
+        public double getMarginValue() {
+            return marginValue;
+        }
+
+        public void setMarginValue(double marginValue) {
+            this.marginValue = marginValue;
+        }
+
+        public double getTransfer() {
+            return transfer;
+        }
+
+        public void setTransfer(double transfer) {
+            this.transfer = transfer;
+        }
+
     }
 
 }
