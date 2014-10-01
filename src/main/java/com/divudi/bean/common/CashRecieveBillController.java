@@ -511,7 +511,7 @@ public class CashRecieveBillController implements Serializable {
         tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
 
-        getBillNumberBean().departmentBillNumberGenerator(tmp, BillClassType.BilledBill);
+        getBillNumberBean().departmentBillNumberGenerator(tmp, BillClassType.BilledBill,BillNumberSuffix.NONE);
         getBillNumberBean().institutionBillNumberGenerator(tmp,BillClassType.BilledBill, BillNumberSuffix.INWPAY);
 
         getBillFacade().create(tmp);

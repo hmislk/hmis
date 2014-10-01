@@ -171,8 +171,8 @@ public class BillNumberGenerator {
                 + " and b.retired=false "
                 + " AND b.institution=:ins"
                 + " AND b.billType=:btp "
-                + " and b.createdAt is not null"
-                + " and (b.netTotal >0 or b.total >0)  ";
+                + " and b.createdAt is not null";
+//                + " and (b.netTotal >0 or b.total >0)  ";
         String result = "";
         HashMap hm = new HashMap();
         hm.put("ins", ins);
@@ -844,12 +844,16 @@ public class BillNumberGenerator {
         return result;
     }
 
-    public String departmentBillNumberGenerator(Bill bill, BillClassType billClassType) {
+    public String departmentBillNumberGenerator(Bill bill, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
         BillNumber billNumber = fetchLastBillNumber(bill.getDepartment(), bill.getBillType(), billClassType);
         Long dd = billNumber.getLastBillNumber();
         String result = "";
 
         result += bill.getDepartment().getDepartmentCode();
+
+        if (billNumberSuffix != BillNumberSuffix.NONE) {
+            result += billNumberSuffix;
+        }
 
         result += "/";
 
