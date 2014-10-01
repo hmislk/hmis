@@ -78,6 +78,8 @@
                                     <h:outputText id="lblIns" value="Institution" ></h:outputText>
                                     <p:autoComplete  completeMethod="#{institutionController.completeCompany}" 
                                                      var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{departmentController.current.institution}" ></p:autoComplete>
+                                    <h:outputText id="lblcre" value="Creater" ></h:outputText>
+                                    <p:outputLabel value="#{institutionController.current.creater}"/>
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">

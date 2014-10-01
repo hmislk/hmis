@@ -167,6 +167,16 @@
                                     </h:outputLabel>
                                 </h:panelGrid>
                             </p:column>
+                            
+                            <p:column headerText="billItem Id"> 
+                                <p:outputLabel value="#{pb.id}"></p:outputLabel>
+                                
+                            </p:column>
+                            
+                            <p:column headerText="ph Id">
+                                <p:outputLabel value="#{pb.pharmaceuticalBillItem.id}"></p:outputLabel>
+                                
+                            </p:column>
 
                         </p:dataTable>
 
