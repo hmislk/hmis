@@ -5,6 +5,8 @@
         <param-value>Production</param-value>
     </context-param>
     
+    
+    
     <context-param>
         <param-name>javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE</param-name>
         <param-value>true</param-value>
@@ -42,7 +44,7 @@
         </filter-class>
         <init-param>
             <param-name>uploadDirectory</param-name>
-            <param-value>/</param-value>
+            <param-value>/tmp/</param-value>
         </init-param>
     </filter>
 
