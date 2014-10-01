@@ -97,7 +97,7 @@ public class BillSearch implements Serializable {
     private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     EjbApplication ejbApplication;

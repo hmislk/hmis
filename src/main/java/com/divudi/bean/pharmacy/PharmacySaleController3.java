@@ -18,6 +18,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
@@ -98,7 +99,7 @@ public class PharmacySaleController3 implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
@@ -915,8 +916,7 @@ public class PharmacySaleController3 implements Serializable {
     }
 
     private void savePreBillFinally(Patient pt) {
-        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getInstitution(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
-
+      
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
@@ -929,7 +929,7 @@ public class PharmacySaleController3 implements Serializable {
 
         getPreBill().setComments(comment);
 
-        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getDepartment(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
+        
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
@@ -940,6 +940,13 @@ public class PharmacySaleController3 implements Serializable {
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
+         //        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getInstitution(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
+        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setInsId(insId);
+
+//        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getDepartment(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
+        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setDeptId(deptId);
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
         }
