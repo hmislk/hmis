@@ -6,13 +6,8 @@
 
 package com.divudi.bean.common;
 
-import com.divudi.data.BillClassType;
-import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
+import com.divudi.entity.BillNumber;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.facade.BillComponentFacade;
@@ -20,11 +15,13 @@ import com.divudi.facade.BillEntryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.BillNumberFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientInvestigationItemValueFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.util.JsfUtil;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
@@ -56,6 +53,21 @@ public class DataAdministrationController {
     BillItemFacade billItemFacade;
     @EJB
     BillFacade billFacade;
+    @EJB
+    BillNumberFacade billNumberFacade;
+    @Inject
+    SessionController sessionController;
+    
+    public void restBillNumber(){
+        String sql="Select b from BillNumber b where b.retired=false";
+        List<BillNumber> list=billNumberFacade.findBySQL(sql);
+        for(BillNumber b:list){
+            b.setRetired(true);
+            b.setRetiredAt(new Date());
+            b.setRetirer(sessionController.getLoggedUser());
+            billNumberFacade.edit(b);
+        }
+    }
     
 
     /**
