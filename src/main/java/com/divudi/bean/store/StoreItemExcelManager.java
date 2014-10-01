@@ -80,7 +80,7 @@ import org.primefaces.model.UploadedFile;
 /**
  *
  * @author Buddhika
- * 
+ *
  * TO check pull is working
  */
 @Named
@@ -110,7 +110,7 @@ public class StoreItemExcelManager implements Serializable {
     MeasurementUnitFacade muFacade;
     @EJB
     PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
-    @EJB
+    @Inject
     private StoreBean storeBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;
@@ -704,7 +704,12 @@ public class StoreItemExcelManager implements Serializable {
                 try {
                     doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
                 } catch (Exception e) {
-                    doe = new Date();
+                    temStr = "12/31/2020";
+                    try {
+                        doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
+                    } catch (Exception ex1) {
+                        doe = new Date();
+                    }
                 }
 
                 getStorePurchaseController().getCurrentBillItem().setItem(amp);
