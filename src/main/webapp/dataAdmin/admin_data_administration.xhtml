@@ -20,8 +20,8 @@
                             <h:outputLabel value="Very Dangerous Section. Please do not touch this page without the written permission from the lead software developer." style="font-size: 20px; color: red; background: yellow;" ></h:outputLabel>
                         </p:panel>
                         <p:panelGrid columns="1"                         >
-                            <p:commandButton ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="Remove All Bills with Bill Items"  onclick="onSubmitButton();"></p:commandButton>
-                             
+                            <p:commandButton ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="Remove All Bills with Bill Items"  onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false"  action="#{dataAdministrationController.restBillNumber()}" value="Reset Bill Number"  onclick="onSubmitButton();"/>
                         </p:panelGrid>
                         
                         

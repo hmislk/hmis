@@ -8,6 +8,7 @@ package com.divudi.entity;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -15,6 +16,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -38,6 +40,38 @@ public class BillNumber implements Serializable {
     private BillType billType;
     @Enumerated(EnumType.STRING)
     private BillClassType billClassType;
+      //Retairing properties
+    boolean retired;
+    @ManyToOne
+    WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date retiredAt;
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+    
+    
 
     public Long getLastBillNumber() {
         return lastBillNumber;

@@ -555,7 +555,8 @@ public class BillNumberGenerator {
     private BillNumber fetchLastBillNumber(Department department, Department toDepartment, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
-                + " where b.billType=:bTp "
+                + " where b.retired=false "
+                + " and b.billType=:bTp "
                 + " and b.billClassType=:bcl"
                 + " and b.department=:dep "
                 + " and b.toDepartment=:tDep";
@@ -607,7 +608,6 @@ public class BillNumberGenerator {
             }
 
             billNumber.setLastBillNumber(dd);
-
             billNumberFacade.create(billNumber);
         }
 
@@ -618,7 +618,8 @@ public class BillNumberGenerator {
     private BillNumber fetchLastBillNumber(Department department, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
-                + " where b.billType=:bTp "
+                + " where b.retired=false "
+                + " and  b.billType=:bTp "
                 + " and b.billClassType=:bcl"
                 + " and b.department=:dep ";
         HashMap hm = new HashMap();
@@ -676,7 +677,8 @@ public class BillNumberGenerator {
     private BillNumber fetchLastBillNumber(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
-                + " where b.billType=:bTp "
+                + " where b.retired=false "
+                + " and b.billType=:bTp "
                 + " and b.billClassType=:bcl"
                 + " and b.institution=:ins "
                 + " AND b.toDepartment=:tDep";
@@ -740,7 +742,8 @@ public class BillNumberGenerator {
     private BillNumber fetchLastBillNumber(Institution institution, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
-                + " where b.billType=:bTp "
+                + " where b.retired=false "
+                + " and b.billType=:bTp "
                 + " and b.billClassType=:bcl"
                 + " and b.institution=:ins ";
         HashMap hm = new HashMap();
