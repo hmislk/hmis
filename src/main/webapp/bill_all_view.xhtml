@@ -48,7 +48,7 @@
 
                                         <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.deptId}" />
-                                        
+
                                         <h:outputLabel value="Bill Date :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.createdAt}" >
                                             <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
@@ -59,7 +59,7 @@
 
                                         <h:outputLabel value="Bill Type :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.billType}" ></h:outputLabel>
-                                        
+
                                         <h:outputLabel value="Bill Class :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.billClass}" ></h:outputLabel>
 
@@ -114,6 +114,13 @@
                                             <f:selectItems value="#{enumController.paymentMethods}"  />
                                         </p:selectOneMenu>
 
+                                        <h:outputLabel value="Cheque No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.chequeRefNo}"/>
+                                        
+                                        
+                                        <h:outputLabel value="Cheque Date :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.chequeDate}"/>
+
                                         <h:outputLabel value="Total :" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.total}"/>
 
@@ -128,17 +135,17 @@
 
                                         <h:outputLabel value="Billed By :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.creater.webUserPerson.name}" ></h:outputLabel> 
-                                        
+
                                         <h:outputLabel value="Edited By :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.editor.webUserPerson.name}" ></h:outputLabel>
 
                                         <h:outputLabel value="Update Bill :" ></h:outputLabel>
                                         <p:commandButton value="Update" action="#{billSearch.updateBill()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
-                                        
+
                                         <h:outputLabel value="Retired :" ></h:outputLabel>
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.retired}" ></p:selectBooleanCheckbox>
-                                        
-                                        
+
+
                                         <h:outputLabel value="Update Bill :" ></h:outputLabel>
                                         <p:commandButton value="Bill Retired" action="#{billSearch.updateBillRetierd()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
 

@@ -52,7 +52,7 @@ import javax.persistence.TemporalType;
 @ApplicationScoped
 public class StoreCalculation {
 
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;

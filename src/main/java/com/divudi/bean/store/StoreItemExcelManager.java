@@ -80,6 +80,8 @@ import org.primefaces.model.UploadedFile;
 /**
  *
  * @author Buddhika
+ *
+ * TO check pull is working
  */
 @Named
 @SessionScoped
@@ -590,15 +592,18 @@ public class StoreItemExcelManager implements Serializable {
                 strAmp = cell.getContents();
                 System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
-                m.put("v", vmp);
                 m.put("n", strAmp);
+                m.put("t", DepartmentType.Store);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
+                        amp.setDepartmentType(DepartmentType.Store);
                         amp.setMeasurementUnit(strengthUnit);
                         amp.setDblValue((double) strengthUnitsPerIssueUnit);
+                        amp.setCreatedAt(new Date());
+                        amp.setCreater(getSessionController().getLoggedUser());
                         if (subCat == null) {
                             amp.setCategory(subCat);
                         } else {
@@ -702,7 +707,12 @@ public class StoreItemExcelManager implements Serializable {
                 try {
                     doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
                 } catch (Exception e) {
-                    doe = new Date();
+                    temStr = "12/31/2020";
+                    try {
+                        doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
+                    } catch (Exception ex1) {
+                        doe = new Date();
+                    }
                 }
 
                 getStorePurchaseController().getCurrentBillItem().setItem(amp);

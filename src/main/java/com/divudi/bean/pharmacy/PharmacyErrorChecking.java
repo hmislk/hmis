@@ -81,7 +81,7 @@ public class PharmacyErrorChecking implements Serializable {
 
     @EJB
     private BillFacade billFacade;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
 
     public double getItemStock() {
