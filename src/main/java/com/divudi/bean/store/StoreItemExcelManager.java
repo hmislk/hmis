@@ -218,7 +218,6 @@ public class StoreItemExcelManager implements Serializable {
 //            }
 //        }
 //    }
-
     @EJB
     private BillFacade billFacade;
 
@@ -741,17 +740,13 @@ public class StoreItemExcelManager implements Serializable {
         }
     }
 
-    
     @EJB
     CategoryFacade categoryFacade;
 
     public CategoryFacade getCategoryFacade() {
         return categoryFacade;
     }
-    
-    
-    
-    
+
     public String importToExcelWithCategory() {
         System.out.println("importing to excel for cat");
         String strCat;
@@ -798,12 +793,12 @@ public class StoreItemExcelManager implements Serializable {
                 strCat = cell.getContents();
                 System.out.println("strCat is " + strCat);
                 cat = getStoreBean().getStoreItemCategoryByName(strCat);
-                
+
                 if (cat == null) {
                     System.out.println("cat is null");
                     continue;
                 }
-                
+
                 System.out.println("cat = " + cat.getName());
 
                 //Sub-Category
@@ -811,13 +806,12 @@ public class StoreItemExcelManager implements Serializable {
                 strSubCat = cell.getContents();
                 System.out.println("strSubCat is " + strSubCat);
                 subCat = getStoreBean().getStoreItemCategoryByName(strSubCat);
-                
+
                 if (subCat != null) {
                     subCat.setParentCategory(cat);
                     System.out.println("sub cat = " + subCat.getName());
                     getCategoryFacade().edit(subCat);
                 }
-
 
                 //Amp
                 cell = sheet.getCell(ampCol, i);
@@ -841,6 +835,15 @@ public class StoreItemExcelManager implements Serializable {
                         }
                         getAmpFacade().create(amp);
                     } else {
+                        amp.setName(strAmp);
+                        amp.setDepartmentType(DepartmentType.Store);
+                        amp.setCreatedAt(new Date());
+                        amp.setCreater(getSessionController().getLoggedUser());
+                        if (subCat == null) {
+                            amp.setCategory(subCat);
+                        } else {
+                            amp.setCategory(cat);
+                        }
                         amp.setRetired(false);
                         getAmpFacade().edit(amp);
                     }
@@ -868,14 +871,7 @@ public class StoreItemExcelManager implements Serializable {
     public StoreAmpController getStoreAmpController() {
         return storeAmpController;
     }
-    
-    
-    
-    
-    
-    
-    
-    
+
     public void resetGrnReference() {
         String sql;
         Map temMap = new HashMap();
@@ -1797,7 +1793,6 @@ public class StoreItemExcelManager implements Serializable {
 //    public void setAmppFacade(AmppFacade amppFacade) {
 //        this.amppFacade = amppFacade;
 //    }
-
     public AtmFacade getAtmFacade() {
         return atmFacade;
     }
@@ -1949,7 +1944,6 @@ public class StoreItemExcelManager implements Serializable {
 //    public void setAmpps(List<Ampp> ampps) {
 //        this.ampps = ampps;
 //    }
-
     public List<Amp> getAmps() {
         return getAmpFacade().findAll();
     }
