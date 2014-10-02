@@ -16,7 +16,9 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.entity.pharmacy.Amp;
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import javax.inject.Named;
 import javax.ejb.EJB;
@@ -140,7 +142,10 @@ public class StoreAmpController implements Serializable {
 
     public List<Amp> getItems() {
         if (items == null) {
-            items = getFacade().findAll("name", true);
+            Map m  = new HashMap();
+            m.put("dt", DepartmentType.Store);
+            String sql = "Select a from Item a where a.retired=false and a.departmentType=:dt order by a.name";
+            items = getFacade().findBySQL(sql, m);
         }
         return items;
     }

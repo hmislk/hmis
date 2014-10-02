@@ -836,9 +836,6 @@ public class StoreItemExcelManager implements Serializable {
                         getAmpFacade().create(amp);
                     } else {
                         amp.setName(strAmp);
-                        amp.setDepartmentType(DepartmentType.Store);
-                        amp.setCreatedAt(new Date());
-                        amp.setCreater(getSessionController().getLoggedUser());
                         if (subCat == null) {
                             amp.setCategory(subCat);
                         } else {
