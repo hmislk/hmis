@@ -143,6 +143,7 @@ public class StoreAmpController implements Serializable {
     public List<Amp> getItems() {
         if (items == null) {
             Map m  = new HashMap();
+            m.put("dt", DepartmentType.Store);
             String sql = "Select a from Item a where a.retired=false and a.departmentType=:dt order by a.name";
             items = getFacade().findBySQL(sql, m);
         }
