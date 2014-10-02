@@ -1276,10 +1276,12 @@ public class PharmacySaleReport implements Serializable {
         m.put("bc", PreBill.class);
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("cat", category);
         jpql = "select pbi.billItem.bill.billType, pbi.billItem.item, sum(pbi.billItem.netValue), sum(pbi.itemBatch.purcahseRate*pbi.qty) "
                 + " from PharmaceuticalBillItem pbi "
                 + " where type(pbi.billItem.bill)=:bc "
-                + " and pbi.billItem.bill.createdAt between :fd and :td ";
+                + " and pbi.billItem.bill.createdAt between :fd and :td "
+                + " and pbi.billItem.item.category=:cat ";
         if (department != null) {
             jpql = jpql + " and pbi.billItem.bill.department=:dept ";
             m.put("dept", department);
@@ -1306,7 +1308,11 @@ public class PharmacySaleReport implements Serializable {
                 sv = (double) o[2];
                 cv = (double) o[3];
 
-                if (pi==null && !ti.equals(pi)) {
+                System.out.println("pi = " + pi);
+                System.out.println("ti = " + ti);
+                
+                if (pi==null || !ti.equals(pi)) {
+                    System.out.println("new item - " + ti.getName() );
                     r = new CategoryMovementReportRow();
                     r.setItem(ti);
                     r.setDepartmentIssue(0.0);
@@ -1320,6 +1326,7 @@ public class PharmacySaleReport implements Serializable {
                     r.setTransferOut(0.0);
                     pi = ti;
                     categoryMovementReportRows.add(r);
+                    System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
                 switch (tbt) {
