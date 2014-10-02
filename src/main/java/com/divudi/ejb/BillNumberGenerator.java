@@ -979,7 +979,10 @@ public class BillNumberGenerator {
         hm.put("dep", DepartmentType.Store);
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
-        result = "ms" + dd.toString();
+        dd=dd+1;
+        System.out.println("dd = " + dd);
+        result = "MS" + dd.toString();
+        System.out.println("result = " + result);
         return result;
 
     }

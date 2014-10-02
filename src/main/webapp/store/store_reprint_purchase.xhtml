@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+      xmlns:st="http://java.sun.com/jsf/composite/store">
 
     <body>
 
@@ -23,12 +23,11 @@
                             </p:commandButton>                         
                         </f:facet>
 
-                        <p:commandButton value="Cancel" ajax="false" action="pharmacy_cancel_purchase" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                        <p:commandButton value="Cancel" ajax="false" action="pharmacy_cancel_purchase" disabled="#{storeBillSearch.bill.cancelled}">                           
                              
                         </p:commandButton>     
-                        <p:commandButton  value="Return" ajax="false" action="pharmacy_return_purchase" disabled="#{pharmacyBillSearch.bill.cancelled}" >
-                            <f:setPropertyActionListener target="#{purchaseReturnController.bill}"  value="#{pharmacyBillSearch.bill}"/>
-                             
+                        <p:commandButton  value="Return" ajax="false" action="pharmacy_return_purchase" disabled="#{storeBillSearch.bill.cancelled}" >
+                            <f:setPropertyActionListener target="#{purchaseReturnController.bill}"  value="#{storeBillSearch.bill}"/>
                         </p:commandButton>
                     </p:panel>
 
@@ -38,7 +37,7 @@
                     <h:panelGroup >
 
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:purhcase bill="#{pharmacyBillSearch.bill}" />
+                            <st:purhcase bill="#{storeBillSearch.bill}" />
                             
 
                         </h:panelGroup>
