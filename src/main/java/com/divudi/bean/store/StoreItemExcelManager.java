@@ -41,6 +41,7 @@ import com.divudi.facade.AmppFacade;
 import com.divudi.facade.AtmFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.MeasurementUnitFacade;
@@ -740,6 +741,141 @@ public class StoreItemExcelManager implements Serializable {
         }
     }
 
+    
+    @EJB
+    CategoryFacade categoryFacade;
+
+    public CategoryFacade getCategoryFacade() {
+        return categoryFacade;
+    }
+    
+    
+    
+    
+    public String importToExcelWithCategory() {
+        System.out.println("importing to excel for cat");
+        String strCat;
+        String strSubCat;
+        String strAmp;
+
+        StoreItemCategory cat;
+        StoreItemCategory subCat;
+        Amp amp;
+
+        File inputWorkbook;
+        Workbook w;
+        Cell cell;
+        InputStream in;
+        UtilityController.addSuccessMessage(file.getFileName());
+        try {
+            UtilityController.addSuccessMessage(file.getFileName());
+            in = file.getInputstream();
+            File f;
+            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
+            FileOutputStream out = new FileOutputStream(f);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+
+            inputWorkbook = new File(f.getAbsolutePath());
+
+            UtilityController.addSuccessMessage("Excel File Opened");
+            w = Workbook.getWorkbook(inputWorkbook);
+            Sheet sheet = w.getSheet(0);
+
+            getStorePurchaseController().makeNull();
+
+            for (int i = startRow; i < sheet.getRows(); i++) {
+                Map m = new HashMap();
+                //Category
+                cell = sheet.getCell(numberCol, i);
+                System.out.println("numberCol = " + numberCol);
+                strCat = cell.getContents();
+                System.out.println("strCat is " + strCat);
+                cat = getStoreBean().getStoreItemCategoryByName(strCat);
+                
+                if (cat == null) {
+                    System.out.println("cat is null");
+                    continue;
+                }
+                
+                System.out.println("cat = " + cat.getName());
+
+                //Sub-Category
+                cell = sheet.getCell(catCol, i);
+                strSubCat = cell.getContents();
+                System.out.println("strSubCat is " + strSubCat);
+                subCat = getStoreBean().getStoreItemCategoryByName(strSubCat);
+                
+                if (subCat != null) {
+                    subCat.setParentCategory(cat);
+                    System.out.println("sub cat = " + subCat.getName());
+                    getCategoryFacade().edit(subCat);
+                }
+
+
+                //Amp
+                cell = sheet.getCell(ampCol, i);
+                strAmp = cell.getContents();
+                System.out.println("strAmp = " + strAmp);
+                m = new HashMap();
+                m.put("n", strAmp.toUpperCase());
+                m.put("t", DepartmentType.Store);
+                if (!strCat.equals("")) {
+                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
+                    if (amp == null) {
+                        amp = new Amp();
+                        amp.setName(strAmp);
+                        amp.setDepartmentType(DepartmentType.Store);
+                        amp.setCreatedAt(new Date());
+                        amp.setCreater(getSessionController().getLoggedUser());
+                        if (subCat == null) {
+                            amp.setCategory(subCat);
+                        } else {
+                            amp.setCategory(cat);
+                        }
+                        getAmpFacade().create(amp);
+                    } else {
+                        amp.setRetired(false);
+                        getAmpFacade().edit(amp);
+                    }
+                } else {
+                    amp = null;
+                    System.out.println("amp is null");
+                }
+                if (amp == null) {
+                    continue;
+                }
+                System.out.println("amp = " + amp.getName());
+            }
+            storeAmpController.recreateModel();
+            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            return "";
+        } catch (IOException | BiffException ex) {
+            UtilityController.addErrorMessage(ex.getMessage());
+            return "";
+        }
+    }
+
+    @Inject
+    StoreAmpController storeAmpController;
+
+    public StoreAmpController getStoreAmpController() {
+        return storeAmpController;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
     public void resetGrnReference() {
         String sql;
         Map temMap = new HashMap();

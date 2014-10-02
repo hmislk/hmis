@@ -63,7 +63,7 @@ public class StoreAmpController implements Serializable {
         current = null;
     }
 
-    private void recreateModel() {
+    public void recreateModel() {
         items = null;
         current = null;
     }
@@ -145,6 +145,8 @@ public class StoreAmpController implements Serializable {
         return items;
     }
 
+    
+    
     public List<Amp> getFilteredItems() {
         return filteredItems;
     }
