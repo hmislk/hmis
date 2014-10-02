@@ -80,6 +80,8 @@ import org.primefaces.model.UploadedFile;
 /**
  *
  * @author Buddhika
+ *
+ * TO check pull is working
  */
 @Named
 @SessionScoped
@@ -108,7 +110,7 @@ public class StoreItemExcelManager implements Serializable {
     MeasurementUnitFacade muFacade;
     @EJB
     PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
-    @EJB
+    @Inject
     private StoreBean storeBean;
     @EJB
     StoreItemCategoryFacade storeItemCategoryFacade;
@@ -201,20 +203,20 @@ public class StoreItemExcelManager implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public void removeDuplicateAmpps() {
-        List<Ampp> temAmpps = getAmppFacade().findAll(true);
-        for (Ampp ampp : temAmpps) {
-            for (Ampp dup : temAmpps) {
-                if (ampp.getName().equals(dup.getName())) {
-                    if (ampp.isRetired() == false && dup.isRetired() == false) {
-                        dup.setRetired(true);
-                        getAmppFacade().edit(dup);
-
-                    }
-                }
-            }
-        }
-    }
+//    public void removeDuplicateAmpps() {
+//        List<Ampp> temAmpps = getAmppFacade().findAll(true);
+//        for (Ampp ampp : temAmpps) {
+//            for (Ampp dup : temAmpps) {
+//                if (ampp.getName().equals(dup.getName())) {
+//                    if (ampp.isRetired() == false && dup.isRetired() == false) {
+//                        dup.setRetired(true);
+//                        getAmppFacade().edit(dup);
+//
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     @EJB
     private BillFacade billFacade;
@@ -440,7 +442,7 @@ public class StoreItemExcelManager implements Serializable {
         Atm atm;
         Vmp vmp;
         Amp amp;
-        Ampp ampp;
+//        Ampp ampp;
         Vmpp vmpp;
         VtmsVmps vtmsvmps;
         MeasurementUnit issueUnit;
@@ -590,15 +592,18 @@ public class StoreItemExcelManager implements Serializable {
                 strAmp = cell.getContents();
                 System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
-                m.put("v", vmp);
-                m.put("n", strAmp);
+                m.put("n", strAmp.toUpperCase());
+                m.put("t", DepartmentType.Store);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
+                        amp.setDepartmentType(DepartmentType.Store);
                         amp.setMeasurementUnit(strengthUnit);
                         amp.setDblValue((double) strengthUnitsPerIssueUnit);
+                        amp.setCreatedAt(new Date());
+                        amp.setCreater(getSessionController().getLoggedUser());
                         if (subCat == null) {
                             amp.setCategory(subCat);
                         } else {
@@ -619,7 +624,7 @@ public class StoreItemExcelManager implements Serializable {
                 }
                 System.out.println("amp = " + amp.getName());
                 //Ampp
-                ampp = getStoreBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+//                ampp = getStoreBean().getAmpp(amp, issueUnitsPerPack, packUnit);
 
                 //Code
                 cell = sheet.getCell(codeCol, i);
@@ -634,7 +639,7 @@ public class StoreItemExcelManager implements Serializable {
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
                 System.out.println("strBarCode = " + strBarcode);
-                amp.setCode(strBarcode);
+                amp.setBarcode(strBarcode);
                 getAmpFacade().edit(amp);
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);
@@ -702,7 +707,12 @@ public class StoreItemExcelManager implements Serializable {
                 try {
                     doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
                 } catch (Exception e) {
-                    doe = new Date();
+                    temStr = "12/31/2020";
+                    try {
+                        doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
+                    } catch (Exception ex1) {
+                        doe = new Date();
+                    }
                 }
 
                 getStorePurchaseController().getCurrentBillItem().setItem(amp);
@@ -1644,13 +1654,13 @@ public class StoreItemExcelManager implements Serializable {
         this.ampFacade = ampFacade;
     }
 
-    public AmppFacade getAmppFacade() {
-        return amppFacade;
-    }
-
-    public void setAmppFacade(AmppFacade amppFacade) {
-        this.amppFacade = amppFacade;
-    }
+//    public AmppFacade getAmppFacade() {
+//        return amppFacade;
+//    }
+//
+//    public void setAmppFacade(AmppFacade amppFacade) {
+//        this.amppFacade = amppFacade;
+//    }
 
     public AtmFacade getAtmFacade() {
         return atmFacade;
@@ -1796,13 +1806,13 @@ public class StoreItemExcelManager implements Serializable {
         this.vtmInAmpFacade = vtmInAmpFacade;
     }
 
-    public List<Ampp> getAmpps() {
-        return getAmppFacade().findAll();
-    }
-
-    public void setAmpps(List<Ampp> ampps) {
-        this.ampps = ampps;
-    }
+//    public List<Ampp> getAmpps() {
+//        return getAmppFacade().findAll();
+//    }
+//
+//    public void setAmpps(List<Ampp> ampps) {
+//        this.ampps = ampps;
+//    }
 
     public List<Amp> getAmps() {
         return getAmpFacade().findAll();
