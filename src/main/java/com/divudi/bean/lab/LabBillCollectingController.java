@@ -17,6 +17,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
@@ -27,15 +28,19 @@ import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
+import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -440,7 +445,7 @@ public class LabBillCollectingController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
         temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, bt, BillClassType.BilledBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp,bt,BillClassType.BilledBill, BillNumberSuffix.NONE));
+        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, bt, BillClassType.BilledBill, BillNumberSuffix.NONE));
         if (temp.getId() == null) {
             getFacade().create(temp);
         }
@@ -529,55 +534,169 @@ public class LabBillCollectingController implements Serializable {
         //billTotal = 0.0;
     }
 
+//    public void calTotals() {
+//        double tot = 0.0;
+//        double dis = 0.0;
+//
+//        for (BillEntry be : getLstBillEntries()) {
+//            BillItem bi = be.getBillItem();
+//            bi.setDiscount(0.0);
+//            bi.setGrossValue(0.0);
+//            bi.setNetValue(0.0);
+//
+//            for (BillFee bf : be.getLstBillFees()) {
+//                if (bf.getBillItem().getItem().isUserChangable() && bf.getBillItem().getItem().isDiscountAllowed() != true) {
+//                    //System.out.println("Total is " + tot);
+//                    //       //System.out.println("Bill Fee value is " + bf.getFeeValue());
+//                    tot += bf.getFeeValue();
+//                    //System.out.println("After addition is " + tot);
+//                    bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
+//                    bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeValue());
+//
+//                } else {
+//                    //System.out.println("12");
+//                    if (bf.getBillItem().getItem().isDiscountAllowed() != null && bf.getBillItem().getItem().isDiscountAllowed() == true) {
+//                        if (getPaymentScheme() == null) {
+//                            bf.setFeeValue(bf.getFee().getFee());
+//                            dis = 0.0;
+//                            bf.getBillItem().setDiscount(0.0);
+//                        } else {
+//                            //    bf.setFeeValue(bf.getFee().getFee() / 100 * (100 - getPaymentScheme().getDiscountPercent()));
+//                            //     dis += (bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
+//                            //              bf.getBillItem().setDiscount(bf.getBillItem().getDiscount() + bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
+//                        }
+//                        tot += bf.getFee().getFee();
+//                        bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFee().getFee());
+//
+//                        bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getBillItem().getGrossValue() - bf.getBillItem().getDiscount());
+//                    } else {
+//                        //System.out.println("13");
+//                        tot = tot + bf.getFeeValue();
+//                        bf.setFeeValue(bf.getFee().getFee());
+//                        bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFee().getFee());
+//                        bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFee().getFee());
+//                    }
+//                }
+//            }
+//        }
+//        setDiscount(dis);
+//        setTotal(tot);
+//        setNetTotal(tot - dis);
+//
+//    }
+    @Inject
+    PriceMatrixController priceMatrixController;
+
+    public PriceMatrixController getPriceMatrixController() {
+        return priceMatrixController;
+    }
+
+    public void setPriceMatrixController(PriceMatrixController priceMatrixController) {
+        this.priceMatrixController = priceMatrixController;
+    }
+    
+    boolean foreigner;
+    Institution creditCompany;
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
+    }
+    
+    
+
+    public boolean isForeigner() {
+        return foreigner;
+    }
+
+    public void setForeigner(boolean foreigner) {
+        this.foreigner = foreigner;
+    }
+    
+    
+    
+
     public void calTotals() {
-        double tot = 0.0;
-        double dis = 0.0;
+//     //   System.out.println("calculating totals");
+        if (paymentMethod == null) {
+            return;
+        }
+
+//        if (toStaff != null) {
+//            System.err.println("Inside");
+//            paymentScheme = null;
+//            creditCompany = null;
+//        }
+
+//     //   System.out.println("calculating totals 222 " + paymentMethod);
+        double billDiscount = 0.0;
+        double billGross = 0.0;
+        double billNet = 0.0;
+        MembershipScheme membershipScheme = null;
+
+//        if (toStaff != null && getSearchedPatient() != null
+//                && getSearchedPatient().getPerson() != null) {
+//            membershipScheme = getSearchedPatient().getPerson().getMembershipScheme();
+//        }
 
         for (BillEntry be : getLstBillEntries()) {
+            //System.out.println("bill item entry");
+            double entryGross = 0.0;
+            double entryDis = 0.0;
+            double entryNet = 0.0;
             BillItem bi = be.getBillItem();
-            bi.setDiscount(0.0);
-            bi.setGrossValue(0.0);
-            bi.setNetValue(0.0);
 
             for (BillFee bf : be.getLstBillFees()) {
-                if (bf.getBillItem().getItem().isUserChangable() && bf.getBillItem().getItem().isDiscountAllowed() != true) {
-                    //System.out.println("Total is " + tot);
-                    //       //System.out.println("Bill Fee value is " + bf.getFeeValue());
-                    tot += bf.getFeeValue();
-                    //System.out.println("After addition is " + tot);
-                    bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
-                    bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeValue());
+                Department department = null;
+                Item item = null;
+                PriceMatrix priceMatrix;
+                Category category = null;
 
-                } else {
-                    //System.out.println("12");
-                    if (bf.getBillItem().getItem().isDiscountAllowed() != null && bf.getBillItem().getItem().isDiscountAllowed() == true) {
-                        if (getPaymentScheme() == null) {
-                            bf.setFeeValue(bf.getFee().getFee());
-                            dis = 0.0;
-                            bf.getBillItem().setDiscount(0.0);
-                        } else {
-                            //    bf.setFeeValue(bf.getFee().getFee() / 100 * (100 - getPaymentScheme().getDiscountPercent()));
-                            //     dis += (bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
-                            //              bf.getBillItem().setDiscount(bf.getBillItem().getDiscount() + bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
-                        }
-                        tot += bf.getFee().getFee();
-                        bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFee().getFee());
+                if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
+                    department = bf.getBillItem().getItem().getDepartment();
 
-                        bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getBillItem().getGrossValue() - bf.getBillItem().getDiscount());
-                    } else {
-                        //System.out.println("13");
-                        tot = tot + bf.getFeeValue();
-                        bf.setFeeValue(bf.getFee().getFee());
-                        bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFee().getFee());
-                        bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFee().getFee());
-                    }
+                    item = bf.getBillItem().getItem();
                 }
-            }
-        }
-        setDiscount(dis);
-        setTotal(tot);
-        setNetTotal(tot - dis);
 
+                //Membership Scheme
+                if (membershipScheme != null) {
+                    priceMatrix = getPriceMatrixController().getOpdMemberDisCount(paymentMethod, membershipScheme, department, category);
+                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, membershipScheme, bi.getItem(), priceMatrix);
+
+                }
+
+                //Payment  Scheme && Credit Company
+                priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
+
+                entryGross += bf.getFeeGrossValue();
+                entryNet += bf.getFeeValue();
+                entryDis += bf.getFeeDiscount();
+                //System.out.println("fee net is " + bf.getFeeValue());
+
+            }
+
+            bi.setDiscount(entryDis);
+            bi.setGrossValue(entryGross);
+            bi.setNetValue(entryNet);
+
+            //System.out.println("item is " + bi.getItem().getName());
+            //System.out.println("item gross is " + bi.getGrossValue());
+            //System.out.println("item net is " + bi.getNetValue());
+            //System.out.println("item dis is " + bi.getDiscount());
+            billGross += bi.getGrossValue();
+            billNet += bi.getNetValue();
+            billDiscount += bi.getDiscount();
+            //     billDis = billDis + entryDis;
+        }
+        setDiscount(billDiscount);
+        setTotal(billGross);
+        setNetTotal(billNet);
+
+        //      //System.out.println("bill tot is " + billGross);
     }
 
     public void feeChanged() {
@@ -585,11 +704,23 @@ public class LabBillCollectingController implements Serializable {
         getLstBillItems();
         calTotals();
     }
+    
+    public void markAsForeigner(){
+        foreigner=true;
+        calTotals();
+    }
+    
+    public void markAsLocal(){
+        foreigner=false;
+        calTotals();
+    }
 
     public void prepareNewBill() {
         clearBillItemValues();
         clearBillValues();
         printPreview = false;
+        foreigner=false;
+        creditCompany=null;
         lstBillEntries = null;
 
     }
