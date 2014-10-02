@@ -789,9 +789,9 @@ public class StoreItemExcelManager implements Serializable {
                 Map m = new HashMap();
                 //Category
                 cell = sheet.getCell(numberCol, i);
-                System.out.println("numberCol = " + numberCol);
+//                System.out.println("numberCol = " + numberCol);
                 strCat = cell.getContents();
-                System.out.println("strCat is " + strCat);
+//                System.out.println("strCat is " + strCat);
                 cat = getStoreBean().getStoreItemCategoryByName(strCat);
 
                 if (cat == null) {
@@ -804,12 +804,13 @@ public class StoreItemExcelManager implements Serializable {
                 //Sub-Category
                 cell = sheet.getCell(catCol, i);
                 strSubCat = cell.getContents();
-                System.out.println("strSubCat is " + strSubCat);
+//                System.out.println("strSubCat is " + strSubCat);
                 subCat = getStoreBean().getStoreItemCategoryByName(strSubCat);
 
                 if (subCat != null) {
                     subCat.setParentCategory(cat);
                     System.out.println("sub cat = " + subCat.getName());
+                    System.out.println("subCat.getParentCategory() = " + subCat.getParentCategory());
                     getCategoryFacade().edit(subCat);
                 }
 
@@ -851,6 +852,13 @@ public class StoreItemExcelManager implements Serializable {
                 if (amp == null) {
                     continue;
                 }
+                System.out.println("-----------------------");
+                System.out.println("amp.getName() = " + amp.getName());
+                System.out.println("amp.getCategory().getName() = " + amp.getCategory().getName());
+                if(amp.getCategory().getParentCategory()!=null){
+                    System.out.println("amp.getCategory().getParentCategory().getName() = " + amp.getCategory().getParentCategory().getName());
+                }
+                System.out.println("-----------------------");
                 System.out.println("amp = " + amp.getName());
             }
             storeAmpController.recreateModel();
