@@ -13,6 +13,7 @@ import com.divudi.entity.Fee;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Service;
 import com.divudi.entity.Staff;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ServiceFacade;
@@ -36,7 +37,7 @@ import javax.faces.convert.FacesConverter;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -52,7 +53,7 @@ public class ServiceFeeController implements Serializable {
     private List<ItemFee> fees;
     private Service currentIx;
     private ItemFee currentFee;
-    private ItemFee removingItemFee;    
+    private ItemFee removingItemFee;
     @EJB
     FeeFacade feeFacade;
     @EJB
@@ -60,8 +61,6 @@ public class ServiceFeeController implements Serializable {
     @EJB
     private StaffFacade staffFacade;
 
-    
-    
     public List<Staff> completeStaff(String query) {
         List<Staff> suggestions;
         String sql;
@@ -187,22 +186,23 @@ public class ServiceFeeController implements Serializable {
         this.currentIx = ix;
 
     }
-    
-    public void makeNullst(ItemFee itemFee){
+
+    public void makeNullst(ItemFee itemFee) {
         itemFee.setSpeciality(null);
         itemFee.setStaff(null);
         itemFee.setFeeType(null);
-        itemFeeFacade.edit(itemFee);    
+        itemFeeFacade.edit(itemFee);
     }
-    
-    public void edit(ItemFee itemFee){
-        calTot();
+
+    public void edit(ItemFee itemFee) {
+
         itemFee.setEditer(getSessionController().getLoggedUser());
         itemFee.setEditedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        
-        
+
         itemFeeFacade.edit(itemFee);
-        
+
+        itemFee.getItem().setTotal(calTot());
+        ejbFacade.edit((Service) itemFee.getItem());
     }
 
     public void removeFee() {
@@ -230,7 +230,6 @@ public class ServiceFeeController implements Serializable {
 //            setCharges(null);
 //            getCharges();
 //            getCurrentIx().setTotal(calTot());
-
         }
     }
 
@@ -253,7 +252,7 @@ public class ServiceFeeController implements Serializable {
     private ServiceFacade getFacade() {
         return ejbFacade;
     }
-    
+
     public void createCharges() {
         String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
         fees = itemFeeFacade.findBySQL(sql);
@@ -270,7 +269,6 @@ public class ServiceFeeController implements Serializable {
 //        }
 //        return fees;
 //    }
-
     public void updateCharges() {
         //System.out.println("updating service charges");
         for (ItemFee f : fees) {
@@ -288,7 +286,6 @@ public class ServiceFeeController implements Serializable {
         getEjbFacade().edit(currentIx);
     }
 
-    
     public List<ItemFee> getCharges() {
         return fees;
     }
@@ -317,7 +314,6 @@ public class ServiceFeeController implements Serializable {
 
     public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
         this.itemFeeFacade = itemFeeFacade;
-
 
     }
 
