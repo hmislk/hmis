@@ -101,6 +101,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
         return false;
     }
+    DayType dayType;
 
     public void createShiftTable() {
         if (errorCheck()) {

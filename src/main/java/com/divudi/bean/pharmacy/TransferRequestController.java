@@ -52,7 +52,7 @@ public class TransferRequestController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;

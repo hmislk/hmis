@@ -50,6 +50,13 @@
                                     <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>
+                            
+                            <p:column>
+                                <p:commandButton ajax="false" value="Print Cheque" action="cheque_print">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
+                                </p:commandButton>
+                            </p:column>
+                            
                             <p:column headerText="Bill No" >                                
                                 <h:outputLabel value="#{bill.insId}"  ></h:outputLabel>                                    
                             </p:column>

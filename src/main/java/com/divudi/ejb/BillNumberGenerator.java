@@ -171,8 +171,8 @@ public class BillNumberGenerator {
                 + " and b.retired=false "
                 + " AND b.institution=:ins"
                 + " AND b.billType=:btp "
-                + " and b.createdAt is not null"
-                + " and (b.netTotal >0 or b.total >0)  ";
+                + " and b.createdAt is not null";
+//                + " and (b.netTotal >0 or b.total >0)  ";
         String result = "";
         HashMap hm = new HashMap();
         hm.put("ins", ins);
@@ -308,9 +308,14 @@ public class BillNumberGenerator {
 
     public String institutionBillNumberGeneratorByPayment(Department dep, Bill bill, BillType billType, BillNumberSuffix billNumberSuffix) {
 
-        String sql = "SELECT count(b) FROM Bill b where type(b)=:type and b.retired=false AND "
-                + " b.department=:dep and b.createdAt is not null AND b.billType=:btp "
-                + " and b.billDate is not null and (b.netTotal >0 or b.total >0) ";
+        String sql = "SELECT count(b) FROM Bill b "
+                + " where type(b)=:type"
+                + " and b.retired=false "
+                + " AND b.department=:dep "
+                + " and b.createdAt is not null "
+                + " AND b.billType=:btp "
+                + " and b.billDate is not null";
+//                + " and (b.netTotal >0 or b.total >0) ";
         String result = "";
         HashMap hm = new HashMap();
         hm.put("dep", dep);
@@ -550,7 +555,8 @@ public class BillNumberGenerator {
     private BillNumber fetchLastBillNumber(Department department, Department toDepartment, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
-                + " where b.billType=:bTp "
+                + " where b.retired=false "
+                + " and b.billType=:bTp "
                 + " and b.billClassType=:bcl"
                 + " and b.department=:dep "
                 + " and b.toDepartment=:tDep";
@@ -602,7 +608,6 @@ public class BillNumberGenerator {
             }
 
             billNumber.setLastBillNumber(dd);
-
             billNumberFacade.create(billNumber);
         }
 
@@ -613,7 +618,8 @@ public class BillNumberGenerator {
     private BillNumber fetchLastBillNumber(Department department, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
-                + " where b.billType=:bTp "
+                + " where b.retired=false "
+                + " and  b.billType=:bTp "
                 + " and b.billClassType=:bcl"
                 + " and b.department=:dep ";
         HashMap hm = new HashMap();
@@ -671,7 +677,8 @@ public class BillNumberGenerator {
     private BillNumber fetchLastBillNumber(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
-                + " where b.billType=:bTp "
+                + " where b.retired=false "
+                + " and b.billType=:bTp "
                 + " and b.billClassType=:bcl"
                 + " and b.institution=:ins "
                 + " AND b.toDepartment=:tDep";
@@ -735,7 +742,8 @@ public class BillNumberGenerator {
     private BillNumber fetchLastBillNumber(Institution institution, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "
-                + " where b.billType=:bTp "
+                + " where b.retired=false "
+                + " and b.billType=:bTp "
                 + " and b.billClassType=:bcl"
                 + " and b.institution=:ins ";
         HashMap hm = new HashMap();
@@ -839,12 +847,16 @@ public class BillNumberGenerator {
         return result;
     }
 
-    public String departmentBillNumberGenerator(Bill bill, BillClassType billClassType) {
+    public String departmentBillNumberGenerator(Bill bill, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
         BillNumber billNumber = fetchLastBillNumber(bill.getDepartment(), bill.getBillType(), billClassType);
         Long dd = billNumber.getLastBillNumber();
         String result = "";
 
         result += bill.getDepartment().getDepartmentCode();
+
+        if (billNumberSuffix != BillNumberSuffix.NONE) {
+            result += billNumberSuffix;
+        }
 
         result += "/";
 
@@ -967,9 +979,7 @@ public class BillNumberGenerator {
         hm.put("dep", DepartmentType.Store);
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
-
-        result = dd.toString();
-
+        result = "ms" + dd.toString();
         return result;
 
     }

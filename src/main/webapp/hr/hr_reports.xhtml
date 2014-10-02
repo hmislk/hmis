@@ -70,11 +70,23 @@
                                                  styleClass="linkButton" ajax="false" /> 
                             </h:panelGrid>
                         </p:panel>
+                        <p:panel header="Extra Time">
+                              <p:commandButton value="(1) Over Time Report " 
+                                                 action="hr_report_over_time" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                        </p:panel>
                         <p:panel header="Leave" >
                             
                         </p:panel>
 
-
+                        <p:panel header="Extra Working Time">
+                             <p:commandButton value="(1) Over Time" 
+                                                 action="hr_report_over_time" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                            
+                        </p:panel>
 
                     </h:panelGrid>
                 </h:form>

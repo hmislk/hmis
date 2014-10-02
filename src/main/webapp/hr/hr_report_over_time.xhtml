@@ -72,7 +72,7 @@
                                     <h:outputLabel value="Previous" rendered="#{ss.previousStaffShift ne null}"/>
                                 </p:column> 
                                 <p:column headerText="OT Minute From In Record Logged">
-                                    <h:outputLabel value="#{ss.overTimeFromStartRecordLogged/60}">                                        
+                                    <h:outputLabel value="#{ss.extraTimeFromStartRecordLogged/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>   
@@ -83,12 +83,12 @@
                                     <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
                                 </p:column>   
                                 <p:column headerText="OT Minute From Out Record Logged">
-                                    <h:outputLabel value="#{ss.overTimeFromEndRecordLogged/60}">                                        
+                                    <h:outputLabel value="#{ss.extraTimeFromEndRecordLogged/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="OT Minute From Complete Record Logged">
-                                    <h:outputLabel value="#{ss.overTimeCompleteRecordLogged/60}">                                        
+                                    <h:outputLabel value="#{ss.extraTimeCompleteRecordLogged/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>
@@ -98,7 +98,7 @@
                                     </h:outputLabel>                                     
                                 </p:column>  
                                 <p:column headerText="OT Minute From In Record Varified">
-                                    <h:outputLabel value="#{ss.overTimeFromStartRecordVarified/60}">                                        
+                                    <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>
@@ -109,12 +109,12 @@
                                     <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
                                 </p:column>    
                                 <p:column headerText="OT Minute From Out Record Varified">
-                                    <h:outputLabel value="#{ss.overTimeFromEndRecordVarified/60}">                                        
+                                    <h:outputLabel value="#{ss.extraTimeFromEndRecordVarified/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="OT Minute From Complete Record Varified">
-                                    <h:outputLabel value="#{ss.overTimeCompleteRecordVarified/60}">                                        
+                                    <h:outputLabel value="#{ss.extraTimeCompleteRecordVarified/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>

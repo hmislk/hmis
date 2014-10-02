@@ -60,7 +60,7 @@ public class StoreBhtIssueReturnController implements Serializable {
     private BillNumberGenerator billNumberBean;
     @EJB
     private BillFacade billFacade;
-    @Inject
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;

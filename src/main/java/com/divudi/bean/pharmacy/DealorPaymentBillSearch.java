@@ -103,11 +103,13 @@ public class DealorPaymentBillSearch implements Serializable {
         newBill.copy(getBill());
         newBill.copyValue(getBill());
         newBill.setCreatedAt(new Date());
+        newBill.setComments(comment);
         newBill.setCreater(sessionController.getLoggedUser());
         newBill.setInstitution(sessionController.getInstitution());
         newBill.setDepartment(sessionController.getDepartment());
         newBill.setBillType(BillType.GrnPayment);
         billFacade.create(newBill);
+        
 
         bill.setReferenceBill(newBill);
         billFacade.edit(bill);

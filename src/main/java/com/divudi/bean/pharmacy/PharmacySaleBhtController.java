@@ -133,7 +133,7 @@ public class PharmacySaleBhtController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     StockFacade stockFacade;
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;

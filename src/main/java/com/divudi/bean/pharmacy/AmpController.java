@@ -91,7 +91,7 @@ public class AmpController implements Serializable {
         this.billNumberBean = billNumberBean;
     }
 
-    @Inject
+    @EJB
     PharmacyBean pharmacyBean;
 
     public PharmacyBean getPharmacyBean() {

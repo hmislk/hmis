@@ -25,6 +25,8 @@
                                                          or dealorPaymentBillSearch.bill.cancelled
                                                          or dealorPaymentBillSearch.bill.referenceBill ne null }">                           
                             </p:commandButton>
+                            <p:inputText id="com" value="#{dealorPaymentBillSearch.comment}"/>
+                            <p:watermark for="com" value="Comment"/>
                         </f:facet>
 
                     </p:panel>
@@ -46,8 +48,7 @@
                     </p:commandButton>                    
                     <p:panel   id="gpBillPreview"   >
 
-                        <bi:grn_payment bill="#{dealorPaymentBillSearch.bill.billedBill}"/>
-                        
+                        <bi:grn_payment billItems="#{dealorPaymentBillSearch.billItems}" bill="#{dealorPaymentBillSearch.bill}"/>  
                        
 
                     </p:panel>

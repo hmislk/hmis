@@ -13,7 +13,210 @@
 
             <ui:define name="content">
                 <h:form>
+                    
+                    <h:panelGroup>
+                        
+                        <p:dataTable var="bi" styleClass="noBorder" 
+                             value="#{storeBillSearch.billItems}" 
+                             scrollable="true" scrollHeight="250"                             
+                             id="itemList">  
 
+                    <f:facet name="header">  
+                        <h:outputLabel  value="Ordered Bill Item"/>                        
+                    </f:facet>          
+
+                    <p:column >
+                        <p:commandButton   value="Add Detail"
+                                           process="@this" 
+                                           update=":#{p:component('billProperties')}"
+                                           style="float: right;" 
+                                           actionListener="#{storeBillSearch.addDetailItemListener(bi)}"
+                                           oncomplete="PF('dlgUpdate').show();">                        
+                        </p:commandButton>
+                    </p:column>
+                            
+                    <p:column headerText="Item Name" style="width: 250px!important;"  > 
+
+                        <h:outputText id="item" value="#{bi.item.name}" >                                   
+                        </h:outputText>
+
+                    </p:column>  
+
+                    <p:column headerText="Parent Item Name" style="width: 250px!important;"  > 
+
+                        <h:outputText  value="#{bi.parentBillItem.item.name}" >                                   
+                        </h:outputText>
+
+                    </p:column>  
+
+                    <p:column headerText="Inventory Code" >  
+                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.code}"/>
+                    </p:column>  
+
+                    <p:column headerText="Ordered Qty" >  
+                        <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>
+                    </p:column>  
+
+                    <p:column headerText="Receiving Qty"  >
+                        <p:cellEditor>  
+                            <f:facet name="output">  
+                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.qtyInUnit}" />                               
+                            </f:facet>                        
+                            <f:facet name="input">  
+                                <p:inputText autocomplete="off" value="#{bi.tmpQty}" />
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>  
+
+                    <p:column headerText="Free"   >   
+                        <p:cellEditor>  
+                            <f:facet name="output">  
+                                <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
+                            </f:facet>                      
+                            <f:facet name="input">  
+                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.freeQty}" />
+                            </f:facet>
+                        </p:cellEditor>                        
+                    </p:column> 
+
+                    <p:column headerText="Purchase Rate"   >  
+                        <p:cellEditor>  
+                            <f:facet name="output">  
+                                <h:panelGroup id="purchase">
+                                    <p:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}" />
+                                    <p:outputLabel value=" X #{bi.item.dblValue}" 
+                                                   rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                </h:panelGroup>
+                            </f:facet>                       
+                            <f:facet name="input">  
+                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
+                                </p:inputText>
+                            </f:facet>
+                        </p:cellEditor>                       
+                    </p:column>                  
+
+                    <p:column headerText="Sale Price"  > 
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:panelGroup id="retail">
+                                    <p:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                    <p:outputLabel value=" X (#{bi.item.dblValue})" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/> 
+                                </h:panelGroup>
+                            </f:facet>  
+                            <f:facet name="input">
+                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+                            </f:facet>
+                        </p:cellEditor>                      
+                    </p:column>  
+
+                    <p:column headerText="Total"  >  
+                        <h:panelGroup id="total">
+                            <h:outputText value=" #{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </h:panelGroup>
+                    </p:column>  
+
+
+
+                    <p:column headerText="Date of Expiry" >  
+                        <p:cellEditor >
+                            <f:facet name="output">
+                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
+                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                </h:outputLabel>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:calendar  value="#{bi.pharmaceuticalBillItem.doe}" 
+                                             id="doeDateOnlyShort"
+                                             navigator="true" pattern="dd MM yy"    > 
+                                </p:calendar>  
+                            </f:facet>
+                        </p:cellEditor>                     
+                    </p:column> 
+
+
+                    <p:column headerText="Bathch No" >  
+                        <p:cellEditor >
+                            <f:facet name="output">
+                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}">  
+                                </p:inputText>
+                            </f:facet>
+                        </p:cellEditor>
+
+                    </p:column>  
+
+
+
+
+
+                    <p:column >
+                        <p:commandButton value="Remove" ajax="false" action="#{storeGrnController.removeItem(bi)}"/>
+                    </p:column>
+
+                </p:dataTable>
+                        
+                      
+                        
+                    </h:panelGroup>
+  <p:dialog id="billProperties" modal="true" height="400" width="600" header="Update Item Properties" widgetVar="dlgUpdate">
+                            <f:facet name="header">                            
+                                <h:outputLabel value="Add Detail"/>
+                                <p:commandButton  value="Update" action="#{storeBillSearch.updatePhIem()}" process="billProperties" update="itemList"/>
+
+                            </f:facet>
+
+                            <p:panelGrid styleClass="alignTop"  columns="2" >
+
+                                <h:outputLabel value="Make"/>
+                                <p:selectOneMenu value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.make}" >
+                                    <f:selectItem itemLabel="Select a Make" ></f:selectItem>
+                                    <f:selectItems value="#{makeController.items}" var="make" itemLabel="#{make.name}" itemValue="#{make}" ></f:selectItems>                                    
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Model"/>
+                                <p:inputText value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.model}" />
+                                <h:outputLabel value="Inventory Code"/>
+                                <p:inputText  value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.code}" />                                
+                                <h:outputLabel value="Description"/>
+                                <p:inputTextarea value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.description}" />
+                                <h:outputLabel value="Barcode No"/>
+                                <p:inputText  value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.barcode}" />
+                                <h:outputLabel value="Serial No"/>
+                                <p:inputText  value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.serialNo}" />
+                                <h:outputLabel value="Registration No"/>
+                                <p:inputText  value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.registrationNo}" ></p:inputText>
+                                <h:outputLabel value="Chassis No"/>
+                                <p:inputText  value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.chassisNo}" ></p:inputText>
+                                <h:outputLabel value="Engine No"/>
+                                <p:inputText value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.engineNo}" ></p:inputText>
+                                <h:outputLabel value="Colour"/>
+                                <p:inputText  value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.colour}" ></p:inputText>
+                                <h:outputLabel value="Warranty Certification No"/>
+                                <p:inputText value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.warrentyCertificateNumber}" ></p:inputText>
+                                <h:outputLabel value="Warranty Duration"/>
+                                <p:outputLabel  value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" ></p:outputLabel>
+                                <h:outputLabel value="Depreciation Rate"/>
+                                <p:inputText value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.deprecitionRate}" ></p:inputText>
+                                <h:outputLabel value="Manufacturer"/>
+                                <p:autoComplete  value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.manufacturer}"
+                                                completeMethod="#{manufacturerController.completeManu}" 
+                                                var="manufacturer"
+                                                itemLabel="#{manufacturer.name}"
+                                                itemValue="#{manufacturer}" ></p:autoComplete>
+                                <h:outputLabel value="Other Notes"/>
+                                <p:inputTextarea  value="#{storeBillSearch.currentBillItem.pharmaceuticalBillItem.otherNotes}" >
+                                </p:inputTextarea>
+
+                            </p:panelGrid>    
+                            
+                        </p:dialog>
                     <p:panel  >
                         <f:facet name="header" >
                             <h:outputLabel value="GRN Reprint" ></h:outputLabel>
