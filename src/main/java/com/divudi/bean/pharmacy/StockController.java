@@ -10,12 +10,19 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.store.StoreBean;
+import com.divudi.data.DepartmentType;
+import com.divudi.entity.Item;
 import com.divudi.facade.StockFacade;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.ItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -51,10 +58,41 @@ public class StockController implements Serializable {
         return selectedItems;
     }
 
-  
- 
-   
-   
+    @EJB
+    ItemFacade itemFacade;
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
+    }
+
+    @Inject
+    StoreBean storeBean;
+
+    public StoreBean getStoreBean() {
+        return storeBean;
+    }
+    
+    public void removeStoreItemsWithoutStocks() {
+        Map m = new HashMap();
+        m.put("dt", DepartmentType.Store);
+        String jpsql = "Select i from Item i where i.departmentType=:dt and i.retired=false ";
+        List<Item> items = getItemFacade().findBySQL(jpsql, m);
+        for (Item i : items) {
+            if (storeBean.getStockQty(i) < 0.0 || storeBean.getStockQty(i) == 0.0  ) {
+                i.setRetired(true);
+                i.setRetirer(getSessionController().getLoggedUser());
+                i.setRetiredAt(new Date());
+                i.setRetireComments("unnecessary");
+                getItemFacade().edit(i);
+            }
+        }
+    }
+
+    
     public List<Stock> completeStock(String qry) {
         List<Stock> a = null;
         if (qry != null) {
@@ -171,7 +209,6 @@ public class StockController implements Serializable {
         this.departmentFacade = departmentFacade;
     }
 
-   
     /**
      *
      */
