@@ -12,8 +12,8 @@
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                 <h:panelGrid columns="2" styleClass="noPrintButton">
 
-                    <h:outputLabel  rendered="false" value="Department"/>
-                    <p:autoComplete rendered="false" styleClass="noPrintButton"  
+                    <h:outputLabel  rendered="true" value="Department"/>
+                    <p:autoComplete rendered="true" styleClass="noPrintButton"  
                                     value="#{pharmacySaleReport.department}"  
                                     style="text-align: left; margin: 5px; padding: 5px;" 
                                     completeMethod="#{departmentController.completeDept}" 
