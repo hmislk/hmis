@@ -131,6 +131,15 @@ public class BillController implements Serializable {
     String opdEncounterComments = "";
     int patientSearchTab = 0;
     String comment;
+    
+    //Print Last Bill
+    Bill billPrint;
+    List<Bill> billsPrint;
+    private List<BillComponent> lstBillComponentsPrint;
+    private List<BillFee> lstBillFeesPrint;
+    private List<BillItem> lstBillItemsPrint;
+    private List<BillEntry> lstBillEntriesPrint;
+    
 
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
@@ -494,12 +503,23 @@ public class BillController implements Serializable {
 
         return true;
     }
+    
+    public void setPrintigBill(){
+        System.out.println("In Print");
+        billPrint=bill;
+        billsPrint=bills;
+        lstBillComponentsPrint=lstBillComponents;
+        lstBillEntriesPrint=lstBillEntries;
+        lstBillFeesPrint=lstBillFees;
+        lstBillItemsPrint=lstBillItems;
+        System.out.println("Out Print");
+    }
 
     public void settleBill() {
         if (errorCheck()) {
             return;
         }
-
+        
         savePatient();
 
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
@@ -537,6 +557,7 @@ public class BillController implements Serializable {
         }
 
         UtilityController.addSuccessMessage("Bill Saved");
+        setPrintigBill();
         printPreview = true;
     }
 
@@ -666,15 +687,15 @@ public class BillController implements Serializable {
     int recurseCount = 0;
 
     private String generateBillNumberInsId(Bill bill) {
-        String insId = "";
-        try {
-            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
-        } catch (Exception e) {
-            if (recurseCount < 50) {
-                insId = generateBillNumberInsId(bill);
-                recurseCount++;
-            }
-        }
+        String insId = generateBillNumberInsId(bill);
+//        try {
+//            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
+//        } catch (Exception e) {
+//            if (recurseCount < 50) {
+//                insId = generateBillNumberInsId(bill);
+//                recurseCount++;
+//            }
+//        }
 
         return insId;
     }
@@ -1549,6 +1570,64 @@ public class BillController implements Serializable {
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
     }
+
+    public Bill getBillPrint() {
+        return billPrint;
+    }
+
+    public void setBillPrint(Bill billPrint) {
+        this.billPrint = billPrint;
+    }
+
+    public List<BillComponent> getLstBillComponentsPrint() {
+        return lstBillComponentsPrint;
+    }
+
+    public void setLstBillComponentsPrint(List<BillComponent> lstBillComponentsPrint) {
+        this.lstBillComponentsPrint = lstBillComponentsPrint;
+    }
+
+    public List<BillFee> getLstBillFeesPrint() {
+        return lstBillFeesPrint;
+    }
+
+    public void setLstBillFeesPrint(List<BillFee> lstBillFeesPrint) {
+        this.lstBillFeesPrint = lstBillFeesPrint;
+    }
+
+    public List<BillItem> getLstBillItemsPrint() {
+        return lstBillItemsPrint;
+    }
+
+    public void setLstBillItemsPrint(List<BillItem> lstBillItemsPrint) {
+        this.lstBillItemsPrint = lstBillItemsPrint;
+    }
+
+    public List<BillEntry> getLstBillEntriesPrint() {
+        return lstBillEntriesPrint;
+    }
+
+    public void setLstBillEntriesPrint(List<BillEntry> lstBillEntriesPrint) {
+        this.lstBillEntriesPrint = lstBillEntriesPrint;
+    }
+
+    public int getRecurseCount() {
+        return recurseCount;
+    }
+
+    public void setRecurseCount(int recurseCount) {
+        this.recurseCount = recurseCount;
+    }
+
+    public List<Bill> getBillsPrint() {
+        return billsPrint;
+    }
+
+    public void setBillsPrint(List<Bill> billsPrint) {
+        this.billsPrint = billsPrint;
+    }
+    
+    
 
     /**
      *
