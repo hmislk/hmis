@@ -112,6 +112,7 @@ public class BillController implements Serializable {
     private Patient newPatient;
     private Patient searchedPatient;
     private Doctor referredBy;
+    private Institution institution;
     private Institution creditCompany;
     private Staff staff;
     Staff toStaff;
@@ -172,6 +173,25 @@ public class BillController implements Serializable {
         calTotals();
     }
 
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public int getRecurseCount() {
+        return recurseCount;
+    }
+
+    public void setRecurseCount(int recurseCount) {
+        this.recurseCount = recurseCount;
+    }
+
+   
+    
+    
     public boolean findByFilter(String property, String value) {
         String sql = "Select b From Bill b where b.retired=false and upper(b." + property + ") like '%" + value.toUpperCase() + " %'";
         Bill b = getBillFacade().findFirstBySQL(sql);
