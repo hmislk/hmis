@@ -112,7 +112,7 @@ public class BillController implements Serializable {
     private Patient newPatient;
     private Patient searchedPatient;
     private Doctor referredBy;
-    private Institution institution;
+    private Institution referredByInstitution;
     private Institution creditCompany;
     private Staff staff;
     Staff toStaff;
@@ -173,12 +173,12 @@ public class BillController implements Serializable {
         calTotals();
     }
 
-    public Institution getInstitution() {
-        return institution;
+    public Institution getReferredByInstitution() {
+        return referredByInstitution;
     }
 
-    public void setInstitution(Institution institution) {
-        this.institution = institution;
+    public void setReferredByInstitution(Institution referredByInstitution) {
+        this.referredByInstitution = referredByInstitution;
     }
 
     public int getRecurseCount() {
@@ -643,6 +643,7 @@ public class BillController implements Serializable {
         temp.setStaff(staff);
         temp.setToStaff(toStaff);
         temp.setReferredBy(referredBy);
+        temp.setReferredByInstitution(referredByInstitution);
         temp.setCreditCompany(creditCompany);
         temp.setComments(comment);
 
@@ -730,6 +731,7 @@ public class BillController implements Serializable {
             UtilityController.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
+        
 
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
             if (getPatientTabId().equals("tabSearchPt")) {
@@ -1209,7 +1211,6 @@ public class BillController implements Serializable {
     }
 
     public Doctor getReferredBy() {
-
         return referredBy;
     }
 

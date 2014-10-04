@@ -343,7 +343,7 @@
                                             <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                             </p:autoComplete>
                                             <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
-                                            <p:autoComplete forceSelection="true" id="cmdIns" value="#{billController.institution}" completeMethod="#{institutionController.completeIns}" var="refi" itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter"></p:autoComplete>
+                                            <p:autoComplete forceSelection="true" id="cmdIns" value="#{billController.referredByInstitution}" completeMethod="#{institutionController.completeIns}" var="refi" itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter"></p:autoComplete>
                                             <p:spacer width="5px"></p:spacer>
                                             <p:outputLabel value="Refferal Institution"></p:outputLabel>
                                         </p:tab>
