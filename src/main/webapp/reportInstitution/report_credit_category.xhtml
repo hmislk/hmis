@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
+                xmlns:in="http://java.sun.com/jsf/composite/income_report" 
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+
+            <p:panel>
+                <f:facet name="header" >
+                    <h:outputLabel value="Book Keeping Summery With Pro (DAY)"  styleClass="noPrintButton" />
+                    <p:commandButton value="Process Credit Items" ajax="false" 
+                                     styleClass="noPrintButton" style="float: right;"
+                                     action="#{bookKeepingSummery.processCreditItems()}"/>
+                    <p:commandButton value="Process Credit Items Paid" ajax="false" 
+                                     styleClass="noPrintButton" style="float: right;"
+                                     action="#{bookKeepingSummery.processCreditPaidItems()}"/>
+
+                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                        <pe:exporter type="xlsx" target="opd_new:opd_new"
+                                     fileName="Book_Keeping_Summery_with_pro_day"
+                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                     fontName="Courier New"  />
+                    </p:commandButton>
+
+                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="Select Institution"/>
+
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                                        forceSelection="true"
+                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                        
+                         <h:outputLabel value="Select Credit Company"/>
+
+                         <p:autoComplete completeMethod="#{institutionController.completeCredit}" 
+                                        forceSelection="true"
+                                        value="#{bookKeepingSummery.creditCompany}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                    </h:panelGrid>
+
+                </f:facet>
+            </p:panel>
+            <!--            <p:spacer height="30" />-->
+
+            <in:opd_new_with id="opd_new" />
+
+
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
