@@ -96,14 +96,18 @@
                         <f:facet name="header">
                             <h:outputLabel value="Item Rate"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate}"/>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
                     </p:column>
                     
                     <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;">
                         <f:facet name="header">
                             <h:outputLabel value="Item Value"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}"/>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
                     </p:column>
 
                 </p:dataTable>
