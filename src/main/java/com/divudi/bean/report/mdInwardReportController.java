@@ -350,7 +350,7 @@ public class mdInwardReportController implements Serializable {
 //        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         total = 0.0;
         for (BillItem b : billItem) {
-            total += b.getBill().getNetTotal();
+            total += b.getNetValue();
         }
     }
 

@@ -14,7 +14,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="posbill noBorder summeryBorder" >
+        <div class="posbill noBorder summeryBorder">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
@@ -296,7 +296,7 @@
                     <h:outputLabel value="Amount : Rs. ................" style="position: absolute; left: 70%;"/>
                     <br></br>
                     <br></br>                    
-                    <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. Ruhunu Pharmaceuticals &amp; Services (Pvt) Ltd : "/>
+                    <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. #{cc.attrs.bill.creater.institution.name} &nbsp; : "/>
                     <br></br>
 
                     <!--                    <div >-->

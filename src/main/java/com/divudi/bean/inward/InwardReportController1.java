@@ -695,8 +695,8 @@ public class InwardReportController1 implements Serializable {
             m.put("cc", institution);
         }
 
-        sql = sql + " group by bf.billItem.item.category,"
-                + " bf.billItem.bill.billClassType"
+        sql = sql + " group by bf.billItem.item.category"
+//                + " bf.billItem.bill.billClassType"
                 + "  order by bf.billItem.item.category.name";
         return billFeeFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
