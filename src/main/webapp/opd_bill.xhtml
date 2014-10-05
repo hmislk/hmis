@@ -17,11 +17,11 @@
 
         <h:outputStylesheet library="css" name="printing.css" />
 
-        <h:panelGroup rendered="#{!webUserController.hasPrivilege('OpdBilling')}" >
+        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
             You are NOT authorized
         </h:panelGroup>
 
-        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling')}" styleClass="opdPanel" >
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
             <h:form id="form">
                 <p:focus id="focusIx" for="acIx" />
                 <f:facet name="header">
