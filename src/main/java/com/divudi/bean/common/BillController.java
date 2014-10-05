@@ -74,6 +74,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
@@ -132,6 +133,7 @@ public class BillController implements Serializable {
     String opdEncounterComments = "";
     int patientSearchTab = 0;
     String comment;
+
 
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
@@ -912,6 +914,7 @@ public class BillController implements Serializable {
         setNewPatient(null);
         setSearchedPatient(null);
         setReferredBy(null);
+        setReferredByInstitution(null);
         setSessionDate(null);
         setCreditCompany(null);
         setYearMonthDay(null);

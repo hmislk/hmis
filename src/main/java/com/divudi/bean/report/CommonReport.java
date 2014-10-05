@@ -62,6 +62,7 @@ public class CommonReport implements Serializable {
     BillFeeFacade billFeeFacade;
     ////////////////////
     List<BillFee> billFees;
+    List<Bill> referralBills;
 
     ////////////////
     private Institution collectingIns;
@@ -1366,8 +1367,8 @@ public class CommonReport implements Serializable {
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip, webUser));
 
     }
-    
-    public void createLabCashierSummeryReport(){
+
+    public void createLabCashierSummeryReport() {
         //Opd Billed Bills
         getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser()));
         getBilledBills().setCard(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser()));
@@ -1390,7 +1391,7 @@ public class CommonReport implements Serializable {
         getRefundedBills().setCash(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser()));
         getRefundedBills().setCheque(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser()));
         getRefundedBills().setCredit(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser()));
-        getRefundedBills().setSlip(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser()));        
+        getRefundedBills().setSlip(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser()));
 
     }
 
@@ -1615,7 +1616,7 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
 
     }
-    
+
     public void createGrnDetailTableStore() {
         recreteModal();
 
@@ -1683,7 +1684,6 @@ public class CommonReport implements Serializable {
 //        getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
 //
 //    }
-
     public void createBhtIssueTable() {
         recreteModal();
 
@@ -1830,7 +1830,7 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
     }
-    
+
     public void createPurchaseDetailTableStore() {
         recreteModal();
 
@@ -1898,7 +1898,6 @@ public class CommonReport implements Serializable {
 //        getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 //
 //    }
-
     public void createGrnDetailTableByDealor() {
         recreateList();
 
@@ -1932,7 +1931,7 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
     }
-    
+
     public void createGrnDetailTableByDealorStore() {
         recreateList();
 
@@ -2000,7 +1999,6 @@ public class CommonReport implements Serializable {
 //        getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 //
 //    }
-
     private void recreateList() {
         billedBills = null;
         cancellededBills = null;
@@ -2031,6 +2029,31 @@ public class CommonReport implements Serializable {
         grnCancelled = null;
         grnReturn = null;
         grnReturnCancel = null;
+    }
+
+    public void fillInstitutionReferralBills() {
+        String jpql;
+        Map m = new HashMap();
+        if (institution != null) {
+            jpql = "select b from Bill b "
+                    + "where b.retired=false "
+                    + "and b.referredByInstitution=:refIns "
+                    + "and b.createdAt between :fd and :td "
+                    + " order by b.id";
+            m.put("refIns", institution);
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+            referralBills = getBillFacade().findBySQL(jpql, m);
+        }else{
+            jpql = "select b from Bill b "
+                    + " where b.retired=false "
+                    + " and b.referredByInstitution is not null "
+                    + "and b.createdAt between :fd and :td "
+                    + " order by b.id";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+            referralBills = getBillFacade().findBySQL(jpql, m);
+        }
     }
 
     public void recreteModal() {
@@ -3026,6 +3049,14 @@ public class CommonReport implements Serializable {
 
     public void setStoreBhtPreRefunded(BillsTotals StoreBhtPreRefunded) {
         this.StoreBhtPreRefunded = StoreBhtPreRefunded;
+    }
+
+    public List<Bill> getReferralBills() {
+        return referralBills;
+    }
+
+    public void setReferralBills(List<Bill> referralBills) {
+        this.referralBills = referralBills;
     }
 
 }
