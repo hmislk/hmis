@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form enctype="multipart/form-data">
+            <h:outputLabel value="Import Pharmaceutical Items With Category" ></h:outputLabel>
+            <p>Please make sure the following order of Columns.</p>
+            <p>Leave First Row for Row Headings.</p>
+            <p>Leave First Column for a serial number.</p>
+            <p>Red Labeled columns are not needed any data, but leave the column intact.</p>
+            <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
+            <p:panelGrid columns="13" style="border: 1px solid blue;" >
+                <h:outputLabel value ="0. Category" ></h:outputLabel>
+                <h:outputLabel value ="1. Sub Category" ></h:outputLabel>
+                <h:outputLabel value ="2. Product" ></h:outputLabel>
+            </p:panelGrid>
+
+            <p:fileUpload value="#{storeItemExcelManager.file}" mode="simple"/>
+            <h:commandButton value="Submit" action="#{storeItemExcelManager.importToExcelWithCategory}"/>
+        </h:form>
+
+
+        <p:dataTable value="#{storeAmpController.items}" var="si" >
+            <p:column headerText="Item" >
+                #{si.name}
+            </p:column>
+            <p:column headerText="Category" >
+                #{si.category.name}
+            </p:column>
+            <p:column headerText="Sup Category" >
+                #{si.category.parentCategory.name}
+            </p:column>
+        </p:dataTable>
+
+
+    </ui:define>
+
+
+</ui:composition>

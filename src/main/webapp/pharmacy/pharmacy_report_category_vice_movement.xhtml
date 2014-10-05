@@ -12,8 +12,8 @@
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                 <h:panelGrid columns="2" styleClass="noPrintButton">
 
-                    <h:outputLabel  rendered="false" value="Department"/>
-                    <p:autoComplete rendered="false" styleClass="noPrintButton"  
+                    <h:outputLabel  rendered="true" value="Department"/>
+                    <p:autoComplete rendered="true" styleClass="noPrintButton"  
                                     value="#{pharmacySaleReport.department}"  
                                     style="text-align: left; margin: 5px; padding: 5px;" 
                                     completeMethod="#{departmentController.completeDept}" 
@@ -92,7 +92,7 @@
                             <f:convertNumber pattern="#,000.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="0.0" style="float:  right;">
+                            <h:outputLabel value="#{pharmacySaleReport.totalOpdSale}" style="float:  right;">
                                 <f:convertNumber pattern="#,000.00" />
                             </h:outputLabel>
                         </f:facet>
@@ -106,7 +106,7 @@
                             <f:convertNumber pattern="#,000.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="0.0" style="float:  right;">
+                            <h:outputLabel value="#{pharmacySaleReport.totalInwardIssue}" style="float:  right;">
                                 <f:convertNumber pattern="#,000.00" />
                             </h:outputLabel>
                         </f:facet>
@@ -120,7 +120,7 @@
                             <f:convertNumber pattern="#,000.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="0.0" style="float:  right;">
+                            <h:outputLabel value="#{pharmacySaleReport.totalDepartmentIssue}" style="float:  right;">
                                 <f:convertNumber pattern="#,000.00" />
                             </h:outputLabel>
                         </f:facet>
@@ -134,7 +134,7 @@
                             <f:convertNumber pattern="#,000.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="0.0" style="float:  right;">
+                            <h:outputLabel value="#{pharmacySaleReport.totalTatalValue}" style="float:  right;">
                                 <f:convertNumber pattern="#,000.00" />
                             </h:outputLabel>
                         </f:facet>
@@ -144,11 +144,11 @@
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Value" />
                         </f:facet>
-                        <h:outputLabel value="#{i.purchaseValue}">
+                        <h:outputLabel value="#{0-i.purchaseValue}">
                             <f:convertNumber pattern="#,000.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="0.0" style="float:  right;">
+                            <h:outputLabel value="#{0-pharmacySaleReport.totalPurchaseValue}" style="float:  right;">
                                 <f:convertNumber pattern="#,000.00" />
                             </h:outputLabel>
                         </f:facet>
@@ -162,7 +162,7 @@
                             <f:convertNumber pattern="#,000.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="0.0" style="float:  right;">
+                            <h:outputLabel value="#{pharmacySaleReport.totalMargineValue}" style="float:  right;">
                                 <f:convertNumber pattern="#,000.00" />
                             </h:outputLabel>
                         </f:facet>

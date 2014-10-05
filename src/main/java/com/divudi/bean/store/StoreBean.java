@@ -517,6 +517,18 @@ public class StoreBean {
         return getStockFacade().findDoubleByJpql(sql, m);
 
     }
+    
+     public double getStockQty(Item item) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("i", item);
+        sql = "select sum(s.stock) from Stock s where s.itemBatch.item=:i";
+        return getStockFacade().findDoubleByJpql(sql, m);
+
+    }
 
     public double getStockQty(Item item, Institution institution) {
         if (item instanceof Ampp) {

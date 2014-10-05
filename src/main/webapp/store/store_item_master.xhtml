@@ -111,6 +111,10 @@
                         </p:panel>
                     </h:panelGrid>
                 </p:panel>
+                
+                <p:commandButton value="Remove Items without Stocks" action="#{stockController.removeStoreItemsWithoutStocks}" ajax="false" rendered="false">
+                </p:commandButton>
+                
             </h:form>
 
         </h:panelGroup>
