@@ -112,6 +112,7 @@ public class Bill implements Serializable {
     BillSession singleBillSession;
     String qutationNumber;
     Institution referredByInstitution;
+    String referralID;
 
     //Values
     double total;
@@ -1489,6 +1490,14 @@ public class Bill implements Serializable {
 
     public void setReferredByInstitution(Institution referredByInstitution) {
         this.referredByInstitution = referredByInstitution;
+    }
+
+    public String getReferralID() {
+        return referralID;
+    }
+
+    public void setReferralID(String referralID) {
+        this.referralID = referralID;
     }
 
     
