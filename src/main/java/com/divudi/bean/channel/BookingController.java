@@ -213,6 +213,7 @@ public class BookingController implements Serializable {
     }
 
     public void setStaff(Staff staff) {
+        System.err.println("CLIKED");
         this.staff = staff;
         generateSessions();
         setSelectedServiceSession(null);

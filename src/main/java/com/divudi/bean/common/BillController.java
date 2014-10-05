@@ -192,13 +192,13 @@ public class BillController implements Serializable {
         this.referredByInstitution = referredByInstitution;
     }
 
-    public int getRecurseCount() {
-        return recurseCount;
-    }
-
-    public void setRecurseCount(int recurseCount) {
-        this.recurseCount = recurseCount;
-    }
+//    public int getRecurseCount() {
+//        return recurseCount;
+//    }
+//
+//    public void setRecurseCount(int recurseCount) {
+//        this.recurseCount = recurseCount;
+//    }
 
    
     

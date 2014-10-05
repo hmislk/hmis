@@ -37,6 +37,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -2032,28 +2033,50 @@ public class CommonReport implements Serializable {
     }
 
     public void fillInstitutionReferralBills() {
+        //Done By Pasan
+//        String jpql;
+//        Map m = new HashMap();
+//        if (institution != null) {
+//            jpql = "select b from Bill b "
+//                    + "where b.retired=false "
+//                    + "and b.referredByInstitution=:refIns "
+//                    + "and b.createdAt between :fd and :td "
+//                    + " order by b.id";
+//            m.put("refIns", institution);
+//            m.put("fd", fromDate);
+//            m.put("td", toDate);
+//            referralBills = getBillFacade().findBySQL(jpql, m);
+//        }else{
+//            jpql = "select b from Bill b "
+//                    + " where b.retired=false "
+//                    + " and b.referredByInstitution is not null "
+//                    + "and b.createdAt between :fd and :td "
+//                    + " order by b.id";
+//            m.put("fd", fromDate);
+//            m.put("td", toDate);
+//            referralBills = getBillFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+//        }
+
+        //Done By Safrin
         String jpql;
         Map m = new HashMap();
-        if (institution != null) {
-            jpql = "select b from Bill b "
-                    + "where b.retired=false "
-                    + "and b.referredByInstitution=:refIns "
-                    + "and b.createdAt between :fd and :td "
-                    + " order by b.id";
+
+        jpql = "select b from Bill b "
+                + "where b.retired=false ";
+
+        if (referenceInstitution != null) {
+            jpql += "and b.referredByInstitution=:refIns ";
             m.put("refIns", institution);
-            m.put("fd", fromDate);
-            m.put("td", toDate);
-            referralBills = getBillFacade().findBySQL(jpql, m);
-        }else{
-            jpql = "select b from Bill b "
-                    + " where b.retired=false "
-                    + " and b.referredByInstitution is not null "
-                    + "and b.createdAt between :fd and :td "
-                    + " order by b.id";
-            m.put("fd", fromDate);
-            m.put("td", toDate);
-            referralBills = getBillFacade().findBySQL(jpql, m);
+        } else {
+            jpql += " and b.referredByInstitution is not null ";
         }
+
+        jpql += "and b.createdAt between :fd and :td "
+                + " order by b.id";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        referralBills = getBillFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+
     }
 
     public void recreteModal() {
