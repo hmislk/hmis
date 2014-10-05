@@ -20,6 +20,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -88,6 +89,12 @@ public class PettyCashBillController implements Serializable {
             return true;
         }
 
+//        //Edited 2014.10.04 p
+//        if (getCurrent().getStaff() == null && getCurrent().getPerson() == null && getNewPerson() == null) {
+//            UtilityController.addErrorMessage("Can't settle without Person");
+//            return true;
+//        }
+
         if (getCurrent().getPaymentMethod() != null && getCurrent().getPaymentMethod() == PaymentMethod.Cheque) {
             if (getCurrent().getBank() == null || getCurrent().getChequeRefNo() == null || getCurrent().getChequeDate() == null) {
                 UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
@@ -150,8 +157,6 @@ public class PettyCashBillController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
-    
 
     private void saveBill() {
 
@@ -187,6 +192,27 @@ public class PettyCashBillController implements Serializable {
             return;
         }
 
+        switch (getTabId()) {
+            case "tabStaff":
+                if(current.getStaff()==null){
+                    JsfUtil.addErrorMessage("Staff?");
+                    return;
+                }   break;
+            case "tabSearchPerson":
+                if(current.getPerson()==null){
+                    JsfUtil.addErrorMessage("Person?");
+                    return;
+                }   break;
+            case "tabNew":
+                if(getNewPerson().getName().trim().equals("")){
+                    JsfUtil.addErrorMessage("Person?");
+                    return;
+            }   break;
+                default:
+                    JsfUtil.addErrorMessage(getTabId());
+                    return;
+        }
+        
         if (getTabId().equals("tabNew")) {
             getPersonFacade().create(getNewPerson());
             getCurrent().setPerson(getNewPerson());
@@ -220,7 +246,7 @@ public class PettyCashBillController implements Serializable {
         current = null;
         printPreview = false;
         newPerson = null;
-        comment =null;
+        comment = null;
 
         tabId = "tabStaff";
     }

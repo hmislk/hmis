@@ -16,19 +16,16 @@
 
                     <p:panel  >
                         <f:facet name="header" >
-                            <h:outputLabel value="Purchase Reprint" ></h:outputLabel>
+                            <h:outputLabel value="Purchase Return Reprint" ></h:outputLabel>
                             <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
+                            <p:commandButton ajax="false" value="Reprint" >
                                 <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>                         
+
+                            </p:commandButton>
+
                         </f:facet>
 
-                        <p:commandButton value="Cancel" ajax="false" action="store_cancel_purchase" disabled="#{storeBillSearch.bill.cancelled}">                           
-                             
-                        </p:commandButton>     
-                        <p:commandButton  value="Return" ajax="false" action="store_return_purchase" disabled="#{storeBillSearch.bill.cancelled}" >
-                            <f:setPropertyActionListener target="#{storePurchaseReturnController.bill}"  value="#{storeBillSearch.bill}"/>
-                        </p:commandButton>
+
                     </p:panel>
 
 
@@ -37,8 +34,7 @@
                     <h:panelGroup >
 
                         <h:panelGroup id="gpBillPreview" >
-                            <st:purhcase bill="#{storeBillSearch.bill}" />
-                            
+                            <st:purchaseReturn bill="#{storeBillSearch.bill}" />
 
                         </h:panelGroup>
 
