@@ -1,0 +1,199 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
+                xmlns:bi="http://java.sun.com/jsf/composite/bill"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:pat="http://java.sun.com/jsf/composite/patient">
+
+
+
+    <ui:define name="content">
+
+        <h:outputStylesheet library="css" name="printing.css" />
+
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('OpdBilling')}" >
+            You are NOT authorized
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling')}" styleClass="opdPanel" >
+            <h:form id="form">
+                <f:facet name="header">
+                    <h:outputLabel value="OPD"/>
+                </f:facet>
+                <h:panelGroup>
+                    <div class="nonPrintBlock" >
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton value="New Bill" ajax="false" action="opd_bill" actionListener="#{billController.prepareNewBill()}">
+                        </p:commandButton>
+                       
+                    </div>
+                    <div >
+
+
+                        <h:panelGroup   id="gpBillPreview"   >
+
+                            <div>
+
+                                <ui:repeat value="#{billController.billsPrint}" var="bill" >
+
+                                    <div class="fiveinchbillBreak" >
+
+                                        <div >
+
+
+                                            <div class="receiptnoPrinting" >
+                                                <h:outputLabel value="#{bill.insId}">
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="billdatePrinting" >
+                                                <h:outputLabel value="#{bill.billDate}">
+                                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="paymentPrinting" >
+                                                <h:panelGroup>
+                                                    <h:outputLabel value="#{bill.paymentMethod}" />
+                                                    <h:outputLabel value=" : "/>
+                                                    <h:outputLabel value="#{bill.chequeRefNo}" />
+                                                </h:panelGroup>
+                                            </div>
+
+                                            <div class="billtimePrinting" >
+                                                <h:outputLabel value="#{bill.billTime}"
+                                                               >
+                                                    <f:convertDateTime pattern="hh:mm a"/>
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="ptnamePrinting" >
+                                                <h:outputLabel value="#{bill.patient.person.nameWithTitle}"
+                                                               >
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="phonePrinting" >
+                                                <h:outputLabel value="#{bill.patient.person.phone}"
+                                                               >
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="cashierPrinting" >
+                                                <h:outputLabel value="Cashier : #{bill.creater.code}">
+                                                </h:outputLabel>
+                                            </div>
+
+                                            <div class="consultPrinting" >
+                                                <h:outputLabel value="#{bill.collectingCentre.name}" />
+                                                <h:outputLabel value="#{bill.creditCompany.name}" />
+                                            </div>
+
+
+
+                                            <div class="itemsPrinting" >
+                                                <h:dataTable value="#{billController.lstBillEntriesPrint}" var="bip"   >
+                                                    <h:column >
+                                                        <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
+                                                        </h:outputLabel>
+                                                        <h:panelGroup rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id and bip.billItem.billSession ne null }"  >
+                                                            <br/>
+                                                            <h:panelGroup rendered="#{bip.billItem.item.sessionNumberType ne null}">
+                                                                <h:outputLabel value="Session No . " ></h:outputLabel>
+                                                                <h:outputLabel value="#{bip.billItem.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
+                                                                </h:outputLabel>
+                                                            </h:panelGroup>
+                                                        </h:panelGroup>
+                                                    </h:column>
+                                                </h:dataTable>
+                                            </div>
+
+                                            <div class="ratesPrinting"  >
+                                                <h:dataTable value="#{billController.lstBillEntriesPrint}" var="bip1"  >
+                                                    <h:column >
+                                                        <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="font-size: 11px!important;" >
+                                                            <f:convertNumber pattern="#,000.00" />
+                                                        </h:outputLabel>
+                                                    </h:column>
+                                                </h:dataTable>
+                                            </div>
+
+                                            <div class="totalsPrinting">
+
+                                                <table>
+                                                    <tr>
+                                                        <td>
+                                                            <br/>
+                                                            <br/>
+                                                        </td>
+                                                        <td>
+                                                            <br/>
+                                                            <br/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="text-align: left; min-width: 3cm;">
+                                                            <h:outputLabel value="TOTAL" style="  text-align: right!important; font-weight: bold; font-size: 15px!important;   "/>
+                                                        </td>
+                                                        <td style="text-align: right!important; ">
+                                                            <h:outputLabel value="#{bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important; ">
+                                                                <f:convertNumber pattern="#,000.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="text-align: left;">
+                                                            <h:outputLabel  rendered="#{bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
+                                                        </td>
+                                                        <td style="text-align: right!important; ">
+                                                            <h:outputLabel rendered="#{bill.discount ne 0.0}"   value="#{bill.discount}"  style=" text-align: right!important;  font-size: 15px!important;   ">
+                                                                <f:convertNumber pattern="#,000.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="text-align: left;">
+                                                            <h:outputLabel  rendered="#{bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                                        </td>
+                                                        <td style="text-align: right!important; ">
+                                                            <h:outputLabel  rendered="#{bill.discount ne 0.0}"    value="#{bill.netTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                                                <f:convertNumber pattern="#,000.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </tr>
+
+
+                                                </table>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </ui:repeat>
+
+                            </div>
+
+
+                        </h:panelGroup>
+
+
+
+
+                    </div>
+                </h:panelGroup>
+
+            </h:form>
+
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

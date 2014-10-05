@@ -24,16 +24,16 @@
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
                 </div>
                 <div >
-                    <!--                    <h:outputLabel value="Tel : 0912234059 - 60 , "/>-->
+                                        <h:outputLabel value="Tel : 0912234059 - 60 , "/>
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1} "/>
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
                 </div>
                 <div >
-                    <!--<h:outputLabel value="Fax : 0912234061 "/>-->
+                    <h:outputLabel value="Fax : 0912234061 "/>
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.fax}"/>                                                 
                 </div>
                 <div >
-                    <!--<h:outputLabel value="Email : ruhunuhos@sltnet.lk "/>-->
+                    <h:outputLabel value="Email : ruhunuhos@sltnet.lk "/>
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.email}"/>                                                 
                 </div>
             </div>
@@ -103,12 +103,6 @@
                             <h:outputLabel value="Item Category" style="font-weight: bold!important; " />
                         </f:facet>
                         <h:outputLabel value="#{bip.item.category.name}"/>
-                    </p:column>
-                     <p:column style="text-align: left!important;"  >
-                        <f:facet name="header">
-                            <h:outputLabel value="Searial No" style="font-weight: bold!important; " />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.code}"/>
                     </p:column>
                     <p:column style="width: 8px;text-align: right!important;" >
                         <f:facet name="header">
@@ -191,7 +185,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="8" footerText="GRN Total" style="font-weight: bold!important;"/>
+                            <p:column colspan="8" footerText="GRN Total"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer">
                                     <br></br>
@@ -229,9 +223,9 @@
                         
                         <p:row >
                             <p:column colspan="8" footerText="GRN Net Total"/>
-                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.discount}">
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.grnNetTotal}">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{cc.attrs.bill.grnNetTotal}">
+                                    <h:outputLabel value="#{0-cc.attrs.bill.grnNetTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -240,8 +234,8 @@
                         </p:row>
                         
                         <p:row>
-                            <p:column colspan="8" footerText="Expenses" style="font-weight: bold!important;"/>
-                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
+                            <p:column colspan="8" footerText="Expenses"/>
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.expenseTotal}">
                                 <f:facet name="footer">
                                     <br></br>
                                     <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
@@ -300,9 +294,9 @@
 
 
                 <div>
-                    <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
-                    <h:outputLabel value="Payee : " style="text-align: right!important;"/>
+                    <h:outputLabel value="Payee : " />
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
+                    <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
                 </div>
                 <div>
                     <br></br>

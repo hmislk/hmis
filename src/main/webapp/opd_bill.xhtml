@@ -75,7 +75,8 @@
                             </p:commandButton>
                             <p:commandButton value="Mark as Foreigner" action="#{billController.markAsForeigner}" rendered="#{!billController.foreigner}" ajax="false" ></p:commandButton>
                             <p:commandButton value="Mark as Local" action="#{billController.markAsLocal}" rendered="#{billController.foreigner}" ajax="false" ></p:commandButton>
-
+                            <p:commandButton value="Print Last Bills" ajax="false" action="opd_bill_print_last" >
+                            </p:commandButton>
                         </h:panelGrid>
 
 
