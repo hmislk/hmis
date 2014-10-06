@@ -19,20 +19,7 @@
 
 
         <h:panelGroup>
-
-            <p:commandButton value="Print" ajax="false" action="#"  >
-                <p:printer target="gpBillPreview" ></p:printer>
-            </p:commandButton>
-            
-            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-            </p:commandButton>
-            
-            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
-                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                     return false;"/>
-
-
-            <h:outputStylesheet library="css" name="printingOpd.css"></h:outputStylesheet>
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
 
             <h:panelGroup id="gpBillPreview" >
 
@@ -42,9 +29,22 @@
 
 
                         <div class="receiptnoPrinting" >
-                            <h:outputLabel value="#{cc.attrs.bill.insId}">
-                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq true}"/>
+                        
+                        
+                        
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
+
+                        <h:outputLabel value="#{cc.attrs.bill.refundedBill.insId} **Refunded" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId ne null and cc.attrs.refund eq true}"/> 
+
+                        <h:outputLabel value="#{cc.attrs.bill.insId} **Duplicate" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId eq null and
+                                                   cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq false}"/>
                         </div>
+                        
+                        
 
                         <div class="billdatePrinting" >
                             <h:outputLabel value="#{cc.attrs.bill.billDate}">
@@ -55,8 +55,7 @@
                         <div class="paymentPrinting" >
                             <h:panelGroup>
                                 <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />
-                                <h:outputLabel value=" : "/>
-                                <h:outputLabel value="#{cc.attrs.bill.chequeRefNo}" />
+                                
                             </h:panelGroup>
                         </div>
 
@@ -92,15 +91,16 @@
 
 
                         <div class="itemsPrinting" >
-                            <h:dataTable value="#{cc.attrs.bill.lstBillEntries}" var="bip"   >
+                            <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip"   >
                                 <h:column >
-                                    <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
+                                   
+                                    <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" >
                                     </h:outputLabel>
-                                    <h:panelGroup rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id and bip.billItem.billSession ne null }"  >
+                                    <h:panelGroup rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id and bip.billSession ne null }"  >
                                         <br/>
-                                        <h:panelGroup rendered="#{bip.billItem.item.sessionNumberType ne null}">
+                                        <h:panelGroup rendered="#{bip.item.sessionNumberType ne null}">
                                             <h:outputLabel value="Session No . " ></h:outputLabel>
-                                            <h:outputLabel value="#{bip.billItem.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
+                                            <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </h:panelGroup>
@@ -109,9 +109,9 @@
                         </div>
 
                         <div class="ratesPrinting"  >
-                            <h:dataTable value="#{cc.attrs.bill.lstBillEntries}" var="bip1"  >
+                            <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                                 <h:column >
-                                    <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="font-size: 11px!important;" >
+                                    <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue}"  style="font-size: 11px!important;" >
                                         <f:convertNumber pattern="#,000.00" />
                                     </h:outputLabel>
                                 </h:column>
