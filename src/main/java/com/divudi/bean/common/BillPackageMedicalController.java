@@ -49,8 +49,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
@@ -62,6 +64,9 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import org.eclipse.persistence.jpa.jpql.tools.ContentAssistProposals;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -124,6 +129,20 @@ public class BillPackageMedicalController implements Serializable {
     @Inject
     private BillSearch billSearch;
     PaymentMethodData paymentMethodData;
+
+    // report
+    @Temporal(TemporalType.TIMESTAMP)
+    Date frmDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    Date toDate;
+    List<BillItem> billItems;
+    Institution institution;
+
+    public void makeNull() {
+        billItems = null;
+        currentBillItem = null;
+        total = 0.0;
+    }
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -489,6 +508,74 @@ public class BillPackageMedicalController implements Serializable {
         }
 
         //UtilityController.addSuccessMessage("Item Added");
+    }
+
+    public void createMedicalPackageBillItems() {
+        String sql;
+        Map m = new HashMap();
+        sql = "select b from BillItem b"
+                + " where b.bill.billType =:billType "
+                + " and b.bill.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.bill.retired=false "
+                + " and type(b.bill.billPackege)=MedicalPackage ";
+
+        if (getCurrentBillItem().getItem() != null) {
+            sql += " and b.bill.billPackege=:item ";
+            m.put("item", getCurrentBillItem().getItem());
+        }
+
+        if (institution != null) {
+            sql += " and b.bill.billPackege.forInstitution=:ins ";
+            m.put("ins", institution);
+        }
+
+        m.put("billType", BillType.OpdBill);
+        m.put("toDate", toDate);
+        m.put("fromDate", frmDate);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        for (BillItem bi : billItems) {
+            total += bi.getNetValue();
+            System.out.println("total = " + total);
+            System.out.println("bi.getNetValue() = " + bi.getNetValue());
+        }
+    }
+
+    public void createOtherPackageBillItems() {
+        String sql;
+        Map m = new HashMap();
+        sql = "select b from BillItem b"
+                + " where b.bill.billType =:billType "
+                + " and b.bill.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.bill.retired=false "
+                + " and type(b.bill.billPackege)=Packege ";
+
+        if (getCurrentBillItem().getItem() != null) {
+            sql += " and b.bill.billPackege=:item ";
+            m.put("item", getCurrentBillItem().getItem());
+        }
+
+        if (institution != null) {
+            sql += " and b.bill.billPackege.forInstitution=:ins ";
+            m.put("ins", institution);
+        }
+
+        m.put("billType", BillType.OpdBill);
+        m.put("toDate", toDate);
+        m.put("fromDate", frmDate);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        for (BillItem bi : billItems) {
+            total += bi.getNetValue();
+            System.out.println("total = " + total);
+            System.out.println("bi.getNetValue() = " + bi.getNetValue());
+        }
     }
 
     public void clearBillItemValues() {
@@ -910,6 +997,44 @@ public class BillPackageMedicalController implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
+    }
+
+    public Date getFrmDate() {
+        if (frmDate == null) {
+            frmDate = getCommonFunctions().getStartOfMonth(new Date());
+        }
+        return frmDate;
+    }
+
+    public void setFrmDate(Date frmDate) {
+        this.frmDate = frmDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = getCommonFunctions().getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     /**
