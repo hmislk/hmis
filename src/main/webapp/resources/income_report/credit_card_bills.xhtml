@@ -30,7 +30,10 @@
                     </h:outputLabel>
                     <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
                 </h:panelGroup>
-            </p:column>                            
+            </p:column>   
+            <p:column headerText="Billed No">
+                <h:outputLabel rendered="#{ch.billedBill ne null}" value="#{ch.billedBill.insId}"/>
+            </p:column>
             <p:column headerText="Credit Card No" >
                 <f:facet name="header">              
                     <p:outputLabel value="Credit Card No"/>    
