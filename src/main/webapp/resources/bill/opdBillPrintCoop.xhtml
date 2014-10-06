@@ -19,22 +19,9 @@
 
 
         <h:panelGroup>
-
-            <p:commandButton value="Print" ajax="false" action="#"  >
-                <p:printer target="gpBillPreview" ></p:printer>
-            </p:commandButton>
-            
-            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-            </p:commandButton>
-            
-            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
-                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                     return false;"/>
-
-
             <h:outputStylesheet library="css" name="printingOpd.css"></h:outputStylesheet>
 
-            <h:panelGroup id="gpBillPreview" >
+            <h:panelGroup id="gpBillPreviewCoop" >
 
                 <div  class="fiveinchbill">
 
