@@ -24,7 +24,7 @@
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
                 </div>
                 <div >
-                                        <h:outputLabel value="Tel : 0912234059 - 60 , "/>
+                    <h:outputLabel value="Tel : 0912234059 - 60 , "/>
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1} "/>
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
                 </div>
@@ -82,7 +82,7 @@
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.department.name}" />
                 <h:outputLabel value="Supplier "/>
                 <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
-                
+
                 <h:outputLabel value="Payment Method "/>
                 <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
 
@@ -172,16 +172,16 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-<!--                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Sale" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value="Price" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>-->
+                    <!--                    <p:column style="text-align: right!important;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Sale" style="font-weight: bold!important;" />
+                                                <br/>
+                                                <h:outputLabel value="Price" style="font-weight: bold!important;" />
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>-->
 
                     <p:columnGroup type="footer">
                         <p:row>
@@ -196,7 +196,7 @@
                             </p:column>
                         </p:row>
 
-                        
+
 
                         <p:row >
                             <p:column colspan="8" footerText="Tax"/>
@@ -220,7 +220,7 @@
                             </p:column>
 
                         </p:row>
-                        
+
                         <p:row >
                             <p:column colspan="8" footerText="GRN Net Total"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.grnNetTotal}">
@@ -232,7 +232,7 @@
                             </p:column>
 
                         </p:row>
-                        
+
                         <p:row>
                             <p:column colspan="8" footerText="Expenses"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.expenseTotal}">
