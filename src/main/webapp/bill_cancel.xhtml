@@ -80,22 +80,19 @@
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
                             </div>
-                            
+
                             <bi:opdBillPrintRuhunu bill="#{billSearch.bill}" cancell="true"/>
-                            
+
 
                         </h:panelGroup>
-                        
+
                         <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.userPreference.printLabelForOPdBill eq true}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                     <p:printer target="gpBillPreviewCoop" ></p:printer>
                                 </p:commandButton>
                             </div>
-                            <ui:repeat value="#{billSearch.bill}" var="b">
-                                <bi:opdBillPrintCoop bill="#{b}" cancell="true"/>
-                            </ui:repeat>
-
+                            <bi:opdBillPrintCoop bill="#{billSearch.bill}" cancell="true"/>
                         </h:panelGroup>
                     </h:panelGroup>
 
