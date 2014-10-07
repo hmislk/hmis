@@ -1,0 +1,199 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="BHT Discount Report" ></h:outputLabel>
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="To : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="Admission Type : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
+                                <f:selectItem itemLabel="All Admission Types"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="BHT Type : " ></h:outputLabel>
+                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
+                                <f:selectItem itemLabel="All BHT Types" />                           
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                                <f:selectItem itemLabel="All Credit Companies"/>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="ccc" 
+                                                itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="BHT No : " ></h:outputLabel>
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{inwardReportController1.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientAll}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Finalized"  rendered="#{myItem.paymentFinalized}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
+                                </p:column>
+                            </p:autoComplete> 
+                            <p:watermark for="acPt" value="BHT No" />
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createBHTDiscountTable()}" onclick="onSubmitButton();"  ></p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController1.createBHTDiscountTable()}">
+                            <pe:exporter type="xlsx" target="tb1" fileName="bht_Discount" />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
+
+                            <p:dataTable id="tb1" value="#{inwardReportController1.billItems}" var="bi" 
+                                         rowStyleClass="#{bi.netValue !=0 ?'':'noDisplayRow' }">
+                                <f:facet name="header">
+                                    <h:outputLabel value="From - "/>
+                                    <p:outputLabel value="#{inwardReportController1.fromDate}">
+                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                    </p:outputLabel>
+                                    <h:outputLabel value=" - To - "/>
+                                    <h:outputLabel value="#{inwardReportController1.toDate}">
+                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value=" - #{inwardReportController1.admissionType.name} Discount Report."/>
+                                </f:facet>
+                                <p:column headerText="BHT No" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="BHT No" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bi.bill.patientEncounter.bhtNo}" />
+                                </p:column>
+                                <p:column headerText="Patient Name" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Patient Name" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bi.bill.patient.person.nameWithTitle}" />
+                                </p:column>
+                                <p:column headerText="Payment Methord" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Payment Methord" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bi.bill.patientEncounter.paymentMethod}" />
+                                </p:column>
+                                <p:column headerText="Credit Company" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Credit Company" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bi.bill.patientEncounter.creditCompany.name}" />
+                                </p:column>
+                                <p:column headerText="Inward Charge Type" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Inward Charge Type" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{bi.inwardChargeType}" />
+                                </p:column>
+                                <p:column headerText="Gross"  style="text-align: right; padding: 5px;" >   
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Gross" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.grossValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController1.inwardGross}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Margin"  style="text-align: right; padding: 5px;"  >   
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Margin" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.marginValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController1.inwardMargin}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Discount"  style="text-align: right; padding: 5px;"  >    
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Discount" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.discount}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController1.inwardDiscount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Net Amount" style="text-align: right; padding: 5px;" >     
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Net Amount" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.netValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController1.inwardNetValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column> 
+                                
+                                <p:column headerText="Discount Persentage"  style="text-align: right; padding: 5px;"  >    
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Discount Persentage" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bi.discount/(bi.grossValue+bi.marginValue)*100}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </p:panel>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>
