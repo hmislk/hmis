@@ -32,6 +32,8 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.MedicalPackage;
+import com.divudi.entity.Packege;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
@@ -509,8 +511,9 @@ public class BillPackageMedicalController implements Serializable {
 
         //UtilityController.addSuccessMessage("Item Added");
     }
-
-    public void createMedicalPackageBillItems() {
+    
+    
+      public void createBillItems(Item item) {
         String sql;
         Map m = new HashMap();
         sql = "select b from BillItem b"
@@ -518,7 +521,8 @@ public class BillPackageMedicalController implements Serializable {
                 + " and b.bill.createdAt between :fromDate and :toDate "
                 + " and b.retired=false "
                 + " and b.bill.retired=false "
-                + " and type(b.bill.billPackege)=MedicalPackage ";
+                + " and type(b.bill.billPackege)=:class ";
+        m.put("class", item.getClass());
 
         if (getCurrentBillItem().getItem() != null) {
             sql += " and b.bill.billPackege=:item ";
@@ -544,38 +548,12 @@ public class BillPackageMedicalController implements Serializable {
         }
     }
 
+    public void createMedicalPackageBillItems() {
+       createBillItems(new MedicalPackage());
+    }
+
     public void createOtherPackageBillItems() {
-        String sql;
-        Map m = new HashMap();
-        sql = "select b from BillItem b"
-                + " where b.bill.billType =:billType "
-                + " and b.bill.createdAt between :fromDate and :toDate "
-                + " and b.retired=false "
-                + " and b.bill.retired=false "
-                + " and type(b.bill.billPackege)=Packege ";
-
-        if (getCurrentBillItem().getItem() != null) {
-            sql += " and b.bill.billPackege=:item ";
-            m.put("item", getCurrentBillItem().getItem());
-        }
-
-        if (institution != null) {
-            sql += " and b.bill.billPackege.forInstitution=:ins ";
-            m.put("ins", institution);
-        }
-
-        m.put("billType", BillType.OpdBill);
-        m.put("toDate", toDate);
-        m.put("fromDate", frmDate);
-
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
-        total = 0.0;
-        for (BillItem bi : billItems) {
-            total += bi.getNetValue();
-            System.out.println("total = " + total);
-            System.out.println("bi.getNetValue() = " + bi.getNetValue());
-        }
+        createBillItems(new Packege());
     }
 
     public void clearBillItemValues() {
