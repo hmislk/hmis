@@ -543,21 +543,47 @@
 
                 <h:panelGroup rendered="#{billController.printPreview}" >
                     
-                    <div >
-
-
-                        <h:panelGroup   id="gpBillPreview" rendered="#{sessionController.userPreference.printForopd eq false}">
-                            <ui:repeat value="#{billController.bills}" var="bill" >
-
-                            </ui:repeat>
-                        </h:panelGroup>
+                    <h:panelGroup   id="gpBillPreview" rendered="#{sessionController.userPreference.printLabelForOPdBill eq false}">
                         
-                        <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.userPreference.printForopd eq true}">
-                            <ui:repeat value="#{billController.bills}" var="b">
-                                <bi:opdBillPrintCoop bill="#{b}" dup="true"/>                        
-                            </ui:repeat>
-                        </h:panelGroup>
-                    </div>
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                     return false;"/>
+                        </div>
+                        
+                        <ui:repeat value="#{billController.bills}" var="bill" >
+                            <bi:opdBillPrintRuhunu bill="#{bill}" dup="true"/>
+                        </ui:repeat>
+                    </h:panelGroup>
+                    
+                        
+                    <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.userPreference.printLabelForOPdBill eq true}">
+                        
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpBillPreviewCoop" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                     return false;"/>
+                        </div>
+                        
+                        <ui:repeat value="#{billController.bills}" var="b">
+                            <bi:opdBillPrintCoop bill="#{b}" dup="true"/>                        
+                        </ui:repeat>
+                    </h:panelGroup>
+                    
                 </h:panelGroup>
 
             </h:form>

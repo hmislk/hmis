@@ -5,7 +5,6 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
                 xmlns:in="http://java.sun.com/jsf/composite/income_report" 
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
@@ -32,7 +31,7 @@
                                      fontName="Courier New"  />
                     </p:commandButton>
 
-                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                    <h:panelGrid columns="2"  styleClass="noPrintButton" style="min-width: 100%;" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
