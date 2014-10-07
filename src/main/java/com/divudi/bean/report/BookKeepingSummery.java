@@ -20,6 +20,7 @@ import com.divudi.data.table.String3Value2;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -1009,9 +1010,13 @@ public class BookKeepingSummery implements Serializable {
                 + " and bi.bill.id in "
                 + " (select paidBillItem.referenceBill.id "
                 + " from BillItem paidBillItem"
-                + "  where paidBillItem.retired=false"
+                + "  where paidBillItem.retired=false "
+                + " and paidBillItem.bill.cancelled=false"
+                + " and type(paidBillItem.bill)=:class"
                 + "  and  paidBillItem.createdAt between :fromDate and :toDate "
                 + " and paidBillItem.bill.billType=:paidBtp)  ";
+        
+        temMap.put("class", BilledBill.class);
 
         if (creditCompany != null) {
             jpql += " and bi.bill.creditCompany=:cd ";
