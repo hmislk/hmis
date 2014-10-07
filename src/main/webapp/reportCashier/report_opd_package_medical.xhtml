@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Medical Package Bill Detail Report" />
+                </f:facet>
+                <h:panelGrid columns="1" style="min-width: 100%;">                    
+                    <p:panel>
+                        <h:outputLabel value="From"/>
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                        </p:calendar>
+                        <h:outputLabel value="To"/>
+                        <p:calendar id="toDate" value="#{billPackageMedicalController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                        </p:calendar>
+                        
+                    </p:panel>
+                    <p:panel>
+                        <p:autoComplete widgetVar="aIx2" id="acIx2" value="#{billPackageMedicalController.currentBillItem.item}" completeMethod="#{itemController.completeMedicalPackage}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 200px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.forInstitution.name}
+                            </p:column>
+                        </p:autoComplete>
+                        <p:autoComplete id="ins" value="#{billPackageMedicalController.institution}"
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 200px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                        </p:autoComplete>
+                        <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
+                                        value="#{billPackageMedicalController.serviceItem}" 
+                                        completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                        size="30"  style="width: 400px;" >
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.fullName}
+                            </p:column>
+                            <p:column>
+                                #{ix.department.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.total}
+                            </p:column>
+                        </p:autoComplete>
+                        <p:commandButton ajax="false" value="Search" 
+                                         action="#{billPackageMedicalController.createMedicalPackageBillItems()}"
+                                         onclick="onSubmitButton();" />
+                        <p:watermark for="acIx2" value="Meical Package" />
+                        <p:watermark for="ins" value="Institution" />
+                        <p:watermark for="acIx" value="Service/Investigation" />
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{billPackageMedicalController.createMedicalPackageBillItems()}">
+                            <pe:exporter type="xlsx" target="tbl" fileName="Medical_Package_Bill_Detail_Report" />
+                        </p:commandButton>
+
+                    </p:panel>
+                </h:panelGrid>   
+
+                <p:panel id="gpBillPreview">
+                    <p:dataTable id="tbl" value="#{billPackageMedicalController.billItems}" rowIndexVar="i" var="bi">
+                        <f:facet name="header">
+                            <p:outputLabel value="Medical Package Bill Detail Report" />
+                        </f:facet>
+                        <p:column headerText="Serial No">
+                            <f:facet name="header">
+                                <p:outputLabel value="Serial No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column headerText="Bill No">
+                            <f:facet name="header">
+                                <p:outputLabel value="Bill No" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.insId}" />
+                        </p:column> 
+                        <p:column headerText="Institution">
+                            <f:facet name="header">
+                                <p:outputLabel value="Institution" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.billPackege.forInstitution.name}" />
+                        </p:column>
+                        <p:column headerText="Patient Name">
+                            <f:facet name="header">
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.patient.person.nameWithTitle}" />
+                        </p:column>                   
+                        <p:column headerText="Investigation/Service">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Investigation/Service" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.item.name}" />
+                        </p:column>
+                        <p:column headerText="Added Date">
+                            <f:facet name="header">
+                                <p:outputLabel value="Added Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Payment Methord">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Payment Methord" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.paymentMethod}" />
+                        </p:column>
+
+                        <p:column headerText="Package">     
+                            <f:facet name="header">
+                                <p:outputLabel value="Package" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.billPackege.name}" />
+                        </p:column>
+                        <p:column headerText="Net Value">
+                            <f:facet name="header">
+                                <p:outputLabel value="Net Value" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.netValue}" >
+                                <f:convertNumber pattern="#,000.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column colspan="8" footerText="Total">
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="Total" />
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{billPackageMedicalController.total}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{billPackageMedicalController.total}">
+                                            <f:convertNumber pattern="#,000.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                    </p:dataTable>
+                </p:panel>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

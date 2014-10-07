@@ -47,7 +47,7 @@
                             <p:column  headerText="Bill" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
                                                value="#{pi.billItem.bill.insId}" 
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"></h:outputLabel>
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
                                 <p:tooltip for="lblBillNo"  >
                                     <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
                                     <br/>
@@ -86,7 +86,7 @@
                                                value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
                                                action="patient" 
                                                style="text-decoration:underline;"
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"
                                                >
                                     <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
                                 </h:commandLink>
