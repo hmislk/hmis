@@ -21,7 +21,10 @@
                         <h:outputLabel value="To"/>
                         <p:calendar id="toDate" value="#{billPackageMedicalController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         </p:calendar>
-                        <p:autoComplete widgetVar="aIx" id="acIx1" value="#{billPackageMedicalController.currentBillItem.item}" completeMethod="#{itemController.completePackage}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 200px;">
+                        
+                    </p:panel>
+                    <p:panel>
+                        <p:autoComplete widgetVar="aIx1" id="acIx1" value="#{billPackageMedicalController.currentBillItem.item}" completeMethod="#{itemController.completePackage}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 200px;">
                             <p:column>
                                 #{ix.name}
                             </p:column>
@@ -36,13 +39,30 @@
                                 #{ix.name}
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton ajax="false" value="Pacage" 
+                        <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
+                                        value="#{billPackageMedicalController.serviceItem}" 
+                                        completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                        size="30"  style="width: 400px;" >
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.fullName}
+                            </p:column>
+                            <p:column>
+                                #{ix.department.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.total}
+                            </p:column>
+                        </p:autoComplete>
+                        <p:commandButton ajax="false" value="Search" 
                                          action="#{billPackageMedicalController.createOtherPackageBillItems()}"
-                                         style="float: right;" onclick="onSubmitButton();" />
+                                         onclick="onSubmitButton();" />
                         <p:watermark for="acIx1" value="Package" />
                         <p:watermark for="ins" value="Institution" />
-                    </p:panel>
-                    <p:panel>
+                        <p:watermark for="acIx" value="Service/Investigation" />
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
