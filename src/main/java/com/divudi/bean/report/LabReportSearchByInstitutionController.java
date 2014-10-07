@@ -239,8 +239,9 @@ public class LabReportSearchByInstitutionController implements Serializable {
                 + " (f.paymentMethod = :pm1 "
                 + " or f.paymentMethod = :pm2 "
                 + " or f.paymentMethod = :pm3 "
-                + " or f.paymentMethod = :pm4) and "
-                + " f.createdAt between :fromDate and :toDate "
+                + " or f.paymentMethod = :pm4)"
+                + " and f.institution=:billedIns "
+                + " and f.createdAt between :fromDate and :toDate "
                 + " and f.toInstitution=:ins ";
         tm = new HashMap();
         tm.put("fromDate", fromDate);
@@ -252,13 +253,18 @@ public class LabReportSearchByInstitutionController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
+        tm.put("billedIns", getSessionController().getInstitution());
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
     private double calProfessionalFeeWithout(Bill bill, Institution ins) {
         String sql;
         Map tm;
-        sql = "select sum(f.staffFee) from Bill f where f.retired=false and type(f) = :billClass "
+        sql = "select sum(f.staffFee) "
+                + " from Bill f "
+                + " where f.retired=false"
+                + "  and type(f) = :billClass "
+                + " and f.institution=:billedIns "
                 + " and (f.paymentMethod = :pm1 or f.paymentMethod = :pm2 "
                 + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4) and"
                 + " f.billType = :billType and f.createdAt between :fromDate and :toDate and f.toInstitution=:ins ";
@@ -272,6 +278,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
+        tm.put("billedIns", getSessionController().getInstitution());
 
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
@@ -279,10 +286,13 @@ public class LabReportSearchByInstitutionController implements Serializable {
     private double calDiscountFeeWithout(Bill bill, Institution ins) {
         String sql;
         Map tm;
-        sql = "select sum(f.discount) from Bill f where f.retired=false and type(f) = :billClass "
+        sql = "select sum(f.discount) from Bill f where "
+                + " f.retired=false and type(f) = :billClass "
+                + " and f.institution=:billedIns "
                 + " and (f.paymentMethod = :pm1 or f.paymentMethod = :pm2 "
                 + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4) and "
-                + " f.billType = :billType and f.createdAt between :fromDate and :toDate and f.toInstitution=:ins";
+                + " f.billType = :billType and f.createdAt between :fromDate and :toDate "
+                + " and f.toInstitution=:ins";
         tm = new HashMap();
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
@@ -293,6 +303,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
+        tm.put("billedIns", getSessionController().getInstitution());
 
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
 
@@ -687,8 +698,8 @@ public class LabReportSearchByInstitutionController implements Serializable {
         }
         return labBills;
     }
-    
-    public List<Bill> getBills(){
+
+    public List<Bill> getBills() {
         return bills;
     }
 
@@ -706,10 +717,49 @@ public class LabReportSearchByInstitutionController implements Serializable {
         return labBills;
     }
 
-    public void createLabBillsWithoutOwn() {
+//    public void createLabBillsWithoutOwn() {
+//        String sql;
+//        Map tm;
+//
+//        
+//        
+//        sql = "select f from Bill f where "
+//                + " f.retired=false "
+//                + " and f.billType = :billType"
+//                + " and (f.paymentMethod = :pm1 "
+//                + " or f.paymentMethod = :pm2 "
+//                + " or f.paymentMethod = :pm3 "
+//                + " or f.paymentMethod = :pm4 ) "
+//                + " and f.institution=:ins "
+//                + " and f.toInstitution=:toIns "
+//                + " and f.createdAt  between :fromDate and :toDate"
+//                + " order by type(f), f.insId";
+//
+//        tm = new HashMap();
+//        tm.put("fromDate", fromDate);
+//        tm.put("toDate", toDate);
+//        tm.put("billType", BillType.OpdBill);
+//        tm.put("pm1", PaymentMethod.Cash);
+//        tm.put("pm2", PaymentMethod.Card);
+//        tm.put("pm3", PaymentMethod.Cheque);
+//        tm.put("pm4", PaymentMethod.Slip);
+//        tm.put("ins", getSessionController().getInstitution());
+//        tm.put("toIns", getInstitution());
+//        bills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+//        if (bills != null) {
+//            calTotalsWithout();
+//        } else {
+//            clearTotals();
+//        }
+//
+//        setString1Value1Table();
+//
+//    }
+    private List<Bill> fetchBills() {
         String sql;
         Map tm;
 
+     
         sql = "select f from Bill f where "
                 + " f.retired=false "
                 + " and f.billType = :billType"
@@ -732,7 +782,16 @@ public class LabReportSearchByInstitutionController implements Serializable {
         tm.put("pm4", PaymentMethod.Slip);
         tm.put("ins", getSessionController().getInstitution());
         tm.put("toIns", getInstitution());
-        bills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        List<Bill> list = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+
+        return list;
+
+    }
+
+    public void createLabBillsWithoutOwn() {
+
+        bills = fetchBills();
+
         if (bills != null) {
             calTotalsWithout();
         } else {
@@ -1001,7 +1060,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         recreteModal();
         this.txtSearch = txtSearch;
     }
-    
+
     private List<Bill> bills;
 
     private void recreteModal() {
