@@ -985,7 +985,6 @@ public class InwardReportController1 implements Serializable {
         if (admissionType != null) {
             sql += " and bi.bill.patientEncounter.admissionType=:at ";
             m.put("at", admissionType);
-
         }
 
         if (paymentMethod != null) {
