@@ -111,6 +111,7 @@ public class Bill implements Serializable {
     @ManyToOne
     BillSession singleBillSession;
     String qutationNumber;
+    @ManyToOne
     Institution referredByInstitution;
     String referralID;
 

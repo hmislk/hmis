@@ -150,15 +150,19 @@ public class ChannelBean {
 
         while (toDate.after(nowDate) && sessionDayCount < getFinalVariables().getSessionSessionDayCounter()) {
             boolean hasSpecificDateSession = false;
-            System.err.println("SESSSION");
+//            System.err.println("SESSSION");
             if (checkLeaveDate(nowDate, inputSessions.get(0).getStaff())) {
                 System.err.println("INSIDE");
+                Calendar nc = Calendar.getInstance();
+                nc.setTime(nowDate);
+                nc.add(Calendar.DATE, 1);
+                nowDate = nc.getTime();
                 continue;
             }
-            System.err.println("After Check Leave");
+//            System.err.println("After Check Leave");
 
             for (ServiceSession ss : inputSessions) {
-                System.err.println("@@@1");
+//                System.err.println("@@@1");
                 if (ss.getSessionDate() != null) {
                     Calendar sessionDate = Calendar.getInstance();
                     sessionDate.setTime(ss.getSessionDate());
@@ -192,16 +196,20 @@ public class ChannelBean {
                 }
             }
 
-            System.err.println("@@@4");
+//            System.err.println("@@@4");
             if (hasSpecificDateSession == false) {
-                System.err.println("@@@41");
+//                System.err.println("@@@41");
                 for (ServiceSession ss : inputSessions) {
-                    System.err.println("@@@42");
+//                    System.err.println("@@@42");
                     Calendar wdc = Calendar.getInstance();
                     wdc.setTime(nowDate);
-                    System.err.println("@@@421");
-                    if (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK)) {
-                        System.err.println("@@@43");
+//                    System.err.println("@@@421");
+//                    System.err.println("Week " + ss.getSessionWeekday());
+//                    System.err.println("WW " + wdc);
+//                    System.err.println("WDC " + wdc.get(Calendar.DAY_OF_WEEK));
+
+                    if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
+//                        System.err.println("@@@43");
                         ServiceSession newSs = new ServiceSession();
                         newSs.setName(ss.getName());
                         newSs.setOriginatingSession(ss);
@@ -218,21 +226,21 @@ public class ChannelBean {
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
                         // //System.out.println("Count : " + sessionDayCount);
-                        System.err.println("@@@45");
+//                        System.err.println("@@@45");
                         createdSessions.add(newSs);
-                        System.err.println("@@@46");
+//                        System.err.println("@@@46");
                         if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                             sessionDayCount++;
                         }
-                        System.err.println("@@@47");
+//                        System.err.println("@@@47");
                     }
-                    System.err.println("@@@471");
+//                    System.err.println("@@@471");
 
                 }
-                System.err.println("@@@48");
+//                System.err.println("@@@48");
             }
 
-            System.err.println("@@@5");
+//            System.err.println("@@@5");
             Calendar nc = Calendar.getInstance();
             nc.setTime(nowDate);
             nc.add(Calendar.DATE, 1);

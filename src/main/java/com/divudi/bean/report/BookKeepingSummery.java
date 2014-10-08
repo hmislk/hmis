@@ -1012,6 +1012,8 @@ public class BookKeepingSummery implements Serializable {
                 + " and type(paidBillItem.bill)=:class"
                 + "  and  paidBillItem.createdAt between :fromDate and :toDate "
                 + " and paidBillItem.bill.billType=:paidBtp)  ";
+        
+        temMap.put("class", BilledBill.class);
 
         if (institution != null) {
             jpql += " bi.bill.institution=:ins ";
