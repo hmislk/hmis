@@ -15,7 +15,8 @@
         <h:outputStylesheet library="css" name="maincss.css" />
         <h:outputStylesheet library="css" name="css1.css" />
         <h:outputStylesheet library="css" name="summery.css" />
-        <h:outputStylesheet library="css" name="printing.css" />
+        <!-- If u encounter any problem in printing call safrin-->
+        <!--<h:outputStylesheet library="css" name="printing.css" />-->
 
         <h:outputScript library="js" name="jsfcrud.js"/>
     </h:head>
@@ -309,8 +310,8 @@
                                         <p:menuitem  ajax="false"  value="Payment Done Search"  action="/channel/channel_payment_bill_search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" ></p:menuitem>
                                     </p:submenu>  
                                     <p:submenu label="Channel Books">
-                                        <p:menuitem  ajax="false"  value="Channel Books"  action="/channel/channel_agent_referece_book"></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Channel Books Report"  action="/channel/channel_report_agent_referece_book"></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Channel Books"  action="/channel/channel_agent_referece_book"/>
+                                        <p:menuitem  ajax="false"  value="Channel Books Report"  action="/channel/channel_report_agent_referece_book"/>
                                     </p:submenu>
                                 </p:submenu>
                                 <p:submenu label="Payment"  rendered="#{webUserController.hasPrivilege('Payment')}">
@@ -347,7 +348,7 @@
                                                 <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd" value="By Opd Bill"  />
                                                 <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd_all" value="By Credit Company"  />
                                             </p:submenu>     
-
+                                            
                                         </p:submenu>
                                         <p:submenu label="Inward">
                                             <p:menuitem  ajax="false"  action="/credit/credit_company_inward_due" value="Due Search"  />
@@ -357,6 +358,7 @@
                                                 <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward_all" value="By Credit Company"  />
                                             </p:submenu>     
                                         </p:submenu>
+                                        <p:menuitem  ajax="false"  action="/credit/credit_reports" value="Report"  />
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search" actionListener="#{searchController.makeListNull}"  value="Payment done Search"  />
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search_billItems" actionListener="#{searchController.makeListNull}"  value="Payment done Search BillItem"  />
                                     </p:submenu>

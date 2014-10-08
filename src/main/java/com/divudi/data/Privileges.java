@@ -66,6 +66,8 @@ public enum Privileges {
     ShowInwardFee,
     
     LabBilling,
+    LabCashier,
+    LabBillSearchCashier,
     LabBillSearch,
     LabBillItemSearch,
     LabBillCancelling,
@@ -88,6 +90,7 @@ public enum Privileges {
     LabReportSearchAll,
     LabReceive,
     LabEditPatient,
+    
     PaymentBilling,
     PaymentBillSearch,
     PaymentBillReprint,
