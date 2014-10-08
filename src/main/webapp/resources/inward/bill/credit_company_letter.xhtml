@@ -36,34 +36,34 @@
                             <td>
                                 <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
                             </td>
-                            
-                            
+
+
                             <div>
                                 <td >
-                                <h:outputLabel value="Time of Discharged" />
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" />
-                            </td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" >
-                                    <f:convertDateTime pattern="dd MM yyyy h:mm a" />
-                                </h:outputLabel>
-                            </td>
+                                    <h:outputLabel value="Time of Discharged" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value=":" />
+                                </td>
+                                <td >
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" >
+                                        <f:convertDateTime pattern="dd MM yyyy h:mm a" />
+                                    </h:outputLabel>
+                                </td>
                             </div>
-                            
+
                             <div>                                
                                 <td >
-                                <h:outputLabel value="BILL NO" />
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" />
-                            </td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.insId}" />
-                            </td>
+                                    <h:outputLabel value="BILL NO" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value=":" />
+                                </td>
+                                <td >
+                                    <h:outputLabel value="#{cc.attrs.bill.insId}" />
+                                </td>
                             </div>
-                            
+
                         </tr>
                         <tr >
                             <td >
@@ -89,15 +89,98 @@
                             <td>
                                 <h:outputLabel value="" />
                             </td>
-                            
+
                         </tr>
-                        
+
                     </table>
 
                     <div>
                         <h:outputLabel value="#{cc.attrs.bill.netTotal}"/>
                     </div>
 
+                    <p:spacer height="50px"></p:spacer>
+                    <div>
+                        <h:outputLabel value="Date"/>
+                        <h:outputLabel  value=":"/>
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" >
+                            <f:convertDateTime pattern="dd MM yyyy" /></h:outputLabel>
+                    </div>
+                    <p:spacer height="20px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="You Ref"/>
+                        <h:outputLabel  value=":"/>  
+                    </div>
+
+                    <div>
+                        <h:outputLabel value="Manager"/>
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}" />
+                    </div>
+
+                    <p:spacer height="45px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="Dear Sir / Madam,"/>
+                    </div>
+
+                    <p:spacer height="15px"></p:spacer>
+                    <div style="margin-left:6%; text-decoration: underline;">
+
+                        <h:outputLabel value ="SETTLEMENT OF MEDICAL BILL" style="font-size: 12px;"/>
+
+                    </div>
+                    <p:spacer height="15px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="Settlement of Hospital Charges Against Bill No"/>  
+                        <h:outputLabel value =":"/>
+                        <h:outputLabel value="#{cc.attrs.bill.insId}" />
+                    </div>
+                    <p:spacer height="15px"></p:spacer>
+                    <div  style="margin-left:8%;">
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
+                    </div>
+
+                    <p:spacer height="15px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="I wish to inform you that the above person has received treatment at this Hospital."/>
+
+                    </div>
+                    <div>
+                        <h:outputLabel value ="Enclosed please find our bill for"/>
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal}"/> 
+                        <h:outputLabel value ="being his / her Hospital charges"/>
+
+                    </div>
+                    <p:spacer height="15px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="You are kindly requested to remit this amount by cheque written in favour of -"/>
+                    </div>
+                    <div>
+                        <h:outputLabel value='"#{cc.attrs.bill.institution.name} "with least possible'/>
+                    </div>
+
+                    <div>
+                        <h:outputLabel value="* Please not that Prevailing Bank overdraft interest rate will be applied for all overdue debts"/>
+                    </div>
+                    <p:spacer height="15px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="Thanking You,"/>
+                    </div>
+
+                    <p:spacer height="3px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="Your's Faithfully,"/>
+                    </div>
+                    <p:spacer height="10px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="#{cc.attrs.bill.institution.name}"/>
+                    </div>
+
+                    <p:spacer height="20px"></p:spacer>
+                    <div>
+                        <h:outputLabel value ="........................"/><br>
+                            <h:outputLabel value ="......................................................."/> </br>
+                        <br>
+                            <h:outputLabel value ="Accountant"/> </br>
+                    </div>
 
 
                     <p:spacer height="50px"></p:spacer>
