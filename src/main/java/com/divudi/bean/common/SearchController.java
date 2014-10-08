@@ -92,7 +92,7 @@ public class SearchController implements Serializable {
     private PharmacyBean pharmacyBean;
     ServiceSession selectedServiceSession;
     Staff currentStaff;
-      List<BillItem> billItem;
+    List<BillItem> billItem;
     //////////
     @Inject
     private SessionController sessionController;
@@ -207,8 +207,8 @@ public class SearchController implements Serializable {
     public void createReturnBhtBills() {
         createReturnBhtBills(BillType.PharmacyBhtPre);
     }
-    
-      public void createReturnBhtBillsStore() {
+
+    public void createReturnBhtBillsStore() {
         createReturnBhtBills(BillType.StoreBhtPre);
     }
 
@@ -1097,7 +1097,7 @@ public class SearchController implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createStoreAdjustmentBillItemTable() {
         //  searchBillItems = null;
         String sql;
@@ -1181,6 +1181,7 @@ public class SearchController implements Serializable {
     public void setBillItem(List<BillItem> billItem) {
         this.billItem = billItem;
     }
+
     public void createBillItemTableBht(BillType btp) {
         //  searchBillItems = null;
         String sql;
@@ -2859,7 +2860,19 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createCreditTableBillItem() {
+    public void createCreditTableBillItemAll() {
+        createCreditTableBillItem(null, true);
+    }
+
+    public void createCreditTableBillItemOpd() {
+        createCreditTableBillItem(BillType.OpdBill, false);
+    }
+
+    public void createCreditTableBillItemBht() {
+        createCreditTableBillItem(null, false);
+    }
+
+    public void createCreditTableBillItem(BillType billType, boolean all) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -2869,6 +2882,16 @@ public class SearchController implements Serializable {
                 + "  and b.bill.institution=:ins "
                 + " and b.bill.createdAt between :fromDate and :toDate "
                 + " and b.bill.retired=false ";
+
+        if (!all) {
+            if (billType != null) {
+                sql += " and b.referenceBill.billType=:refBtp";
+                temMap.put("refBtp", billType);
+            } else {
+                sql += " and b.patientEncounter is not null ";
+            }
+
+        }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  (upper(b.bill.insId) like :billNo )";
@@ -2937,21 +2960,20 @@ public class SearchController implements Serializable {
         return bills;
 
     }
-  
-    public void channelPaymentBills(){
+
+    public void channelPaymentBills() {
         String sql;
         Map m = new HashMap();
-        
+
         sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
                 + " and bi.bill.billType=:bt"
                 + " and bi.createdAt between :fromDate and :toDate ";
-        
+
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("bt", BillType.ChannelProPayment);
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
-        
+
     }
 
     public void createChannelDueBillFeeOld() {
@@ -2974,8 +2996,8 @@ public class SearchController implements Serializable {
     }
 
     public void createChannelDueBillFee() {
-        selectedServiceSession=null;
-        
+        selectedServiceSession = null;
+
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = " SELECT b FROM BillFee b "
