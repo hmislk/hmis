@@ -112,7 +112,8 @@
                                 <f:convertNumber pattern="#,000.00" />
                                 <p:ajax process="@this" update="@this catNetTotal :#{p:component('tot')}  "  event="blur"
                                         listener="#{bhtSummeryController.changeDiscountListener(c)}"/>
-                                <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}"
+                                        listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
                         <p:column headerText="NetTotal">
