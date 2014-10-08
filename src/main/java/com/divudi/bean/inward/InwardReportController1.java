@@ -61,6 +61,7 @@ public class InwardReportController1 implements Serializable {
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
     private Institution institution;
+    PatientEncounter patientEncounter;
     private List<OpdService> opdServices;
     List<String1Value2> timedServices;
     List<RoomChargeInward> roomChargeInwards;
@@ -68,6 +69,7 @@ public class InwardReportController1 implements Serializable {
     List<String2Value4> inwardCharges;
     List<String1Value2> finalValues;
     List<BillFee> billFees;
+    List<BillItem>billItems;
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -696,7 +698,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         sql = sql + " group by bf.billItem.item.category"
-//                + " bf.billItem.bill.billClassType"
+                //                + " bf.billItem.bill.billClassType"
                 + "  order by bf.billItem.item.category.name";
         return billFeeFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
@@ -904,6 +906,114 @@ public class InwardReportController1 implements Serializable {
                 pt.setTmpStayedTime(val / (1000 * 60 * 60));
             }
 
+        }
+
+    }
+
+    public void createBHTDiscountTable() {
+        String sql;
+        Map m = new HashMap();
+        billItems=new ArrayList<>();
+//        BillItem bi = new BillItem();
+//        bi.getBill().getPatientEncounter().getBhtNo();
+        sql = "select bi"
+                + " from BillItem bi where "
+                + " bi.bill.patientEncounter.dateOfDischarge between :fd and :td "
+                + " and bi.retired=false "
+                + " and type(bi.bill)=:class "
+                + " and bi.bill.billType=:bt "
+                + " and bi.bill.cancelled=false ";
+            
+        m.put("bt", BillType.InwardFinalBill);
+        m.put("class", BilledBill.class);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (admissionType != null) {
+            sql += " and bi.bill.patientEncounter.admissionType=:at ";
+            m.put("at", admissionType);
+
+        }
+
+        if (paymentMethod != null) {
+            sql += " and bi.bill.patientEncounter.paymentMethod=:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql += " and bi.bill.patientEncounter.creditCompany=:cc ";
+            m.put("cc", institution);
+        }
+        
+        if (patientEncounter!=null) {
+            sql+=" and bi.bill.patientEncounter=:pe ";
+            m.put("pe", patientEncounter);
+        }
+        
+        sql+= " order by bi.bill.patientEncounter.bhtNo ,bi.inwardChargeType";
+        
+        billItems=getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        Double[] dbl=fetchFinalBillTotals();
+        
+        inwardGross=dbl[0];
+        inwardMargin=dbl[1];
+        inwardDiscount=dbl[2];
+        inwardNetValue=dbl[3];
+
+    }
+    
+    public Double[] fetchFinalBillTotals() {
+        String sql;
+        Map m = new HashMap();
+        sql = "select sum(bi.grossValue),"
+                + " sum(bi.marginValue),"
+                + " sum(bi.discount),"
+                + " sum(bi.netValue)"
+                + " from BillItem bi where "
+                + " bi.bill.patientEncounter.dateOfDischarge between :fd and :td "
+                + " and bi.retired=false "
+                + " and type(bi.bill)=:class "
+                + " and bi.bill.billType=:bt "
+                + " and bi.bill.cancelled=false ";
+            
+        m.put("bt", BillType.InwardFinalBill);
+        m.put("class", BilledBill.class);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (admissionType != null) {
+            sql += " and bi.bill.patientEncounter.admissionType=:at ";
+            m.put("at", admissionType);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and bi.bill.patientEncounter.paymentMethod=:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql += " and bi.bill.patientEncounter.creditCompany=:cc ";
+            m.put("cc", institution);
+        }
+        
+        if (patientEncounter!=null) {
+            sql+=" and bi.bill.patientEncounter=:pe ";
+            m.put("pe", patientEncounter);
+        }
+
+        Object obj[] = patientRoomFacade.findAggregateModified(sql, m, TemporalType.TIMESTAMP);
+        System.err.println("OBJ " + obj);
+        if (obj == null) {
+            Double[] dbl = new Double[4];
+            dbl[0] = 0.0;
+            dbl[1] = 0.0;
+            dbl[2] = 0.0;
+            dbl[3] = 0.0;
+
+            return dbl;
+        } else {
+            return Arrays.copyOf(obj, obj.length, Double[].class);
         }
 
     }
@@ -1621,6 +1731,22 @@ public class InwardReportController1 implements Serializable {
         this.finalValues = finalValues;
     }
 
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+    
     public class CategoryTime {
 
         Category roomCategory;
