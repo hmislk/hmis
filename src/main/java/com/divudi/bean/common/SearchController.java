@@ -2629,9 +2629,14 @@ public class SearchController implements Serializable {
 
         sql = "select b from Bill b where "
                 + " (b.insId=:insId or b.deptId=:deptId) "
-                + " and (type(b)!=:class)"
-                + " order by b.insId ";
-
+                + " and (type(b)!=:class)";
+                
+        
+        if(!getSearchKeyword().getBhtNo().trim().isEmpty()){
+            sql+=" and b.patientEncounter.bhtNo=:bht";
+            m.put("bht", getSearchKeyword().getBhtNo());
+        }
+        sql+= " order by b.insId ";
         m.put("insId", getSearchKeyword().getInsId());
         m.put("deptId", getSearchKeyword().getDeptId());
         m.put("class", PreBill.class);
