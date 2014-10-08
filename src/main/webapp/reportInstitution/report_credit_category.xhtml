@@ -42,16 +42,16 @@
 
                         <h:outputLabel value="Select Billed Institution"/>
 
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" 
                                         forceSelection="true"
-                                        requiredMessage="Please Select Billed Institution" value="#{bookKeepingSummery.institution}"
+                                        value="#{bookKeepingSummery.institution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                         
                          <h:outputLabel value="Select Income Institution"/>
 
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}"
                                         forceSelection="true"
-                                        requiredMessage="Please Select Income Institution" value="#{bookKeepingSummery.incomeInstitution}"
+                                         value="#{bookKeepingSummery.incomeInstitution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                         
                          <h:outputLabel value="Select Credit Company"/>
