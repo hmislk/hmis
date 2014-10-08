@@ -629,7 +629,7 @@ public class InwardBeanController implements Serializable {
 
     }
 
-    public List<BillItem> createIssueItemTable(PatientEncounter patientEncounter,BillType billType) {
+    public List<BillItem> createIssueItemTable(PatientEncounter patientEncounter, BillType billType) {
         List<BillItem> grantList = new ArrayList<>();
         String sql;
         HashMap hm;
@@ -894,9 +894,12 @@ public class InwardBeanController implements Serializable {
                 + " and b.retired=false"
                 + " and b.bill.cancelled=false "
                 + " and (b.refunded is null "
-                + " or b.refunded=false) "
-                //                + " and b.bill.billedBill is null "
-                + " and b.bill.refundedBill is null "
+                + " or b.refunded=false) ";
+
+        if (billClass instanceof PreBill) {
+            sql += " and b.bill.billedBill is null ";
+        }
+        sql += " and b.bill.refundedBill is null "
                 + " and b.bill.checkedBy is null"
                 + " and b.bill.billType=:bt"
                 + " and b.bill.patientEncounter=:pe "
