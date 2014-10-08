@@ -66,6 +66,7 @@ public enum Privileges {
     ShowInwardFee,
     
     LabBilling,
+    LabCasheirBillSearch,
     LabCashier,
     LabBillSearchCashier,
     LabBillSearch,

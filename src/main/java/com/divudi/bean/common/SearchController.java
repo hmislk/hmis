@@ -2628,13 +2628,25 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
 
         sql = "select b from Bill b where "
-                + " (b.insId=:insId or b.deptId=:deptId) "
-                + " and (type(b)!=:class)"
-                + " order by b.insId ";
+                + " b.id is not null ";
 
-        m.put("insId", getSearchKeyword().getInsId());
-        m.put("deptId", getSearchKeyword().getDeptId());
-        m.put("class", PreBill.class);
+        if (!getSearchKeyword().getInsId().isEmpty()) {
+            sql += " and b.insId=:insId  ";
+            m.put("insId", getSearchKeyword().getInsId());
+        }
+
+        if (!getSearchKeyword().getDeptId().isEmpty()) {
+            sql += " and b.deptId=:deptId  ";
+            m.put("deptId", getSearchKeyword().getDeptId());
+        }
+
+        if (!getSearchKeyword().getBhtNo().trim().isEmpty()) {
+            sql += " and b.patientEncounter.bhtNo=:bht";
+            m.put("bht", getSearchKeyword().getBhtNo());
+        }
+        sql += " order by b.insId ";
+
+//        m.put("class", PreBill.class);
         bills = getBillFacade().findBySQL(sql, m);
     }
 

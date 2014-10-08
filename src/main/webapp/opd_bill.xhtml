@@ -558,7 +558,7 @@
                         </div>
                         
                         <ui:repeat value="#{billController.bills}" var="bill" >
-                            <bi:opdBillPrintRuhunu bill="#{bill}" dup="true"/>
+                            <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
                         </ui:repeat>
                     </h:panelGroup>
                     
@@ -579,7 +579,7 @@
                         </div>
                         
                         <ui:repeat value="#{billController.bills}" var="b">
-                            <bi:opdBillPrintCoop bill="#{b}" dup="true"/>                        
+                            <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
                         </ui:repeat>
                     </h:panelGroup>
                     
