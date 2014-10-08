@@ -98,6 +98,18 @@
                         </p:panel>
 
 
+                        <p:panel header="Inward Payment  (NEW)">
+                            <h:panelGrid columns="1">
+                                <p:commandButton value="(1)All Payment By Created Date " action="bht_deposit_by_created_date_all" 
+                                                 actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="(2)Payment By Created Date Discharge Only" action="bht_deposit_by_created_date_discharged" 
+                                                 actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="(3)Payment By Created Date Not Discharged" action="bht_deposit_by_created_date_not_discharge" 
+                                                 actionListener="#{mdInwardReportController.makeNull()}" styleClass="linkButton" ajax="false" />
+                              
+                            </h:panelGrid>
+                        </p:panel>
+
                     </h:panelGrid>
                 </h:form>
             </ui:define>
