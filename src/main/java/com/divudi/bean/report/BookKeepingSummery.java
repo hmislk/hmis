@@ -1016,7 +1016,7 @@ public class BookKeepingSummery implements Serializable {
         temMap.put("class", BilledBill.class);
 
         if (institution != null) {
-            jpql += " bi.bill.institution=:ins ";
+            jpql += " and bi.bill.institution=:ins ";
             temMap.put("ins", institution);
         }
 

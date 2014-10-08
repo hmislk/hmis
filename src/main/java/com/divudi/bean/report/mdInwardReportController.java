@@ -1068,16 +1068,18 @@ public class mdInwardReportController implements Serializable {
             temMap.put("cc", creditCompany);
         }
         if (paymentMethod != null) {
-            sql += " and b.patientEncounter.paymentMethod =:pm";
+            sql += " and b.patientEncounter.paymentMethod =:pm ";
             temMap.put("pm", paymentMethod);
         }
 
         if (admissionType != null) {
-            sql += " and b.patientEncounter.admissionType =:ad";
+            sql += " and b.patientEncounter.admissionType =:ad ";
             temMap.put("ad", admissionType);
         }
 
-        sql += " order by b.patientEncounter.bhtNo,b.patientEncounter.dateOfAdmission ";
+        sql += " order by b.patientEncounter.bhtNo,"
+                + " b.patientEncounter.dateOfDischarge,"
+                + " b.createdAt ";
 
         temMap.put("billType", BillType.InwardPaymentBill);
         temMap.put("toDate", toDate);
