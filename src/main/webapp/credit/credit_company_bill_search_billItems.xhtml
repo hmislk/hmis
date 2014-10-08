@@ -57,8 +57,8 @@
                                     <f:setPropertyActionListener value="#{b.bill}" target="#{creditCompanyBillSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>
-                            <p:column headerText="Bill No">
-                                <h:outputLabel  value="#{b.bill.insId}" />
+                            <p:column headerText="Opd Bill No">
+                                <h:outputLabel  value="#{b.referenceBill.insId}" />
                             </p:column>
                             <p:column headerText="BHT No">
                                 <h:outputLabel  value="#{b.patientEncounter.bhtNo}" />
@@ -97,7 +97,7 @@
                                 </h:outputLabel>                                
                             </p:column>
                             <p:column headerText="Net Value" >                               
-                                <h:outputLabel value="#{b.bill.netTotal}" >
+                                <h:outputLabel value="#{b.netValue}" >
                                     <f:convertNumber pattern="#,000.00"/>
                                 </h:outputLabel>                                    
                             </p:column>
