@@ -92,7 +92,7 @@
                                 </p:submenu>
 
                                 <p:submenu label="Lab"  rendered="#{webUserController.hasPrivilege('Lab')}">
-                                    <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="Bill" rendered="#{webUserController.hasPrivilege('LabCashier')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="Bill" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/lab_bill_collecting_centre" value="Collecting Centre Billing" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/lab_collecting_bill_search_all" value="Collecting Centre Bill Search" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
 
@@ -348,7 +348,7 @@
                                                 <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd" value="By Opd Bill"  />
                                                 <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd_all" value="By Credit Company"  />
                                             </p:submenu>     
-                                            <p:menuitem  ajax="false"  action="/credit/credit_reports" value="Report"  />
+                                            
                                         </p:submenu>
                                         <p:submenu label="Inward">
                                             <p:menuitem  ajax="false"  action="/credit/credit_company_inward_due" value="Due Search"  />
@@ -358,6 +358,7 @@
                                                 <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward_all" value="By Credit Company"  />
                                             </p:submenu>     
                                         </p:submenu>
+                                        <p:menuitem  ajax="false"  action="/credit/credit_reports" value="Report"  />
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search" actionListener="#{searchController.makeListNull}"  value="Payment done Search"  />
                                         <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search_billItems" actionListener="#{searchController.makeListNull}"  value="Payment done Search BillItem"  />
                                     </p:submenu>
