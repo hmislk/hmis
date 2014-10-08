@@ -25,12 +25,12 @@
 
                 <div  class="fiveinchbill">
 
-                    <div class="heading">
+                    <div class="headingPrinting">
                         <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"/>
                     </div>
                     
                     <div class="receiptnoPrintingLabel">
-                        <h:outputLabel value="Receipt No"/>
+                        <h:outputLabel value="Receipt "/>
                     </div>
                     <div class="receiptnoPrintingLabelCol">
                         <h:outputLabel value=":"/>
@@ -77,7 +77,7 @@
                     </div>
                     
                     <div class="paymentPrintingLabel">
-                        <h:outputLabel value="Payment Type"/>
+                        <h:outputLabel value="Payment "/>
                     </div>
                     <div class="paymentPrintingLabelCol">
                         <h:outputLabel value=":"/>
@@ -101,21 +101,21 @@
                     <div class="billtimePrinting">
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
-                            <f:convertDateTime pattern="hh mm ss a"/>
+                            <f:convertDateTime pattern="hh mm  a"/>
                         </h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.refundedBill.billTime}"  
                                        rendered="#{cc.attrs.bill.refundedBill.insId ne null}">
-                            <f:convertDateTime pattern="hh mm ss a"/>
+                            <f:convertDateTime pattern="hh mm  a"/>
                         </h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.billTime}" 
                                        rendered="#{cc.attrs.bill.refundedBill.insId eq null and 
                                                                                cc.attrs.bill.cancelledBill.insId eq null }">
-                            <f:convertDateTime pattern="hh mm ss a"/>
+                            <f:convertDateTime pattern="hh mm  a"/>
                         </h:outputLabel>
                     </div>
                     
                     <div class="ptnamePrintingLabel">
-                        <h:outputLabel value="Patient Name"/>
+                        <h:outputLabel value="Patient "/>
                     </div>
                     <div class="ptnamePrintingLabelCol">
                         <h:outputLabel value=":"/>
@@ -136,7 +136,7 @@
                     </div>
                     <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip" styleClass="itemsPrinting"   >
                         <h:column >
-                            <h:outputLabel value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" />
+                            <h:outputLabel value="#{bip.item.printName}"  />
                         </h:column>
                     </h:dataTable>
                     
@@ -146,7 +146,7 @@
                     <div class="ratesPrinting" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                             <h:column>
-                                <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px; font-size: 11px!important;" >
+                                <h:outputLabel value="#{bip1.netValue}"  >
                                     <f:convertNumber pattern="#,000.00" />
                                 </h:outputLabel>
                             </h:column>
