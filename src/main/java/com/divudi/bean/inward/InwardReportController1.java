@@ -69,7 +69,7 @@ public class InwardReportController1 implements Serializable {
     List<String2Value4> inwardCharges;
     List<String1Value2> finalValues;
     List<BillFee> billFees;
-    List<BillItem>billItems;
+    List<BillItem> billItems;
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -859,6 +859,66 @@ public class InwardReportController1 implements Serializable {
 
     }
 
+    public void bhtCreditPayments() {
+        HashMap hm = new HashMap();
+        String sql = "Select b from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:btp"
+                + " and b.bill.cancelled=false "
+                + " and type(b.bill)=:class "
+                + " and b.patientEncounter is not null"
+                + " and b.createdAt between :frm and :to ";
+
+        if (admissionType != null) {
+            sql = sql + " and b.patientEncounter.admissionType=:at ";
+            hm.put("at", admissionType);
+        }
+
+        if (paymentMethod != null) {
+            sql = sql + " and b.patientEncounter.paymentMethod=:bt ";
+            hm.put("bt", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql = sql + " and b.patientEncounter.creditCompany=:cc ";
+            hm.put("cc", institution);
+        }
+
+        sql += " order by b.patientEncounter.bhtNo ";
+
+        hm.put("btp", BillType.CashRecieveBill);
+        hm.put("class", BilledBill.class);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        billItems = BillItemFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    public void opdCreditPayments() {
+        HashMap hm = new HashMap();
+        String sql = "Select b.referenceBill.billItems"
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:btp"
+                + " and b.bill.cancelled=false "
+                + " and type(b.bill)=:class "
+                + " and b.referenceBill is not null"
+                + " and b.createdAt between :frm and :to ";
+
+        
+
+        sql += " order by b.referenceBill.insId ";
+
+        hm.put("btp", BillType.CashRecieveBill);
+        hm.put("class", BilledBill.class);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        billItems = BillItemFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
     public void createRoomTime() {
         categoryTimes = new ArrayList<>();
 
@@ -913,7 +973,7 @@ public class InwardReportController1 implements Serializable {
     public void createBHTDiscountTable() {
         String sql;
         Map m = new HashMap();
-        billItems=new ArrayList<>();
+        billItems = new ArrayList<>();
 //        BillItem bi = new BillItem();
 //        bi.getBill().getPatientEncounter().getBhtNo();
         sql = "select bi"
@@ -923,7 +983,7 @@ public class InwardReportController1 implements Serializable {
                 + " and type(bi.bill)=:class "
                 + " and bi.bill.billType=:bt "
                 + " and bi.bill.cancelled=false ";
-            
+
         m.put("bt", BillType.InwardFinalBill);
         m.put("class", BilledBill.class);
         m.put("fd", fromDate);
@@ -944,25 +1004,25 @@ public class InwardReportController1 implements Serializable {
             sql += " and bi.bill.patientEncounter.creditCompany=:cc ";
             m.put("cc", institution);
         }
-        
-        if (patientEncounter!=null) {
-            sql+=" and bi.bill.patientEncounter=:pe ";
+
+        if (patientEncounter != null) {
+            sql += " and bi.bill.patientEncounter=:pe ";
             m.put("pe", patientEncounter);
         }
-        
-        sql+= " order by bi.bill.patientEncounter.bhtNo ,bi.inwardChargeType";
-        
-        billItems=getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
-        Double[] dbl=fetchFinalBillTotals();
-        
-        inwardGross=dbl[0];
-        inwardMargin=dbl[1];
-        inwardDiscount=dbl[2];
-        inwardNetValue=dbl[3];
+
+        sql += " order by bi.bill.patientEncounter.bhtNo ,bi.inwardChargeType";
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        Double[] dbl = fetchFinalBillTotals();
+
+        inwardGross = dbl[0];
+        inwardMargin = dbl[1];
+        inwardDiscount = dbl[2];
+        inwardNetValue = dbl[3];
 
     }
-    
+
     public Double[] fetchFinalBillTotals() {
         String sql;
         Map m = new HashMap();
@@ -976,7 +1036,7 @@ public class InwardReportController1 implements Serializable {
                 + " and type(bi.bill)=:class "
                 + " and bi.bill.billType=:bt "
                 + " and bi.bill.cancelled=false ";
-            
+
         m.put("bt", BillType.InwardFinalBill);
         m.put("class", BilledBill.class);
         m.put("fd", fromDate);
@@ -996,9 +1056,9 @@ public class InwardReportController1 implements Serializable {
             sql += " and bi.bill.patientEncounter.creditCompany=:cc ";
             m.put("cc", institution);
         }
-        
-        if (patientEncounter!=null) {
-            sql+=" and bi.bill.patientEncounter=:pe ";
+
+        if (patientEncounter != null) {
+            sql += " and bi.bill.patientEncounter=:pe ";
             m.put("pe", patientEncounter);
         }
 
@@ -1746,7 +1806,7 @@ public class InwardReportController1 implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
     }
-    
+
     public class CategoryTime {
 
         Category roomCategory;

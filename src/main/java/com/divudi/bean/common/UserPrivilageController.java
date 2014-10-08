@@ -120,8 +120,8 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode node2 = new PrivilageNode("Lab", tmproot);
         TreeNode node200 = new PrivilageNode("Lab Menu", node2, Privileges.Lab);
-        TreeNode node201 = new PrivilageNode("Collecting Centre Billing", node2, Privileges.LabBilling);
-        TreeNode node217 = new PrivilageNode("Lab Cashier", node2, Privileges.LabCashier);
+        TreeNode node201 = new PrivilageNode("Billing", node2, Privileges.LabBilling);
+        TreeNode node217 = new PrivilageNode("LabCashier", node2, Privileges.LabCashier);
         TreeNode node218 = new PrivilageNode("Lab Bill Search", node2,Privileges.LabBillSearchCashier);
         TreeNode node202 = new PrivilageNode("Search Bills", node2, Privileges.LabBillSearch);
         TreeNode node203 = new PrivilageNode("Search Bills Items", node2, Privileges.LabBillItemSearch);
