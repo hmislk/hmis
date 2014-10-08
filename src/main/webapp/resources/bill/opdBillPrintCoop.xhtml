@@ -101,16 +101,16 @@
                     <div class="billtimePrinting">
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
-                            <f:convertDateTime pattern="hh mm  a"/>
+                            <f:convertDateTime pattern="hh:mm:a"/>
                         </h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.refundedBill.billTime}"  
                                        rendered="#{cc.attrs.bill.refundedBill.insId ne null}">
-                            <f:convertDateTime pattern="hh mm  a"/>
+                            <f:convertDateTime pattern="hh:mm:a"/>
                         </h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.billTime}" 
                                        rendered="#{cc.attrs.bill.refundedBill.insId eq null and 
                                                                                cc.attrs.bill.cancelledBill.insId eq null }">
-                            <f:convertDateTime pattern="hh mm  a"/>
+                            <f:convertDateTime pattern="hh:mm:a"/>
                         </h:outputLabel>
                     </div>
                     
@@ -129,6 +129,14 @@
                         <h:outputLabel value=":"/>
                     </div>
                     <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" styleClass="phonePrinting" />
+                    
+                    <div class="nicPrintingLabel">
+                        <h:outputLabel value="NIC"/>
+                    </div>
+                    <div class="nicPrintingLabelCol">
+                        <h:outputLabel value=":"/>
+                    </div>
+                    <h:outputLabel value="#{cc.attrs.bill.patient.person.nic}" styleClass="nicPrinting" />
 
 
                     <div class="disLabel">
@@ -146,7 +154,7 @@
                     <div class="ratesPrinting" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                             <h:column>
-                                <h:outputLabel value="#{bip1.netValue}"  >
+                                <h:outputLabel value="#{bip1.netValue}" style="font-size: 12px!important;"  >
                                     <f:convertNumber pattern="#,000.00" />
                                 </h:outputLabel>
                             </h:column>
@@ -170,7 +178,7 @@
                                     <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;"/>
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel value="#{cc.attrs.bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                    <h:outputLabel value="#{cc.attrs.bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;margin-left: 82%;    ">
                                         <f:convertNumber pattern="#,000.00" />
                                     </h:outputLabel>
                                 </td>

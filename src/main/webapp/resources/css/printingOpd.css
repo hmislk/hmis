@@ -341,7 +341,7 @@ root {
 
 .receiptnoPrinting{
     position: absolute;
-    left: 36%!important;
+    left: 33%!important;
     top: 7%!important;
     font-size: 15px;
 }
@@ -355,7 +355,7 @@ root {
 
 .receiptnoPrintingLabelCol{
     position: absolute;
-    left: 30%;
+    left: 27%;
     top: 7%;
     font-size:15px;
 }
@@ -386,7 +386,7 @@ root {
 
 .paymentPrinting{
     position: absolute;
-    left: 32% !important;
+    left: 29% !important;
     top: 10%!important;
     font-size: 15px;
 
@@ -402,7 +402,7 @@ root {
 
 .paymentPrintingLabelCol{
     position: absolute;
-    left: 30% !important;
+    left: 27% !important;
     top: 10%;
     font-size:15px;
 
@@ -433,7 +433,7 @@ root {
 
 .ptnamePrinting{
     position: absolute;
-    left: 32% !important;
+    left: 29% !important;
     top: 13%;
     font-size: 15px;
 
@@ -449,7 +449,7 @@ root {
 
 .ptnamePrintingLabelCol{
     position: absolute;
-    left: 30% !important;
+    left: 27% !important;
     top: 13%;
     font-size: 15px;
 
@@ -480,7 +480,7 @@ root {
 
 .phonePrinting{
     position: absolute;
-    left: 32%;
+    left: 29%;
     top: 16%;
     font-size: 15px;
 
@@ -496,8 +496,32 @@ root {
 
 .phonePrintingLabelCol{
     position: absolute;
-    left: 30%;
+    left: 27%;
     top: 16%;
+    font-size: 15px; 
+
+}
+
+.nicPrinting{
+    position: absolute;
+    left: 29%;
+    top: 19%;
+    font-size: 15px;
+
+}
+
+.nicPrintingLabel{
+    position: absolute;
+    left:10%;
+    top: 19%;
+    font-size: 15px
+
+}
+
+.nicPrintingLabelCol{
+    position: absolute;
+    left: 27%;
+    top: 19%;
     font-size: 15px; 
 
 }
@@ -557,7 +581,7 @@ root {
     
     font-size: 12px!important;
     position: absolute;
-    left: 8%;
+    left: 10%;
     top: 37%;
 
 }
@@ -583,9 +607,9 @@ root {
 
 .ratesPrinting{    
     position: absolute;
-    left: 84%;
+    left: 82%;
     top: 37%;
-    font-size: 12px!important;
+    font-size: 11px!important;
     text-align: right;
 
 }
