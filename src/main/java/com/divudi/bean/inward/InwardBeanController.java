@@ -1338,7 +1338,9 @@ public class InwardBeanController implements Serializable {
     public double getPaidValue(PatientEncounter patientEncounter) {
 
         HashMap hm = new HashMap();
-        String sql = "SELECT  sum(b.netTotal) FROM Bill b WHERE b.retired=false  and b.billType=:btp "
+        String sql = "SELECT  sum(b.netTotal) FROM Bill b "
+                + " WHERE b.retired=false "
+                + "  and b.billType=:btp "
                 + " and b.patientEncounter=:pe ";
         hm.put("btp", BillType.InwardPaymentBill);
         hm.put("pe", patientEncounter);

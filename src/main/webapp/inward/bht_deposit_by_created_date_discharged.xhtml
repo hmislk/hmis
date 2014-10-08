@@ -14,7 +14,7 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="B.H.T. DEPOSIT PAYMENT  SUMMERIES (Not Discharge B.H.T. only)" >
+                    <p:panel header="B.H.T. DEPOSIT PAYMENT  SUMMERIES (Discharge B.H.T. only)" >
 
                         <h:panelGrid columns="2" >
                             <p:outputLabel value="From" ></p:outputLabel>
@@ -52,7 +52,7 @@
                         </h:panelGroup>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateNotDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -142,7 +142,7 @@
                                         <p:column footerText="#{mdInwardReportController.totalValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.totalValue}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                    <f:convertNumber pattern="#,000.00"/></p:outputLabel>
                                             </f:facet>
                                         </p:column>
 
