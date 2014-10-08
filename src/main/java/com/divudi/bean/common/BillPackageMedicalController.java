@@ -139,6 +139,7 @@ public class BillPackageMedicalController implements Serializable {
     Date toDate;
     List<BillItem> billItems;
     Institution institution;
+    Item ServiceItem;
 
     public void makeNull() {
         billItems = null;
@@ -511,9 +512,8 @@ public class BillPackageMedicalController implements Serializable {
 
         //UtilityController.addSuccessMessage("Item Added");
     }
-    
-    
-      public void createBillItems(Item item) {
+
+    public void createBillItems(Item item) {
         String sql;
         Map m = new HashMap();
         sql = "select b from BillItem b"
@@ -522,7 +522,6 @@ public class BillPackageMedicalController implements Serializable {
                 + " and b.retired=false "
                 + " and b.bill.retired=false "
                 + " and type(b.bill.billPackege)=:class ";
-        m.put("class", item.getClass());
 
         if (getCurrentBillItem().getItem() != null) {
             sql += " and b.bill.billPackege=:item ";
@@ -534,6 +533,12 @@ public class BillPackageMedicalController implements Serializable {
             m.put("ins", institution);
         }
 
+        if (ServiceItem != null) {
+            sql += " and b.item=:item ";
+            m.put("item", ServiceItem);
+        }
+
+        m.put("class", item.getClass());
         m.put("billType", BillType.OpdBill);
         m.put("toDate", toDate);
         m.put("fromDate", frmDate);
@@ -549,7 +554,7 @@ public class BillPackageMedicalController implements Serializable {
     }
 
     public void createMedicalPackageBillItems() {
-       createBillItems(new MedicalPackage());
+        createBillItems(new MedicalPackage());
     }
 
     public void createOtherPackageBillItems() {
@@ -1013,6 +1018,14 @@ public class BillPackageMedicalController implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Item getServiceItem() {
+        return ServiceItem;
+    }
+
+    public void setServiceItem(Item ServiceItem) {
+        this.ServiceItem = ServiceItem;
     }
 
     /**

@@ -15,7 +15,6 @@
 
     <ui:define name="content">
 
-        <h:outputStylesheet library="css" name="printing.css" />
 
         <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
             You are NOT authorized
