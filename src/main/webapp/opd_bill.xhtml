@@ -156,7 +156,7 @@
 
                                                 <tr>
                                                     <td >
-                                                        <h:outputLabel value="Phone &amp; Area"/>
+                                                        <h:outputLabel value="Phone,Area &amp; Nic"/>
                                                     </td>
                                                     <td> : </td>
                                                     <td >
@@ -172,7 +172,9 @@
                                                                         var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
                                                                         itemValue="#{pta}" forceSelection="true" 
                                                                         value="#{billController.newPatient.person.area}" ></p:autoComplete>
+                                                        <p:inputMask mask="999999999V" value="#{billController.newPatient.person.nic}" />
                                                     </td>
+                                                    
                                                 </tr>
                                             </table>
 
