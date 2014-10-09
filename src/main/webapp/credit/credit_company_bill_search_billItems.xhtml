@@ -13,7 +13,7 @@
                     <p:panel >
 
                         <f:facet name="header" >
-                            <h:outputLabel value="CREDIT COMPANY PAYMENT BILL SEARCH "/>
+                            <h:outputLabel value="CREDIT COMPANY PAYMENT BILL ITEM SEARCH "/>
                             <h:panelGrid columns="5" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
@@ -21,7 +21,12 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search"  action="#{searchController.createCreditTableBillItem()}" onclick="onSubmitButton();"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search All"  
+                                                 action="#{searchController.createCreditTableBillItemAll()}" onclick="onSubmitButton();"/>
+                                <p:commandButton  ajax="false" value="Search OPD"  
+                                                 action="#{searchController.createCreditTableBillItemOpd()}" onclick="onSubmitButton();"/>
+                                <p:commandButton  ajax="false" value="Search BHT"  
+                                                 action="#{searchController.createCreditTableBillItemBht()}" onclick="onSubmitButton();"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                             </h:panelGrid>
@@ -52,8 +57,8 @@
                                     <f:setPropertyActionListener value="#{b.bill}" target="#{creditCompanyBillSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>
-                            <p:column headerText="Bill No">
-                                <h:outputLabel  value="#{b.bill.insId}" />
+                            <p:column headerText="Opd Bill No">
+                                <h:outputLabel  value="#{b.referenceBill.insId}" />
                             </p:column>
                             <p:column headerText="BHT No">
                                 <h:outputLabel  value="#{b.patientEncounter.bhtNo}" />
@@ -92,7 +97,7 @@
                                 </h:outputLabel>                                
                             </p:column>
                             <p:column headerText="Net Value" >                               
-                                <h:outputLabel value="#{b.bill.netTotal}" >
+                                <h:outputLabel value="#{b.netValue}" >
                                     <f:convertNumber pattern="#,000.00"/>
                                 </h:outputLabel>                                    
                             </p:column>

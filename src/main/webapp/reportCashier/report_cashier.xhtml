@@ -55,6 +55,14 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="OPD Doctor Payments" action="/opd_search_professional_payment_due_1" actionListener="#{searchController.makeListNull2()}"/>                                
 
                         </h:panelGrid>
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Package Details" />
+                            </f:facet>                           
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Package Detail Report" action="report_opd_package" actionListener="#{billPackageMedicalController.makeNull}"/>     
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Medical Package Detail Report" action="report_opd_package_medical" actionListener="#{billPackageMedicalController.makeNull}"/>
+
+                        </h:panelGrid>
                     </h:panelGrid>
 
                 </h:form>

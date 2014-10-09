@@ -64,18 +64,17 @@
                         <p:column headerText="Discharged At">
                             #{p.dateOfDischarge}
                         </p:column>
-                        <p:column headerText="Final Total">
+                        <p:column headerText="Final Total"  style="text-align: right;">
                             <h:outputLabel value="#{p.finalBill.netTotal}">
                                 <f:convertNumber pattern="#,000.00"/>
                             </h:outputLabel>
                             <f:facet name="footer">
-
                                 <h:outputLabel value="#{creditCompanyDueController.billed}">
                                     <f:convertNumber pattern="#,000.00"/>
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Paid By Patient">
+                        <p:column headerText="Paid By Patient" style="text-align: right;">
                             <h:outputLabel value="#{p.finalBill.paidAmount}">
                                 <f:convertNumber pattern="#,000.00"/>
                             </h:outputLabel>
@@ -86,7 +85,7 @@
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Paid By Company">
+                        <p:column headerText="Paid By Company"  style="text-align: right;">
                             <h:outputLabel value="#{p.paidByCreditCompany}">
                                 <f:convertNumber pattern="#,000.00"/>
                             </h:outputLabel>                            
@@ -96,7 +95,7 @@
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Due">
+                        <p:column headerText="Due"  style="text-align: right;">
 
                             <h:outputLabel value="#{p.finalBill.netTotal-p.finalBill.paidAmount}">
                                 <f:convertNumber pattern="#,000.00"/>

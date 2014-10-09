@@ -82,8 +82,15 @@
                                 </f:facet>
                             </p:column> 
 
-                            <p:column headerText="Paid Value" >
-                                <h:outputLabel value="#{bf.paidValue}" ></h:outputLabel>
+                            <p:column headerText="Paid Value" style="text-align: right;">
+                                <h:outputLabel value="#{bf.paidValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{inwardReportController1.billfeePaidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
 
                         </p:dataTable>

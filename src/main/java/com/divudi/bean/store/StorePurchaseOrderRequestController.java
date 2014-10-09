@@ -23,6 +23,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -232,6 +233,12 @@ public class StorePurchaseOrderRequestController implements Serializable {
             UtilityController.addErrorMessage("Please Select Paymntmethod");
             return;
         }
+        
+        if(getCurrentBill().getToInstitution() == null){
+            JsfUtil.addErrorMessage("Distributor ?");
+            return;
+        }
+
 //
 //        if (checkItemPrice()) {
 //            UtilityController.addErrorMessage("Please enter purchase price for all");

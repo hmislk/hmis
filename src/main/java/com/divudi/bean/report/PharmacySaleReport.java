@@ -1259,6 +1259,13 @@ public class PharmacySaleReport implements Serializable {
 
     List<CategoryMovementReportRow> categoryMovementReportRows;
 
+    double totalOpdSale;
+    double totalInwardIssue;
+    double totalDepartmentIssue;
+    double totalTatalValue;
+    double totalPurchaseValue;
+    double totalMargineValue;
+
     public void createCategoryMovementReport() {
         String jpql;
         Map m = new HashMap();
@@ -1293,6 +1300,12 @@ public class PharmacySaleReport implements Serializable {
         Item pi = null;
         CategoryMovementReportRow r;
         r = new CategoryMovementReportRow();
+        totalOpdSale = 0.0;
+        totalInwardIssue = 0.0;
+        totalDepartmentIssue = 0.0;
+        totalPurchaseValue = 0.0;
+        totalTatalValue = 0.0;
+        totalMargineValue = 0.0;
         for (Object o[] : objs) {
 
             try {
@@ -1332,7 +1345,7 @@ public class PharmacySaleReport implements Serializable {
                 }
 
                 System.out.println("tbt = " + tbt);
-                
+
                 switch (tbt) {
                     case PharmacySale:
                     case PharmacyPre:
@@ -1378,8 +1391,14 @@ public class PharmacySaleReport implements Serializable {
 
             r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
             System.out.println("r.getTotal() = " + r.getTotal());
-            r.setMarginValue(r.getTotal() - r.getPurchaseValue());
+            r.setMarginValue(r.getTotal() + r.getPurchaseValue());
 
+            totalOpdSale += r.getOpdSale();
+            totalInwardIssue += r.getInwardIssue();
+            totalDepartmentIssue += r.getDepartmentIssue();
+            totalPurchaseValue += r.getPurchaseValue();
+            totalTatalValue += r.getTotal();
+            totalMargineValue += r.getMarginValue();
         }
     }
 
@@ -3097,6 +3116,54 @@ public class PharmacySaleReport implements Serializable {
 
     public void setTotalUnitIssueNC(double totalUnitIssueNC) {
         this.totalUnitIssueNC = totalUnitIssueNC;
+    }
+
+    public double getTotalOpdSale() {
+        return totalOpdSale;
+    }
+
+    public void setTotalOpdSale(double totalOpdSale) {
+        this.totalOpdSale = totalOpdSale;
+    }
+
+    public double getTotalInwardIssue() {
+        return totalInwardIssue;
+    }
+
+    public void setTotalInwardIssue(double totalInwardIssue) {
+        this.totalInwardIssue = totalInwardIssue;
+    }
+
+    public double getTotalDepartmentIssue() {
+        return totalDepartmentIssue;
+    }
+
+    public void setTotalDepartmentIssue(double totalDepartmentIssue) {
+        this.totalDepartmentIssue = totalDepartmentIssue;
+    }
+
+    public double getTotalTatalValue() {
+        return totalTatalValue;
+    }
+
+    public void setTotalTatalValue(double totalTatalValue) {
+        this.totalTatalValue = totalTatalValue;
+    }
+
+    public double getTotalPurchaseValue() {
+        return totalPurchaseValue;
+    }
+
+    public void setTotalPurchaseValue(double totalPurchaseValue) {
+        this.totalPurchaseValue = totalPurchaseValue;
+    }
+
+    public double getTotalMargineValue() {
+        return totalMargineValue;
+    }
+
+    public void setTotalMargineValue(double totalMargineValue) {
+        this.totalMargineValue = totalMargineValue;
     }
 
     public class CategoryMovementReportRow {

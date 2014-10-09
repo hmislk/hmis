@@ -370,7 +370,7 @@ public class CreditCompanyDueController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = new Date();
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -442,7 +442,7 @@ public class CreditCompanyDueController implements Serializable {
         }
 
     }
-    
+
     AdmissionType admissionType;
     PaymentMethod paymentMethod;
     @EJB
@@ -471,9 +471,6 @@ public class CreditCompanyDueController implements Serializable {
     public void setPatientEncounterFacade(PatientEncounterFacade patientEncounterFacade) {
         this.patientEncounterFacade = patientEncounterFacade;
     }
-    
-    
-    
 
     public void createInwardCashDue() {
         HashMap m = new HashMap();
@@ -511,16 +508,15 @@ public class CreditCompanyDueController implements Serializable {
         paidByCompany = 0;
         for (PatientEncounter p : patientEncounters) {
             billed += p.getFinalBill().getNetTotal();
-            paidByPatient += p.getFinalBill().getPaidAmount();            
+            paidByPatient += p.getFinalBill().getPaidAmount();
             paidByCompany += p.getPaidByCreditCompany();
-            
 
         }
 
     }
 
     double billed;
-    double  paidByPatient;
+    double paidByPatient;
     double paidByCompany;
 
     public double getBilled() {
@@ -546,8 +542,7 @@ public class CreditCompanyDueController implements Serializable {
     public void setPaidByCompany(double paidByCompany) {
         this.paidByCompany = paidByCompany;
     }
-    
-    
+
     public void createInwardCreditAccess() {
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Credit, false);
 

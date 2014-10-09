@@ -288,7 +288,7 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public double calFeeValue(Date fromDate, Date toDate, Institution institution) {
+    public double calFeeValue(Date fromDate, Date toDate, Institution institution, Institution creditCompany, List<PaymentMethod> paymentMethods) {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
@@ -297,22 +297,55 @@ public class BillBeanController implements Serializable {
                 + " and bf.bill.institution=:ins"
                 + " and bf.bill.toInstitution=:ins"
                 + " and bf.bill.createdAt between :fromDate and :toDate "
-                + " and ( bf.bill.paymentMethod = :pm1 "
-                + " or  bf.bill.paymentMethod = :pm2"
-                + " or  bf.bill.paymentMethod = :pm3 "
-                + " or  bf.bill.paymentMethod = :pm4)";
+                + " and bf.bill.paymentMethod in :pms";
 
         HashMap temMap = new HashMap();
+        if (creditCompany != null) {
+            sql += " and bf.bill.creditCompany=:cd ";
+            temMap.put("cd", creditCompany);
+
+        }
+
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", institution);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ftp1", FeeType.OwnInstitution);
         temMap.put("ftp2", FeeType.Staff);
-        temMap.put("pm1", PaymentMethod.Cash);
-        temMap.put("pm2", PaymentMethod.Card);
-        temMap.put("pm3", PaymentMethod.Cheque);
-        temMap.put("pm4", PaymentMethod.Slip);
+        temMap.put("pms", paymentMethods);
+        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public double calFeeValue(Date fromDate, Date toDate, Institution institution, Institution creditCompany) {
+        HashMap temMap = new HashMap();
+        String sql = "SELECT sum(bf.feeValue)"
+                + " FROM BillFee bf "
+                + " WHERE bf.bill.billType=:bTp"
+                + " and ( bf.fee.feeType=:ftp1 "
+                + " or bf.fee.feeType=:ftp2 ) "
+                + " and bf.bill.institution=:ins"
+                + " and bf.bill.toInstitution=:ins "
+                + " and bf.bill.id in"
+                + " (select paidBillItem.referenceBill.id "
+                + " from BillItem paidBillItem"
+                + "  where paidBillItem.retired=false"
+                + "  and  paidBillItem.createdAt between :fromDate and :toDate "
+                + " and paidBillItem.bill.billType=:paidBtp)";
+
+        if (creditCompany != null) {
+            sql += " and bf.bill.creditCompany=:cd ";
+            temMap.put("cd", creditCompany);
+
+        }
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", institution);
+        temMap.put("bTp", BillType.OpdBill);
+        temMap.put("paidBtp", BillType.CashRecieveBill);
+        temMap.put("ftp1", FeeType.OwnInstitution);
+        temMap.put("ftp2", FeeType.Staff);
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }

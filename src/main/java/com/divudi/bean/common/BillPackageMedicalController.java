@@ -32,6 +32,8 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.MedicalPackage;
+import com.divudi.entity.Packege;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
@@ -49,8 +51,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
@@ -62,6 +66,9 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import org.eclipse.persistence.jpa.jpql.tools.ContentAssistProposals;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -124,6 +131,21 @@ public class BillPackageMedicalController implements Serializable {
     @Inject
     private BillSearch billSearch;
     PaymentMethodData paymentMethodData;
+
+    // report
+    @Temporal(TemporalType.TIMESTAMP)
+    Date frmDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    Date toDate;
+    List<BillItem> billItems;
+    Institution institution;
+    Item ServiceItem;
+
+    public void makeNull() {
+        billItems = null;
+        currentBillItem = null;
+        total = 0.0;
+    }
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -489,6 +511,54 @@ public class BillPackageMedicalController implements Serializable {
         }
 
         //UtilityController.addSuccessMessage("Item Added");
+    }
+
+    public void createBillItems(Item item) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select b from BillItem b"
+                + " where b.bill.billType =:billType "
+                + " and b.bill.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.bill.retired=false "
+                + " and type(b.bill.billPackege)=:class ";
+
+        if (getCurrentBillItem().getItem() != null) {
+            sql += " and b.bill.billPackege=:item ";
+            m.put("item", getCurrentBillItem().getItem());
+        }
+
+        if (institution != null) {
+            sql += " and b.bill.billPackege.forInstitution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (ServiceItem != null) {
+            sql += " and b.item=:item ";
+            m.put("item", ServiceItem);
+        }
+
+        m.put("class", item.getClass());
+        m.put("billType", BillType.OpdBill);
+        m.put("toDate", toDate);
+        m.put("fromDate", frmDate);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        for (BillItem bi : billItems) {
+            total += bi.getNetValue();
+            System.out.println("total = " + total);
+            System.out.println("bi.getNetValue() = " + bi.getNetValue());
+        }
+    }
+
+    public void createMedicalPackageBillItems() {
+        createBillItems(new MedicalPackage());
+    }
+
+    public void createOtherPackageBillItems() {
+        createBillItems(new Packege());
     }
 
     public void clearBillItemValues() {
@@ -910,6 +980,52 @@ public class BillPackageMedicalController implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
+    }
+
+    public Date getFrmDate() {
+        if (frmDate == null) {
+            frmDate = getCommonFunctions().getStartOfMonth(new Date());
+        }
+        return frmDate;
+    }
+
+    public void setFrmDate(Date frmDate) {
+        this.frmDate = frmDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = getCommonFunctions().getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Item getServiceItem() {
+        return ServiceItem;
+    }
+
+    public void setServiceItem(Item ServiceItem) {
+        this.ServiceItem = ServiceItem;
     }
 
     /**

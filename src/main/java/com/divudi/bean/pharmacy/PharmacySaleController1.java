@@ -662,6 +662,10 @@ public class PharmacySaleController1 implements Serializable {
         if (getQty() == null) {
             qty = 0.0;
         }
+        if (getQty() > getStock().getStock()) {
+            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            return;
+        }
 
         //Bill Item
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);
@@ -694,24 +698,24 @@ public class PharmacySaleController1 implements Serializable {
         }
         if (getStock() == null) {
             errorMessage = "Item?";
-//            UtilityController.addErrorMessage("Item?");
+            UtilityController.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
             errorMessage = "Quentity?";
-//            UtilityController.addErrorMessage("Quentity?");
+            UtilityController.addErrorMessage("Quentity?");
             return;
         }
 
         if (getQty() > getStock().getStock()) {
             errorMessage = "No sufficient stocks.";
-//            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            UtilityController.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         if (checkItemBatch()) {
             errorMessage = "This batch is already there in the bill.";
-//            UtilityController.addErrorMessage("Already added this item batch");
+            UtilityController.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity

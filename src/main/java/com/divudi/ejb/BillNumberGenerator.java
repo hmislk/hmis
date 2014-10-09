@@ -975,11 +975,15 @@ public class BillNumberGenerator {
 
     public String storeItemNumberGenerator() {
         HashMap hm = new HashMap();
-        String sql = "SELECT count(b) FROM Amp b where b.retired=false and b.departmentType=:dep ";
+        String sql = "SELECT count(b) FROM Amp b where b.retired=false"
+                + " and b.departmentType=:dep ";
         hm.put("dep", DepartmentType.Store);
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
-        result = "ms" + dd.toString();
+        dd=dd+1;
+        System.out.println("dd = " + dd);
+        result = "MS" + dd.toString();
+        System.out.println("result = " + result);
         return result;
 
     }
