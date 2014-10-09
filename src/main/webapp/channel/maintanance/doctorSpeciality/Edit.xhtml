@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="DoctorSpecialityEditDlg" widgetVar="DoctorSpecialityEditDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.EditDoctorSpecialityTitle}">
+            <h:form id="DoctorSpecialityEditForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{doctorSpecialityController.selected != null}">
+                       <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_code}" for="code" />
+                        <p:inputText id="code" value="#{doctorSpecialityController.selected.code}" title="#{bundle.EditDoctorSpecialityTitle_code}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_description}" for="description" />
+                        <p:inputText id="description" value="#{doctorSpecialityController.selected.description}" title="#{bundle.EditDoctorSpecialityTitle_description}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_name}" for="name" />
+                        <p:inputText id="name" value="#{doctorSpecialityController.selected.name}" title="#{bundle.EditDoctorSpecialityTitle_name}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_retireComments}" for="retireComments" />
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{doctorSpecialityController.updateSelected()}" value="#{bundle.Save}" update="display,:DoctorSpecialityListForm:datalist" oncomplete="handleSubmit(args, 'DoctorSpecialityEditDialog');"/>
+                    <p:commandButton value="#{bundle.Cancel}" onclick="DoctorSpecialityEditDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

@@ -53,6 +53,7 @@ public enum Privileges {
     InwardSearchProfessionalBill,
     InwardSearchFinalBill,
     InwardReport,
+    InwardFinalBillReportEdit,
     InwardAdministration,
     InwardAdditionalPrivilages,
     InwardBillSearch,
