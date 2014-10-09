@@ -267,7 +267,6 @@ public class mdInwardReportController implements Serializable {
 
     }
 
-    
     public List<Bill> getBills() {
         return bills;
     }
@@ -910,6 +909,86 @@ public class mdInwardReportController implements Serializable {
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    private List<Bill> depositByCreatedDate(Bill bill, boolean disharged) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  ";
+        if (disharged) {
+            sql += " and b.patientEncounter.dateOfDischarge < :toDate";
+        } else {
+            sql += " and (b.patientEncounter.dateOfDischarge > :toDate "
+                    + " or b.patientEncounter.dateOfDischarge is null )";
+        }
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
+
+        sql += " order by b.patientEncounter.bhtNo,b.insId ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    private double depositByCreatedDateValue(Bill bill, boolean discharge) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(b.netTotal) from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  ";
+
+        if (discharge) {
+            sql += " and b.patientEncounter.dateOfDischarge < :toDate";
+        } else {
+            sql += " and (b.patientEncounter.dateOfDischarge > :toDate "
+                    + " or b.patientEncounter.dateOfDischarge is null )";
+        }
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
+
+//        sql += " order by b.patientEncounter.bhtNo,b.insId ";
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
     private List<Bill> inwdPaymentBillsAdmitted(Bill bill) {
         String sql;
         Map temMap = new HashMap();
@@ -989,16 +1068,18 @@ public class mdInwardReportController implements Serializable {
             temMap.put("cc", creditCompany);
         }
         if (paymentMethod != null) {
-            sql += " and b.patientEncounter.paymentMethod =:pm";
+            sql += " and b.patientEncounter.paymentMethod =:pm ";
             temMap.put("pm", paymentMethod);
         }
 
         if (admissionType != null) {
-            sql += " and b.patientEncounter.admissionType =:ad";
+            sql += " and b.patientEncounter.admissionType =:ad ";
             temMap.put("ad", admissionType);
         }
 
-        sql += " order by b.patientEncounter.bhtNo,b.patientEncounter.dateOfAdmission ";
+        sql += " order by b.patientEncounter.bhtNo,"
+                + " b.patientEncounter.dateOfDischarge,"
+                + " b.createdAt ";
 
         temMap.put("billType", BillType.InwardPaymentBill);
         temMap.put("toDate", toDate);
@@ -1050,6 +1131,30 @@ public class mdInwardReportController implements Serializable {
 
     }
 
+    public void createDepositByCreatedDateNotDischarged() {
+
+        bil = depositByCreatedDate(new BilledBill(), false);
+        cancel = depositByCreatedDate(new CancelledBill(), false);
+        refund = depositByCreatedDate(new RefundBill(), false);
+
+        totalValue = depositByCreatedDateValue(new BilledBill(), false);
+        cancelledTotal = depositByCreatedDateValue(new CancelledBill(), false);
+        refundTotal = depositByCreatedDateValue(new RefundBill(), false);
+
+    }
+
+    public void createDepositByCreatedDateDischarged() {
+
+        bil = depositByCreatedDate(new BilledBill(), true);
+        cancel = depositByCreatedDate(new CancelledBill(), true);
+        refund = depositByCreatedDate(new RefundBill(), true);
+
+        totalValue = depositByCreatedDateValue(new BilledBill(), true);
+        cancelledTotal = depositByCreatedDateValue(new CancelledBill(), true);
+        refundTotal = depositByCreatedDateValue(new RefundBill(), true);
+
+    }
+
     public void admittedPatientSummerries() {
 
         bil = inwdPaymentBillsAdmitted(new BilledBill());
@@ -1070,14 +1175,15 @@ public class mdInwardReportController implements Serializable {
     double grantTotal;
 
     public void allBhtPySummerriesByCreatedDate() {
-        String sql = " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+//        String sql = " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        String sql="";
         completePayments = fetchPaymentBills(sql);
         completePaymentsTotal = calPaymentBills(sql);
 
-        sql = " and b.patientEncounter.dateOfDischarge not between :fromDate and :toDate ";
-        deposits = fetchPaymentBills(sql);
-        depositsTotal = calPaymentBills(sql);
-
+//        sql = " and b.patientEncounter.dateOfDischarge not between :fromDate and :toDate ";
+//        deposits = fetchPaymentBills(sql);
+//        depositsTotal = calPaymentBills(sql);
+//
         sql = "";
         grantTotal = calPaymentBills(sql);
 

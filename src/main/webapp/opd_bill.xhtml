@@ -15,13 +15,12 @@
 
     <ui:define name="content">
 
-        <h:outputStylesheet library="css" name="printing.css" />
 
-        <h:panelGroup rendered="#{!webUserController.hasPrivilege('OpdBilling')}" >
+        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
             You are NOT authorized
         </h:panelGroup>
 
-        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling')}" styleClass="opdPanel" >
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
             <h:form id="form">
                 <p:focus id="focusIx" for="acIx" />
                 <f:facet name="header">
@@ -157,7 +156,7 @@
 
                                                 <tr>
                                                     <td >
-                                                        <h:outputLabel value="Phone &amp; Area"/>
+                                                        <h:outputLabel value="Phone,Area &amp; Nic"/>
                                                     </td>
                                                     <td> : </td>
                                                     <td >
@@ -173,7 +172,9 @@
                                                                         var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
                                                                         itemValue="#{pta}" forceSelection="true" 
                                                                         value="#{billController.newPatient.person.area}" ></p:autoComplete>
+                                                        <p:inputMask mask="999999999V" value="#{billController.newPatient.person.nic}" />
                                                     </td>
+                                                    
                                                 </tr>
                                             </table>
 
@@ -559,7 +560,7 @@
                         </div>
                         
                         <ui:repeat value="#{billController.bills}" var="bill" >
-                            <bi:opdBillPrintRuhunu bill="#{bill}" dup="true"/>
+                            <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
                         </ui:repeat>
                     </h:panelGroup>
                     
@@ -580,7 +581,7 @@
                         </div>
                         
                         <ui:repeat value="#{billController.bills}" var="b">
-                            <bi:opdBillPrintCoop bill="#{b}" dup="true"/>                        
+                            <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
                         </ui:repeat>
                     </h:panelGroup>
                     

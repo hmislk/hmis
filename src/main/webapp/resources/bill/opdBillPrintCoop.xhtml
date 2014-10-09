@@ -25,8 +25,21 @@
 
                 <div  class="fiveinchbill">
 
+                    <div class="headingPrinting">
+                        <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"/>
+                         <h:outputLabel value="**Cancelled"  
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
+
+                        <h:outputLabel value="**Refunded" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId ne null and cc.attrs.refund eq true}"/> 
+
+                        <h:outputLabel value="**Duplicate" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId eq null and
+                                                   cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true}"/> 
+                    </div>
+                    
                     <div class="receiptnoPrintingLabel">
-                        <h:outputLabel value="Receipt No"/>
+                        <h:outputLabel value="Receipt "/>
                     </div>
                     <div class="receiptnoPrintingLabelCol">
                         <h:outputLabel value=":"/>
@@ -34,19 +47,19 @@
                     <div  class="receiptnoPrinting">
                         
                         
-                        <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq true}"/>
                         
                         
                         
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
+                        
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
 
-                        <h:outputLabel value="#{cc.attrs.bill.refundedBill.insId} **Refunded" 
+                        <h:outputLabel value="#{cc.attrs.bill.refundedBill.insId}" 
                                        rendered="#{cc.attrs.bill.refundedBill.insId ne null and cc.attrs.refund eq true}"/> 
 
-                        <h:outputLabel value="#{cc.attrs.bill.insId} **Duplicate" 
+                        <h:outputLabel value="#{cc.attrs.bill.insId}" 
                                        rendered="#{cc.attrs.bill.refundedBill.insId eq null and
-                                                   cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq false}"/> 
+                                                   cc.attrs.bill.cancelledBill.insId eq null}"/> 
                     </div>
                     
                     
@@ -73,7 +86,7 @@
                     </div>
                     
                     <div class="paymentPrintingLabel">
-                        <h:outputLabel value="Payment Type"/>
+                        <h:outputLabel value="Payment "/>
                     </div>
                     <div class="paymentPrintingLabelCol">
                         <h:outputLabel value=":"/>
@@ -97,21 +110,21 @@
                     <div class="billtimePrinting">
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
-                            <f:convertDateTime pattern="hh mm ss a"/>
+                            <f:convertDateTime pattern="hh:mm:a"/>
                         </h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.refundedBill.billTime}"  
                                        rendered="#{cc.attrs.bill.refundedBill.insId ne null}">
-                            <f:convertDateTime pattern="hh mm ss a"/>
+                            <f:convertDateTime pattern="hh:mm:a"/>
                         </h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.billTime}" 
                                        rendered="#{cc.attrs.bill.refundedBill.insId eq null and 
                                                                                cc.attrs.bill.cancelledBill.insId eq null }">
-                            <f:convertDateTime pattern="hh mm ss a"/>
+                            <f:convertDateTime pattern="hh:mm:a"/>
                         </h:outputLabel>
                     </div>
                     
                     <div class="ptnamePrintingLabel">
-                        <h:outputLabel value="Patient Name"/>
+                        <h:outputLabel value="Patient "/>
                     </div>
                     <div class="ptnamePrintingLabelCol">
                         <h:outputLabel value=":"/>
@@ -125,6 +138,14 @@
                         <h:outputLabel value=":"/>
                     </div>
                     <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" styleClass="phonePrinting" />
+                    
+                    <div class="nicPrintingLabel">
+                        <h:outputLabel value="NIC"/>
+                    </div>
+                    <div class="nicPrintingLabelCol">
+                        <h:outputLabel value=":"/>
+                    </div>
+                    <h:outputLabel value="#{cc.attrs.bill.patient.person.nic}" styleClass="nicPrinting" />
 
 
                     <div class="disLabel">
@@ -132,7 +153,7 @@
                     </div>
                     <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip" styleClass="itemsPrinting"   >
                         <h:column >
-                            <h:outputLabel value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" />
+                            <h:outputLabel value="#{bip.item.printName}"  />
                         </h:column>
                     </h:dataTable>
                     
@@ -142,7 +163,7 @@
                     <div class="ratesPrinting" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                             <h:column>
-                                <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px; font-size: 11px!important;" >
+                                <h:outputLabel value="#{bip1.netValue}" style="font-size: 12px!important;"  >
                                     <f:convertNumber pattern="#,000.00" />
                                 </h:outputLabel>
                             </h:column>
@@ -165,8 +186,8 @@
                                 <td style="text-align: left; min-width: 3cm;">
                                     <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;"/>
                                 </td>
-                                <td style="text-align: right!important; ">
-                                    <h:outputLabel value="#{cc.attrs.bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                <td style="text-align: right!important;">
+                                    <h:outputLabel value="#{cc.attrs.bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important; margin-left: 115px;">
                                         <f:convertNumber pattern="#,000.00" />
                                     </h:outputLabel>
                                 </td>

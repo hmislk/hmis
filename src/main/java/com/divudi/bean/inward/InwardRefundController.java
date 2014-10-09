@@ -261,7 +261,8 @@ public class InwardRefundController implements Serializable {
         double paidByPatient = Math.abs(b.getPaidAmount());
 
         if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Cash) {
-            paidAmount = paidByPatient - Math.abs(b.getNetTotal());
+//            paidAmount = paidByPatient - Math.abs(b.getNetTotal());
+            paidAmount = paidByPatient;
             return;
         }
 
