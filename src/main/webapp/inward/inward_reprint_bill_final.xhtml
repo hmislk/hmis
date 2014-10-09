@@ -31,7 +31,7 @@
                                         <p:commandButton value="Duplicate Copy" ajax="false"  >
                                             <p:printer target="claimableDuplicate" ></p:printer>
                                         </p:commandButton>
-                                        
+
                                         <p:commandButton value="Print Credit Company Letter" ajax="false"  >
                                             <p:printer target="letter" ></p:printer>
                                         </p:commandButton>
@@ -80,17 +80,50 @@
                             <p:panel header="Patient Detail">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
+                                    <h:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.name}" ></h:inputText>
                                     <h:outputLabel value="Age" />
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.age}"  />
+                                    <h:panelGrid columns="4">
+                                        <p:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" autocomplete="off"  id="year"  
+                                                     value="#{inwardSearch.yearMonthDay.year}" 
+                                                     style="width: 50px; ">
+                                            <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
+
+                                                    listener="#{inwardSearch.dateChangeListen()}"  />
+                                            <p:watermark for="year" value="Years"></p:watermark>
+                                        </p:inputText>
+
+                                        <p:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" autocomplete="off" id="month"
+                                                     style="width: 50px; " value="#{inwardSearch.yearMonthDay.month}">
+                                            <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{inwardSearch.dateChangeListen()}"  />
+                                            <p:watermark for="month" value="Months"></p:watermark>
+                                        </p:inputText>
+
+                                        <p:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" autocomplete="off" id="day" 
+                                                     style="width: 50px;" value="#{inwardSearch.yearMonthDay.day}">
+                                            <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{inwardSearch.dateChangeListen()}" />
+                                            <p:watermark for="day" value="Days"></p:watermark>
+                                        </p:inputText>
+
+                                        <p:calendar disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}"  value="#{inwardSearch.patient.person.dob}" 
+                                                    id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                                    style="width: 100px!important;"
+                                                    styleClass="shortinput">
+                                            <f:ajax event="dateSelect" />
+                                        </p:calendar>
+                                    </h:panelGrid>
+
                                     <h:outputLabel value="Sex" >
                                     </h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}" >
-                                    </h:outputLabel>
+                                    <p:selectOneMenu disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" id="txtNewSex"  value="#{inwardSearch.bill.patient.person.sex}" >
+                                        <f:selectItem itemLabel="Select Sex"/>
+                                        <f:selectItems value="#{inwardSearch.sex}"/>
+                                    </p:selectOneMenu>
+                                    
                                     <h:outputLabel value="Phone" >
                                     </h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" >
-                                    </h:outputLabel>
+                                    <p:inputMask mask="999-9999999" disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.phone}" >
+                                    </p:inputMask>
+                                    <p:commandButton value="Update" action="#{inwardSearch.updatePatiantDetails()}" ajax="false"></p:commandButton>
                                 </p:panelGrid>
                             </p:panel>
                             <p:panel header="Bill Detail">
@@ -130,7 +163,7 @@
                         <in:finalTable bill="#{inwardSearch.bill}"/>
                     </p:panel>
 
-                    
+
 
 
 
@@ -139,7 +172,7 @@
                     <h:panelGroup id="claimablePatientCopy" styleClass="noBorder">                  
                         <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup id="letter">
                         <bi:credit_company_letter bill="#{inwardSearch.bill}"/> 
                     </h:panelGroup>
