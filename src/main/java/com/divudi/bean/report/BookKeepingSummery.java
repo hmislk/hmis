@@ -20,6 +20,7 @@ import com.divudi.data.table.String3Value2;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -34,10 +35,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -56,6 +55,7 @@ public class BookKeepingSummery implements Serializable {
     Date fromDate;
     Date toDate;
     Institution institution;
+    private Institution incomeInstitution;
     @EJB
     CommonFunctions commonFunctions;
     @Inject
@@ -1003,15 +1003,29 @@ public class BookKeepingSummery implements Serializable {
                 + " bf.fee.feeType, "
                 + " bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.institution=:ins "
-                + " and bi.item.department.institution=:ins "
-                + " and  bi.bill.billType= :bTp  "
+                + " where bi.bill.billType= :bTp  "
                 + " and bi.bill.id in "
                 + " (select paidBillItem.referenceBill.id "
                 + " from BillItem paidBillItem"
-                + "  where paidBillItem.retired=false"
+                + "  where paidBillItem.retired=false "
+                + " and paidBillItem.bill.cancelled=false"
+                + " and type(paidBillItem.bill)=:class"
                 + "  and  paidBillItem.createdAt between :fromDate and :toDate "
                 + " and paidBillItem.bill.billType=:paidBtp)  ";
+        
+        temMap.put("class", BilledBill.class);
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution=:ins ";
+            temMap.put("ins", institution);
+        }
+
+        if (incomeInstitution != null) {
+            jpql += " and bi.item.department.institution=:inIns ";
+            temMap.put("inIns", incomeInstitution);
+        }
+
+        temMap.put("class", BilledBill.class);
 
         if (creditCompany != null) {
             jpql += " and bi.bill.creditCompany=:cd ";
@@ -1019,13 +1033,11 @@ public class BookKeepingSummery implements Serializable {
 
         }
 
-//                + " and bi.bill.paymentMethod in :pms"
         jpql += " group by c.name, i.name,  bf.fee.feeType,  bi.bill.billClassType "
                 + " order by c.name, i.name, bf.fee.feeType";
 
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        temMap.put("ins", institution);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("paidBtp", BillType.CashRecieveBill);
 //        temMap.put("pms", paymentMethods);
@@ -1819,7 +1831,7 @@ public class BookKeepingSummery implements Serializable {
         createDoctorPaymentOpd();
         createDoctorPaymentInward();
         ///////////////////
-        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(),creditCompany, Arrays.asList(paymentMethods));
+        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
@@ -1854,7 +1866,7 @@ public class BookKeepingSummery implements Serializable {
         makeNull();
         PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
-        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(),creditCompany, Arrays.asList(paymentMethods));
+        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
     }
 
     public void processCreditPaidItems() {
@@ -1914,7 +1926,7 @@ public class BookKeepingSummery implements Serializable {
         createDoctorPaymentOpd();
         createDoctorPaymentInward();
         ///////////////////
-        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(),creditCompany, Arrays.asList(paymentMethods));
+        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
@@ -2014,6 +2026,14 @@ public class BookKeepingSummery implements Serializable {
 
     public void setProfessionalPaymentsByAdmissionTypeAndCategorys(List<ProfessionalPaymentsByAdmissionTypeAndCategory> professionalPaymentsByAdmissionTypeAndCategorys) {
         this.professionalPaymentsByAdmissionTypeAndCategorys = professionalPaymentsByAdmissionTypeAndCategorys;
+    }
+
+    public Institution getIncomeInstitution() {
+        return incomeInstitution;
+    }
+
+    public void setIncomeInstitution(Institution incomeInstitution) {
+        this.incomeInstitution = incomeInstitution;
     }
 
     public class ProfessionalPaymentsByAdmissionTypeAndCategory {

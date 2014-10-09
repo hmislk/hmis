@@ -110,8 +110,6 @@ public class BillSearch implements Serializable {
     private PharmacyPreSettleController pharmacyPreSettleController;
     private SearchKeyword searchKeyword;
 
-    
-
     public BillSearch() {
     }
 
@@ -878,7 +876,9 @@ public class BillSearch implements Serializable {
                     || (getBill().getBillType() == BillType.OpdBill && getWebUserController().hasPrivilege("OpdCancel"))) {
 
                 getBillFacade().create(cb);
-                cancelBillItems(cb);
+                List<BillItem> list = cancelBillItems(cb);
+                cb.setBillItems(list);
+                billFacade.edit(cb);
                 getBill().setCancelled(true);
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
@@ -899,6 +899,7 @@ public class BillSearch implements Serializable {
                     }
                 }
 
+                bill = billFacade.find(bill.getId());
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
@@ -1122,7 +1123,8 @@ public class BillSearch implements Serializable {
         this.billsApproving = billsApproving;
     }
 
-    private void cancelBillItems(Bill can) {
+    private List<BillItem> cancelBillItems(Bill can) {
+        List<BillItem> list = new ArrayList<>();
         for (BillItem nB : getBillItems()) {
             BillItem b = new BillItem();
             b.setBill(can);
@@ -1157,7 +1159,11 @@ public class BillSearch implements Serializable {
 
             cancelBillFee(can, b, tmp);
 
+            list.add(b);
+
         }
+
+        return list;
     }
 
     private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
@@ -1396,7 +1402,7 @@ public class BillSearch implements Serializable {
         billItems = getBillItemFacede().findBySQL(sql, hm);
 
     }
-    
+
     private void createBillItemsForRetire() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -1450,8 +1456,8 @@ public class BillSearch implements Serializable {
                 billFees = getBillFeeFacade().findBySQL(sql);
             }
         }
-        
-        if (getBillSearch()!= null) {
+
+        if (getBillSearch() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.bill.id=" + getBillSearch().getId();
                 billFees = getBillFeeFacade().findBySQL(sql);

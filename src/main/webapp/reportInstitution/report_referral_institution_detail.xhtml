@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
+
+                    <f:facet name="header" >
+                        <p:commandButton  id="btnRefresh"  ajax="false" value="Process"
+                                          styleClass="noPrintButton" 
+                                          actionListener="#{commonReport.fillInstitutionReferralBills()}" 
+                                          style="float: right;" />  
+                        <p:defaultCommand target="btnRefresh"/>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>  
+                        <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" 
+                                         target=""
+                                         fileName="Day_END_By_Bill_Type" />
+                        </p:commandButton> 
+                    </f:facet>
+
+                    <h:panelGrid columns="8" styleClass="noPrintButton" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="Referring Institution"/>
+                        <p:autoComplete forceSelection="true" 
+                                        id="cmdIns" 
+                                        value="#{billController.referredByInstitution}" 
+                                        completeMethod="#{institutionController.completeIns}" 
+                                        var="refi" 
+                                        itemLabel="#{refi.name}" 
+                                        itemValue="#{refi}" 
+                                        converter="institutionConverter">
+                        </p:autoComplete>
+                    </h:panelGrid>
+
+
+                    <p:dataTable id="billed"  value="#{commonReport.referralBills}" var="b"  >
+                        <f:facet name="header">  
+                            <h:outputLabel value="Opd Bills "/> 
+                        </f:facet>
+
+                        <p:column headerText="Id" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Id"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.insId}"/>
+                        </p:column>
+
+                        <p:column headerText="Institurion" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Institution"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.referredByInstitution.name}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Referral ID" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Referral Number"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.referralID}"/>
+                        </p:column>
+
+                        <p:column >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Billed At"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.createdAt}"/>
+                        </p:column>
+
+                        <p:column >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Total"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.total}"/>
+                        </p:column>
+
+                    </p:dataTable>
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

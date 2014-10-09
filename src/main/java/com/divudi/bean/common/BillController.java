@@ -54,6 +54,7 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +75,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
@@ -113,6 +115,7 @@ public class BillController implements Serializable {
     private Patient searchedPatient;
     private Doctor referredBy;
     private Institution referredByInstitution;
+    String referralId;
     private Institution creditCompany;
     private Staff staff;
     Staff toStaff;
@@ -141,6 +144,7 @@ public class BillController implements Serializable {
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
     
+
 
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
@@ -190,13 +194,13 @@ public class BillController implements Serializable {
         this.referredByInstitution = referredByInstitution;
     }
 
-    public int getRecurseCount() {
-        return recurseCount;
-    }
-
-    public void setRecurseCount(int recurseCount) {
-        this.recurseCount = recurseCount;
-    }
+//    public int getRecurseCount() {
+//        return recurseCount;
+//    }
+//
+//    public void setRecurseCount(int recurseCount) {
+//        this.recurseCount = recurseCount;
+//    }
 
    
     
@@ -745,6 +749,20 @@ public class BillController implements Serializable {
         return false;
 
     }
+    
+    private boolean institutionReferranceNumberExist(){
+        String jpql;
+        HashMap m = new HashMap();
+        jpql="Select b from Bill b where "
+                + "b.retired = false and "
+                + "upper(b.referralID) =:rid ";
+        m.put("rid", referralId.toUpperCase());
+        List<Bill> tempBills = getFacade().findBySQL(jpql,m);
+        if(tempBills == null || tempBills.isEmpty()){
+            return false;
+        }
+        return true; 
+    }
 
     private boolean errorCheck() {
 
@@ -753,6 +771,21 @@ public class BillController implements Serializable {
             return true;
         }
         
+        if(referredByInstitution != null){
+            if(referralId == null || referralId.trim().equals("")){
+                JsfUtil.addErrorMessage("Please Enter Referrance Number");
+                return true;
+            }else{
+                
+                if(institutionReferranceNumberExist()){
+                    
+                    JsfUtil.addErrorMessage("Alredy Entered");
+                    return true;
+                }
+                    
+            }
+
+        }
 
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
             if (getPatientTabId().equals("tabSearchPt")) {
@@ -933,6 +966,7 @@ public class BillController implements Serializable {
         setNewPatient(null);
         setSearchedPatient(null);
         setReferredBy(null);
+        setReferredByInstitution(null);
         setSessionDate(null);
         setCreditCompany(null);
         setYearMonthDay(null);
@@ -1646,6 +1680,14 @@ public class BillController implements Serializable {
 
     public void setBillsPrint(List<Bill> billsPrint) {
         this.billsPrint = billsPrint;
+    }
+
+    public String getReferralId() {
+        return referralId;
+    }
+
+    public void setReferralId(String referralId) {
+        this.referralId = referralId;
     }
     
     

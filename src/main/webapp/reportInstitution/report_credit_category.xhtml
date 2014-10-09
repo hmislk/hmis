@@ -5,7 +5,6 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
                 xmlns:in="http://java.sun.com/jsf/composite/income_report" 
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
@@ -32,7 +31,7 @@
                                      fontName="Courier New"  />
                     </p:commandButton>
 
-                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                    <h:panelGrid columns="2"  styleClass="noPrintButton" style="min-width: 100%;" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -41,11 +40,18 @@
                         <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
-                        <h:outputLabel value="Select Institution"/>
+                        <h:outputLabel value="Select Billed Institution"/>
 
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" 
                                         forceSelection="true"
-                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
+                                        value="#{bookKeepingSummery.institution}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                        
+                         <h:outputLabel value="Select Income Institution"/>
+
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}"
+                                        forceSelection="true"
+                                         value="#{bookKeepingSummery.incomeInstitution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                         
                          <h:outputLabel value="Select Credit Company"/>

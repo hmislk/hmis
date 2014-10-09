@@ -25,10 +25,10 @@
 
                 <p:panel header="Consultants" id="scStaff" >    
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  /> 
-                            <f:ajax  event="click" execute="@this" render="tblSessionsOfSelectedConsultant"  /> 
+                            <!--<f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  />--> 
+                            <p:ajax  event="click" process="@this" update="tblSessionsOfSelectedConsultant"  /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
                 </p:panel>
