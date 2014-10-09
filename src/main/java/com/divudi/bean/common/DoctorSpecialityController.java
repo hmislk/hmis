@@ -35,18 +35,20 @@ public class DoctorSpecialityController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+
     @EJB
-    private DoctorSpecialityFacade ejbFacade;
+    DoctorSpecialityFacade ejbFacade;
+
     List<DoctorSpeciality> selectedItems;
     private DoctorSpeciality current;
     private List<DoctorSpeciality> items = null;
     String selectText = "";
 
     public List<DoctorSpeciality> completeSpeciality(String qry) {
-     //   System.out.println("qry = " + qry);
+        //   System.out.println("qry = " + qry);
         List<DoctorSpeciality> lst;
         lst = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-     //   System.out.println("lst = " + lst);
+        //   System.out.println("lst = " + lst);
         return lst;
     }
 
@@ -194,10 +196,7 @@ public class DoctorSpecialityController implements Serializable {
             }
         }
     }
-    
-    
-    
-    
+
     /**
      *
      */
@@ -240,5 +239,5 @@ public class DoctorSpecialityController implements Serializable {
             }
         }
     }
-    
+
 }

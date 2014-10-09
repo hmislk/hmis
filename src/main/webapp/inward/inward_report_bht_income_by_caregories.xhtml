@@ -144,7 +144,7 @@
 
                             <p:dataTable id="tb2" value="#{inwardReportController1.roomChargeInwards}" var="rm">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Room Chargess"/>
+                                    <h:outputLabel value="Room Charges"/>
                                     <p:commandButton ajax="false" value="View Detail"
                                                      style="float: right;"
                                                      action="report_income_room" 
@@ -312,6 +312,10 @@
                             <p:dataTable id="tb5" value="#{inwardReportController1.inwardCharges}" var="in">
                                 <f:facet name="header">
                                     <h:outputLabel value="Inward Charges"/>
+                                    <p:commandButton ajax="false" value="View Detail"
+                                                     style="float: right;"
+                                                     action="inward_charge" 
+                                                     actionListener="#{inwardReportController1.processInwardCharges()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">
                                     <f:facet name="header" >

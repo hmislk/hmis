@@ -380,6 +380,16 @@ public class InvestigationItemController implements Serializable {
 
     }
 
+    public void saveSelectedItemValue(InvestigationItemValue iiv){
+        if(current==null){
+            return;
+        }
+        if(iiv==null){
+            return;
+        }
+        getIivFacade().edit(iiv);
+    }
+    
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
