@@ -36,10 +36,11 @@
                             <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
-                                                itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
+                                                itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
                             </p:selectOneMenu>
 
-
+                           
+                                
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.process()}" onclick="onSubmitButton();"  ></p:commandButton>
