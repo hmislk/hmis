@@ -345,7 +345,10 @@ public class CommonReport implements Serializable {
         Map temMap = new HashMap();
         List<Bill> tmp;
 
-        String sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.billType = :bTp and b.createdAt between :fromDate and :toDate  order by b.referredBy.person.name";
+        String sql = "SELECT b FROM BilledBill b WHERE b.retired=false "
+                + " and b.billType = :bTp "
+                + " and b.createdAt between :fromDate"
+                + " and :toDate  order by b.referredBy.person.name";
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("bTp", BillType.OpdBill);
