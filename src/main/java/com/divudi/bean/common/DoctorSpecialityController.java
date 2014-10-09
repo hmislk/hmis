@@ -44,6 +44,18 @@ public class DoctorSpecialityController implements Serializable {
     private List<DoctorSpeciality> items = null;
     String selectText = "";
 
+    DoctorSpeciality selected;
+
+    public DoctorSpeciality getSelected() {
+        return selected;
+    }
+
+    public void setSelected(DoctorSpeciality selected) {
+        this.selected = selected;
+    }
+    
+    
+    
     public List<DoctorSpeciality> completeSpeciality(String qry) {
         //   System.out.println("qry = " + qry);
         List<DoctorSpeciality> lst;

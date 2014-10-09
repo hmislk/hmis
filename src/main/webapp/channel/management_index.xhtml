@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel">
+
+    <ui:define name="content">
+
+        <h:form>
+            <p:panel header="Cannel Management" >
+                
+                <p:panelGrid columns="3" >
+                    <p:commandLink value="Manage Specialities" ajax="false"
+                                   action="/channel/maintanance/doctorSpeciality/List" ></p:commandLink>
+                     <p:commandLink value="Manage Consultants" ajax="false"
+                                   action="/channel/maintanance/doctorSpeciality/List" ></p:commandLink>
+                </p:panelGrid>
+            </p:panel>
+            
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
