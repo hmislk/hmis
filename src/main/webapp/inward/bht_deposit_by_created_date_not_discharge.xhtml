@@ -37,21 +37,46 @@
                             <p:selectOneMenu   id="cmbPs" value="#{mdInwardReportController.paymentMethod}">
                                 <f:selectItem itemLabel="Select" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                <p:ajax process="@this" update="crd" event="change" />
+
                             </p:selectOneMenu>
 
-                        </h:panelGrid>
+                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                                <f:selectItem itemLabel="All Credit Companies"/>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
+                            </p:selectOneMenu>
 
-                        <h:panelGroup id="crd" style="display: #{mdInwardReportController.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
-                            <p:outputLabel value="Credit Company"/>
-                            <p:autoComplete id="creditCom" forceSelection="true" 
-                                            value="#{mdInwardReportController.creditCompany}"  
-                                            completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
-                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                            </p:autoComplete>
-                        </h:panelGroup>
+                            <h:outputLabel value="B H T No :" ></h:outputLabel>
 
-                        <h:panelGrid columns="3">
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientAll}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >
+                                <p:ajax event="itemSelect" 
+                                        process="@this" 
+                                        update="@all" 
+                                        listener="#{bhtSummeryFinalizedController.selectLitener}"/>
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
+                                </p:column>
+                            </p:autoComplete>   
+
+                            <h:panelGroup>
                             <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateNotDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
@@ -60,14 +85,17 @@
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
                                 <pe:exporter type="xlsx" target="tbl" fileName="Deposite_of_Undischaged_Patient"  />
-                            </p:commandButton>  
+                            </p:commandButton> 
+                            </h:panelGroup>
                         </h:panelGrid>
+
+
 
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{mdInwardReportController.bil}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Total Payment Summery (Not Discharge B.H.T. only) - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
+                                    <h:outputLabel value="B.H.T. DEPOSIT PAYMENT  SUMMERIES (Not Discharge B.H.T. only) #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">
@@ -325,12 +353,9 @@
                                     <f:convertNumber pattern="#000.00"></f:convertNumber></p:outputLabel>
                             </p:panelGrid>
 
-
-
-
-
-
                         </h:panelGroup>
+                    
+
                     </p:panel>
                 </h:form>
 

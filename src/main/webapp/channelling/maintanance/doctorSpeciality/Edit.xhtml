@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="DoctorSpecialityEditDlg" widgetVar="DoctorSpecialityEditDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.EditDoctorSpecialityTitle}">
+            <h:form id="DoctorSpecialityEditForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{doctorSpecialityController.selected != null}">
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_categoryClass}" for="categoryClass" />
+                        <p:inputText id="categoryClass" value="#{doctorSpecialityController.selected.categoryClass}" title="#{bundle.EditDoctorSpecialityTitle_categoryClass}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_symanticType}" for="symanticType" />
+                        <p:inputText id="symanticType" value="#{doctorSpecialityController.selected.symanticType}" title="#{bundle.EditDoctorSpecialityTitle_symanticType}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_code}" for="code" />
+                        <p:inputText id="code" value="#{doctorSpecialityController.selected.code}" title="#{bundle.EditDoctorSpecialityTitle_code}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_saleMargin}" for="saleMargin" />
+                        <p:inputText id="saleMargin" value="#{doctorSpecialityController.selected.saleMargin}" title="#{bundle.EditDoctorSpecialityTitle_saleMargin}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_wholeSaleMargin}" for="wholeSaleMargin" />
+                        <p:inputText id="wholeSaleMargin" value="#{doctorSpecialityController.selected.wholeSaleMargin}" title="#{bundle.EditDoctorSpecialityTitle_wholeSaleMargin}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_dblValue}" for="dblValue" />
+                        <p:inputText id="dblValue" value="#{doctorSpecialityController.selected.dblValue}" title="#{bundle.EditDoctorSpecialityTitle_dblValue}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_longValue}" for="longValue" />
+                        <p:inputText id="longValue" value="#{doctorSpecialityController.selected.longValue}" title="#{bundle.EditDoctorSpecialityTitle_longValue}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_parentCategory}" for="parentCategory" />
+                        <p:selectOneMenu id="parentCategory" value="#{doctorSpecialityController.selected.parentCategory}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{categoryController.itemsAvailableSelectOne}"
+                                           var="parentCategoryItem"
+                                           itemValue="#{parentCategoryItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_createdAt}" for="createdAt" />
+                        <p:calendar id="createdAt" pattern="MM/dd/yyyy HH:mm:ss" value="#{doctorSpecialityController.selected.createdAt}" title="#{bundle.EditDoctorSpecialityTitle_createdAt}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_creater}" for="creater" />
+                        <p:selectOneMenu id="creater" value="#{doctorSpecialityController.selected.creater}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{webUserController.itemsAvailableSelectOne}"
+                                           var="createrItem"
+                                           itemValue="#{createrItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_description}" for="description" />
+                        <p:inputText id="description" value="#{doctorSpecialityController.selected.description}" title="#{bundle.EditDoctorSpecialityTitle_description}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_name}" for="name" />
+                        <p:inputText id="name" value="#{doctorSpecialityController.selected.name}" title="#{bundle.EditDoctorSpecialityTitle_name}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_retireComments}" for="retireComments" />
+                        <p:inputText id="retireComments" value="#{doctorSpecialityController.selected.retireComments}" title="#{bundle.EditDoctorSpecialityTitle_retireComments}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_retiredAt}" for="retiredAt" />
+                        <p:calendar id="retiredAt" pattern="MM/dd/yyyy HH:mm:ss" value="#{doctorSpecialityController.selected.retiredAt}" title="#{bundle.EditDoctorSpecialityTitle_retiredAt}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_retirer}" for="retirer" />
+                        <p:selectOneMenu id="retirer" value="#{doctorSpecialityController.selected.retirer}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{webUserController.itemsAvailableSelectOne}"
+                                           var="retirerItem"
+                                           itemValue="#{retirerItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_orderNo}" for="orderNo" />
+                        <p:inputText id="orderNo" value="#{doctorSpecialityController.selected.orderNo}" title="#{bundle.EditDoctorSpecialityTitle_orderNo}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_id}" for="id" />
+                        <p:inputText id="id" value="#{doctorSpecialityController.selected.id}" title="#{bundle.EditDoctorSpecialityTitle_id}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_tName}" for="tName" />
+                        <p:inputText id="tName" value="#{doctorSpecialityController.selected.tName}" title="#{bundle.EditDoctorSpecialityTitle_tName}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_sName}" for="sName" />
+                        <p:inputText id="sName" value="#{doctorSpecialityController.selected.sName}" title="#{bundle.EditDoctorSpecialityTitle_sName}" />
+                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_entityClass}" for="entityClass" />
+                        <p:inputText id="entityClass" value="#{doctorSpecialityController.selected.entityClass}" title="#{bundle.EditDoctorSpecialityTitle_entityClass}" />
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{doctorSpecialityController.update}" value="#{bundle.Save}" update="display,:DoctorSpecialityListForm:datalist,:growl" oncomplete="handleSubmit(args, 'DoctorSpecialityEditDialog');"/>
+                    <p:commandButton value="#{bundle.Cancel}" onclick="DoctorSpecialityEditDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>
