@@ -178,6 +178,13 @@
                                     <f:selectItem itemLabel="Select Sex"/>
                                     <f:selectItems value="#{billController.sex}"/>
                                 </p:selectOneMenu> 
+                                <p:outputLabel value="Area"></p:outputLabel>
+                                <p:autoComplete widgetVar="np" id="acnp" forceSelection="true" 
+                                                value="#{channelBillController.area}" 
+                                                completeMethod="#{areaController.completeArea}" 
+                                                var="npt" itemLabel="#{npt.name}" 
+                                                itemValue="#{npt}" size="30"  style="width: 40px;">
+                                </p:autoComplete>  
                             </h:panelGrid>
                         </p:tab>
                         <p:tab  id="tabSearchPt" title="Search Pateint">
@@ -540,7 +547,7 @@
         </h:form>
 
         <p:dialog  widgetVar="dlgSessionEdit" modal="true" height="100">
-           
+
         </p:dialog> 
 
 

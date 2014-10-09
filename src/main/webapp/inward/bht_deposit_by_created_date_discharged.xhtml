@@ -17,29 +17,65 @@
                     <p:panel header="B.H.T. DEPOSIT PAYMENT  SUMMERIES (Discharge B.H.T. only)" >
 
                         <h:panelGrid columns="2" >
-                            <p:outputLabel value="From" ></p:outputLabel>
+                            <p:outputLabel value="From :" ></p:outputLabel>
                             <p:calendar value="#{mdInwardReportController.fromDate}"
                                         pattern="dd MM yyyy hh mm ss a" ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
+                            <h:outputLabel value="To :" ></h:outputLabel>
 
                             <p:calendar value="#{mdInwardReportController.toDate}" 
                                         pattern="dd MM yyyy hh mm ss a" ></p:calendar>
 
 
-                            <p:outputLabel value="Admission Type"/>
+                            <p:outputLabel value="Admission Type :"/>
                             <p:selectOneMenu value="#{mdInwardReportController.admissionType}">
                                 <f:selectItem itemLabel="Select Admission Type"/>
                                 <f:selectItems  value="#{mdInwardReportController.admissionTy}" var="myItem" 
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:outputLabel value="B.H.T. Type"/>
+                            <p:outputLabel value="B.H.T. Type :"/>
                             <p:selectOneMenu   id="cmbPs" value="#{mdInwardReportController.paymentMethod}">
                                 <f:selectItem itemLabel="Select" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                 <p:ajax process="@this" update="crd" event="change" />
                             </p:selectOneMenu>
 
+                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                                <f:selectItem itemLabel="All Credit Companies"/>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="B H T No :" ></h:outputLabel>
+                            <h:panelGrid columns="1">
+                                <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                                completeMethod="#{admissionController.completePatientAll}" 
+                                                var="myItem" itemValue="#{myItem}" 
+                                                itemLabel="#{myItem.bhtNo}" 
+                                                size="30"  >
+                                    <p:ajax event="itemSelect" 
+                                            process="@this" 
+                                            update="@all" 
+                                            listener="#{bhtSummeryFinalizedController.selectLitener}"/>
+                                    <p:column>
+                                        #{myItem.bhtNo}
+                                    </p:column>
+                                    <p:column>
+                                        #{myItem.patient.person.nameWithTitle}
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
+                                    </p:column>
+                                </p:autoComplete>   
+
+                            </h:panelGrid>
                         </h:panelGrid>
 
                         <h:panelGroup id="crd" style="display: #{mdInwardReportController.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
@@ -67,7 +103,7 @@
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{mdInwardReportController.bil}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Total Payment Summery (Not Discharge B.H.T. only) - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
+                                    <h:outputLabel value="B.H.T. DEPOSIT PAYMENT  SUMMERIES (Discharge B.H.T. only)#{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">

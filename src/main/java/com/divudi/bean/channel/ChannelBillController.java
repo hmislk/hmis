@@ -15,6 +15,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
+import com.divudi.entity.Area;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -65,6 +66,7 @@ public class ChannelBillController implements Serializable {
     private BillSession billSession;
     private String patientTabId = "tabNewPt";
     private Patient newPatient;
+    private Area area;
     private Patient searchPatient;
     private String agentRefNo;
     private double amount;
@@ -763,6 +765,10 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Can not bill without Patient ");
                 return true;
             }
+            if (area == null){
+                UtilityController.addErrorMessage("Select Area");
+                return true;
+            }
         }
 
         if (patientTabId.equals("tabSearchPt")) {
@@ -1269,4 +1275,13 @@ public class ChannelBillController implements Serializable {
         this.agentReferenceBookController = agentReferenceBookController;
     }
 
+    public Area getArea() {
+        return area;
+    }
+
+    public void setArea(Area area) {
+        this.area = area;
+    }
+
+    
 }

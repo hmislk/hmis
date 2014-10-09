@@ -5,7 +5,6 @@
 package com.divudi.facade;
 
 import com.divudi.entity.Bill;
-import com.divudi.entity.pharmacy.AdjustmentCategory;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
