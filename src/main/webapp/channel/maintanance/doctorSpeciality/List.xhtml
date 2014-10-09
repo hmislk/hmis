@@ -10,7 +10,7 @@
 
 
         <ui:define name="title">
-            <h:outputText value="#{bundle.ListDoctorSpecialityTitle}"></h:outputText>
+            <h:outputText value="Doctor Specialities"></h:outputText>
         </ui:define>
 
         <ui:define name="content">
@@ -155,7 +155,7 @@
                             <p:commandButton id="createButton" icon="ui-icon-plus"   value="#{bundle.Create}" actionListener="#{doctorSpecialityController.prepareCreate}" update=":DoctorSpecialityCreateForm" oncomplete="PF('DoctorSpecialityCreateDialog').show()"/>
                             <p:commandButton id="viewButton"   icon="ui-icon-search" value="#{bundle.View}" update=":DoctorSpecialityViewForm" oncomplete="PF('DoctorSpecialityViewDialog').show()" disabled="#{empty doctorSpecialityController.selected}"/>
                             <p:commandButton id="editButton"   icon="ui-icon-pencil" value="#{bundle.Edit}" update=":DoctorSpecialityEditForm" oncomplete="PF('DoctorSpecialityEditDialog').show()" disabled="#{empty doctorSpecialityController.selected}"/>
-                            <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="#{bundle.Delete}" actionListener="#{doctorSpecialityController.destroy}" update=":growl,datalist" disabled="#{empty doctorSpecialityController.selected}"/>
+                            <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="#{bundle.Delete}" actionListener="#{doctorSpecialityController.destroy}" update="datalist" disabled="#{empty doctorSpecialityController.selected}"/>
                         </f:facet>
                     </p:dataTable>
                 </p:panel>

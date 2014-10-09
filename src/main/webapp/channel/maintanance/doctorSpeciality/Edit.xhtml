@@ -50,13 +50,6 @@
                         <p:inputText id="retireComments" value="#{doctorSpecialityController.selected.retireComments}" title="#{bundle.EditDoctorSpecialityTitle_retireComments}" />
                         <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_retiredAt}" for="retiredAt" />
                         <p:calendar id="retiredAt" pattern="MM/dd/yyyy HH:mm:ss" value="#{doctorSpecialityController.selected.retiredAt}" title="#{bundle.EditDoctorSpecialityTitle_retiredAt}"  showOn="button"/>
-                        <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_retirer}" for="retirer" />
-                        <p:selectOneMenu id="retirer" value="#{doctorSpecialityController.selected.retirer}" >
-                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
-                            <f:selectItems value="#{webUserController.itemsAvailableSelectOne}"
-                                           var="retirerItem"
-                                           itemValue="#{retirerItem}"/>
-                        </p:selectOneMenu>
                         <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_orderNo}" for="orderNo" />
                         <p:inputText id="orderNo" value="#{doctorSpecialityController.selected.orderNo}" title="#{bundle.EditDoctorSpecialityTitle_orderNo}" />
                         <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_id}" for="id" />
@@ -68,7 +61,7 @@
                         <p:outputLabel value="#{bundle.EditDoctorSpecialityLabel_entityClass}" for="entityClass" />
                         <p:inputText id="entityClass" value="#{doctorSpecialityController.selected.entityClass}" title="#{bundle.EditDoctorSpecialityTitle_entityClass}" />
                     </p:panelGrid>
-                    <p:commandButton actionListener="#{doctorSpecialityController.update}" value="#{bundle.Save}" update="display,:DoctorSpecialityListForm:datalist,:growl" oncomplete="handleSubmit(args, 'DoctorSpecialityEditDialog');"/>
+                    <p:commandButton actionListener="#{doctorSpecialityController.update}" value="#{bundle.Save}" update="display,:DoctorSpecialityListForm:datalist" oncomplete="handleSubmit(args, 'DoctorSpecialityEditDialog');"/>
                     <p:commandButton value="#{bundle.Cancel}" onclick="DoctorSpecialityEditDialog.hide()"/>
                 </h:panelGroup>
             </h:form>
