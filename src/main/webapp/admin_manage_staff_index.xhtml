@@ -16,18 +16,23 @@
                     <p:panel header="Manage Staff" >
 
                         <h:panelGrid columns="1" >
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Doctor Specialities" action="admin_doctor_speciality"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Doctors" action="admin_doctor"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Consultant" action="admin_doctor_consultant"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="All Specialities" action="admin_speciality"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Staff" action="/hr/hr_staff_admin"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="View Staff Signatures" action="admin_staff_view_signature"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Connect staff to user" action="admin_user_staff"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Specility Not set Staff List " action="admin_speciality_not_set"/>
-                            
-                            <p:commandButton styleClass="linkButton" value="Convert Specialities to Medical Specialities" action="#{specialityController.toConvertSpecialities()}" ajax="false" ></p:commandButton>
-                            
+                            <p:commandLink  styleClass="linkButton" ajax="false" value="Doctor Specialities" action="admin_doctor_speciality"/>
+                            <p:commandLink  styleClass="linkButton" ajax="false" value="Doctors" action="admin_doctor"/>
+                            <p:commandLink  styleClass="linkButton" ajax="false" value="Consultant" action="admin_doctor_consultant"/>
+                            <p:commandLink  styleClass="linkButton" ajax="false" value="All Specialities" action="admin_speciality"/>
+                            <p:commandLink  styleClass="linkButton" ajax="false" value="Staff" action="/hr/hr_staff_admin"/>
+                            <p:commandLink  styleClass="linkButton" ajax="false" value="View Staff Signatures" action="admin_staff_view_signature"/>
+                            <p:commandLink  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature"/>
+                            <p:commandLink  styleClass="linkButton" ajax="false" value="Connect staff to user" action="admin_user_staff"/>
+                            <p:commandLink  styleClass="linkButton" ajax="false" value="Specility Not set Staff List " action="admin_speciality_not_set"/>
+                            <br />
+                            <p:commandLink  styleClass="linkButton" ajax="false" action="/channelling/maintanance/consultant/List" value="Show All Consultant Items"/>
+                            <br />
+                             <p:commandLink  styleClass="linkButton" ajax="false" action="/channelling/maintanance/doctor/List" value="Show All Doctor Items"/>
+                            <br />
+                             <p:commandLink  styleClass="linkButton" ajax="false" action="/channelling/maintanance/doctorSpeciality/List" value="Show All DoctorSpeciality Items"/>
+                            <br />
+                             <p:commandLink  styleClass="linkButton" ajax="false" action="/channelling/maintanance/speciality/List" value="Show All Speciality Items"/>
                         </h:panelGrid>
 
                     </p:panel>

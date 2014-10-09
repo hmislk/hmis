@@ -1,20 +1,22 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.facade;
 
-import com.divudi.entity.Bill;
+package com.divudi.bean.common;
+
+import com.divudi.entity.Consultant;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 /**
  *
- * @author safrin
+ * @author Buddhika
  */
 @Stateless
-public class BillDataAccess extends AbstractFacade<Bill> {
+public class ConsultantFacade extends AbstractFacade<Consultant> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -23,8 +25,8 @@ public class BillDataAccess extends AbstractFacade<Bill> {
         return em;
     }
 
-    public BillDataAccess() {
-        super(Bill.class);
+    public ConsultantFacade() {
+        super(Consultant.class);
     }
     
 }

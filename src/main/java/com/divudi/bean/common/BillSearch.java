@@ -1798,5 +1798,43 @@ public class BillSearch implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         createBillItemsForRetire();
     }
+    
+    public void fillBillTypeIncomeRecords(){
+        
+        String jpql;
+        jpql = "select new com.divudi.bean.common.BillTypeIncomeRecord(b.billType,sum(b.netTotal)) from Bill b "
+                + " where b.billType in :bts "
+                + " group by b.billType "
+                + " order by b.billType";
+    }
 
+    public class BillTypeIncomeRecord{
+        BillType billType;
+        Double netTotal;
+
+        public BillTypeIncomeRecord(BillType billType, Double netTotal) {
+            this.billType = billType;
+            this.netTotal = netTotal;
+        }
+
+        public BillType getBillType() {
+            return billType;
+        }
+
+        public void setBillType(BillType billType) {
+            this.billType = billType;
+        }
+
+        public Double getNetTotal() {
+            return netTotal;
+        }
+
+        public void setNetTotal(Double netTotal) {
+            this.netTotal = netTotal;
+        }
+        
+        
+        
+    }
+    
 }
