@@ -126,6 +126,7 @@ public class PharmacySaleController1 implements Serializable {
     //BillItem removingBillItem;
     BillItem editingBillItem;
     Double qty;
+    Integer intQty;
     Stock stock;
     Stock replacableStock;
 
@@ -385,6 +386,22 @@ public class PharmacySaleController1 implements Serializable {
 
     public List<Stock> getReplaceableStocks() {
         return replaceableStocks;
+    }
+
+    public Integer getIntQty() {
+        if (qty == null) {
+            return null;
+        }
+        return qty.intValue();
+    }
+
+    public void setIntQty(Integer intQty) {
+        this.intQty = intQty;
+        if (intQty == null) {
+            setQty(null);
+        } else {
+            setQty(intQty.doubleValue());
+        }
     }
 
     public Double getQty() {
@@ -916,7 +933,7 @@ public class PharmacySaleController1 implements Serializable {
     }
 
     private void savePreBillFinally(Patient pt) {
-        
+
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 

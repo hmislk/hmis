@@ -387,6 +387,24 @@ public class PharmacySaleController3 implements Serializable {
         return replaceableStocks;
     }
 
+    Integer intQty;
+
+    public Integer getIntQty() {
+        if (qty == null) {
+            return null;
+        }
+        return qty.intValue();
+    }
+
+    public void setIntQty(Integer intQty) {
+        this.intQty = intQty;
+        if (intQty == null) {
+            setQty(null);
+        } else {
+            setQty(intQty.doubleValue());
+        }
+    }
+
     public Double getQty() {
         return qty;
     }
@@ -916,7 +934,7 @@ public class PharmacySaleController3 implements Serializable {
     }
 
     private void savePreBillFinally(Patient pt) {
-      
+
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
@@ -929,8 +947,6 @@ public class PharmacySaleController3 implements Serializable {
 
         getPreBill().setComments(comment);
 
-        
-
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
         getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -940,7 +956,7 @@ public class PharmacySaleController3 implements Serializable {
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
-         //        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getInstitution(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
+        //        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getInstitution(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
         String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setInsId(insId);
 
@@ -1439,7 +1455,7 @@ public class PharmacySaleController3 implements Serializable {
 
 //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
-     //   System.out.println("bill item discount rate");
+        //   System.out.println("bill item discount rate");
         //   System.out.println("getPaymentScheme() = " + getPaymentScheme());
         if (bi == null) {
             //   System.out.println("bi is null");
