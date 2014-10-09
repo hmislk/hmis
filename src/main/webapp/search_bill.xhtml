@@ -13,16 +13,18 @@
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="SEARCH Bill"/>                          
-                            <h:panelGrid columns="5" >
+                            <h:panelGrid columns="2" >
                                 
-                                
-
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                              
 
                                 <h:outputLabel value="Bill No(Ins ID)"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" />
                                 <h:outputLabel value="Bill No(Dept ID)"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.deptId}" />
+                                
+                                 <h:outputLabel value="BHT No"/>
+                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
+                                
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createSearchBill()}"/>
                                 
                             </h:panelGrid>

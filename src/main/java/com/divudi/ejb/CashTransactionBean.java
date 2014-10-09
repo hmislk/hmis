@@ -5,11 +5,8 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.InOutType;
-import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.cashTransaction.CashTransaction;
-import com.divudi.entity.cashTransaction.CashTransactionHistory;
 import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
@@ -18,11 +15,7 @@ import com.divudi.facade.CashTransactionHistoryFacade;
 import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.WebUserFacade;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 

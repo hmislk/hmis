@@ -16,23 +16,30 @@
             <p:panel  rendered="#{webUserController.hasPrivilege('PharmacyOrderApproval')}" >
                 <p:panel rendered="#{!storePurchaseOrderController.printPreview}">
                     <f:facet name="header">
-                        <h:panelGrid columns="4" style="min-width: 100%;">
+                        <h:panelGrid columns="5" style="min-width: 100%;">
                             <p:outputLabel value="Purchase order Request Order"/>
+
                             <p:commandButton ajax="false"  value="Approve" actionListener="#{storePurchaseOrderController.approve}" action="store_purhcase_order_list_to_approve"/>
                             <p:selectOneMenu   id="cmbPs" value="#{storePurchaseOrderController.aprovedBill.paymentMethod}">    
                                 <f:selectItem itemLabel="SelectPayment method"/>
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                             </p:selectOneMenu>
-                            <p:outputLabel id="tot"  value="Total :  #{storePurchaseOrderController.aprovedBill.netTotal}"/>    
+                            <p:outputLabel id="tot"  value="Total :  #{storePurchaseOrderController.aprovedBill.netTotal}"/>  
+
+                            <p:outputLabel value="Suplier  :   #{storePurchaseOrderController.aprovedBill.toInstitution.name}"/>
                         </h:panelGrid>
+
                     </f:facet>
+                    <p:panel>
+                        <p:commandButton ajax="false"  value="Back To Po List" action="store_purhcase_order_list_to_approve"/>
+                    </p:panel>
                     <p:dataTable scrollable="true" styleClass="noBorder" scrollHeight="250"
                                  var="bi" value="#{storePurchaseOrderController.billItems}"
                                  id="itemList" sortBy="#{bi.searialNo}"  rowKey="#{bi.searialNo}"
                                  selection="#{storePurchaseOrderController.selectedItems}">  
 
                         <f:facet name="header">  
-                            <h:outputLabel  value="Pharmacy Bill Item"/>
+                            <h:outputLabel  value="Store Bill Item"/>
                             <p:commandButton ajax="false" value="Remove All" action="#{storePurchaseOrderController.removeSelected()}"/>                            
                         </f:facet>  
 
@@ -49,7 +56,7 @@
 
                         <p:column headerText="Qty" style="width:25px!important;">                         
                             <p:inputText autocomplete="off" id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">
-                                
+
                                 <f:ajax event="blur" render="total :#{p:component('tot')}"  execute="@this price" listener="#{storePurchaseOrderController.onEdit(bi)}" ></f:ajax>
                                 <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderController.onFocus(bi)}" />
                             </p:inputText>
@@ -58,7 +65,7 @@
                         <p:column headerText="Purchse Price" style="width:25px!important;" >  
                             <h:panelGroup id="price">
                                 <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">   
-                                    
+
                                     <f:ajax event="blur" render="total :#{p:component('tot')}"  execute="@this qty" listener="#{storePurchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderController.onFocus(bi)}" />
                                 </p:inputText>
@@ -69,7 +76,7 @@
                         <p:column headerText="Last Sale Price" style="width:25px!important;text-align: right;">  
                             <h:panelGroup >
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}">
-                                    
+
                                 </h:outputText>
                             </h:panelGroup>
                         </p:column>  
@@ -77,7 +84,7 @@
                         <p:column headerText="Total" style="width:25px!important;text-align: right;">  
                             <h:panelGroup id="total">
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
-                                    
+
                                 </h:outputText>
                             </h:panelGroup>
                         </p:column>  

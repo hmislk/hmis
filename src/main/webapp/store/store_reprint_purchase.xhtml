@@ -23,11 +23,11 @@
                             </p:commandButton>                         
                         </f:facet>
 
-                        <p:commandButton value="Cancel" ajax="false" action="pharmacy_cancel_purchase" disabled="true">                           
+                        <p:commandButton value="Cancel" ajax="false" action="store_cancel_purchase" disabled="#{storeBillSearch.bill.cancelled}">                           
                              
                         </p:commandButton>     
-                        <p:commandButton  value="Return" ajax="false" action="pharmacy_return_purchase" disabled="true" >
-                            <f:setPropertyActionListener target="#{purchaseReturnController.bill}"  value="#{storeBillSearch.bill}"/>
+                        <p:commandButton  value="Return" ajax="false" action="store_return_purchase" disabled="#{storeBillSearch.bill.cancelled}" >
+                            <f:setPropertyActionListener target="#{storePurchaseReturnController.bill}"  value="#{storeBillSearch.bill}"/>
                         </p:commandButton>
                     </p:panel>
 

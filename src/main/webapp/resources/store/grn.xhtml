@@ -17,24 +17,24 @@
         <div class="posbill noBorder summeryBorder" >
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
             </div>
             <div class="institutionContact" >
                 <div>
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
                 <div >
-                    <!--                    <h:outputLabel value="Tel : 0912234059 - 60 , "/>-->
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1} "/>
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
+                    <!--<h:outputLabel value="Tel : 0912234059 - 60 , "/>-->
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
                     <!--<h:outputLabel value="Fax : 0912234061 "/>-->
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.fax}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
                 </div>
                 <div >
                     <!--<h:outputLabel value="Email : ruhunuhos@sltnet.lk "/>-->
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.email}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>                                                 
                 </div>
             </div>
 
@@ -79,10 +79,10 @@
                 <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}"/>
 
                 <h:outputLabel value="Location "/>
-                <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.department.name}" />
+                <h:outputLabel value="#{cc.attrs.bill.department.name}" />
                 <h:outputLabel value="Supplier "/>
                 <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
-                
+
                 <h:outputLabel value="Payment Method "/>
                 <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
 
@@ -104,18 +104,12 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.item.category.name}"/>
                     </p:column>
-                     <p:column style="text-align: left!important;"  >
-                        <f:facet name="header">
-                            <h:outputLabel value="Searial No" style="font-weight: bold!important; " />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.code}"/>
-                    </p:column>
                     <p:column style="width: 8px;text-align: right!important;" >
                         <f:facet name="header">
                             <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="dd/MM/yyyy"/>
                         </h:outputLabel>
                     </p:column>                                  
                     <p:column style="text-align: right!important;">
@@ -178,20 +172,20 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-<!--                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Sale" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value="Price" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>-->
+                    <!--                    <p:column style="text-align: right!important;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Sale" style="font-weight: bold!important;" />
+                                                <br/>
+                                                <h:outputLabel value="Price" style="font-weight: bold!important;" />
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>-->
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="8" footerText="GRN Total" style="font-weight: bold!important;"/>
+                            <p:column colspan="8" footerText="GRN Total"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer">
                                     <br></br>
@@ -202,7 +196,7 @@
                             </p:column>
                         </p:row>
 
-                        
+
 
                         <p:row >
                             <p:column colspan="8" footerText="Tax"/>
@@ -226,22 +220,22 @@
                             </p:column>
 
                         </p:row>
-                        
+
                         <p:row >
                             <p:column colspan="8" footerText="GRN Net Total"/>
-                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.discount}">
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.grnNetTotal}">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{cc.attrs.bill.grnNetTotal}">
+                                    <h:outputLabel value="#{0-cc.attrs.bill.grnNetTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
 
                         </p:row>
-                        
+
                         <p:row>
-                            <p:column colspan="8" footerText="Expenses" style="font-weight: bold!important;"/>
-                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
+                            <p:column colspan="8" footerText="Expenses"/>
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.expenseTotal}">
                                 <f:facet name="footer">
                                     <br></br>
                                     <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
@@ -300,9 +294,9 @@
 
 
                 <div>
-                    <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
-                    <h:outputLabel value="Payee : " style="text-align: right!important;"/>
+                    <h:outputLabel value="Payee : " />
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
+                    <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
                 </div>
                 <div>
                     <br></br>

@@ -627,7 +627,14 @@ public class InwardSearch implements Serializable {
 
     public void cancelFinalBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-
+            
+            long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(),new Date());
+          
+            
+            if(Math.abs(dayCount)>3){
+               UtilityController.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
+               return;
+            }
             if (getBill().isCancelled()) {
                 UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;

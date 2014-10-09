@@ -32,7 +32,7 @@ public class SearchKeyword {
     private String code;
     private String category;
     private String institution;
-    private String bhtNo;
+    private String bhtNo="";
     private String paymentScheme;
     private String paymentmethod;
     private String insId;

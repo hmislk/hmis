@@ -16,16 +16,20 @@
             <p:panel  rendered="#{webUserController.hasPrivilege('PharmacyOrderApproval')}" >
                 <p:panel rendered="#{!purchaseOrderController.printPreview}">
                     <f:facet name="header">
-                        <h:panelGrid columns="4" style="min-width: 100%;">
+                        <h:panelGrid columns="5" style="min-width: 100%;">
                             <p:outputLabel value="Purchase order Request Order"/>
                             <p:commandButton ajax="false"  value="Approve" action="#{purchaseOrderController.approve}"/>
                             <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
                                 <f:selectItem itemLabel="SelectPayment method"/>
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                             </p:selectOneMenu>
-                            <p:outputLabel id="tot"  value="Total :  #{purchaseOrderController.aprovedBill.netTotal}"/>    
+                            <p:outputLabel id="tot"  value="Total :  #{purchaseOrderController.aprovedBill.netTotal}"/>   
+                            <p:outputLabel value="Suplier  :   #{purchaseOrderController.aprovedBill.toInstitution.name}"/>
                         </h:panelGrid>
                     </f:facet>
+                    <p:panel>
+                        <p:commandButton ajax="false"  value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve"/>
+                    </p:panel>
                     <p:dataTable scrollable="true" styleClass="noBorder" scrollHeight="250"
                                  var="bi" value="#{purchaseOrderController.billItems}"
                                  id="itemList" sortBy="#{bi.searialNo}"  rowKey="#{bi.searialNo}"
