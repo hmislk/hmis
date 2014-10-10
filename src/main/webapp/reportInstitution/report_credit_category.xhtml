@@ -17,6 +17,7 @@
                     <p:commandButton value="Process Credit Items" ajax="false" 
                                      styleClass="noPrintButton" style="float: right;"
                                      action="#{bookKeepingSummery.processCreditItems()}"/>
+                    
                     <p:commandButton value="Process Credit Items Paid" ajax="false" 
                                      styleClass="noPrintButton" style="float: right;"
                                      action="#{bookKeepingSummery.processCreditPaidItems()}"/>
@@ -24,6 +25,7 @@
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
+                    
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                         <pe:exporter type="xlsx" target="opd_new:opd_new"
                                      fileName="Book_Keeping_Summery_with_pro_day"
