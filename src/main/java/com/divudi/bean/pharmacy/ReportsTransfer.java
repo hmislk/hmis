@@ -117,8 +117,6 @@ public class ReportsTransfer implements Serializable {
     public void setCategory(Category category) {
         this.category = category;
     }
-    
-    
 
     public void fillMovingWithStock() {
         String sql;
@@ -184,6 +182,9 @@ public class ReportsTransfer implements Serializable {
         //System.out.println("m = " + m);
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m);
         movementRecords = new ArrayList<>();
+        if (objs == null) {
+            return;
+        }
         for (Object[] obj : objs) {
             StockReportRecord r = new StockReportRecord();
             r.setItem((Item) obj[0]);
@@ -501,11 +502,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.bill.createdAt between :fd and :td"
@@ -535,8 +536,8 @@ public class ReportsTransfer implements Serializable {
         if (surgeryBillType != null) {
             sql += " and b.bill.surgeryBillType=:surg";
             m.put("surg", surgeryBillType);
-        }else{
-            sql+=" and b.bill.surgeryBillType is null ";
+        } else {
+            sql += " and b.bill.surgeryBillType is null ";
         }
 
         if (toDepartment != null) {
@@ -568,11 +569,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.createdAt between :fd and :td"
@@ -597,11 +598,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.createdAt between :fd and :td"
@@ -626,11 +627,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.createdAt between :fd and :td"
@@ -655,11 +656,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.createdAt between :fd and :td"
@@ -805,7 +806,7 @@ public class ReportsTransfer implements Serializable {
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
 
     }
-    
+
     public void fillItemCountsBhtSurgery() {
 
         List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre, SurgeryBillType.PharmacyItem);
@@ -929,13 +930,12 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
-        
 
         sql += " and b.bill.createdAt between :fd and :td"
                 + " and b.bill.billType=:bt";
@@ -966,11 +966,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.bill.createdAt between :fd and :td"
@@ -1002,11 +1002,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.bill.createdAt between :fd and :td"
