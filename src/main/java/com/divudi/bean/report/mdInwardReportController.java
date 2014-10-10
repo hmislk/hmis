@@ -988,6 +988,78 @@ public class mdInwardReportController implements Serializable {
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+    
+    private List<Bill> depositByCreatedDateAbove(Bill bill) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  "
+                + " and b.patientEncounter.dateOfDischarge > :toDate ";
+        
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
+
+        sql += " order by b.patientEncounter.bhtNo,b.insId ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+    
+    private double depositByCreatedDateValueAbove(Bill bill, boolean discharge) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(b.netTotal) from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  "
+                + " and b.patientEncounter.dateOfDischarge > :toDate ";
+
+      
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
+
+//        sql += " order by b.patientEncounter.bhtNo,b.insId ";
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
 
     private List<Bill> inwdPaymentBillsAdmitted(Bill bill) {
         String sql;
@@ -1152,6 +1224,18 @@ public class mdInwardReportController implements Serializable {
         totalValue = depositByCreatedDateValue(new BilledBill(), true);
         cancelledTotal = depositByCreatedDateValue(new CancelledBill(), true);
         refundTotal = depositByCreatedDateValue(new RefundBill(), true);
+
+    }
+    
+    public void createDepositByCreatedDateDischargedAbove() {
+
+        bil = depositByCreatedDateAbove(new BilledBill());
+        cancel = depositByCreatedDateAbove(new CancelledBill());
+        refund = depositByCreatedDateAbove(new RefundBill());
+
+        totalValue = depositByCreatedDateValueAbove(new BilledBill(), true);
+        cancelledTotal = depositByCreatedDateValueAbove(new CancelledBill(), true);
+        refundTotal = depositByCreatedDateValueAbove(new RefundBill(), true);
 
     }
 
