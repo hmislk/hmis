@@ -8,10 +8,11 @@
  */
 package com.divudi.bean.common;
 
-import java.util.TimeZone;
 import com.divudi.data.InstitutionType;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
+import com.divudi.facade.InstitutionFacade;
 import com.lowagie.text.xml.simpleparser.EntitiesToSymbol;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,10 +20,11 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
+import java.util.TimeZone;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -40,6 +42,9 @@ public class CreditCompanyController implements Serializable {
     private InstitutionFacade ejbFacade;
     List<Institution> selectedItems;
     private Institution current;
+    Item service;
+    Category category;
+    
     private List<Institution> items = null;
     List<Institution> institutions;
     String selectText = "";
@@ -87,6 +92,22 @@ public class CreditCompanyController implements Serializable {
 
     public void setInstitutions(List<Institution> institutions) {
         this.institutions = institutions;
+    }
+
+    public Item getService() {
+        return service;
+    }
+
+    public void setService(Item service) {
+        this.service = service;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
     
     

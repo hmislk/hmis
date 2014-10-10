@@ -17,9 +17,7 @@
                     <p:panel header="B.H.T. DEPOSIT PAYMENT  SUMMERIES (Discharge B.H.T. only)" >
 
                         <h:panelGrid columns="2" >
-                            <p:outputLabel value="From :" ></p:outputLabel>
-                            <p:calendar value="#{mdInwardReportController.fromDate}"
-                                        pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            
                             <h:outputLabel value="To :" ></h:outputLabel>
 
                             <p:calendar value="#{mdInwardReportController.toDate}" 
@@ -88,7 +86,7 @@
                         </h:panelGroup>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateDischargedAbove()}" onclick="onSubmitButton();" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
