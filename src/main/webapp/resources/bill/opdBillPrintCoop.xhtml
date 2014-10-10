@@ -20,10 +20,10 @@
 
         <h:panelGroup>
             <h:outputStylesheet library="css" name="printingOpd.css"></h:outputStylesheet>
-
+            <div  class="fiveinchbill">
             <h:panelGroup id="gpBillPreviewCoop" >
 
-                <div  class="fiveinchbill">
+                
 
                     <div class="headingPrinting">
                         <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"/>
@@ -233,11 +233,12 @@
                         <h:outputLabel value="#{cc.attrs.bill.collectingCentre.name} #{cc.attrs.bill.creditCompany.name}" />
                     </div>
 
-                </div>
+                
 
 
 
             </h:panelGroup>
+                </div>
         </h:panelGroup>                
 
 

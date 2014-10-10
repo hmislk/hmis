@@ -1,0 +1,222 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+
+            <p:panel>
+                <p:wizard>
+                    <p:tab title="Select Specility">
+                        <h:outputLabel  value="Speciality" ></h:outputLabel>
+                        <p:autoComplete  forceSelection="true" value="#{channelSessionWizard.speciality}" id="acSpeciality"
+                                         completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                         converter="specilityCon" >
+                            <!--<f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"/>-->
+                        </p:autoComplete>
+                    </p:tab>
+                    <p:tab title="Select Doctor" >
+                        <h:outputLabel  value="Doctor" ></h:outputLabel>
+                        <p:autoComplete   forceSelection="true" value="#{channelSessionWizard.currentStaff}" id="scStaff"
+                                          completeMethod="#{channelSessionWizard.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                          converter="stfcon"   >   
+                            <!--<f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail"  />-->
+                        </p:autoComplete>
+                    </p:tab>
+                    <p:tab title="Select New Session Or Edit Session">
+                        <p:selectOneRadio id="console" value="#{channelSessionWizard.createNewSession}" >
+                            <f:selectItem itemLabel="New Session" itemValue="true" />
+                            <f:selectItem itemLabel="Edit Session" itemValue="false" />
+                            <p:ajax process="console" update="gpSelectTextS" event="change" listener="#{channelSessionWizard.sessionListner()}"/>
+                        </p:selectOneRadio>
+                        <h:panelGrid id="gpSelectTextS">
+                            <p:panel rendered="#{channelSessionWizard.createNewSession eq false}">
+                                <p:selectOneListbox  id="lstSelectS" converter="sscon"   value="#{channelSessionWizard.current}" style="min-width: 100%;">
+                                    <f:selectItems  value="#{channelSessionWizard.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <!--<f:ajax render="gpDetail" execute="lstSelect" >-->
+                                    <!--</f:ajax>-->
+                                </p:selectOneListbox>
+                            </p:panel>
+                        </h:panelGrid>
+                    </p:tab>
+                    <p:tab title="Session">
+                        <p:panel id="gpDetail">                    
+                            <h:panelGrid columns="1" class="alignTop">
+                                <p:panelGrid columns="2">  
+                                    <p:outputLabel value="Session Name"/>
+                                    <p:inputText autocomplete="off" value="#{channelSessionWizard.current.name}"/>
+                                    <p:outputLabel value="Start Time"/>                        
+                                    <p:calendar  value="#{channelSessionWizard.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                    </p:calendar>
+                                    <p:outputLabel value="Max Number"/>
+                                    <p:inputText autocomplete="off" value="#{channelSessionWizard.current.maxNo}"/>
+                                    <p:outputLabel value="Duration in Minutes"/>
+                                    <p:inputText autocomplete="off" value="#{channelSessionWizard.current.duration}"/>
+                                    <p:outputLabel value="Room Number"/>
+                                    <p:inputText autocomplete="off" value="#{channelSessionWizard.current.roomNo}"/>
+                                    <p:outputLabel value="Before Session" rendered="false"/>
+                                    <p:autoComplete rendered="false" forceSelection="true" value="#{channelSessionWizard.current.beforeSession}" 
+                                                    completeMethod="#{channelSessionWizard.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                    converter="sscon"   >                            
+                                    </p:autoComplete>
+                                    <p:outputLabel value="After Session" rendered="false"/>
+                                    <p:autoComplete  rendered="false" forceSelection="true" value="#{channelSessionWizard.current.afterSession}" 
+                                                     completeMethod="#{channelSessionWizard.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                     converter="sscon"   >                            
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Displaying Count"/>
+                                    <p:inputText autocomplete="off" value="#{channelSessionWizard.current.displayCount}"/>
+                                    <p:outputLabel value="Displaying Percent"/>
+                                    <p:inputText autocomplete="off" value="#{channelSessionWizard.current.displayPercent}"/>
+                                    <p:outputLabel value="Effective From"/>
+                                    <p:calendar id="efdate" value="#{channelSessionWizard.current.effectiveFrom}" pattern="dd MMMM yyyy" >                              
+                                    </p:calendar>
+                                    <p:outputLabel value="Effective To"/>
+                                    <p:calendar id="etdate" value="#{channelSessionWizard.current.effectiveTo}" pattern="dd MMMM yyyy" >                              
+                                    </p:calendar>
+                                    <p:outputLabel value="Week Day" rendered="#{channelSessionWizard.createNewSession eq false}"/>
+                                    <p:selectOneMenu id="wdate" value="#{channelSessionWizard.current.sessionWeekday}" disabled="true" rendered="#{channelSessionWizard.createNewSession eq false}">
+                                        <f:selectItem itemLabel="Select Week Day"/>
+                                        <f:selectItem itemValue="1" itemLabel="Sunday"/>
+                                        <f:selectItem itemValue="2" itemLabel="Monday"/>
+                                        <f:selectItem itemValue="3" itemLabel="Tuesday"/>
+                                        <f:selectItem itemValue="4" itemLabel="Wednesday"/>
+                                        <f:selectItem itemValue="5" itemLabel="Thursday"/>
+                                        <f:selectItem itemValue="6" itemLabel="Friday"/>
+                                        <f:selectItem itemValue="7" itemLabel="Sutarday"/>
+                                    </p:selectOneMenu>
+                                    <p:outputLabel value="Other Day" rendered="#{channelSessionWizard.createNewSession eq false}"/>
+                                    <p:outputLabel value="#{channelSessionWizard.current.sessionDate}" rendered="#{channelSessionWizard.createNewSession eq false}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Session Number"></p:outputLabel>
+                                    <p:autoComplete forceSelection="true" value="#{channelSessionWizard.current.sessionNumberGenerator}" 
+                                                    completeMethod="#{sessionNumberGenerateConrtroller.completeSessionNumberGenerator}" 
+                                                    var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                    converter="genConvert">                            
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Refundable"/>
+                                    <p:selectBooleanCheckbox value="#{channelSessionWizard.current.refundable}"/>
+                                    <p:outputLabel value="#{channelSessionWizard.current.id}"/>
+                                </p:panelGrid>
+                                <br/>
+                                <p:tabView rendered="#{channelSessionWizard.createNewSession ne false}" >
+                                    <p:tab title="WeekDay"> 
+                                        <p:selectOneMenu id="wdate" value="#{channelSessionWizard.current.sessionWeekday}">
+                                            <f:selectItem itemLabel="Select Week Day"/>
+                                            <f:selectItem itemValue="1" itemLabel="Sunday"/>
+                                            <f:selectItem itemValue="2" itemLabel="Monday"/>
+                                            <f:selectItem itemValue="3" itemLabel="Tuesday"/>
+                                            <f:selectItem itemValue="4" itemLabel="Wednesday"/>
+                                            <f:selectItem itemValue="5" itemLabel="Thursday"/>
+                                            <f:selectItem itemValue="6" itemLabel="Friday"/>
+                                            <f:selectItem itemValue="7" itemLabel="Sutarday"/>
+                                        </p:selectOneMenu>
+                                    </p:tab>
+                                    <p:tab title="Other Day" >
+                                        <p:calendar id="odate" value="#{channelSessionWizard.current.sessionDate}" pattern="dd MMMM yyyy" >                              
+                                        </p:calendar>
+                                    </p:tab>
+                                </p:tabView>                    
+
+                            </h:panelGrid>                   
+                        </p:panel>
+
+                    </p:tab>
+                    <p:tab title="Fee For Session">
+                        <p:panelGrid columns="3" >
+                            <p:panel header="Hospital Fee">
+                                <p:panelGrid columns="2" >
+                                <h:outputLabel value="Fee Name" >
+                                </h:outputLabel>
+                                <p:inputText value="#{channellingFeeController.fee.name}" ></p:inputText>
+
+                                <h:outputText value="Local Fee"/>
+                                <h:inputText autocomplete="off" id="txtFee" value="#{channellingFeeController.fee.fee}"/>
+
+                                <h:outputText value="Foreign Fee"/>
+                                <h:inputText autocomplete="off" id="txtFFee" value="#{channellingFeeController.fee.ffee}"/>
+
+
+
+                                <h:outputLabel value="Fee Type" >
+                                </h:outputLabel>
+                                <p:selectOneMenu value="#{channellingFeeController.fee.feeType}" >
+                                    <f:selectItem itemLabel="Select Fee Type" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.feeTypes}" ></f:selectItems>
+                                    <f:ajax event="change" execute="@this" render="lblIns cmbIns lblDep cmbDep lblSpe cmbSpe lblStaff cmbStaff" ></f:ajax>
+                                </p:selectOneMenu>
+
+
+
+
+                                <h:panelGroup id="lblIns" >
+                                    <h:outputLabel rendered="#{channellingFeeController.fee.feeType eq 'OwnInstitution'}" 
+                                                   value="Institution" ></h:outputLabel>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="cmbIns" >
+                                    <p:selectOneMenu id="cmbInstitution" value="#{channellingFeeController.fee.institution}"
+                                                     rendered="#{channellingFeeController.fee.feeType eq 'OwnInstitution'}" >
+                                        <f:selectItem itemLabel="Select Institution"/>
+                                        <f:selectItems value="#{institutionController.company}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/>                                        
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="lblDep" >
+                                    <h:outputText value="Department"  rendered="#{channellingFeeController.fee.feeType eq 'OwnInstitution'}" />
+                                </h:panelGroup>
+                                <h:panelGroup id="cmbDep" >
+                                    <h:selectOneListbox id="cmbDepartment" size="1" 
+                                                        value="#{channellingFeeController.fee.department}"
+                                                        rendered="#{channellingFeeController.fee.feeType eq 'OwnInstitution'}" >
+                                        <f:selectItem itemLabel="Select Department"/>
+                                        <f:selectItems value="#{channellingFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
+                                    </h:selectOneListbox>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="lblSpe" >
+                                    <h:outputText value="Speciality"  rendered="#{channellingFeeController.fee.feeType eq 'Staff'}" />
+                                </h:panelGroup>
+
+                                <h:panelGroup id="cmbSpe" >
+                                    <p:autoComplete converter="specilityCon"  forceSelection="true" 
+                                                    value="#{channellingFeeController.fee.speciality}"
+                                                    completeMethod="#{specialityController.completeSpeciality}"
+                                                    var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" 
+                                                    size="30"  style="width: 400px;"
+                                                    rendered="#{channellingFeeController.fee.feeType eq 'Staff'}">
+                                        <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
+                                    </p:autoComplete>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="lblStaff" >
+                                    <h:outputText value="Staff"  rendered="#{channellingFeeController.fee.feeType eq 'Staff'}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="cmbStaff" >
+                                    <p:autoComplete converter="stfcon"  forceSelection="true" id="cmbDoc" 
+                                                    value="#{channellingFeeController.fee.staff}" 
+                                                    completeMethod="#{channellingFeeController.completeStaff}" var="st" itemLabel="#{st.person.name}" itemValue="#{st}" size="30"  style="width: 400px;"
+                                                    rendered="#{channellingFeeController.fee.feeType eq 'Staff'}">
+                                        <f:ajax execute="cmbSpe" event="keypress"/>
+                                    </p:autoComplete>
+                                </h:panelGroup>
+
+                            </p:panelGrid>
+                            </p:panel>
+                        </p:panelGrid>
+                    </p:tab>
+                </p:wizard>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
