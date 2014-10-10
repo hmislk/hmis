@@ -96,6 +96,21 @@ root {
         font-size: 130%;
 
     }
+    
+    .fiveinchbillBreakruhunu{
+        position: relative!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 14cm!important;
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 130%;
+
+    }
 
 
 
@@ -123,6 +138,21 @@ root {
         //    height: 95%!important;
         padding: 0px!important;
         font-size: 100%!important;
+    }
+    
+    .fiveinchbillBreakruhunu{
+        position: relative!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 14cm!important;
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 130%;
+
     }
 
 
@@ -326,26 +356,30 @@ root {
 
 }
 
-.receiptnoPrinting{
+.receiptnoPrintingRuhunu{
+    font-size: 12px!important;
     position: absolute;
     left: 36%;
     top: 6.5%;
 }
 
-.billdatePrinting{
+.billdatePrintingRuhunu{
+    font-size: 12px!important;
     position: absolute;
     left: 85%;
     top: 6.5%;
 
 }
-.paymentPrinting{
+.paymentPrintingRuhunu{
+    font-size: 12px!important;
     position: absolute;
     left: 36%;
     top: 10%;
 
 }
 
-.billtimePrinting{
+.billtimePrintingRuhunu{
+    font-size: 12px!important;
     position: absolute;
     left:85%;
     top: 10%;
@@ -353,7 +387,8 @@ root {
 }
 
 
-.ptnamePrinting{
+.ptnamePrintingRuhunu{
+    font-size: 12px!important;
     position: absolute;
     left: 36%;
     top: 13.3%;
@@ -375,6 +410,7 @@ root {
 }
 
 .billNamePrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 75%;
     top: 25%;
@@ -384,6 +420,7 @@ root {
 }
 
 .phonePrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 36%;
     top: 15.8%;
@@ -391,6 +428,7 @@ root {
 }
 
 .bhtNoPrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 24%;
     top: 16.8%;
@@ -419,6 +457,7 @@ root {
 }
 
 .consultPrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 36%;
     top: 17.8%;
