@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
     <ui:composition>
@@ -12,15 +12,15 @@
             <h:form id="DoctorSpecialityCreateForm">
                 <h:panelGroup id="display">
                     <p:panelGrid columns="2" rendered="#{doctorSpecialityController.selected != null}">
-                        <p:outputLabel value="#{bundle.CreateDoctorSpecialityLabel_code}" for="code" />
-                        <p:inputText id="code" value="#{doctorSpecialityController.selected.code}" title="#{bundle.CreateDoctorSpecialityTitle_code}" />
-                        <p:outputLabel value="#{bundle.CreateDoctorSpecialityLabel_description}" for="description" />
+                        <p:outputLabel value="Name" for="name" />
+                        <p:inputText id="name" value="#{doctorSpecialityController.selected.name}" />
+                        <p:outputLabel value="Code" for="code" />
+                        <p:inputText id="code" value="#{doctorSpecialityController.selected.code}"  />
+                        <p:outputLabel value="Description" for="description" />
                         <p:inputText id="description" value="#{doctorSpecialityController.selected.description}" title="#{bundle.CreateDoctorSpecialityTitle_description}" />
-                        <p:outputLabel value="#{bundle.CreateDoctorSpecialityLabel_name}" for="name" />
-                        <p:inputText id="name" value="#{doctorSpecialityController.selected.name}" title="#{bundle.CreateDoctorSpecialityTitle_name}" />
                     </p:panelGrid>
-                    <p:commandButton actionListener="#{doctorSpecialityController.create}" value="#{bundle.Save}" update="display,:DoctorSpecialityListForm:datalist" oncomplete="handleSubmit(args,'DoctorSpecialityCreateDialog');"/>
-                    <p:commandButton value="#{bundle.Cancel}" onclick="DoctorSpecialityCreateDialog.hide()"/>
+                    <p:commandButton actionListener="#{doctorSpecialityController.updateSelected()}" value="Save" update="display,:DoctorSpecialityListForm:datalist" oncomplete="handleSubmit(args,'DoctorSpecialityCreateDialog');"/>
+                    <p:commandButton value="Cancel" onclick="DoctorSpecialityCreateDialog.hide()"/>
                 </h:panelGroup>
             </h:form>
         </p:dialog>

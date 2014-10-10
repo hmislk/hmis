@@ -4,8 +4,5 @@
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <jta-data-source>dsR</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
-    <properties>
-      <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
-    </properties>
   </persistence-unit>
 </persistence>
