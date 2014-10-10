@@ -50,7 +50,7 @@
                             <h:outputLabel value="B H T No :" ></h:outputLabel>
 
                             <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
-                                            value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                            value="#{mdInwardReportController.patientEncounter}"
                                             completeMethod="#{admissionController.completePatientAll}" 
                                             var="myItem" itemValue="#{myItem}" 
                                             itemLabel="#{myItem.bhtNo}" 
