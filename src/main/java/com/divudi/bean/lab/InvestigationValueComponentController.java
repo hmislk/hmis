@@ -43,7 +43,6 @@ public class InvestigationValueComponentController implements Serializable {
     private String newValidatorName;
 
     public void addNewValidator() {
-        
         currentValidator = new InvestigationItemValidator();
         currentValidator.setName(newValidatorName);
         currentValidator.setItem(currentInvestigation);
