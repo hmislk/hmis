@@ -931,8 +931,8 @@ public class mdInwardReportController implements Serializable {
         }
         
         if (patientEncounter != null) {
-            sql += " and b.patientEncounter.bhtNo=:pten ";
-            temMap.put("pten", creditCompany);
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
         }
         
         if (paymentMethod != null) {
@@ -978,8 +978,8 @@ public class mdInwardReportController implements Serializable {
         }
         
         if (patientEncounter != null) {
-            sql += " and b.patientEncounter.bhtNo=:pten ";
-            temMap.put("pten", creditCompany);
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
         }
         
         if (paymentMethod != null) {
@@ -1081,8 +1081,8 @@ public class mdInwardReportController implements Serializable {
         }
         
         if (patientEncounter != null) {
-            sql += " and b.patientEncounter.bhtNo=:pten ";
-            temMap.put("pten", creditCompany);
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
         }
         
         if (paymentMethod != null) {
@@ -1122,8 +1122,8 @@ public class mdInwardReportController implements Serializable {
         }
         
         if (patientEncounter != null) {
-            sql += " and b.patientEncounter.bhtNo=:pten ";
-            temMap.put("pten", creditCompany);
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
         }
         
         if (paymentMethod != null) {

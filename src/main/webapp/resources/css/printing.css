@@ -42,6 +42,21 @@ root {
         padding: 1px;
         font-size: 180%;
     }
+    
+    .fiveinchbillBreakIncm{
+        position: relative!important;
+        padding: 5px!important;
+        height:13cm!important;
+        width:10cm!important; 
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        
+        font-size: 130%;
+
+    }
 
     .fiveinchbillNoBreak{
         // page-break-before: always!important;
@@ -93,6 +108,21 @@ root {
         margin: auto!important; 
         background-size: 100% auto!important; 
         border: 1px solid!important;
+        font-size: 130%;
+
+    }
+    
+    .fiveinchbillBreakIncm{
+        position: relative!important;
+        padding: 5px!important;
+        height:13cm!important;
+        width:10cm!important; 
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        font-size: 11px!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+       
         font-size: 130%;
 
     }
@@ -327,18 +357,21 @@ root {
 }
 
 .receiptnoPrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 36%;
     top: 6.5%;
 }
 
 .billdatePrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 85%;
     top: 6.5%;
 
 }
 .paymentPrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 36%;
     top: 10%;
@@ -346,6 +379,7 @@ root {
 }
 
 .billtimePrinting{
+    font-size: 12px!important;
     position: absolute;
     left:85%;
     top: 10%;
@@ -354,6 +388,7 @@ root {
 
 
 .ptnamePrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 36%;
     top: 13.3%;
@@ -361,6 +396,7 @@ root {
 }
 
 .bhtNoGSPrinting{
+    
     position: absolute;
     left: 36%;
     top: 16.8%;
@@ -375,6 +411,7 @@ root {
 }
 
 .billNamePrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 75%;
     top: 25%;
@@ -384,6 +421,7 @@ root {
 }
 
 .phonePrinting{
+    font-size: 12px!important;
     position: absolute;
     left: 36%;
     top: 15.8%;
