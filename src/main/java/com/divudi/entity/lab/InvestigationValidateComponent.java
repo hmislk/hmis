@@ -9,12 +9,15 @@ import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 
 /**
@@ -23,7 +26,8 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class InvestigationValidateComponent implements Serializable {
-    @ManyToMany(mappedBy = "investigationValidateComponents")
+    
+    @OneToMany(mappedBy = "investigationValidateComponent")
     private List<InvestigationItemValidator> investigationItemValidators;
 
     private static final long serialVersionUID = 1L;
@@ -43,9 +47,22 @@ public class InvestigationValidateComponent implements Serializable {
 
     @ManyToOne
     private InvestigationItemValidator investigationItemValidator;
-    @ManyToMany
+    
+    @ManyToOne
     private InvestigationItem investigationItem;
 
+    //Retairing properties
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    private String retireComments;
+    
+    private String newValidator;
+    
+    
+    
     public Long getId() {
         return id;
     }
@@ -119,12 +136,64 @@ public class InvestigationValidateComponent implements Serializable {
         this.investigationItemValidator = investigationItemValidator;
     }
 
-    public List<InvestigationItem> getInvestigationItems() {
-        return investigationItems;
+    public List<InvestigationItemValidator> getInvestigationItemValidators() {
+        return investigationItemValidators;
     }
 
-    public void setInvestigationItems(List<InvestigationItem> investigationItems) {
-        this.investigationItems = investigationItems;
+    public void setInvestigationItemValidators(List<InvestigationItemValidator> investigationItemValidators) {
+        this.investigationItemValidators = investigationItemValidators;
     }
+
+    public InvestigationItem getInvestigationItem() {
+        return investigationItem;
+    }
+
+    public void setInvestigationItem(InvestigationItem investigationItem) {
+        this.investigationItem = investigationItem;
+    }
+
+    public String getNewValidator() {
+        return newValidator;
+    }
+
+    public void setNewValidator(String newValidator) {
+        this.newValidator = newValidator;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+
+    
+
+    
 
 }

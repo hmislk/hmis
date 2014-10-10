@@ -21,9 +21,7 @@ import javax.persistence.OneToMany;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class InvestigationItem extends ReportItem implements Serializable {
-    @ManyToMany(mappedBy = "investigationItems")
-    private List<InvestigationValidateComponent> investigationValueComponents;
-
+   
     private static final long serialVersionUID = 1L;
     
     

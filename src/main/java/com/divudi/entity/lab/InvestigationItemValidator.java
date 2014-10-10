@@ -5,11 +5,14 @@
  */
 package com.divudi.entity.lab;
 
+import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -24,8 +27,11 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class InvestigationItemValidator implements Serializable {
+    @ManyToOne
+    private InvestigationValidateComponent investigationValidateComponent;
+    
     @OneToMany(mappedBy = "investigationItemValidator")
-    private List<InvestigationValidateComponent> investigationValueComponents;
+    private List<InvestigationValidateComponent> investigationValidateComponents;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -41,13 +47,19 @@ public class InvestigationItemValidator implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
     
-    private String item;
-    private String investigationItem;
+    //Retairing properties
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    private String retireComments;
+    
+    private String name;
+    @ManyToOne
+    Item item;
     private String maxValue;
     private String minValue;
-    
-    @ManyToMany
-    private List<InvestigationValidateComponent> investigationValidateComponents;
     
     
     
@@ -121,21 +133,6 @@ public class InvestigationItemValidator implements Serializable {
         return "com.divudi.entity.lab.InvestigationItemValidator[ id=" + id + " ]";
     }
 
-    public String getItem() {
-        return item;
-    }
-
-    public void setItem(String item) {
-        this.item = item;
-    }
-
-    public String getInvestigationItem() {
-        return investigationItem;
-    }
-
-    public void setInvestigationItem(String investigationItem) {
-        this.investigationItem = investigationItem;
-    }
 
     public List<InvestigationValidateComponent> getInvestigationValidateComponents() {
         return investigationValidateComponents;
@@ -146,11 +143,11 @@ public class InvestigationItemValidator implements Serializable {
     }
 
     public List<InvestigationValidateComponent> getInvestigationValueComponents() {
-        return investigationValueComponents;
+        return investigationValidateComponents;
     }
 
     public void setInvestigationValueComponents(List<InvestigationValidateComponent> investigationValueComponents) {
-        this.investigationValueComponents = investigationValueComponents;
+        this.investigationValidateComponents = investigationValueComponents;
     }
 
     public String getMaxValue() {
@@ -167,6 +164,62 @@ public class InvestigationItemValidator implements Serializable {
 
     public void setMinValue(String minValue) {
         this.minValue = minValue;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public InvestigationValidateComponent getInvestigationValidateComponent() {
+        return investigationValidateComponent;
+    }
+
+    public void setInvestigationValidateComponent(InvestigationValidateComponent investigationValidateComponent) {
+        this.investigationValidateComponent = investigationValidateComponent;
     }
 
     
