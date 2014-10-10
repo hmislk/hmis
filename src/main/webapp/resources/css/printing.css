@@ -43,17 +43,17 @@ root {
         font-size: 180%;
     }
     
-    .fiveinchbillBreakIncm{
+    .fiveinchbillBreakRuhunu{
         position: relative!important;
         padding: 5px!important;
-        height:13cm!important;
-        width:10cm!important; 
+        height:550px!important;
+        width:550px!important; 
         overflow:hidden!important; 
         font-family: sans-serif!important; 
         font-size: 11px!important; 
         margin: auto!important; 
         background-size: 100% auto!important; 
-        
+        border: 1px solid!important;
         font-size: 130%;
 
     }
@@ -112,17 +112,17 @@ root {
 
     }
     
-    .fiveinchbillBreakIncm{
+    .fiveinchbillBreakRuhunu{
         position: relative!important;
         padding: 5px!important;
-        height:13cm!important;
-        width:10cm!important; 
+        height:550px!important;
+        width:550px!important; 
         overflow:hidden!important; 
         font-family: sans-serif!important; 
         font-size: 11px!important; 
         margin: auto!important; 
         background-size: 100% auto!important; 
-       
+        border: 1px solid!important;
         font-size: 130%;
 
     }
@@ -396,7 +396,6 @@ root {
 }
 
 .bhtNoGSPrinting{
-    
     position: absolute;
     left: 36%;
     top: 16.8%;
@@ -507,8 +506,8 @@ root {
 
 .totalsPrinting{
     position: absolute;
-    left: 30%;
-    bottom: 10%;
+    left: 30%!important;
+    bottom: 10%!important;
     font-size: 150%;
     font-weight: bolder;
     text-align: right;
@@ -737,6 +736,148 @@ root {
     left: 80%;
     top: 34%;
 
+}
+
+////ruhunu hospital
+
+.receiptnoPrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left: 36%;
+    top: 6.5%;
+}
+
+.billdatePrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left: 85%;
+    top: 6.5%;
+
+}
+.paymentPrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left: 36%;
+    top: 10%;
+
+}
+
+.billtimePrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left:85%;
+    top: 10%;
+
+}
+
+
+.ptnamePrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left: 36%;
+    top: 13.3%;
+
+}
+
+.bhtNoGSPrintingRuhunu{
+    position: absolute;
+    left: 36%;
+    top: 16.8%;
+
+}
+
+.bhtNoRuhunu{
+    position: absolute;
+    left: 36%;
+    margin-top: 26.5%;
+
+}
+
+.billNamePrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left: 75%;
+    top: 25%;
+    // text-align: center;
+    //  width: 90%;
+
+}
+
+.phonePrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left: 36%;
+    top: 15.8%;
+
+}
+
+.bhtNoPrintingRuhunu{
+    position: absolute;
+    left: 24%;
+    top: 16.8%;
+
+}
+
+
+
+.cashierRuhunu{
+    position: inherit;
+    
+    left: 10%;
+    text-decoration: overline;
+    font-size: 12px;
+
+}
+
+.pgsignPrintingRuhunu{
+    position: absolute;
+    bottom: 3%;
+    left: 0%;
+    text-decoration: overline; 
+    margin-left: 70%; 
+    font-size: 12px;
+
+}
+
+.consultPrintingRuhunu{
+    position: absolute;
+    left: 36%;
+    top: 17.8%;
+    
+}
+
+.cashierPrintingRuhunu{
+    text-decoration: overline;
+    position:absolute!important;
+    left:25%!important;
+    bottom:3%!important;
+
+}
+
+.itemsPrintingRuhunu{
+    
+    font-size: 11px;
+    position: absolute;
+    left: 12%;
+    top: 37%;
+
+}
+
+.ratesPrintingRuhunu{    
+    position: absolute;
+    left: 80%;
+    top: 37%;
+    text-align: right;
+
+}
+
+.totalsPrintingRuhunu{
+    position: absolute;
+    left: 30%!important;
+    bottom: 10%!important;
+    font-size: 150%;
+    font-weight: bolder;
+    text-align: right;
 }
 
 

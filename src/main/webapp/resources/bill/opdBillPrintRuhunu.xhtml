@@ -23,12 +23,12 @@
 
             <h:panelGroup id="gpBillPreview" >
 
-                <div class="fiveinchbillBreakIncm" >
+                <div class="fiveinchbillBreakRuhunu" >
 
                     <div >
 
 
-                        <div class="receiptnoPrinting" >
+                        <div class="receiptnoPrintingRuhunu" >
                             <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq false}"/>
                         
                         
@@ -46,51 +46,51 @@
                         
                         
 
-                        <div class="billdatePrinting" >
+                        <div class="billdatePrintingRuhunu" >
                             <h:outputLabel value="#{cc.attrs.bill.billDate}">
                                 <f:convertDateTime pattern="dd/MM/yy"/>
                             </h:outputLabel>
                         </div>
 
-                        <div class="paymentPrinting" >
+                        <div class="paymentPrintingRuhunu" >
                             <h:panelGroup>
                                 <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />
                                 
                             </h:panelGroup>
                         </div>
 
-                        <div class="billtimePrinting" >
+                        <div class="billtimePrintingRuhunu" >
                             <h:outputLabel value="#{cc.attrs.bill.billTime}"
                                            >
                                 <f:convertDateTime pattern="hh:mm a"/>
                             </h:outputLabel>
                         </div>
 
-                        <div class="ptnamePrinting" >
+                        <div class="ptnamePrintingRuhunu" >
                             <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"
                                            >
                             </h:outputLabel>
                         </div>
 
-                        <div class="phonePrinting" >
+                        <div class="phonePrintingRuhunu" >
                             <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"
                                            >
                             </h:outputLabel>
                         </div>
 
-                        <div class="cashierPrinting" >
+                        <div class="cashierPrintingRuhunu" >
                             <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}">
                             </h:outputLabel>
                         </div>
 
-                        <div class="consultPrinting" >
+                        <div class="consultPrintingRuhunu" >
                             <h:outputLabel value="#{cc.attrs.bill.collectingCentre.name}" />
                             <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
                         </div>
 
 
 
-                        <div class="itemsPrinting" >
+                        <div class="itemsPrintingRuhunu" >
                             <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip"   >
                                 <h:column >
                                    
@@ -108,7 +108,7 @@
                             </h:dataTable>
                         </div>
 
-                        <div class="ratesPrinting"  >
+                        <div class="ratesPrintingRuhunu"  >
                             <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                                 <h:column >
                                     <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue}"  style="font-size: 11px!important;" >
@@ -118,7 +118,7 @@
                             </h:dataTable>
                         </div>
 
-                        <div class="totalsPrinting">
+                        <div class="totalsPrintingRuhunu">
 
                             <table>
                                 <tr>
@@ -133,10 +133,10 @@
                                 </tr>
                                 <tr>
                                     <td style="text-align: left; min-width: 3cm;">
-                                        <h:outputLabel value="TOTAL" style="  text-align: right!important; font-weight: bold; font-size: 15px!important;   "/>
+                                        <h:outputLabel value="TOTAL" />
                                     </td>
                                     <td style="text-align: right!important; ">
-                                        <h:outputLabel value="#{cc.attrs.bill.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important; ">
+                                        <h:outputLabel value="#{cc.attrs.bill.total}">
                                             <f:convertNumber pattern="#,000.00" />
                                         </h:outputLabel>
                                     </td>
