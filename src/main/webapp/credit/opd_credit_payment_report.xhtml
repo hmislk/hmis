@@ -33,7 +33,7 @@
                             
                             <h:outputLabel value="Service Name"/>
                             
-                            <p:autoComplete value="#{serviceSummery.service}" completeMethod="#{itemController.completeService}" var="ix" 
+                            <p:autoComplete value="#{creditCompanyController.service}" completeMethod="#{itemController.completeService}" var="ix" 
                                         itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
                             <p:column>
                                 #{ix.name}
@@ -44,6 +44,12 @@
                             <p:column>
                                 #{ix.category.name}
                             </p:column> 
+                        </p:autoComplete>
+                            
+                            <h:outputText value="Service Category/Sub Category" ></h:outputText>
+                            <p:autoComplete converter="categoryConverter" completeMethod="#{categoryController.completeServiceCategory}" var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" forceSelection="true" value="#{creditCompanyController.category}" >                                    
+                            <p:column>#{pta.name}</p:column>
+                            <p:column>#{pta.parentCategory}</p:column>                                        
                         </p:autoComplete>
 
 

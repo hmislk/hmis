@@ -58,6 +58,8 @@ public class InwardReportController1 implements Serializable {
     private Date fromDate;
     private Date toDate;
     Category category;
+    Item service;
+    
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
     private Institution institution;
@@ -958,7 +960,15 @@ public class InwardReportController1 implements Serializable {
                 + " and b.referenceBill is not null"
                 + " and b.createdAt between :frm and :to ";
 
+        if(category != null){
+            sql +="b.bill.item.category=:cat";
+            hm.put("cat", category);
+        }
         
+        if(service != null){
+            sql +="b.bill.item=:itm";
+            hm.put("itm", service);
+        }
 
         sql += " order by b.referenceBill.insId ";
 
@@ -1254,6 +1264,16 @@ public class InwardReportController1 implements Serializable {
     public void setInwardOutSideNetValue(double inwardOutSideNetValue) {
         this.inwardOutSideNetValue = inwardOutSideNetValue;
     }
+
+    public Item getService() {
+        return service;
+    }
+
+    public void setService(Item service) {
+        this.service = service;
+    }
+    
+    
     
     
     
