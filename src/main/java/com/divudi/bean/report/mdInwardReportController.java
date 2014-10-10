@@ -1053,7 +1053,7 @@ public class mdInwardReportController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
-    private List<Bill> fetchPaymentBills(String args) {
+    private List<Bill> fetchPaymentBills(String args,Bill bill) {
         String sql = "";
         Map temMap = new HashMap();
         sql = "select b from Bill b where "
@@ -1088,7 +1088,7 @@ public class mdInwardReportController implements Serializable {
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
-    private double calPaymentBills(String args) {
+    private double calPaymentBills(String args,Bill bill) {
         String sql = "";
         Map temMap = new HashMap();
         sql = "select sum(b.netTotal) from Bill b where "
@@ -1177,15 +1177,25 @@ public class mdInwardReportController implements Serializable {
     public void allBhtPySummerriesByCreatedDate() {
 //        String sql = " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
         String sql="";
-        completePayments = fetchPaymentBills(sql);
-        completePaymentsTotal = calPaymentBills(sql);
+        bil = fetchPaymentBills(sql, new BilledBill());
+        cancel = fetchPaymentBills(sql, new CancelledBill());
+        refund = fetchPaymentBills(sql, new RefundBill());
+        
+        totalValue = calPaymentBills(sql, new BilledBill());
+        cancelledTotal = calPaymentBills(sql, new BilledBill());
+        refundTotal = calPaymentBills(sql, new BilledBill());
+        
+        
+        
+//        completePayments = fetchPaymentBills(sql);
+//        completePaymentsTotal = calPaymentBills(sql);
 
 //        sql = " and b.patientEncounter.dateOfDischarge not between :fromDate and :toDate ";
 //        deposits = fetchPaymentBills(sql);
 //        depositsTotal = calPaymentBills(sql);
 //
-        sql = "";
-        grantTotal = calPaymentBills(sql);
+//        sql = "";
+//        grantTotal = calPaymentBills(sql);
 
     }
 

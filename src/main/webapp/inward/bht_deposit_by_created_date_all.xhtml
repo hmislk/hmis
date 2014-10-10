@@ -48,7 +48,7 @@
                                 <h:outputLabel value="B H T No :" ></h:outputLabel>
                                 <h:panelGrid columns="1">
                                 <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                                value="#{mdInwardReportController.patientEncounter}"
                                                 completeMethod="#{admissionController.completePatientAll}" 
                                                 var="myItem" itemValue="#{myItem}" 
                                                 itemLabel="#{myItem.bhtNo}" 
@@ -100,7 +100,7 @@
 
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.completePayments}" var="i"  >
+                            <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.bil}" var="i"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="B.H.T. DEPOSIT PAYMENT  SUMMERIES - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
                                     <h:panelGrid columns="4">
@@ -172,7 +172,7 @@
                                         <f:convertNumber pattern="#,000.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{mdInwardReportController.completePaymentsTotal}">
+                                        <h:outputLabel value="#{mdInwardReportController.totalValue}">
                                             <f:convertNumber pattern="#,000.00"/>
                                         </h:outputLabel>
                                     </f:facet>
@@ -190,7 +190,7 @@
 
                             <p:panelGrid columns="2" styleClass="noBorder normalFont">
                                 <p:outputLabel value="Net Bill Total"/>
-                                <p:outputLabel value="#{mdInwardReportController.grantTotal}">
+                                <p:outputLabel value="#{mdInwardReportController.totalValue}">
                                     <f:convertNumber pattern="#000.00"></f:convertNumber>
                                 </p:outputLabel>
 
