@@ -46,7 +46,11 @@
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
 
-                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" 
+                                     var="rm" 
+                                     paginator="true" 
+                                     rows="5" 
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 Room Charge
                             </f:facet>
@@ -64,7 +68,11 @@
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
-                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" 
+                                     var="rm"
+                                     paginator="true" 
+                                     rows="5" 
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 Maintain Charge
                             </f:facet>
@@ -82,7 +90,11 @@
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
-                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" 
+                                     var="rm"
+                                     paginator="true" 
+                                     rows="5" 
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 Administration Charge
                             </f:facet>
@@ -100,7 +112,11 @@
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
-                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" 
+                                     var="rm"
+                                     paginator="true" 
+                                     rows="5" 
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 Linen Charge
                             </f:facet>
@@ -118,7 +134,11 @@
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
-                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" 
+                                     var="rm"
+                                     paginator="true" 
+                                     rows="5" 
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 Medical Care Charge
                             </f:facet>
@@ -136,7 +156,11 @@
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
-                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" 
+                                     var="rm"
+                                     paginator="true" 
+                                     rows="5" 
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 MO Charge
                             </f:facet>
@@ -154,7 +178,11 @@
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
-                        <p:dataTable value="#{inwardReportController1.patientRooms}" var="rm">
+                        <p:dataTable value="#{inwardReportController1.patientRooms}" 
+                                     var="rm"
+                                     paginator="true" 
+                                     rows="5" 
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 Nursing Charge
                             </f:facet>
@@ -171,7 +199,7 @@
                                 #{rm.discountNursingCharge}
                             </p:column>
                         </p:dataTable>
-                        
+
                     </p:panel>
 
                 </h:form>
