@@ -1358,9 +1358,9 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
-//            if (checkBill()) {
-//                return "";
-//            }
+            if (checkBill()) {
+                return "";
+            }
         }
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {

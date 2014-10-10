@@ -126,6 +126,7 @@ public class PharmacySaleController implements Serializable {
     //BillItem removingBillItem;
     BillItem editingBillItem;
     Double qty;
+    Integer intQty;
     Stock stock;
     Stock replacableStock;
 
@@ -385,6 +386,22 @@ public class PharmacySaleController implements Serializable {
 
     public List<Stock> getReplaceableStocks() {
         return replaceableStocks;
+    }
+
+    public Integer getIntQty() {
+        if (qty == null) {
+            return null;
+        }
+        return qty.intValue();
+    }
+
+    public void setIntQty(Integer intQty) {
+        this.intQty = intQty;
+        if (intQty == null) {
+            setQty(null);
+        } else {
+            setQty(intQty.doubleValue());
+        }
     }
 
     public Double getQty() {
@@ -662,6 +679,10 @@ public class PharmacySaleController implements Serializable {
         if (getQty() == null) {
             qty = 0.0;
         }
+        if (getQty() > getStock().getStock()) {
+            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            return;
+        }
 
         //Bill Item
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);
@@ -694,24 +715,24 @@ public class PharmacySaleController implements Serializable {
         }
         if (getStock() == null) {
             errorMessage = "Item?";
-//            UtilityController.addErrorMessage("Item?");
+            UtilityController.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
             errorMessage = "Quentity?";
-//            UtilityController.addErrorMessage("Quentity?");
+            UtilityController.addErrorMessage("Quentity?");
             return;
         }
 
         if (getQty() > getStock().getStock()) {
             errorMessage = "No sufficient stocks.";
-//            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            UtilityController.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         if (checkItemBatch()) {
             errorMessage = "This batch is already there in the bill.";
-//            UtilityController.addErrorMessage("Already added this item batch");
+            UtilityController.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity

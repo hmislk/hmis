@@ -34,6 +34,7 @@ public class UserPreference implements Serializable {
     Department department;
     @ManyToOne
     Institution institution;
+    boolean printLabelForOPdBill;
     
     
 
@@ -125,6 +126,16 @@ public class UserPreference implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public boolean isPrintLabelForOPdBill() {
+        return printLabelForOPdBill;
+    }
+
+    public void setPrintLabelForOPdBill(boolean printLabelForOPdBill) {
+        this.printLabelForOPdBill = printLabelForOPdBill;
+    }
+    
+    
 
     @Override
     public int hashCode() {

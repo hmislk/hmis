@@ -48,6 +48,27 @@
 
                                         <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.deptId}" />
+                                        
+                                        <h:outputLabel value="Forward ref Bill(Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.forwardReferenceBill}" />
+                                        
+                                        <h:outputLabel value="Forward ref Bill(Ins Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.insId}" ></h:outputLabel>
+                                        
+                                        <h:outputLabel value="Forward ref Bill(Dept Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.deptId}" ></h:outputLabel>
+                                        
+                                        <h:outputLabel value="Paid Amount :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.paidAmount}" />
+                                        
+                                        <h:outputLabel value="Backword ref Bill(Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.backwardReferenceBill}" />
+                                        
+                                        <h:outputLabel value="Backword ref Bill(Ins Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.insId}" ></h:outputLabel>
+                                        
+                                        <h:outputLabel value="Backword ref Bill(Dept Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.deptId}" ></h:outputLabel>
 
                                         <h:outputLabel value="Bill Date :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.createdAt}" >

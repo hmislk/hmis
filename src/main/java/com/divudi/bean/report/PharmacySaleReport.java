@@ -24,16 +24,19 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
-import javax.inject.Named;
+import com.divudi.facade.ItemFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -43,6 +46,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -1253,8 +1257,157 @@ public class PharmacySaleReport implements Serializable {
         return string1Value3s;
     }
 
-    public void setString1Value3s(List<String1Value3> string1Value3s) {
-        this.string1Value3s = string1Value3s;
+    List<CategoryMovementReportRow> categoryMovementReportRows;
+
+    double totalOpdSale;
+    double totalInwardIssue;
+    double totalDepartmentIssue;
+    double totalTatalValue;
+    double totalPurchaseValue;
+    double totalMargineValue;
+
+    public void createCategoryMovementReport() {
+        String jpql;
+        Map m = new HashMap();
+        PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+//        pbi.getBillItem().getBill().getCreatedAt();
+//        pbi.getBillItem().getBill().getBillType();
+//        pbi.getBillItem().getItem();
+//        pbi.getPurchaseRate();
+//
+//        pbi.getBillItem().getBill().getDepartment();
+//        pbi.getBillItem().getNetValue();
+//        pbi.getItemBatch().getPurcahseRate();
+//        pbi.getQty();
+
+        m.put("bc", PreBill.class);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("cat", category);
+        jpql = "select pbi.billItem.bill.billType, pbi.billItem.item, sum(pbi.billItem.netValue), sum(pbi.itemBatch.purcahseRate*pbi.qty) "
+                + " from PharmaceuticalBillItem pbi "
+                + " where type(pbi.billItem.bill)=:bc "
+                + " and pbi.billItem.bill.createdAt between :fd and :td "
+                + " and pbi.billItem.item.category=:cat ";
+        if (department != null) {
+            jpql = jpql + " and pbi.billItem.bill.department=:dept ";
+            m.put("dept", department);
+        }
+        jpql = jpql + " group by pbi.billItem.bill.billType, pbi.billItem.item ";
+        jpql = jpql + " order by pbi.billItem.item.name ";
+        List<Object[]> objs = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
+        categoryMovementReportRows = new ArrayList<>();
+        Item pi = null;
+        CategoryMovementReportRow r;
+        r = new CategoryMovementReportRow();
+        totalOpdSale = 0.0;
+        totalInwardIssue = 0.0;
+        totalDepartmentIssue = 0.0;
+        totalPurchaseValue = 0.0;
+        totalTatalValue = 0.0;
+        totalMargineValue = 0.0;
+        for (Object o[] : objs) {
+
+            try {
+
+                Item ti;
+                BillType tbt;
+                double sv;
+                double cv;
+                ti = (Item) o[1];
+
+                tbt = (BillType) o[0];
+
+                sv = (double) o[2];
+                cv = (double) o[3];
+                System.out.println("cv = " + cv);
+                System.out.println("sv = " + sv);
+
+                System.out.println("pi = " + pi);
+                System.out.println("ti = " + ti);
+
+                if (pi == null || !ti.equals(pi)) {
+                    System.out.println("new item - " + ti.getName());
+                    r = new CategoryMovementReportRow();
+                    r.setItem(ti);
+                    r.setDepartmentIssue(0.0);
+                    r.setInwardIssue(0.0);
+                    r.setMarginValue(0.0);
+                    r.setOpdSale(0.0);
+                    r.setPurchaseValue(0.0);
+                    r.setTotal(0.0);
+                    r.setTransfer(0.0);
+                    r.setTransferIn(0.0);
+                    r.setTransferOut(0.0);
+                    pi = ti;
+                    categoryMovementReportRows.add(r);
+                    System.out.println("size = " + categoryMovementReportRows.size());
+                }
+
+                System.out.println("tbt = " + tbt);
+
+                switch (tbt) {
+                    case PharmacySale:
+                    case PharmacyPre:
+                        System.out.println("pharmacy sale");
+                        System.out.println("r.getOpdSale() = " + r.getOpdSale());
+                        r.setOpdSale(r.getOpdSale() + sv);
+                        r.setPurchaseValue(r.getPurchaseValue() + cv);
+                        break;
+                    case PharmacyBhtPre:
+                        System.out.println("bht sale ");
+                        System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+                        r.setInwardIssue(r.getInwardIssue() + sv);
+                        r.setPurchaseValue(r.getPurchaseValue() + cv);
+                        System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+                        break;
+                    case PharmacyIssue:
+                        System.out.println("pharmacy issue ");
+                        System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+                        r.setDepartmentIssue(r.getDepartmentIssue() + sv);
+                        r.setPurchaseValue(r.getPurchaseValue() + cv);
+                        System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+                        break;
+                    case PharmacyTransferIssue:
+                        System.out.println("tx issue ");
+                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
+                        r.setTransferIn(r.getTransferIn() + sv);
+                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
+                        break;
+                    case PharmacyTransferReceive:
+                        System.out.println("tx issue ");
+                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
+                        r.setTransferOut(r.getTransferOut() + sv);
+                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
+                        break;
+
+                    default:
+                        System.out.println("other bill type");
+                }
+
+            } catch (Exception e) {
+                System.out.println("e = " + e);
+            }
+
+            r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
+            System.out.println("r.getTotal() = " + r.getTotal());
+            r.setMarginValue(r.getTotal() + r.getPurchaseValue());
+
+            totalOpdSale += r.getOpdSale();
+            totalInwardIssue += r.getInwardIssue();
+            totalDepartmentIssue += r.getDepartmentIssue();
+            totalPurchaseValue += r.getPurchaseValue();
+            totalTatalValue += r.getTotal();
+            totalMargineValue += r.getMarginValue();
+        }
+    }
+
+    public List<CategoryMovementReportRow> getCategoryMovementReportRows() {
+        return categoryMovementReportRows;
+    }
+
+    public void setCategoryMovementReportRows(List<CategoryMovementReportRow> categoryMovementReportRows) {
+        this.categoryMovementReportRows = categoryMovementReportRows;
     }
 
     public void createSaleReportByDate3() {
@@ -2963,6 +3116,149 @@ public class PharmacySaleReport implements Serializable {
 
     public void setTotalUnitIssueNC(double totalUnitIssueNC) {
         this.totalUnitIssueNC = totalUnitIssueNC;
+    }
+
+    public double getTotalOpdSale() {
+        return totalOpdSale;
+    }
+
+    public void setTotalOpdSale(double totalOpdSale) {
+        this.totalOpdSale = totalOpdSale;
+    }
+
+    public double getTotalInwardIssue() {
+        return totalInwardIssue;
+    }
+
+    public void setTotalInwardIssue(double totalInwardIssue) {
+        this.totalInwardIssue = totalInwardIssue;
+    }
+
+    public double getTotalDepartmentIssue() {
+        return totalDepartmentIssue;
+    }
+
+    public void setTotalDepartmentIssue(double totalDepartmentIssue) {
+        this.totalDepartmentIssue = totalDepartmentIssue;
+    }
+
+    public double getTotalTatalValue() {
+        return totalTatalValue;
+    }
+
+    public void setTotalTatalValue(double totalTatalValue) {
+        this.totalTatalValue = totalTatalValue;
+    }
+
+    public double getTotalPurchaseValue() {
+        return totalPurchaseValue;
+    }
+
+    public void setTotalPurchaseValue(double totalPurchaseValue) {
+        this.totalPurchaseValue = totalPurchaseValue;
+    }
+
+    public double getTotalMargineValue() {
+        return totalMargineValue;
+    }
+
+    public void setTotalMargineValue(double totalMargineValue) {
+        this.totalMargineValue = totalMargineValue;
+    }
+
+    public class CategoryMovementReportRow {
+
+        Item item;
+        double opdSale;
+        double inwardIssue;
+        double departmentIssue;
+        double total;
+        double purchaseValue;
+        double marginValue;
+        double transfer;
+        double transferIn;
+        double transferOut;
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public double getOpdSale() {
+            return opdSale;
+        }
+
+        public void setOpdSale(double opdSale) {
+            this.opdSale = opdSale;
+        }
+
+        public double getInwardIssue() {
+            return inwardIssue;
+        }
+
+        public void setInwardIssue(double inwardIssue) {
+            this.inwardIssue = inwardIssue;
+        }
+
+        public double getDepartmentIssue() {
+            return departmentIssue;
+        }
+
+        public void setDepartmentIssue(double departmentIssue) {
+            this.departmentIssue = departmentIssue;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+
+        public void setTotal(double total) {
+            this.total = total;
+        }
+
+        public double getPurchaseValue() {
+            return purchaseValue;
+        }
+
+        public void setPurchaseValue(double purchaseValue) {
+            this.purchaseValue = purchaseValue;
+        }
+
+        public double getMarginValue() {
+            return marginValue;
+        }
+
+        public void setMarginValue(double marginValue) {
+            this.marginValue = marginValue;
+        }
+
+        public double getTransfer() {
+            return transfer;
+        }
+
+        public void setTransfer(double transfer) {
+            this.transfer = transfer;
+        }
+
+        public double getTransferIn() {
+            return transferIn;
+        }
+
+        public void setTransferIn(double transferIn) {
+            this.transferIn = transferIn;
+        }
+
+        public double getTransferOut() {
+            return transferOut;
+        }
+
+        public void setTransferOut(double transferOut) {
+            this.transferOut = transferOut;
+        }
+
     }
 
 }

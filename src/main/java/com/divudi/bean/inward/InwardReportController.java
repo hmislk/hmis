@@ -396,7 +396,7 @@ public class InwardReportController implements Serializable {
         }
 
     }
-
+    
     public void createOutSideBillsByDischargeDate() {
         makeListNull();
         String sql;

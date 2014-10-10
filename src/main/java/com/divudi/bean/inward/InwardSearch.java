@@ -10,6 +10,8 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.PaymentMethod;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.data.Sex;
+import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
@@ -21,7 +23,9 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.EncounterComponent;
@@ -33,6 +37,8 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.facade.PersonFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -99,6 +105,11 @@ public class InwardSearch implements Serializable {
     @Inject
     private WebUserController webUserController;
     PaymentMethod paymentMethod;
+    @EJB
+    PersonFacade personFacade;
+    private YearMonthDay yearMonthDay;
+    Patient patient;
+    Sex[] sex;
 
     public void edit() {
         if (getBill() == null) {
@@ -129,6 +140,19 @@ public class InwardSearch implements Serializable {
         for (BillItem b : bill.getBillItems()) {
             getBillItemFacede().edit(b);
         }
+    }
+
+    public Sex[] getSex() {
+        return Sex.values();
+    }
+
+    public void updatePatiantDetails() {
+        if (bill.getPatient().getPerson() == null) {
+            JsfUtil.addErrorMessage("Person Not Set");
+            return;
+        }
+        personFacade.edit(getBill().getPatient().getPerson());
+
     }
 
     public void replace() {
@@ -200,6 +224,44 @@ public class InwardSearch implements Serializable {
         }
 
         return true;
+    }
+
+    public void dateChangeListen() {
+        getBill().getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+    }
+
+    public Patient getPatient() {
+
+        if (patient == null) {
+            patient = new Patient();
+            Person p = new Person();
+
+            patient.setPerson(p);
+        }
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public PersonFacade getPersonFacade() {
+        return personFacade;
+    }
+
+    public void setPersonFacade(PersonFacade personFacade) {
+        this.personFacade = personFacade;
+    }
+
+    public YearMonthDay getYearMonthDay() {
+        if (yearMonthDay == null) {
+            yearMonthDay = new YearMonthDay();
+        }
+        return yearMonthDay;
+    }
+
+    public void setYearMonthDay(YearMonthDay yearMonthDay) {
+        this.yearMonthDay = yearMonthDay;
     }
 
     public String inwardReprintBillFinal() {
@@ -574,7 +636,7 @@ public class InwardSearch implements Serializable {
             RefundBill cb = createRefundCancelBill();
             //Copy & paste
             getBillFacade().create(cb);
-            cancelBillItems(cb);            
+            cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
@@ -628,6 +690,12 @@ public class InwardSearch implements Serializable {
     public void cancelFinalBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
+            long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(), new Date());
+
+            if (Math.abs(dayCount) > 3) {
+                UtilityController.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
+                return;
+            }
             if (getBill().isCancelled()) {
                 UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;

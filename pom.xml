@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.divudi</groupId>
-    <artifactId>ruhunu</artifactId>
+    <artifactId>storeNew</artifactId>
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>live</name>
+    <name>storeNew</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -16,7 +16,11 @@
     </properties>
     
     <dependencies>
-      
+      <dependency>
+	<groupId>org.glassfish</groupId>
+	<artifactId>javax.el</artifactId>
+	<version>3.0.0</version>
+</dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa</artifactId>
@@ -125,6 +129,11 @@
             <groupId>xstream</groupId>
             <artifactId>xstream</artifactId>
             <version>1.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
     </dependencies>

@@ -330,7 +330,7 @@ public class PatientReportBean {
     public InvestigationItem investigationItemForAntibiotic(Antibiotic a, Investigation i) {
         Map m = new HashMap();
         String sql;
-        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a and ii.retired=false and ii.ixItemType=:iit and ii.investigationItemValueType=:iivt";
+        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a and ii.retired=false and ii.ixItemType=:iit and ii.ixItemValueType=:iivt";
         m.put("i", i);
         m.put("a", a.getName());
         m.put("iit", InvestigationItemType.Value);

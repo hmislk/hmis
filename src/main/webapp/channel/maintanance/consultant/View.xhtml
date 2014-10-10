@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="ConsultantViewDlg" widgetVar="ConsultantViewDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.ViewConsultantTitle}">
+            <h:form id="ConsultantViewForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{consultantController.selected != null}">
+                        <h:outputText value="#{bundle.ViewConsultantLabel_baImage}"/>
+                        <h:outputText value="#{consultantController.selected.baImage}" title="#{bundle.ViewConsultantTitle_baImage}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_fileName}"/>
+                        <h:outputText value="#{consultantController.selected.fileName}" title="#{bundle.ViewConsultantTitle_fileName}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_fileType}"/>
+                        <h:outputText value="#{consultantController.selected.fileType}" title="#{bundle.ViewConsultantTitle_fileType}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_id}"/>
+                        <h:outputText value="#{consultantController.selected.id}" title="#{bundle.ViewConsultantTitle_id}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_person}"/>
+                        <h:outputText value="#{consultantController.selected.person}" title="#{bundle.ViewConsultantTitle_person}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_creater}"/>
+                        <h:outputText value="#{consultantController.selected.creater}" title="#{bundle.ViewConsultantTitle_creater}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_createdAt}"/>
+                        <h:outputText value="#{consultantController.selected.createdAt}" title="#{bundle.ViewConsultantTitle_createdAt}">
+                            <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_retirer}"/>
+                        <h:outputText value="#{consultantController.selected.retirer}" title="#{bundle.ViewConsultantTitle_retirer}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_retiredAt}"/>
+                        <h:outputText value="#{consultantController.selected.retiredAt}" title="#{bundle.ViewConsultantTitle_retiredAt}">
+                            <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_retireComments}"/>
+                        <h:outputText value="#{consultantController.selected.retireComments}" title="#{bundle.ViewConsultantTitle_retireComments}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_code}"/>
+                        <h:outputText value="#{consultantController.selected.code}" title="#{bundle.ViewConsultantTitle_code}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_speciality}"/>
+                        <h:outputText value="#{consultantController.selected.speciality}" title="#{bundle.ViewConsultantTitle_speciality}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_registration}"/>
+                        <h:outputText value="#{consultantController.selected.registration}" title="#{bundle.ViewConsultantTitle_registration}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_qualification}"/>
+                        <h:outputText value="#{consultantController.selected.qualification}" title="#{bundle.ViewConsultantTitle_qualification}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_institution}"/>
+                        <h:outputText value="#{consultantController.selected.institution}" title="#{bundle.ViewConsultantTitle_institution}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_department}"/>
+                        <h:outputText value="#{consultantController.selected.department}" title="#{bundle.ViewConsultantTitle_department}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_staffCode}"/>
+                        <h:outputText value="#{consultantController.selected.staffCode}" title="#{bundle.ViewConsultantTitle_staffCode}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_shiftPreference}"/>
+                        <h:outputText value="#{consultantController.selected.shiftPreference}" title="#{bundle.ViewConsultantTitle_shiftPreference}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_shift}"/>
+                        <h:outputText value="#{consultantController.selected.shift}" title="#{bundle.ViewConsultantTitle_shift}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_repeatedDay}"/>
+                        <h:outputText value="#{consultantController.selected.repeatedDay}" title="#{bundle.ViewConsultantTitle_repeatedDay}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_workingDepartment}"/>
+                        <h:outputText value="#{consultantController.selected.workingDepartment}" title="#{bundle.ViewConsultantTitle_workingDepartment}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_employeeLeavingStatus}"/>
+                        <h:outputText value="#{consultantController.selected.employeeLeavingStatus}" title="#{bundle.ViewConsultantTitle_employeeLeavingStatus}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_employeeStatus}"/>
+                        <h:outputText value="#{consultantController.selected.employeeStatus}" title="#{bundle.ViewConsultantTitle_employeeStatus}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_payingMethod}"/>
+                        <h:outputText value="#{consultantController.selected.payingMethod}" title="#{bundle.ViewConsultantTitle_payingMethod}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_salaryPaymentMethod}"/>
+                        <h:outputText value="#{consultantController.selected.salaryPaymentMethod}" title="#{bundle.ViewConsultantTitle_salaryPaymentMethod}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_dateJoined}"/>
+                        <h:outputText value="#{consultantController.selected.dateJoined}" title="#{bundle.ViewConsultantTitle_dateJoined}">
+                            <f:convertDateTime pattern="MM/dd/yyyy" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_dateLeft}"/>
+                        <h:outputText value="#{consultantController.selected.dateLeft}" title="#{bundle.ViewConsultantTitle_dateLeft}">
+                            <f:convertDateTime pattern="MM/dd/yyyy" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_designation}"/>
+                        <h:outputText value="#{consultantController.selected.designation}" title="#{bundle.ViewConsultantTitle_designation}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_grade}"/>
+                        <h:outputText value="#{consultantController.selected.grade}" title="#{bundle.ViewConsultantTitle_grade}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_staffCategory}"/>
+                        <h:outputText value="#{consultantController.selected.staffCategory}" title="#{bundle.ViewConsultantTitle_staffCategory}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_paysheetComponent}"/>
+                        <h:outputText value="#{consultantController.selected.paysheetComponent}" title="#{bundle.ViewConsultantTitle_paysheetComponent}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_orderNo}"/>
+                        <h:outputText value="#{consultantController.selected.orderNo}" title="#{bundle.ViewConsultantTitle_orderNo}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_staffEmployment}"/>
+                        <h:outputText value="#{consultantController.selected.staffEmployment}" title="#{bundle.ViewConsultantTitle_staffEmployment}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_basic}"/>
+                        <h:outputText value="#{consultantController.selected.basic}" title="#{bundle.ViewConsultantTitle_basic}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_bankAccount}"/>
+                        <h:outputText value="#{consultantController.selected.bankAccount}" title="#{bundle.ViewConsultantTitle_bankAccount}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_epfNo}"/>
+                        <h:outputText value="#{consultantController.selected.epfNo}" title="#{bundle.ViewConsultantTitle_epfNo}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_roster}"/>
+                        <h:outputText value="#{consultantController.selected.roster}" title="#{bundle.ViewConsultantTitle_roster}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_acNo}"/>
+                        <h:outputText value="#{consultantController.selected.acNo}" title="#{bundle.ViewConsultantTitle_acNo}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_workingHour}"/>
+                        <h:outputText value="#{consultantController.selected.workingHour}" title="#{bundle.ViewConsultantTitle_workingHour}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_charge}"/>
+                        <h:outputText value="#{consultantController.selected.charge}" title="#{bundle.ViewConsultantTitle_charge}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_annualWelfareQualified}"/>
+                        <h:outputText value="#{consultantController.selected.annualWelfareQualified}" title="#{bundle.ViewConsultantTitle_annualWelfareQualified}"/>
+                        <h:outputText value="#{bundle.ViewConsultantLabel_annualWelfareUtilized}"/>
+                        <h:outputText value="#{consultantController.selected.annualWelfareUtilized}" title="#{bundle.ViewConsultantTitle_annualWelfareUtilized}"/>
+                    </p:panelGrid>
+                    <p:commandButton value="#{bundle.Close}" onclick="ConsultantViewDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="DoctorCreateDlg" widgetVar="DoctorCreateDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.CreateDoctorTitle}">
+            <h:form id="DoctorCreateForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{doctorController.selected != null}">
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_baImage}" for="baImage" />
+                        <p:inputTextarea rows="4" cols="30" id="baImage" value="#{doctorController.selected.baImage}" title="#{bundle.CreateDoctorTitle_baImage}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_fileName}" for="fileName" />
+                        <p:inputText id="fileName" value="#{doctorController.selected.fileName}" title="#{bundle.CreateDoctorTitle_fileName}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_fileType}" for="fileType" />
+                        <p:inputText id="fileType" value="#{doctorController.selected.fileType}" title="#{bundle.CreateDoctorTitle_fileType}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_id}" for="id" />
+                        <p:inputText id="id" value="#{doctorController.selected.id}" title="#{bundle.CreateDoctorTitle_id}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_person}" for="person" />
+                        <p:selectOneMenu id="person" value="#{doctorController.selected.person}" >
+                            <f:selectItems value="#{personController.itemsAvailableSelectOne}"
+                                           var="personItem"
+                                           itemValue="#{personItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_creater}" for="creater" />
+                        <p:selectOneMenu id="creater" value="#{doctorController.selected.creater}" >
+                            <f:selectItems value="#{webUserController.itemsAvailableSelectOne}"
+                                           var="createrItem"
+                                           itemValue="#{createrItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_createdAt}" for="createdAt" />
+                        <p:calendar id="createdAt" pattern="MM/dd/yyyy HH:mm:ss" value="#{doctorController.selected.createdAt}" title="#{bundle.EditDoctorTitle_createdAt}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_retirer}" for="retirer" />
+                        <p:selectOneMenu id="retirer" value="#{doctorController.selected.retirer}" >
+                            <f:selectItems value="#{webUserController.itemsAvailableSelectOne}"
+                                           var="retirerItem"
+                                           itemValue="#{retirerItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_retiredAt}" for="retiredAt" />
+                        <p:calendar id="retiredAt" pattern="MM/dd/yyyy HH:mm:ss" value="#{doctorController.selected.retiredAt}" title="#{bundle.EditDoctorTitle_retiredAt}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_retireComments}" for="retireComments" />
+                        <p:inputText id="retireComments" value="#{doctorController.selected.retireComments}" title="#{bundle.CreateDoctorTitle_retireComments}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_code}" for="code" />
+                        <p:inputText id="code" value="#{doctorController.selected.code}" title="#{bundle.CreateDoctorTitle_code}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_speciality}" for="speciality" />
+                        <p:selectOneMenu id="speciality" value="#{doctorController.selected.speciality}" >
+                            <f:selectItems value="#{specialityController.itemsAvailableSelectOne}"
+                                           var="specialityItem"
+                                           itemValue="#{specialityItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_registration}" for="registration" />
+                        <p:inputText id="registration" value="#{doctorController.selected.registration}" title="#{bundle.CreateDoctorTitle_registration}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_qualification}" for="qualification" />
+                        <p:inputTextarea rows="4" cols="30" id="qualification" value="#{doctorController.selected.qualification}" title="#{bundle.CreateDoctorTitle_qualification}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_institution}" for="institution" />
+                        <p:selectOneMenu id="institution" value="#{doctorController.selected.institution}" >
+                            <f:selectItems value="#{institutionController.itemsAvailableSelectOne}"
+                                           var="institutionItem"
+                                           itemValue="#{institutionItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_department}" for="department" />
+                        <p:selectOneMenu id="department" value="#{doctorController.selected.department}" >
+                            <f:selectItems value="#{departmentController.itemsAvailableSelectOne}"
+                                           var="departmentItem"
+                                           itemValue="#{departmentItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_staffCode}" for="staffCode" />
+                        <p:inputText id="staffCode" value="#{doctorController.selected.staffCode}" title="#{bundle.CreateDoctorTitle_staffCode}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_shiftPreference}" for="shiftPreference" />
+                        <p:selectOneMenu id="shiftPreference" value="#{doctorController.selected.shiftPreference}" >
+                            <f:selectItems value="#{shiftPreferenceController.itemsAvailableSelectOne}"
+                                           var="shiftPreferenceItem"
+                                           itemValue="#{shiftPreferenceItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_shift}" for="shift" />
+                        <p:inputText id="shift" value="#{doctorController.selected.shift}" title="#{bundle.CreateDoctorTitle_shift}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_repeatedDay}" for="repeatedDay" />
+                        <p:inputText id="repeatedDay" value="#{doctorController.selected.repeatedDay}" title="#{bundle.CreateDoctorTitle_repeatedDay}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_workingDepartment}" for="workingDepartment" />
+                        <p:selectOneMenu id="workingDepartment" value="#{doctorController.selected.workingDepartment}" >
+                            <f:selectItems value="#{departmentController.itemsAvailableSelectOne}"
+                                           var="workingDepartmentItem"
+                                           itemValue="#{workingDepartmentItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_employeeLeavingStatus}" for="employeeLeavingStatus" />
+                        <p:inputText id="employeeLeavingStatus" value="#{doctorController.selected.employeeLeavingStatus}" title="#{bundle.CreateDoctorTitle_employeeLeavingStatus}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_employeeStatus}" for="employeeStatus" />
+                        <p:inputText id="employeeStatus" value="#{doctorController.selected.employeeStatus}" title="#{bundle.CreateDoctorTitle_employeeStatus}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_payingMethod}" for="payingMethod" />
+                        <p:inputText id="payingMethod" value="#{doctorController.selected.payingMethod}" title="#{bundle.CreateDoctorTitle_payingMethod}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_salaryPaymentMethod}" for="salaryPaymentMethod" />
+                        <p:inputText id="salaryPaymentMethod" value="#{doctorController.selected.salaryPaymentMethod}" title="#{bundle.CreateDoctorTitle_salaryPaymentMethod}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_dateJoined}" for="dateJoined" />
+                        <p:calendar id="dateJoined" pattern="MM/dd/yyyy" value="#{doctorController.selected.dateJoined}" title="#{bundle.EditDoctorTitle_dateJoined}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_dateLeft}" for="dateLeft" />
+                        <p:calendar id="dateLeft" pattern="MM/dd/yyyy" value="#{doctorController.selected.dateLeft}" title="#{bundle.EditDoctorTitle_dateLeft}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_designation}" for="designation" />
+                        <p:selectOneMenu id="designation" value="#{doctorController.selected.designation}" >
+                            <f:selectItems value="#{designationController.itemsAvailableSelectOne}"
+                                           var="designationItem"
+                                           itemValue="#{designationItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_grade}" for="grade" />
+                        <p:selectOneMenu id="grade" value="#{doctorController.selected.grade}" >
+                            <f:selectItems value="#{gradeController.itemsAvailableSelectOne}"
+                                           var="gradeItem"
+                                           itemValue="#{gradeItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_staffCategory}" for="staffCategory" />
+                        <p:selectOneMenu id="staffCategory" value="#{doctorController.selected.staffCategory}" >
+                            <f:selectItems value="#{staffCategoryController.itemsAvailableSelectOne}"
+                                           var="staffCategoryItem"
+                                           itemValue="#{staffCategoryItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_paysheetComponent}" for="paysheetComponent" />
+                        <p:selectOneMenu id="paysheetComponent" value="#{doctorController.selected.paysheetComponent}" >
+                            <f:selectItems value="#{paysheetComponentController.itemsAvailableSelectOne}"
+                                           var="paysheetComponentItem"
+                                           itemValue="#{paysheetComponentItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_orderNo}" for="orderNo" />
+                        <p:inputText id="orderNo" value="#{doctorController.selected.orderNo}" title="#{bundle.CreateDoctorTitle_orderNo}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_staffEmployment}" for="staffEmployment" />
+                        <p:selectOneMenu id="staffEmployment" value="#{doctorController.selected.staffEmployment}" >
+                            <f:selectItems value="#{staffEmploymentController.itemsAvailableSelectOne}"
+                                           var="staffEmploymentItem"
+                                           itemValue="#{staffEmploymentItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_basic}" for="basic" />
+                        <p:inputText id="basic" value="#{doctorController.selected.basic}" title="#{bundle.CreateDoctorTitle_basic}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_bankAccount}" for="bankAccount" />
+                        <p:selectOneMenu id="bankAccount" value="#{doctorController.selected.bankAccount}" >
+                            <f:selectItems value="#{bankAccountController.itemsAvailableSelectOne}"
+                                           var="bankAccountItem"
+                                           itemValue="#{bankAccountItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_epfNo}" for="epfNo" />
+                        <p:inputText id="epfNo" value="#{doctorController.selected.epfNo}" title="#{bundle.CreateDoctorTitle_epfNo}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_roster}" for="roster" />
+                        <p:selectOneMenu id="roster" value="#{doctorController.selected.roster}" >
+                            <f:selectItems value="#{rosterController.itemsAvailableSelectOne}"
+                                           var="rosterItem"
+                                           itemValue="#{rosterItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_acNo}" for="acNo" />
+                        <p:inputText id="acNo" value="#{doctorController.selected.acNo}" title="#{bundle.CreateDoctorTitle_acNo}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_workingHour}" for="workingHour" />
+                        <p:inputText id="workingHour" value="#{doctorController.selected.workingHour}" title="#{bundle.CreateDoctorTitle_workingHour}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_charge}" for="charge" />
+                        <p:inputText id="charge" value="#{doctorController.selected.charge}" title="#{bundle.CreateDoctorTitle_charge}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_annualWelfareQualified}" for="annualWelfareQualified" />
+                        <p:inputText id="annualWelfareQualified" value="#{doctorController.selected.annualWelfareQualified}" title="#{bundle.CreateDoctorTitle_annualWelfareQualified}" />
+                        <p:outputLabel value="#{bundle.CreateDoctorLabel_annualWelfareUtilized}" for="annualWelfareUtilized" />
+                        <p:inputText id="annualWelfareUtilized" value="#{doctorController.selected.annualWelfareUtilized}" title="#{bundle.CreateDoctorTitle_annualWelfareUtilized}" />
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{doctorController.create}" value="#{bundle.Save}" update="display,:DoctorListForm:datalist,:growl" oncomplete="handleSubmit(args,'DoctorCreateDialog');"/>
+                    <p:commandButton value="#{bundle.Cancel}" onclick="DoctorCreateDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="DoctorViewDlg" widgetVar="DoctorViewDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.ViewDoctorTitle}">
+            <h:form id="DoctorViewForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{doctorController.selected != null}">
+                        <h:outputText value="#{bundle.ViewDoctorLabel_baImage}"/>
+                        <h:outputText value="#{doctorController.selected.baImage}" title="#{bundle.ViewDoctorTitle_baImage}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_fileName}"/>
+                        <h:outputText value="#{doctorController.selected.fileName}" title="#{bundle.ViewDoctorTitle_fileName}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_fileType}"/>
+                        <h:outputText value="#{doctorController.selected.fileType}" title="#{bundle.ViewDoctorTitle_fileType}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_id}"/>
+                        <h:outputText value="#{doctorController.selected.id}" title="#{bundle.ViewDoctorTitle_id}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_person}"/>
+                        <h:outputText value="#{doctorController.selected.person}" title="#{bundle.ViewDoctorTitle_person}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_creater}"/>
+                        <h:outputText value="#{doctorController.selected.creater}" title="#{bundle.ViewDoctorTitle_creater}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_createdAt}"/>
+                        <h:outputText value="#{doctorController.selected.createdAt}" title="#{bundle.ViewDoctorTitle_createdAt}">
+                            <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_retirer}"/>
+                        <h:outputText value="#{doctorController.selected.retirer}" title="#{bundle.ViewDoctorTitle_retirer}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_retiredAt}"/>
+                        <h:outputText value="#{doctorController.selected.retiredAt}" title="#{bundle.ViewDoctorTitle_retiredAt}">
+                            <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_retireComments}"/>
+                        <h:outputText value="#{doctorController.selected.retireComments}" title="#{bundle.ViewDoctorTitle_retireComments}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_code}"/>
+                        <h:outputText value="#{doctorController.selected.code}" title="#{bundle.ViewDoctorTitle_code}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_speciality}"/>
+                        <h:outputText value="#{doctorController.selected.speciality}" title="#{bundle.ViewDoctorTitle_speciality}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_registration}"/>
+                        <h:outputText value="#{doctorController.selected.registration}" title="#{bundle.ViewDoctorTitle_registration}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_qualification}"/>
+                        <h:outputText value="#{doctorController.selected.qualification}" title="#{bundle.ViewDoctorTitle_qualification}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_institution}"/>
+                        <h:outputText value="#{doctorController.selected.institution}" title="#{bundle.ViewDoctorTitle_institution}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_department}"/>
+                        <h:outputText value="#{doctorController.selected.department}" title="#{bundle.ViewDoctorTitle_department}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_staffCode}"/>
+                        <h:outputText value="#{doctorController.selected.staffCode}" title="#{bundle.ViewDoctorTitle_staffCode}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_shiftPreference}"/>
+                        <h:outputText value="#{doctorController.selected.shiftPreference}" title="#{bundle.ViewDoctorTitle_shiftPreference}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_shift}"/>
+                        <h:outputText value="#{doctorController.selected.shift}" title="#{bundle.ViewDoctorTitle_shift}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_repeatedDay}"/>
+                        <h:outputText value="#{doctorController.selected.repeatedDay}" title="#{bundle.ViewDoctorTitle_repeatedDay}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_workingDepartment}"/>
+                        <h:outputText value="#{doctorController.selected.workingDepartment}" title="#{bundle.ViewDoctorTitle_workingDepartment}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_employeeLeavingStatus}"/>
+                        <h:outputText value="#{doctorController.selected.employeeLeavingStatus}" title="#{bundle.ViewDoctorTitle_employeeLeavingStatus}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_employeeStatus}"/>
+                        <h:outputText value="#{doctorController.selected.employeeStatus}" title="#{bundle.ViewDoctorTitle_employeeStatus}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_payingMethod}"/>
+                        <h:outputText value="#{doctorController.selected.payingMethod}" title="#{bundle.ViewDoctorTitle_payingMethod}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_salaryPaymentMethod}"/>
+                        <h:outputText value="#{doctorController.selected.salaryPaymentMethod}" title="#{bundle.ViewDoctorTitle_salaryPaymentMethod}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_dateJoined}"/>
+                        <h:outputText value="#{doctorController.selected.dateJoined}" title="#{bundle.ViewDoctorTitle_dateJoined}">
+                            <f:convertDateTime pattern="MM/dd/yyyy" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_dateLeft}"/>
+                        <h:outputText value="#{doctorController.selected.dateLeft}" title="#{bundle.ViewDoctorTitle_dateLeft}">
+                            <f:convertDateTime pattern="MM/dd/yyyy" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_designation}"/>
+                        <h:outputText value="#{doctorController.selected.designation}" title="#{bundle.ViewDoctorTitle_designation}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_grade}"/>
+                        <h:outputText value="#{doctorController.selected.grade}" title="#{bundle.ViewDoctorTitle_grade}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_staffCategory}"/>
+                        <h:outputText value="#{doctorController.selected.staffCategory}" title="#{bundle.ViewDoctorTitle_staffCategory}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_paysheetComponent}"/>
+                        <h:outputText value="#{doctorController.selected.paysheetComponent}" title="#{bundle.ViewDoctorTitle_paysheetComponent}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_orderNo}"/>
+                        <h:outputText value="#{doctorController.selected.orderNo}" title="#{bundle.ViewDoctorTitle_orderNo}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_staffEmployment}"/>
+                        <h:outputText value="#{doctorController.selected.staffEmployment}" title="#{bundle.ViewDoctorTitle_staffEmployment}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_basic}"/>
+                        <h:outputText value="#{doctorController.selected.basic}" title="#{bundle.ViewDoctorTitle_basic}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_bankAccount}"/>
+                        <h:outputText value="#{doctorController.selected.bankAccount}" title="#{bundle.ViewDoctorTitle_bankAccount}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_epfNo}"/>
+                        <h:outputText value="#{doctorController.selected.epfNo}" title="#{bundle.ViewDoctorTitle_epfNo}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_roster}"/>
+                        <h:outputText value="#{doctorController.selected.roster}" title="#{bundle.ViewDoctorTitle_roster}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_acNo}"/>
+                        <h:outputText value="#{doctorController.selected.acNo}" title="#{bundle.ViewDoctorTitle_acNo}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_workingHour}"/>
+                        <h:outputText value="#{doctorController.selected.workingHour}" title="#{bundle.ViewDoctorTitle_workingHour}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_charge}"/>
+                        <h:outputText value="#{doctorController.selected.charge}" title="#{bundle.ViewDoctorTitle_charge}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_annualWelfareQualified}"/>
+                        <h:outputText value="#{doctorController.selected.annualWelfareQualified}" title="#{bundle.ViewDoctorTitle_annualWelfareQualified}"/>
+                        <h:outputText value="#{bundle.ViewDoctorLabel_annualWelfareUtilized}"/>
+                        <h:outputText value="#{doctorController.selected.annualWelfareUtilized}" title="#{bundle.ViewDoctorTitle_annualWelfareUtilized}"/>
+                    </p:panelGrid>
+                    <p:commandButton value="#{bundle.Close}" onclick="DoctorViewDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>
