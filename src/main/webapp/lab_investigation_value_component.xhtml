@@ -33,7 +33,7 @@
                                 <f:ajax listener="#{investigationValidatorComponentController.listItemValidator()}" render="invalcom" event="itemSelect" execute="acPt"></f:ajax>
                             </p:autoComplete> 
                             <p:outputLabel value="Item Validators"></p:outputLabel>
-                            <h:selectOneMenu value="#{investigationValidatorComponentController.currentValidator}" id="invalcom">
+                            <h:selectOneMenu value="#{investigationValidatorComponentController.currentValidator}" id="invalcom" converter="investigationValidatorConverter">
                                 <f:selectItems var="iv"  itemLabel="#{iv.name}" itemValue="#{iv}" 
                                                value="#{investigationValidatorComponentController.investigationItemValidators}"></f:selectItems>
                                 <f:ajax execute="@this" render="panelDetails" ></f:ajax>
