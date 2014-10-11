@@ -12,6 +12,7 @@
     <ui:define name="content">
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summery Without Pro (DAY)"  styleClass="noPrintButton" />
@@ -35,7 +36,7 @@
                                      slip:slip,
                                      cheque:cheque,
                                      finalSum"
-                                     fileName="Book_Keeping_Summery_without_pro_day"
+                                     fileName="Book_Keeping_Summery_without_pro_day_by_category_dat_end"
                                      facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                      fontName="Courier New"  />
                     </p:commandButton>

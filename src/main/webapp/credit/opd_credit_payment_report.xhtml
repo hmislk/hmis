@@ -30,6 +30,27 @@
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            <h:outputLabel value="Service Name"/>
+                            
+                            <p:autoComplete value="#{creditCompanyController.service}" completeMethod="#{itemController.completeService}" var="ix" 
+                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.department.name}
+                            </p:column>  
+                            <p:column>
+                                #{ix.category.name}
+                            </p:column> 
+                        </p:autoComplete>
+                            
+                            <h:outputText value="Service Category/Sub Category" ></h:outputText>
+                            <p:autoComplete converter="categoryConverter" completeMethod="#{categoryController.completeServiceCategory}" var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" forceSelection="true" value="#{creditCompanyController.category}" >                                    
+                            <p:column>#{pta.name}</p:column>
+                            <p:column>#{pta.parentCategory}</p:column>                                        
+                        </p:autoComplete>
 
 
                         </h:panelGrid>
@@ -53,8 +74,14 @@
                                     #{rm.item.name}
                                 </p:column>
                                 <p:column headerText="Value">
-                                    #{rm.netValue}
+                                    <h:outputLabel value="#{rm.netValue}">
+                                    </h:outputLabel>
+                                    
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController1.billItemNetValue}"/>
+                                    </f:facet> 
                                 </p:column>
+                                 
                             </p:dataTable>
                         </p:panel>
 

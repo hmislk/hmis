@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
                 xmlns:pe="http://primefaces.org/ui/extensions"
-                xmlns:cashier="http://xmlns.jcp.org/jsf/composite/cashier">
+                xmlns:cashier="http://java.sun.com/jsf/composite/cashier">
 
 
     <ui:define name="content">
@@ -84,8 +84,8 @@
 
                  
                     <h:panelGroup rendered="#{commonReport.billType eq 'OpdBill'}" >                       
-                        <p:dataTable id="billed"  value="#{commonReport.billedBills.bills}" var="b" 
-                                     rendered="#{commonReport.billedBills.bills.size()>0}" sortBy="#{b.billType}"  >
+                        <p:dataTable id="billed"  value="#{commonReport.billedBills.bills}" var="b" rowStyleClass="noDisplayRow"
+                                     rendered="#{commonReport.billedBills.bills.size()>0}" sortBy="#{b.billType}"  style="width: 95%;" >
 
                             <f:facet name="header">  
                                 <h:outputLabel value="Opd Bills "/> 

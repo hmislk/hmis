@@ -929,6 +929,12 @@ public class mdInwardReportController implements Serializable {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
+        
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+        
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
@@ -970,6 +976,12 @@ public class mdInwardReportController implements Serializable {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
+        
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+        
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
@@ -1067,6 +1079,12 @@ public class mdInwardReportController implements Serializable {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
+        
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+        
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm ";
             temMap.put("pm", paymentMethod);
@@ -1102,6 +1120,12 @@ public class mdInwardReportController implements Serializable {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
+        
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+        
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);

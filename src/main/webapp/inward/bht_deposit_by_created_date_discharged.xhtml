@@ -49,7 +49,7 @@
                             <h:outputLabel value="B H T No :" ></h:outputLabel>
                             <h:panelGrid columns="1">
                                 <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                value="#{bhtSummeryFinalizedController.patientEncounter}"
+                                                value="#{mdInwardReportController.patientEncounter}"
                                                 completeMethod="#{admissionController.completePatientAll}" 
                                                 var="myItem" itemValue="#{myItem}" 
                                                 itemLabel="#{myItem.bhtNo}" 
@@ -177,8 +177,11 @@
                                         <p:column colspan="5" footerText="Total"></p:column>
                                         <p:column footerText="#{mdInwardReportController.totalValue}" style="text-align: right">
                                             <f:facet name="footer">
+
                                                 <p:outputLabel value="#{mdInwardReportController.totalValue}">
-                                                    <f:convertNumber pattern="#,000.00"/></p:outputLabel>
+                                                    <f:convertNumber pattern="#,000.00"/>
+                                                </p:outputLabel>
+
                                             </f:facet>
                                         </p:column>
 

@@ -10,8 +10,10 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.DoctorSpeciality;
 import com.divudi.facade.DoctorSpecialityFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import javax.ejb.EJB;
@@ -53,9 +55,37 @@ public class DoctorSpecialityController implements Serializable {
     public void setSelected(DoctorSpeciality selected) {
         this.selected = selected;
     }
+
+    public void deleteSelected(){
+        if(selected==null){
+            JsfUtil.addErrorMessage("Nothing to delete");
+            return;
+        }
+        selected.setRetired(true);
+        selected.setRetiredAt(new Date());
+        selected.setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(selected);
+        items = null;
+    }
     
+    public void prepareCreate(){
+        selected = new DoctorSpeciality();
+    }
     
-    
+    public void updateSelected() {
+        if (getSelected() == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (getSelected().getId() == null || getSelected().getId() == 0) {
+            getFacade().create(selected);
+        } else {
+            getFacade().edit(selected);
+        }
+        items = null;
+        getItems();
+    }
+
     public List<DoctorSpeciality> completeSpeciality(String qry) {
         //   System.out.println("qry = " + qry);
         List<DoctorSpeciality> lst;
@@ -161,8 +191,9 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public List<DoctorSpeciality> getItems() {
-        items = getFacade().findAll("name", true);
-        //System.out.println("a");
+        if (items == null) {
+            items = getFacade().findAll("name", true);
+        }
         return items;
     }
 
