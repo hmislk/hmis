@@ -105,6 +105,7 @@
                                     <p:menuitem  ajax="false"  action="/reportLab/report_lab_matro" value="Summeries"  ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/lab_administration" value="Administration"  ></p:menuitem>
                                     
+                                    
                                 </p:submenu>
                                 <p:submenu label="Pharmacy"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
                                     <p:submenu label="Sale Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
