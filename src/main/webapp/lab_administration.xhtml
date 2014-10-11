@@ -30,12 +30,12 @@
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="lab_investigation" onclick="onSubmitButton();" />
                                 
                                 <p:commandButton  styleClass="linkButton" ajax="false"  rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" value="Investigation Formats" action="lab_investigation_format" onclick="onSubmitButton();" />
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Field Values" action="lab_investigation_item_value" onclick="onSubmitButton();" />  
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Value Component" action="lab_investigation_value_component" onclick="onSubmitButton();" />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Field Values" action="lab_investigation_item_value" onclick="onSubmitButton();" />  
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Validators" action="lab_investigation_value_component" onclick="onSubmitButton();" />
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Replaceable Investigations" action="lab_replaceable_ix" onclick="onSubmitButton();" />
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Flags" action="lab_flags" onclick="onSubmitButton();" />
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Calculations" action="lab_calculation" onclick="onSubmitButton();" />
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Dynamic Labels" action="lab_dynamic_labels" onclick="onSubmitButton();" />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Flags" action="lab_flags" onclick="onSubmitButton();" />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Calculations" action="lab_calculation" onclick="onSubmitButton();" />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Dynamic Labels" action="lab_dynamic_labels" onclick="onSubmitButton();" />
                                 <hr/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Report Format Categories" action="lab_report_format_category" onclick="onSubmitButton();" />
                                 <p:commandButton  styleClass="linkButton" ajax="false" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" value="Report Formats" action="lab_report_format" onclick="onSubmitButton();" />

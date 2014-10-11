@@ -5,7 +5,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.lab.InvestigationItemValidator;
+import com.divudi.entity.lab.InvestigationValidator;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -15,7 +15,7 @@ import javax.persistence.PersistenceContext;
  * @author pasan
  */
 @Stateless
-public class InvestigationItemValidatorFacade extends AbstractFacade<InvestigationItemValidator> {
+public class InvestigationItemValidatorFacade extends AbstractFacade<InvestigationValidator> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -25,7 +25,7 @@ public class InvestigationItemValidatorFacade extends AbstractFacade<Investigati
     }
 
     public InvestigationItemValidatorFacade() {
-        super(InvestigationItemValidator.class);
+        super(InvestigationValidator.class);
     }
     
 }

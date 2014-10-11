@@ -25,10 +25,11 @@ import javax.persistence.Temporal;
  * @author pasan
  */
 @Entity
-public class InvestigationValidateComponent implements Serializable {
+public class InvestigationValidaterComponent implements Serializable {
+    
     
     @OneToMany(mappedBy = "investigationValidateComponent")
-    private List<InvestigationItemValidator> investigationItemValidators;
+    private List<InvestigationValidator> investigationItemValidators;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -46,7 +47,7 @@ public class InvestigationValidateComponent implements Serializable {
     private Date editedAt;
 
     @ManyToOne
-    private InvestigationItemValidator investigationItemValidator;
+    private InvestigationValidator investigationValidator;
     
     @ManyToOne
     private InvestigationItem investigationItem;
@@ -81,10 +82,10 @@ public class InvestigationValidateComponent implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof InvestigationValidateComponent)) {
+        if (!(object instanceof InvestigationValidaterComponent)) {
             return false;
         }
-        InvestigationValidateComponent other = (InvestigationValidateComponent) object;
+        InvestigationValidaterComponent other = (InvestigationValidaterComponent) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -128,19 +129,19 @@ public class InvestigationValidateComponent implements Serializable {
         this.editedAt = editedAt;
     }
 
-    public InvestigationItemValidator getInvestigationItemValidator() {
-        return investigationItemValidator;
+    public InvestigationValidator getInvestigationValidator() {
+        return investigationValidator;
     }
 
-    public void setInvestigationItemValidator(InvestigationItemValidator investigationItemValidator) {
-        this.investigationItemValidator = investigationItemValidator;
+    public void setInvestigationValidator(InvestigationValidator investigationValidator) {
+        this.investigationValidator = investigationValidator;
     }
 
-    public List<InvestigationItemValidator> getInvestigationItemValidators() {
+    public List<InvestigationValidator> getInvestigationItemValidators() {
         return investigationItemValidators;
     }
 
-    public void setInvestigationItemValidators(List<InvestigationItemValidator> investigationItemValidators) {
+    public void setInvestigationItemValidators(List<InvestigationValidator> investigationItemValidators) {
         this.investigationItemValidators = investigationItemValidators;
     }
 

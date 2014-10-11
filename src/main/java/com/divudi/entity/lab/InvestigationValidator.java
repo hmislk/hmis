@@ -10,13 +10,10 @@ import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
@@ -26,12 +23,12 @@ import javax.persistence.Temporal;
  * @author pasan
  */
 @Entity
-public class InvestigationItemValidator implements Serializable {
+public class InvestigationValidator implements Serializable {
     @ManyToOne
-    private InvestigationValidateComponent investigationValidateComponent;
+    private InvestigationValidaterComponent investigationValidateComponent;
     
-    @OneToMany(mappedBy = "investigationItemValidator")
-    private List<InvestigationValidateComponent> investigationValidateComponents;
+    @OneToMany(mappedBy = "investigationValidator")
+    private List<InvestigationValidaterComponent> investigationValidateComponents;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -56,10 +53,11 @@ public class InvestigationItemValidator implements Serializable {
     private String retireComments;
     
     private String name;
+    
     @ManyToOne
     Item item;
-    private String maxValue;
-    private String minValue;
+    private Double maximumValue;
+    private Double minimumValue;
     
     
     
@@ -118,10 +116,10 @@ public class InvestigationItemValidator implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof InvestigationItemValidator)) {
+        if (!(object instanceof InvestigationValidator)) {
             return false;
         }
-        InvestigationItemValidator other = (InvestigationItemValidator) object;
+        InvestigationValidator other = (InvestigationValidator) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -134,37 +132,39 @@ public class InvestigationItemValidator implements Serializable {
     }
 
 
-    public List<InvestigationValidateComponent> getInvestigationValidateComponents() {
+    public List<InvestigationValidaterComponent> getInvestigationValidateComponents() {
         return investigationValidateComponents;
     }
 
-    public void setInvestigationValidateComponents(List<InvestigationValidateComponent> investigationValidateComponents) {
+    public void setInvestigationValidateComponents(List<InvestigationValidaterComponent> investigationValidateComponents) {
         this.investigationValidateComponents = investigationValidateComponents;
     }
 
-    public List<InvestigationValidateComponent> getInvestigationValueComponents() {
+    public List<InvestigationValidaterComponent> getInvestigationValueComponents() {
         return investigationValidateComponents;
     }
 
-    public void setInvestigationValueComponents(List<InvestigationValidateComponent> investigationValueComponents) {
+    public void setInvestigationValueComponents(List<InvestigationValidaterComponent> investigationValueComponents) {
         this.investigationValidateComponents = investigationValueComponents;
     }
 
-    public String getMaxValue() {
-        return maxValue;
+    public Double getMaximumValue() {
+        return maximumValue;
     }
 
-    public void setMaxValue(String maxValue) {
-        this.maxValue = maxValue;
+    public void setMaximumValue(Double maximumValue) {
+        this.maximumValue = maximumValue;
     }
 
-    public String getMinValue() {
-        return minValue;
+    public Double getMinimumValue() {
+        return minimumValue;
     }
 
-    public void setMinValue(String minValue) {
-        this.minValue = minValue;
+    public void setMinimumValue(Double minimumValue) {
+        this.minimumValue = minimumValue;
     }
+
+   
 
     public boolean isRetired() {
         return retired;
@@ -214,11 +214,11 @@ public class InvestigationItemValidator implements Serializable {
         this.item = item;
     }
 
-    public InvestigationValidateComponent getInvestigationValidateComponent() {
+    public InvestigationValidaterComponent getInvestigationValidateComponent() {
         return investigationValidateComponent;
     }
 
-    public void setInvestigationValidateComponent(InvestigationValidateComponent investigationValidateComponent) {
+    public void setInvestigationValidateComponent(InvestigationValidaterComponent investigationValidateComponent) {
         this.investigationValidateComponent = investigationValidateComponent;
     }
 

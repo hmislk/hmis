@@ -11,7 +11,7 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.InvestigationItemValidator;
+import com.divudi.entity.lab.InvestigationValidator;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.entity.pharmacy.MeasurementUnit;

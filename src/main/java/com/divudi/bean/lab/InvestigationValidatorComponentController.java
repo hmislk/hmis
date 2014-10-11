@@ -6,91 +6,82 @@
 package com.divudi.bean.lab;
 
 import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItemValidator;
-import com.divudi.entity.lab.InvestigationValidateComponent;
+import com.divudi.entity.lab.InvestigationValidator;
+import com.divudi.entity.lab.InvestigationValidaterComponent;
 import com.divudi.facade.InvestigationItemValidatorFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
-import javax.faces.validator.Validator;
 
 /**
  *
  * @author pasan
  */
-@Named(value = "investigationValueComponentController")
+@Named
 @SessionScoped
-public class InvestigationValueComponentController implements Serializable {
+public class InvestigationValidatorComponentController implements Serializable {
 
     /**
      * Creates a new instance of InvestigationValueComponentController
      */
-    public InvestigationValueComponentController() {
+    public InvestigationValidatorComponentController() {
     }
 
     Investigation currentInvestigation;
-    InvestigationValidateComponent current;
-    InvestigationItemValidator currentValidator;
-    private List<InvestigationItemValidator> investigationItemValidators;
+    InvestigationValidaterComponent current;
+    InvestigationValidator currentValidator;
+    private List<InvestigationValidator> investigationItemValidators;
     @EJB
     private InvestigationItemValidatorFacade investigationItemValidatorFacade;
     private String newValidatorName;
 
     public void addNewValidator() {
-        currentValidator = new InvestigationItemValidator();
+        if(currentInvestigation==null){
+            JsfUtil.addErrorMessage("Select an investigation");
+            return;
+        }
+        currentValidator = new InvestigationValidator();
         currentValidator.setName(newValidatorName);
         currentValidator.setItem(currentInvestigation);
         getInvestigationItemValidatorFacade().create(currentValidator);
         listItemValidator();
-
     }
 
     public void listItemValidator() {
-
         investigationItemValidators = new ArrayList<>();
         String sql;
         sql = "select i from InvestigationItemValidator i where "
                 + " i.retired=false ";
         investigationItemValidators = getInvestigationItemValidatorFacade().findBySQL(sql);
-
     }
 
-    public Investigation getCurrentInvestigation() {
-        if (currentInvestigation == null) {
-            currentInvestigation = new Investigation();
-            //current = null;
-        }
+    public void setCurrentInvestigation(Investigation currentInvestigation) {
+        this.currentInvestigation = currentInvestigation;
+    }
 
-        current = null;
+    
+    
+    public Investigation getCurrentInvestigation() {
         return currentInvestigation;
     }
 
-    public InvestigationValidateComponent getCurrent() {
-
-        if (current == null) {
-            current = new InvestigationValidateComponent();
-        }
+    public InvestigationValidaterComponent getCurrent() {
         return current;
     }
 
-    public void setCurrent(InvestigationValidateComponent current) {
+    public void setCurrent(InvestigationValidaterComponent current) {
         this.current = current;
     }
 
-    public List<InvestigationItemValidator> getInvestigationItemValidators() {
-        if (investigationItemValidators == null) {
-            JsfUtil.addErrorMessage("No Validators");
-        }
+    public List<InvestigationValidator> getInvestigationItemValidators() {
         return investigationItemValidators;
     }
 
-    public void setInvestigationItemValidators(List<InvestigationItemValidator> investigationItemValidators) {
+    public void setInvestigationItemValidators(List<InvestigationValidator> investigationItemValidators) {
         this.investigationItemValidators = investigationItemValidators;
     }
 
@@ -103,7 +94,6 @@ public class InvestigationValueComponentController implements Serializable {
     }
 
     public String getNewValidatorName() {
-
         return newValidatorName;
     }
 
@@ -111,13 +101,11 @@ public class InvestigationValueComponentController implements Serializable {
         this.newValidatorName = newValidatorName;
     }
 
-    public InvestigationItemValidator getCurrentValidator() {
-        
-        
+    public InvestigationValidator getCurrentValidator() {
         return currentValidator;
     }
 
-    public void setCurrentValidator(InvestigationItemValidator currentValidator) {
+    public void setCurrentValidator(InvestigationValidator currentValidator) {
         this.currentValidator = currentValidator;
     }
 

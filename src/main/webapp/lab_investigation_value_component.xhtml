@@ -3,17 +3,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html">
 
     <body>
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+            
+                <h:form >
+                
                 <p:panel>
                     <p:panelGrid columns="2">
                         <p:outputLabel value="Investigations"></p:outputLabel>
                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
-                                        value="#{investigationValueComponentController.currentInvestigation}" 
+                                        value="#{investigationValidatorComponentController.currentInvestigation}" 
                                         completeMethod="#{investigationController.completeInvest}" 
                                         var="apt" itemLabel="#{apt.name}" 
                                         itemValue="#{apt}" size="30"  style="width: 400px;">
@@ -26,18 +30,20 @@
                             <p:column>
                                 #{apt.department.name}
                             </p:column>
-                            <f:ajax listener="#{investigationValueComponentController.listItemValidator()}" render="invalcom" event="itemSelect" execute="acPt"></f:ajax>
+                            <f:ajax listener="#{investigationValidatorComponentController.listItemValidator()}" render="invalcom" event="itemSelect" execute="acPt"></f:ajax>
                         </p:autoComplete> 
                         <p:outputLabel value="Item Validators"></p:outputLabel>
-                        <p:selectOneMenu value="#{investigationValueComponentController.current.investigationItemValidator}" id="invalcom">
-                            <f:selectItem value="#{investigationValueComponentController.investigationItemValidators}"></f:selectItem>
+                        <p:selectOneMenu value="#{investigationValidatorComponentController.currentValidator}" id="invalcom">
+                            <f:selectItem value="#{investigationValidatorComponentController.investigationItemValidators}"></f:selectItem>
                         </p:selectOneMenu>
                         <p:outputLabel value="New Validator"></p:outputLabel>
-                        <p:inputText value="#{investigationValueComponentController.newValidatorName}"></p:inputText>
+                        <p:inputText value="#{investigationValidatorComponentController.newValidatorName}"></p:inputText>
                         
                     </p:panelGrid>
-                    <p:commandButton action="#{investigationValueComponentController.addNewValidator()}" value="Save"></p:commandButton>
+                    <p:commandButton ajax="false" action="#{investigationValidatorComponentController.addNewValidator()}" value="Save"></p:commandButton>
                 </p:panel>
+            
+            </h:form>
             </ui:define>
 
         </ui:composition>
