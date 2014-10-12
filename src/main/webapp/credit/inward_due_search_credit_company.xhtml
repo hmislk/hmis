@@ -55,22 +55,22 @@
                             </p:column>
                             <p:column style="text-align: right;">                                
                                 <h:outputLabel value="#{b.finalBill.netTotal}" >
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                 
                             </p:column>
                             <p:column style="text-align: right;">                              
                                 <h:outputLabel value="#{b.finalBill.paidAmount}" >
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;">                              
                                 <h:outputLabel value="#{b.creditPaidAmount}" >
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>                           
                             <p:column style="text-align: right;">                              
                                 <h:outputLabel value="#{b.finalBill.netTotal-(b.finalBill.paidAmount+b.paidByCreditCompany)}" >
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:columnGroup type="footer">
@@ -79,28 +79,28 @@
                                     <p:column style="text-align: right;">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{i.total}">
-                                                <f:convertNumber pattern="#,000.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" >
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{i.paidTotalPatient}">
-                                                <f:convertNumber pattern="#,000.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" >
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{i.paidTotal}">
-                                                <f:convertNumber pattern="#,000.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" >
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{i.total-(i.paidTotal+i.paidTotalPatient)}">
-                                                <f:convertNumber pattern="#,000.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>

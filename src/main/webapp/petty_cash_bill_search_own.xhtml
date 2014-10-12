@@ -50,19 +50,19 @@
                             </p:column>
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  
@@ -78,7 +78,7 @@
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  
@@ -91,7 +91,7 @@
                             </p:column> 
                             <p:column headerText="Net Value" >
                                 <h:outputLabel value="#{bill.netTotal}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>                         
                             <p:column headerText="Comments" >

@@ -29,7 +29,7 @@
                 </p:column>                                    
                 <p:column headerText="Total" style="width: 200px;text-align: right;">
                     <h:outputLabel value="#{b.netValue}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column> 
                 <p:columnGroup type="footer">
@@ -38,7 +38,7 @@
                         <p:column style="text-align: right;">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{c.bill.netTotal}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>   
                             </f:facet>
                         </p:column>
@@ -52,7 +52,7 @@
                     <p:column style="text-align: right;" footerText="#{cc.attrs.controller.creditCompanyTotal}">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.controller.creditCompanyTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>   
                         </f:facet>
                     </p:column>

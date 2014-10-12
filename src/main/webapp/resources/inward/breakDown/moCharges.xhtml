@@ -23,17 +23,17 @@
             </p:column>                                                                          
             <p:column headerText="Total Charge">
                 <h:outputLabel value="#{rm.calculatedMoCharge}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column> 
             <p:column headerText="Discount Charge">
                 <h:outputLabel value="#{rm.discountMoCharge}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column> 
             <p:column headerText="Net Charge">
                 <h:outputLabel value="#{rm.calculatedMoCharge-rm.discountMoCharge}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column> 
         </p:dataTable>

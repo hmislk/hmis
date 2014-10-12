@@ -89,18 +89,18 @@
                             </p:column>
                             <p:column headerText="Value">
                                 <p:outputLabel value="#{b.patientEncounter.creditUsedAmount}">  
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Paid">
                                 <p:outputLabel value="#{b.patientEncounter.creditPaidAmount}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Net Total">
                                 <p:inputText autocomplete="off" value="#{b.netValue}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                     <f:ajax event="blur" execute="@this" render="@all" 
                                             listener="#{cashRecieveBillController.changeNetValueListenerBht(b)}"/>
                                 </p:inputText>
@@ -118,7 +118,7 @@
                         <p:panelGrid  columns="2">
                             <p:outputLabel value="Net Total" />
                             <p:outputLabel id="tot" value="#{cashRecieveBillController.current.netTotal}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
 
                             <p:outputLabel value="Description"/>

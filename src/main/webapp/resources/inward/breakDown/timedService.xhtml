@@ -34,17 +34,17 @@
             </p:column>   
             <p:column headerText="Total Charge">
                 <h:outputLabel value="#{ti.serviceValue}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column>
             <p:column headerText="Discount">
                 <h:outputLabel value="#{ti.discount}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column>
             <p:column headerText="Net Charge">
                 <h:outputLabel value="#{ti.serviceValue-ti.discount}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column>
         </p:dataTable>

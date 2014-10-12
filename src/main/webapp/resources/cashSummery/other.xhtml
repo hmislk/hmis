@@ -22,7 +22,7 @@
                     <h:outputLabel value="Hospital Fee"/>
                 </f:facet>
                 <h:outputLabel value="#{th.value1}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
             <p:column style="text-align: right;">
@@ -30,7 +30,7 @@
                     <h:outputLabel value="Pathology Fee"/>
                 </f:facet>
                 <h:outputLabel value="#{th.value2}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
             <p:column style="text-align: right;">
@@ -38,7 +38,7 @@
                     <h:outputLabel value="Total Fee"/>
                 </f:facet>                
                 <h:outputLabel value="#{th.value3}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
         </p:dataTable>

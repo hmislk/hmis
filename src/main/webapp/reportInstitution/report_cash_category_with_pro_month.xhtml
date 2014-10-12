@@ -78,7 +78,7 @@
                 </p:column>
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="#{sm.value1}" > 
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
@@ -99,7 +99,7 @@
                 </p:column>
                 <p:column style="text-align: right;">
                     <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}"> 
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <h:outputLabel value="................" rendered="#{s.value1 eq 0}"/>
                 </p:column>

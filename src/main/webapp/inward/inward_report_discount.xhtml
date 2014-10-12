@@ -81,11 +81,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="From - "/>
                                     <p:outputLabel value="#{inwardReportController1.fromDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </p:outputLabel>
                                     <h:outputLabel value=" - To - "/>
                                     <h:outputLabel value="#{inwardReportController1.toDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
 
                                     <h:outputLabel value=" - #{inwardReportController1.admissionType.name} Discount Report."/>
