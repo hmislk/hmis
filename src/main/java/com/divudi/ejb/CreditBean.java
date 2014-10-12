@@ -6,7 +6,6 @@
 package com.divudi.ejb;
 
 import com.divudi.data.BillType;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Institution;
@@ -207,6 +206,23 @@ public class CreditBean {
         HashMap hm = new HashMap();
         hm.put("pe", p);
         hm.put("btp", billType);
+
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+
+    }
+    
+    public double getPaidAmount(PatientEncounter p, BillType billType,Date date) {
+        String sql = "Select sum(b.netValue)"
+                + "  From BillItem b "
+                + " where b.retired=false "
+                + " and b.patientEncounter=:pe "
+                + " and b.bill.billType=:btp "
+                + " and b.bill.createdAt < :date";
+
+        HashMap hm = new HashMap();
+        hm.put("pe", p);
+        hm.put("btp", billType);
+        hm.put("date", date);
 
         return getBillItemFacade().findDoubleByJpql(sql, hm);
 

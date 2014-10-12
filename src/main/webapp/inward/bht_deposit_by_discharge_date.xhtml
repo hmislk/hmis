@@ -37,19 +37,21 @@
                             <p:selectOneMenu   id="cmbPs" value="#{mdInwardReportController.paymentMethod}">
                                 <f:selectItem itemLabel="Select" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                <p:ajax process="@this" update="crd" event="change" />
+
                             </p:selectOneMenu>
 
-                        </h:panelGrid>
-
-                        <h:panelGroup id="crd" style="display: #{mdInwardReportController.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
                             <p:outputLabel value="Credit Company"/>
                             <p:autoComplete id="creditCom" forceSelection="true" 
                                             value="#{mdInwardReportController.creditCompany}"  
                                             completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                             </p:autoComplete>
-                        </h:panelGroup>
+
+
+                        </h:panelGrid>
+
+
+
 
                         <h:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.disBhtPySummerries()}" onclick="onSubmitButton();" ></p:commandButton>

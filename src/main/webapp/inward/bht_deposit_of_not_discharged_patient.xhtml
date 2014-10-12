@@ -14,16 +14,13 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="B.H.T. DEPOSIT PAYMENT  SUMMERIES " >
+                    <p:panel header="B.H.T. DEPOSITS " >
 
-                        <h:panelGrid columns="2" >
-                            <p:outputLabel value="From Date :"/>
-                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
-                            
-                            <h:outputLabel value="To ;" ></h:outputLabel>
+                        <h:panelGrid columns="2" >                        
+
+                            <h:outputLabel value="Date :" ></h:outputLabel>
                             <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
-                            
-                         
+
                             <p:outputLabel value="Admission Type :"/>
                             <p:selectOneMenu value="#{mdInwardReportController.admissionType}">
                                 <f:selectItem itemLabel="Select Admission Type"/>
@@ -31,28 +28,27 @@
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:outputLabel value="B.H.T. Type :"/>
+                            <p:outputLabel value="B.H.T. Type : "/>
                             <p:selectOneMenu   id="cmbPs" value="#{mdInwardReportController.paymentMethod}">
                                 <f:selectItem itemLabel="Select" />                           
-                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                <p:ajax process="@this" update="crd" event="change" />
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                              
                             </p:selectOneMenu>
-                            
-                              <h:outputLabel value="Credit Company : " ></h:outputLabel>
+
+                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
                             <p:selectOneMenu  id="lstCc"   value="#{mdInwardReportController.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
                             </p:selectOneMenu>
-                              
-                                <h:outputLabel value="B H T No :" ></h:outputLabel>
-                                <h:panelGrid columns="1">
+
+                            <h:outputLabel value="B H T No :" ></h:outputLabel>
+                            <h:panelGrid columns="1">
                                 <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
                                                 value="#{mdInwardReportController.patientEncounter}"
                                                 completeMethod="#{admissionController.completePatientAll}" 
                                                 var="myItem" itemValue="#{myItem}" 
                                                 itemLabel="#{myItem.bhtNo}" 
-                                                size="30"  >/>
+                                                size="30"  >                                   
                                     <p:column>
                                         #{myItem.bhtNo}
                                     </p:column>
@@ -73,17 +69,9 @@
                             </h:panelGrid>
                         </h:panelGrid>
 
-                        <h:panelGroup id="crd" style="display: #{mdInwardReportController.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
-                            <p:outputLabel value="Credit Company"/>
-                            <p:autoComplete id="creditCom" forceSelection="true" 
-                                            value="#{mdInwardReportController.creditCompany}"  
-                                            completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
-                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                            </p:autoComplete>
-                        </h:panelGroup>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.allBhtPySummerriesByCreatedDate()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.dipositsOfNotDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -98,7 +86,7 @@
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.completePayments}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="B.H.T. DEPOSIT PAYMENT  SUMMERIES - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
+                                    <h:outputLabel value="B.H.T. DEPOSITS - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">
@@ -183,14 +171,6 @@
                                 </p:column>
 
                             </p:dataTable>
-
-                            <p:panelGrid columns="2" styleClass="noBorder normalFont">
-                                <p:outputLabel value="Net Bill Total"/>
-                                <p:outputLabel value="#{mdInwardReportController.grantTotal}">
-                                    <f:convertNumber pattern="#000.00"></f:convertNumber>
-                                </p:outputLabel>
-
-                            </p:panelGrid>
 
 
 
