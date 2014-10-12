@@ -14,6 +14,8 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    
+                     <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                     <f:facet name="header">
 
                         <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnly()}" />  
