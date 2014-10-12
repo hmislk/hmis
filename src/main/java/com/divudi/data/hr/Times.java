@@ -13,4 +13,5 @@ package com.divudi.data.hr;
 public enum Times {
     inTime,
     outTime,
+    All,
 }

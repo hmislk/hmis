@@ -59,7 +59,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Select \"Leave For Date\" ");
             return true;
         }
-        if (currentLeaveForm.getApproved() == null) {
+        if (currentLeaveForm.getApprovedStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Approved Person");
             return true;
         }

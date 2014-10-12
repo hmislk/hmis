@@ -70,7 +70,7 @@ public class StaffAmendmentFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
-        if (currAmendmentForm.getApproved() == null) {
+        if (currAmendmentForm.getApprovedStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Approved Person");
             return true;
         }

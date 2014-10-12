@@ -116,6 +116,18 @@ public class StaffShift implements Serializable {
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
     double qty;
+    @OneToOne(mappedBy = "staffShift")
+    HrForm hrForm;
+
+    public HrForm getHrForm() {
+        return hrForm;
+    }
+
+    public void setHrForm(HrForm hrForm) {
+        this.hrForm = hrForm;
+    }
+    
+    
 
     private void calLoggedStartRecord() {
         Calendar fromCalendar = Calendar.getInstance();
@@ -264,7 +276,7 @@ public class StaffShift implements Serializable {
         Long inSecond = 0l;
         //Over Time From Start Record Logged 
         extraTimeFromStartRecordLogged = 0;
-        if (getStartRecord().isAllowedOverTime()
+        if (getStartRecord().isAllowedExtraDuty()
                 && getStartRecord().getLoggedRecord() != null
                 && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null) {
 
@@ -278,7 +290,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From End Record Logged 
         extraTimeFromEndRecordLogged = 0;
-        if (getEndRecord().isAllowedOverTime()
+        if (getEndRecord().isAllowedExtraDuty()
                 && getEndRecord().getLoggedRecord() != null
                 && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null) {
 
@@ -292,7 +304,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From Start Record Varified 
         extraTimeFromStartRecordVarified = 0;
-        if (getStartRecord().isAllowedOverTime()) {
+        if (getStartRecord().isAllowedExtraDuty()) {
 
             if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
@@ -304,8 +316,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From End Record Varified
         extraTimeFromEndRecordVarified = 0;
-        if (getEndRecord().isAllowedOverTime()) {
-
+        if (getEndRecord().isAllowedExtraDuty()) {
             if (getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());
@@ -316,7 +327,7 @@ public class StaffShift implements Serializable {
 
     }
 
-    public void calOverTimeAll() {
+    public void calExtraDuty() {
 
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
@@ -325,10 +336,10 @@ public class StaffShift implements Serializable {
         //Logged 
         if (getStartRecord().getLoggedRecord() != null
                 && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null
-                && getStartRecord().getLoggedRecord().isAllowedOverTime()
+                && getStartRecord().getLoggedRecord().isAllowedExtraDuty()
                 && getEndRecord().getLoggedRecord() != null
                 && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null
-                && getEndRecord().getLoggedRecord().isAllowedOverTime()) {
+                && getEndRecord().getLoggedRecord().isAllowedExtraDuty()) {
             fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
             toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -337,9 +348,9 @@ public class StaffShift implements Serializable {
 
         //Varified 
         if (getStartRecord().getRecordTimeStamp() != null
-                && getStartRecord().isAllowedOverTime()
+                && getStartRecord().isAllowedExtraDuty()
                 && getEndRecord().getRecordTimeStamp() != null
-                && getEndRecord().isAllowedOverTime()) {
+                && getEndRecord().isAllowedExtraDuty()) {
             fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
             toCalendar.setTime(getEndRecord().getRecordTimeStamp());
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);

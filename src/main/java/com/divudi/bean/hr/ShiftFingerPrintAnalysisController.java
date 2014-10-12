@@ -14,12 +14,14 @@ import com.divudi.data.hr.Times;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
+import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftReplace;
 import com.divudi.facade.FingerPrintRecordFacade;
+import com.divudi.facade.FormFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
@@ -28,6 +30,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -102,6 +105,18 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         return false;
     }
     DayType dayType;
+    @EJB
+    FormFacade formFacade;
+
+    private AdditionalForm fetchAdditionalForm(StaffShift staffShift) {
+        String sql = "Select a from AdditionalForm a "
+                + " where a.retired=false"
+                + " and a.staffShift=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staffShift);
+
+        return (AdditionalForm) formFacade.findBySQL(sql, hm);
+    }
 
     public void createShiftTable() {
         if (errorCheck()) {
@@ -197,6 +212,27 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                            System.err.println("NEXT");
                             ss.getEndRecord().setComments("(NEW NEXT)");
                             ss.getEndRecord().setRecordTimeStamp(ss.getShiftEndTime());
+                        }
+                    }
+
+                    if (ss.getHrForm() != null) {
+                        if (ss.getHrForm() instanceof AdditionalForm) {
+                            AdditionalForm additionalForm = (AdditionalForm) ss.getHrForm();
+
+                            switch (ss.getHrForm().getTimes()) {
+                                case inTime:
+                                    ss.getStartRecord().setAllowedExtraDuty(true);
+                                    ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
+                                    break;
+                                case outTime:
+                                    ss.getEndRecord().setAllowedExtraDuty(true);
+                                    ss.getEndRecord().setRecordTimeStamp(additionalForm.getToTime());
+                                    break;
+                                case All:
+                                    ss.getStartRecord().setAllowedExtraDuty(true);
+                                    ss.getEndRecord().setAllowedExtraDuty(true);
+                                    break;
+                            }
                         }
                     }
 
@@ -338,7 +374,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 if (ss.getShift().getDayType() == DayType.DayOff
                         || ss.getShift().getDayType() == DayType.SleepingDay
                         || ss instanceof StaffShiftReplace) {
-                    ss.calOverTimeAll();
+                    ss.calExtraDuty();
                 }
 
                 getStaffShiftFacade().edit(ss);

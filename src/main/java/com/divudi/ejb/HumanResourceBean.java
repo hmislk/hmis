@@ -483,7 +483,7 @@ public class HumanResourceBean {
                 + " order by st.shift.shiftOrder,st.shift.id";
         hm.put("dt", d);
         hm.put("st", staff);
-        List<StaffShift> tmp = getStaffShiftFacade().findBySQL(sql, hm, TemporalType.DATE);
+        List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
         System.err.println("fetchStaffShiftWithShift:: " + tmp);
         return tmp;
     }

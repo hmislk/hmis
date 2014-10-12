@@ -84,7 +84,7 @@
                         <p:panelGrid columns="2">
                             <h:outputLabel value="Approved Person"/>
                             <p:autoComplete id="staffApp"  forceSelection="true"
-                                            value="#{staffAmendmentFormController.currAmendmentForm.approved}"
+                                            value="#{staffAmendmentFormController.currAmendmentForm.approvedStaff}"
                                             completeMethod="#{staffController.completeStaffCode}" var="mys" 
                                             itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                             converter="stfcon"   >   

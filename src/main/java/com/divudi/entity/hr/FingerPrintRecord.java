@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -45,7 +46,8 @@ public class FingerPrintRecord implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date recordTimeStamp;
-    boolean allowedOverTime;
+    @Column(name = "allowedOverTime")
+    boolean allowedExtraDuty;
 
     @ManyToOne
     private StaffShift staffShift;
@@ -258,12 +260,12 @@ public class FingerPrintRecord implements Serializable {
         this.times = times;
     }
 
-    public boolean isAllowedOverTime() {
-        return allowedOverTime;
+    public boolean isAllowedExtraDuty() {
+        return allowedExtraDuty;
     }
 
-    public void setAllowedOverTime(boolean allowedOverTime) {
-        this.allowedOverTime = allowedOverTime;
+    public void setAllowedExtraDuty(boolean allowedExtraDuty) {
+        this.allowedExtraDuty = allowedExtraDuty;
     }
 
 }

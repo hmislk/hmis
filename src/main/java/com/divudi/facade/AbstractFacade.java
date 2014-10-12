@@ -355,6 +355,27 @@ public abstract class AbstractFacade<T> {
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
         return qry.getResultList();
     }
+    
+       public List<T> findBySQLWithoutCache(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal = m.getValue();
+            String pPara = (String) m.getKey();
+            if (pVal instanceof Date) {
+                Date d = (Date) pVal;
+                qry.setParameter(pPara, d, tt);
+            } else {
+                qry.setParameter(pPara, pVal);
+            }
+//            //System.out.println("Parameter " + pPara + "\tVal" + pVal);
+        }
+//        qry.setMaxResults(maxRecords);
+        qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+        return qry.getResultList();
+    }
 
     public List<T> findBySQLWithoutCache(String temSQL, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);

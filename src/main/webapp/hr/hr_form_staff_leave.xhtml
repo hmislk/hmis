@@ -37,7 +37,7 @@
                         </p:calendar> 
                         <h:outputLabel value="Leave Approved Person"/>
                         <p:autoComplete id="staffApp"  forceSelection="true"
-                                        value="#{staffLeaveApplicationFormController.currentLeaveForm.approved}"
+                                        value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"
                                         completeMethod="#{staffController.completeStaffCode}" var="mys" 
                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                         converter="stfcon"   >   
