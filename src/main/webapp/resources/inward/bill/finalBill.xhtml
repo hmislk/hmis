@@ -181,7 +181,7 @@
                                                                 <td  style="text-align: right;font-size: 8px!important;">
                                                                     <h:panelGroup >
                                                                         <h:outputLabel value="#{fe.feeAdjusted}">
-                                                                            <f:convertNumber pattern="#,000.00" />
+                                                                            <f:convertNumber pattern="#,##0.00" />
                                                                         </h:outputLabel>
                                                                     </h:panelGroup>
                                                                 </td>
@@ -220,7 +220,7 @@
                                                                 <td>
 
                                                                     <h:outputLabel value="#{fe.referencePatientRoom.adjustedRoomCharge}" style="text-align: center;font-size: 9px!important;" >
-                                                                        <f:convertNumber pattern="#,000.00" />
+                                                                        <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>                                                                
                                                                 </td>
                                                             </tr>
@@ -232,7 +232,7 @@
                                     </td>
                                     <td  style="width: 30%;text-align: right;font-size: 13px!important;">                                        
                                         <h:outputLabel  value="#{bip.adjustedValue}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>
                                 </tr>
@@ -258,11 +258,11 @@
                                     <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
 
                                         <h:outputLabel rendered="#{cc.attrs.showProfessional}" value="#{cc.attrs.bill.grantTotal}" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>  
 
                                         <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee}" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>  
 
                                     </td>
@@ -280,7 +280,7 @@
                                 <td>&nbsp;</td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.bill.discount}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
@@ -300,11 +300,11 @@
                                 <td>&nbsp;</td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel rendered="#{cc.attrs.showProfessional}" value="#{cc.attrs.bill.netTotal}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>  
 
                                     <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee-cc.attrs.bill.discount}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>  
 
                                 </td>
@@ -341,7 +341,7 @@
                                                     </td>                                                   
                                                     <td>
                                                         <h:outputLabel value="#{b.netTotal}">
-                                                            <f:convertNumber pattern="#,000.00" />
+                                                            <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </td>
                                                 </tr>
@@ -351,7 +351,7 @@
                                 </td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel  value="#{cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany}" rendered="#{cc.attrs.bill.paidAmount !=0}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
@@ -370,7 +370,7 @@
                                 </td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel  value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany)}"  >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>

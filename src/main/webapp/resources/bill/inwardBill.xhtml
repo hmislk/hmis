@@ -119,10 +119,10 @@
                                     </td>
                                     <td style="width: 30%;text-align: right;">
                                         <h:outputLabel  value="#{bip.total}" rendered="#{cc.attrs.isIntrim eq true}"  >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                          <h:outputLabel  value="#{bip.netValue}" rendered="#{cc.attrs.isIntrim ne true}" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>
                                 </tr>
@@ -139,10 +139,10 @@
                                 </td>
                                 <td>
                                     <h:outputLabel value="#{cc.attrs.bill.grantTotal}"  rendered="#{cc.attrs.isIntrim ne true}"  >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <h:outputLabel value="#{cc.attrs.controller.grantTotal}" rendered="#{cc.attrs.isIntrim eq true}"  >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
@@ -155,7 +155,7 @@
                                 </td>
                                 <td>
                                     <h:outputLabel  value="#{cc.attrs.controller.paid}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
@@ -168,7 +168,7 @@
                                 </td>
                                 <td>
                                     <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.bill.discount}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
@@ -181,10 +181,10 @@
                             </td>
                             <td>
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 and cc.attrs.isIntrim ne true}"   value="#{cc.attrs.bill.grantTotal-cc.attrs.bill.discount}"  >
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <h:outputLabel  rendered="#{cc.attrs.isIntrim eq true}"    value="#{cc.attrs.controller.due}" >
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                         </tr>

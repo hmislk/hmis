@@ -70,28 +70,28 @@
                         </p:column>
                         <p:column headerText="Cash" style="text-align: right; ">
                             <h:outputLabel value="#{commonReport.userBills.cash}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Credit" style="text-align: right; " >
                             <h:outputLabel value="#{commonReport.userBills.credit}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
 
                         </p:column>
                         <p:column  headerText="C Card" style="text-align: right; ">
                             <h:outputLabel value="#{commonReport.userBills.card}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column> 
                         <p:column  headerText="Cheque" style="text-align: right; ">
                             <h:outputLabel value="#{commonReport.userBills.cheque}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column> 
                         <p:column  headerText="Slip" style="text-align: right; ">
                             <h:outputLabel value="#{commonReport.userBills.slip}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column> 
 
@@ -101,28 +101,28 @@
                             </p:column>
                             <p:column headerText="Cash" style="text-align: right; ">
                                 <h:outputLabel value="#{commonReport.userBills.cash}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Credit" style="text-align: right; ">
                                 <h:outputLabel value="#{commonReport.userBills.credit}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
 
                             </p:column>
                             <p:column  headerText="C Card" style="text-align: right; ">
                                 <h:outputLabel value="#{commonReport.userBills.card}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column> 
                             <p:column  headerText="Cheque" style="text-align: right; ">
                                 <h:outputLabel value="#{commonReport.userBills.cheque}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column> 
                             <p:column  headerText="Slip" style="text-align: right; ">
                                 <h:outputLabel value="#{commonReport.userBills.slip}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column> 
 
@@ -152,15 +152,15 @@
 
 
                     <h:outputLabel value="Final Credit Total : "/>
-                    <h:outputLabel style="font-weight: bold;text-align: right;" value="#{commonReport.finalCreditTotal}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                    <h:outputLabel style="font-weight: bold;text-align: right;" value="#{commonReport.finalCreditTotal}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
                     <br/><br/>
                     <h:outputLabel value="Final Credit Card Total : "/>
-                    <h:outputLabel style="font-weight: bold;text-align: right;" value="#{commonReport.finalCreditCardTotal}"><f:convertNumber pattern="#,000.00" /></h:outputLabel><br/>
+                    <h:outputLabel style="font-weight: bold;text-align: right;" value="#{commonReport.finalCreditCardTotal}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel><br/>
                     <h:outputLabel value="Final Cheque Total : "/>
-                    <h:outputLabel style="font-weight: bold;text-align: right;" value="#{commonReport.finalChequeTot}"><f:convertNumber pattern="#,000.00" /></h:outputLabel><br/>
+                    <h:outputLabel style="font-weight: bold;text-align: right;" value="#{commonReport.finalChequeTot}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel><br/>
                     <br/>
                     <h:outputLabel value="Final Slip  Total : "/>
-                    <h:outputLabel style="font-weight: bold;text-align: right;" value="#{commonReport.finalSlipTot}"><f:convertNumber pattern="#,000.00" /></h:outputLabel><br/>
+                    <h:outputLabel style="font-weight: bold;text-align: right;" value="#{commonReport.finalSlipTot}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel><br/>
                     <br/>
                     <h:outputLabel style="font-weight: bolder; font-size: 100%;text-align: right;" value="Net Cash : "/>
                     <h:outputLabel style="font-weight: bolder;font-size: 100%;text-align: right;" value="#{commonReport.finalCashTotal}" >

@@ -23,7 +23,7 @@
             </p:column>
             <p:column style="text-align: right;"  headerText="Total" >
                 <h:outputLabel value="#{inw.value2}" style="font-weight: bolder;" >   
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
             <p:columnGroup type="footer">
@@ -32,7 +32,7 @@
                     <p:column style="text-align: right;" footerText="#{bookKeepingSummery.inwardPaymentTotal}" >
                         <f:facet name="footer">
                             <h:outputLabel value="#{bookKeepingSummery.inwardPaymentTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>

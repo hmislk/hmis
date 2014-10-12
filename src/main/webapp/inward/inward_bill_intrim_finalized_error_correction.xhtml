@@ -82,19 +82,19 @@
 
                                 <h:outputLabel value="BillItem"/>
                                 <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGross}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMargin}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGross+bhtSummeryFinalizedController.billItemMargin}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemDiscount}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemNetValue}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMargin}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGross+bhtSummeryFinalizedController.billItemMargin}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemDiscount}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemNetValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
 
                                 <h:outputLabel value="BillFee"/>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeGross}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeMargin}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeGross+bhtSummeryFinalizedController.billFeeMargin}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeDiscount}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeNetValue}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeGross}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeMargin}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeGross+bhtSummeryFinalizedController.billFeeMargin}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeDiscount}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billFeeNetValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
 
                             </p:panelGrid>
 
@@ -268,13 +268,13 @@
                                 <h:outputLabel value="Net Total"/>
 
                                 <h:outputLabel value="BillItem"/>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy+bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy+bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
                                 <h:outputLabel value="#{(bhtSummeryFinalizedController.billItemGrossPharmacy
                                                         +bhtSummeryFinalizedController.billItemMarginPharmacy)
-                                                        -bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                                        -bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
 
 
                             </p:panelGrid>
@@ -351,13 +351,13 @@
                                 <h:outputLabel value="Net Total"/>
 
                                 <h:outputLabel value="BillItem"/>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy+bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemMarginPharmacy+bhtSummeryFinalizedController.billItemGrossPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
                                 <h:outputLabel value="#{(bhtSummeryFinalizedController.billItemGrossPharmacy
                                                         +bhtSummeryFinalizedController.billItemMarginPharmacy)
-                                                        -bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                                        -bhtSummeryFinalizedController.billItemDiscountPharmacy}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
 
 
                             </p:panelGrid>

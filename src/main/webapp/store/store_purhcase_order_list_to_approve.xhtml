@@ -51,14 +51,14 @@
                     </p:column>
                     <p:column headerText="Requested at"  >                        
                         <h:outputLabel value="#{b.createdAt}" >
-                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                         </h:outputLabel>
                         <br/>
                         <h:panelGroup rendered="#{b.cancelled}" >
                             <h:outputLabel style="color: red;" value="Cancelled at " />
                             <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                            value="#{b.cancelledBill.createdAt}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                             </h:outputLabel>
                         </h:panelGroup>                       
                     </p:column> 

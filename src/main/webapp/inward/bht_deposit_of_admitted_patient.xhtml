@@ -133,7 +133,7 @@
                                         <p:column footerText="#{mdInwardReportController.totalValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.totalValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
@@ -208,7 +208,7 @@
                                         <p:column footerText="#{mdInwardReportController.cancelledTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -285,7 +285,7 @@
                                         <p:column footerText="#{mdInwardReportController.refundTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.refundTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>

@@ -80,14 +80,14 @@
                 </p:column>
                 <p:column style="text-align: right;"  headerText="Hospital Fee">                               
                     <h:outputLabel value="#{d.value2}" rendered="#{d.summery eq false}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
 
 
                 </p:column>    
                 <p:column headerText="Sub Total" style="text-align: right;">
                     <h:outputLabel value="#{d.value2}" rendered="#{d.summery eq true}" style="font-weight: bold;">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
 
                 </p:column>
@@ -97,7 +97,7 @@
                         <p:column style="text-align: right;" footerText="#{cashSummeryControllerExcel1.opdHospitalTotal}" >
                             <f:facet name="footer">
                                 <h:outputLabel value="#{cashSummeryControllerExcel1.opdHospitalTotal}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
@@ -119,7 +119,7 @@
                         <h:outputLabel value="Hospital Fee"/>
                     </f:facet>
                     <h:outputLabel value="#{th.value1}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
                 <p:column style="text-align: right;">
@@ -127,7 +127,7 @@
                         <h:outputLabel value="Professional Fee"/>
                     </f:facet>
                     <h:outputLabel value="#{th.value2}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
                 <p:column style="text-align: right;">
@@ -135,7 +135,7 @@
                         <h:outputLabel value="Total Fee"/>
                     </f:facet>                
                     <h:outputLabel value="#{th.value3}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
@@ -158,7 +158,7 @@
                         <h:outputLabel value="Value"/>
                     </f:facet>
                     <h:outputLabel value="#{dep.pharmacyDepartmentTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
                 <p:columnGroup type="footer">
@@ -171,7 +171,7 @@
                         <p:column footerText="#{cashSummeryControllerExcel1.pharmacyTotal}" style="text-align: right;">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{cashSummeryControllerExcel1.pharmacyTotal}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
@@ -200,7 +200,7 @@
                     </p:column>
                     <p:column style="text-align: right;" headerText="Payment" >
                         <h:outputLabel value="#{b.netTotal}" >
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
                     <p:columnGroup type="footer">
@@ -213,7 +213,7 @@
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{inw.total}" >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -242,7 +242,7 @@
                 </p:column>
                 <p:column style="text-align: right;" headerText="Total">
                     <h:outputLabel value="#{a.netTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
 
@@ -252,7 +252,7 @@
                         <p:column style="text-align: right;" footerText="#{cashSummeryControllerExcel1.agentCollectionTot}">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{cashSummeryControllerExcel1.agentCollectionTot}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>   
                             </f:facet>
                         </p:column>
@@ -280,7 +280,7 @@
                     </p:column>                                    
                     <p:column headerText="Total" style="width: 200px;text-align: right;">
                         <h:outputLabel value="#{b.netValue}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column> 
                     <p:columnGroup type="footer">
@@ -289,7 +289,7 @@
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{c.bill.netTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>   
                                 </f:facet>
                             </p:column>
@@ -303,7 +303,7 @@
                         <p:column style="text-align: right;" footerText="#{cashSummeryControllerExcel1.creditCompanyTotal}">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{cashSummeryControllerExcel1.creditCompanyTotal}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>   
                             </f:facet>
                         </p:column>
@@ -321,7 +321,7 @@
                 </p:column>
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="#{sm.value}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
@@ -338,7 +338,7 @@
                 </p:column>
                 <p:column style="text-align: right;">
                     <h:outputLabel value="#{0-a.totalPayment}" rendered="#{a.totalPayment!=0}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>                
                 <p:columnGroup type="footer">
@@ -347,7 +347,7 @@
                         <p:column style="text-align: right;" footerText="#{0-cashSummeryControllerExcel1.doctorPaymentTot}">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{0-cashSummeryControllerExcel1.doctorPaymentTot}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>   
                             </f:facet>
                         </p:column>
@@ -367,7 +367,7 @@
                 </p:column> 
                 <p:column style="text-align: right;">
                     <h:outputLabel value="#{0-b.value}" rendered="#{b.value!=0}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column> 
                 <p:columnGroup type="footer">
@@ -380,7 +380,7 @@
                         <p:column style="text-align: right;">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{0-cashSummeryControllerExcel1.inwardProfTot}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
@@ -419,7 +419,7 @@
                         <p:outputLabel value="Total"/>    
                     </f:facet>
                     <h:outputLabel value="#{0-ch.netTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>      
                 </p:column>    
 
@@ -429,7 +429,7 @@
                         <p:column style="text-align: right;" footerText="#{0-cashSummeryControllerExcel1.cardTot}" >
                             <f:facet name="footer">
                                 <h:outputLabel value="#{0-cashSummeryControllerExcel1.cardTot}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>   
                             </f:facet>
                         </p:column>
@@ -478,7 +478,7 @@
                         <h:outputLabel value="Total"/>
                     </f:facet>
                     <h:outputLabel value="#{-ch.netTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>      
                 </p:column>
 
@@ -488,7 +488,7 @@
                         <p:column style="text-align: right;" footerText="#{0-cashSummeryControllerExcel1.slipTot}">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{0-cashSummeryControllerExcel1.slipTot}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>   
                             </f:facet>
                         </p:column>
@@ -539,7 +539,7 @@
                         <p:outputLabel value="Total"/>    
                     </f:facet>
                     <h:outputLabel value="#{0-ch.netTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
 
@@ -549,7 +549,7 @@
                         <p:column style="text-align: right;" footerText="#{0-cashSummeryControllerExcel1.chequeTot}">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{0-cashSummeryControllerExcel1.chequeTot}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>   
                             </f:facet>
                         </p:column>
@@ -567,7 +567,7 @@
                 </p:column>
                 <p:column style="text-align: right;">
                     <h:outputLabel value="#{s.value}" rendered="#{s.value!=0}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <h:outputLabel value="................" rendered="#{s.value==0}"/>
                 </p:column>
