@@ -24,12 +24,21 @@
                     <p:defaultCommand  target="btnAdd" />  
 
                     <p:panel rendered="#{!pharmacySaleController3.billPreview}"  >
+                        <h:panelGroup id="panelError" >
+                            <h:panelGroup  
+                                rendered="#{storeIssueController.errorMessage ne null}"
+                                style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
+                                <p:outputLabel value="#{storeIssueController.errorMessage}" ></p:outputLabel>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
                         <p:panel>
                             <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                            <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                            <p:commandButton disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                         </p:panel>
+
                         <h:panelGrid id="sale" columns="2" class="alignTop" >
 
 
@@ -493,6 +502,12 @@
                                              ajax="false" action="pharmacy_bill_retail_sale_3" 
                                              onclick="onSubmitButton();"
                                              actionListener="#{pharmacySaleController3.resetAll()}" ></p:commandButton>
+
+                            <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                            <p:commandButton disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+
 
                         </div>
                         <div >

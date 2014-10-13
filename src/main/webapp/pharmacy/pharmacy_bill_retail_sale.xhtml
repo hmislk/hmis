@@ -25,7 +25,7 @@
 
                     <p:panel rendered="#{!pharmacySaleController.billPreview}"  >
                         <p:panel>
-                            <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                            <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
@@ -52,8 +52,8 @@
                                                 .ui-autocomplete-input {width:350px!important;display: block;}
                                                 .ui-autocomplete{display: block!important;}
                                             </style>
-                                           
-                                            
+
+
                                             <p:autoComplete accesskey="i"    id="acStock" 
                                                             value="#{pharmacySaleController.stock}" 
                                                             converter="stockCon" 
@@ -90,7 +90,7 @@
                                                 <p:ajax event="query" update=":#{p:component('tabI')}" process="acStock"></p:ajax>
                                             </p:autoComplete>
 
-                                            
+
                                         </h:panelGrid>
 
                                         <h:panelGrid columns="1" >
@@ -167,8 +167,8 @@
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                                 </h:outputLabel>
-                                                
-                                                
+
+
 
                                             </p:column>
                                             <p:column headerText="Remove">
@@ -499,6 +499,10 @@
                                              ajax="false" action="pharmacy_bill_retail_sale" 
                                              onclick="onSubmitButton();"
                                              actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
+                            <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
                         </div>
                         <div >
