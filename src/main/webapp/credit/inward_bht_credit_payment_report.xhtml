@@ -40,12 +40,7 @@
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
                             </p:selectOneMenu>
-
-
                         </h:panelGrid>
-
-
-
 
                         <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.bhtCreditPayments()}" onclick="onSubmitButton();"  ></p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
