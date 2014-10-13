@@ -13,7 +13,9 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
+import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.data.hr.Times;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
@@ -37,6 +39,15 @@ public class EnumController implements Serializable {
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
+    }
+
+    public LeaveType[] getLeaveType() {
+        LeaveType[] ltp = {LeaveType.Annual, LeaveType.Casual, LeaveType.Lieu, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical};
+        return ltp;
+    }
+
+    public Times[] getTimeses() {
+        return Times.values();
     }
 
     public void setSessionNumberTypes(SessionNumberType[] sessionNumberTypes) {
@@ -156,25 +167,23 @@ public class EnumController implements Serializable {
 
         return b;
     }
-    
-    public BillType[] getStoreBillTypes(){
-    
-       BillType[] b={
-           BillType.StoreGrnBill,
-           BillType.StoreGrnReturn,
-           BillType.StoreOrder,
-           BillType.StoreOrderApprove,
-           BillType.StorePre,
-           BillType.StorePurchase,
-           BillType.StoreSale,
-           BillType.StoreAdjustment,
-           BillType.StorePurchaseReturn,
-           BillType.StoreTransferRequest,
-           BillType.StoreTransferIssue,
-       };
-           
-       
-       return b;
+
+    public BillType[] getStoreBillTypes() {
+
+        BillType[] b = {
+            BillType.StoreGrnBill,
+            BillType.StoreGrnReturn,
+            BillType.StoreOrder,
+            BillType.StoreOrderApprove,
+            BillType.StorePre,
+            BillType.StorePurchase,
+            BillType.StoreSale,
+            BillType.StoreAdjustment,
+            BillType.StorePurchaseReturn,
+            BillType.StoreTransferRequest,
+            BillType.StoreTransferIssue,};
+
+        return b;
     }
 
     public BillType[] getPharmacyBillTypes() {

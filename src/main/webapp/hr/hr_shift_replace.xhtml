@@ -10,7 +10,7 @@
     <ui:define name="content">
         <h:form id="form">  
             <h:panelGrid columns="2">
-                <h:outputLabel value="Date"/>
+                <h:outputLabel value="From Date"/>
                 <p:calendar id="frmDate" value="#{staffShiftController.fromDate}" pattern="dd MMMM yyyy" />
                 <h:outputLabel value="To Date"/>
                 <p:calendar id="toDate" value="#{staffShiftController.toDate}" pattern="dd MMMM yyyy" />
@@ -21,7 +21,8 @@
                     <f:ajax event="change" execute="@this"  render="shift" listener="#{staffShiftController.selectRosterListener()}"/>
                 </p:selectOneMenu>
                 <h:outputLabel value="Shift"/>
-                <p:autoComplete id="shift" value="#{staffShiftController.reportKeyWord.shift}"
+                <p:autoComplete id="shift"
+                                value="#{staffShiftController.reportKeyWord.shift}"
                                 autocomplete="off"
                                 forceSelection="true"     
                                 styleClass="autoComplete75px"

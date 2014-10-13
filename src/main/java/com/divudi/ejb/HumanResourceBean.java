@@ -483,7 +483,7 @@ public class HumanResourceBean {
                 + " order by st.shift.shiftOrder,st.shift.id";
         hm.put("dt", d);
         hm.put("st", staff);
-        List<StaffShift> tmp = getStaffShiftFacade().findBySQL(sql, hm, TemporalType.DATE);
+        List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
         System.err.println("fetchStaffShiftWithShift:: " + tmp);
         return tmp;
     }
@@ -1386,8 +1386,8 @@ public class HumanResourceBean {
 
         }
 
-        if (workedMinute > (staff.getWorkingHour() * 4 * 60)) {
-            otNormalSpecial.setSpecialMin(otMaxMinute - (staff.getWorkingHour() * 4 * 60));
+        if (workedMinute > (staff.getWorkingHourPerShift() * 4 * 60)) {
+            otNormalSpecial.setSpecialMin(otMaxMinute - (staff.getWorkingHourPerShift() * 4 * 60));
         }
 
         if (workedMinute > otMaxMinute) {
@@ -1425,8 +1425,8 @@ public class HumanResourceBean {
             getStaffShiftFacade().edit(ser);
         }
 
-        if (workedMinute > (staff.getWorkingHour() * 4 * 60)) {
-            otNormalSpecial.setSpecialMin(otMaxMinute - (staff.getWorkingHour() * 4 * 60));
+        if (workedMinute > (staff.getWorkingHourPerShift() * 4 * 60)) {
+            otNormalSpecial.setSpecialMin(otMaxMinute - (staff.getWorkingHourPerShift() * 4 * 60));
         }
 
         if (workedMinute > otMaxMinute) {

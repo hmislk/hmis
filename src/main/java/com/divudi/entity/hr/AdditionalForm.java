@@ -6,7 +6,6 @@
 
 package com.divudi.entity.hr;
 
-import com.divudi.entity.Department;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
@@ -22,7 +21,6 @@ public class AdditionalForm extends HrForm  {
     private Date fromTime;
     @Temporal(TemporalType.TIMESTAMP)
     private Date toTime;
-    private Department requestDepartment;
 
     public Date getFromTime() {
         return fromTime;
@@ -40,12 +38,4 @@ public class AdditionalForm extends HrForm  {
         this.toTime = toTime;
     }
 
-    public Department getRequestDepartment() {
-        return requestDepartment;
-    }
-
-    public void setRequestDepartment(Department requestDepartment) {
-        this.requestDepartment = requestDepartment;
-    }
-    
 }

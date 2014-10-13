@@ -25,12 +25,6 @@
                     <f:ajax event="change" execute="@this" render="lst" 
                             listener="#{shiftFingerPrintAnalysisController.selectRosterLstener()}" />
                 </p:selectOneMenu>
-                <h:outputLabel value="Day Type"/>
-                <p:selectOneMenu   value="#{shiftFingerPrintAnalysisController.dayType}">   
-                    <f:selectItem value="All Day Type"/>
-                    <f:selectItems value="#{enumController.dayTypeForShift}"/>
-                    <f:ajax execute="@this roster" render="start" event="change"/>
-                </p:selectOneMenu>
                 <p:commandButton value="Fill"
                                  process="@this frmDate toDate roster"
                                  update="lst"
@@ -68,7 +62,6 @@
                                         converter="staffShiftConverter">
                             <f:ajax event="focus" 
                                     listener="#{staffShiftController.staffShiftListner(sts)}"/>
-
                         </p:autoComplete>
                     </p:column>
 
@@ -127,8 +120,8 @@
                                 <p:ajax event="click" process="@this" update="@this"
                                         listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                             </p:calendar>
-                            <p:selectBooleanCheckbox value="#{sts.startRecord.allowedOverTime}" />
-                            <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.startRecord)}"/>
+                            <p:selectBooleanCheckbox value="#{sts.startRecord.allowedExtraDuty}" disabled="true" />
+                            <!--<p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.startRecord)}"/>-->
 
                         </h:panelGroup>
 
@@ -143,8 +136,8 @@
                                 <p:ajax event="click" process="@this" update="@this"
                                         listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
                             </p:calendar>
-                            <p:selectBooleanCheckbox value="#{sts.endRecord.allowedOverTime}"/>
-                            <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.endRecord)}"/>
+                            <p:selectBooleanCheckbox value="#{sts.endRecord.allowedExtraDuty}" disabled="true"/>
+<!--                            <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.endRecord)}"/>-->
                         </h:panelGroup>
 
                     </p:column>
