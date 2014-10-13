@@ -24,11 +24,18 @@
                     <p:defaultCommand  target="btnAdd" />  
 
                     <p:panel rendered="#{!pharmacySaleController.billPreview}"  >
+                        <h:panelGroup id="panelError" >
+                            <h:panelGroup  
+                                rendered="#{pharmacySaleController.errorMessage ne null}"
+                                style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
+                                <p:outputLabel value="#{pharmacySaleController.errorMessage}" ></p:outputLabel>
+                            </h:panelGroup>
+                        </h:panelGroup>
                         <p:panel>
-                            <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.resetAll()}" />
-                            <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.resetAll()}" />
-                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.resetAll()}" />
-                            <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.resetAll()}" />
+                            <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                         </p:panel>
                         <h:panelGrid id="sale" columns="2" class="alignTop" >
 
@@ -38,13 +45,6 @@
                                     <h:outputLabel value="Pharmacy Retail Bill(Sale 1)" />
                                 </f:facet>
                                 <h:panelGrid columns="1" >
-
-                                    <p:panel id="panelErrorMsg"  >
-                                        <h:outputLabel value="#{pharmacySaleController.errorMessage}" style="padding: 5px; margin: 5px; color: red; background-color: yellow ; border: 1px solid red;"
-                                                       rendered="#{pharmacySaleController.errorMessage ne ''}">
-                                        </h:outputLabel>
-                                    </p:panel>
-
                                     <h:panelGrid columns="6" >
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
@@ -52,8 +52,8 @@
                                                 .ui-autocomplete-input {width:350px!important;display: block;}
                                                 .ui-autocomplete{display: block!important;}
                                             </style>
-                                           
-                                            
+
+
                                             <p:autoComplete accesskey="i"    id="acStock" 
                                                             value="#{pharmacySaleController.stock}" 
                                                             converter="stockCon" 
@@ -90,7 +90,7 @@
                                                 <p:ajax event="query" update=":#{p:component('tabI')}" process="acStock"></p:ajax>
                                             </p:autoComplete>
 
-                                            
+
                                         </h:panelGrid>
 
                                         <h:panelGrid columns="1" >
@@ -104,7 +104,7 @@
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
                                                           action="#{pharmacySaleController.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')}" 
-                                                          update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')}" ></p:commandButton>
+                                                          update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelError')}" ></p:commandButton>
 
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Rate" ></p:outputLabel>
@@ -167,8 +167,8 @@
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                                 </h:outputLabel>
-                                                
-                                                
+
+
 
                                             </p:column>
                                             <p:column headerText="Remove">
@@ -499,6 +499,10 @@
                                              ajax="false" action="pharmacy_bill_retail_sale" 
                                              onclick="onSubmitButton();"
                                              actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
+                            <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
                         </div>
                         <div >
