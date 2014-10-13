@@ -63,9 +63,7 @@
                                rendered="#{!sr.catRow and sr.totalRow eq true}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
-                <f:facet name="footer">
-                    <h:outputLabel rendered="false" value="#{bookKeepingSummery.professionalTotal}"></h:outputLabel>
-                </f:facet>
+               
             </p:column>
             <p:column  headerText="Total Fee"  styleClass="numberCol" >
                 <p:outputLabel value="#{sr.hosFee+sr.proFee}" rendered="#{!sr.catRow and sr.totalRow eq false}" >
