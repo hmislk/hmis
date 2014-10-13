@@ -21,7 +21,7 @@
                             <h:outputLabel value="To :" ></h:outputLabel>
 
                             <p:calendar value="#{mdInwardReportController.toDate}" 
-                                        pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                                        pattern="dd/MMM/yyyy - hh:mm a" ></p:calendar>
 
 
                             <p:outputLabel value="Admission Type :"/>
@@ -35,11 +35,11 @@
                             <p:selectOneMenu   id="cmbPs" value="#{mdInwardReportController.paymentMethod}">
                                 <f:selectItem itemLabel="Select" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                <p:ajax process="@this" update="crd" event="change" />
+                               
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Credit Company : " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                            <p:selectOneMenu  id="lstCc"   value="#{mdInwardReportController.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
@@ -76,15 +76,7 @@
                             </h:panelGrid>
                         </h:panelGrid>
 
-                        <h:panelGroup id="crd" style="display: #{mdInwardReportController.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
-                            <p:outputLabel value="Credit Company"/>
-                            <p:autoComplete id="creditCom" forceSelection="true" 
-                                            value="#{mdInwardReportController.creditCompany}"  
-                                            completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
-                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                            </p:autoComplete>
-                        </h:panelGroup>
-
+                       
                         <h:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateDischargedAbove()}" onclick="onSubmitButton();" ></p:commandButton>
 
@@ -177,7 +169,7 @@
                                             <f:facet name="footer">
 
                                                 <p:outputLabel value="#{mdInwardReportController.totalValue}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </p:outputLabel>
 
                                             </f:facet>
@@ -254,7 +246,7 @@
                                         <p:column footerText="#{mdInwardReportController.cancelledTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -331,7 +323,7 @@
                                         <p:column footerText="#{mdInwardReportController.refundTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.refundTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>

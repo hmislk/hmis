@@ -96,7 +96,7 @@ public class StaffAmendmentFormController implements Serializable {
         JsfUtil.addSuccessMessage("Sucessfully Saved");
         clear();
     }
-
+    
     public AmendmentForm getCurrAmendmentForm() {
         if (currAmendmentForm == null) {
             currAmendmentForm = new AmendmentForm();

@@ -14,6 +14,7 @@ public class SearchKeyword {
     private String billNo;
     private String refBillNo;
     private String patientName;
+    String requestNo;
     private String patientPhone;
     private String total;
     private String netTotal;
@@ -73,6 +74,16 @@ public class SearchKeyword {
         return false;
 
     }
+
+    public String getRequestNo() {
+        return requestNo;
+    }
+
+    public void setRequestNo(String requestNo) {
+        this.requestNo = requestNo;
+    }
+    
+    
 
     public String getPatientName() {
         return patientName;

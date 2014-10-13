@@ -51,7 +51,7 @@
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Paying Amount"/>
                                 <p:inputText autocomplete="off" value="#{inwardPaymentController.current.total}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
                             </h:panelGrid>
                         </p:panel>
@@ -60,11 +60,11 @@
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Due"/>
                                 <h:outputLabel value="#{inwardPaymentController.due}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <h:outputLabel value="Paying Amount"/>
                                 <p:inputText autocomplete="off" value="#{inwardPaymentController.current.total}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
                             </h:panelGrid>
                         </p:panel>

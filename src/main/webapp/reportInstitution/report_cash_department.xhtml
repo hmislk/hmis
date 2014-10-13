@@ -61,17 +61,17 @@
                         </p:column>
                         <p:column style="text-align: right;" rendered="#{i.total!=0}">                               
                             <h:outputLabel value="#{i.hospitalFee}" style="text-align: right;">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>                                        
                         </p:column>
                         <p:column style="text-align: right;">                               
                             <h:outputLabel value="#{i.proFee}" rendered="#{i.total!=0}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column style="text-align: right;">                               
                             <h:outputLabel value="#{i.total}" rendered="#{i.total!=0}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
@@ -81,7 +81,7 @@
                                 <p:column style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{s.subHosTotal}">
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -89,14 +89,14 @@
                                 <p:column style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{s.subTotal-s.subHosTotal}">
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{s.subTotal}">
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -115,7 +115,7 @@
                             <p:column style="text-align: right;" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{d.departmentTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -125,7 +125,7 @@
                 <f:facet name="footer">
                     <h:outputLabel value="Total OPD Service Collection" />
                     <h:outputLabel value="#{cashSummeryController.departmentTotal}" style="float: right;">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
 
@@ -160,7 +160,7 @@
                 </p:column>
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="#{sm.value}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
@@ -195,7 +195,7 @@
                 </p:column>
                 <p:column style="text-align: right;">
                     <h:outputLabel value="#{s.value}" rendered="#{s.value>0}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <h:outputLabel value="................" rendered="#{s.value==0}"/>
                 </p:column>

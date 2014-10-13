@@ -36,23 +36,23 @@
                             <p:panelGrid columns="2" id="tot" style="min-width: 100%;">
                                 <h:outputLabel  value="Total Charges" style="font-weight: bold"/>
                                 <h:outputLabel value="#{intrimPrintController.currentBill.total}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                                               
                                 <h:outputLabel value="Paid " style="font-weight: bold"/>
                                 <h:outputLabel value="#{intrimPrintController.currentBill.paidAmount}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <h:outputLabel value="Due " style="font-weight: bold"/>
                                 <h:outputLabel value="#{intrimPrintController.currentBill.total-intrimPrintController.currentBill.paidAmount}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <h:outputLabel value="Adjusted Total " style="font-weight: bold" />
                                 <h:outputLabel id="claim" value="#{intrimPrintController.currentBill.adjustedTotal}" >
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <h:outputLabel value="Different With Actual and Adjusted " style="font-weight: bold" />
                                 <h:outputLabel value="#{intrimPrintController.currentBill.total-intrimPrintController.currentBill.adjustedTotal}" >
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:panelGrid>      
                         </h:panelGroup>
@@ -73,18 +73,18 @@
                         </p:column>
                         <p:column headerText="Total">
                             <h:outputLabel value="#{c.grossValue}" >
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>                            
                         </p:column>                      
                         <p:column headerText="Adjusted Value">
                             <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedValue}">
-                                <f:convertNumber pattern="#,000.00" />  
+                                <f:convertNumber pattern="#,##0.00" />  
                                 <p:ajax event="blur" update=":#{p:component('tot')} :#{p:component('intrim')}" listener="#{intrimPrintController.calAdjustedTotal()}"/>
                             </p:inputText>
                         </p:column>
                         <p:column headerText="Previous Print Adjusted Value">
                             <h:outputLabel value="#{c.referanceBillItem.adjustedValue}">
-                                <f:convertNumber pattern="#,000.00" />                               
+                                <f:convertNumber pattern="#,##0.00" />                               
                             </h:outputLabel>
                         </p:column>
                     </p:dataTable> 

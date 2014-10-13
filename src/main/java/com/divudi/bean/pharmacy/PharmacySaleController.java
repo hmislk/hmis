@@ -481,6 +481,10 @@ public class PharmacySaleController implements Serializable {
         clearBillItem();
         billPreview = false;
     }
+    
+    public String pharmacyRetailSale(){
+        return "/pharmacy/pharmacy_bill_retail_sale";
+    }
 
     public List<Item> completeRetailSaleItems(String qry) {
         Map m = new HashMap<>();

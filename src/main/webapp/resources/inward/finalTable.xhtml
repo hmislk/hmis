@@ -24,39 +24,39 @@
             </p:column>
             <p:column headerText="Total Value" style="text-align: right;">
                 <h:outputLabel  value="#{bip.grossValue}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
                 <f:facet name="footer">
                     <h:outputLabel  value="#{cc.attrs.bill.grantTotal}">
-                        <f:convertNumber pattern="#,000.00" />
+                        <f:convertNumber pattern="#,##0.00" />
                     </h:outputLabel>
                 </f:facet>
             </p:column>                            
             <p:column headerText="Discount Value"  style="text-align: right;">
                 <h:outputLabel  value="#{bip.discount}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
                 <f:facet name="footer">
                     <h:outputLabel  value="#{cc.attrs.bill.discount}">
-                        <f:convertNumber pattern="#,000.00" />
+                        <f:convertNumber pattern="#,##0.00" />
                     </h:outputLabel>
                 </f:facet>
             </p:column>
 
             <p:column headerText="Net Value"  style="text-align: right;">
                 <h:outputLabel  value="#{bip.netValue}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
                 <f:facet name="footer">
                     <h:outputLabel  value="#{cc.attrs.bill.netTotal}">
-                        <f:convertNumber pattern="#,000.00" />
+                        <f:convertNumber pattern="#,##0.00" />
                     </h:outputLabel>
                 </f:facet>
             </p:column>
 
             <p:column headerText="Adjusted Value"  style="text-align: right;">
                 <h:outputLabel  value="#{bip.adjustedValue}">
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column>
 

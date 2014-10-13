@@ -83,7 +83,7 @@
                                         <h:outputLabel value="Purchase Rate(Avg)"/>    
                                     </f:facet>
                                     <h:outputLabel  value="#{i.purchaseRate}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>                                  
                                 </p:column>
 
@@ -92,7 +92,7 @@
                                         <h:outputLabel value="Before Total Value"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.referenceStockVariantBillItem.purchaseRate*i.referenceStockVariantBillItem.systemStock}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>                                  
                                 </p:column>
 
@@ -101,7 +101,7 @@
                                         <h:outputLabel value="After Total Value"/>    
                                     </f:facet>
                                     <h:outputLabel  value="#{i.purchaseRate*i.systemStock}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>                                  
                                 </p:column>
 
@@ -112,20 +112,20 @@
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{reportsStockVariant.systemStockValue}" rendered="#{reportsStockVariant.recordedBillAfter.id eq null}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                                 <h:outputLabel value="#{reportsStockVariant.recordedBillAfter.total}" rendered="#{reportsStockVariant.recordedBillAfter.id ne null}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{reportsStockVariant.systemStockValueAfter}" rendered="#{reportsStockVariant.recordedBillAfter.id eq null}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                                 <h:outputLabel value="#{reportsStockVariant.recordedBillAfter.netTotal}" rendered="#{reportsStockVariant.recordedBillAfter.id ne null}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>

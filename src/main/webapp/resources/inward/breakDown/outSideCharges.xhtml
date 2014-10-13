@@ -33,17 +33,17 @@
             </p:column>
             <p:column headerText="Total">
                 <h:outputLabel value="#{bil.total}" >
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column>
             <p:column headerText="Discount">
                 <h:outputLabel value="#{bil.discount}" >
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column>
             <p:column headerText="Net Value">
                 <h:outputLabel value="#{bil.netTotal}" >
-                    <f:convertNumber pattern="#,000.00" />
+                    <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column>
         </p:dataTable>

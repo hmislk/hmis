@@ -67,7 +67,7 @@
 
                             <p:column headerText="Pre Bill at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                 </h:outputLabel>
 
                                 <br/>                                
@@ -75,21 +75,21 @@
                                     <h:outputLabel style="color: red;" value="Return at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" 
                                                    value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted at " />
                                     <h:outputLabel style="color: red;"  
                                                    value="#{bill.retiredAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>   
 
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.referenceBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                 </h:outputLabel>
 
                                 <br/>
@@ -97,21 +97,21 @@
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.cancelled}" 
                                                    value="#{bill.referenceBill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.refunded}" 
                                                    value="#{bill.referenceBill.refundedBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted at " />
                                     <h:outputLabel style="color: red;"  
                                                    value="#{bill.retiredAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column> 
@@ -166,19 +166,19 @@
 
                             <p:column headerText="Gross Value"  >
                                 <h:outputLabel value="#{bill.total}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Discount">
                                 <h:outputLabel value="#{bill.discount}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Net Value"  >
                                 <h:outputLabel value="#{bill.netTotal}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 

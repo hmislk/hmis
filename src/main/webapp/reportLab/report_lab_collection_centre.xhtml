@@ -92,7 +92,7 @@
                             <h:outputLabel value="Discount"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.discount}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>                    
                     <p:column headerText="Pro Total" style="text-align: right;">
@@ -100,7 +100,7 @@
                             <h:outputLabel value="Pro Total"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.staffFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     
@@ -109,7 +109,7 @@
                             <h:outputLabel value="Hos Total"/>                        
                         </f:facet>
                          <h:outputLabel value="#{d.performInstitutionFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     
@@ -118,7 +118,7 @@
                             <h:outputLabel value="Net Total"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.netTotal}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     
@@ -128,7 +128,7 @@
                             <p:column footerText="#{commonReport.total}" style=" text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{commonReport.total}" style=" text-align: right;">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>                             

@@ -68,18 +68,18 @@
                                 </p:column>
                                 <p:column>
                                     <h:outputLabel value="#{ix.creditUsedAmount}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
                                     <h:outputLabel value="#{ix.creditPaidAmount}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <f:ajax execute="@this" event="itemSelect" render="val" listener="#{cashRecieveBillController.selectBhtListener()}"/>
                             </p:autoComplete>
                             <p:inputText autocomplete="off" id="val" value="#{cashRecieveBillController.currentBillItem.netValue}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </p:inputText>
                             <p:commandButton id="btnAddIx" value="Add" action="#{cashRecieveBillController.addToBht()}" ajax="false" onclick="onSubmitButton();"/>
                         </h:panelGroup>
@@ -101,7 +101,7 @@
                             </p:column>
                             <p:column headerText="Net Total">
                                 <h:outputLabel value="#{b.netValue}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Remove">
@@ -117,7 +117,7 @@
                         <p:panelGrid  columns="2">
                             <p:outputLabel value="Net Total" />
                             <p:outputLabel id="tot" value="#{cashRecieveBillController.current.netTotal}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
 
                             <p:outputLabel value="Description"/>
