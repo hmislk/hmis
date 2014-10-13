@@ -9,46 +9,160 @@
     <ui:define name="content">
         <h:form>
             <p:panel header="Additional Working Shift Sheet">
-                <p:panel header="Additional Working Details">
-                    <h:panelGrid columns="2">
-                        <h:outputLabel value="Staff Name"/>
-                        <p:autoComplete id="staff"
-                                        value="#{staffAdditionalFormController.currentAdditionalForm.staff}"
-                                        completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                        itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                        converter="stfcon"   >   
-                        </p:autoComplete>
-                        <h:outputLabel value="Section"/>
-                        <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
-                                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{staffAdditionalFormController.currentAdditionalForm.requestDepartment}" converter="dep"/>   
-                        <h:outputLabel value="From Time"/>
-                        <p:calendar id="requestedDate" value="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
-                                    pattern="yyyy MM dd HH:mm:ss">
-                        </p:calendar> 
-                        <h:outputLabel value="To Time"/>
-                        <p:calendar id="forDate" value="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
-                                    pattern="yyyy MM dd HH:mm:ss" >
-                        </p:calendar> 
-                        <h:outputLabel value="Approved Person"/>
-                        <p:autoComplete id="staffApp"  forceSelection="true"
-                                        value="#{staffAdditionalFormController.currentAdditionalForm.approved}"
-                                        completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                        itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                        converter="stfcon"   >   
-                        </p:autoComplete>
-                        <h:outputLabel value="Approved Date"/>
-                        <p:calendar id="approvedDate" value="#{staffAdditionalFormController.currentAdditionalForm.approvedAt}"
-                                    pattern="dd MMMM yyyy" >
-                        </p:calendar>
-                        <h:outputLabel value="Comment"/>
-                        <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
-                        <p:commandButton id="btnAdd" ajax="false" value="Add" 
-                                         action="#{staffAdditionalFormController.saveAdditionalForm()}"/>
+                <p:panelGrid columns="2" >
+                    <p:panel header="Additional Working Details">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Staff Name"/>
+                            <p:autoComplete id="staff"
+                                            value="#{staffAdditionalFormController.currentAdditionalForm.staff}"
+                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
+                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                            converter="stfcon"   >   
+                            </p:autoComplete>
+                            <h:outputLabel value="Section"/>
+                            <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
+                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{staffAdditionalFormController.currentAdditionalForm.requestDepartment}" converter="dep"/>   
+                            <h:outputLabel value="From Time"/>
+                            <p:calendar id="requestedDate" value="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
+                                        pattern="yyyy MM dd HH:mm:ss">
+                            </p:calendar> 
+                            <h:outputLabel value="To Time"/>
+                            <p:calendar id="forDate" value="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
+                                        pattern="yyyy MM dd HH:mm:ss" >
+                            </p:calendar> 
+                            <h:outputLabel value="Approved Person"/>
+                            <p:autoComplete id="staffApp"  forceSelection="true"
+                                            value="#{staffAdditionalFormController.currentAdditionalForm.approved}"
+                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
+                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                            converter="stfcon"   >   
+                            </p:autoComplete>
+                            <h:outputLabel value="Approved Date"/>
+                            <p:calendar id="approvedDate" value="#{staffAdditionalFormController.currentAdditionalForm.approvedAt}"
+                                        pattern="dd MMMM yyyy" >
+                            </p:calendar>
+                            <h:outputLabel value="Comment"/>
+                            <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
+                            <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                                             action="#{staffAdditionalFormController.saveAdditionalForm()}"/>
 
-                        <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
-                    </h:panelGrid>
-                </p:panel>
+                            <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
+                            <p:commandButton ajax="false" value="Delete" 
+                                             onclick="if(!confirm('Are you sure you want to delete this record?')) return ;" 
+                                             action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel header="Additional Work Serch" >
+                        <p:panel>
+                            <p:panelGrid columns="2" >
+                                <h:outputLabel value="From Time"/>
+                                <p:calendar id="requestedDateS" value="#{staffAdditionalFormController.fromDate}"
+                                            pattern="yyyy MM dd HH:mm:ss">
+                                </p:calendar> 
+                                <h:outputLabel value="To Time"/>
+                                <p:calendar id="forDateS" value="#{staffAdditionalFormController.toDate}"
+                                            pattern="yyyy MM dd HH:mm:ss" >
+                                </p:calendar> 
+                                <h:outputLabel value="Staff Name"/>
+                                <p:autoComplete id="staffS"
+                                                value="#{staffAdditionalFormController.staff}"
+                                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
+                                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                converter="stfcon"   >   
+                                </p:autoComplete>
+                                <h:outputLabel value="Approved Person"/>
+                                <p:autoComplete id="staffAppS"  forceSelection="true"
+                                                value="#{staffAdditionalFormController.approvedStaff}"
+                                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
+                                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                converter="stfcon"   >   
+                                </p:autoComplete>
+                                <h:outputLabel value="Section"/>
+                                <p:autoComplete id="todepS" completeMethod="#{departmentController.completeDept}" 
+                                                var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                value="#{staffAdditionalFormController.department}" converter="dep"/>
+                                <p:commandButton ajax="false" value="Search" action="#{staffAdditionalFormController.createAmmendmentTable()}" ></p:commandButton>
+                            </p:panelGrid>
+                        </p:panel>
+                        <p:panel>
+                            <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 
+                                         rowStyleClass="#{add.retired eq true ? 'redText':''}">
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="View" />
+                                    </f:facet>
+                                    <p:commandButton ajax="false" value="View" action="#{staffAdditionalFormController.viewAdditionalForm(add)}" disabled="#{add.retired}"/>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Staff" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{add.staff.person.nameWithTitle}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Approved" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{add.approved.person.nameWithTitle}" />
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Approved At" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{add.approvedAt}" >
+                                        <f:convertDateTime pattern="YY MM dd"/>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="From Time" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{add.fromTime}" >
+                                        <f:convertDateTime pattern="YY MM dd HH:mm:ss"/>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="To Time"/> 
+                                    </f:facet>
+                                    <p:outputLabel value="#{add.toTime}" >
+                                        <f:convertDateTime pattern="YY MM dd HH:mm:ss"/>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Section" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{add.requestDepartment.name}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Creater" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{add.creater.webUserPerson.nameWithTitle}" />
+                                    <br></br>
+                                    <p:outputLabel value="Deleted By #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"/>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Editer" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{add.editor.webUserPerson.nameWithTitle}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Comment" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{add.comments}" />
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </p:panel>
+                </p:panelGrid>
             </p:panel>
         </h:form>
     </ui:define> 
