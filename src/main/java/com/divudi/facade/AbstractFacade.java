@@ -21,6 +21,7 @@ import javax.persistence.criteria.Predicate;
 /**
  *
  * @author Dr. M H B Ariyaratne <buddhika.ari at gmail.com>
+ * @param <T>
  */
 public abstract class AbstractFacade<T> {
 
@@ -171,7 +172,7 @@ public abstract class AbstractFacade<T> {
             } else {
                 qry.setParameter(pPara, pVal);
             }
-            // System.out.println("Parameter " + pPara + "\tVal" + pVal);
+            
         }
         return qry.getResultList();
     }

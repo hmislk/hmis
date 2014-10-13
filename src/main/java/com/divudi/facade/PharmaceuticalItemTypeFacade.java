@@ -20,7 +20,7 @@ public class PharmaceuticalItemTypeFacade extends AbstractFacade<PharmaceuticalI
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public PharmaceuticalItemTypeFacade() {

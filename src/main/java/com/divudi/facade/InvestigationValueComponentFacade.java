@@ -21,7 +21,7 @@ public class InvestigationValueComponentFacade extends AbstractFacade<Investigat
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public InvestigationValueComponentFacade() {

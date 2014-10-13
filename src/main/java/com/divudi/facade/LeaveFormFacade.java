@@ -22,7 +22,7 @@ public class LeaveFormFacade extends AbstractFacade<LeaveForm> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public LeaveFormFacade() {
