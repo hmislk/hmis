@@ -37,8 +37,12 @@
                         <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
-                        <h:outputLabel value="Institution"/>
-                        <p:inputText value="#{sessionController.loggedUser.institution.name}"></p:inputText>
+                        <h:outputLabel value="Select Institution"/>
+
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                                        forceSelection="true"
+                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
 
                 </f:facet>
