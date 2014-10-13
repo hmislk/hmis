@@ -7,6 +7,7 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.DepartmentController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.data.BillClassType;
@@ -55,6 +56,7 @@ public class BookKeepingSummery implements Serializable {
     Date fromDate;
     Date toDate;
     Institution institution;
+    Institution loggediInstitution;
     private Institution incomeInstitution;
     @EJB
     CommonFunctions commonFunctions;
@@ -92,7 +94,9 @@ public class BookKeepingSummery implements Serializable {
     double chequeTotal;
     double slipTotal;
     double grantTotal;
-
+    @Inject
+    SessionController sessionController;
+    
     public void makeNull() {
         //List
         opdList = null;
@@ -497,11 +501,14 @@ public class BookKeepingSummery implements Serializable {
 
     List<bookKeepingSummeryRow> bookKeepingSummeryRows;
 
-    public void createOPdLabListWithProDayEndTable() {
+     public void createOPdLabListWithProDayEndTable() {
+         
+         
         Map temMap = new HashMap();
         bookKeepingSummeryRows = new ArrayList<>();
 
         List t = new ArrayList();
+       
 
         String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
@@ -518,7 +525,7 @@ public class BookKeepingSummery implements Serializable {
 
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        temMap.put("ins", institution);
+        temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm1", PaymentMethod.Cash);
         temMap.put("pm2", PaymentMethod.Card);
@@ -2036,6 +2043,24 @@ public class BookKeepingSummery implements Serializable {
         this.incomeInstitution = incomeInstitution;
     }
 
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public Institution getLoggediInstitution() {
+        return loggediInstitution;
+    }
+
+    public void setLoggediInstitution(Institution loggediInstitution) {
+        this.loggediInstitution = loggediInstitution;
+    }
+
+    
+
     public class ProfessionalPaymentsByAdmissionTypeAndCategory {
 
         String admissionType;
@@ -2273,4 +2298,6 @@ public class BookKeepingSummery implements Serializable {
         this.creditCompanyTotalInward = creditCompanyTotalInward;
     }
 
+    
+    
 }

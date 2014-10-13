@@ -46,7 +46,7 @@
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
 
-                        <p:dataTable id="tbl1" value="#{inwardReportController1.billItemAdimissionFee}" var="rm" rowIndexVar="i">
+                        <p:dataTable id="tbl1" value="#{inwardReportController1.billItemAdimissionFee}" var="rm" rowIndexVar="i" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 Room Charge
                             </f:facet>

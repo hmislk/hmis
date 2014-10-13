@@ -773,6 +773,7 @@ public class PharmacySaleController3 implements Serializable {
 
         clearBillItem();
         setActiveIndex(1);
+        
     }
 
     private void saveUserStockContainer() {
