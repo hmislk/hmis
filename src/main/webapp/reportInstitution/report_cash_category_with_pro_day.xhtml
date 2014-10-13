@@ -94,7 +94,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="col"  value="#{bookKeepingSummery.collections2Hos}" var="sm">
+            <p:dataTable id="col"  value="#{bookKeepingSummery.collections2Hos}" var="sm" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
                 </p:column>
@@ -127,7 +127,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}" var="s">
+            <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}" var="s" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
 
                 <p:columnGroup type="header">
 
@@ -232,7 +232,7 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b">
+            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
 
                 <f:facet name="header">
                     <h:outputLabel value="Bank Deposit" />

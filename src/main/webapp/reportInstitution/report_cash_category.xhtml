@@ -35,7 +35,7 @@
             </p:panel>
             <p:spacer height="30"/>
 
-            <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d">                   
+            <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">                   
 
                 <f:facet name="header">
                     <h:outputLabel value="OPD Service"/>
@@ -156,7 +156,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="col"  value="#{cashSummeryController.collections2}" var="sm">
+            <p:dataTable id="col"  value="#{cashSummeryController.collections2}" var="sm" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
                 </p:column>
@@ -194,7 +194,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="finalSum" value="#{cashSummeryController.finalSummery}" var="s">
+            <p:dataTable id="finalSum" value="#{cashSummeryController.finalSummery}" var="s" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
 
                 <p:column>
                     <h:outputLabel value="#{s.string}"/>
