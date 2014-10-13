@@ -39,7 +39,7 @@
                 </f:facet>
 
             </p:panel>
-            <p:dataGrid  value="#{creditSummeryController.dailyCredit}" var="d" columns="1">
+            <p:dataGrid  value="#{creditSummeryController.dailyCredit}" var="d" columns="1" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
                 <p:dataTable id="safrin" value="#{d.categoryWitmItems}" var="s" rendered="#{d.departmentTotal!=0}">                       
                     <p:columnGroup type="header">
                         <p:row>

@@ -43,7 +43,7 @@
                 </f:facet>
 
             </p:panel>            
-            <p:dataTable id="safrin" value="#{creditSummeryController.dailyCreditByBill}" var="d" >                       
+            <p:dataTable id="safrin" value="#{creditSummeryController.dailyCreditByBill}" var="d" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">                       
                 <p:columnGroup type="header">
                     <p:row>
                         <p:column headerText="Bill No"/>                         

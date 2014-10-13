@@ -12,7 +12,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" >
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
             <f:facet name="header">
                 <p:outputLabel value="#{sessionController.institution.name}"/> &nbsp;<h:outputLabel/>
                 <p:outputLabel value="Book Keeping Summary "/><h:outputLabel/>   

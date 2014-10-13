@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+
+
+
+                    <p:panel header="Manage Item Fees" >
+
+                        <p:panelGrid columns="1" >
+                            <p:panelGrid columns="2" >
+                                <h:outputLabel value="Select Item" />
+                                <p:autoComplete widgetVar="aIx" id="acIx" 
+                                                forceSelection="true" 
+                                                value="#{itemFeeManager.item}"
+                                                completeMethod="#{itemController.completeItem}" 
+                                                var="ix" 
+                                                itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
+                                                style="width: 400px;">
+                                    <p:ajax event="itemSelect" process="@this" update="gpFees lblTotal" listener="#{itemFeeManager.fillFees()}"></p:ajax>
+                                </p:autoComplete>
+                                <h:outputLabel value="Total Fee" />
+                                <h:outputLabel id="lblTotal" value="#{itemFeeManager.item.total}" ></h:outputLabel>
+
+                                <p:panel header="New Fee Details - #{itemFeeManager.item.total}" id="gpDetail" >
+
+                                    <f:facet name="header" >
+                                        New Fee Details
+
+                                    </f:facet>
+                                    <p:panelGrid columns="2" >
+                                        <h:inputText value="Fee Name" ></h:inputText>
+                                        <h:inputText value="#{itemFeeManager.itemFee.name}" ></h:inputText>
+
+                                        <h:inputText value="Local Value" ></h:inputText>
+                                        <h:inputText value="#{itemFeeManager.itemFee.fee}" ></h:inputText>
+
+                                        <h:inputText value="Fee Type" ></h:inputText>
+                                        <p:selectOneMenu value="#{itemFeeManager.itemFee.feeType}" >
+                                            <f:selectItems value="#{enumController.feeTypes}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                        
+                                        <h:inputText value="Institution" ></h:inputText>
+                                        <p:autoComplete value="#{itemFeeManager.itemFee.institution}" 
+                                                        completeMethod="#{institutionController.completeIns}"
+                                                        var="ins" 
+                                                        itemLabel="#{ins.name}" 
+                                                        itemValue="#{ins}" 
+                                                        converter="institutionConverter" >
+                                            <p:ajax event="itemSelect" process="@this" update="somDepartment lblIns" listener="#{itemFeeManager.fillDepartments()}" ></p:ajax>
+                                        </p:autoComplete>
+                                        
+                                        
+                                        <h:inputText id="lblIns" value="#{itemFeeManager.itemFee.institution.name}" ></h:inputText>
+                                         
+                                         <h:inputText value="Department" ></h:inputText>
+                                         <p:selectOneMenu id="somDepartment" value="#{itemFeeManager.itemFee.department}" >
+                                             <f:selectItems value="#{itemFeeManager.departments}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
+                                         </p:selectOneMenu>
+                                       
+                                                          
+                                        
+                                        <p:commandButton ajax="false" value="Add" action="#{itemFeeManager.addNewFee()}" ></p:commandButton>
+
+                                    </p:panelGrid>
+                                </p:panel>
+
+                                <p:panel header="Fees" id="gpFees" >
+
+
+
+                                    <table >
+
+                                        <ui:repeat value="#{itemFeeManager.itemFees}" var="f" >
+                                            <tr>
+
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p:inputText id="txtFeeName" value="#{f.name}" >
+                                                        <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
+                                                    </p:inputText>
+                                                </td>
+                                                <td>
+                                                    <p:inputText id="txtFeeVal" value="#{f.fee}" >
+                                                        <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
+                                                    </p:inputText>
+                                                </td>
+                                            </tr>
+
+                                        </ui:repeat>
+
+                                    </table>
+
+                                </p:panel>
+                            </p:panelGrid>
+
+
+
+                        </p:panelGrid>
+
+
+                    </p:panel>
+
+
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

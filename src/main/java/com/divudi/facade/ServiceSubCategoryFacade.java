@@ -20,7 +20,7 @@ public class ServiceSubCategoryFacade extends AbstractFacade<ServiceSubCategory>
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public ServiceSubCategoryFacade() {

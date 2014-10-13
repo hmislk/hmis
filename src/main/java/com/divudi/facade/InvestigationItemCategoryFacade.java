@@ -20,7 +20,7 @@ public class InvestigationItemCategoryFacade extends AbstractFacade<Investigatio
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public InvestigationItemCategoryFacade() {
