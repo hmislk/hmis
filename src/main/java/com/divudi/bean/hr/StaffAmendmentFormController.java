@@ -7,14 +7,19 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.entity.hr.AmendmentForm;
+import com.divudi.entity.hr.StaffShift;
 import com.divudi.facade.AmendmentFormFacade;
+import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -32,9 +37,9 @@ public class StaffAmendmentFormController implements Serializable {
 
     public StaffAmendmentFormController() {
     }
-    
-    public void clear(){
-        currAmendmentForm=null;
+
+    public void clear() {
+        currAmendmentForm = null;
     }
 
     public boolean errorCheck() {
@@ -46,30 +51,17 @@ public class StaffAmendmentFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Staff");
             return true;
         }
-        if (currAmendmentForm.getFromDepartment() == null) {
-            JsfUtil.addErrorMessage("Please Select Section");
-            return true;
-        }
-        if (currAmendmentForm.getToDepartment() == null) {
-            JsfUtil.addErrorMessage("Please Select Section");
-            return true;
-        }
-        if (currAmendmentForm.getFromFDate() == null) {
+        
+        if (currAmendmentForm.getFromDate() == null) {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
-        if (currAmendmentForm.getFromTDate() == null) {
+      
+        if (currAmendmentForm.getToDate() == null) {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
-        if (currAmendmentForm.getToFDate() == null) {
-            JsfUtil.addErrorMessage("Please Select From Time");
-            return true;
-        }
-        if (currAmendmentForm.getToTDate() == null) {
-            JsfUtil.addErrorMessage("Please Select From Time");
-            return true;
-        }
+      
         if (currAmendmentForm.getApprovedStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Approved Person");
             return true;
@@ -95,6 +87,38 @@ public class StaffAmendmentFormController implements Serializable {
         getAmendmentFormFacade().create(currAmendmentForm);
         JsfUtil.addSuccessMessage("Sucessfully Saved");
         clear();
+    }
+    List<StaffShift> fromStaffShifts;
+    List<StaffShift> toStaffShifts;
+    @EJB
+    StaffShiftFacade staffShiftFacade;
+
+    public void fetchFromStaffShift() {
+        HashMap hm = new HashMap();
+        String sql = "select c from "
+                + " StaffShift c"
+                + " where c.retired=false "
+                + " and c.shiftDate=:dt "
+                + " and c.staff=:stf ";
+
+        hm.put("dt", getCurrAmendmentForm().getFromDate());
+        hm.put("stf", getCurrAmendmentForm().getStaff());
+
+        fromStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
+    public void fetchToStaffShift() {
+        HashMap hm = new HashMap();
+        String sql = " select c from "
+                + " StaffShift c"
+                + " where c.retired=false "
+                + " and c.shiftDate=:dt "
+                + " and c.staff=:stf ";
+
+        hm.put("dt", getCurrAmendmentForm().getToDate());
+        hm.put("stf", getCurrAmendmentForm().getStaff());
+
+        toStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
     public AmendmentForm getCurrAmendmentForm() {

@@ -9,32 +9,32 @@
     <ui:define name="content">
         <h:form>
             <p:panel header="Leave Application Form">
-                <p:panel header="Leave Details">
+                <p:panel header="Leave Form Details">
                     <h:panelGrid columns="2">
-                        <h:outputLabel value="Staff Name"/>
+                        <h:outputLabel value="Staff : "/>
                         <p:autoComplete id="staff"
-                                        value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"
+                                        value="#{staffLeaveApplicationFormController.currentLeaveForm.staffLeave.staff}"
                                         completeMethod="#{staffController.completeStaffCode}" var="mys" 
                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                         converter="stfcon"   >   
                         </p:autoComplete>
                         <h:outputLabel value="Leave Type"/>
-                        <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.leaveType}">
+                        <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.staffLeave.leaveType}">
                             <f:selectItem itemLabel="Select Day Type"/>
-                            <f:selectItems value="#{staffLeaveApplicationFormController.leaveType}"/>
-                        </p:selectOneMenu>                          
-                        <h:outputLabel value="Name Of Sub Department"/>
-                        <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
-                                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{staffLeaveApplicationFormController.currentLeaveForm.subDepartment}" converter="dep"/>   
-                        <h:outputLabel value="Leave Date"/>
+                            <f:selectItems value="#{enumController.leaveType}"/>
+                        </p:selectOneMenu>                                                 
+                        <h:outputLabel value="Requested Date"/>
                         <p:calendar id="requestedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.requestedDate}"
                                     pattern="dd MMMM yyyy">
-                        </p:calendar> 
-                        <h:outputLabel value="Leave For Date"/>
-                        <p:calendar id="forDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.forDate}"
-                                    pattern="dd MMMM yyyy" >
-                        </p:calendar> 
+                        </p:calendar>                     
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{staffLeaveController.currentLeaveForm.staffLeave.fromDate}"
+                                    pattern="dd MMMM yyyy">     
+                        </p:calendar>   
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{staffLeaveController.currentLeaveForm.staffLeave.toDate}"
+                                    pattern="dd MMMM yyyy">
+                        </p:calendar>     
                         <h:outputLabel value="Leave Approved Person"/>
                         <p:autoComplete id="staffApp"  forceSelection="true"
                                         value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"
@@ -53,7 +53,7 @@
 
                         <p:commandButton ajax="false" value="Clear" action="#{staffLeaveApplicationFormController.clear}"/>
                     </h:panelGrid>
-                </p:panel>
+                </p:panel>               
             </p:panel>
         </h:form>
     </ui:define> 

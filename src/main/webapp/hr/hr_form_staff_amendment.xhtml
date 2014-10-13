@@ -13,36 +13,24 @@
                     <h:panelGrid columns="2">
                         <p:panel header="Employee Details">
                             <p:panelGrid columns="2">
-                                <h:outputLabel value="Staff Name"/>
+                                <h:outputLabel value="From Staff"/>
                                 <p:autoComplete id="fromStaff"
                                                 value="#{staffAmendmentFormController.currAmendmentForm.fromStaff}"
                                                 completeMethod="#{staffController.completeStaffCode}" var="mys" 
                                                 itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                 converter="stfcon"   >   
-                                </p:autoComplete>
-                                <h:outputLabel value="Section"/>
-                                <p:autoComplete id="froDdep" completeMethod="#{departmentController.completeDept}" 
-                                                var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                value="#{staffAmendmentFormController.currAmendmentForm.fromFDate}" converter="dep"/>   
-                                <h:outputLabel value="From Time"/>
-                                <p:calendar id="formFDate" value="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
+                                </p:autoComplete>                               
+                                <h:outputLabel value="Date "/>
+                                <p:calendar id="formFDate" value="#{staffAmendmentFormController.currAmendmentForm.fromDate}"
                                             pattern="yyyy MM dd HH:mm:ss">
-                                </p:calendar> 
-                                <h:outputLabel value="To Time"/>
-                                <p:calendar id="formTDate" value="#{staffAmendmentFormController.currAmendmentForm.fromTDate}"
-                                            pattern="yyyy MM dd HH:mm:ss" >
-                                </p:calendar> 
-                                <p:outputLabel value="Form Shift"/>
-                                <p:autoComplete value="#{staffAmendmentFormController.currAmendmentForm.fromShift}"
-                                                autocomplete="off"
-                                                forceSelection="true"     
-                                                styleClass="autoComplete75px"
-                                                completeMethod="#{shiftController.completeShiftAll}"
-                                                var="mys" 
-                                                size="50"
-                                                itemLabel="#{mys.name}" 
-                                                itemValue="#{mys}">                                  
-                                </p:autoComplete>
+                                </p:calendar>   
+                                <p:commandButton ajax="false" value="Process Staff Shift" 
+                                                 action="#{staffAmendmentFormController.fetchFromStaffShift()}" />
+                                <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShift}"   >
+                                    <f:selectItem itemLabel="Select Staff Shift"/>
+                                    <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
+                                                   var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                                </p:selectOneMenu>
                             </p:panelGrid>
                         </p:panel>
                         <p:panel header="Action Employee Details">

@@ -8,6 +8,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.entity.hr.StaffShiftExtra;
 import com.divudi.facade.AdditionalFormFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -47,7 +48,7 @@ public class staffAdditionalFormController implements Serializable {
                 + " and c.shiftDate between :fd and :td "
                 + " and c.staff=:stf ";
 
-        hm.put("fd",getDate());
+        hm.put("fd", getDate());
         hm.put("td", getDate());
         hm.put("stf", getCurrentAdditionalForm().getStaff());
 
@@ -70,8 +71,6 @@ public class staffAdditionalFormController implements Serializable {
         this.staffShiftFacade = staffShiftFacade;
     }
 
-    
-    
     public Date getDate() {
         return date;
     }
@@ -114,6 +113,8 @@ public class staffAdditionalFormController implements Serializable {
             return true;
         }
 
+        //NEED To Check StaffSHift  if not selected is there any shift time on that day
+        
         return false;
     }
 
@@ -124,6 +125,24 @@ public class staffAdditionalFormController implements Serializable {
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
         getAdditionalFormFacade().create(currentAdditionalForm);
+
+        if (currentAdditionalForm.getStaffShift() != null) {
+            currentAdditionalForm.getStaffShift().setHrForm(currentAdditionalForm);
+            staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
+        } else {
+            StaffShiftExtra staffShiftExtra = new StaffShiftExtra();
+            staffShiftExtra.setCreatedAt(new Date());
+            staffShiftExtra.setCreater(sessionController.getLoggedUser());
+            staffShiftExtra.setHrForm(currentAdditionalForm);
+            staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
+            staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
+            staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
+            staffShiftFacade.create(staffShiftExtra);
+
+            currentAdditionalForm.setStaffShift(staffShiftExtra);
+            additionalFormFacade.edit(currentAdditionalForm);
+        }
+
         JsfUtil.addSuccessMessage("Sucessfully Saved");
         clear();
     }

@@ -13,6 +13,7 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
+import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.Times;
 import com.divudi.data.inward.AdmissionTypeEnum;
@@ -38,6 +39,11 @@ public class EnumController implements Serializable {
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
+    }
+
+    public LeaveType[] getLeaveType() {
+        LeaveType[] ltp = {LeaveType.Annual, LeaveType.Casual, LeaveType.Lieu, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical};
+        return ltp;
     }
 
     public Times[] getTimeses() {

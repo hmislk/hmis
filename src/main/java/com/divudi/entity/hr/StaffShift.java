@@ -94,6 +94,7 @@ public class StaffShift implements Serializable {
     double lateOutVarified;
     double lateInLogged;
     double lateOutLogged;
+    double leavedTime;
     @Column(name = "overTimeFromStartRecordLogged")
     double extraTimeFromStartRecordLogged;
     @Column(name = "overTimeFromEndRecordLogged")
@@ -116,8 +117,32 @@ public class StaffShift implements Serializable {
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
     double qty;
-    @OneToOne(mappedBy = "staffShift")
+    @ManyToOne
     HrForm hrForm;
+
+    public double getLeavedTime() {
+        return leavedTime;
+    }
+
+    public void setLeavedTime(double leavedTime) {
+        this.leavedTime = leavedTime;
+    }
+
+    public void calLeaveTime() {
+        if (leaveType == null) {
+            return;
+        }
+        
+        
+        switch (getLeaveType()) {
+            case Annual:
+            case Casual:
+            case Lieu:
+                setLeavedTime(getStaff().getLeaveHour() * 60 * 60);
+                break;
+
+        }
+    }
 
     public HrForm getHrForm() {
         return hrForm;
@@ -126,8 +151,6 @@ public class StaffShift implements Serializable {
     public void setHrForm(HrForm hrForm) {
         this.hrForm = hrForm;
     }
-    
-    
 
     private void calLoggedStartRecord() {
         Calendar fromCalendar = Calendar.getInstance();

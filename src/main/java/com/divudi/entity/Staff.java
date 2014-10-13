@@ -117,7 +117,8 @@ public class Staff implements Serializable {
 
     String acNo;
 
-    double workingHour;
+    double workingHourPerShift;
+    double leaveHour;
     
     double annualWelfareQualified;
     double annualWelfareUtilized;
@@ -132,6 +133,17 @@ public class Staff implements Serializable {
 //        
 //        return tmp2;
 //    }
+    
+    
+    
+    public double getLeaveHour() {
+        return leaveHour;
+    }
+
+    public void setLeaveHour(double leaveHour) {
+        this.leaveHour = leaveHour;
+    }
+
     public byte[] getBaImage() {
         return baImage;
     }
@@ -508,12 +520,12 @@ public class Staff implements Serializable {
         this.acNo = acNo;
     }
 
-    public double getWorkingHour() {
-        return workingHour;
+    public double getWorkingHourPerShift() {
+        return workingHourPerShift;
     }
 
-    public void setWorkingHour(double workingHour) {
-        this.workingHour = workingHour;
+    public void setWorkingHourPerShift(double workingHourPerShift) {
+        this.workingHourPerShift = workingHourPerShift;
     }
 
     public double getCharge() {

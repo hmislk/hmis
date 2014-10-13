@@ -20,6 +20,7 @@ public enum LeaveType {
     Sick, //    
     Lieu,
     No_Pay,
+    @Deprecated
     Absent,
     Other,
 }
