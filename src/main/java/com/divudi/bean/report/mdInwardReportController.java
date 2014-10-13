@@ -5,13 +5,13 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.ItemWithFee;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -929,12 +929,52 @@ public class mdInwardReportController implements Serializable {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-        
+
         if (patientEncounter != null) {
             sql += " and b.patientEncounter=pten ";
             temMap.put("pten", patientEncounter);
         }
-        
+
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
+
+        sql += " order by b.patientEncounter.bhtNo,b.insId ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    private List<Bill> depositByCreatedDate(Bill bill) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  ";
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
@@ -976,12 +1016,51 @@ public class mdInwardReportController implements Serializable {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-        
+
         if (patientEncounter != null) {
             sql += " and b.patientEncounter=pten ";
             temMap.put("pten", patientEncounter);
         }
-        
+
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
+
+//        sql += " order by b.patientEncounter.bhtNo,b.insId ";
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    private double depositByCreatedDateValue(Bill bill) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(b.netTotal) from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  ";
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
@@ -1079,12 +1158,12 @@ public class mdInwardReportController implements Serializable {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-        
+
         if (patientEncounter != null) {
             sql += " and b.patientEncounter=pten ";
             temMap.put("pten", patientEncounter);
         }
-        
+
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm ";
             temMap.put("pm", paymentMethod);
@@ -1106,10 +1185,89 @@ public class mdInwardReportController implements Serializable {
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
-    private double calPaymentBills(String args) {
+    private List<Bill> fetchPaymentBillsNotDicharged() {
+        String sql = "";
+        Map temMap = new HashMap();
+        sql = "select b from Bill b where "
+                + " b.billType = :billType "
+                + " and b.retired=false"
+                + " and b.createdAt < :toDate"
+                + " and b.patientEncounter.dateOfAdmission < :toDate "
+                + " and (b.patientEncounter.dateOfDischarge > :toDate"
+                + " or b.patientEncounter.dateOfDischarge is null )";
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad ";
+            temMap.put("ad", admissionType);
+        }
+
+        sql += " order by b.patientEncounter.bhtNo,"
+                + " b.createdAt ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("toDate", toDate);
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+    
+   
+    private double calPaymentBillsNotDicharged() {
         String sql = "";
         Map temMap = new HashMap();
         sql = "select sum(b.netTotal) from Bill b where "
+                + " b.billType = :billType "
+                + " and b.retired=false"
+                + " and b.createdAt < :toDate"
+                + " and b.patientEncounter.dateOfAdmission < :toDate "
+                + " and (b.patientEncounter.dateOfDischarge > :toDate"
+                + " or b.patientEncounter.dateOfDischarge is null )";
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad ";
+            temMap.put("ad", admissionType);
+        }
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("toDate", toDate);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    private double calPaymentBills(String args) {
+        String sql = "";
+        Map temMap = new HashMap();
+        sql = "select sum(b.netTotal) "
+                + " from Bill b where "
                 + " b.billType = :billType "
                 + " and b.retired=false"
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -1120,12 +1278,12 @@ public class mdInwardReportController implements Serializable {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-        
+
         if (patientEncounter != null) {
             sql += " and b.patientEncounter=pten ";
             temMap.put("pten", patientEncounter);
         }
-        
+
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
@@ -1179,6 +1337,18 @@ public class mdInwardReportController implements Serializable {
 
     }
 
+    public void createDepositByCreatedDateDischargedAll() {
+
+        bil = depositByCreatedDate(new BilledBill());
+        cancel = depositByCreatedDate(new CancelledBill());
+        refund = depositByCreatedDate(new RefundBill());
+
+        totalValue = depositByCreatedDateValue(new BilledBill());
+        cancelledTotal = depositByCreatedDateValue(new CancelledBill());
+        refundTotal = depositByCreatedDateValue(new RefundBill());
+
+    }
+
     public void admittedPatientSummerries() {
 
         bil = inwdPaymentBillsAdmitted(new BilledBill());
@@ -1200,7 +1370,7 @@ public class mdInwardReportController implements Serializable {
 
     public void allBhtPySummerriesByCreatedDate() {
 //        String sql = " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
-        String sql="";
+        String sql = "";
         completePayments = fetchPaymentBills(sql);
         completePaymentsTotal = calPaymentBills(sql);
 
@@ -1212,6 +1382,75 @@ public class mdInwardReportController implements Serializable {
         grantTotal = calPaymentBills(sql);
 
     }
+
+    public void dipositsOfNotDischarged() {
+//        String sql = " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        String sql = "";
+        completePayments = fetchPaymentBillsNotDicharged();
+        completePaymentsTotal = calPaymentBillsNotDicharged();
+
+    }
+
+
+    public void dipositsOfNotDischargedByBht() {
+        String sql = "";
+        Map temMap = new HashMap();
+        sql = "select b.patientEncounter,sum(b.netTotal)"
+                + " from Bill b where "
+                + " b.billType = :billType "
+                + " and b.retired=false "
+                + " and b.createdAt < :toDate"
+                + " and b.patientEncounter.dateOfAdmission < :toDate "
+                + " and (b.patientEncounter.dateOfDischarge > :toDate"
+                + " or b.patientEncounter.dateOfDischarge is null )";
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad ";
+            temMap.put("ad", admissionType);
+        }
+
+        sql += "  group by b.patientEncounter.id "
+                + " order  by b.patientEncounter.admissionType.name,b.patientEncounter.bhtNo";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("toDate", toDate);
+
+        List<Object[]> list = getBillFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+
+        patientEncounterValues = new ArrayList<>();
+
+        for (Object[] obj : list) {
+            PatientEncounterValue row = new PatientEncounterValue();
+            PatientEncounter pe = (PatientEncounter) obj[0];
+            row.setPe(pe);
+            row.setPaid((Double) obj[1]);
+            double paidAmtByCreditCompany = Math.abs(creditBean.getPaidAmount(pe, BillType.CashRecieveBill, getToDate()));
+            row.setPaidByCreditCompany(paidAmtByCreditCompany);
+
+            patientEncounterValues.add(row);
+        }
+
+        completePaymentsTotal = calPaymentBillsNotDicharged();
+
+    }
+
+    @EJB
+    CreditBean creditBean;
 
     private double calInwdPaymentBillsDischarge(Bill bill) {
         String sql;
@@ -2069,6 +2308,16 @@ public class mdInwardReportController implements Serializable {
         this.grantTotal = grantTotal;
     }
 
+    List<PatientEncounterValue> patientEncounterValues;
+
+    public List<PatientEncounterValue> getPatientEncounterValues() {
+        return patientEncounterValues;
+    }
+
+    public void setPatientEncounterValues(List<PatientEncounterValue> patientEncounterValues) {
+        this.patientEncounterValues = patientEncounterValues;
+    }
+
     public Item getItem() {
         return item;
     }
@@ -2099,6 +2348,47 @@ public class mdInwardReportController implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public class PatientEncounterValue {
+
+        PatientEncounter pe;
+        Double paid;
+        Double paidByCreditCompany;
+        Double due;
+
+        public Double getPaidByCreditCompany() {
+            return paidByCreditCompany;
+        }
+
+        public void setPaidByCreditCompany(Double paidByCreditCompany) {
+            this.paidByCreditCompany = paidByCreditCompany;
+        }
+
+        public PatientEncounter getPe() {
+            return pe;
+        }
+
+        public void setPe(PatientEncounter pe) {
+            this.pe = pe;
+        }
+
+        public Double getPaid() {
+            return paid;
+        }
+
+        public void setPaid(Double paid) {
+            this.paid = paid;
+        }
+
+        public Double getDue() {
+            return due;
+        }
+
+        public void setDue(Double due) {
+            this.due = due;
+        }
+
     }
 
 }

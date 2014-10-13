@@ -104,44 +104,44 @@
                         <h:outputLabel value="Professional Fee" />
                     </f:facet>
                     <p:outputLabel value="#{d.proFee}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.proFeeTotal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
 
                 <p:column headerText="Hospital Fee" style="text-align: right;">
                     <p:outputLabel value="#{d.hospitalFee}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.hosFeeTotal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>     
 
                 <p:column headerText="Out Fee" style="text-align: right;">
                     <p:outputLabel value="#{d.outSideFee}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.outSideFeeTotoal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>    
 
                 <p:column headerText="Total Fee" style="text-align: right;">
                     <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>              

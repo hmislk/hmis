@@ -59,7 +59,7 @@
                             <h:outputLabel value="Hospital Fee" style="float: left;"/>
                         </f:facet>
                         <h:outputLabel value="#{i.hospitalFee}" style="text-align: right;">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>                                        
                     </p:column>
                     <p:column style="width: 100px;text-align: right;">
@@ -67,7 +67,7 @@
                             <h:outputLabel value="Professional Fee" style="float: left;"/>
                         </f:facet>
                         <h:outputLabel value="#{i.proFee}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column style="width: 100px;text-align: right;">
@@ -75,7 +75,7 @@
                             <h:outputLabel value="Total" style="float: left;"/>
                         </f:facet>
                         <h:outputLabel value="#{i.total}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
 
@@ -84,17 +84,17 @@
                         <p:column colspan="5"/>
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{cashSummeryController.hosTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>                                            
                         </p:column>
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{cashSummeryController.profTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>                                            
                         </p:column>
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{cashSummeryController.hosTotal+cashSummeryController.profTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>                                            
                         </p:column>
                     </p:summaryRow>
@@ -118,12 +118,12 @@
 
                             <h:outputLabel value="Collection For the Day"/>
                             <p:outputLabel value="#{cashSummeryController.grantTotal3}" style="text-align: right;float: right;font-weight: bold;">                        
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </p:outputLabel>
 
                             <p:outputLabel value="Petty cash Payments : "/>
                             <p:outputLabel value="#{cashSummeryController.pettyTot}"  style="text-align: right;float: right;font-weight: bold;" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </p:outputLabel>
 
                         </p:panelGrid>
@@ -158,7 +158,7 @@
                     <p:outputLabel value="&nbsp;" />
                     <p:outputLabel value="Net Cash : "/>
                     <h:outputLabel value="#{cashSummeryController.netCash}" style="float: right;font-weight: bolder;">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <p:outputLabel value="Lab Handover Total :"/>
                     <p:outputLabel value="......................." style="float: right;font-weight: bolder;">                          

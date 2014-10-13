@@ -70,14 +70,14 @@
                             <p:column headerText="Cash Refund By" filterBy="#{bill.referenceBill.creater.webUserPerson.name}">
                                 
                                     <h:outputLabel value="#{bill.referenceBill.creater.webUserPerson.name}" >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                  
                             </p:column>
                             <p:column headerText="Net Value" filterBy="#{bill.referenceBill.netTotal}">
                           
                                     <h:outputLabel value="#{bill.referenceBill.netTotal}" >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                   
                             </p:column>

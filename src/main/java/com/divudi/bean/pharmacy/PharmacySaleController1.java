@@ -163,6 +163,10 @@ public class PharmacySaleController1 implements Serializable {
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
 
+    public String pharmacyRetailSale() {
+        return "/pharmacy/pharmacy_bill_retail_sale_1";
+    }
+
     public void searchPatientListener() {
         System.err.println("1");
         //  createPaymentSchemeItems();

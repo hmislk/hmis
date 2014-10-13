@@ -822,3 +822,14 @@ a:hover {
     width: 100px!important;
 }
     
+
+
+.standardList{
+    height: 300px;
+    width: 300px!important;
+}
+
+.standardText{
+    width: 300px!important;
+    font-size: 22px;
+}

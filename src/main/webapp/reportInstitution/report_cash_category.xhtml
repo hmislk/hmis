@@ -35,7 +35,7 @@
             </p:panel>
             <p:spacer height="30"/>
 
-            <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d">                   
+            <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">                   
 
                 <f:facet name="header">
                     <h:outputLabel value="OPD Service"/>
@@ -71,19 +71,19 @@
 
                     <p:column style="text-align: right;">                               
                         <h:outputLabel value="#{i.hospitalFee}" >
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>                                        
                     </p:column>
 
                     <p:column style="text-align: right;">                                
                         <h:outputLabel value="#{i.proFee}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
 
                     <p:column style="text-align: right;">                               
                         <h:outputLabel value="#{i.total}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
 
@@ -94,7 +94,7 @@
                             <p:column style="text-align: right;" footerText="#{d.subHosTotal}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{d.subHosTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -102,7 +102,7 @@
                             <p:column style="text-align: right;" footerText="#{d.subTotal-d.subHosTotal}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{d.subTotal-d.subHosTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -110,7 +110,7 @@
                             <p:column style="text-align: right;" footerText="#{d.subTotal}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{d.subTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -125,7 +125,7 @@
                         <p:column style="text-align: right;" footerText="#{cashSummeryController.categoryTotal}" >
                             <f:facet name="footer">
                                 <h:outputLabel value="#{cashSummeryController.categoryTotal}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
@@ -156,14 +156,14 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="col"  value="#{cashSummeryController.collections2}" var="sm">
+            <p:dataTable id="col"  value="#{cashSummeryController.collections2}" var="sm" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
                 </p:column>
 
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="#{sm.value}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
 
@@ -194,7 +194,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="finalSum" value="#{cashSummeryController.finalSummery}" var="s">
+            <p:dataTable id="finalSum" value="#{cashSummeryController.finalSummery}" var="s" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
 
                 <p:column>
                     <h:outputLabel value="#{s.string}"/>
@@ -202,7 +202,7 @@
 
                 <p:column style="text-align: right;">
                     <h:outputLabel value="#{s.value}" rendered="#{s.value!=0}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <h:outputLabel value="................" rendered="#{s.value==0}"/>
                 </p:column>

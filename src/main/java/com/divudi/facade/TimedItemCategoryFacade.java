@@ -5,6 +5,7 @@
 package com.divudi.facade;
 
 import com.divudi.entity.inward.TimedItemCategory;
+import com.divudi.facade.util.JsfUtil;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -20,7 +21,10 @@ public class TimedItemCategoryFacade extends AbstractFacade<TimedItemCategory> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if (em == null){
+            JsfUtil.addErrorMessage("null em");
+        }
+        if(em == null){}return em;
     }
 
     public TimedItemCategoryFacade() {

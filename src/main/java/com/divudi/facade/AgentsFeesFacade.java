@@ -20,7 +20,7 @@ public class AgentsFeesFacade extends AbstractFacade<AgentsFees> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public AgentsFeesFacade() {

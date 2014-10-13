@@ -46,7 +46,7 @@
             </p:panel>
             <p:spacer height="30"/>
 
-            <p:dataTable id="opd" rowIndexVar="i"  value="#{serviceSummery.billItemWithFees}" var="d">                   
+            <p:dataTable id="opd" rowIndexVar="i"  value="#{serviceSummery.billItemWithFees}" var="d" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">                   
 
                 <f:facet name="header">
                     <h:outputLabel value="#{serviceSummery.category.name}"/>
@@ -95,7 +95,7 @@
                         <h:outputLabel value="Hospital Fee" />
                     </f:facet>
                     <p:outputLabel value="#{d.hospitalFee}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
 
                 </p:column>              
@@ -120,7 +120,7 @@
                         <p:column style="text-align: right;" footerText="#{serviceSummery.value}" >
                             <f:facet name="footer">
                                 <h:outputLabel value="#{serviceSummery.value}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>

@@ -90,7 +90,7 @@
             <p:column headerText="Net Value" style="text-align: right;"  >
                 <h:commandLink action="store_reprint_bill_pre" >
                     <h:outputLabel value="#{bill.netTotal}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>

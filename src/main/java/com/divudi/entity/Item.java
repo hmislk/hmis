@@ -141,12 +141,11 @@ public class Item implements Serializable {
     Date effectiveFrom;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date effectiveTo;
-    
+
     //Matara Phrmacy Sale Autocomplete
-    
     @ManyToOne
     private Vmp vmp;
-    
+
     public Date getEffectiveFrom() {
         return effectiveFrom;
     }
@@ -246,6 +245,9 @@ public class Item implements Serializable {
     List<ItemFee> itemFees;
 
     public List<ItemFee> getItemFees() {
+        if (itemFees == null) {
+            itemFees = new ArrayList<>();
+        }
         return itemFees;
     }
 
@@ -755,7 +757,7 @@ public class Item implements Serializable {
     public void setEffectiveTo(Date effectiveTo) {
         this.effectiveTo = effectiveTo;
     }
-    
+
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override

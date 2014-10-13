@@ -20,7 +20,7 @@ public class OpdVisitFacade extends AbstractFacade<OpdVisit> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public OpdVisitFacade() {

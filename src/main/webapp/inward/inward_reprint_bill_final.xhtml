@@ -113,23 +113,23 @@
                                         <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
                                         <h:outputLabel value="Total :" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.grantTotal}" style="float: right;" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Discount :" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.discount}" style="float: right;" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Net Total :" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.netTotal}" style="float: right;" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Paid Amount : " ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.paidAmount+inwardSearch.bill.patientEncounter.paidByCreditCompany}" style="float: right;" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Due :" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.netTotal-(inwardSearch.bill.paidAmount+inwardSearch.bill.patientEncounter.paidByCreditCompany)}" style="float: right;" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Credit Limit"/>
                                         <p:inputText value="#{inwardSearch.bill.patientEncounter.creditLimit}"

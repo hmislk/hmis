@@ -73,30 +73,30 @@
                         </p:column>
                         <p:column headerText="Cash" style="text-align: right;" rendered="#{commonReport.userPaymentBillsOwn.cash!=0.0}"  >
                             <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
                         </p:column>
                         <p:column headerText="Credit" style="text-align: right;" rendered="#{commonReport.userPaymentBillsOwn.credit!=0.0}">
                             <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
                         <p:column headerText="Credit Card" style="text-align: right;" rendered="#{commonReport.userPaymentBillsOwn.card!=0.0}">
                             <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
                         </p:column>
                         <f:facet name="footer">  
                             <p:panelGrid columns="2">
                                 <h:outputLabel value="Cash Total"/>
-                                <h:outputLabel id="pCashTot" value="#{commonReport.userPaymentBillsOwn.cash}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel id="pCashTot" value="#{commonReport.userPaymentBillsOwn.cash}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
                                 <h:outputLabel value="Credit Total"/>
-                                <h:outputLabel id="pCreditTot" value="#{commonReport.userPaymentBillsOwn.credit}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel id="pCreditTot" value="#{commonReport.userPaymentBillsOwn.credit}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
                                 <h:outputLabel value="CreditCard Total"/>
-                                <h:outputLabel id="pCardTot" value="#{commonReport.userPaymentBillsOwn.card}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel id="pCardTot" value="#{commonReport.userPaymentBillsOwn.card}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
                             </p:panelGrid>
 
                         </f:facet>

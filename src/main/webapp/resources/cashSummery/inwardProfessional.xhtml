@@ -22,7 +22,7 @@
             </p:column> 
             <p:column style="text-align: right;">
                 <h:outputLabel value="#{-b.value}" rendered="#{b.value!=0}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column> 
             <p:columnGroup type="footer">
@@ -35,7 +35,7 @@
                     <p:column style="text-align: right;">
                         <f:facet name="footer">
                             <h:outputLabel value="#{-cc.attrs.controller.inwardProfTot}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>

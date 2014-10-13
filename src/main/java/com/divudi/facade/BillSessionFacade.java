@@ -20,7 +20,7 @@ public class BillSessionFacade extends AbstractFacade<BillSession> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public BillSessionFacade() {

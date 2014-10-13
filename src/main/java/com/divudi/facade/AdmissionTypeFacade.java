@@ -20,7 +20,7 @@ public class AdmissionTypeFacade extends AbstractFacade<AdmissionType> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public AdmissionTypeFacade() {

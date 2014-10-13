@@ -112,7 +112,7 @@
                                                     <h:dataTable value="#{inwardSearch.billItems}" var="bip1"  >
                                                         <h:column>
                                                             <h:outputLabel value="#{bip1.netValue}"  style="margin: 4px;" >
-                                                                <f:convertNumber pattern="#,000.00" />
+                                                                <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </h:column>
                                                     </h:dataTable>
@@ -127,7 +127,7 @@
                                                             </td>
                                                             <td>
                                                                 <h:outputLabel value="#{inwardSearch.bill.netTotal}"  style="font-size: 110%; font-weight: bold ; text-align: right;    ">
-                                                                    <f:convertNumber pattern="#,000.00" />
+                                                                    <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputLabel>
                                                             </td>
                                                         </tr>

@@ -20,7 +20,7 @@ public class MedicalPackageFacade extends AbstractFacade<MedicalPackage> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public MedicalPackageFacade() {

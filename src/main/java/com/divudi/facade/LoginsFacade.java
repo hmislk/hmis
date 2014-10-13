@@ -20,7 +20,7 @@ public class LoginsFacade extends AbstractFacade<Logins> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public LoginsFacade() {

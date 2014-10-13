@@ -20,7 +20,7 @@ public class DiscardCategoryFacade extends AbstractFacade<DiscardCategory> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public DiscardCategoryFacade() {

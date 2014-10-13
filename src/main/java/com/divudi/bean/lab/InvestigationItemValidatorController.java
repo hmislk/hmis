@@ -58,7 +58,7 @@ public class InvestigationItemValidatorController implements Serializable {
 
     
     
-    @FacesConverter("i nvestigationValidatorConverter")
+    @FacesConverter("investigationValidatorConverter")
     public static class InvestigationValidatorConverter implements Converter {
 
         @Override

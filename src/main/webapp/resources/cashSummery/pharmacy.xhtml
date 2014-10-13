@@ -28,7 +28,7 @@
                     <h:outputLabel value="Value"/>
                 </f:facet>
                 <h:outputLabel value="#{dep.pharmacyDepartmentTotal}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
             <p:columnGroup type="footer">
@@ -41,7 +41,7 @@
                     <p:column footerText="#{cc.attrs.controller.pharmacyTotal}" style="text-align: right;">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.controller.pharmacyTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>

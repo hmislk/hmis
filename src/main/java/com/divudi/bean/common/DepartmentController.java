@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import javax.inject.Named;
 import javax.ejb.EJB;
@@ -44,9 +45,31 @@ public class DepartmentController implements Serializable {
     List<Department> selectedItems;
     private Department current;
     private List<Department> items = null;
+    private List<Department> searchItems = null;
     String selectText = "";
     private Boolean codeDisabled = false;
     private Institution institution;
+
+    public List<Department> getSearchItems() {
+        return searchItems;
+    }
+    
+    public void fillSearchItems(){
+        if(selectText==null || selectText.trim().equals("")){
+            searchItems = getFacade().findAll(true);
+        }else{
+            String sql = "Select d from Department d where d.retired=false and upper(d.name) like :dn order by d.name";
+            Map m = new HashMap();
+            m.put("dn", "%" + selectText.toUpperCase() + "%");
+            searchItems = getFacade().findBySQL(sql, m);
+            if(searchItems!=null && !searchItems.isEmpty()){
+                current = searchItems.get(0);
+            }else{
+                current = null;
+            }
+        }
+    }
+    
 
     public List<Department> getInstitutionDepatrments() {
         if (getInstitution() == null) {
@@ -148,12 +171,16 @@ public class DepartmentController implements Serializable {
             UtilityController.addErrorMessage("Please enter a name");
             return;
         }
+        if(getCurrent().getInstitution()==null){
+            UtilityController.addErrorMessage("Please select an institution");
+            return;
+        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             if (getCurrent().getDepartmentCode() != null) {
                 getCurrent().setDepartmentCode(getCurrent().getDepartmentCode());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated");
         } else {
             if (getCurrent().getDepartmentCode() != null) {
                 if (!checkCodeExist()) {
@@ -166,11 +193,10 @@ public class DepartmentController implements Serializable {
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved");
         }
+        fillSearchItems();
         recreateModel();
-        getItems();
-
     }
 
     public void setSelectText(String selectText) {
@@ -231,6 +257,8 @@ public class DepartmentController implements Serializable {
         return items;
     }
 
+    
+    
     public Boolean getCodeDisabled() {
         return codeDisabled;
     }

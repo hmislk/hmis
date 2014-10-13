@@ -41,7 +41,7 @@
                     <p:outputLabel value="Total"/>    
                 </f:facet>
                 <h:outputLabel value="#{-ch.netTotal}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>      
             </p:column>    
             
@@ -51,7 +51,7 @@
                     <p:column style="text-align: right;" footerText="#{-cc.attrs.controller.cardTot}" >
                         <f:facet name="footer">
                             <h:outputLabel value="#{-cc.attrs.controller.cardTot}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>   
                         </f:facet>
                     </p:column>
