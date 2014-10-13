@@ -668,6 +668,7 @@ public class BillController implements Serializable {
         temp.setStaff(staff);
         temp.setToStaff(toStaff);
         temp.setReferredBy(referredBy);
+        temp.setReferralNumber(referralId);
         temp.setReferredByInstitution(referredByInstitution);
         temp.setCreditCompany(creditCompany);
         temp.setComments(comment);
@@ -967,6 +968,7 @@ public class BillController implements Serializable {
         setSearchedPatient(null);
         setReferredBy(null);
         setReferredByInstitution(null);
+        setReferralId(null);
         setSessionDate(null);
         setCreditCompany(null);
         setYearMonthDay(null);

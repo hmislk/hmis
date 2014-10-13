@@ -104,7 +104,7 @@
                                 <h:outputLabel value="Net Amount"/>
                             </f:facet> 
                             <h:outputLabel  value="#{b.netTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>                          
                         </p:column>
                       
@@ -122,7 +122,7 @@
                                 <p:column style="text-align: right;" footerText="#{commonReport.pharmacyBhtPreBilled.cash}">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{commonReport.pharmacyBhtPreBilled.cash}">
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>                             
@@ -145,7 +145,7 @@
                         </p:column>
                         <p:column style="font-weight: bold;text-align:right;" >
                             <h:outputLabel value="#{i.value}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
                     </p:dataTable>

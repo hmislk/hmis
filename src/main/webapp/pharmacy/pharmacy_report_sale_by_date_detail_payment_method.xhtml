@@ -113,25 +113,25 @@
                         </p:column>                        
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{b.discount}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
                         <p:column style=" text-align: right" >                             
                             <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                         </p:column>
                         <p:column style=" text-align: right" >                            
                             <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
 
                         <p:column style=" text-align: right" >                           
                             <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
                         </p:column>
@@ -143,28 +143,28 @@
                                 <p:column  footerText="#{i.sumDiscount}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumDiscount}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column  footerText="#{i.sumCashTotal}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumCashTotal}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column  footerText="#{i.sumCreditTotal}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumCreditTotal}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column  footerText="#{i.sumCardTotal}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumCardTotal}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -177,28 +177,28 @@
                             <p:column footerText="#{pharmacySaleReport.refundedDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.refundedDetail.discount}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.refundedDetail.cashTotal}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.refundedDetail.cashTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.refundedDetail.creditTotal}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.billedDetail.creditTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.billedDetail.cardTotal}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.billedDetail.cardTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -271,25 +271,25 @@
                         </p:column>                        
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{b.discount}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
                         <p:column style=" text-align: right"  > 
                             <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                         </p:column>
                         <p:column style=" text-align: right" >
                             <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
 
                         <p:column style=" text-align: right" >                             
                             <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
                         </p:column>
@@ -301,28 +301,28 @@
                                 <p:column  footerText="#{i.sumDiscount}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumDiscount}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column  footerText="#{i.sumCashTotal}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumCashTotal}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column  footerText="#{i.sumCreditTotal}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumCreditTotal}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column  footerText="#{i.sumCardTotal}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumCardTotal}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -335,28 +335,28 @@
                             <p:column footerText="#{pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.discount}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.cancelledDetail.cashTotal}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.cashTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.cancelledDetail.creditTotal}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.creditTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.cancelledDetail.cardTotal}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.cardTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -429,7 +429,7 @@
                         </p:column>                        
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{b.discount}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Cash" style=" text-align: right"  >
@@ -437,7 +437,7 @@
                                 <h:outputLabel value="Cash"/>
                             </f:facet> 
                             <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
                         </p:column>
@@ -446,7 +446,7 @@
                                 <h:outputLabel value="Credit"/>
                             </f:facet> 
                             <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
@@ -456,7 +456,7 @@
                                 <h:outputLabel value="C Card"/>
                             </f:facet> 
                             <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
                         </p:column>
@@ -468,28 +468,28 @@
                                 <p:column  footerText="#{i.sumDiscount}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumDiscount}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column  footerText="#{i.sumCashTotal}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumCashTotal}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column  footerText="#{i.sumCreditTotal}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumCreditTotal}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column  footerText="#{i.sumCardTotal}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{i.sumCardTotal}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -502,28 +502,28 @@
                             <p:column footerText="#{pharmacySaleReport.refundedDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.refundedDetail.discount}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.refundedDetail.cashTotal}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.refundedDetail.cashTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.refundedDetail.creditTotal}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.refundedDetail.creditTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.refundedDetail.cardTotal}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.refundedDetail.cardTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>

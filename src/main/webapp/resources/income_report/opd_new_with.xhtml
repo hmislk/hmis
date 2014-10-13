@@ -12,7 +12,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" >
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
             <f:facet name="header">
                 <p:outputLabel value="#{sessionController.institution.name}"/> &nbsp;<h:outputLabel/>
                 <p:outputLabel value="Book Keeping Summary "/><h:outputLabel/>   
@@ -50,7 +50,7 @@
 
                 <f:facet name="footer" >
                     <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
 
@@ -64,7 +64,7 @@
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
                 <f:facet name="footer">
-                    <h:outputLabel value="#{bookKeepingSummery.professionalTotal}"></h:outputLabel>
+                    <h:outputLabel rendered="false" value="#{bookKeepingSummery.professionalTotal}"></h:outputLabel>
                 </f:facet>
             </p:column>
             <p:column  headerText="Total Fee"  styleClass="numberCol" >
@@ -78,7 +78,7 @@
                
                 <f:facet name="footer">
                     <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
             </p:column>

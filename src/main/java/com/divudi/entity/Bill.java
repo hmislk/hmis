@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -113,7 +114,8 @@ public class Bill implements Serializable {
     String qutationNumber;
     @ManyToOne
     Institution referredByInstitution;
-    String referralID;
+    @Column(name = "referralID")
+    String referralNumber;
 
     //Values
     double total;
@@ -1493,12 +1495,12 @@ public class Bill implements Serializable {
         this.referredByInstitution = referredByInstitution;
     }
 
-    public String getReferralID() {
-        return referralID;
+    public String getReferralNumber() {
+        return referralNumber;
     }
 
-    public void setReferralID(String referralID) {
-        this.referralID = referralID;
+    public void setReferralNumber(String referralNumber) {
+        this.referralNumber = referralNumber;
     }
 
     

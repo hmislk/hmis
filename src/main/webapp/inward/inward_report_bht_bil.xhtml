@@ -90,32 +90,32 @@
                             </p:column>
                             <p:column headerText="Total Value" style="text-align: right;">
                                 <h:outputLabel  value="#{bip.grossValue}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
                                     <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.grantTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>                            
                             <p:column headerText="Discount Value"  style="text-align: right;">
                                 <h:outputLabel  value="#{bip.discount}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
                                     <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.discount}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
 
                             <p:column headerText="Net Value"  style="text-align: right;">
                                 <h:outputLabel  value="#{bip.netValue}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
                                     <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.netTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>

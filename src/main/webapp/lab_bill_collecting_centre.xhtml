@@ -348,7 +348,7 @@
                                     <h:dataTable value="#{labBillCollectingController.lstBillEntries}" var="bip1"  >
                                         <h:column >
                                             <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="margin: 4px; font-size: 11px!important;" >
-                                                <f:convertNumber pattern="#,000.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </h:column>
                                     </h:dataTable>
@@ -373,7 +373,7 @@
                                             </td>
                                             <td style="text-align: right!important; ">
                                                 <h:outputLabel value="#{labBillCollectingController.current.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </td>
                                         </tr>
@@ -383,7 +383,7 @@
                                             </td>
                                             <td style="text-align: right!important; ">
                                                 <h:outputLabel rendered="#{bill.discount ne 0.0}"   value="#{labBillCollectingController.current.discount}"  style=" text-align: right!important;  font-size: 15px!important;   ">
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </td>
                                         </tr>
@@ -393,7 +393,7 @@
                                             </td>
                                             <td style="text-align: right!important; ">
                                                 <h:outputLabel  rendered="#{labBillCollectingController.current.discount ne 0.0}"    value="#{bill.netTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </td>
                                         </tr>

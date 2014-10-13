@@ -46,7 +46,7 @@
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
 
-                        <p:dataTable id="tbl1" value="#{inwardReportController1.billItemAdimissionFee}" var="rm" rowIndexVar="i">
+                        <p:dataTable id="tbl1" value="#{inwardReportController1.billItemAdimissionFee}" var="rm" rowIndexVar="i" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 Room Charge
                             </f:facet>
@@ -76,7 +76,7 @@
                             
                         </p:dataTable>
                         
-                        <p:dataTable id="tbl2" value="#{inwardReportController1.billItemMediciene}" var="rm" rowIndexVar="i">
+                        <p:dataTable id="tbl2" value="#{inwardReportController1.billItemMediciene}" var="rm" rowIndexVar="i" rows="10" rowsPerPageTemplate="5,10,15,20" paginator="true">
                             <f:facet name="header">
                                 Mediciene
                             </f:facet>
@@ -106,7 +106,7 @@
                             
                         </p:dataTable>
                         
-                        <p:dataTable id="tbl3" value="#{inwardReportController1.billItemGeneralIssuing}" var="rm" rowIndexVar="i">
+                        <p:dataTable id="tbl3" value="#{inwardReportController1.billItemGeneralIssuing}" var="rm" rowIndexVar="i" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 General Issuing
                             </f:facet>
@@ -136,7 +136,7 @@
                             
                         </p:dataTable>
                         
-                        <p:dataTable id="tbl4" value="#{inwardReportController1.billItemOutSide}" var="rm" rowIndexVar="i">
+                        <p:dataTable id="tbl4" value="#{inwardReportController1.billItemOutSide}" var="rm" rowIndexVar="i" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
                                 Out Side
                             </f:facet>

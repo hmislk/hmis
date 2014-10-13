@@ -39,6 +39,9 @@ public class InvestigationValidatorComponentController implements Serializable {
     private InvestigationItemValidatorFacade investigationItemValidatorFacade;
     private String newValidatorName;
 
+    
+    
+
     public void addNewValidator() {
         if(currentInvestigation==null){
             JsfUtil.addErrorMessage("Select an investigation");
@@ -49,12 +52,13 @@ public class InvestigationValidatorComponentController implements Serializable {
         currentValidator.setItem(currentInvestigation);
         getInvestigationItemValidatorFacade().create(currentValidator);
         listItemValidator();
+        setNewValidatorName(null);
     }
 
     public void listItemValidator() {
         investigationItemValidators = new ArrayList<>();
         String sql;
-        sql = "select i from InvestigationItemValidator i where "
+        sql = "select i from InvestigationValidator i where "
                 + " i.retired=false ";
         investigationItemValidators = getInvestigationItemValidatorFacade().findBySQL(sql);
     }
@@ -109,5 +113,9 @@ public class InvestigationValidatorComponentController implements Serializable {
         this.currentValidator = currentValidator;
     }
 
+    
+    
+    
+    
     
 }

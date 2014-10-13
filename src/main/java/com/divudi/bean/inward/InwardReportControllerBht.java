@@ -55,6 +55,7 @@ public class InwardReportControllerBht implements Serializable {
     List<RoomChargeInward> roomChargeInwards;
     List<String1Value2> professionals;
     List<String2Value4> inwardCharges;
+    List<BillItem> creditPayment;
     @EJB
     BillFeeFacade billFeeFacade;
     @EJB
@@ -585,6 +586,22 @@ public class InwardReportControllerBht implements Serializable {
         }
 
     }
+    
+    public void createCreditPayment(){
+        System.out.println("inside credit payment ");
+        String sql;
+        Map m = new HashMap();
+        sql = "SELECT bi FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill.billType=:bty"
+                + " and bi.patientEncounter=:bhtno";
+        
+        m.put("bty", BillType.CashRecieveBill);
+        m.put("bhtno", patientEncounter);
+
+        creditPayment=billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+    }
 
     public void createOpdServiceWithoutPro2() {
         String sql;
@@ -770,6 +787,7 @@ public class InwardReportControllerBht implements Serializable {
         createDoctorPaymentInward();
         createTimedService();
         createInwardService();
+        createCreditPayment();
         finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
         calTotal();
     }
@@ -986,6 +1004,16 @@ public class InwardReportControllerBht implements Serializable {
         this.opdNetTotal = opdNetTotal;
     }
 
+    public List<BillItem> getCreditPayment() {
+        return creditPayment;
+    }
+
+    public void setCreditPayment(List<BillItem> creditPayment) {
+        this.creditPayment = creditPayment;
+    }
+    
+    
+
     //DATA STRUCTURE
     public class OpdService {
 
@@ -1043,6 +1071,10 @@ public class InwardReportControllerBht implements Serializable {
         public void setNetValue(double netValue) {
             this.netValue = netValue;
         }
+        
+        
+        
+        
 
     }
 

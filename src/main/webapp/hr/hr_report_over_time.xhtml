@@ -65,29 +65,29 @@
                                 <p:column headerText="Staff Shift">
                                     #{ss.shift.name}
                                 </p:column>
-                                <p:column headerText="In Actual ">
+                                <p:column headerText="In Actual " rendered="false">
                                     <h:outputLabel value="#{ss.startRecord.loggedRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                     <h:outputLabel value="Previous" rendered="#{ss.previousStaffShift ne null}"/>
                                 </p:column> 
-                                <p:column headerText="OT Minute From In Record Logged">
+                                <p:column headerText="OT Minute From In Record Logged" rendered="false">
                                     <h:outputLabel value="#{ss.extraTimeFromStartRecordLogged/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>   
-                                <p:column headerText="Out Actual">
+                                <p:column headerText="Out Actual" rendered="false">
                                     <h:outputLabel value="#{ss.endRecord.loggedRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                     <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
                                 </p:column>   
-                                <p:column headerText="OT Minute From Out Record Logged">
+                                <p:column headerText="OT Minute From Out Record Logged" rendered="false">
                                     <h:outputLabel value="#{ss.extraTimeFromEndRecordLogged/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="OT Minute From Complete Record Logged">
+                                <p:column headerText="OT Minute From Complete Record Logged" rendered="false">
                                     <h:outputLabel value="#{ss.extraTimeCompleteRecordLogged/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>

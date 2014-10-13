@@ -16,7 +16,7 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Investigation Summery"  styleClass="noPrintButton" />
                     <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.createOPdLabListWithProDayEndTable()}"/>
+                                     action="#{bookKeepingSummery.createOPdLabListWithProDayEndTable}"/>
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
@@ -38,11 +38,7 @@
                         </p:calendar>
 
                         <h:outputLabel value="Select Institution"/>
-
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
-                                        forceSelection="true"
-                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
-                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                        <p:inputText value="#{sessionController.loggedUser.institution.name}"></p:inputText>
                     </h:panelGrid>
 
                 </f:facet>

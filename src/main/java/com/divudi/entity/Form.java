@@ -38,6 +38,11 @@ public class Form implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
      private Date retiredAt;
      private String retireComments;
+     //Edited Properties
+    @ManyToOne
+    private WebUser editor;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date editedAt;
      //
      private String comments;
 
@@ -128,6 +133,22 @@ public class Form implements Serializable {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public WebUser getEditor() {
+        return editor;
+    }
+
+    public void setEditor(WebUser editor) {
+        this.editor = editor;
+    }
+
+    public Date getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Date editedAt) {
+        this.editedAt = editedAt;
     }
     
 }

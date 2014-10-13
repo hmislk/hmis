@@ -11,6 +11,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
                     <p:panel header="Search Bills" >
                         <f:facet name="header">
                             <h:panelGrid columns="6" >
@@ -82,11 +83,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="From - "/>
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                         </p:outputLabel>
                                         <h:outputLabel value=" - To - "/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                         </h:outputLabel>
                                         <p:outputLabel value=" - Due Payments" />
                                     </f:facet>
@@ -150,12 +151,12 @@
                                             <h:outputLabel value="Charge"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.feeValue}" style="text-align: right;" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
                                         <f:facet name="footer" >
                                             <h:outputLabel value="#{searchController.dueTotal}" style="text-align: right;">
-                                                <f:convertNumber pattern="#,000.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
@@ -168,11 +169,11 @@
                                 <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{searchController.billFeesDone}" var="bf"   >
                                     <f:facet name="header">
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                         </p:outputLabel>
                                         <h:outputLabel value=" - To - "/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                         </h:outputLabel>
                                         <p:outputLabel value=" - Done Payments" />
                                     </f:facet>
@@ -235,12 +236,12 @@
                                             <h:outputLabel value="Charge"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.feeValue}" style="text-align: right;">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{searchController.doneTotal}">
-                                                <f:convertNumber pattern="#,000.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>

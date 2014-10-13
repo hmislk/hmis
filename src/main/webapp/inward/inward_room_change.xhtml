@@ -96,7 +96,7 @@
                             <h:outputLabel value="Change at"/>                          
                             <p:calendar  id="changeTimeStamp" 
                                          value="#{roomChangeController.changeAt}"
-                                         navigator="false" pattern="dd MM yyyy hh mm ss a"  >                                                               
+                                         navigator="false" pattern="dd/MMM/yyyy - hh:mm a"  >                                                               
                             </p:calendar>
                             <p:commandButton  value="Change"  
                                               action="#{roomChangeController.change()}"
@@ -112,7 +112,7 @@
                                 <p:calendar navigator="true"  
                                             id="admittedTimeStamp"
                                             value="#{rm.admittedAt}" 
-                                            pattern="dd MM yyyy hh mm ss a" />     
+                                            pattern="dd/MMM/yyyy - hh:mm a" />     
                             </p:column>
                             <p:column headerText="Admitted By">
                                 <h:outputLabel value="#{rm.addmittedBy.webUserPerson.name}"  /><br/>
@@ -122,7 +122,7 @@
                                 <p:calendar navigator="true"
                                             id="dischargedTimeStamp"
                                             value="#{rm.dischargedAt}" 
-                                            pattern="dd MM yyyy hh mm ss a" />   
+                                            pattern="dd/MMM/yyyy - hh:mm a" />   
                             </p:column>
                             <p:column headerText="Discharge By">
                                 #{rm.dischargedBy.webUserPerson.name}

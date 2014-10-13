@@ -136,7 +136,7 @@
                                 <p:outputLabel value="Total" />
                             </f:facet>
                             <h:outputLabel value="#{bi.bill.netTotal}" style="text-align: right;">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Paid" style="text-align: right;">
@@ -170,7 +170,7 @@
                                 <p:column footerText="#{inwardReportController.total}">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportController.total}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>

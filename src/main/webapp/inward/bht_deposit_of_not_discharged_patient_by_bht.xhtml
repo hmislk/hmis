@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="B.H.T. DEPOSITS " >
+
+                        <h:panelGrid columns="2" >                        
+
+                            <h:outputLabel value="Date :" ></h:outputLabel>
+                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+
+                            <p:outputLabel value="Admission Type :"/>
+                            <p:selectOneMenu value="#{mdInwardReportController.admissionType}">
+                                <f:selectItem itemLabel="Select Admission Type"/>
+                                <f:selectItems  value="#{mdInwardReportController.admissionTy}" var="myItem" 
+                                                itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="B.H.T. Type : "/>
+                            <p:selectOneMenu   id="cmbPs" value="#{mdInwardReportController.paymentMethod}">
+                                <f:selectItem itemLabel="Select" />                           
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                              
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstCc"   value="#{mdInwardReportController.institution}" >
+                                <f:selectItem itemLabel="All Credit Companies"/>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="B H T No :" ></h:outputLabel>
+                            <h:panelGrid columns="1">
+                                <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                value="#{mdInwardReportController.patientEncounter}"
+                                                completeMethod="#{admissionController.completePatientAll}" 
+                                                var="myItem" itemValue="#{myItem}" 
+                                                itemLabel="#{myItem.bhtNo}" 
+                                                size="30"  >                                   
+                                    <p:column>
+                                        #{myItem.bhtNo}
+                                    </p:column>
+                                    <p:column>
+                                        #{myItem.patient.person.nameWithTitle}
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
+                                    </p:column>
+                                </p:autoComplete>   
+
+                            </h:panelGrid>
+                        </h:panelGrid>
+
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.dipositsOfNotDischargedByBht()}" onclick="onSubmitButton();" ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.allBhtPySummerriesByCreatedDate}">
+                                <pe:exporter type="xlsx" target="tbl,tbl2" fileName="All_Payment_by_Created_Date_Date"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.patientEncounterValues}" var="i"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="B.H.T. DEPOSITS - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
+                                    <h:panelGrid columns="4">
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{mdInwardReportController.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{mdInwardReportController.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a" />
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </f:facet>
+
+                                <p:column headerText="B H T No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="B H T No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pe.bhtNo}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date Of Admission" rendered="false">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Admission"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pe.dateOfAdmission}" >
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date Of Discharge">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date Of Discharge"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pe.dateOfDischarge}" >
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a" />
+                                    </h:outputLabel>
+                                </p:column>
+
+
+                                <p:column headerText="Patient Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Patient Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pe.patient.person.nameWithTitle} - #{i.pe.creditCompany.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Final Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Final Value"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel  value="#{i.pe.finalBill.netTotal}">
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+
+                                </p:column>
+
+                                <p:column headerText="Paid By Company" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Paid By Company"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel  value="#{i.paidByCreditCompany}">
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+
+                                </p:column>
+
+
+                                <p:column headerText="Paid By Patient" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Paid By Patient"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel  value="#{i.paid}">
+                                        <f:convertNumber pattern="#,000.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{mdInwardReportController.completePaymentsTotal}">
+                                            <f:convertNumber pattern="#,000.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+
+
+
+
+
+
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

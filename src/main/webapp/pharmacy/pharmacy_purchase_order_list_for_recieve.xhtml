@@ -41,7 +41,7 @@
                 <p:column headerText="Approve at"  >
                     <h:commandLink action="pharmacy_reprint_po" >
                         <h:outputLabel value="#{p.createdAt}" >
-                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                         </h:outputLabel>
                         <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                     </h:commandLink>
@@ -50,7 +50,7 @@
                         <h:outputLabel style="color: red;" value="Cancelled at " />
                         <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
                                        value="#{p.cancelledBill.createdAt}" >
-                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                         </h:outputLabel>
                     </h:panelGroup>                   
                 </p:column> 
@@ -105,7 +105,7 @@
                         <p:column >
                             <h:commandLink action="pharmacy_reprint_grn" >
                                 <h:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                 </h:outputLabel>
                                 <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
                             </h:commandLink>
@@ -114,14 +114,14 @@
                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                 <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                value="#{b.cancelledBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{b.refunded}" >
                                 <h:outputLabel style="color: red;" value="Refunded at " />
                                 <h:outputLabel style="color: red;" rendered="#{b.refunded}" 
                                                value="#{b.refundedBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:column> 

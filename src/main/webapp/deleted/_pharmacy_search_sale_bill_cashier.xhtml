@@ -83,21 +83,21 @@
                             <p:column headerText="Gross Value" filterBy="#{bill.total}"  >
                                
                                     <h:outputLabel value="#{bill.total}" >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                   
                             </p:column>
                             <p:column headerText="Discount" filterBy="#{bill.discount}"  >
                                 
                                     <h:outputLabel value="#{bill.discount}" >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                  
                             </p:column>
                             <p:column headerText="Net Value" filterBy="#{bill.netTotal}"  >
                                 
                                     <h:outputLabel value="#{bill.netTotal}" >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     
                             </p:column>
