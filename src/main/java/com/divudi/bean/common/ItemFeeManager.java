@@ -5,14 +5,17 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,10 +45,46 @@ public class ItemFeeManager implements Serializable {
     ItemFeeFacade itemFeeFacade;
     @EJB
     ItemFacade itemFacade;
+    @EJB
+    DepartmentFacade departmentFacade;
     
     @Inject
     SessionController sessionController;
     
+    List<Department> departments;
+
+    public List<Department> getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
+    }
+    
+    
+    
+    public void fillDepartments(){
+        System.out.println("fill dept");
+        String jpql;
+        Map m = new HashMap();
+        m.put("ins", getItemFee().getInstitution());
+        jpql = "select d from Department d where d.retired=false and d.institution=:ins order by d.name";
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        departments = departmentFacade.findBySQL(jpql, m);
+    }
+    
+    public List<Department> compelteDepartments(String qry){
+         String jpql;
+         if(qry==null){
+             return new ArrayList<>();
+         }
+        Map m = new HashMap();
+        m.put("ins", getItemFee().getInstitution());
+        m.put("name", "%" + qry.toUpperCase() + "%" );
+        jpql = "select d from Department d where d.retired=false and d.institution=:ins and d.name like :name order by d.name";
+        return departmentFacade.findBySQL(jpql, m);
+    }
     
     public Item getItem() {
         return item;
@@ -115,7 +154,7 @@ public class ItemFeeManager implements Serializable {
         }
         double t = 0.0;
         for(ItemFee f:itemFees){
-            t=f.getFee();
+            t+=f.getFee();
         }
         getItem().setTotal(t);
         itemFacade.edit(item);
