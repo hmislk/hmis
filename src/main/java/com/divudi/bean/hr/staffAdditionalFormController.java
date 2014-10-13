@@ -123,8 +123,7 @@ public class staffAdditionalFormController implements Serializable {
         Map m = new HashMap();
 
         sql = " select a from AdditionalForm a where "
-                + " a.createdAt between :fd and :td "
-                + " and a.retired=false ";
+                + " a.createdAt between :fd and :td ";
 
         if (department != null) {
             sql += " and a.requestDepartment=:dept ";

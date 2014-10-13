@@ -86,12 +86,13 @@
                             </p:panelGrid>
                         </p:panel>
                         <p:panel>
-                            <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" >
+                            <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 
+                                         rowStyleClass="#{add.retired eq true ? 'redText':''}">
                                 <p:column>
                                     <f:facet name="header">
                                         <p:outputLabel value="View" />
                                     </f:facet>
-                                    <p:commandButton ajax="false" value="View" action="#{staffAdditionalFormController.viewAdditionalForm(add)}" />
+                                    <p:commandButton ajax="false" value="View" action="#{staffAdditionalFormController.viewAdditionalForm(add)}" disabled="#{add.retired}"/>
                                 </p:column>
 
                                 <p:column>
@@ -143,6 +144,8 @@
                                         <p:outputLabel value="Creater" />
                                     </f:facet>
                                     <p:outputLabel value="#{add.creater.webUserPerson.nameWithTitle}" />
+                                    <br></br>
+                                    <p:outputLabel value="Deleted By #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"/>
                                 </p:column>
                                 <p:column>
                                     <f:facet name="header">
