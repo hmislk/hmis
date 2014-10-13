@@ -20,7 +20,7 @@ public class GradeFacade extends AbstractFacade<Grade> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public GradeFacade() {

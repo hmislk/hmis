@@ -20,7 +20,7 @@ public class StockFacade extends AbstractFacade<Stock> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public StockFacade() {

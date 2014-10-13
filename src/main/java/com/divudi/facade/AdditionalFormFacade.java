@@ -22,7 +22,7 @@ public class AdditionalFormFacade extends AbstractFacade<AdditionalForm> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public AdditionalFormFacade() {

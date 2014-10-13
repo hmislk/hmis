@@ -20,7 +20,7 @@ public class ItemFeeFacade extends AbstractFacade<ItemFee> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public ItemFeeFacade() {

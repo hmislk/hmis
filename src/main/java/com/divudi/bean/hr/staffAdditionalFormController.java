@@ -6,6 +6,9 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.Department;
+import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftExtra;
@@ -18,6 +21,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
@@ -39,6 +43,61 @@ public class staffAdditionalFormController implements Serializable {
     List<StaffShift> staffShifts;
     @EJB
     StaffShiftFacade staffShiftFacade;
+    
+    @EJB
+    CommonFunctions commonFunctions;
+    List<AdditionalForm> additionalForms;
+    Department department;
+    Staff staff;
+    Staff approvedStaff;
+    Date fromDate;
+    Date toDate;
+    
+    public void deleteAdditionalForm(){
+        if (getCurrentAdditionalForm()!=null) {
+            currentAdditionalForm.setRetired(true);
+            currentAdditionalForm.setRetirer(getSessionController().getLoggedUser());
+            currentAdditionalForm.setRetiredAt(new Date());
+            getAdditionalFormFacade().edit(currentAdditionalForm);
+            JsfUtil.addSuccessMessage("Sucessfuly Deleted.");
+            clear();
+        } else {
+            JsfUtil.addErrorMessage("Nothing to Delete.");
+        }
+    }
+    
+     public void createAmmendmentTable() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select a from AdditionalForm a where "
+                + " a.createdAt between :fd and :td ";
+
+        if (department != null) {
+            sql += " and a.requestDepartment=:dept ";
+            m.put("dept", department);
+        }
+
+        if (staff != null) {
+            sql += " and a.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and a.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+     
+     public void viewAdditionalForm(AdditionalForm additionalForm){
+         currentAdditionalForm=additionalForm;
+     }
 
     public void fetchStaffShift() {
         HashMap hm = new HashMap();
@@ -135,6 +194,7 @@ public class staffAdditionalFormController implements Serializable {
             staffShiftExtra.setCreater(sessionController.getLoggedUser());
             staffShiftExtra.setHrForm(currentAdditionalForm);
             staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
+            staffShiftExtra.setShiftDate(date);
             staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
             staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
             staffShiftFacade.create(staffShiftExtra);
@@ -172,6 +232,68 @@ public class staffAdditionalFormController implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+
+    public List<AdditionalForm> getAdditionalForms() {
+        return additionalForms;
+    }
+
+    public void setAdditionalForms(List<AdditionalForm> additionalForms) {
+        this.additionalForms = additionalForms;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public Staff getApprovedStaff() {
+        return approvedStaff;
+    }
+
+    public void setApprovedStaff(Staff approvedStaff) {
+        this.approvedStaff = approvedStaff;
+    }
+
+    public Date getFromDate() {
+        if (fromDate==null) {
+            fromDate=commonFunctions.getStartOfMonth(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate==null) {
+            toDate=commonFunctions.getEndOfMonth(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
 }

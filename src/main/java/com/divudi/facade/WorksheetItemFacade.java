@@ -20,7 +20,7 @@ public class WorksheetItemFacade extends AbstractFacade<WorksheetItem> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public WorksheetItemFacade() {

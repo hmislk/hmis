@@ -22,7 +22,7 @@ public class DrawerFacade extends AbstractFacade<Drawer> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public DrawerFacade() {

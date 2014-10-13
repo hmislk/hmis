@@ -21,7 +21,7 @@ public class PackageItemFacade extends AbstractFacade<PackageItem> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public PackageItemFacade() {

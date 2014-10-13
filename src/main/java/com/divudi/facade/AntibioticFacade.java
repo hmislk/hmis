@@ -22,7 +22,7 @@ public class AntibioticFacade extends  AbstractFacade<Antibiotic> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public AntibioticFacade() {

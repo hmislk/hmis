@@ -20,7 +20,7 @@ public class CashierItemFacade extends AbstractFacade<CashierItem> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public CashierItemFacade() {

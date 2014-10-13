@@ -20,7 +20,7 @@ public class TestFlagFacade extends AbstractFacade<TestFlag> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public TestFlagFacade() {
