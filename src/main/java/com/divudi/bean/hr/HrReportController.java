@@ -155,8 +155,8 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
-        sql += " and (ss.startRecord.allowedOverTime=true or "
-                + " ss.endRecord.allowedOverTime=true )";
+        sql += " and (ss.startRecord.allowedExtraDuty=true or "
+                + " ss.endRecord.allowedExtraDuty=true )";
 //        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 

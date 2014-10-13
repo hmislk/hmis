@@ -73,13 +73,13 @@
                                     </h:outputLabel>  
 
                                 </p:column> 
-                                <p:column headerText="Out Actual ">
+                                <p:column headerText="Out Actual " rendered="false">
                                     <h:outputLabel value="#{ss.endRecord.loggedRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                     <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
                                 </p:column>        
-                                <p:column headerText="Early Out Minute Logged">
+                                <p:column headerText="Early Out Minute Logged" rendered="false">
                                     <h:outputLabel value="#{ss.earlyOutLogged/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>

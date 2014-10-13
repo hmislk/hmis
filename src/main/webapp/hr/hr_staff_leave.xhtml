@@ -9,34 +9,7 @@
     <ui:define name="content">
         <h:form>
             <h:panelGrid columns="2">
-                <h:panelGrid columns="2">
-                    <h:outputLabel value="Leave Type"/>
-                    <p:selectOneMenu  value="#{staffLeaveController.current.leaveType}">
-                        <f:selectItem itemLabel="Select Day Type"/>
-                        <f:selectItems value="#{staffLeaveController.leaveType}"/>
-                    </p:selectOneMenu>                          
-                    <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate" value="#{staffLeaveController.current.fromDate}"
-                                pattern="dd MMMM yyyy">     
-                    </p:calendar>   
-                    <h:outputLabel value="From Date"/>
-                    <p:calendar id="toDate" value="#{staffLeaveController.current.toDate}"
-                                pattern="dd MMMM yyyy">
-                    </p:calendar>     
-                    <h:outputLabel value="Staff Name"/>
-                    <p:autoComplete id="staff"  forceSelection="true"
-                                    value="#{staffLeaveController.current.staff}"
-                                    completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                    itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                    converter="stfcon"   >   
-                        <f:ajax execute="@this frmDate toDate" render="lst" event="itemSelect" listener="#{staffLeaveController.createLeave()}"/>
-                    </p:autoComplete>
-                    <p:commandButton id="btnAdd" ajax="false" value="Add" 
-                                     action="#{staffLeaveController.save}"/>
-                    <p:defaultCommand target="btnAdd"/>
-
-                    <p:commandButton ajax="false" value="Clear" action="#{staffLeaveController.clear}"/>
-                </h:panelGrid>
+              
                 <p:dataTable id="lst" value="#{staffLeaveController.staffLeaves}" var="i" >
                     <p:column headerText="Leave Type">                   
                         <h:outputLabel value="#{i.leaveType}"/>

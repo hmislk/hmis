@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Additional Working Shift Sheet">
+                <h:panelGrid columns="2">
+                    <p:panel header="Additional Working Details">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Staff : "/>
+                            <p:autoComplete id="staff"
+                                            value="#{staffAdditionalFormController.currentAdditionalForm.staff}"
+                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
+                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                            converter="stfcon"   >   
+                            </p:autoComplete>  
+                            <h:outputLabel value="Shift Date "/>
+                            <p:calendar value="#{staffAdditionalFormController.date}"
+                                        pattern="yyyy MM dd HH:mm:ss">
+                            </p:calendar> 
+                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShift()}" />
+                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
+                                <f:selectItem itemLabel="Select Staff Shift"/>
+                                <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
+                                               var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="From Time"/>
+                            <p:calendar id="requestedDate" 
+                                        value="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
+                                        pattern="yyyy MM dd HH:mm:ss">
+                            </p:calendar> 
+                            <h:outputLabel value="To Time"/>
+                            <p:calendar id="forDate" value="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
+                                        pattern="yyyy MM dd HH:mm:ss" >
+                            </p:calendar> 
+
+                            <h:outputLabel value="Approved Person"/>
+                            <p:autoComplete id="staffApp"  forceSelection="true"
+                                            value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"
+                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
+                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                            converter="stfcon"   >   
+                            </p:autoComplete>
+
+                            <h:outputLabel value="Time Type"/>
+                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}"   >
+                                <f:selectItem itemLabel="Select Time Type"/>
+                                <f:selectItems value="#{enumController.timeses}" />
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Approved Date"/>
+                            <p:calendar id="approvedDate" 
+                                        value="#{staffAdditionalFormController.currentAdditionalForm.approvedAt}"
+                                        pattern="dd MMMM yyyy" >
+                            </p:calendar>
+                            <h:outputLabel value="Comment"/>
+                            <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
+                            <p:commandButton id="btnAdd" ajax="false" value="Add" 
+                                             action="#{staffAdditionalFormController.saveAdditionalForm()}"/>
+
+                            <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
+
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel>
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date"/>
+                            <h:outputLabel value="To Date"/>
+                        </h:panelGrid>
+                        <p:dataTable >
+                        </p:dataTable>
+                    </p:panel>
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </ui:define> 
+
+</ui:composition>
