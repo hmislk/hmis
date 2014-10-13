@@ -9,7 +9,6 @@ import com.divudi.facade.util.JsfUtil;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import sun.org.mozilla.javascript.internal.annotations.JSFunction;
 
 /**
  *
