@@ -146,6 +146,30 @@ public class StaffLeaveApplicationFormController implements Serializable {
         leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    public void createleaveTableApprovedDate() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select l from LeaveForm l where "
+                + " l.approvedAt between :fd and :td ";
+
+        if (staff != null) {
+            sql += " and l.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and l.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     public void deleteLeaveForm() {
         if (currentLeaveForm != null) {

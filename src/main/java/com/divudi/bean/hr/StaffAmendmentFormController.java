@@ -42,7 +42,7 @@ public class StaffAmendmentFormController implements Serializable {
     AmendmentFormFacade amendmentFormFacade;
     @Inject
     SessionController sessionController;
-    
+
     @EJB
     CommonFunctions commonFunctions;
     List<AmendmentForm> amendmentForms;
@@ -57,8 +57,8 @@ public class StaffAmendmentFormController implements Serializable {
 
     public void clear() {
         currAmendmentForm = null;
-        fromStaffShifts=null;
-        toStaffShifts=null;
+        fromStaffShifts = null;
+        toStaffShifts = null;
     }
 
     public boolean errorCheck() {
@@ -142,21 +142,8 @@ public class StaffAmendmentFormController implements Serializable {
     List<StaffShift> toStaffShifts;
     @EJB
     StaffShiftFacade staffShiftFacade;
-    
-    public void deleteAdditionalForm(){
-        if (currAmendmentForm!=null) {
-            currAmendmentForm.setRetired(true);
-            currAmendmentForm.setRetirer(getSessionController().getLoggedUser());
-            currAmendmentForm.setRetiredAt(new Date());
-            getAmendmentFormFacade().edit(currAmendmentForm);
-            JsfUtil.addSuccessMessage("Sucessfuly Deleted.");
-            clear();
-        } else {
-            JsfUtil.addErrorMessage("Nothing to Delete.");
-        }
-    }
-    
-     public void createAmmendmentTable() {
+
+    public void createAmmendmentTable() {
         String sql;
         Map m = new HashMap();
 
@@ -167,7 +154,7 @@ public class StaffAmendmentFormController implements Serializable {
             sql += " and a.fromStaff=:fst ";
             m.put("st", fromStaff);
         }
-        
+
         if (toStaff != null) {
             sql += " and a.toStaff=:tst ";
             m.put("st", toStaff);
@@ -184,10 +171,39 @@ public class StaffAmendmentFormController implements Serializable {
         amendmentForms = getAmendmentFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-     
-     public void viewAmendmentForm(AmendmentForm amendmentForm){
-         currAmendmentForm=amendmentForm;
-     }
+
+    public void createAmmendmentTableApprovedDate() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select a from AmendmentForm a where "
+                + " a.approvedAt between :fd and :td ";
+
+        if (fromStaff != null) {
+            sql += " and a.fromStaff=:fst ";
+            m.put("st", fromStaff);
+        }
+
+        if (toStaff != null) {
+            sql += " and a.toStaff=:tst ";
+            m.put("st", toStaff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and a.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        amendmentForms = getAmendmentFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void viewAmendmentForm(AmendmentForm amendmentForm) {
+        currAmendmentForm = amendmentForm;
+    }
 
     public void fetchFromStaffShift() {
         HashMap hm = new HashMap();
@@ -317,6 +333,9 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getFromStaff() {
+        if (fromDate == null) {
+            fromDate = commonFunctions.getStartOfMonth(new Date());
+        }
         return fromStaff;
     }
 
@@ -325,6 +344,9 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getToStaff() {
+        if (toDate == null) {
+            toDate = commonFunctions.getEndOfMonth(new Date());
+        }
         return toStaff;
     }
 

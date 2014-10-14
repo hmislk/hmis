@@ -95,6 +95,35 @@ public class StaffAdditionalFormController implements Serializable {
 
     }
      
+     public void createAmmendmentTableApprovedDate() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select a from AdditionalForm a where "
+                + " a.approvedAt between :fd and :td ";
+
+        if (department != null) {
+            sql += " and a.requestDepartment=:dept ";
+            m.put("dept", department);
+        }
+
+        if (staff != null) {
+            sql += " and a.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and a.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+     
      public void viewAdditionalForm(AdditionalForm additionalForm){
          currentAdditionalForm=additionalForm;
      }

@@ -92,7 +92,8 @@
                                             itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                             converter="stfcon"   >   
                             </p:autoComplete>
-                            <p:commandButton ajax="false" value="Search" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
+                            <p:commandButton ajax="false" value="Search Created Date" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
+                            <p:commandButton ajax="false" value="Search Approved Date " action="#{staffAdditionalFormController.createAmmendmentTableApprovedDate()}" />
                         </h:panelGrid>
                         <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 
                                      rowStyleClass="#{add.retired eq true ? 'redText':''}">
