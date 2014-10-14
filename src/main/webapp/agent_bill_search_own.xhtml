@@ -48,7 +48,7 @@
                             <p:column headerText="Billed at"  >
                                 <h:commandLink action="agent_bill_reprint" >
                                     <h:outputLabel value="#{bill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
                                 </h:commandLink>
@@ -56,7 +56,7 @@
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             
