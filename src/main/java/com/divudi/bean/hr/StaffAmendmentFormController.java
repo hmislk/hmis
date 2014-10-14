@@ -57,6 +57,8 @@ public class StaffAmendmentFormController implements Serializable {
 
     public void clear() {
         currAmendmentForm = null;
+        fromStaffShifts=null;
+        toStaffShifts=null;
     }
 
     public boolean errorCheck() {
