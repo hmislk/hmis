@@ -32,7 +32,7 @@ import javax.persistence.TemporalType;
  */
 @Named(value = "staffAdditionalFormController")
 @SessionScoped
-public class staffAdditionalFormController implements Serializable {
+public class StaffAdditionalFormController implements Serializable {
 
     private AdditionalForm currentAdditionalForm;
     @EJB
@@ -138,7 +138,7 @@ public class staffAdditionalFormController implements Serializable {
         this.date = date;
     }
 
-    public staffAdditionalFormController() {
+    public StaffAdditionalFormController() {
     }
 
     public void clear() {
