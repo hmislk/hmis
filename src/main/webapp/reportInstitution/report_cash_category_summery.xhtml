@@ -41,13 +41,9 @@
                 </f:facet>
             </p:panel>
             <p:spacer height="30"/>
-            
+
 
             <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d" 
-                         paginator="true"
-                         rows="10"
-                         rowsPerPageTemplate="5,10,15,20"
-                         
                          >                   
                 <f:facet name="header">
                     <h:outputLabel value="Opd Category" />
@@ -104,7 +100,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="s1" value="#{cashSummeryController.summerizeTable}" var="d">
+            <p:dataTable id="s1" value="#{cashSummeryController.summerizeTable}" var="d" >
                 <p:column>
                     <h:outputLabel value="#{d.string}" />
                 </p:column>
