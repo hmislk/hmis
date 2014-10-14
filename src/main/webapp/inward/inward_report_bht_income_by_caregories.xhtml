@@ -389,7 +389,7 @@
                                 <p:column headerText="Created Date">
                                     <h:outputLabel value="#{pa.createdAt}"></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Net Total">
+                                <p:column headerText="Net Total" style="text-align: right;">
                                     <h:outputLabel value="#{pa.netTotal}"></h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportController1.paidbyPatientTotalValue}"></h:outputLabel>
@@ -407,7 +407,7 @@
                                 <p:column headerText="Created Date">
                                     <h:outputLabel value="#{bi.createdAt}"></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Net Total">
+                                <p:column headerText="Net Total" style="text-align: right;">
                                     <h:outputLabel value="#{bi.netValue}"></h:outputLabel>
                                     <f:facet name="footer">
                                     <h:outputLabel value="#{inwardReportController1.creditPaymentTotalValue}"></h:outputLabel>
