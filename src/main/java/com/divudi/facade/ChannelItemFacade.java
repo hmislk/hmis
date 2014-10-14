@@ -20,7 +20,7 @@ public class ChannelItemFacade extends AbstractFacade<ChannelItem> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public ChannelItemFacade() {

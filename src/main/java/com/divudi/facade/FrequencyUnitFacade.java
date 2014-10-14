@@ -20,7 +20,7 @@ public class FrequencyUnitFacade extends AbstractFacade<FrequencyUnit> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public FrequencyUnitFacade() {

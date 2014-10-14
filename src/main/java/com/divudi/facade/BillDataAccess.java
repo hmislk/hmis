@@ -20,7 +20,7 @@ public class BillDataAccess extends AbstractFacade<Bill> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public BillDataAccess() {

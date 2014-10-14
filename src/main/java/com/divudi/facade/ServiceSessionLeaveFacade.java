@@ -22,7 +22,7 @@ public class ServiceSessionLeaveFacade extends AbstractFacade<ServiceSessionLeav
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public ServiceSessionLeaveFacade() {

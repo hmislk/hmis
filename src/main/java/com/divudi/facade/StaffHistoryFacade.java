@@ -20,7 +20,7 @@ public class StaffHistoryFacade extends AbstractFacade<StaffEmployment> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public StaffHistoryFacade() {

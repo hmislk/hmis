@@ -20,7 +20,7 @@ public class ItemsDistributorsFacade extends AbstractFacade<ItemsDistributors> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public ItemsDistributorsFacade() {

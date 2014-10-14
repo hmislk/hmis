@@ -22,7 +22,7 @@ public class AppointmentFacade extends AbstractFacade<Appointment> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public AppointmentFacade() {

@@ -20,7 +20,7 @@ public class SampleFacade extends AbstractFacade<Sample> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public SampleFacade() {
