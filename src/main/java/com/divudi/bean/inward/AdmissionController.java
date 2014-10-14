@@ -554,7 +554,7 @@ public class AdmissionController implements Serializable {
             return;
         }
 
-        if (getPatientTabId().toString().equals("tabNewPt")) {
+        if (getPatientTabId().equals("tabNewPt")) {
             savePatient();
             getCurrent().setPatient(getNewPatient());
         }
