@@ -17,9 +17,9 @@
 
                         <p:panel>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storePurchaseController.frmDate}" pattern="dd/MMM/yyyy - hh:mm a" ></p:calendar>
+                            <p:calendar value="#{storePurchaseController.frmDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storePurchaseController.toDate}" pattern="dd/MMM/yyyy - hh:mm a" ></p:calendar>
+                            <p:calendar value="#{storePurchaseController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="" ></h:outputLabel>
                             <p:autoComplete id="acExpense"   value="#{storePurchaseController.currentExpense.item}" 
                                             forceSelection="true"

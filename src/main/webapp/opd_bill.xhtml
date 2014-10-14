@@ -394,7 +394,20 @@
                                         <p:tab title="Referrals">
                                             <p:panelGrid columns="2">
                                                 <p:outputLabel value="Refferal Institution"></p:outputLabel>
-                                                <p:autoComplete forceSelection="true" id="cmdIns" value="#{billController.referredByInstitution}" completeMethod="#{institutionController.completeIns}" var="refi" itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter"></p:autoComplete>
+                                                <p:autoComplete forceSelection="true" id="cmdIns" 
+                                                                value="#{billController.referredByInstitution}" 
+                                                                completeMethod="#{institutionController.completeIns}" var="refi" 
+                                                                itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter">
+                                                    <p:column headerText="Name">
+                                                        #{refi.name}
+                                                    </p:column>
+                                                    <p:column headerText="Code">
+                                                        #{refi.institutionCode}
+                                                    </p:column>
+                                                    <p:column headerText="Institution Type">
+                                                        #{refi.institutionType}
+                                                    </p:column>
+                                                </p:autoComplete>
                                                 <p:outputLabel value="Referral Number"></p:outputLabel>
                                                 <p:inputText value="#{billController.referralId}" style="width: 400px"></p:inputText>
                                             </p:panelGrid>

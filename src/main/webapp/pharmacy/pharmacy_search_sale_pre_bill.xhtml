@@ -67,7 +67,7 @@
 
                             <p:column headerText="Pre Bill at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
 
                                 <br/>                                
@@ -75,21 +75,21 @@
                                     <h:outputLabel style="color: red;" value="Return at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" 
                                                    value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted at " />
                                     <h:outputLabel style="color: red;"  
                                                    value="#{bill.retiredAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>   
 
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.referenceBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
 
                                 <br/>
@@ -97,21 +97,21 @@
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.cancelled}" 
                                                    value="#{bill.referenceBill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.refunded}" 
                                                    value="#{bill.referenceBill.refundedBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted at " />
                                     <h:outputLabel style="color: red;"  
                                                    value="#{bill.retiredAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column> 

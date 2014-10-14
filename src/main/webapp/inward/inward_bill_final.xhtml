@@ -79,12 +79,12 @@
                             <h:outputLabel value="Printing Admission Time"/>
                             <p:calendar value="#{bhtSummeryController.patientEncounter.printingAdmissionTime}" 
                                         id="printingAdmissionTimeStamp"
-                                        pattern="dd/MMM/yyyy - hh:mm a" >                               
+                                        pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
                             </p:calendar>     
                             <h:outputLabel value="Printing Discharge Time"/>
                             <p:calendar value="#{bhtSummeryController.patientEncounter.printingDischargeTime}"
                                         id="printingDischargeTimeStamp"
-                                        pattern="dd/MMM/yyyy - hh:mm a" >                               
+                                        pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
                             </p:calendar>    
                         </h:panelGrid>
                     </h:panelGrid>
@@ -162,7 +162,7 @@
                                     <p:calendar navigator="true"  
                                                 id="printingRoomAdmittedTimeStamp"
                                                 value="#{b.printAdmittedAt}" 
-                                                pattern="dd/MMM/yyyy - hh:mm a" >
+                                                pattern="dd/MMM/yyyy - hh:mm:ss a" >
                                         <p:ajax event="change" process="@this" listener="#{patientRoomController.edit(b)}"/>
                                     </p:calendar>
                                 </p:column>
@@ -170,7 +170,7 @@
                                     <p:calendar navigator="true"  
                                                 id="printingRoomDischargeTimeStamp"
                                                 value="#{b.printDischargeAt}" 
-                                                pattern="dd/MMM/yyyy - hh:mm a" >
+                                                pattern="dd/MMM/yyyy - hh:mm:ss a" >
                                         <p:ajax event="change" process="@this" listener="#{patientRoomController.edit(b)}"/>
                                     </p:calendar>
 
