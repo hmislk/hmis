@@ -116,7 +116,7 @@
                                             <h:outputLabel value="#{inwardReportControllerBht.finalBill.paidAmount}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
-                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.netTotal-inwardReportControllerBht.finalBill.paidAmount}" >
+                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.netTotal-inwardReportControllerBht.finalBill.paidAmount-inwardReportControllerBht.creditPaymentTotalValue}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </h:panelGrid>
@@ -391,7 +391,7 @@
 
                                 </p:column>
                             </p:dataTable>
-                            <p:dataTable value="#{inwardReportControllerBht.finalBill.backwardReferenceBills}" var="pay" id="tbl2">
+                            <p:dataTable value="#{inwardReportControllerBht.paidbyPatientBillList}" var="pay" id="tbl2">
                                 <f:facet name="header">
                                     <h:outputLabel value="Paid by Patient"/>
                                 </f:facet>
@@ -407,6 +407,9 @@
                                     <h:outputLabel value="#{pay.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.paidbyPatientTotalValue}"></h:outputLabel>
+                                    </f:facet>
 
                                 </p:column>
 
@@ -429,6 +432,9 @@
                                     <h:outputLabel value="#{cre.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.creditPaymentTotalValue}"></h:outputLabel>
+                                    </f:facet>
 
                                 </p:column>
 
