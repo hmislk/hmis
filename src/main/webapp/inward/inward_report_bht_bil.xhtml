@@ -122,7 +122,7 @@
 
                         </p:dataTable>
 
-                        <p:dataTable value="#{bhtSummeryFinalizedController.bill.backwardReferenceBills}" var="pay" id="tbl2">
+                        <p:dataTable value="#{bhtSummeryFinalizedController.paidbyPatientBillList}" var="pay" id="tbl3">
                             <f:facet name="header">
                                 <h:outputLabel value="Payement Detail"/>
                             </f:facet>
@@ -131,6 +131,26 @@
                             </p:column>
                             <p:column headerText="Amount">
                                 <h:outputLabel value="#{pay.netTotal}"></h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}"></h:outputLabel>
+                                </f:facet>
+                                
+                            </p:column>
+                            
+                        </p:dataTable>
+                        
+                        <p:dataTable value="#{bhtSummeryFinalizedController.billItems}" var="cre" id="tbl4">
+                            <f:facet name="header">
+                                <h:outputLabel value="Credit Company Payment Detail"/>
+                            </f:facet>
+                            <p:column headerText="Bill No">
+                                <h:outputLabel value="#{cre.insId}"></h:outputLabel>                                
+                            </p:column>
+                            <p:column headerText="Amount">
+                                <h:outputLabel value="#{cre.netValue}"></h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.billItemNetValue}"></h:outputLabel>
+                                </f:facet>
                                 
                             </p:column>
                             
@@ -139,9 +159,12 @@
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Paid By Patient"/>
                             <h:outputLabel value="#{bhtSummeryFinalizedController.bill.paidAmount}"/>
+                            <h:outputLabel value="Credit Payment"/>
+                            <h:outputLabel value="#{bhtSummeryFinalizedController.billItemNetValue}"/>
                             <h:outputLabel value="Due"/>
                             <h:outputLabel value="#{bhtSummeryFinalizedController.bill.netTotal
-                                                    -bhtSummeryFinalizedController.bill.paidAmount}"/>
+                                                    -bhtSummeryFinalizedController.bill.paidAmount
+                                                    -bhtSummeryFinalizedController.billItemNetValue}"/>
                         </h:panelGrid>
                     </p:panel>
 

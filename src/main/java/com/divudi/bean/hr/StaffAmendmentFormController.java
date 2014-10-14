@@ -6,10 +6,14 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import static com.divudi.bean.common.UtilityController.addSuccessMessage;
+import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AmendmentForm;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.AmendmentFormFacade;
 import com.divudi.facade.StaffShiftFacade;
+import com.divudi.facade.StaffShiftHistoryFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -51,17 +55,17 @@ public class StaffAmendmentFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Staff");
             return true;
         }
-        
+
         if (currAmendmentForm.getFromDate() == null) {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
-      
+
         if (currAmendmentForm.getToDate() == null) {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
-      
+
         if (currAmendmentForm.getApprovedStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Approved Person");
             return true;
@@ -85,9 +89,40 @@ public class StaffAmendmentFormController implements Serializable {
         currAmendmentForm.setCreatedAt(new Date());
         currAmendmentForm.setCreater(getSessionController().getLoggedUser());
         getAmendmentFormFacade().create(currAmendmentForm);
+
+        //CHange SHifts
+        StaffShift fromStaffShift = getCurrAmendmentForm().getFromStaffShift();
+        StaffShift toStaffShift = getCurrAmendmentForm().getToStaffShift();
+        Staff fromStaff = getCurrAmendmentForm().getFromStaff();
+        Staff toStaff = getCurrAmendmentForm().getToStaff();
+
+        fromStaffShift.setStaff(toStaff);
+        toStaffShift.setStaff(fromStaff);
+
+        StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
+        staffShiftHistory.setCreatedAt(new Date());
+        staffShiftHistory.setCreater(sessionController.getLoggedUser());
+        staffShiftHistory.setStaff(fromStaff);
+        staffShiftHistory.setStaffShift(fromStaffShift);
+        staffShiftHistoryFacade.create(staffShiftHistory);
+
+        staffShiftHistory = new StaffShiftHistory();
+        staffShiftHistory.setCreatedAt(new Date());
+        staffShiftHistory.setCreater(sessionController.getLoggedUser());
+        staffShiftHistory.setStaff(toStaff);
+        staffShiftHistory.setStaffShift(toStaffShift);
+        staffShiftHistoryFacade.create(staffShiftHistory);
+
+        staffShiftFacade.edit(fromStaffShift);
+        staffShiftFacade.edit(toStaffShift);
+
         JsfUtil.addSuccessMessage("Sucessfully Saved");
         clear();
     }
+
+    @EJB
+    StaffShiftHistoryFacade staffShiftHistoryFacade;
+
     List<StaffShift> fromStaffShifts;
     List<StaffShift> toStaffShifts;
     @EJB
@@ -106,7 +141,7 @@ public class StaffAmendmentFormController implements Serializable {
 
         fromStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void fetchToStaffShift() {
         HashMap hm = new HashMap();
         String sql = " select c from "
@@ -119,6 +154,30 @@ public class StaffAmendmentFormController implements Serializable {
         hm.put("stf", getCurrAmendmentForm().getStaff());
 
         toStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public List<StaffShift> getFromStaffShifts() {
+        return fromStaffShifts;
+    }
+
+    public void setFromStaffShifts(List<StaffShift> fromStaffShifts) {
+        this.fromStaffShifts = fromStaffShifts;
+    }
+
+    public List<StaffShift> getToStaffShifts() {
+        return toStaffShifts;
+    }
+
+    public void setToStaffShifts(List<StaffShift> toStaffShifts) {
+        this.toStaffShifts = toStaffShifts;
+    }
+
+    public StaffShiftFacade getStaffShiftFacade() {
+        return staffShiftFacade;
+    }
+
+    public void setStaffShiftFacade(StaffShiftFacade staffShiftFacade) {
+        this.staffShiftFacade = staffShiftFacade;
     }
 
     public AmendmentForm getCurrAmendmentForm() {
