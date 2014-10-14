@@ -68,12 +68,15 @@ public class BhtSummeryFinalizedController implements Serializable {
     List<Bill> outSideBills;
     List<Bill> paymentBills;
     List<Bill> paidbyPatientBillList;
+    List<BillItem> creditPayment;
     
 
     InwardChargeType inwardChargeType;
     Bill bill;
     @Inject
     InwardBeanController inwardBean;
+    @Inject
+    InwardReportControllerBht inwardReportControllerBht;
     double billItemGross;
     double billItemMargin;
     double billItemDiscount;
@@ -206,6 +209,16 @@ public class BhtSummeryFinalizedController implements Serializable {
     public void setPaidbyPatientTotalValue(double paidbyPatientTotalValue) {
         this.paidbyPatientTotalValue = paidbyPatientTotalValue;
     }
+
+    public List<BillItem> getCreditPayment() {
+        return creditPayment;
+    }
+
+    public void setCreditPayment(List<BillItem> creditPayment) {
+        this.creditPayment = creditPayment;
+    }
+    
+    
     
     
 
@@ -218,8 +231,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     }
 
-    @Inject
-    InwardReportControllerBht inwardReportControllerBht;
+   
 
     public void updateAllBillItems() {
         if (filterItems == null) {
@@ -534,6 +546,8 @@ public class BhtSummeryFinalizedController implements Serializable {
         paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter());
         pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(),BillType.PharmacyBhtPre);
         storeItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(),BillType.StoreBhtPre);
+        
+        
 
     }
 
