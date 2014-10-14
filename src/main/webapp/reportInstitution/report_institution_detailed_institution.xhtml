@@ -75,7 +75,11 @@
                     </h:panelGrid>
 
 
-                    <p:dataTable id="billed"  value="#{commonReport.institutionBilledBillsOwn.bills}" var="b" rendered="#{commonReport.institutionBilledBillsOwn.bills.size()>0}" sortBy="#{b.billType}"  >
+                    <p:dataTable id="billed"  value="#{commonReport.institutionBilledBillsOwn.bills}" var="b" 
+                                 rendered="#{commonReport.institutionBilledBillsOwn.bills.size()>0}" sortBy="#{b.billType}"  rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
 
                         <f:facet name="header">  
                             <h:outputLabel value="Opd Bills "/>
@@ -237,7 +241,11 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="cancelled"  value="#{commonReport.institutionCancelledBillsOwn.bills}" var="b1"  rendered="#{commonReport.institutionCancelledBillsOwn.bills.size()>0}" >
+                    <p:dataTable id="cancelled"  value="#{commonReport.institutionCancelledBillsOwn.bills}" var="b1"  
+                                 rendered="#{commonReport.institutionCancelledBillsOwn.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Cancelled"/>
                         </f:facet> 
@@ -387,7 +395,11 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="refund" value="#{commonReport.institutionRefundedBillsOwn.bills}" var="b" sortBy="#{b.billType}"  rendered="#{commonReport.institutionRefundedBillsOwn.bills.size()>0}" >
+                    <p:dataTable id="refund" value="#{commonReport.institutionRefundedBillsOwn.bills}" var="b" sortBy="#{b.billType}"  
+                                 rendered="#{commonReport.institutionRefundedBillsOwn.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Refunded" />
                         </f:facet> 
@@ -537,7 +549,11 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="billedPh"  value="#{commonReport.institutionBilledBillsOwnPh.bills}" var="b" rendered="#{commonReport.institutionBilledBillsOwnPh.bills.size()>0}" sortBy="#{b.billType}"  >
+                    <p:dataTable id="billedPh"  value="#{commonReport.institutionBilledBillsOwnPh.bills}" var="b"
+                                 rendered="#{commonReport.institutionBilledBillsOwnPh.bills.size()>0}" sortBy="#{b.billType}"  rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
 
                         <f:facet name="header">  
                             <h:outputLabel value="Opd Bills "/>
@@ -699,7 +715,11 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="cancelledPh"  value="#{commonReport.institutionCancelledBillsOwnPh.bills}" var="b1"  rendered="#{commonReport.institutionCancelledBillsOwnPh.bills.size()>0}" >
+                    <p:dataTable id="cancelledPh"  value="#{commonReport.institutionCancelledBillsOwnPh.bills}" var="b1"  
+                                 rendered="#{commonReport.institutionCancelledBillsOwnPh.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Cancelled"/>
                         </f:facet> 
@@ -849,7 +869,11 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="refundPh" value="#{commonReport.institutionRefundedBillsOwnPh.bills}" var="b" sortBy="#{b.billType}"  rendered="#{commonReport.institutionRefundedBillsOwnPh.bills.size()>0}" >
+                    <p:dataTable id="refundPh" value="#{commonReport.institutionRefundedBillsOwnPh.bills}" var="b" sortBy="#{b.billType}"
+                                 rendered="#{commonReport.institutionRefundedBillsOwnPh.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Refunded" />
                         </f:facet> 
@@ -999,7 +1023,11 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="payment" value="#{commonReport.institutionPaymentBillsOwn.bills}" var="b"   sortBy="#{b.billType}" rendered="#{commonReport.institutionPaymentBillsOwn.bills.size()>0}" >
+                    <p:dataTable id="payment" value="#{commonReport.institutionPaymentBillsOwn.bills}" var="b"   sortBy="#{b.billType}" 
+                                 rendered="#{commonReport.institutionPaymentBillsOwn.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Payments"/>
                         </f:facet> 
@@ -1060,7 +1088,12 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="paymentCancel" value="#{commonReport.institutionPaymentCancelBillsOwn.bills}" var="b"   sortBy="#{b.billType}" rendered="#{commonReport.institutionPaymentCancelBillsOwn.bills.size()>0}" >
+                    <p:dataTable id="paymentCancel" value="#{commonReport.institutionPaymentCancelBillsOwn.bills}" var="b"   
+                                 sortBy="#{b.billType}" 
+                                 rendered="#{commonReport.institutionPaymentCancelBillsOwn.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="PaymentsCancel" />
                         </f:facet> 
@@ -1132,7 +1165,12 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="petty" value="#{commonReport.institutionPettyPaymentBillsOwn.bills}" var="b4"   sortBy="#{b4.billType}" rendered="#{commonReport.institutionPettyPaymentBillsOwn.bills.size()>0}">
+                    <p:dataTable id="petty" value="#{commonReport.institutionPettyPaymentBillsOwn.bills}" var="b4"   
+                                 sortBy="#{b4.billType}" 
+                                 rendered="#{commonReport.institutionPettyPaymentBillsOwn.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Petty Cash Payment"/>
                         </f:facet> 
@@ -1228,7 +1266,11 @@
                     <p:spacer height="30"/>
 
 
-                    <p:dataTable id="pettyCancel" value="#{commonReport.institutionPettyCancellBillsOwn.bills}" var="b4"   sortBy="#{b4.billType}" rendered="#{commonReport.institutionPettyCancellBillsOwn.bills.size()>0}" >
+                    <p:dataTable id="pettyCancel" value="#{commonReport.institutionPettyCancellBillsOwn.bills}" var="b4"   
+                                 sortBy="#{b4.billType}" rendered="#{commonReport.institutionPettyCancellBillsOwn.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel  value="Petty Cash Payment Cancel"/>
                         </f:facet> 
@@ -1328,7 +1370,12 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="companyPay" value="#{commonReport.institutionCashRecieveBillsOwn.bills}" var="b7"   sortBy="#{b7.billType}" rendered="#{commonReport.institutionCashRecieveBillsOwn.bills.size()>0}">
+                    <p:dataTable id="companyPay" value="#{commonReport.institutionCashRecieveBillsOwn.bills}" var="b7"   
+                                 sortBy="#{b7.billType}" rendered="#{commonReport.institutionCashRecieveBillsOwn.bills.size()>0}"
+                                 rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Credit Company Payment Recieve"/>
                         </f:facet> 
@@ -1426,7 +1473,12 @@
                     <p:spacer height="30"/>
 
 
-                    <p:dataTable id="companyCancel" value="#{commonReport.institutionCashRecieveCancellBillsOwn.bills}" var="b7"   sortBy="#{b7.billType}" rendered="#{commonReport.institutionCashRecieveCancellBillsOwn.bills.size()>0}">
+                    <p:dataTable id="companyCancel" value="#{commonReport.institutionCashRecieveCancellBillsOwn.bills}" var="b7"  
+                                 sortBy="#{b7.billType}" rendered="#{commonReport.institutionCashRecieveCancellBillsOwn.bills.size()>0}"
+                                 rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Credit Company Payment Cancel"/>
                         </f:facet> 
@@ -1545,7 +1597,11 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="agent" value="#{commonReport.institutionAgentBillsOwn.bills}" var="b7"   sortBy="#{b7.billType}" rendered="#{commonReport.institutionAgentBillsOwn.bills.size()>0}">
+                    <p:dataTable id="agent" value="#{commonReport.institutionAgentBillsOwn.bills}" var="b7"   sortBy="#{b7.billType}" 
+                                 rendered="#{commonReport.institutionAgentBillsOwn.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Agent Payment Recieve"/>
                         </f:facet> 
@@ -1645,7 +1701,12 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="agentCancel"  value="#{commonReport.institutionAgentCancellBillsOwn.bills}" var="b7"   sortBy="#{b7.billType}" rendered="#{commonReport.institutionAgentCancellBillsOwn.bills.size()>0}">
+                    <p:dataTable id="agentCancel"  value="#{commonReport.institutionAgentCancellBillsOwn.bills}" var="b7"   
+                                 sortBy="#{b7.billType}" rendered="#{commonReport.institutionAgentCancellBillsOwn.bills.size()>0}"
+                                 rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Agent Payment Cancel"/>
                         </f:facet> 
@@ -1765,7 +1826,11 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="inward" value="#{commonReport.institutionInwardPaymentBillsOwn.bills}" var="b"   sortBy="#{b.billType}" rendered="#{commonReport.institutionInwardPaymentBillsOwn.bills.size()>0}" >
+                    <p:dataTable id="inward" value="#{commonReport.institutionInwardPaymentBillsOwn.bills}" var="b"   
+                                 sortBy="#{b.billType}" rendered="#{commonReport.institutionInwardPaymentBillsOwn.bills.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Inward Payments" />
                         </f:facet> 
@@ -1828,7 +1893,12 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="inwardCancel" value="#{commonReport.institutionInwardPaymentCancelBillsOwn.bills}" var="b"   sortBy="#{b.billType}" rendered="#{commonReport.institutionInwardPaymentCancelBillsOwn.bills.size()>0}" >
+                    <p:dataTable id="inwardCancel" value="#{commonReport.institutionInwardPaymentCancelBillsOwn.bills}" var="b"  
+                                 sortBy="#{b.billType}" rendered="#{commonReport.institutionInwardPaymentCancelBillsOwn.bills.size()>0}"
+                                 rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">  
                             <h:outputLabel value="Inward Payments Cancel"/>
                         </f:facet> 
@@ -1906,7 +1976,10 @@
 
                     <p:spacer height="30"/>
 
-                    <p:dataTable id="sum" value="#{commonReport.dataTableData}"  var="i" >
+                    <p:dataTable id="sum" value="#{commonReport.dataTableData}"  var="i" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">
                             Summery
                         </f:facet>
