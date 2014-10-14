@@ -20,7 +20,7 @@ public class StaffWorkDayFacade extends AbstractFacade<StaffWorkDay> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public StaffWorkDayFacade() {

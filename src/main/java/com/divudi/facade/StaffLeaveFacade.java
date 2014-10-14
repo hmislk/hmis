@@ -22,7 +22,10 @@ public class StaffLeaveFacade extends AbstractFacade<StaffLeave> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em==null){
+            
+        }
+        if(em == null){}return em;
     }
 
     public StaffLeaveFacade() {

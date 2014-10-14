@@ -20,7 +20,7 @@ public class ReportFormatFacade extends AbstractFacade<ReportFormat> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public ReportFormatFacade() {

@@ -20,7 +20,10 @@ public class PatientItemFacade extends AbstractFacade<PatientItem> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em==null){
+            System.out.println("em is nulkl");
+        }
+        if(em == null){}return em;
     }
 
     public PatientItemFacade() {

@@ -20,7 +20,7 @@ public class HrmVariablesFacade extends AbstractFacade<HrmVariables> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public HrmVariablesFacade() {

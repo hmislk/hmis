@@ -15,8 +15,7 @@
         <h:outputStylesheet library="css" name="maincss.css" />
         <h:outputStylesheet library="css" name="css1.css" />
         <h:outputStylesheet library="css" name="summery.css" />
-        <!-- If u encounter any problem in printing call safrin-->
-        <!--<h:outputStylesheet library="css" name="printing.css" />-->
+        <h:outputStylesheet library="css" name="printing.css" />
 
         <h:outputScript library="js" name="jsfcrud.js"/>
     </h:head>
@@ -307,6 +306,7 @@
                                     <p:menuitem  ajax="false"  value="Channel Sheduling"  action="/channel/channel_shedule" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingChannelSheduling')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee" rendered="#{webUserController.hasPrivilege('ChannellingChannelAgentFee')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report" actionListener="#{sheduleController.prepareAdd}" rendered="#{webUserController.hasPrivilege('ChannellingDoctorSessionView')}"></p:menuitem>
+                                    <p:menuitem ajax="false" value="Channel Wizard" action="/channel/channel_sessoin_wizard"/>
                                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports"/>
                                     <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
                                         <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>

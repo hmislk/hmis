@@ -20,7 +20,7 @@ public class LabVisitFacade extends AbstractFacade<LabVisit> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public LabVisitFacade() {

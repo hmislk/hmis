@@ -22,7 +22,7 @@ public class UserStockContainerFacade extends AbstractFacade<UserStockContainer>
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public UserStockContainerFacade() {

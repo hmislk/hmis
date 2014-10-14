@@ -20,7 +20,7 @@ public class StaffDesignationFacade extends AbstractFacade<StaffDesignation> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public StaffDesignationFacade() {

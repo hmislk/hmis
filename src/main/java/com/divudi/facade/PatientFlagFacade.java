@@ -20,7 +20,7 @@ public class PatientFlagFacade extends AbstractFacade<PatientFlag> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public PatientFlagFacade() {

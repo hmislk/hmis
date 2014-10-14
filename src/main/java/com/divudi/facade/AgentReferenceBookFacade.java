@@ -22,7 +22,7 @@ public class AgentReferenceBookFacade extends AbstractFacade<AgentReferenceBook>
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public AgentReferenceBookFacade() {
