@@ -89,6 +89,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     double billFeeDiscount;
     double billFeeNetValue;
     double paidbyPatientTotalValue;
+    double creditCompanyPaymentTotal;
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
@@ -217,6 +218,16 @@ public class BhtSummeryFinalizedController implements Serializable {
     public void setCreditPayment(List<BillItem> creditPayment) {
         this.creditPayment = creditPayment;
     }
+
+    public double getCreditCompanyPaymentTotal() {
+        return creditCompanyPaymentTotal;
+    }
+
+    public void setCreditCompanyPaymentTotal(double creditCompanyPaymentTotal) {
+        this.creditCompanyPaymentTotal = creditCompanyPaymentTotal;
+    }
+    
+    
     
     
     
@@ -544,8 +555,12 @@ public class BhtSummeryFinalizedController implements Serializable {
         proBillFee = getInwardBean().createProfesionallFee(getPatientEncounter());
         assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter());
         paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter());
+        paidbyPatientTotalValue = getInwardReportControllerBht().calPaidbyPatient(paymentBills);
         pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(),BillType.PharmacyBhtPre);
         storeItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(),BillType.StoreBhtPre);
+        creditPayment=getInwardReportControllerBht().createCreditPayment(getPatientEncounter());
+        creditCompanyPaymentTotal=getInwardReportControllerBht().calTotalCreditCompany(creditPayment);
+        
         
         
 
