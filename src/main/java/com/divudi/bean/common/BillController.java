@@ -772,7 +772,7 @@ public class BillController implements Serializable {
             return true;
         }
         
-        if(referredByInstitution != null){
+        if(referredByInstitution != null && referredByInstitution.getInstitutionType()!=InstitutionType.CollectingCentre){
             if(referralId == null || referralId.trim().equals("")){
                 JsfUtil.addErrorMessage("Please Enter Referrance Number");
                 return true;

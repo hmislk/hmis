@@ -30,9 +30,9 @@
 
                                 <h:outputLabel value="From" ></h:outputLabel>
 
-                                <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd/MMM/yyyy - hh:mm a" ></p:calendar>
+                                <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                                 <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar value="#{reportsTransfer.toDate}" pattern="dd/MMM/yyyy - hh:mm a" ></p:calendar>
+                                <p:calendar value="#{reportsTransfer.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton ajax="false" value="Process" actionListener="#{reportsTransfer.fillSlowMoving()}" ></p:commandButton>
 

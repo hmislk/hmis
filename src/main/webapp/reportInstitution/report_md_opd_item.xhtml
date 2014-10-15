@@ -41,7 +41,10 @@
 
                 <p:dataTable id="tbl" value="#{mdReportController.itemWithFees}"
                              rowIndexVar="i"
-                             var="iwf" filteredValue="#{mdReportController.fillterItemWithFees}" >
+                             var="iwf" filteredValue="#{mdReportController.fillterItemWithFees}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
 
                     <f:facet name="header">
                         <h:outputLabel value="Report By Item (OPD) From &nbsp;&nbsp; : "/>

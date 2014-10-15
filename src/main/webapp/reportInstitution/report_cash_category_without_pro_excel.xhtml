@@ -49,7 +49,10 @@
             <!--            <p:spacer height="30" />-->
 
             <p:dataTable id="opd"  value="#{cashSummeryControllerExcel1.dailyCashExcel}" var="d" 
-                         rendered="#{cashSummeryControllerExcel1.dailyCashExcel.size()>0}">                   
+                         rendered="#{cashSummeryControllerExcel1.dailyCashExcel.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">                   
                 <f:facet name="header">
                     <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
                         <p:outputLabel value="#{sessionController.institution.name}"/><h:outputLabel/>
@@ -110,7 +113,10 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="other" value="#{cashSummeryControllerExcel1.otherInstitution}" var="th" 
-                         rendered="#{cashSummeryControllerExcel1.otherInstitution.size()>0}">
+                         rendered="#{cashSummeryControllerExcel1.otherInstitution.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column>
                     <h:outputLabel value="#{th.string}"/>
                 </p:column>
@@ -143,7 +149,10 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="pharmacy" value="#{cashSummeryControllerExcel1.pharmacySales}" var="dep"
-                         rendered="#{cashSummeryControllerExcel1.pharmacySales.size()>0}">
+                         rendered="#{cashSummeryControllerExcel1.pharmacySales.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">
                     <h:outputLabel value="Pharmacy Collection"/>
                 </f:facet>
@@ -184,7 +193,10 @@
             <p:spacer height="30"/>
 
             <p:dataGrid value="#{cashSummeryControllerExcel1.inwardCollection}" columns="1"
-                        var="inw" rendered="#{cashSummeryControllerExcel1.inwardTot!=0}">
+                        var="inw" rendered="#{cashSummeryControllerExcel1.inwardTot!=0}" rows="10"
+                        paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">
                     Inward Collection
                 </f:facet>                
@@ -227,7 +239,10 @@
 
             <p:spacer height="30"/>
             <p:dataTable id="agent" value="#{cashSummeryControllerExcel1.agentCollections}" var="a" 
-                         rendered="#{cashSummeryControllerExcel1.agentCollections.size()>0}" sortBy="#{a.institution.id}" >
+                         rendered="#{cashSummeryControllerExcel1.agentCollections.size()>0}" sortBy="#{a.institution.id}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">               
                     <p:outputLabel value="Agent Collection"/>                 
                 </f:facet>
@@ -264,7 +279,10 @@
 
 
             <p:dataTable id="creditCompany" value="#{cashSummeryControllerExcel1.creditCompanyCollections}" var="c"
-                         rendered="#{cashSummeryControllerExcel1.creditCompanyCollections.size()>0}">
+                         rendered="#{cashSummeryControllerExcel1.creditCompanyCollections.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">
                     <p:outputLabel value="Credit Company Collection"/>    
                 </f:facet>                               
@@ -315,7 +333,10 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable id="col"  value="#{cashSummeryControllerExcel1.collections2Hos}" var="sm">
+            <p:dataTable id="col"  value="#{cashSummeryControllerExcel1.collections2Hos}" var="sm" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
                 </p:column>
@@ -329,7 +350,10 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="dept" value="#{cashSummeryControllerExcel1.departmentPayments}" var="a" 
-                         rendered="#{cashSummeryControllerExcel1.departmentPayments.size()>0}"  >
+                         rendered="#{cashSummeryControllerExcel1.departmentPayments.size()>0}"  rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">               
                     <p:outputLabel value="Professional Payment" />    
                 </f:facet>
@@ -358,7 +382,10 @@
 
 
             <p:dataTable id="inwProf" value="#{cashSummeryControllerExcel1.inwardProfessions}" var="b" 
-                         rendered="#{cashSummeryControllerExcel1.inwardProfessions.size()>0}" >
+                         rendered="#{cashSummeryControllerExcel1.inwardProfessions.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">               
                     <p:outputLabel value="Inward Professional Payment" />    
                 </f:facet>
@@ -391,7 +418,10 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="card" value="#{cashSummeryControllerExcel1.cardBill}" var="ch" sortBy="#{ch.billClass}" 
-                         rendered="#{cashSummeryControllerExcel1.cardBill.size()>0}">
+                         rendered="#{cashSummeryControllerExcel1.cardBill.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">              
                     <p:outputLabel value="Credit Card Transactions"/>    
                 </f:facet>
@@ -441,7 +471,10 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="slip" value="#{cashSummeryControllerExcel1.slipBill}" var="ch" sortBy="#{ch.billClass}" 
-                         rendered="#{cashSummeryControllerExcel1.slipBill.size()>0}">
+                         rendered="#{cashSummeryControllerExcel1.slipBill.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">
 
                     <p:outputLabel value="Slip Transactions"/>    
@@ -501,7 +534,10 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="cheque" value="#{cashSummeryControllerExcel1.chequeBill}" var="ch" sortBy="#{ch.billClass}" 
-                         rendered="#{cashSummeryControllerExcel1.chequeBill.size()>0}">
+                         rendered="#{cashSummeryControllerExcel1.chequeBill.size()>0}" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">              
                     <p:outputLabel value="Cheque Transactions"/>    
                 </f:facet>
@@ -561,7 +597,10 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="finalSum" value="#{cashSummeryControllerExcel1.finalSumery}" var="s">
+            <p:dataTable id="finalSum" value="#{cashSummeryControllerExcel1.finalSumery}" var="s" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column>
                     <h:outputLabel value="#{s.string}"/>
                 </p:column>
@@ -576,7 +615,10 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b">
+            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">
                     <h:outputLabel value="Bank Deposit" />
                 </f:facet>

@@ -139,11 +139,11 @@
                                         </h:outputLabel>                                    
                                         <h:outputLabel value="Date Of Admission"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <h:outputLabel value="Date Of Discharge"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <h:outputLabel value="BHT Type"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.paymentMethod}"/>
@@ -400,7 +400,7 @@
                                 </p:column>
                                 <p:column headerText="Bill Date">
                                     <h:outputLabel value="#{pay.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column headerText="Amount">
@@ -425,7 +425,7 @@
                                 </p:column>
                                 <p:column headerText="Bill Date">
                                     <h:outputLabel value="#{cre.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column headerText="Amount">

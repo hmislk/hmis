@@ -38,7 +38,7 @@
             </p:panel>
             <p:spacer height="30"/>
 
-            <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d" rendered="#{cashSummeryController.dailyCash2.size()>0}">                   
+            <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d" rendered="#{cashSummeryController.dailyCash2.size()>0}" rows="10">                
                 <f:facet name="header">
                     <h:outputLabel value="Opd Category" />
                 </f:facet>               
@@ -79,7 +79,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="s1" value="#{cashSummeryController.summerizeTable}" var="d">
+            <p:dataTable id="s1" value="#{cashSummeryController.summerizeTable}" var="d" >
                 <p:column>
                     <h:outputLabel value="#{d.string}" />
                 </p:column>

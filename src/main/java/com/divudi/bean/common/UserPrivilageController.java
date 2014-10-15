@@ -94,7 +94,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node140 = new PrivilageNode("Billing Menu", node14, Privileges.InwardBilling);
         TreeNode node141 = new PrivilageNode("Interim Bill", node14, Privileges.InwardBillingInterimBill);
         TreeNode node142 = new PrivilageNode("Interim Bill Search", node14, Privileges.InwardBillingInterimBillSearch);
-        TreeNode node143 = new PrivilageNode("Final Bill Report Edit", node14, Privileges.InwardFinalBillReportEdit);
+        TreeNode node143 = new PrivilageNode("Edit Patient Name After Payment Finalized", node14, Privileges.InwardFinalBillReportEdit);
         TreeNode node15 = new PrivilageNode("Search", node1);
         TreeNode node150 = new PrivilageNode("Serch Menu", node15, Privileges.InwardSearch);
         TreeNode node151 = new PrivilageNode("Serch Service Bill", node15, Privileges.InwardSearchServiceBill);

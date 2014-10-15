@@ -83,11 +83,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="From - "/>
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </p:outputLabel>
                                         <h:outputLabel value=" - To - "/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <p:outputLabel value=" - Due Payments" />
                                     </f:facet>
@@ -169,11 +169,11 @@
                                 <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{searchController.billFeesDone}" var="bf"   >
                                     <f:facet name="header">
                                         <p:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </p:outputLabel>
                                         <h:outputLabel value=" - To - "/>
                                         <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <p:outputLabel value=" - Done Payments" />
                                     </f:facet>
