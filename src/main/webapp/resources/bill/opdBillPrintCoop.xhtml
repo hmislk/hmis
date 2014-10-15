@@ -122,6 +122,16 @@
                             <f:convertDateTime pattern="hh:mm:a"/>
                         </h:outputLabel>
                     </div>
+                
+                <div class="agePrintingLabel">
+                        <h:outputLabel value="Age"/>
+                    </div>
+                    <div class="agePrintingLabelCol">
+                        <h:outputLabel value=":"/>
+                    </div>
+                    <div class="agePrinting">
+                    <h:outputLabel value="#{cc.attrs.bill.patient.age}"/>    
+                    </div>
                     
                     <div class="ptnamePrintingLabel">
                         <h:outputLabel value="Patient "/>

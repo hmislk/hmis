@@ -776,7 +776,37 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    List<Bill>bills;
 
+    public void createOutSideDepartment(Date fromDate, Date toDate, Institution institution) {
+        String sql = "SELECT bf "
+                + " FROM Bill bf "
+                + " WHERE bf.institution=:ins "
+                + " and bf.toDepartment.institution!=:ins "
+                + " and bf.createdAt between :fromDate and :toDate "
+                + " and (bf.paymentMethod = :pm1 "
+                + " or bf.paymentMethod = :pm2 "
+                + " or bf.paymentMethod = :pm3 "
+                + " or bf.paymentMethod = :pm4)"
+                + " group by bf.toDepartment "
+                + " order by bf.toDepartment.name ";
+        
+        HashMap temMap = new HashMap();
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", institution);
+        // temMap.put("ftp1", FeeType.OwnInstitution);
+        //   temMap.put("ftp2", FeeType.Staff);
+        temMap.put("pm1", PaymentMethod.Cash);
+        temMap.put("pm2", PaymentMethod.Card);
+        temMap.put("pm3", PaymentMethod.Cheque);
+        temMap.put("pm4", PaymentMethod.Slip);
+
+        bills=getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
     public List<Object[]> fetchOutSideDepartment(Date fromDate, Date toDate, Institution institution) {
         String sql = "SELECT bf.toDepartment,sum(bf.performInstitutionFee),sum(bf.staffFee)"
                 + " FROM Bill bf"
@@ -789,7 +819,7 @@ public class BillBeanController implements Serializable {
                 + " or bf.paymentMethod = :pm4)"
                 + " group by bf.toDepartment "
                 + " order by bf.toDepartment.name ";
-
+        
         HashMap temMap = new HashMap();
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
@@ -2688,6 +2718,14 @@ public class BillBeanController implements Serializable {
 
     public void setAllowedPaymentMethodFacade(AllowedPaymentMethodFacade allowedPaymentMethodFacade) {
         this.allowedPaymentMethodFacade = allowedPaymentMethodFacade;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
     }
 
 }
