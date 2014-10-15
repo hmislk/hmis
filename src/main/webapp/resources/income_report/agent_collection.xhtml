@@ -14,7 +14,7 @@
     <cc:implementation>
         <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.agentCollections}" var="a" 
                      rendered="#{bookKeepingSummery.agentCollections.size()>0}" 
-                     sortBy="#{a.institution.id}" >
+                     sortBy="#{a.institution.id}">
             <f:facet name="header">               
                 <p:outputLabel value="Agent Collection"/>                 
             </f:facet>

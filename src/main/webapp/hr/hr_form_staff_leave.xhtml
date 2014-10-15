@@ -84,7 +84,8 @@
                                                 itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                 converter="stfcon"   >   
                                 </p:autoComplete>
-                                <p:commandButton value="Search" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
+                                <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
+                                <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
                             </p:panelGrid>
                         </p:panel>
                         <p:panel>

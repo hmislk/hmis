@@ -36,7 +36,10 @@
 
             </p:panel>
 
-            <p:dataTable id="acm"  value="#{cashSummeryController.dailyCash}" var="d">
+            <p:dataTable id="acm"  value="#{cashSummeryController.dailyCash}" var="d" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">
                     <h:outputLabel value="OPD Department Wise"/>
                 </f:facet>
@@ -110,7 +113,10 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="summms" value="#{cashSummeryController.summerizeTable}" var="d">
+            <p:dataTable id="summms" value="#{cashSummeryController.summerizeTable}" var="d" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column>
                     <h:outputLabel value="#{d.string}" />
                 </p:column>
@@ -123,7 +129,10 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.collections}" var="sm">
+            <p:dataTable value="#{cashSummeryController.collections}" var="sm" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
                 </p:column>
@@ -136,7 +145,10 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.summerizeTableAfter}" var="sm">
+            <p:dataTable value="#{cashSummeryController.summerizeTableAfter}" var="sm" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
                 </p:column>
@@ -149,7 +161,10 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.finalSummery}" var="s">
+            <p:dataTable value="#{cashSummeryController.finalSummery}" var="s" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column>
                     <h:outputLabel value="#{s.string}"/>
                 </p:column>
@@ -163,7 +178,10 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.bankingData}" var="b">
+            <p:dataTable value="#{cashSummeryController.bankingData}" var="b" rows="10"
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">
                     <h:outputLabel value="Bank Deposit" />
                 </f:facet>

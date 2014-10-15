@@ -47,7 +47,7 @@ import javax.servlet.http.HttpSessionListener;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -71,12 +71,21 @@ public class SessionController implements Serializable, HttpSessionListener {
     Institution institution;
     @EJB
     private CashTransactionBean cashTransactionBean;
+    boolean paginator;
 
-    
-    public Date getCurrentDate(){
-        return new Date();
+    public void makePaginatorTrue() {
+        paginator = true;
+    }
+
+    public void makePaginatorFalse(){
+        paginator = false;
+
     }
     
+    public Date getCurrentDate() {
+        return new Date();
+    }
+
     public void update() {
         getFacede().edit(getLoggedUser());
         getCashTransactionBean().updateDrawers();
@@ -113,10 +122,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-
-   
-
-   
 
     public SecurityController getSecurityController() {
         return securityController;
@@ -271,7 +276,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         WebUser user = getLoggedUser();
         if (!getSecurityController().matchPassword(passord, user.getWebUserPassword())) {
             UtilityController.addErrorMessage("The old password you entered is incorrect");
-            return ;
+            return;
         }
         if (!newPassword.equals(newPasswordConfirm)) {
             UtilityController.addErrorMessage("Password and Re-entered password are not maching");
@@ -282,7 +287,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         uFacade.edit(user);
         //
         UtilityController.addSuccessMessage("Password changed");
-        
+
     }
 
     public void changeCurrentUserPassword() {
@@ -350,17 +355,17 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setRole(u.getRole());
                     UserPreference uf;
                     String sql;
-                    sql="select p from UserPreference p where p.webUser=:u";
+                    sql = "select p from UserPreference p where p.webUser=:u";
                     Map m = new HashMap();
                     m.put("u", u);
-                    uf=getUserPreferenceFacade().findFirstBySQL(sql, m);
-                    if(uf==null){
-                        uf=new UserPreference();
+                    uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                    if (uf == null) {
+                        uf = new UserPreference();
                         uf.setWebUser(u);
                         getUserPreferenceFacade().create(uf);
                     }
                     setUserPreference(uf);
-                    
+
                     recordLogin();
 
                     UtilityController.addSuccessMessage("Logged successfully");
@@ -757,6 +762,13 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.userPreferenceFacade = userPreferenceFacade;
     }
 
+    public boolean getPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
 
     
 }

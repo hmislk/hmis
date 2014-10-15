@@ -4,9 +4,12 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core">
 
-    <body>
+    <h:head>
+        
+    </h:head>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -16,8 +19,9 @@
 
                     <p:panel header="Manage Item Fees" >
 
-                        <p:panelGrid columns="1" >
-                            <p:panelGrid columns="2" >
+                        <p:panelGrid columns="1" styleClass="alignTop" >
+
+                            <p:panelGrid columns="2" styleClass="alignTop" >
                                 <h:outputLabel value="Select Item" />
                                 <p:autoComplete widgetVar="aIx" id="acIx" 
                                                 forceSelection="true" 
@@ -31,70 +35,154 @@
                                 <h:outputLabel value="Total Fee" />
                                 <h:outputLabel id="lblTotal" value="#{itemFeeManager.item.total}" ></h:outputLabel>
 
-                                <p:panel header="New Fee Details - #{itemFeeManager.item.total}" id="gpDetail" >
-
+                                <p:panel header="New Fee Details" id="gpDetail" >
                                     <f:facet name="header" >
-                                        New Fee Details
-
+                                        <h:outputLabel value="New Fee Details"></h:outputLabel>
+                                        <p:commandButton ajax="false" value="Save as a New Fee" action="#{itemFeeManager.addNewFee()}" style="margin-left: 30px;" ></p:commandButton>
                                     </f:facet>
-                                    <p:panelGrid columns="2" >
-                                        <h:inputText value="Fee Name" ></h:inputText>
-                                        <h:inputText value="#{itemFeeManager.itemFee.name}" ></h:inputText>
 
-                                        <h:inputText value="Local Value" ></h:inputText>
+                                    <p:panelGrid columns="2" >
+                                        <h:outputLabel value="Fee Name" ></h:outputLabel>
+                                        <h:inputText value="#{itemFeeManager.itemFee.name}" >
+                                            <f:ajax event="keyup" execute="@this" ></f:ajax>
+                                        </h:inputText>
+
+                                        <h:outputLabel value="Fee Type" ></h:outputLabel>
+                                        <p:selectOneMenu value="#{itemFeeManager.itemFee.feeType}" >
+                                            <f:selectItems value="#{enumController.feeTypes}" var="ft" itemLabel="#{ft.label}" itemValue="#{ft}" />                                        
+                                            <p:ajax process="@this" update="gpDetail" ></p:ajax>
+                                        </p:selectOneMenu>
+
+                                        <h:panelGroup id="gpLblIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'}" >
+                                            <h:outputLabel value="Institution" ></h:outputLabel>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpAcIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'}" >
+                                            <p:autoComplete id="acIns" value="#{itemFeeManager.itemFee.institution}" 
+                                                            completeMethod="#{institutionController.completeIns}"
+                                                            var="ins" 
+                                                            itemLabel="#{ins.name}" 
+                                                            itemValue="#{ins}" 
+                                                            converter="institutionConverter" >
+                                                <p:ajax event="itemSelect" process="acIns" update="gpSomDepartment" listener="#{itemFeeManager.fillDepartments()}" ></p:ajax>
+                                            </p:autoComplete>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpLblDep" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'}" >
+                                            <h:outputLabel value="Department" ></h:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup id="gpSomDepartment" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'}" >
+                                            <p:selectOneMenu id="somDepartment" value="#{itemFeeManager.itemFee.department}" >
+                                                <f:selectItems value="#{itemFeeManager.departments}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
+                                            </p:selectOneMenu>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpLblSpe" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
+                                            <h:outputLabel value="Speciality" ></h:outputLabel>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpAcSpe" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff' }" >
+                                            <p:autoComplete value="#{itemFeeManager.itemFee.speciality}" 
+                                                            completeMethod="#{specialityController.completeSpeciality}"
+                                                            var="spe" 
+                                                            itemLabel="#{spe.name}" 
+                                                            itemValue="#{spe}" 
+                                                            converter="specilityCon" >
+                                                <p:ajax event="itemSelect" process="@this" update="somEmployee" listener="#{itemFeeManager.fillStaff()}" ></p:ajax>
+                                            </p:autoComplete>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpLblEmp" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
+                                            <h:outputLabel value="Doctor/Staff" ></h:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup id="gpSomEmp" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
+                                            <p:selectOneMenu id="somEmployee" value="#{itemFeeManager.itemFee.staff}" >
+                                                <f:selectItems value="#{itemFeeManager.staffs}" var="staff" itemLabel="#{staff.person.nameWithTitle}" itemValue="#{staff}" ></f:selectItems>
+                                            </p:selectOneMenu>
+                                        </h:panelGroup>
+
+                                        <h:outputLabel value="Fee" ></h:outputLabel>
                                         <h:inputText value="#{itemFeeManager.itemFee.fee}" ></h:inputText>
 
-                                        <h:inputText value="Fee Type" ></h:inputText>
-                                        <p:selectOneMenu value="#{itemFeeManager.itemFee.feeType}" >
-                                            <f:selectItems value="#{enumController.feeTypes}" ></f:selectItems>
-                                        </p:selectOneMenu>
-                                        
-                                        <h:inputText value="Institution" ></h:inputText>
-                                        <p:autoComplete value="#{itemFeeManager.itemFee.institution}" 
-                                                        completeMethod="#{institutionController.completeIns}"
-                                                        var="ins" 
-                                                        itemLabel="#{ins.name}" 
-                                                        itemValue="#{ins}" 
-                                                        converter="institutionConverter" >
-                                            <p:ajax event="itemSelect" process="@this" update="somDepartment lblIns" listener="#{itemFeeManager.fillDepartments()}" ></p:ajax>
-                                        </p:autoComplete>
-                                        
-                                        
-                                        <h:inputText id="lblIns" value="#{itemFeeManager.itemFee.institution.name}" ></h:inputText>
-                                         
-                                         <h:inputText value="Department" ></h:inputText>
-                                         <p:selectOneMenu id="somDepartment" value="#{itemFeeManager.itemFee.department}" >
-                                             <f:selectItems value="#{itemFeeManager.departments}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
-                                         </p:selectOneMenu>
-                                       
-                                                          
-                                        
-                                        <p:commandButton ajax="false" value="Add" action="#{itemFeeManager.addNewFee()}" ></p:commandButton>
+                                        <h:outputLabel value="Foreigner Fee" ></h:outputLabel>
+                                        <h:inputText value="#{itemFeeManager.itemFee.ffee}" ></h:inputText>
+
+
+
 
                                     </p:panelGrid>
+
                                 </p:panel>
 
-                                <p:panel header="Fees" id="gpFees" >
+                                <p:panel header="Current Fees" id="gpFees" >
 
 
 
                                     <table >
+                                        <tr>
+                                            <th>
+                                                Fee Name
+                                            </th>
+                                            <th>
+                                                Fee Type
+                                            </th>
+                                            <th>
+                                                Fee For
+                                            </th>
+                                            <th>
+                                                Local Fee
+                                            </th>
+                                            <th>
+                                                Foreigner Fee
+                                            </th>
+                                        </tr>
 
                                         <ui:repeat value="#{itemFeeManager.itemFees}" var="f" >
-                                            <tr>
-
-                                            </tr>
                                             <tr>
                                                 <td>
                                                     <p:inputText id="txtFeeName" value="#{f.name}" >
                                                         <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
                                                     </p:inputText>
                                                 </td>
+
+                                                <td>
+                                                    <h:outputLabel id="txtFeeType" value="#{f.feeType.label}" >
+                                                    </h:outputLabel>
+                                                </td>
+
+                                                <td>
+                                                    <h:outputLabel value="#{f.institution.name}" >
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="#{f.speciality.name}" >
+                                                    </h:outputLabel>
+
+                                                    &nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;
+
+                                                    <h:outputLabel value="#{f.department.name}" >
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="#{f.staff.person.nameWithTitle}" >
+                                                    </h:outputLabel>
+
+                                                </td>
+
                                                 <td>
                                                     <p:inputText id="txtFeeVal" value="#{f.fee}" >
                                                         <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
                                                     </p:inputText>
                                                 </td>
+
+                                                <td>
+                                                    <p:inputText id="txtFfeeVal" value="#{f.ffee}" >
+                                                        <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" ></p:ajax>
+                                                    </p:inputText>
+                                                </td>
+
+                                                <td>
+                                                    <p:commandButton value="Remove" ajax="false" action="#{itemFeeManager.removeFee()}" >
+                                                        <f:setPropertyActionListener value="#{f}" target="#{itemFeeManager.removingFee}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </td>
+
                                             </tr>
 
                                         </ui:repeat>
@@ -119,5 +207,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

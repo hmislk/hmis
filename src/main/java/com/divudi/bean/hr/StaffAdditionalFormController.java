@@ -32,7 +32,7 @@ import javax.persistence.TemporalType;
  */
 @Named(value = "staffAdditionalFormController")
 @SessionScoped
-public class staffAdditionalFormController implements Serializable {
+public class StaffAdditionalFormController implements Serializable {
 
     private AdditionalForm currentAdditionalForm;
     @EJB
@@ -72,6 +72,35 @@ public class staffAdditionalFormController implements Serializable {
 
         sql = " select a from AdditionalForm a where "
                 + " a.createdAt between :fd and :td ";
+
+        if (department != null) {
+            sql += " and a.requestDepartment=:dept ";
+            m.put("dept", department);
+        }
+
+        if (staff != null) {
+            sql += " and a.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and a.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+     
+     public void createAmmendmentTableApprovedDate() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select a from AdditionalForm a where "
+                + " a.approvedAt between :fd and :td ";
 
         if (department != null) {
             sql += " and a.requestDepartment=:dept ";
@@ -138,7 +167,7 @@ public class staffAdditionalFormController implements Serializable {
         this.date = date;
     }
 
-    public staffAdditionalFormController() {
+    public StaffAdditionalFormController() {
     }
 
     public void clear() {

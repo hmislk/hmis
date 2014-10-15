@@ -20,13 +20,14 @@ root {
 @media print{
     .fiveinchbill{
         // page-break-after:always!important; 
+        page-break-after:always!important; 
         font-family: sans-serif!important; 
         font-size: 11px!important; 
         position: relative!important;  
         margin: 0px!important; 
-        width: 12cm!important;
-        height: 14cm!important;
-        padding: 0px;
+        width: 95%;
+        height: 95%;
+        padding: 1px;
         font-size: 180%;
     }
 
