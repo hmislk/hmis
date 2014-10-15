@@ -432,6 +432,29 @@ root {
 
 }
 
+.agePrinting{
+    position: absolute;
+    left:81%;
+    top: 13%;
+    font-size: 15px;
+
+}
+
+.agePrintingLabel{
+    position: absolute;
+    left:71%;
+    top: 13%;
+    font-size: 15px
+
+}
+.agePrintingLabelCol{
+    position: absolute;
+    left:79%;
+    top: 13%;
+    font-size: 15px;
+
+}
+
 .ptnamePrinting{
     position: absolute;
     left: 29% !important;
