@@ -1165,7 +1165,10 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{p.netTotal}"/>                                    
+                                    <h:outputLabel value="#{p.netTotal}"/>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}"></h:outputLabel>
+                                    </f:facet>
                                 </p:column>     
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{p.createdAt}">
@@ -1220,6 +1223,47 @@
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:tab>
+                        
+                        <p:tab id="tabC" title="Credit Payments"  >
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             >
+                                <pe:exporter type="xlsx"
+                                             target="cre" fileName="Credit Company Payment"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+                            <p:dataTable id="cre" scrollable="true" scrollHeight="300"  
+                                         value="#{bhtSummeryFinalizedController.creditPayment}" 
+                                         var="cre">
+                                
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{cre.bill.insId}"/>
+
+                                </p:column>
+                                <p:column headerText="Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{cre.netValue}"/>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{bhtSummeryFinalizedController.creditCompanyPaymentTotal}"></h:outputLabel>
+                                    </f:facet>
+                                </p:column>     
+                                
+                                <p:column headerText="Created At" exportable="false">
+                                    <h:outputLabel value="#{cre.createdAt}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                    </h:outputLabel>
+                                    
                                 </p:column>
 
                             </p:dataTable>
