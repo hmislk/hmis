@@ -12,7 +12,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:commandButton ajax="false" value="View Bills" action="view_all_outside_bills" actionListener="#{bookKeepingSummery.viewOutSideDepartmentBills()}"
+        <p:commandButton ajax="false" value="View Bills" action="view_all_outside_bills" actionListener="#{bookKeepingSummery.viewOutSideDepartmentBills()}" />
         <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.outSideFees}" var="th" 
                      rendered="#{bookKeepingSummery.outSideFees.size()>0}">
             <f:facet name="header">
