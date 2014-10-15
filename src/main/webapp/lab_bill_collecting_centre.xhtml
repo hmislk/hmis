@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp">
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
 
 
@@ -256,8 +257,30 @@
             </h:panelGroup>
 
             <h:panelGroup rendered="#{labBillCollectingController.printPreview}" >
+                
+                
+                <h:panelGroup rendered="#{sessionController.userPreference.printLabelForOPdBill eq true}">
+                        
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpBillPreviewCoop" ></p:printer>
+                            </p:commandButton>
 
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
 
+                            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                     return false;"/>
+                        </div>
+                        <h:panelGroup id="gpBillPreviewCoop">
+                            <ui:repeat value="#{labBillCollectingController.bills}" var="b">
+                            <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
+                        </ui:repeat>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                <p:panelGrid rendered="#{sessionController.userPreference.printLabelForOPdBill eq false}">
                 <div class="nonPrintBlock" >
                     <p:commandButton value="Print" ajax="false" action="#">
                         <p:printer target="gpBillPreview" ></p:printer>
@@ -417,6 +440,7 @@
 
 
                 </div>
+                </p:panelGrid>
 
 
 
