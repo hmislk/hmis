@@ -38,6 +38,7 @@
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl"
+                                         paginatorAlwaysVisible="false"
                                          rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{storeReportsStock.stocks}" var="i"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock"/>

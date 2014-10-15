@@ -592,51 +592,42 @@ public class InwardReportControllerBht implements Serializable {
         }
 
     }
-    
-    public void createCreditPayment(){
-        
+
+    public List<BillItem> createCreditPayment(PatientEncounter pe) {
+
         String sql;
         Map m = new HashMap();
         sql = "SELECT bi FROM BillItem bi "
                 + " WHERE bi.retired=false "
                 + " and bi.bill.billType=:bty"
                 + " and bi.patientEncounter=:bhtno";
-        
-        m.put("bty", BillType.CashRecieveBill);
-        m.put("bhtno", patientEncounter);
 
-        creditPayment=billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-        creditPaymentTotalValue=0;
-        for(BillItem bi: creditPayment){
-            if(creditPayment == null){
-            return;
-            }
-            creditPaymentTotalValue += bi.getNetValue();
-        }
-        
+        m.put("bty", BillType.CashRecieveBill);
+        m.put("bhtno", pe);
+
+        creditPayment = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        return creditPayment;
+
     }
-    
-    public void createPaidByPatient(){
-        
+
+    public List<Bill> createPaidByPatient(PatientEncounter pe) {
+
         String sql;
         Map m = new HashMap();
         sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired=false "
                 + " and b.billType=:bty"
                 + " and b.patientEncounter=:bhtno";
-        
+
         m.put("bty", BillType.InwardPaymentBill);
-        m.put("bhtno", patientEncounter);
+        m.put("bhtno", pe);
 
         paidbyPatientBillList = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-        paidbyPatientTotalValue=0.0;
-        for(Bill b: paidbyPatientBillList){
-            if(paidbyPatientBillList == null){
-            return;
-            }
-            paidbyPatientTotalValue += b.getNetTotal();
-        }
         
+        return paidbyPatientBillList;
+        
+
     }
 
     public void createOpdServiceWithoutPro2() {
@@ -815,6 +806,28 @@ public class InwardReportControllerBht implements Serializable {
     @Inject
     InwardBeanController inwardBeanController;
 
+    public double calTotalCreditCompany(List<BillItem> list) {
+       if(list==null)return 0;
+       double dbl=0;
+        for (BillItem bi : list) {
+           
+            dbl += bi.getNetValue();
+        }
+        
+        return dbl;
+    }
+    
+    public double calPaidbyPatient(List<Bill> lst){
+    
+        if(lst == null)return 0.0;
+        double dbl = 0.0;
+        for(Bill b : lst){
+            dbl+=b.getNetTotal();        
+        }
+        return dbl;
+        
+    }
+
     public void process() {
         makeNull();
 
@@ -823,8 +836,12 @@ public class InwardReportControllerBht implements Serializable {
         createDoctorPaymentInward();
         createTimedService();
         createInwardService();
-        createPaidByPatient();
-        createCreditPayment();
+        paidbyPatientBillList=createPaidByPatient(getPatientEncounter());
+        paidbyPatientTotalValue = calPaidbyPatient(paidbyPatientBillList);
+        
+        creditPayment = createCreditPayment(getPatientEncounter());
+        creditPaymentTotalValue = calTotalCreditCompany(creditPayment);
+
         finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
         calTotal();
     }
@@ -1080,11 +1097,6 @@ public class InwardReportControllerBht implements Serializable {
     public void setPaidbyPatientTotalValue(double paidbyPatientTotalValue) {
         this.paidbyPatientTotalValue = paidbyPatientTotalValue;
     }
-    
-    
-    
-    
-    
 
     //DATA STRUCTURE
     public class OpdService {
@@ -1143,7 +1155,6 @@ public class InwardReportControllerBht implements Serializable {
         public void setNetValue(double netValue) {
             this.netValue = netValue;
         }
-        
 
     }
 

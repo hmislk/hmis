@@ -91,7 +91,7 @@
                                     <p:outputLabel value="Discharge Time"/>
                                     <p:calendar value="#{bhtSummeryController.date}"
                                                 id="dischargeTimeStamp"
-                                                pattern="dd/MMM/yyyy - hh:mm a" >                               
+                                                pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
                                         <f:ajax execute="@this" render="sum tvPt tot" event="dateSelect" listener="#{bhtSummeryController.checkDate}" />
                                     </p:calendar> 
                                     <p:commandButton ajax="false" style="float: right;" value="Disharge" action="#{bhtSummeryController.discharge}" onclick="onSubmitButton();" />
@@ -130,13 +130,13 @@
                                     <p:calendar navigator="true"  
                                                 id="roomAdmittedTimeStamp"
                                                 value="#{rm.admittedAt}" 
-                                                pattern="dd/MMM/yyyy - hh:mm a" />     
+                                                pattern="dd/MMM/yyyy - hh:mm:ss a" />     
                                 </p:column>
                                 <p:column headerText="Discharged At">                                      
                                     <p:calendar navigator="true"  
                                                 id="roomDischargeTimeStamp"
                                                 value="#{rm.dischargedAt}" 
-                                                pattern="dd/MMM/yyyy - hh:mm a" /> 
+                                                pattern="dd/MMM/yyyy - hh:mm:ss a" /> 
                                 </p:column>
                                 <p:column headerText="Room Charge" style="text-align: right;">
                                     <h:outputLabel value="#{rm.calculatedRoomCharge}" >
@@ -202,13 +202,13 @@
                                     <p:calendar navigator="true"  
                                                 id="serviceStartTimeStamp"
                                                 value="#{pt.fromTime}" 
-                                                pattern="dd/MMM/yyyy - hh:mm a" />           
+                                                pattern="dd/MMM/yyyy - hh:mm:ss a" />           
                                 </p:column>
                                 <p:column headerText="Stopped Time">
                                     <p:calendar navigator="true"  
                                                 id="serviceStoppedTimeStamp"
                                                 value="#{pt.toTime}" 
-                                                pattern="dd/MMM/yyyy - hh:mm a" />                                    
+                                                pattern="dd/MMM/yyyy - hh:mm:ss a" />                                    
                                 </p:column>
                                 <p:column headerText="Total" style="text-align: right;">
                                     <h:outputLabel value="#{pt.serviceValue}">
@@ -358,7 +358,7 @@
                                 </p:column>  
                                 <p:column headerText="Checked At">
                                     <h:outputLabel value="#{iss.checkeAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>      
                                 </p:column>  
                                 <p:column>
@@ -432,7 +432,7 @@
                                 </p:column>  
                                 <p:column headerText="Checked At">
                                     <h:outputLabel value="#{iss.checkeAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>      
                                 </p:column>  
                                 <p:column>
@@ -545,14 +545,14 @@
                                 </p:column>
                                 <p:column headerText="Added Time">                                      
                                     <h:outputLabel value="#{pf.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{pf.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}" 
                                                        value="#{pf.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -571,7 +571,7 @@
                                 </p:column>
                                 <p:column headerText="Checked At">
                                     <h:outputLabel value="#{pf.bill.checkeAt}">                                         
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
@@ -601,14 +601,14 @@
                                 </p:column>
                                 <p:column headerText="Added Time">                                      
                                     <h:outputLabel value="#{pf.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{pf.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}" 
                                                        value="#{pf.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -627,7 +627,7 @@
                                 </p:column>
                                 <p:column headerText="Checked At">
                                     <h:outputLabel value="#{pf.bill.checkeAt}">                                         
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
@@ -651,14 +651,14 @@
 
                                 <p:column headerText="Paid At">  
                                     <h:outputLabel value="#{p.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{p.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
                                                        value="#{p.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -682,7 +682,7 @@
                                 </p:column>
                                 <p:column headerText="Checked At">
                                     <h:outputLabel value="#{p.checkeAt}">                                         
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>

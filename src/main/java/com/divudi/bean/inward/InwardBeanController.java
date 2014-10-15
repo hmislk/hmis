@@ -1071,6 +1071,8 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         return getPatientItemFacade().findBySQL(sql, hm);
     }
+    
+    
 
     public List<Bill> fetchPaymentBill(PatientEncounter patientEncounter) {
 

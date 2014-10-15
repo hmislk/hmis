@@ -21,7 +21,8 @@ public enum FeeType {
     @Deprecated
     Matrix,
     Issue,
-    Additional,;
+    Additional,
+    Service,;
 
     public String getLabel() {
         switch (this) {
@@ -33,6 +34,8 @@ public enum FeeType {
                 return "Out Side Fee ";
             case Chemical:
                 return "Regent Fee";
+            case Service:
+                return "Service Fee";
             default:
                 return this.toString();
         }

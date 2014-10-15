@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.FeeType;
 import com.divudi.entity.Fee;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
@@ -40,8 +41,8 @@ public class ChannelSessionWizard implements Serializable {
     Staff currentStaff;
     Boolean createNewSession;
     private Fee hospitalFee;
-    private Fee doctorFee;
-    private Fee other;
+    private Fee staffFee;
+    private Fee scanFee;
     @EJB
     StaffFacade staffFacade;
     @EJB
@@ -53,16 +54,16 @@ public class ChannelSessionWizard implements Serializable {
 
     public ChannelSessionWizard() {
     }
-    
+
     public void prepareAdd() {
         current = new ServiceSession();
-        hospitalFee = null;
-        doctorFee = null;
-        other = null;
+        createHospitalFee();
+        createScanFee();
+        createStaffFee();
 //        speciality = null;
 //        currentStaff = null;
     }
-    
+
     public void delete() {
 
         if (current != null) {
@@ -79,7 +80,7 @@ public class ChannelSessionWizard implements Serializable {
         current = null;
         getCurrent();
     }
-    
+
     public void saveSelected() {
         if (getCurrent().getSessionNumberGenerator() == null) {
             SessionNumberGenerator ss = saveSessionNumber();
@@ -102,7 +103,7 @@ public class ChannelSessionWizard implements Serializable {
         prepareAdd();
         getItems();
     }
-    
+
     public SessionNumberGenerator saveSessionNumber() {
         SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
         sessionNumberGenerator.setSpeciality(speciality);
@@ -111,7 +112,7 @@ public class ChannelSessionWizard implements Serializable {
         sessionNumberGeneratorFacade.create(sessionNumberGenerator);
         return sessionNumberGenerator;
     }
-    
+
     private boolean checkError() {
         if (getCurrent().getStartingTime() == null) {
             UtilityController.addErrorMessage("Starting time Must be Filled");
@@ -135,7 +136,7 @@ public class ChannelSessionWizard implements Serializable {
 
         return false;
     }
-    
+
     public List<ServiceSession> completeSession(String query) {
         List<ServiceSession> suggestions;
         String sql;
@@ -152,7 +153,7 @@ public class ChannelSessionWizard implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Staff> completeStaff(String query) {
         List<Staff> suggestions;
         String sql;
@@ -169,7 +170,7 @@ public class ChannelSessionWizard implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<ServiceSession> getItems() {
         List<ServiceSession> items;
         String sql;
@@ -188,9 +189,32 @@ public class ChannelSessionWizard implements Serializable {
 
         return items;
     }
-    
-    public void sessionListner(){
-        if (createNewSession==true) {
+
+    public void createStaffFee() {
+        staffFee = new Fee();
+        staffFee.setName("Staff Fee");
+        staffFee.setFeeType(FeeType.Staff);
+        staffFee.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        staffFee.setSpeciality(speciality);
+        staffFee.setStaff(currentStaff);
+    }
+
+    public void createHospitalFee() {
+        hospitalFee = new Fee();
+        hospitalFee.setName("Hospital Fee");
+        hospitalFee.setFeeType(FeeType.OwnInstitution);
+        hospitalFee.setInstitution(getSessionController().getLoggedUser().getInstitution());
+    }
+
+    public void createScanFee() {
+        scanFee = new Fee();
+        scanFee.setName("Scan Fee");
+        scanFee.setFeeType(FeeType.Service);
+        scanFee.setInstitution(getSessionController().getLoggedUser().getInstitution());
+    }
+
+    public void sessionListner() {
+        if (createNewSession == true) {
             prepareAdd();
         }
     }
@@ -254,14 +278,6 @@ public class ChannelSessionWizard implements Serializable {
         this.hospitalFee = hospitalFee;
     }
 
-    public Fee getDoctorFee() {
-        return doctorFee;
-    }
-
-    public void setDoctorFee(Fee doctorFee) {
-        this.doctorFee = doctorFee;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
     }
@@ -278,12 +294,21 @@ public class ChannelSessionWizard implements Serializable {
         this.sessionNumberGeneratorFacade = sessionNumberGeneratorFacade;
     }
 
-    public Fee getOther() {
-        return other;
+    public Fee getStaffFee() {
+        return staffFee;
     }
 
-    public void setOther(Fee other) {
-        this.other = other;
+    public void setStaffFee(Fee staffFee) {
+        this.staffFee = staffFee;
+    }
+
+    public Fee getScanFee() {
+
+        return scanFee;
+    }
+
+    public void setScanFee(Fee scanFee) {
+        this.scanFee = scanFee;
     }
 
 }
