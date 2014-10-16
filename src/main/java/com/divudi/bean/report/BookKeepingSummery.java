@@ -1384,6 +1384,10 @@ public class BookKeepingSummery implements Serializable {
             }
         }
     }
+    
+    public void viewOutSideDepartmentBills(){
+        getBillBean().createOutSideDepartment(getFromDate(), getToDate(), getInstitution());
+    }
 
     @Inject
     DepartmentController departmentController;

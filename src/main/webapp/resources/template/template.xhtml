@@ -95,7 +95,7 @@
                                     <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Bill Search" rendered="#{webUserController.hasPrivilege('LabCasheirBillSearch')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Billitem Search" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('LabCasheirBillSearch')}" ></p:menuitem>
                                     
-                                    <p:menuitem  ajax="false"  action="/lab_bill_collecting_centre" value="Collecting Centre Billing" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/lab_bill_collecting_centre" value="Collecting Centre / Inward Billing" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/lab_collecting_bill_search_all" value="Collecting Centre Bill Search" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
 
                                     <p:menuitem  ajax="false" action="/lab_sample"  actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>

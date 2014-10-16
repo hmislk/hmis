@@ -16,15 +16,16 @@
         <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
             <h:form  >
                 <h:inputText autocomplete="off" id="txtSearch" value="#{webUserController.selectText}" >
-                    <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
+                    <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{webUserController.createTable()}" />
                 </h:inputText>
-
+                <p:commandButton ajax="false" value="Process" action="#{webUserController.createTable()}"/>
+                
                 <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u">
                     <f:facet name="header" >
                         <h:outputLabel value="List of All Users" />
                     </f:facet>
                     <p:column headerText="Full Name">
-                        <h:outputLabel value="#{u.webUserPerson.name}"/>
+                        <h:inputText value="#{u.webUserPerson.name}"/>
                     </p:column>
                     
                     <p:column headerText="Department">
@@ -47,6 +48,9 @@
                                                      return false;" action="#{webUserController.removeUser}">
                             <f:setPropertyActionListener value="#{u}" target="#{webUserController.removingUser}" />
                         </p:commandButton>
+                    </p:column>
+                    <p:column>
+                        <p:commandButton value="Update" action="#{webUserController.updateWebUser(u.webUserPerson)}" ajax="false" />
                     </p:column>
                 </p:dataTable>
             

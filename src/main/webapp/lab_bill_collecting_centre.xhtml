@@ -19,7 +19,7 @@
                 <p:panel style="min-height: 600px; position:relative;"  >
                     <f:facet name="header" >
                         <p:panelGrid columns="3">
-                            <p:autoComplete  forceSelection="true" value="#{labBillCollectingController.collectingCentre}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:autoComplete id="acColl" forceSelection="true" value="#{labBillCollectingController.collectingCentre}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:column>
                                     #{ix.name}
                                 </p:column>
@@ -27,6 +27,7 @@
                                     #{ix.institutionCode}
                                 </p:column>
                             </p:autoComplete>
+                            <p:watermark for="acColl" value="Collecting Centre" />
                             <p:commandButton ajax="false" action="#{labBillCollectingController.settleBill()}" value="Settle" onclick="onSubmitButton();" />
                             <p:commandButton ajax="false" action="lab_bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}" value="New Bill" onclick="onSubmitButton();" />
 
