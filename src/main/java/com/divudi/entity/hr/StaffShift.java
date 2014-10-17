@@ -132,13 +132,17 @@ public class StaffShift implements Serializable {
         if (leaveType == null) {
             return;
         }
-        
-        
+
         switch (getLeaveType()) {
             case Annual:
             case Casual:
             case Lieu:
                 setLeavedTime(getStaff().getLeaveHour() * 60 * 60);
+                break;
+            case AnnualHalf:
+            case CasualHalf:
+            case LieuHalf:
+                setLeavedTime((getStaff().getLeaveHour() * 60 * 60) / 2);
                 break;
 
         }
