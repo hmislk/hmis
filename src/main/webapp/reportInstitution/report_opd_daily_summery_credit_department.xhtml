@@ -41,7 +41,7 @@
             </p:panel>
             <p:dataGrid  value="#{creditSummeryController.dailyCredit}" var="d" columns="1">
                 <p:dataTable id="safrin" value="#{d.categoryWitmItems}" var="s" rendered="#{d.departmentTotal!=0}"
-                             rows="10"
+                             
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">                       
