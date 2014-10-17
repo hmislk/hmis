@@ -9,6 +9,7 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel  style="border: none;">
@@ -43,7 +44,7 @@
                 </f:facet>
 
             </p:panel>            
-            <p:dataTable id="safrin" value="#{creditSummeryController.dailyCreditByBill}" var="d" rows="10"
+            <p:dataTable id="safrin" value="#{creditSummeryController.dailyCreditByBill}" var="d" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">                       

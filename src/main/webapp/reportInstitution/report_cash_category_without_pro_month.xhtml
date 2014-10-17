@@ -10,8 +10,9 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
+         
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summery Without Pro (Month)"  styleClass="noPrintButton" />
@@ -71,7 +72,7 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable id="col"  value="#{bookKeepingSummery.collections2Hos}" var="sm" rows="10"
+            <p:dataTable id="col"  value="#{bookKeepingSummery.collections2Hos}" var="sm" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">
@@ -92,7 +93,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}" var="s" rows="10"
+            <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}" var="s" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">
@@ -110,7 +111,7 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b" rows="10"
+            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">

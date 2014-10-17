@@ -54,6 +54,13 @@
                                         <f:selectItems value="#{staffAmendmentFormController.toStaffShifts}"
                                                        var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
                                     </p:selectOneMenu>
+                                    <p:commandButton ajax="false" value="Process Shift" 
+                                                     action="#{staffAmendmentFormController.fetchToShift()}" />
+                                    <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShift}"   >
+                                        <f:selectItem itemLabel="Select Shift"/>
+                                        <f:selectItems value="#{staffAmendmentFormController.toShifts}"
+                                                       var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />
+                                    </p:selectOneMenu>
                                 </p:panelGrid> 
                             </p:panel>
                             <p:panel>

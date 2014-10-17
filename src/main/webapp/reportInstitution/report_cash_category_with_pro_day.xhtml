@@ -10,8 +10,10 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
-<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summery With Pro (DAY)"  styleClass="noPrintButton" />
@@ -79,8 +81,8 @@
             <p:spacer height="30"/>
 
             <in:agent_collection id="agent_collection"/>
-            
-           <p:spacer height="30"/>
+
+            <p:spacer height="30"/>
 
             <in:credit_collection_opd 
                 id="credit_collection"/>
@@ -90,7 +92,7 @@
             <in:credit_collection_inward                 
                 id="credit_collection_inward"/>
 
-            
+
 
             <p:spacer height="30"/>
 

@@ -9,7 +9,11 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+ 
+        <h:outputStylesheet library="css" name="printing.css" />
+        
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+ 
 
             <p:panel>
                 <f:facet name="header" >
@@ -156,7 +160,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="col"  value="#{cashSummeryController.collections2}" var="sm" rows="10"
+            <p:dataTable id="col"  value="#{cashSummeryController.collections2}" var="sm" 
                          >
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
@@ -195,7 +199,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="finalSum" value="#{cashSummeryController.finalSummery}" var="s" rows="10"
+            <p:dataTable id="finalSum" value="#{cashSummeryController.finalSummery}" var="s" 
                          >
 
                 <p:column>
@@ -214,7 +218,7 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable value="#{cashSummeryController.bankingData}" var="b" rows="10"
+            <p:dataTable value="#{cashSummeryController.bankingData}" var="b" 
                          >
 
                 <f:facet name="header">

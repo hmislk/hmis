@@ -8,6 +8,7 @@
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <ui:define name="content">
                 <h:form>
                     <p:panel>
@@ -26,7 +27,7 @@
                             <p:column headerText="Bill No(Department Id)" >                              
                                 <h:outputLabel  value="#{bill.insId}" ></h:outputLabel>                                    
                             </p:column>       
-                            <p:column headerText="Institution"  >                              
+<!--                            <p:column headerText="Institution"  >                              
                                 <h:outputLabel value="#{bill.institution.name}"  ></h:outputLabel>                                  
                             </p:column>
                             <p:column headerText="To Institution"  >                              
@@ -40,7 +41,7 @@
                             </p:column>
                             <p:column headerText="From Department"  >                              
                                 <h:outputLabel value="#{bill.fromDepartment.name}"  ></h:outputLabel>                                  
-                            </p:column>
+                            </p:column>-->
 
                             <p:column headerText="Billed at"  >                              
                                 <h:outputLabel value="#{bill.createdAt}" >
@@ -76,7 +77,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>    
-                            <p:column headerText="Client">                              
+<!--                            <p:column headerText="Client">                              
                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="Client Phone No">                                
@@ -91,7 +92,7 @@
                             </p:column>
                             <p:column headerText="Paymentscheme">                               
                                 <h:outputLabel value="#{bill.paymentScheme.name}" ></h:outputLabel>                                    
-                            </p:column>
+                            </p:column>-->
                             <p:column headerText="PerformInstitutionFee"  >                              
                                 <h:outputLabel value="#{bill.performInstitutionFee}" >
                                     <f:convertNumber pattern="#,##0.00"/>

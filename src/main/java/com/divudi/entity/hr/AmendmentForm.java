@@ -29,7 +29,20 @@ public class AmendmentForm extends HrForm {
     private Staff toStaff;
     @ManyToOne
     private StaffShift fromStaffShift;
+    @ManyToOne
     private StaffShift toStaffShift;
+    @ManyToOne
+    Shift toShift;
+
+    public Shift getToShift() {
+        return toShift;
+    }
+
+    public void setToShift(Shift toShift) {
+        this.toShift = toShift;
+    }
+    
+    
 
     public Staff getFromStaff() {
         return fromStaff;

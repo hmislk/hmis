@@ -120,11 +120,11 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     @Inject
-    private PharmacyController pharmacyController;
+    private StoreController1 storeController1;
 
     public void onFocus(BillItem bi) {
 
-        getPharmacyController().setPharmacyItem(bi.getItem());
+        getStoreController1().setPharmacyItem(bi.getItem());
     }
 
     public void onEdit(BillItem bi) {
@@ -137,7 +137,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
         bi.setNetValue(bi.getPharmaceuticalBillItem().getQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
 
-        getPharmacyController().setPharmacyItem(bi.getItem());
+        getStoreController1().setPharmacyItem(bi.getItem());
 
         calTotal();
     }
@@ -355,14 +355,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
         this.itemsDistributorsFacade = itemsDistributorsFacade;
     }
 
-    public PharmacyController getPharmacyController() {
-        return pharmacyController;
-    }
-
-    public void setPharmacyController(PharmacyController pharmacyController) {
-        this.pharmacyController = pharmacyController;
-    }
-
     public List<BillItem> getSelectedBillItems() {
         return selectedBillItems;
     }
@@ -402,6 +394,22 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public StoreCalculation getStoreCalculation() {
+        return storeCalculation;
+    }
+
+    public void setStoreCalculation(StoreCalculation storeCalculation) {
+        this.storeCalculation = storeCalculation;
+    }
+
+    public StoreController1 getStoreController1() {
+        return storeController1;
+    }
+
+    public void setStoreController1(StoreController1 storeController1) {
+        this.storeController1 = storeController1;
     }
 
 }

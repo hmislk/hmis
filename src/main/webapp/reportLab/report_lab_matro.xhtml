@@ -9,7 +9,7 @@
     <body>
 
         <ui:composition template="/resources/template/template.xhtml">
-
+<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <ui:define name="content">
 
                 <h:form>
@@ -30,6 +30,14 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Fee Type" action="report_investigation_summery_by_feetype"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Regent Fee" action="report_investigation_summery_by_regent_fee"/>
                              
+
+                        </h:panelGrid>
+                        
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Lab Summery" />
+                            </f:facet>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summery" action="report_opd_service_summery"/>                            
 
                         </h:panelGrid>
 

@@ -9,6 +9,8 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css" />
+        
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel>
@@ -38,7 +40,7 @@
             </p:panel>
             <p:spacer height="30"/>
 
-            <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d" rendered="#{cashSummeryController.dailyCash2.size()>0}" rows="10">                
+            <p:dataTable id="opd"  value="#{cashSummeryController.dailyCash2}" var="d" rendered="#{cashSummeryController.dailyCash2.size()>0}" >                
                 <f:facet name="header">
                     <h:outputLabel value="Opd Category" />
                 </f:facet>               

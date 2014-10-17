@@ -9,8 +9,10 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
+        
+        
             <p:panel>
                 <f:facet name="header" >                
                     <h:outputLabel value="Service Detail OPD"/>
@@ -65,7 +67,7 @@
             <p:dataTable id="opd" rowIndexVar="i" 
                          rowStyleClass="#{d.billItem.bill.cancelled or d.billItem.bill.billedBill ne null?'crossLine':''}"
                          value="#{serviceSummery.serviceSummery}" var="d"
-                         rows="10"
+                         
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">                   

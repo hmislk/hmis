@@ -135,7 +135,7 @@ public class ReportsTransfer implements Serializable {
                 + "(bi.bill.billType=:t1 or bi.bill.billType=:t2) and "
                 + "bi.bill.billDate between :fd and :td group by bi.item "
                 + "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
-        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m);
+        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
         movementRecordsQty = new ArrayList<>();
         for (Object[] obj : objs) {
             StockReportRecord r = new StockReportRecord();
@@ -161,15 +161,17 @@ public class ReportsTransfer implements Serializable {
         m.put("td", toDate);
         List<BillType> bts = Arrays.asList(billTypes);
         m.put("bt", bts);
+        m.put("bct", PreBill.class);
         BillItem bi = new BillItem();
 
         sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
                 + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
                 + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty))  "
                 + "FROM BillItem bi where "
-                + " bi.retired=false "
+                + " type(bi.bill)=:bct "
+                + " and bi.retired=false "
                 + " and bi.bill.department=:d "
-                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.billType in :bt "
                 + " group by bi.item ";
 
@@ -178,11 +180,12 @@ public class ReportsTransfer implements Serializable {
         } else {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
         }
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
-        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
         movementRecords = new ArrayList<>();
         if (objs == null) {
+            System.out.println("objs = " + objs);
             return;
         }
         for (Object[] obj : objs) {
@@ -208,6 +211,7 @@ public class ReportsTransfer implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", bts);
+        m.put("bct", PreBill.class);
 
         BillItem bi = new BillItem();
 
@@ -219,6 +223,7 @@ public class ReportsTransfer implements Serializable {
                 + " where bi.retired=false "
                 + " and  bi.bill.department=:d "
                 + " and bi.bill.billType in :bt "
+                + " and type(bi.bill) =:bct "
                 + " and bi.bill.billDate between :fd and :td "
                 + " group by bi.item ";
 
@@ -229,6 +234,7 @@ public class ReportsTransfer implements Serializable {
         }
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecordsQty = new ArrayList<>();
+        if(objs==null) return;
         for (Object[] obj : objs) {
             StockReportRecord r = new StockReportRecord();
             r.setItem((Item) obj[0]);
