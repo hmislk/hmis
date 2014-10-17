@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -19,7 +20,7 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAll()}"/>
+                                <h:outputLabel/>
                                 <h:outputLabel/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
@@ -36,6 +37,16 @@
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
 
+                            </h:panelGrid>
+                            <h:panelGrid columns="3">
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAll()}"/>
+                                <p:commandButton value="Print" ajax="false" action="#" >
+                                    <p:printer target="tblFee" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{searchController.createDueFeeTableAll()}">
+                                    <pe:exporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
+                                </p:commandButton> 
                             </h:panelGrid>
 
                         </f:facet>

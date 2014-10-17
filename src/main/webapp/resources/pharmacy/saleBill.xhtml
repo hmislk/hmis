@@ -370,7 +370,9 @@
                 <br/>
                 THANK YOU. PLEASE COME AGAIN<br/>
                 <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}" ></h:outputLabel>
-                
+                <h:panelGroup  rendered="#{sessionController.userPreference.pharmacyBillFooter ne null}">
+                    <br/>
+                </h:panelGroup>
                 Software by www.lakmedi.com - 0776285007<br/>
             </div>
 
