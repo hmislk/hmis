@@ -15,6 +15,7 @@ public class BillItemWithFee {
     private BillItem billItem;
     private double count;
     private double hospitalFee;
+    double reagentFee;
     double hospitalFeeMargin;
     double hospitalFeeDiscount;
     double hospitalFeeGross;
@@ -121,6 +122,14 @@ public class BillItemWithFee {
 
     public void setOutSideFeeDiscount(double outSideFeeDiscount) {
         this.outSideFeeDiscount = outSideFeeDiscount;
+    }
+
+    public double getReagentFee() {
+        return reagentFee;
+    }
+
+    public void setReagentFee(double reagentFee) {
+        this.reagentFee = reagentFee;
     }
     
     

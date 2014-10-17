@@ -80,6 +80,10 @@ public class WebUserController implements Serializable {
     WebUser removingUser;
     private List<WebUser> webUsers;
 
+    public void updateWebUser(Person person) {
+        personFacade.edit(person);
+    }
+
     public void createWebUserDrawers() {
         String sql = "select c from WebUser c "
                 + " where c.retired=false "
@@ -474,7 +478,7 @@ public class WebUserController implements Serializable {
         current = null;
     }
 
-    public List<WebUser> getSelectedItems() {
+    public void createTable() {
 
         if (selectText.trim().equals("")) {
             items = getFacade().findBySQL("select c from WebUser c where c.retired=false order by c.webUserPerson.name");
@@ -482,6 +486,10 @@ public class WebUserController implements Serializable {
             items = getFacade().findBySQL("select c from WebUser c where c.retired=false and upper(c.webUserPerson.name) like '%" + getSelectText().toUpperCase() + "%' order by c.webUserPerson.name");
         }
         dycryptName();
+    }
+
+    public List<WebUser> getSelectedItems() {
+
         return items;
     }
 

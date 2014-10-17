@@ -1671,6 +1671,59 @@ public class SearchController implements Serializable {
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
+    
+    
+    public void createDueFeeTableAll() {
+
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from BillFee b where b.retired=false and "
+                + " b.bill.billType=:btp "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 and"
+                + "  b.bill.createdAt between :fromDate"
+                + " and :toDate ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(b.bill.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.bill.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(b.feeValue) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
+            sql += " and  (upper(b.staff.speciality.name) like :special )";
+            temMap.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(b.staff.person.name) like :staff )";
+            temMap.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (upper(b.billItem.item.name) like :staff )";
+            temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        sql += "  order by b.staff.id    ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("btp", BillType.OpdBill);
+
+        billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
 
     public void createDueFeeTableAndPaidFeeTable() {
 

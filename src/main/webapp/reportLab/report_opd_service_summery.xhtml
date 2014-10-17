@@ -10,13 +10,13 @@
 
     <ui:define name="content">
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
-
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
             <p:panel>
                 <f:facet name="header" >                
-                    <h:outputLabel value="Service Detail Inward - Added"/>
+                    <h:outputLabel value="Service Detail OPD"/>
                     <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
                                      styleClass="noPrintButton" style="float: right;" 
-                                     action="#{serviceSummery.createServiceSummeryInwardAdded()}"/>
+                                     action="#{serviceSummery.createServiceSummeryLab()}"/>
                     <p:defaultCommand target="btnRefresh"/>
 
                     <p:commandButton ajax="false" value="Print"  
@@ -36,7 +36,7 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy  HH:mm:ss" >
                         </p:calendar>
-
+                        
                         <h:outputLabel value="Service Name"/>
                         <p:autoComplete value="#{serviceSummery.service}" completeMethod="#{itemController.completeService}" var="ix" 
                                         itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
@@ -50,6 +50,17 @@
                                 #{ix.category.name}
                             </p:column> 
                         </p:autoComplete>
+
+                        <h:outputLabel value="Department"/>
+                        <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
+                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                        value="#{serviceSummery.department}" converter="dep"/>
+
+                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                        <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">     
+                            <f:selectItems value="#{enumController.paymentMethods}"  />
+                        </p:selectOneMenu>
+
                     </h:panelGrid>
                 </f:facet>
             </p:panel>
@@ -58,10 +69,7 @@
             <p:dataTable id="opd" rowIndexVar="i" 
                          rowStyleClass="#{d.billItem.bill.cancelled or d.billItem.bill.billedBill ne null?'crossLine':''}"
                          value="#{serviceSummery.serviceSummery}" var="d"
-                         
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">                   
+                         >                   
 
                 <f:facet name="header">
                     <h:outputLabel value="#{serviceSummery.service.name}"/>
@@ -74,7 +82,6 @@
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
                 </f:facet>
-
                 <p:column headerText="No">
                     <h:outputLabel value="#{i+1}"/>
                 </p:column>
@@ -87,15 +94,15 @@
                     <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
                 </p:column>
 
-                <p:column headerText="BHT No">
+                <p:column headerText="BHT No" rendered="">
                     <f:facet name="header">
                         <h:outputLabel value="BHT No" />
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.patientEncounter.bhtNo}" />
-                    <f:facet name="footer">
+<!--                    <f:facet name="footer">
                         <h:outputLabel value="COUNT  (#{serviceSummery.count})">                                   
                         </h:outputLabel>
-                    </f:facet>
+                    </f:facet>-->
                 </p:column>
 
                 <p:column headerText="Date">
@@ -127,7 +134,18 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
-                </p:column>     
+                </p:column>  
+                
+                <p:column headerText="Reagent Fee" style="text-align: right;">
+                    <p:outputLabel value="#{d.reagentFee}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{serviceSummery.reagentFeeTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>  
 
                 <p:column headerText="Out Fee" style="text-align: right;">
                     <p:outputLabel value="#{d.outSideFee}">

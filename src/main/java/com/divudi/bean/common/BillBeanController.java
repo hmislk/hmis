@@ -725,6 +725,7 @@ public class BillBeanController implements Serializable {
                 + " FROM Bill bf"
                 + " WHERE bf.institution=:ins"
                 + " and bf.toInstitution!=:ins "
+                + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -742,6 +743,7 @@ public class BillBeanController implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
+        temMap.put("bt", BillType.OpdBill);
 
         List<Object[]> list = getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -784,6 +786,7 @@ public class BillBeanController implements Serializable {
                 + " FROM Bill bf "
                 + " WHERE bf.institution=:ins "
                 + " and bf.toDepartment.institution!=:ins "
+                + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -802,6 +805,7 @@ public class BillBeanController implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
+        temMap.put("bt", BillType.OpdBill);
 
         bills=getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -812,6 +816,7 @@ public class BillBeanController implements Serializable {
                 + " FROM Bill bf"
                 + " WHERE bf.institution=:ins"
                 + " and bf.toDepartment.institution!=:ins "
+                + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -830,6 +835,7 @@ public class BillBeanController implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
+        temMap.put("bt", BillType.OpdBill);
 
         return getDepartmentFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
