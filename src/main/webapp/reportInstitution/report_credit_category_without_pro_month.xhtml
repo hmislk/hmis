@@ -52,7 +52,7 @@
             <!--            <p:spacer height="30" />-->
 
             <p:dataTable id="opd"  value="#{bookKeepingSummery.opdList}" var="d" 
-                         rendered="#{bookKeepingSummery.opdList.size()>0}" rows="10"
+                         rendered="#{bookKeepingSummery.opdList.size()>0}" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">                   

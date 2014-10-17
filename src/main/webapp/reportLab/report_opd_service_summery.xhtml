@@ -69,10 +69,7 @@
             <p:dataTable id="opd" rowIndexVar="i" 
                          rowStyleClass="#{d.billItem.bill.cancelled or d.billItem.bill.billedBill ne null?'crossLine':''}"
                          value="#{serviceSummery.serviceSummery}" var="d"
-                         rows="10"
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">                   
+                         >                   
 
                 <f:facet name="header">
                     <h:outputLabel value="#{serviceSummery.service.name}"/>
@@ -97,15 +94,15 @@
                     <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
                 </p:column>
 
-                <p:column headerText="BHT No">
+                <p:column headerText="BHT No" rendered="">
                     <f:facet name="header">
                         <h:outputLabel value="BHT No" />
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.patientEncounter.bhtNo}" />
-                    <f:facet name="footer">
+<!--                    <f:facet name="footer">
                         <h:outputLabel value="COUNT  (#{serviceSummery.count})">                                   
                         </h:outputLabel>
-                    </f:facet>
+                    </f:facet>-->
                 </p:column>
 
                 <p:column headerText="Date">
@@ -139,12 +136,12 @@
                     </f:facet>
                 </p:column>  
                 
-                <p:column headerText="Hospital Fee" style="text-align: right;">
+                <p:column headerText="Reagent Fee" style="text-align: right;">
                     <p:outputLabel value="#{d.reagentFee}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
-                        <h:outputLabel value="#{serviceSummery.hosFeeTotal}">
+                        <h:outputLabel value="#{serviceSummery.reagentFeeTotal}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
