@@ -80,12 +80,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill Id"/>
                                 </f:facet>
-                                <h:outputLabel value="#{b.insId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" ></h:outputLabel>
+                                <h:outputLabel value="#{b.insId}" ></h:outputLabel>
 
-                                <h:outputLabel value="#{b.billedBill.insId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}"></h:outputLabel>
+                                <h:outputLabel value="// #{b.billedBill.insId}" ></h:outputLabel>
                             </p:column>                           
 
-
+                           
                             <p:column headerText="Name" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Name"/>
@@ -129,71 +129,6 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:summaryRow >
-                                <p:column colspan="3" >
-                                    <h:outputLabel value="Billed Bill Totals" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}"/>                                   
-                                    <h:outputLabel value="Cancelled Bill Totals" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}"/>                                 
-                                    <h:outputLabel value="Refund Bill Totals" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}"/>
-                                </p:column>
-
-                                <p:column  >                                    
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.hosTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" style="text-align: right;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.hosTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.hosTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>                                    
-                                </p:column>
-
-                                <p:column  >
-
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.disTotB}"  rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.disTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.disTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:column  >
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.profTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.profTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.profTotR}"  rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:column  >
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.netTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.netTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{labReportSearchByInstitutionController.netTotR}"  rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>
-
-                            </p:summaryRow>
 
                             <f:facet name="footer" >
                                 <p:row>
