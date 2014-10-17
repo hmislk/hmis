@@ -123,8 +123,30 @@ public class PatientEncounter implements Serializable {
     double transTotal;
     @Transient
     double transPaid;
+    @Transient
+    double transPaidByCompany;
+    @Transient
+    double transPaidByPatient;
     @ManyToOne
     Bill finalBill;
+
+    public double getTransPaidByCompany() {
+        return transPaidByCompany;
+    }
+
+    public void setTransPaidByCompany(double transPaidByCompany) {
+        this.transPaidByCompany = transPaidByCompany;
+    }
+
+    public double getTransPaidByPatient() {
+        return transPaidByPatient;
+    }
+
+    public void setTransPaidByPatient(double transPaidByPatient) {
+        this.transPaidByPatient = transPaidByPatient;
+    }
+    
+    
 
     public double getTransTotal() {
         return transTotal;
