@@ -28,6 +28,7 @@ public class UserPreference implements Serializable {
     String abbreviationForInvestigations;
     String abbreviationForTreatments;
     String abbreviationForManagement;
+    String pharmacyBillFooter;
     @ManyToOne
     WebUser webUser;
     @ManyToOne
@@ -134,6 +135,16 @@ public class UserPreference implements Serializable {
     public void setPrintLabelForOPdBill(boolean printLabelForOPdBill) {
         this.printLabelForOPdBill = printLabelForOPdBill;
     }
+
+    public String getPharmacyBillFooter() {
+        return pharmacyBillFooter;
+    }
+
+    public void setPharmacyBillFooter(String pharmacyBillFooter) {
+        this.pharmacyBillFooter = pharmacyBillFooter;
+    }
+    
+    
     
     
 
