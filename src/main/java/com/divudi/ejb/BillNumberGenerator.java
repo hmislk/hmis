@@ -980,7 +980,7 @@ public class BillNumberGenerator {
         hm.put("dep", DepartmentType.Store);
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
-        dd=dd+1;
+        dd = dd + 1;
         System.out.println("dd = " + dd);
         result = "MS" + dd.toString();
         System.out.println("result = " + result);
@@ -994,9 +994,10 @@ public class BillNumberGenerator {
         hm.put("dep", DepartmentType.Inventry);
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
-
-        result = dd.toString();
-
+        dd = dd + 1;
+        System.out.println("dd = " + dd);
+        result = "ASS" + dd.toString();
+        System.out.println("result = " + result);
         return result;
 
     }

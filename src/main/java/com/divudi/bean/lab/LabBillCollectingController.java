@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import javax.inject.Named;
@@ -200,13 +201,16 @@ public class LabBillCollectingController implements Serializable {
         for (Department d : billDepts) {
             BilledBill myBill = new BilledBill();
             saveBill(d, myBill);
-
+            bills.add(myBill);
+            List<BillItem> list=new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
-                if (e.getBillItem().getItem().getDepartment().getId() == d.getId()) {
+                if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
                     //e.setBill(myBill);
-                    saveBillItem(myBill, e);
+                    myBill.getBillItems().add(saveBillItem(myBill, e));                    
                     calculateBillItem(myBill, e);
                 }
+                
+                billFacade.edit(myBill);
             }
             //set Bill Item Properties like bill TOtal, Discount
             //Save Bill
@@ -241,17 +245,32 @@ public class LabBillCollectingController implements Serializable {
         return c;
     }
 
+    List<Bill> bills;
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
     public void settleBill() {
         if (errorCheck()) {
             return;
         }
 
+        bills = new ArrayList<>();
+
         savePatient();
         if (checkDepartment() == 1) {
             current = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), current);
-            saveBillItems(b);
+
+            b.setBillItems(saveBillItems(b));
+            billFacade.edit(b);
             calculateBillItems(b);
+            bills.add(b);
         } else {
             putToBills();
         }
@@ -369,7 +388,7 @@ public class LabBillCollectingController implements Serializable {
         }
     }
 
-    private void saveBillItem(Bill b, BillEntry e) {
+    private BillItem saveBillItem(Bill b, BillEntry e) {
         //   BillItem temBi = e.getBillItem();
         e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         e.getBillItem().setCreater(getSessionController().getLoggedUser());
@@ -380,9 +399,12 @@ public class LabBillCollectingController implements Serializable {
 
         saveBillComponent(e, b);
         saveBillFee(e, b);
+        
+        return e.getBillItem();
     }
 
-    private void saveBillItems(Bill b) {
+    private List<BillItem> saveBillItems(Bill b) {
+     List<BillItem> billItems=new ArrayList<>();
         for (BillEntry e : getLstBillEntries()) {
             // BillItem temBi = e.getBillItem();
             e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -393,7 +415,10 @@ public class LabBillCollectingController implements Serializable {
 
             saveBillComponent(e, b);
             saveBillFee(e, b);
+            
+            billItems.add(e.getBillItem());
         }
+        return billItems;
     }
 
     PaymentMethod paymentMethod;
@@ -440,7 +465,7 @@ public class LabBillCollectingController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
         temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, bt, BillClassType.BilledBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp,bt,BillClassType.BilledBill, BillNumberSuffix.NONE));
+        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, bt, BillClassType.BilledBill, BillNumberSuffix.NONE));
         if (temp.getId() == null) {
             getFacade().create(temp);
         }
