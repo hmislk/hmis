@@ -230,7 +230,7 @@ public class ReportsTransfer implements Serializable {
                 + " and  bi.bill.department=:d "
                 + " and bi.bill.billType in :bt "
                 + " and type(bi.bill) in :bct "
-                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.createdAt between :fd and :td "
                 + " group by bi.item ";
 
         if (!fast) {
