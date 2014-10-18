@@ -168,6 +168,7 @@ public enum Privileges {
     StorePurchase,
     StorePurchaseOrder,
     StorePurchaseOrderApprove,
+    StorePurchaseOrderApproveSearch,
     StorePurchaseGRNRecive,
     StorePurchaseGRNReturn,
     StorePurchasePurchase,
