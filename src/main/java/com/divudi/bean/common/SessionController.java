@@ -26,6 +26,7 @@ import com.divudi.facade.WebUserDepartmentFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +60,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     UserPreferenceFacade userPreferenceFacade;
     private static final long serialVersionUID = 1L;
     WebUser loggedUser = null;
+    private UserPreference institutionPreference;
     UserPreference userPreference;
     boolean logged = false;
     boolean activated = false;
@@ -72,6 +74,19 @@ public class SessionController implements Serializable, HttpSessionListener {
     @EJB
     private CashTransactionBean cashTransactionBean;
     boolean paginator;
+    
+    public void updateUserPreferences(){
+        if(institutionPreference!=null){
+            if(institutionPreference.getId()==null || institutionPreference.getId()==0){
+                userPreferenceFacade.create(institutionPreference);
+                JsfUtil.addErrorMessage("Preferences Saved");
+            }else{
+                userPreferenceFacade.edit(institutionPreference);
+                JsfUtil.addErrorMessage("Preferences Updated");
+            }
+            
+        }
+    }
 
     public void makePaginatorTrue() {
         paginator = true;
@@ -353,9 +368,11 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
-                    UserPreference uf;
+                    
                     String sql;
-                    sql = "select p from UserPreference p where p.webUser=:u";
+                    
+                    UserPreference uf;
+                    sql = "select p from UserPreference p where p.webUser=:u ";
                     Map m = new HashMap();
                     m.put("u", u);
                     uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
@@ -366,6 +383,20 @@ public class SessionController implements Serializable, HttpSessionListener {
                     }
                     setUserPreference(uf);
 
+                    UserPreference insPre;
+
+                    sql = "select p from UserPreference p where p.webUser=:u ";
+                    m = new HashMap();
+                    m.put("u", u);
+                    insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                    if (insPre == null) {
+                        insPre = new UserPreference();
+                        insPre.setWebUser(null);
+                        getUserPreferenceFacade().create(insPre);
+                    }
+                    setInstitutionPreference(insPre);
+                    
+                    
                     recordLogin();
 
                     UtilityController.addSuccessMessage("Logged successfully");
@@ -746,12 +777,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public UserPreference getUserPreference() {
-        return userPreference;
+    public UserPreference getInstitutionPreference() {
+        return institutionPreference;
     }
 
-    public void setUserPreference(UserPreference userPreference) {
-        this.userPreference = userPreference;
+    public void setInstitutionPreference(UserPreference institutionPreference) {
+        this.institutionPreference = institutionPreference;
     }
 
     public UserPreferenceFacade getUserPreferenceFacade() {
@@ -770,5 +801,15 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.paginator = paginator;
     }
 
+    public UserPreference getUserPreference() {
+        return userPreference;
+    }
+
+    public void setUserPreference(UserPreference userPreference) {
+        this.userPreference = userPreference;
+    }
+
+
+    
     
 }
