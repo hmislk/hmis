@@ -5,12 +5,11 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
-import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.data.hr.StaffLeaveBallance;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.entity.Department;
-import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
@@ -230,7 +229,7 @@ public class HrReportController implements Serializable {
     public void createStaffLeaveAggregate() {
         String sql = "";
         HashMap hm = new HashMap();
-        sql = "select new com.divudi.bean.hr.StaffLeaveBallance(ss.staff,ss.leaveType,sum(ss.qty)) "
+        sql = "select new com.divudi.data.hr.StaffLeaveBallance(ss.staff,ss.leaveType,sum(ss.qty)) "
                 + " from StaffLeave ss "
                 + " where ss.retired=false "
                 + " and ss.leaveDate between :frm  and :to ";
@@ -277,7 +276,7 @@ public class HrReportController implements Serializable {
         String sql = "";
 
         HashMap hm = new HashMap();
-        sql = "select new com.divudi.bean.hr.DepartmentAttendance(FUNC('Date',s.stockAt),ss.staff.department,count(distinct(ss.staff))) "
+        sql = "select new com.divudi.data.hr.DepartmentAttendance(FUNC('Date',s.stockAt),ss.staff.department,count(distinct(ss.staff))) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and (ss.startRecord.recordTimeStamp is not null "
@@ -464,6 +463,7 @@ public class HrReportController implements Serializable {
     public void setFingerPrintRecords(List<FingerPrintRecord> fingerPrintRecords) {
         this.fingerPrintRecords = fingerPrintRecords;
     }
+    
 
     public StaffShiftFacade getStaffShiftFacade() {
         return staffShiftFacade;
@@ -473,86 +473,6 @@ public class HrReportController implements Serializable {
         this.staffShiftFacade = staffShiftFacade;
     }
 
-    public class StaffLeaveBallance {
+    
 
-        Staff staff;
-        LeaveType leaveType;
-        Double count;
-
-        public Staff getStaff() {
-            return staff;
-        }
-
-        public void setStaff(Staff staff) {
-            this.staff = staff;
-        }
-
-        public LeaveType getLeaveType() {
-            return leaveType;
-        }
-
-        public void setLeaveType(LeaveType leaveType) {
-            this.leaveType = leaveType;
-        }
-
-        public Double getCount() {
-            return count;
-        }
-
-        public void setCount(Double count) {
-            this.count = count;
-        }
-
-        public StaffLeaveBallance(Staff staff, LeaveType leaveType, Double count) {
-            this.staff = staff;
-            this.leaveType = leaveType;
-            this.count = count;
-        }
-
-        
-        
-        
-    }
-
-    public class DepartmentAttendance {
-
-        Department department;
-        Date date;
-        Double present;
-
-        public DepartmentAttendance(Department department, Date date, Double present) {
-            this.department = department;
-            this.date = date;
-            this.present = present;
-        }
-        
-        
-
-        public Department getDepartment() {
-            return department;
-        }
-
-        public void setDepartment(Department department) {
-            this.department = department;
-        }
-
-        public Date getDate() {
-            return date;
-        }
-
-        public void setDate(Date date) {
-            this.date = date;
-        }
-
-        public Double getPresent() {
-            return present;
-        }
-
-        public void setPresent(Double present) {
-            this.present = present;
-        }
-
-        
-
-    }
 }
