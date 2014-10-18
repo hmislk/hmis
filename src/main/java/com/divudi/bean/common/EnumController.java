@@ -215,6 +215,17 @@ public class EnumController implements Serializable {
 
         return b;
     }
+    
+     public BillType[] getPharmacyBillTypes3() {
+        BillType[] b = {
+            BillType.PharmacyPre,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre};
+
+        return b;
+    }
 
     public PaymentMethod[] getPaymentMethods() {
         PaymentMethod[] p = {
