@@ -34,11 +34,11 @@
                             </h:panelGrid>
 
 
-                            <h:panelGrid columns="2" style="width: 300px;height: 200px;" >
+                            <h:panelGrid columns="2" style="width: 300px;" >
                                 <h:outputLabel value="Movement Type" ></h:outputLabel>
-                                <p:selectManyMenu value="#{reportsTransfer.billTypes}"   >
-                                    <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt" ></f:selectItems>
-                                </p:selectManyMenu>
+                                <h:selectManyMenu value="#{reportsTransfer.billTypes}"   >
+                                    <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
+                                </h:selectManyMenu>
                             </h:panelGrid>
 
                         </h:panelGrid>
