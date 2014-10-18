@@ -13,7 +13,6 @@ import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Item;
@@ -67,7 +66,7 @@ public class StoreAdjustmentController implements Serializable {
     @EJB
     StockFacade stockFacade;
     @EJB
-    PharmacyBean pharmacyBean;
+    StoreBean storeBean;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -400,7 +399,7 @@ public class StoreAdjustmentController implements Serializable {
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
 //        getBillFacade().edit(getDeptAdjustmentPreBill());
         setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
-        getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
+        getStoreBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
         printPreview = true;
     }
@@ -493,12 +492,12 @@ public class StoreAdjustmentController implements Serializable {
         this.stockFacade = stockFacade;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
+    public StoreBean getStoreBean() {
+        return storeBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
+    public void setStoreBean(StoreBean storeBean) {
+        this.storeBean = storeBean;
     }
 
     public Bill getDeptAdjustmentPreBill() {

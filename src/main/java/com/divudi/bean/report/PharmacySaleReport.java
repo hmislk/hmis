@@ -14,11 +14,13 @@ import com.divudi.data.dataStructure.DatedBills;
 import com.divudi.data.dataStructure.PharmacyDetail;
 import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
 import com.divudi.data.dataStructure.PharmacySummery;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.table.String1Value3;
 import com.divudi.data.table.String1Value6;
 import com.divudi.data.table.String2Value4;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
@@ -68,6 +70,7 @@ public class PharmacySaleReport implements Serializable {
     List<String1Value6> saleValuesCredit;
     List<String1Value6> bhtIssues;
     List<String1Value6> unitIssues;
+    List<BillItem> billItems;
     private Department department;
     Department toDepartment;
     private Institution institution;
@@ -86,6 +89,8 @@ public class PharmacySaleReport implements Serializable {
     private PharmacyPaymetMethodSummery billedPaymentSummery;
   //  private List<DatedBills> billDetail;
 
+    SearchKeyword searchKeyword;
+    
     ///pharmacy summery all///
     double totalPSCashBV = 0.0;
     double totalPSCashRV = 0.0;
@@ -198,6 +203,40 @@ public class PharmacySaleReport implements Serializable {
 //        return saleValue;
 //
 //    }
+    
+    public void createGRNBillItemTable(){
+//select bi from BillItem bi where  bi.retired=false  and bi.bill.billType=:bt  and bi.bill.createdAt bettween :fd and :td  and bi.bill.depId like :di  and bi.bill.referenceBill.deptId like :po;
+        String sql;
+        Map m = new HashMap();
+        sql = "select bi from BillItem bi where "
+                + " bi.retired=false "
+                + " and bi.bill.billType=:bt "
+                + " and bi.bill.createdAt between :fd and :td ";
+        
+        if(searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")){
+            sql += " and (upper(bi.bill.depId) like :di) ";
+            m.put("di", "%"+searchKeyword.getBillNo().toUpperCase().trim()+"%");
+        }
+//        BillItem bi = new BillItem();
+//        bi.getBill().getReferenceBill().getDeptId();
+//        bi.getBill().getFromInstitution();
+        if(searchKeyword.getRefBillNo() != null && !searchKeyword.getRefBillNo().toUpperCase().trim().equals("")){
+            sql += " and (upper(bi.bill.referenceBill.deptId) like :po) ";
+            m.put("po", "%"+searchKeyword.getRefBillNo().toUpperCase().trim()+"%");
+        }
+        
+        if(searchKeyword.getIns() != null){
+            sql += " and bi.bill.fromInstitution=:de ";
+            m.put("de", searchKeyword.getIns());
+        }
+        
+        m.put("bt", BillType.PharmacyGrnBill);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+    
     private double getSaleValueByDepartment(Date date, Bill bill) {
 
         Date fd = getCommonFunctions().getStartOfDay(date);
@@ -3166,6 +3205,26 @@ public class PharmacySaleReport implements Serializable {
         this.totalMargineValue = totalMargineValue;
     }
 
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public SearchKeyword getSearchKeyword() {
+        if (searchKeyword == null){
+            searchKeyword = new SearchKeyword();
+        }
+        return searchKeyword;
+    }
+
+    public void setSearchKeyword(SearchKeyword searchKeyword) {
+        this.searchKeyword = searchKeyword;
+    }
+
+    
     public class CategoryMovementReportRow {
 
         Item item;
