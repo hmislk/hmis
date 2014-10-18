@@ -2,8 +2,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
     <body>
@@ -11,26 +11,64 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                
+
                 <f:view>
 
-
                     <h:form>
-                        <h1><h:outputText value="List"/></h1>
-                        <p:dataTable value="#{stockHistoryController.pharmacyStockHistories}" var="item">
-                            <p:column>
+
+                        <p:panelGrid columns="2" >
+                            <p:panelGrid columns="2" >
+                                <p:outputLabel value="From Date" ></p:outputLabel>
+                                <p:calendar id="calFromDate" value="#{stockHistoryController.fromDate}" pattern="dd MMMM yyyy" >
+                                    <f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>
+                                </p:calendar>
+
+                                <p:outputLabel value="To Date" ></p:outputLabel>
+                                <p:calendar id="calToDate" value="#{stockHistoryController.toDate}"  pattern="dd MMMM yyyy" >
+                                    <f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>
+                                </p:calendar>
+
+                                <p:outputLabel value="Department" ></p:outputLabel>
+                                <p:autoComplete completeMethod="#{departmentController.completeDept}"
+                                                var="d" itemLabel="#{d.name}"
+                                                itemValue="#{d}"
+                                                value="#{stockHistoryController.department}"
+                                                converter="" ></p:autoComplete>
+                                
+                                
+                            </p:panelGrid>
+
+
+
+                            <p:dataTable id="tblDates" value="#{stockHistoryController.pharmacyStockHistoryDays}" var="d" selection="#{stockHistoryController.historyDate}" rowKey="#{d}" selectionMode="single" >
+                                <p:ajax event="rowSelect" listener="#{stockHistoryController.fillStockHistories()}" update=":#{p:component('tblHistories')} " />
+                                <p:ajax event="rowUnselect" listener="#{stockHistoryController.fillStockHistories}"  />
+                                <p:column headerText="History Availabe Days" >
+                                    <p:outputLabel value="#{d}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+
+                        </p:panelGrid>
+
+                        <p:dataTable id="tblHistories" value="#{stockHistoryController.pharmacyStockHistories}" var="item"
+                                     paginator="true" paginatorAlwaysVisible="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="10,30,50"
+                                     rows="20"
+                                     >
+                            <p:column rendered="#{stockHistoryController.department eq null}">
                                 <f:facet name="header">
-                                    <h:outputText value="Stock At"/>
+                                    <h:outputText value="Department"/>
                                 </f:facet>
-                                <h:outputText value="#{item.stockAt}">
-                                    <f:convertDateTime pattern="MM/dd/yyyy" />
-                                </h:outputText>
+                                <h:outputText value="#{item.department.name}"/>
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="PbItem"/>
+                                    <h:outputText value="Item"/>
                                 </f:facet>
-                                <h:outputText value="#{item.pbItem}"/>
+                                <h:outputText value="#{item.item.name}"/>
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
@@ -38,53 +76,14 @@
                                 </f:facet>
                                 <h:outputText value="#{item.stockQty}"/>
                             </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Retail Rate"/>
-                                </f:facet>
-                                <h:outputText value="#{item.retailRate}"/>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Wholesale Rate"/>
-                                </f:facet>
-                                <h:outputText value="#{item.wholesaleRate}"/>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Purchase Rate"/>
-                                </f:facet>
-                                <h:outputText value="#{item.purchaseRate}"/>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Item Batch"/>
-                                </f:facet>
-                                <h:outputText value="#{item.itemBatch}"/>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Institution"/>
-                                </f:facet>
-                                <h:outputText value="#{item.institution}"/>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Department"/>
-                                </f:facet>
-                                <h:outputText value="#{item.department}"/>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Item"/>
-                                </f:facet>
-                                <h:outputText value="#{item.item}"/>
-                            </p:column>
                         </p:dataTable>
                     </h:form>
+
+
+
                 </f:view>
 
-                
+
             </ui:define>
 
 
