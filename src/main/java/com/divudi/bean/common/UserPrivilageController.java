@@ -252,6 +252,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node20023 = new PrivilageNode("GRN Recive", node2002, Privileges.StorePurchaseGRNRecive);
         TreeNode node20024 = new PrivilageNode("GRN Return", node2002, Privileges.StorePurchaseGRNReturn);
         TreeNode node20025 = new PrivilageNode("Purchase", node2002, Privileges.StorePurchasePurchase);
+        TreeNode node20026 = new PrivilageNode("PO Approve Search", node2002, Privileges.StorePurchaseOrderApproveSearch);
         TreeNode node2003 = new PrivilageNode("Transfer", node20);
         TreeNode node20030 = new PrivilageNode("Transfer Menu", node2003, Privileges.StoreTransfer);
         TreeNode node20031 = new PrivilageNode("Request", node2003, Privileges.StoreTransferRequest);
