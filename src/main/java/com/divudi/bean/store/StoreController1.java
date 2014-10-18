@@ -811,7 +811,7 @@ public class StoreController1 implements Serializable {
             List<DepartmentSale> list = new ArrayList<>();
             double totalValue = 0;
             double totalQty = 0;
-            List<Object[]> objs = calDepartmentTransferIssue(ins);
+            List<Object[]> objs = calDepartmentIssue(ins);
 
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
@@ -889,6 +889,13 @@ public class StoreController1 implements Serializable {
         createGrnTable();
         createPoTable();
         createDirectPurchaseTable();
+        //dushan add
+        createInstitutionBhtIssue();
+        createInstitutionIssue();
+        createInstitutionTransferIssue();
+        createInstitutionTransferReceive();
+        createInstitutionIssue();
+        
 
     }
 

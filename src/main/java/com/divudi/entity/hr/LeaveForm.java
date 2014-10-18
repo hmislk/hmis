@@ -5,11 +5,8 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.data.hr.LeaveType;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;

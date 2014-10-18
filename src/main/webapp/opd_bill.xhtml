@@ -557,7 +557,7 @@
 
                 <h:panelGroup rendered="#{billController.printPreview}" >
                     
-                    <h:panelGroup rendered="#{sessionController.userPreference.printLabelForOPdBill eq false}">
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
                         
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
@@ -579,7 +579,7 @@
                     </h:panelGroup>
                     
                         
-                    <h:panelGroup rendered="#{sessionController.userPreference.printLabelForOPdBill eq true}">
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
                         
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
