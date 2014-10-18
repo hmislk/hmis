@@ -142,7 +142,7 @@ public class StaffShift implements Serializable {
             case AnnualHalf:
             case CasualHalf:
             case LieuHalf:
-                setLeavedTime((getStaff().getLeaveHour() * 60 * 60) / 2);
+                setLeavedTime((getStaff().getLeaveHour() * 60 * 60) / 0.5);
                 break;
 
         }

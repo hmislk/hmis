@@ -52,6 +52,37 @@ public class StaffLeave implements Serializable {
     private Date fromDate;
     @Temporal(TemporalType.DATE)
     private Date toDate;
+    double qty;
+
+    public void calLeaveQty(double dayCount) {
+        if (leaveType == null) {
+            return;
+        }
+
+        switch (getLeaveType()) {
+            case Annual:
+            case Casual:
+            case Lieu:
+                qty = 1*dayCount;
+                break;
+            case AnnualHalf:
+            case CasualHalf:
+            case LieuHalf:
+                qty = 0.5*dayCount;
+                break;
+            default:
+                qty = 1*dayCount;
+
+        }
+    }
+
+    public double getQty() {
+        return qty;
+    }
+
+    public void setQty(double qty) {
+        this.qty = qty;
+    }
 
     public Long getId() {
         return id;
@@ -109,8 +140,6 @@ public class StaffLeave implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-
- 
 
     public WebUser getCreater() {
         return creater;
