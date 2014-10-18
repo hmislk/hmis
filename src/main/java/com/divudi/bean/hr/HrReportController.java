@@ -479,12 +479,6 @@ public class HrReportController implements Serializable {
         LeaveType leaveType;
         Double count;
 
-        public StaffLeaveBallance(Staff staff, LeaveType leaveType, double count) {
-            this.staff = staff;
-            this.leaveType = leaveType;
-            this.count = count;
-        }
-
         public Staff getStaff() {
             return staff;
         }
@@ -501,14 +495,23 @@ public class HrReportController implements Serializable {
             this.leaveType = leaveType;
         }
 
-        public double getCount() {
+        public Double getCount() {
             return count;
         }
 
-        public void setCount(double count) {
+        public void setCount(Double count) {
             this.count = count;
         }
 
+        public StaffLeaveBallance(Staff staff, LeaveType leaveType, Double count) {
+            this.staff = staff;
+            this.leaveType = leaveType;
+            this.count = count;
+        }
+
+        
+        
+        
     }
 
     public class DepartmentAttendance {
@@ -517,19 +520,13 @@ public class HrReportController implements Serializable {
         Date date;
         Double present;
 
-        public DepartmentAttendance(Department department, Date date, double present) {
+        public DepartmentAttendance(Department department, Date date, Double present) {
             this.department = department;
             this.date = date;
             this.present = present;
         }
-
-        public double getPresent() {
-            return present;
-        }
-
-        public void setPresent(double present) {
-            this.present = present;
-        }
+        
+        
 
         public Department getDepartment() {
             return department;
@@ -546,6 +543,16 @@ public class HrReportController implements Serializable {
         public void setDate(Date date) {
             this.date = date;
         }
+
+        public Double getPresent() {
+            return present;
+        }
+
+        public void setPresent(Double present) {
+            this.present = present;
+        }
+
+        
 
     }
 }
