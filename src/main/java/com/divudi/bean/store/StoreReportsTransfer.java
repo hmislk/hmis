@@ -431,16 +431,14 @@ public class StoreReportsTransfer implements Serializable {
             ibr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());
             ibr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() + ts.getQty());
 
-            cbr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());
-            cbr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() + ts.getQty());
+            cbr.getBill().setNetTotal(cbr.getBill().getNetTotal() + ts.getNetValue());
+            cbr.getBill().setGrantTotal(cbr.getBill().getGrantTotal() + ts.getQty());
 
-            dbr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());
-            dbr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() + ts.getQty());
+            dbr.getBill().setNetTotal(dbr.getBill().getNetTotal() + ts.getNetValue());
+            dbr.getBill().setGrantTotal(dbr.getBill().getGrantTotal() + ts.getQty());
 
-            if (ts.getPharmaceuticalBillItem() != null && ts.getPharmaceuticalBillItem().getItemBatch() != null ) {
-                purchaseValue = purchaseValue + (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
-                saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
-            }
+            purchaseValue+=ts.getNetValue();
+            
         }
 
     }

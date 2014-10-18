@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                
+                <f:view>
+
+
+                    <h:form>
+                        <h1><h:outputText value="List"/></h1>
+                        <p:dataTable value="#{stockHistoryController.pharmacyStockHistories}" var="item">
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Stock At"/>
+                                </f:facet>
+                                <h:outputText value="#{item.stockAt}">
+                                    <f:convertDateTime pattern="MM/dd/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="PbItem"/>
+                                </f:facet>
+                                <h:outputText value="#{item.pbItem}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Stock"/>
+                                </f:facet>
+                                <h:outputText value="#{item.stockQty}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Retail Rate"/>
+                                </f:facet>
+                                <h:outputText value="#{item.retailRate}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Wholesale Rate"/>
+                                </f:facet>
+                                <h:outputText value="#{item.wholesaleRate}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Purchase Rate"/>
+                                </f:facet>
+                                <h:outputText value="#{item.purchaseRate}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Item Batch"/>
+                                </f:facet>
+                                <h:outputText value="#{item.itemBatch}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Institution"/>
+                                </f:facet>
+                                <h:outputText value="#{item.institution}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Department"/>
+                                </f:facet>
+                                <h:outputText value="#{item.department}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Item"/>
+                                </f:facet>
+                                <h:outputText value="#{item.item}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                </f:view>
+
+                
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>
