@@ -6,6 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Staff;
@@ -17,6 +18,8 @@ import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -98,15 +101,48 @@ public class StaffLeaveApplicationFormController implements Serializable {
         return false;
     }
 
+    @Inject
+    PhDateController phDateController;
+
+    public Long calLeaveCount() {
+        Long dayCount = commonFunctions.getDayCount(fromDate, toDate);
+
+        DayType[] dayType = {DayType.MurchantileHoliday, DayType.Poya, DayType.PublicHoliday};
+        Long holidayCount = phDateController.calHolidayCount(Arrays.asList(dayType), fromDate, toDate);
+
+        Long satCount = 0l;
+        Long sunCount = 0l;
+
+        Date nowDate = fromDate;
+
+        while (toDate.after(nowDate)) {
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+
+            switch (nc.get(Calendar.DAY_OF_WEEK)) {
+                case Calendar.SATURDAY:
+                    satCount++;
+                    break;
+                case Calendar.SUNDAY:
+                    sunCount++;
+                    break;
+            }
+
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+        }
+
+        return dayCount - (holidayCount + sunCount);
+    }
+
     public void saveLeaveform() {
         if (errorCheck()) {
             return;
         }
         currentLeaveForm.setCreater(getSessionController().getLoggedUser());
         currentLeaveForm.setCreatedAt(new Date());
-
-        Long dayCount = commonFunctions.getDayCount(fromDate, toDate);
-        currentLeaveForm.getStaffLeave().calLeaveQty(dayCount);
+        Long leaveCount = calLeaveCount();
+        currentLeaveForm.getStaffLeave().calLeaveQty(leaveCount);
         if (getCurrentLeaveForm().getStaffLeave().getId() == null) {
             getCurrentLeaveForm().getStaffLeave().setCreatedAt(new Date());
             getCurrentLeaveForm().getStaffLeave().setCreater(sessionController.getLoggedUser());
