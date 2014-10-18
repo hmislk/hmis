@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -503,6 +504,14 @@ public class BillSearch implements Serializable {
             if (!calculateRefundTotal()) {
                 return "";
             }
+            
+            for(BillItem trbi :refundingItems){
+                if(patientInvestigationController.sampledForBillItem(trbi)){
+                    UtilityController.addErrorMessage("One or more bill Item has been already undersone process at the Lab. Can not return.");
+                    return "";
+                }
+            }
+            
 
             RefundBill rb = (RefundBill) createRefundBill();
 
@@ -830,8 +839,9 @@ public class BillSearch implements Serializable {
             return true;
         }
 
-        if (checkCollectedReported()) {
-            UtilityController.addErrorMessage("Sample Already collected can't cancel or report already issued");
+        System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill)) ;
+        if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
+            UtilityController.addErrorMessage("Sample Already collected can't cancel");
             return true;
         }
 
@@ -1730,9 +1740,13 @@ public class BillSearch implements Serializable {
     public void setFilteredBill(List<Bill> filteredBill) {
         this.filteredBill = filteredBill;
     }
+    
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    
 
     private boolean checkCollectedReported() {
-        return false;
+        return patientInvestigationController.sampledForAnyItemInTheBill(bill);
     }
 
     public PharmacyPreSettleController getPharmacyPreSettleController() {

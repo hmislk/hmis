@@ -62,6 +62,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -71,8 +72,7 @@ import javax.persistence.TemporalType;
  *
  * @author Buddhika
  */
-@Named
-@ApplicationScoped
+@Singleton
 public class StoreBean {
 
     @EJB
@@ -1615,7 +1615,7 @@ public class StoreBean {
 //        String sql;
 //        sql = "Select bi.pharmaceuticalBillItem.purchaseRate from BillItem bi where bi.retired=false and bi.bill.cancelled=false and bi.pharmaceuticalBillItem.itemBatch.item=:i and bi.bill.billType=:t order by bi.id desc";
 //        m.put("i", item);
-//        m.put("t", BillType.PharmacyGrnBill);
+//        m.put("t", BillType.StoreGrnBill);
 //        return getBillItemFacade().findDoubleByJpql(sql, m);
 //    }
     public double getLastPurchaseRate(Item item, Department dept) {
@@ -1634,8 +1634,8 @@ public class StoreBean {
                 + " order by bi.id desc";
         m.put("i", item);
         m.put("d", dept);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1662,8 +1662,8 @@ public class StoreBean {
                 + " order by bi.id desc";
         m.put("i", item);
         m.put("ins", ins);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1699,8 +1699,8 @@ public class StoreBean {
                 + " and (bi.bill.billType=:t or bi.bill.billType=:t1) "
                 + " order by bi.id desc";
         m.put("i", item);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1725,8 +1725,8 @@ public class StoreBean {
                 + " order by bi.id desc";
         m.put("i", item);
         m.put("ins", ins);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1750,8 +1750,8 @@ public class StoreBean {
                 + " and (bi.bill.billType=:t or bi.bill.billType=:t1) "
                 + " order by bi.id desc";
         m.put("i", item);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1776,8 +1776,8 @@ public class StoreBean {
                 + " order by bi.id desc";
         m.put("i", item);
         m.put("d", dept);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {

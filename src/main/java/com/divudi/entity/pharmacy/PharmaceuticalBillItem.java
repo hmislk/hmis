@@ -213,7 +213,6 @@ public class PharmaceuticalBillItem implements Serializable {
         if (ph == null) {
             return;
         }
-        
         qty = ph.qty;
         freeQty = ph.freeQty;
         purchaseRate = ph.purchaseRate;

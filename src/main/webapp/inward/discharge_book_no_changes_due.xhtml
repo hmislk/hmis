@@ -50,9 +50,14 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">                            
-                            <p:commandButton ajax="false" value="Process "
+                            <p:commandButton ajax="false" value="Process All"
                                              action="#{inwardReportController.fillDischargeBookPaymentFinalizedNoChanges()}" 
                                              onclick="onSubmitButton();" ></p:commandButton>
+                            
+                             <p:commandButton ajax="false" value="Process Due Only"
+                                             action="#{inwardReportController.fillDischargeBookPaymentFinalizedNoChangesOnlyDue()}" 
+                                             onclick="onSubmitButton();" ></p:commandButton>
+                            
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>

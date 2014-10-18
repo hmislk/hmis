@@ -13,6 +13,7 @@ import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.AmendmentFormFacade;
+import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -111,16 +112,20 @@ public class StaffAmendmentFormController implements Serializable {
 
         StaffShift toStaffShift = getCurrAmendmentForm().getToStaffShift();
         Staff fStaff = getCurrAmendmentForm().getFromStaff();
-        
         if (toStaffShift != null) {
             toStaffShift.setStaff(fStaff);
             staffShiftFacade.edit(toStaffShift);
-        }else{
-            toStaffShift=new StaffShift();
+        } else {
+            toStaffShift = new StaffShift();
             toStaffShift.setStaff(fStaff);
             toStaffShift.setShift(getCurrAmendmentForm().getToShift());
             toStaffShift.setShiftDate(toDate);
             staffShiftFacade.create(toStaffShift);
+
+            fromStaffShift.setRetired(true);
+            fromStaffShift.setRetirer(sessionController.getLoggedUser());
+            fromStaffShift.setRetiredAt(new Date());
+            staffShiftFacade.edit(fromStaffShift);
         }
         ///////////////////////Finish Amendment
 
@@ -249,9 +254,11 @@ public class StaffAmendmentFormController implements Serializable {
 
         hm.put("rs", getToStaff().getRoster());
 
-        toStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        toShifts = shiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
+    @EJB
+    ShiftFacade shiftFacade;
     List<Shift> toShifts;
 
     public List<Shift> getToShifts() {

@@ -300,8 +300,8 @@ public class InwardReportController implements Serializable {
             p.setTransPaidByCompany(calPaidByCompany(p));
 
             total += p.getFinalBill().getNetTotal();
-            paid += p.getTransPaidByPatient();            
-            creditPaid += p.getTransPaidByCompany();           
+            paid += p.getTransPaidByPatient();
+            creditPaid += p.getTransPaidByCompany();
         }
     }
 
@@ -426,6 +426,59 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         calTotalDischargedNoChanges();
+    }
+
+    public void fillDischargeBookPaymentFinalizedNoChangesOnlyDue() {
+        Map m = new HashMap();
+        String sql = "select b from PatientEncounter b "
+                + " where b.retired=false "
+                + " and b.discharged=true "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.creditCompany =:ins ";
+            m.put("ins", institution);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        calTotalDischargedNoChanges();
+
+        List<PatientEncounter> list = patientEncounters;
+        patientEncounters = null;
+        patientEncounters = new ArrayList<>();
+        for (PatientEncounter p : list) {
+            p.setTransPaidByPatient(calPaidByPatient(p));
+            p.setTransPaidByCompany(calPaidByCompany(p));
+
+            double paidValue = p.getTransPaidByPatient() + p.getTransPaidByCompany();
+            double dueValue = p.getFinalBill().getNetTotal() - paidValue;
+
+            if (dueValue != 0) {
+                total += p.getFinalBill().getNetTotal();
+                paid += p.getTransPaidByPatient();
+                creditPaid += p.getTransPaidByCompany();
+
+                patientEncounters.add(p);
+            }
+
+        }
+
     }
 
     public void makeListNull() {
