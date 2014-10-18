@@ -92,6 +92,7 @@ public enum Privileges {
     LabReportSearchAll,
     LabReceive,
     LabEditPatient,
+    LabInvestigationFee,
     
     PaymentBilling,
     PaymentBillSearch,
