@@ -477,7 +477,7 @@ public class HrReportController implements Serializable {
 
         Staff staff;
         LeaveType leaveType;
-        double count;
+        Double count;
 
         public StaffLeaveBallance(Staff staff, LeaveType leaveType, double count) {
             this.staff = staff;
@@ -515,7 +515,7 @@ public class HrReportController implements Serializable {
 
         Department department;
         Date date;
-        double present;
+        Double present;
 
         public DepartmentAttendance(Department department, Date date, double present) {
             this.department = department;
