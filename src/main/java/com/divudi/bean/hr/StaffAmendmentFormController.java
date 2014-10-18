@@ -121,6 +121,12 @@ public class StaffAmendmentFormController implements Serializable {
             toStaffShift.setShift(getCurrAmendmentForm().getToShift());
             toStaffShift.setShiftDate(toDate);
             staffShiftFacade.create(toStaffShift);
+            
+            
+            fromStaffShift.setRetired(true);
+            fromStaffShift.setRetirer(sessionController.getLoggedUser());
+            fromStaffShift.setRetiredAt(new Date());
+            staffShiftFacade.edit(fromStaffShift);
         }
         ///////////////////////Finish Amendment
 
