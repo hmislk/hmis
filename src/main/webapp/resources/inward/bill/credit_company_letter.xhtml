@@ -19,90 +19,110 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="printing.css" />
         <div>
-            <p:panel   id="gpBillPreview"  style="margin: auto; padding: 0px; font-size: 14px!important;" >
+            <p:panel   id="gpBillPreview" style="margin:auto  ; padding: 0px; font-size: 20px!important; margin-top: 50px;"  >
                 <div class="a4bill" >
 
-                    <table>
-                        <tr >
-                            <td >
-                                <h:outputLabel value="B.H.T NO" />
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" />
-                            </td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
-                            </td>
-                            <td>
-                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
-                            </td>
+                    <!--                    <table>
+                                            <tr>
+                                                <td >                           
+                                                    <h:outputLabel value="B.H.T NO" style="font-size: 11px;"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value=":" />
+                                                </td>
+                                                <td >
+                                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" style="font-size: 11px;" />
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
+                                                </td>
+                    
+                    
+                                               
+                                                    <td >
+                                                        <h:outputLabel value="Time of Discharged" style="font-size: 11px;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value=":" />
+                                                    </td>
+                                                    <td >
+                                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" style="font-size: 11px;">
+                                                            <f:convertDateTime pattern="dd MM yyyy h:mm a" />
+                                                        </h:outputLabel>
+                                                    </td>
+                                               
+                    
+                                                <div>                                
+                                                    <td >
+                                                        <h:outputLabel value="BILL NO" style="font-size: 11px;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value=":" />
+                                                    </td>
+                                                    <td >
+                                                        <h:outputLabel value="#{cc.attrs.bill.insId}" style="font-size: 11px;"/>
+                                                    </td>
+                                                </div>
+                    
+                                            </tr>
+                                        </table>
+                                        <table>
+                                            <tr >
+                                                <td >
+                                                    <h:outputLabel value="Patient Name" style="font-size: 11px;"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value=":" />
+                                                </td>
+                                                <td >
+                                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" style="font-size: 11px;" />
+                                                </td> 
+                                                <td>
+                                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
+                                                </td>
+                                                                        
+                                                    <td >
+                                                        <h:outputLabel value="BILL NO" style="font-size: 11px;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputLabel value=":" />
+                                                    </td>
+                                                    <td >
+                                                        <h:outputLabel value="#{cc.attrs.bill.insId}" style="font-size: 11px;"/>
+                                                    </td>
+                                             
+                                            </tr>
+                                        </table>-->
+                    <!--                    <table>
+                                            <tr>
+                                                <td >
+                                                    <h:outputLabel value="Address" style="font-size: 11px;"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value=":" />
+                                                </td>
+                                                <td >
+                                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}" style="font-size: 11px;"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value="" />
+                                                </td>
+                    
+                                            </tr>
+                    
+                                        </table>-->
 
-
-                            <div>
-                                <td >
-                                    <h:outputLabel value="Time of Discharged" />
-                                </td>
-                                <td>
-                                    <h:outputLabel value=":" />
-                                </td>
-                                <td >
-                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" >
-                                        <f:convertDateTime pattern="dd MM yyyy h:mm a" />
-                                    </h:outputLabel>
-                                </td>
-                            </div>
-
-                            <div>                                
-                                <td >
-                                    <h:outputLabel value="BILL NO" />
-                                </td>
-                                <td>
-                                    <h:outputLabel value=":" />
-                                </td>
-                                <td >
-                                    <h:outputLabel value="#{cc.attrs.bill.insId}" />
-                                </td>
-                            </div>
-
-                        </tr>
-                        <tr >
-                            <td >
-                                <h:outputLabel value="Patient Name" />
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" />
-                            </td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
-                            </td>                           
-                        </tr>
-                        <tr>
-                            <td >
-                                <h:outputLabel value="Address" />
-                            </td>
-                            <td>
-                                <h:outputLabel value=":" />
-                            </td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}" />
-                            </td>
-                            <td>
-                                <h:outputLabel value="" />
-                            </td>
-
-                        </tr>
-
-                    </table>
-
-                    <div>
-                        <h:outputLabel value="#{cc.attrs.bill.netTotal}"/>
-                    </div>
+                    <!--                    <div>
+                                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 11px;">
+                                                  <f:convertNumber pattern="#,###.##" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </div>-->
 
                     <p:spacer height="50px"></p:spacer>
                     <div>
-                        <h:outputLabel value="Date"/>
+                        <h:outputLabel value="Date" style="font-size: 13px;"/>
                         <h:outputLabel  value=":"/>
-                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" >
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" style="font-size: 13px;" >
                             <f:convertDateTime pattern="dd MM yyyy" /></h:outputLabel>
                     </div>
                     <p:spacer height="20px"></p:spacer>
@@ -111,86 +131,125 @@
                         <h:outputLabel  value=":"/>  
                     </div>
 
+                    <p:spacer height="20px"></p:spacer>
+
                     <div>
                         <h:outputLabel value="Manager"/>
                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}" />
                     </div>
+                               
+                    <table>
+<!--                        <tr>
+                                                        <td >
+                                                            <h:outputLabel value="Address" style="font-size: 11px;"/>
+                                                        </td>
+                                                        <td>
+                                                            <h:outputLabel value=":" />
+                                                        </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}" style="font-size: 13px;"/>
+                            </td>
+                            <td>
+                                <h:outputLabel value="" />
+                            </td>
+
+                        </tr>-->
+
+                    </table>
 
                     <p:spacer height="45px"></p:spacer>
-                    <div>
+                    <div style="font-size: 13px;">
                         <h:outputLabel value ="Dear Sir / Madam,"/>
                     </div>
 
                     <p:spacer height="15px"></p:spacer>
                     <div style="margin-left:6%; text-decoration: underline;">
 
-                        <h:outputLabel value ="SETTLEMENT OF MEDICAL BILL" style="font-size: 12px;"/>
+                        <b>  <h:outputLabel value ="SETTLEMENT OF MEDICAL BILL" style="font-size: 14px;"/></b>
 
                     </div>
                     <p:spacer height="15px"></p:spacer>
-                    <div>
+                    <div style="font-size: 13px;">
                         <h:outputLabel value ="Settlement of Hospital Charges Against Bill No"/>  
                         <h:outputLabel value =":"/>
-                        <h:outputLabel value="#{cc.attrs.bill.insId}" style="text-align: 55px" />
+                        <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"/>
+                        <b> <h:outputLabel value="#{cc.attrs.bill.insId}" style="text-align: 55px" /></b>
+
                     </div>
                     <p:spacer height="15px"></p:spacer>
                     <div  style="margin-left:8%;">
-                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
+                        <b> <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" /> </b>
                     </div>
 
                     <p:spacer height="15px"></p:spacer>
-                    <div>
+                    <div style="font-size: 13px;">
                         <h:outputLabel value ="I wish to inform you that the above person has received treatment at this Hospital."/>
 
                     </div>
-                    <div>
-                        <h:outputLabel value ="Enclosed please find our bill for"/>
-                        <h:outputLabel value="#{cc.attrs.bill.netTotal}"/> 
+                    <div style="font-size: 13px;">
+                        <h:outputLabel value ="Enclosed please find our bill for Rs."/>
+                        <h:outputLabel value="&nbsp;&nbsp;"/>
+                        <b> <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                <f:convertNumber pattern="#,###.##" ></f:convertNumber>
+                            </h:outputLabel> </b>
+                        <h:outputLabel value="&nbsp;&nbsp;  "/>
                         <h:outputLabel value ="being his / her Hospital charges"/>
 
                     </div>
                     <p:spacer height="15px"></p:spacer>
-                    <div>
+                    <div style="font-size: 13px;">
                         <h:outputLabel value ="You are kindly requested to remit this amount by cheque written in favour of -"/>
                     </div>
-                    <div>
-                        <h:outputLabel value='"#{cc.attrs.bill.institution.name} "with least possible'/>
+                    <div style="font-size: 13px;">
+                        <b> <h:outputLabel value='"#{cc.attrs.bill.institution.name} "'/> </b>
+                        <h:outputLabel value="&nbsp;"/>
+                        <h:outputLabel value ="with least possible."/>
                     </div>
 
-                    <div>
-                        <h:outputLabel value="* Please not that Prevailing Bank overdraft interest rate will be applied for all overdue debts"/>
-                    </div>
                     <p:spacer height="15px"></p:spacer>
-                    <div>
+
+                    <div style="font-size: 13px;">
+                        <b> <h:outputLabel value="* Please not that Prevailing Bank overdraft interest rate will be applied for all overdue debts"/> </b>
+                    </div>
+                    <p:spacer height="45px"></p:spacer>
+                    <div style="font-size: 13px;">
                         <h:outputLabel value ="Thanking You,"/>
                     </div>
 
                     <p:spacer height="3px"></p:spacer>
-                    <div>
+                    <div style="font-size: 13px;">
                         <h:outputLabel value ="Your's Faithfully,"/>
                     </div>
                     <p:spacer height="10px"></p:spacer>
-                    <div>
+                    <div style="font-size: 13px;">
+                        <h:outputLabel value="&nbsp;&nbsp;&nbsp;"/>
                         <h:outputLabel value ="#{cc.attrs.bill.institution.name}"/>
                     </div>
 
-                    <p:spacer height="20px"></p:spacer>
+                    <p:spacer height="75px"></p:spacer>
                     <div>
-                        <h:outputLabel value ="........................"/><br>
-                            <h:outputLabel value ="......................................................."/> </br>
-                        <br>
-                            <h:outputLabel value ="Accountant"/> </br>
+                        <h:outputLabel value ="........................"/>
+                    </div>
+                    <p:spacer height="12px"></p:spacer>
+                    <div>
+                        <h:outputLabel value =".............................................."/>
+                    </div>
+                    <div style="font-size: 13px;">
+                        <h:outputLabel value ="Accountant"/>
                     </div>
 
 
                     <p:spacer height="50px"></p:spacer>
 
-                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" style="margin-left: 60%; text-decoration: overline;">
-                    </h:outputLabel>
-
-                    <h:outputLabel value="     Patient/Gurdian     " style="margin-left: 60%; text-decoration: overline;">
-                    </h:outputLabel>
-
+                    <div>
+                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" style="margin-left: 60%; text-decoration: overline;">
+                        </h:outputLabel>
+                    </div>
+                    <p:spacer height="15px"></p:spacer>
+                    <div>
+                        <h:outputLabel value="     Patient/Gurdian     " style="margin-left: 60%; text-decoration: overline;">
+                        </h:outputLabel>
+                    </div>
                 </div>
 
 

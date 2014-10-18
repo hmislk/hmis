@@ -15,8 +15,6 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.ejb.PharmacyBean;
-import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Item;
@@ -58,7 +56,7 @@ public class StorePurchaseController implements Serializable {
     @EJB
     private BillFacade billFacade;   
     @EJB
-    private PharmacyBean pharmacyBean;
+    StoreBean storeBean;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -163,7 +161,7 @@ public class StorePurchaseController implements Serializable {
 
     public void onEditPurchaseRate(BillItem tmp) {
 
-        double retail = tmp.getPharmaceuticalBillItem().getPurchaseRate() + (tmp.getPharmaceuticalBillItem().getPurchaseRate() * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
+        double retail = tmp.getPharmaceuticalBillItem().getPurchaseRate() + (tmp.getPharmaceuticalBillItem().getPurchaseRate() * (getStoreBean().getMaximumRetailPriceChange() / 100));
         tmp.getPharmaceuticalBillItem().setRetailRate((double) retail);
 
         onEdit(tmp);
@@ -171,7 +169,7 @@ public class StorePurchaseController implements Serializable {
 
     public void onEditPurchaseRate() {
 
-        double retail = getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() + (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
+        double retail = getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() + (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() * (getStoreBean().getMaximumRetailPriceChange() / 100));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate((double) retail);
 
         onEdit(getCurrentBillItem());
@@ -311,7 +309,7 @@ public class StorePurchaseController implements Serializable {
             double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
 
             tmpPh.setItemBatch(itemBatch);
-            Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
+            Stock stock = getStoreBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
 
             tmpPh.setStock(stock);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
@@ -517,8 +515,8 @@ public class StorePurchaseController implements Serializable {
     public PharmaceuticalBillItem getPharmacyBillItem(BillItem b) {
         PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
         tmp.setBillItem(b);
-        //   tmp.setQty(getPharmacyBean().getPurchaseRate(b.getItem(), getSessionController().getDepartment()));
-        //     tmp.setPurchaseRate(getPharmacyBean().getPurchaseRate(b.getItem(), getSessionController().getDepartment()));
+        //   tmp.setQty(getStoreBean().getPurchaseRate(b.getItem(), getSessionController().getDepartment()));
+        //     tmp.setPurchaseRate(getStoreBean().getPurchaseRate(b.getItem(), getSessionController().getDepartment()));
         tmp.setRetailRate(storeCalculation.calRetailRate(tmp));
 //        if (b.getId() == null || b.getId() == 0) {
 //            getPharmaceuticalBillItemFacade().create(tmp);
@@ -594,12 +592,12 @@ public class StorePurchaseController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
+    public StoreBean getStoreBean() {
+        return storeBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
+    public void setStoreBean(StoreBean storeBean) {
+        this.storeBean = storeBean;
     }
 
     public BillItemFacade getBillItemFacade() {

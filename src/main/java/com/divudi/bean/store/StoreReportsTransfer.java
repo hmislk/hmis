@@ -9,7 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.table.String1Value3;
-import com.divudi.ejb.PharmacyBean;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
@@ -50,7 +51,9 @@ public class StoreReportsTransfer implements Serializable {
     Department fromDepartment;
     Department toDepartment;
     Department department;
+    @Temporal(TemporalType.TIMESTAMP)
     Date fromDate;
+    @Temporal(TemporalType.TIMESTAMP)
     Date toDate;
 
     Institution institution;
@@ -79,9 +82,11 @@ public class StoreReportsTransfer implements Serializable {
     @EJB
     BillFacade BillFacade;
     @EJB
-    PharmacyBean pharmacyBean;
+    StoreBean StoreBean;
     @Inject
     BillBeanController billBeanController;
+    @EJB
+    CommonFunctions commonFunctions;
 
     /**
      * Methods
@@ -123,7 +128,7 @@ public class StoreReportsTransfer implements Serializable {
             int ds = daysBetween.getDays();
             r.setPurchaseValue((Double) (r.getQty() / ds));
 //            r.setRetailsaleValue((Double) obj[2]);
-            r.setStockQty(getPharmacyBean().getStockQty(r.getItem(), institution));
+            r.setStockQty(getStoreBean().getStockQty(r.getItem(), institution));
             movementRecordsQty.add(r);
         }
     }
@@ -169,7 +174,7 @@ public class StoreReportsTransfer implements Serializable {
             r.setQty((Double) obj[1]);
             r.setPurchaseValue((Double) obj[2]);
             r.setRetailsaleValue((Double) obj[3]);
-            r.setStockQty(getPharmacyBean().getStockByPurchaseValue(r.getItem(), department));
+            r.setStockQty(getStoreBean().getStockByPurchaseValue(r.getItem(), department));
             movementRecords.add(r);
         }
     }
@@ -208,7 +213,7 @@ public class StoreReportsTransfer implements Serializable {
             r.setQty((Double) obj[1]);
             r.setPurchaseValue((Double) obj[3]);
             r.setRetailsaleValue((Double) obj[2]);
-            r.setStockQty(getPharmacyBean().getStockByPurchaseValue(r.getItem(), department));
+            r.setStockQty(getStoreBean().getStockByPurchaseValue(r.getItem(), department));
             movementRecordsQty.add(r);
         }
     }
@@ -327,6 +332,39 @@ public class StoreReportsTransfer implements Serializable {
 
         netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
 
+    }
+    
+    public void fillAssetTransferlist() {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", BillType.StoreTransferIssue);
+        
+        sql = "select bi from BillItem bi where "
+                    + " bi.bill.createdAt between :fd and :td "
+                    + " and  bi.bill.billType=:bt";
+
+        if (fromDepartment != null) {
+            m.put("fdept", fromDepartment);
+            sql += " and bi.bill.department=:fdept ";
+        }
+        
+        if (toDepartment != null) {
+            m.put("tdept", toDepartment);
+            sql += " and bi.bill.toDepartment=:tdept ";
+        }
+        
+        sql += " order by bi.bill.toDepartment.name, bi.item.category.name, bi.item.name, bi.id";
+
+
+        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        purchaseValue=0.0;
+        for (BillItem bi : transferItems) {
+            purchaseValue+=(bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getPharmaceuticalBillItem().getQtyInUnit());
+        }
+        
     }
 
     public void fillDepartmentTransfersIssueByBillItem() {
@@ -595,6 +633,9 @@ public class StoreReportsTransfer implements Serializable {
     }
 
     public Date getFromDate() {
+        if (fromDate==null) {
+            fromDate=getCommonFunctions().getStartOfMonth(new Date());
+        }
         return fromDate;
     }
 
@@ -603,6 +644,9 @@ public class StoreReportsTransfer implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate==null) {
+            toDate=getCommonFunctions().getEndOfMonth(new Date());
+        }
         return toDate;
     }
 
@@ -642,12 +686,12 @@ public class StoreReportsTransfer implements Serializable {
         this.department = department;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
+    public StoreBean getStoreBean() {
+        return StoreBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
+    public void setStoreBean(StoreBean StoreBean) {
+        this.StoreBean = StoreBean;
     }
 
     public List<StockReportRecord> getMovementRecordsQty() {
@@ -712,6 +756,14 @@ public class StoreReportsTransfer implements Serializable {
 
     public void setBillBeanController(BillBeanController billBeanController) {
         this.billBeanController = billBeanController;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
     }
 
     public class DepartmentBillRow {
