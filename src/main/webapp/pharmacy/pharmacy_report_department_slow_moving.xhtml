@@ -42,11 +42,11 @@
                             </h:panelGrid>
 
 
-                            <h:panelGrid columns="2"  >
+                            <h:panelGrid columns="2" styleClass="alignTop"  >
                                 <h:outputLabel value="Movement Type" ></h:outputLabel>
-                                <h:selectManyMenu value="#{reportsTransfer.billTypes}"   >
+                                <p:selectCheckboxMenu value="#{reportsTransfer.billTypes}" label="Bill Type"   >
                                     <f:selectItems value="#{enumController.pharmacyBillTypes2}" var="pbt" ></f:selectItems>
-                                </h:selectManyMenu>
+                                </p:selectCheckboxMenu>
                             </h:panelGrid>
 
 
