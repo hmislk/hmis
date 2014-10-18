@@ -504,6 +504,14 @@ public class BillSearch implements Serializable {
             if (!calculateRefundTotal()) {
                 return "";
             }
+            
+            for(BillItem trbi :refundingItems){
+                if(patientInvestigationController.sampledForBillItem(trbi)){
+                    UtilityController.addErrorMessage("One or more bill Item has been already undersone process at the Lab. Can not return.");
+                    return "";
+                }
+            }
+            
 
             RefundBill rb = (RefundBill) createRefundBill();
 
