@@ -6,16 +6,20 @@
 package com.divudi.bean.hr;
 
 import com.divudi.data.hr.FingerPrintRecordType;
+import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.Department;
+import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
+import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.facade.FingerPrintRecordFacade;
+import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -142,6 +146,188 @@ public class HrReportController implements Serializable {
 
         return sql;
     }
+
+    List<StaffLeave> staffLeaves;
+    @EJB
+    StaffLeaveFacade staffLeaveFacade;
+
+    public FingerPrintRecordFacade getFingerPrintRecordFacade() {
+        return fingerPrintRecordFacade;
+    }
+
+    public void setFingerPrintRecordFacade(FingerPrintRecordFacade fingerPrintRecordFacade) {
+        this.fingerPrintRecordFacade = fingerPrintRecordFacade;
+    }
+
+    public List<StaffLeave> getStaffLeaves() {
+        return staffLeaves;
+    }
+
+    public void setStaffLeaves(List<StaffLeave> staffLeaves) {
+        this.staffLeaves = staffLeaves;
+    }
+
+    public StaffLeaveFacade getStaffLeaveFacade() {
+        return staffLeaveFacade;
+    }
+
+    public void setStaffLeaveFacade(StaffLeaveFacade staffLeaveFacade) {
+        this.staffLeaveFacade = staffLeaveFacade;
+    }
+
+    public void createStaffLeave() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffLeave ss "
+                + " where ss.retired=false "
+                + " and ss.leaveDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getLeaveType() != null) {
+            sql += " and ss.leaveType=:ltp ";
+            hm.put("ltp", getReportKeyWord().getLeaveType());
+        }
+
+        staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    List<StaffLeaveBallance> staffLeaveBallances;
+
+    public List<StaffLeaveBallance> getStaffLeaveBallances() {
+        return staffLeaveBallances;
+    }
+
+    public void setStaffLeaveBallances(List<StaffLeaveBallance> staffLeaveBallances) {
+        this.staffLeaveBallances = staffLeaveBallances;
+    }
+
+    public void createStaffLeaveAggregate() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select new com.divudi.bean.hr.StaffLeaveBallance(ss.staff,ss.leaveType,sum(ss.qty)) "
+                + " from StaffLeave ss "
+                + " where ss.retired=false "
+                + " and ss.leaveDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getLeaveType() != null) {
+            sql += " and ss.leaveType=:ltp ";
+            hm.put("ltp", getReportKeyWord().getLeaveType());
+        }
+
+        sql += " group by ss.staff,ss.leaveType"
+                + " order by ss.staff.person.name,ss.leaveType ";
+
+        staffLeaveBallances = (List<StaffLeaveBallance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+    }
+
+    public void createStaffAttendanceAggregate() {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select new com.divudi.bean.hr.DepartmentAttendance(FUNC('Date',s.stockAt),ss.staff.department,count(distinct(ss.staff))) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and (ss.startRecord.recordTimeStamp is not null "
+                + " or ss.endRecord.recordTimeStamp is not null ) "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " group by FUNC('Date',ss.shiftDate),ss.staff.department"
+                + " order by ss.shiftDate,ss.staff.department.name";
+
+        departmentAttendances = (List<DepartmentAttendance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+    }
+
+    List<DepartmentAttendance> departmentAttendances;
+
+    public List<DepartmentAttendance> getDepartmentAttendances() {
+        return departmentAttendances;
+    }
+
+    public void setDepartmentAttendances(List<DepartmentAttendance> departmentAttendances) {
+        this.departmentAttendances = departmentAttendances;
+    }
+    
+    
 
     public void createStaffShift() {
         String sql = "";
@@ -287,4 +473,79 @@ public class HrReportController implements Serializable {
         this.staffShiftFacade = staffShiftFacade;
     }
 
+    public class StaffLeaveBallance {
+
+        Staff staff;
+        LeaveType leaveType;
+        double count;
+
+        public StaffLeaveBallance(Staff staff, LeaveType leaveType, double count) {
+            this.staff = staff;
+            this.leaveType = leaveType;
+            this.count = count;
+        }
+
+        public Staff getStaff() {
+            return staff;
+        }
+
+        public void setStaff(Staff staff) {
+            this.staff = staff;
+        }
+
+        public LeaveType getLeaveType() {
+            return leaveType;
+        }
+
+        public void setLeaveType(LeaveType leaveType) {
+            this.leaveType = leaveType;
+        }
+
+        public double getCount() {
+            return count;
+        }
+
+        public void setCount(double count) {
+            this.count = count;
+        }
+
+    }
+
+    public class DepartmentAttendance {
+
+        Department department;
+        Date date;
+        double present;
+
+        public DepartmentAttendance(Department department, Date date, double present) {
+            this.department = department;
+            this.date = date;
+            this.present = present;
+        }
+
+        public double getPresent() {
+            return present;
+        }
+
+        public void setPresent(double present) {
+            this.present = present;
+        }
+
+        public Department getDepartment() {
+            return department;
+        }
+
+        public void setDepartment(Department department) {
+            this.department = department;
+        }
+
+        public Date getDate() {
+            return date;
+        }
+
+        public void setDate(Date date) {
+            this.date = date;
+        }
+
+    }
 }

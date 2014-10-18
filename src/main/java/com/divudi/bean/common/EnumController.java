@@ -35,6 +35,8 @@ public class EnumController implements Serializable {
     private PaymentScheme paymentScheme;
 
     SessionNumberType[] sessionNumberTypes;
+    
+   
 
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();

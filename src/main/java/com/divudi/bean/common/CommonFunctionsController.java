@@ -257,7 +257,7 @@ public class CommonFunctionsController {
         return calendar.getTime();
     }
 
-    public Date getEndOfDay(Date date) {
+    public static Date getEndOfDay(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
@@ -269,7 +269,7 @@ public class CommonFunctionsController {
         return calendar.getTime();
     }
 
-    public Date getStartOfMonth(Date date) {
+    public static Date getStartOfMonth(Date date) {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("IST"));
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
@@ -279,7 +279,7 @@ public class CommonFunctionsController {
         return calendar.getTime();
     }
 
-    public Date getFirstDayOfYear(Date date) {
+    public static Date getFirstDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.set(Calendar.MONTH, 0);
@@ -288,7 +288,7 @@ public class CommonFunctionsController {
         return cal.getTime();
     }
 
-    public Date getLastDayOfYear(Date date) {
+    public static Date getLastDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.set(Calendar.MONTH, 11);

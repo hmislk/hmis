@@ -118,7 +118,8 @@ public class Staff implements Serializable {
     String acNo;
 
     double workingHourPerShift;
-    double leaveHour;
+    double leaveHour;  
+    
     
     double annualWelfareQualified;
     double annualWelfareUtilized;

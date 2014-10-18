@@ -10,11 +10,14 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.hr.DayType;
 import com.divudi.facade.PhDateFacade;
 import com.divudi.entity.hr.PhDate;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 import javax.inject.Named;
@@ -25,11 +28,12 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.persistence.TemporalType;
 
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -42,8 +46,7 @@ public class PhDateController implements Serializable {
     private PhDateFacade ejbFacade;
     private PhDate current;
     private List<PhDate> items = null;
-    
-   
+
     public List<PhDate> completePhDate(String qry) {
         List<PhDate> a = null;
         if (qry != null) {
@@ -53,6 +56,22 @@ public class PhDateController implements Serializable {
             a = new ArrayList<>();
         }
         return a;
+    }
+
+    public Long calHolidayCount(List<DayType> dayTypes, Date fromDate, Date toDate) {
+        String sql = "select count(c) from "
+                + " PhDate c "
+                + " where c.retired=false"
+                + " and c.dayType in :dt "
+                + " and c.phDate between :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("dt", dayTypes);
+        Long dbl = getFacade().findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        return dbl;
+
     }
 
     public void prepareAdd() {
