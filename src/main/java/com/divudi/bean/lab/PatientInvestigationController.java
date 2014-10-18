@@ -12,6 +12,8 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.LabReportSearchByInstitutionController;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -100,6 +102,42 @@ public class PatientInvestigationController implements Serializable {
         investSummery = null;
         lstToReceiveSearch = null;
         toReceive = null;
+    }
+
+    public boolean sampledForAnyItemInTheBill(Bill bill) {
+        System.out.println("bill = " + bill);
+        String jpql;
+        jpql = "select pi from PatientInvestigation pi where pi.billItem.bill=:b";
+        Map m = new HashMap();
+        m.put("b", bill);
+        List<PatientInvestigation> pis = getFacade().findBySQL(jpql, m);
+        System.out.println("pis = " + pis);
+        for (PatientInvestigation pi : pis) {
+            System.out.println("pi = " + pi);
+            if (pi.getCollected() == true || pi.getReceived() == true || pi.getDataEntered() == true) {
+                    System.out.println("can not cancel now." );
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean sampledForBillItem(BillItem billItem) {
+       System.out.println("bill = " + billItem);
+        String jpql;
+        jpql = "select pi from PatientInvestigation pi where pi.billItem=:b";
+        Map m = new HashMap();
+        m.put("b", billItem);
+        List<PatientInvestigation> pis = getFacade().findBySQL(jpql, m);
+        System.out.println("pis = " + pis);
+        for (PatientInvestigation pi : pis) {
+            System.out.println("pi = " + pi);
+            if (pi.getCollected() == true || pi.getReceived() == true || pi.getDataEntered() == true) {
+                    System.out.println("can not return." );
+                    return true;
+            }
+        }
+        return false;
     }
 
     public boolean isListIncludingApproved() {
@@ -466,7 +504,7 @@ public class PatientInvestigationController implements Serializable {
 
     public void toCollectSample() {
         prepareToSample();
-        
+
     }
 
     public void prepareToSample() {
@@ -498,7 +536,7 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("d", getSessionController().getDepartment());
 //        //System.out.println("Sql is " + temSql);
         toReceive = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
-      
+
     }
 
     public void markYetToReceiveOnes() {

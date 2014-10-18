@@ -92,6 +92,7 @@ public enum Privileges {
     LabReportSearchAll,
     LabReceive,
     LabEditPatient,
+    LabInvestigationFee,
     
     PaymentBilling,
     PaymentBillSearch,
@@ -168,6 +169,7 @@ public enum Privileges {
     StorePurchase,
     StorePurchaseOrder,
     StorePurchaseOrderApprove,
+    StorePurchaseOrderApproveSearch,
     StorePurchaseGRNRecive,
     StorePurchaseGRNReturn,
     StorePurchasePurchase,

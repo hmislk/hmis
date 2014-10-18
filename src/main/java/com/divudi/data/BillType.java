@@ -106,21 +106,21 @@ public enum BillType {
     public String getLabel() {
         switch (this) {
             case OpdBill:
-                return "OPD ";
+                return "OPD Bill";
             case PaymentBill:
-                return "Professional Pay ";
+                return "Professional Payment Bill";
             case PettyCash:
-                return "Petty Cash ";
+                return "Petty Cash Payment Bill";
             case CashRecieveBill:
-                return "Credit Company Payment ";
+                return "Credit Company Payment Receive Bill";
             case AgentPaymentReceiveBill:
-                return "Agent Payment";
+                return "Agent Payment Receive Bill";
             case InwardPaymentBill:
-                return "Inward Payment";
+                return "Inward Payment Receive Bill";
             case PharmacyOrder:
                 return "Purchase Order Request";
             case PharmacyOrderApprove:
-                return "Purchase Order Aproved";
+                return "Purchase Order Aproval";
             case PharmacyGrnBill:
                 return "Good Receive Note";
             case PharmacyGrnReturn:
@@ -132,9 +132,9 @@ public enum BillType {
             case PharmacySale:
                 return "Pharmacy Sale Bill";
             case PharmacyPre:
-                return "Pharmacy Pre Bill";
+                return "Pharmacy Sale Bill (Pre)";
             case PharmacyAdjustment:
-                return "Pharmacy Adjustment Bill";
+                return "Pharmacy Adjustment";
             case GrnPayment:
                 return "Grn Payment";
             case PharmacyTransferRequest:
@@ -170,17 +170,21 @@ public enum BillType {
             case StoreSale:
                 return "Store Sale Bill";
             case StorePre:
-                return "Store Pre Bill";
+                return "Store Sale Bill (Pre)";
             case StoreAdjustment:
-                return "Store Adjustment Bill";
+                return "Store Adjustment";
             case StoreTransferRequest:
                 return "Store Transfer Request";
             case StoreTransferIssue:
                 return "Store Transfer Issue";
-
+            case PharmacyIssue:
+                return "Pharmacy Issue";
+            case PharmacyBhtPre:
+                return "Pharmacy BHT Issue (Pre)";
+            
         }
 
-        return "";
+        return "Other";
     }
 
     private BillType parent = null;

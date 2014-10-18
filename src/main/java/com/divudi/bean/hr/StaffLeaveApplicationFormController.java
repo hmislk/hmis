@@ -105,6 +105,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         currentLeaveForm.setCreater(getSessionController().getLoggedUser());
         currentLeaveForm.setCreatedAt(new Date());
 
+        Long dayCount = commonFunctions.getDayCount(fromDate, toDate);
+        currentLeaveForm.getStaffLeave().calLeaveQty(dayCount);
         if (getCurrentLeaveForm().getStaffLeave().getId() == null) {
             getCurrentLeaveForm().getStaffLeave().setCreatedAt(new Date());
             getCurrentLeaveForm().getStaffLeave().setCreater(sessionController.getLoggedUser());
@@ -127,7 +129,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = " select l from LeaveForm l where "
+        sql = " select l from LeaveForm l "
+                + " where "
                 + " l.createdAt between :fd and :td ";
 
         if (staff != null) {
@@ -146,7 +149,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createleaveTableApprovedDate() {
         String sql;
         Map m = new HashMap();
@@ -183,9 +186,9 @@ public class StaffLeaveApplicationFormController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to Delete.");
         }
     }
-    
-    public void viewLeaveForm(LeaveForm leaveForm){
-        currentLeaveForm=leaveForm;
+
+    public void viewLeaveForm(LeaveForm leaveForm) {
+        currentLeaveForm = leaveForm;
     }
 
     public void clear() {
