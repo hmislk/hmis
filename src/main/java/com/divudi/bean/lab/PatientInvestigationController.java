@@ -12,6 +12,8 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.LabReportSearchByInstitutionController;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -102,6 +104,54 @@ public class PatientInvestigationController implements Serializable {
         toReceive = null;
     }
 
+    
+    public boolean sampledForAnyItemInTheBill(Bill bill){
+        System.out.println("bill = " + bill);
+        String jpql;
+        jpql = "select pi from PatientInvestigation pi where pi.billItem.bill=:b and pi.collected == :sa";
+        Map m = new HashMap();
+        m.put("b", bill);
+        m.put("sa", true);
+        
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        
+        PatientInvestigation pi = new PatientInvestigation();
+        pi.getSampledAt();
+        
+        Long billCount = getFacade().findLongByJpql(jpql, m);
+        System.out.println("billCount = " + billCount);
+        
+        if(billCount != 0l){
+            return true;
+        }
+        return false;
+    }
+    
+    
+     public boolean sampledForBillItem(BillItem billItem){
+        System.out.println("bill = " + billItem);
+        String jpql;
+        jpql = "select pi from PatientInvestigation pi where pi.billItem=:b and pi.collected == :sa";
+        Map m = new HashMap();
+        m.put("b", billItem);
+        m.put("sa", true);
+        
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        
+        PatientInvestigation pi = new PatientInvestigation();
+        pi.getSampledAt();
+        
+        Long billCount = getFacade().findLongByJpql(jpql, m);
+        System.out.println("billCount = " + billCount);
+        
+        if(billCount != 0l){
+            return true;
+        }
+        return false;
+    }
+    
     public boolean isListIncludingApproved() {
         return listIncludingApproved;
     }
