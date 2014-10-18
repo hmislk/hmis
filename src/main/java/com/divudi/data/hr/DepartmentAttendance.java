@@ -23,6 +23,7 @@ public class DepartmentAttendance {
         this.date = date;
         this.present = present;
     }
+    
 
     public Department getDepartment() {
         return department;
