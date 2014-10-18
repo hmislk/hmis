@@ -12,7 +12,6 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -55,7 +54,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
-    private PharmacyBean pharmacyBean;
+    StoreBean storeBeen;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
     private Bill currentBill;
@@ -98,8 +97,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getCurrentBillItem().getPharmaceuticalBillItem().
-                setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
-        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+                setPurchaseRateInUnit(getStoreBeen().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getStoreBeen().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
 
         getBillItems().add(getCurrentBillItem());
 
@@ -173,9 +172,9 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);
-            tmp.setQty(getPharmacyBean().getOrderingQty(bi.getItem(), getSessionController().getDepartment()));
-            tmp.setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
-            tmp.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(bi.getItem(), getSessionController().getDepartment()));
+            tmp.setQty(getStoreBeen().getOrderingQty(bi.getItem(), getSessionController().getDepartment()));
+            tmp.setPurchaseRateInUnit(getStoreBeen().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
+            tmp.setRetailRateInUnit(getStoreBeen().getLastRetailRate(bi.getItem(), getSessionController().getDepartment()));
 
             bi.setTmpQty(tmp.getQty());
             bi.setPharmaceuticalBillItem(tmp);
@@ -339,14 +338,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
-    }
-
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
-    }
-
     public ItemsDistributorsFacade getItemsDistributorsFacade() {
         return itemsDistributorsFacade;
     }
@@ -410,6 +401,14 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void setStoreController1(StoreController1 storeController1) {
         this.storeController1 = storeController1;
+    }
+
+    public StoreBean getStoreBeen() {
+        return storeBeen;
+    }
+
+    public void setStoreBeen(StoreBean storeBeen) {
+        this.storeBeen = storeBeen;
     }
 
 }
