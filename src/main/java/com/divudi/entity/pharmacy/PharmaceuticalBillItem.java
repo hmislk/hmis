@@ -73,7 +73,7 @@ public class PharmaceuticalBillItem implements Serializable {
     double deprecitionRate;
     @Lob
     String otherNotes;
-    
+
     @ManyToOne
     Institution manufacturer;
 
@@ -85,8 +85,6 @@ public class PharmaceuticalBillItem implements Serializable {
         this.serialNo = serialNo;
     }
 
-    
-    
     public String getWarrentyCertificateNumber() {
         return warrentyCertificateNumber;
     }
@@ -102,7 +100,7 @@ public class PharmaceuticalBillItem implements Serializable {
     public String getWarrentyDurationInYearsAndDays() {
         return TimeUtils.millisToYearsAndDates(warrentyDuration);
     }
-    
+
     public void setWarrentyDuration(long warrentyDuration) {
         this.warrentyDuration = warrentyDuration;
     }
@@ -139,8 +137,6 @@ public class PharmaceuticalBillItem implements Serializable {
         this.manufacturer = manufacturer;
     }
 
-    
-    
     public String getRegistrationNo() {
         return registrationNo;
     }
@@ -181,8 +177,6 @@ public class PharmaceuticalBillItem implements Serializable {
         this.numberOfAccessories = numberOfAccessories;
     }
 
-    
-    
     public String getBarcode() {
         return barcode;
     }
@@ -190,8 +184,6 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setBarcode(String barcode) {
         this.barcode = barcode;
     }
-    
-    
 
     public String getDescription() {
         return description;
@@ -200,8 +192,6 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    
 
     public String getCode() {
         return code;
@@ -211,8 +201,6 @@ public class PharmaceuticalBillItem implements Serializable {
         this.code = code;
     }
 
-    
-    
     public String getModel() {
         return model;
     }
@@ -220,11 +208,12 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setModel(String model) {
         this.model = model;
     }
-    
-    
-    
-    
+
     public void copy(PharmaceuticalBillItem ph) {
+        if (ph == null) {
+            return;
+        }
+        
         qty = ph.qty;
         freeQty = ph.freeQty;
         purchaseRate = ph.purchaseRate;
@@ -243,7 +232,7 @@ public class PharmaceuticalBillItem implements Serializable {
         qty = 0 - ph.qty;
         // //System.err.println("QTY "+qty);
         freeQty = 0 - ph.freeQty;
-      //  purchaseRate=0-ph.purchaseRate;
+        //  purchaseRate=0-ph.purchaseRate;
         //  lastPurchaseRate=0-ph.lastPurchaseRate;
         // retailRate=0-ph.retailRate;
         //  wholesaleRate=0-ph.wholesaleRate;
@@ -298,7 +287,7 @@ public class PharmaceuticalBillItem implements Serializable {
         if (itemBatch != null) {
             retailRate = itemBatch.getRetailsaleRate();
             purchaseRate = itemBatch.getPurcahseRate();
-            
+
         }
     }
 
@@ -496,5 +485,4 @@ public class PharmaceuticalBillItem implements Serializable {
         this.make = make;
     }
 
-    
 }
