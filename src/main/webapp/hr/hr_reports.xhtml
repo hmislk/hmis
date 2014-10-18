@@ -77,7 +77,14 @@
                                                  styleClass="linkButton" ajax="false" /> 
                         </p:panel>
                         <p:panel header="Leave" >
-                            
+                             <p:commandButton value="(1) Leave Report " 
+                                                 action="hr_report_leave" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                             <p:commandButton value="(2) Leave Report Summery " 
+                                                 action="hr_report_leave_summery" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
                         </p:panel>
 
                         <p:panel header="Extra Working Time">

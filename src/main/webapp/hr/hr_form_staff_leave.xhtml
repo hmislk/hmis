@@ -14,13 +14,13 @@
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Staff : "/>
                             <p:autoComplete id="staff"
-                                            value="#{staffLeaveApplicationFormController.currentLeaveForm.staffLeave.staff}"
+                                            value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"
                                             completeMethod="#{staffController.completeStaffCode}" var="mys" 
                                             itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                             converter="stfcon"   >   
                             </p:autoComplete>
                             <h:outputLabel value="Leave Type"/>
-                            <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.staffLeave.leaveType}">
+                            <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.leaveType}">
                                 <f:selectItem itemLabel="Select Day Type"/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
                             </p:selectOneMenu>                                                 
@@ -29,11 +29,11 @@
                                         pattern="dd MMMM yyyy">
                             </p:calendar>                     
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.staffLeave.fromDate}"
+                            <p:calendar id="frmDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.fromDate}"
                                         pattern="dd MMMM yyyy">     
                             </p:calendar>   
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.staffLeave.toDate}"
+                            <p:calendar id="toDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.toDate}"
                                         pattern="dd MMMM yyyy">
                             </p:calendar>     
                             <h:outputLabel value="Leave Approved Person"/>
@@ -94,15 +94,15 @@
                                     <p:commandButton ajax="false" value="View" action="#{staffLeaveApplicationFormController.viewLeaveForm(l)}" disabled="#{l.retired}"></p:commandButton>
                                 </p:column>
                                 <p:column headerText="Staff">
-                                    <p:outputLabel value="#{l.staffLeave.staff.person.nameWithTitle}" ></p:outputLabel>
+                                    <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="From">
-                                    <p:outputLabel value="#{l.staffLeave.fromDate}" >
+                                    <p:outputLabel value="#{l.fromDate}" >
                                         <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="To">
-                                    <p:outputLabel value="#{l.staffLeave.toDate}" >
+                                    <p:outputLabel value="#{l.toDate}" >
                                         <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                     </p:outputLabel>
                                 </p:column>

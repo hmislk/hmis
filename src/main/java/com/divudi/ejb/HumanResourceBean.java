@@ -663,7 +663,6 @@ public class HumanResourceBean {
         tmp = getFingerPrintRecordFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 //        System.err.println("fetchMissedFingerFrintRecord:: " + tmp);
 
-        
         return tmp;
     }
 
@@ -796,13 +795,14 @@ public class HumanResourceBean {
 
         return getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
-    
-     public StaffLeave fetchFirstStaffLeave(Staff staff, Date date) {
+
+    public StaffLeave fetchFirstStaffLeave(Staff staff, Date date) {
 
         String sql = "Select s From StaffLeave s"
                 + " where s.retired=false "
+                + " and s.form.retired=false"
                 + " and s.staff=:st"
-                + " and (s.fromDate >= :date and s.toDate<= :date)";
+                + " and s.leaveDate=:date";
         HashMap hm = new HashMap();
         hm.put("st", staff);
         hm.put("date", date);
@@ -810,7 +810,6 @@ public class HumanResourceBean {
 
         return getStaffLeaveFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
     }
-
 
     public boolean isHoliday(Date d) {
         String sql = "Select d From PhDate d "
@@ -825,6 +824,22 @@ public class HumanResourceBean {
         }
 
         return false;
+    }
+
+    public DayType isHolidayWithDayType(Date d) {
+        String sql = "Select d.dayType From PhDate d "
+                + " Where d.retired=false"
+                + " and d.phDate=:dtd";
+        HashMap hm = new HashMap();
+        hm.put("dtd", d);
+        Object obj = getPhDateFacade().findObjectBySQL(sql, hm, TemporalType.DATE);
+
+        if (obj == null) {
+            return null;
+        } else {
+            return (DayType) obj;
+        }
+
     }
 
     public double calWorkedDuraion(StaffShift ss) {
