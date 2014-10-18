@@ -459,19 +459,24 @@ public class InwardReportController implements Serializable {
 
         calTotalDischargedNoChanges();
 
-        List<PatientEncounter> list=patientEncounters;
-        patientEncounters=null;
-        patientEncounters=new ArrayList<>();
+        List<PatientEncounter> list = patientEncounters;
+        patientEncounters = null;
+        patientEncounters = new ArrayList<>();
         for (PatientEncounter p : list) {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
 
-            
-//            if(p)
-            total += p.getFinalBill().getNetTotal();
-            paid += p.getTransPaidByPatient();
-            creditPaid += p.getTransPaidByCompany();
-        
+            double paidValue = p.getTransPaidByPatient() + p.getTransPaidByCompany();
+            double dueValue = p.getFinalBill().getNetTotal() - paidValue;
+
+            if (dueValue != 0) {
+                total += p.getFinalBill().getNetTotal();
+                paid += p.getTransPaidByPatient();
+                creditPaid += p.getTransPaidByCompany();
+
+                patientEncounters.add(p);
+            }
+
         }
 
     }
