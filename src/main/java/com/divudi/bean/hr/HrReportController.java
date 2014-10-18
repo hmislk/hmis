@@ -226,9 +226,7 @@ public class HrReportController implements Serializable {
     public void setStaffLeaveBallances(List<StaffLeaveBallance> staffLeaveBallances) {
         this.staffLeaveBallances = staffLeaveBallances;
     }
-    
-    
-    
+
     public void createStaffLeaveAggregate() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -269,17 +267,17 @@ public class HrReportController implements Serializable {
             hm.put("ltp", getReportKeyWord().getLeaveType());
         }
 
-        sql+=" group by ss.staff,ss.leaveType"
+        sql += " group by ss.staff,ss.leaveType"
                 + " order by ss.staff.person.name,ss.leaveType ";
-        
-        staffLeaveBallances = (List<StaffLeaveBallance>)(Object)staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+
+        staffLeaveBallances = (List<StaffLeaveBallance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
-    
-       public void createStaffAttendanceAggregate() {
+
+    public void createStaffAttendanceAggregate() {
         String sql = "";
-        
+
         HashMap hm = new HashMap();
-        sql = "select new com.divudi.bean.hr.StaffLeaveBallance(ss.staff,ss.leaveType,sum(ss.qty)) "
+        sql = "select new com.divudi.bean.hr.DepartmentAttendance(FUNC('Date',s.stockAt),ss.staff.department,count(distinct(ss.staff))) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and (ss.startRecord.recordTimeStamp is not null "
@@ -313,12 +311,23 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-    
-        sql+=" group by ss.staff.department"
+        sql += " group by FUNC('Date',ss.shiftDate),ss.staff.department"
                 + " order by ss.shiftDate,ss.staff.department.name";
-        
-        staffLeaveBallances = (List<StaffLeaveBallance>)(Object)staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+
+        departmentAttendances = (List<DepartmentAttendance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
+
+    List<DepartmentAttendance> departmentAttendances;
+
+    public List<DepartmentAttendance> getDepartmentAttendances() {
+        return departmentAttendances;
+    }
+
+    public void setDepartmentAttendances(List<DepartmentAttendance> departmentAttendances) {
+        this.departmentAttendances = departmentAttendances;
+    }
+    
+    
 
     public void createStaffShift() {
         String sql = "";
@@ -464,8 +473,8 @@ public class HrReportController implements Serializable {
         this.staffShiftFacade = staffShiftFacade;
     }
 
-    
-    public class StaffLeaveBallance{
+    public class StaffLeaveBallance {
+
         Staff staff;
         LeaveType leaveType;
         double count;
@@ -475,8 +484,6 @@ public class HrReportController implements Serializable {
             this.leaveType = leaveType;
             this.count = count;
         }
-        
-        
 
         public Staff getStaff() {
             return staff;
@@ -501,15 +508,28 @@ public class HrReportController implements Serializable {
         public void setCount(double count) {
             this.count = count;
         }
-        
-        
+
     }
-    
-    public class DepartmentAttendance{
+
+    public class DepartmentAttendance {
+
         Department department;
         Date date;
-        double malePresent;
-        double femalePresent;
+        double present;
+
+        public DepartmentAttendance(Department department, Date date, double present) {
+            this.department = department;
+            this.date = date;
+            this.present = present;
+        }
+
+        public double getPresent() {
+            return present;
+        }
+
+        public void setPresent(double present) {
+            this.present = present;
+        }
 
         public Department getDepartment() {
             return department;
@@ -527,22 +547,5 @@ public class HrReportController implements Serializable {
             this.date = date;
         }
 
-        public double getMalePresent() {
-            return malePresent;
-        }
-
-        public void setMalePresent(double malePresent) {
-            this.malePresent = malePresent;
-        }
-
-        public double getFemalePresent() {
-            return femalePresent;
-        }
-
-        public void setFemalePresent(double femalePresent) {
-            this.femalePresent = femalePresent;
-        }
-        
-        
     }
 }
