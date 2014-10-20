@@ -22,12 +22,15 @@ public class DepartmentAttendance {
         this.department = department;
         this.date = date;
         this.present = present;
+
     }
 
-    public DepartmentAttendance(Department department, Object object, Double present) {
+    public DepartmentAttendance(Department department, Object object, Long present) {
         this.department = department;
         this.date = (Date) object;
-        this.present = present;
+        if (present != null) {
+            this.present = present.doubleValue();
+        }
     }
 
     public Department getDepartment() {

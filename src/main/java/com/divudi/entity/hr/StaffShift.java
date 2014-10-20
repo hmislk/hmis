@@ -144,7 +144,12 @@ public class StaffShift implements Serializable {
             case LieuHalf:
                 setLeavedTime((getStaff().getLeaveHour() * 60 * 60) / 0.5);
                 break;
-
+            case No_Pay:
+                setLeavedTime(0 - (getStaff().getLeaveHour() * 60 * 60));
+                break;
+            case No_Pay_Half:
+                setLeavedTime(0 - ((getStaff().getLeaveHour() * 60 * 60) / 0.5));
+                break;
         }
     }
 
