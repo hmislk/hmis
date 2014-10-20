@@ -653,7 +653,6 @@ public class SearchController implements Serializable {
             if (getActiveRefBill(b) == null) {
                 bills.add(b);
             }
-
         }
 
     }
