@@ -10,8 +10,6 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.PharmacyBean;
-import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -54,7 +52,7 @@ public class StoreTransferRequestController implements Serializable {
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
-    private PharmacyBean pharmacyBean;
+    StoreBean storeBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
     private Bill bill;
@@ -121,8 +119,8 @@ public class StoreTransferRequestController implements Serializable {
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
 
-        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
-        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getStoreBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getStoreBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
 
         getBillItems().add(getCurrentBillItem());
 
@@ -289,12 +287,12 @@ public class StoreTransferRequestController implements Serializable {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
+    public StoreBean getStoreBean() {
+        return storeBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
+    public void setStoreBean(StoreBean storeBean) {
+        this.storeBean = storeBean;
     }
 
     public ItemsDistributorsFacade getItemsDistributorsFacade() {

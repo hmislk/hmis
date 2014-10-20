@@ -35,6 +35,8 @@ public class EnumController implements Serializable {
     private PaymentScheme paymentScheme;
 
     SessionNumberType[] sessionNumberTypes;
+    
+   
 
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
@@ -208,6 +210,28 @@ public class EnumController implements Serializable {
     public BillType[] getPharmacyBillTypes2() {
         BillType[] b = {
             BillType.PharmacySale,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre};
+
+        return b;
+    }
+    
+    
+    public BillType[] getPharmacyBillTypesForMovementReports() {
+        BillType[] b = {
+            BillType.PharmacySale,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre};
+        return b;
+    }
+    
+     public BillType[] getPharmacyBillTypes3() {
+        BillType[] b = {
+            BillType.PharmacyPre,
             BillType.PharmacyAdjustment,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyIssue,

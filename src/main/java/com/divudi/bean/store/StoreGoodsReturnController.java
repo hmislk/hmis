@@ -10,7 +10,6 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -58,7 +57,7 @@ public class StoreGoodsReturnController implements Serializable {
     @EJB
     private BillFacade billFacade;
     @EJB
-    private PharmacyBean pharmacyBean;
+    StoreBean storeBean;
     @EJB
     private BillItemFacade billItemFacade;
     @Inject
@@ -158,7 +157,7 @@ public class StoreGoodsReturnController implements Serializable {
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
 
-            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
+            boolean returnFlag = getStoreBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
 
             if (!returnFlag) {
                 i.setTmpQty(0);
@@ -175,7 +174,7 @@ public class StoreGoodsReturnController implements Serializable {
     }
 
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
-        double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getSessionController().getDepartment());
+        double stockQty = getStoreBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getSessionController().getDepartment());
 
         if (pharmaceuticalBillItem.getQtyInUnit() > stockQty) {
             return true;
@@ -261,7 +260,7 @@ public class StoreGoodsReturnController implements Serializable {
 
 //            if (item instanceof Amp) {
 //                suggessions.add(item);
-//                suggessions.add(getPharmacyBean().getAmpp((Amp) item));
+//                suggessions.add(getStoreBean().getAmpp((Amp) item));
 //            } else if (item instanceof Ampp) {
 //                suggessions.add(((Ampp) item).getAmp());
 //                suggessions.add(item);
@@ -280,8 +279,8 @@ public class StoreGoodsReturnController implements Serializable {
     }
 
 //    public void onEditItem(BillItem tmp) {
-//        double pur = getPharmacyBean().getLastPurchaseRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
-//        double ret = getPharmacyBean().getLastRetailRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
+//        double pur = getStoreBean().getLastPurchaseRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
+//        double ret = getStoreBean().getLastRetailRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
 //
 //        tmp.getPharmaceuticalBillItem().setPurchaseRateInUnit(pur);
 //        tmp.getPharmaceuticalBillItem().setRetailRateInUnit(ret);
@@ -337,12 +336,12 @@ public class StoreGoodsReturnController implements Serializable {
         this.billFacade = billFacade;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
+    public StoreBean getStoreBean() {
+        return storeBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
+    public void setStoreBean(StoreBean storeBean) {
+        this.storeBean = storeBean;
     }
 
     public BillItemFacade getBillItemFacade() {

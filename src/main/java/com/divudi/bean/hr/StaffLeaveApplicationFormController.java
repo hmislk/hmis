@@ -6,8 +6,10 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.LeaveForm;
 import com.divudi.entity.hr.StaffLeave;
@@ -17,6 +19,8 @@ import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -65,11 +69,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
     }
 
     public boolean errorCheck() {
-        if (currentLeaveForm.getStaffLeave().getStaff() == null) {
+        if (currentLeaveForm.getStaff() == null) {
             JsfUtil.addErrorMessage("Please Enter Staff");
             return true;
         }
-        if (getCurrentLeaveForm().getStaffLeave().getLeaveType() == null) {
+        if (getCurrentLeaveForm().getLeaveType() == null) {
             JsfUtil.addErrorMessage("Please Enter Leave Type");
             return true;
         }
@@ -98,6 +102,61 @@ public class StaffLeaveApplicationFormController implements Serializable {
         return false;
     }
 
+    @Inject
+    PhDateController phDateController;
+
+    @EJB
+    HumanResourceBean humanResourceBean;
+
+    private void saveStaffLeaves() {
+        Date nowDate = fromDate;
+
+        while (toDate.after(nowDate)) {
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+
+            boolean dontAddLeave = false;
+            switch (nc.get(Calendar.DAY_OF_WEEK)) {
+//                case Calendar.SATURDAY:                    
+//                    continueFlag = true;
+//                    break;
+                case Calendar.SUNDAY:
+                    dontAddLeave = true;
+                    break;
+
+            }
+
+            DayType dayType = humanResourceBean.isHolidayWithDayType(nowDate);
+
+            switch (dayType) {
+                case MurchantileHoliday:
+                    dontAddLeave = true;
+                    break;
+                case Poya:
+                    dontAddLeave = true;
+                    break;
+                case PublicHoliday:
+                    dontAddLeave = true;
+                    break;
+            }
+
+            if (!dontAddLeave) {
+                StaffLeave staffLeave = new StaffLeave();
+                staffLeave.setCreatedAt(new Date());
+                staffLeave.setCreater(sessionController.getLoggedUser());
+                staffLeave.setLeaveType(getCurrentLeaveForm().getLeaveType());
+                staffLeave.setLeaveDate(nowDate);
+                staffLeave.setForm(getCurrentLeaveForm());
+                staffLeave.calLeaveQty();
+                staffLeaveFacade.create(staffLeave);
+            }
+
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+        }
+
+    }
+
     public void saveLeaveform() {
         if (errorCheck()) {
             return;
@@ -105,19 +164,13 @@ public class StaffLeaveApplicationFormController implements Serializable {
         currentLeaveForm.setCreater(getSessionController().getLoggedUser());
         currentLeaveForm.setCreatedAt(new Date());
 
-        if (getCurrentLeaveForm().getStaffLeave().getId() == null) {
-            getCurrentLeaveForm().getStaffLeave().setCreatedAt(new Date());
-            getCurrentLeaveForm().getStaffLeave().setCreater(sessionController.getLoggedUser());
-            staffLeaveFacade.create(getCurrentLeaveForm().getStaffLeave());
-        } else {
-            staffLeaveFacade.edit(getCurrentLeaveForm().getStaffLeave());
-        }
-
         if (currentLeaveForm.getId() == null) {
             getLeaveFormFacade().create(currentLeaveForm);
         } else {
             getLeaveFormFacade().edit(currentLeaveForm);
         }
+
+        saveStaffLeaves();
 
         JsfUtil.addSuccessMessage("Sucessfully Saved");
         clear();
@@ -127,7 +180,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = " select l from LeaveForm l where "
+        sql = " select l from LeaveForm l "
+                + " where "
                 + " l.createdAt between :fd and :td ";
 
         if (staff != null) {
@@ -146,7 +200,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createleaveTableApprovedDate() {
         String sql;
         Map m = new HashMap();
@@ -183,9 +237,9 @@ public class StaffLeaveApplicationFormController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to Delete.");
         }
     }
-    
-    public void viewLeaveForm(LeaveForm leaveForm){
-        currentLeaveForm=leaveForm;
+
+    public void viewLeaveForm(LeaveForm leaveForm) {
+        currentLeaveForm = leaveForm;
     }
 
     public void clear() {
@@ -196,7 +250,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
     public LeaveForm getCurrentLeaveForm() {
         if (currentLeaveForm == null) {
             currentLeaveForm = new LeaveForm();
-            currentLeaveForm.setStaffLeave(new StaffLeave());
+
         }
         return currentLeaveForm;
     }

@@ -108,11 +108,11 @@ public class PatientEncounterController implements Serializable {
             return completeStrings;
         }
         String c = current.getComments();
-        int intHx = c.lastIndexOf(getSessionController().getUserPreference().getAbbreviationForHistory());
-        int intEx = c.lastIndexOf(getSessionController().getUserPreference().getAbbreviationForExamination());
-        int intIx = c.lastIndexOf(getSessionController().getUserPreference().getAbbreviationForInvestigations());
-        int intRx = c.lastIndexOf(getSessionController().getUserPreference().getAbbreviationForTreatments());
-        int intMx = c.lastIndexOf(getSessionController().getUserPreference().getAbbreviationForManagement());
+        int intHx = c.lastIndexOf(getSessionController().getInstitutionPreference().getAbbreviationForHistory());
+        int intEx = c.lastIndexOf(getSessionController().getInstitutionPreference().getAbbreviationForExamination());
+        int intIx = c.lastIndexOf(getSessionController().getInstitutionPreference().getAbbreviationForInvestigations());
+        int intRx = c.lastIndexOf(getSessionController().getInstitutionPreference().getAbbreviationForTreatments());
+        int intMx = c.lastIndexOf(getSessionController().getInstitutionPreference().getAbbreviationForManagement());
 
         //   System.out.println("intHx = " + intHx);
         //   System.out.println("intEx = " + intEx);

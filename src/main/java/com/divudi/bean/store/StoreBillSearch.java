@@ -15,7 +15,6 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.EjbApplication;
-import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -1034,7 +1033,7 @@ public class StoreBillSearch implements Serializable {
             getPharmaceuticalBillItemFacade().edit(ph);
 
 //            //System.err.println("Updating QTY " + ph.getQtyInUnit());
-//            getPharmacyBean().deductFromStock(ph.getStock(), Math.abs(ph.getQtyInUnit()), ph, getSessionController().getDepartment());
+//            getStoreBean().deductFromStock(ph.getStock(), Math.abs(ph.getQtyInUnit()), ph, getSessionController().getDepartment());
 //
 //            //    updateRemainingQty(nB);
             // if (b.getReferanceBillItem() != null) {
@@ -1520,10 +1519,10 @@ public class StoreBillSearch implements Serializable {
 //
 //            for (PharmaceuticalBillItem ph : tmp) {
 //                double qty = ph.getQtyInUnit() + ph.getFreeQtyInUnit();
-//                getPharmacyBean().deductFromStock(ph.getStock(), qty);
+//                getStoreBean().deductFromStock(ph.getStock(), qty);
 //
-//                getPharmacyBean().reSetPurchaseRate(ph.getItemBatch(), getBill().getDepartment());
-//                getPharmacyBean().reSetRetailRate(ph.getItemBatch(), getSessionController().getDepartment());
+//                getStoreBean().reSetPurchaseRate(ph.getItemBatch(), getBill().getDepartment());
+//                getStoreBean().reSetRetailRate(ph.getItemBatch(), getSessionController().getDepartment());
 //            }
 
             getBill().setCancelled(true);
@@ -1630,10 +1629,10 @@ public class StoreBillSearch implements Serializable {
 //            //   List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //            for (BillItem bi : getBill().getBillItems()) {
 //                double qty = bi.getPharmaceuticalBillItem().getQtyInUnit() + bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
-//                getPharmacyBean().deductFromStock(bi.getPharmaceuticalBillItem().getStock(), qty);
+//                getStoreBean().deductFromStock(bi.getPharmaceuticalBillItem().getStock(), qty);
 //
-//                getPharmacyBean().reSetPurchaseRate(bi.getPharmaceuticalBillItem().getItemBatch(), getBill().getDepartment());
-//                getPharmacyBean().reSetRetailRate(bi.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
+//                getStoreBean().reSetPurchaseRate(bi.getPharmaceuticalBillItem().getItemBatch(), getBill().getDepartment());
+//                getStoreBean().reSetRetailRate(bi.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
 //            }
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
@@ -1666,10 +1665,10 @@ public class StoreBillSearch implements Serializable {
 
             //        List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //            for (PharmaceuticalBillItem ph : tmp) {
-//                getPharmacyBean().addToStock(ph.getStock(), ph.getQtyInUnit());
+//                getStoreBean().addToStock(ph.getStock(), ph.getQtyInUnit());
 //
-//                getPharmacyBean().reSetPurchaseRate(ph.getItemBatch(), getBill().getDepartment());
-//                getPharmacyBean().reSetRetailRate(ph.getItemBatch(), getSessionController().getDepartment());
+//                getStoreBean().reSetPurchaseRate(ph.getItemBatch(), getBill().getDepartment());
+//                getStoreBean().reSetRetailRate(ph.getItemBatch(), getSessionController().getDepartment());
 //            }
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
