@@ -61,6 +61,10 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     StaffLeaveFacade staffLeaveFacade;
 
     public void restTimeStamp(FingerPrintRecord fingerPrintRecord) {
+        if (fingerPrintRecord == null) {
+            return;
+        }
+
         if (fingerPrintRecord.getLoggedRecord() != null) {
             fingerPrintRecord.setRecordTimeStamp(fingerPrintRecord.getLoggedRecord().getRecordTimeStamp());
         } else {
@@ -74,6 +78,10 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void listenStart(StaffShift staffShift) {
+        if (staffShift == null) {
+            return;
+        }
+
         if (staffShift.getStartRecord().getLoggedRecord() != null) {
             return;
         }
@@ -85,6 +93,10 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void listenEnd(StaffShift staffShift) {
+        if (staffShift == null) {
+            return;
+        }
+
         if (staffShift.getEndRecord().getLoggedRecord() != null) {
             return;
         }
@@ -108,15 +120,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     @EJB
     FormFacade formFacade;
 
-    private AdditionalForm fetchAdditionalForm(StaffShift staffShift) {
-        String sql = "Select a from AdditionalForm a "
-                + " where a.retired=false"
-                + " and a.staffShift=:stf ";
-        HashMap hm = new HashMap();
-        hm.put("stf", staffShift);
-
-        return (AdditionalForm) formFacade.findBySQL(sql, hm);
-    }
+//    private AdditionalForm fetchAdditionalForm(StaffShift staffShift) {
+//        String sql = "Select a from AdditionalForm a "
+//                + " where a.retired=false"
+//                + " and a.staffShift=:stf ";
+//        HashMap hm = new HashMap();
+//        hm.put("stf", staffShift);
+//
+//        return (AdditionalForm) formFacade.findBySQL(sql, hm);
+//    }
 
     public void createShiftTable() {
         if (errorCheck()) {
@@ -158,7 +170,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                System.err.println("Staff " + stf.getCode());
                 List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShiftWithShift(nowDate, stf);
 
-                
                 if (staffShifts.isEmpty()) {
 //                    System.err.println("CONTINUE");
                     continue;
@@ -166,7 +177,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 for (StaffShift ss : staffShifts) {
                     StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
-                    
+
                     List<FingerPrintRecord> list = new ArrayList<>();
                     FingerPrintRecord fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
                     FingerPrintRecord fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
@@ -183,7 +194,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                     //Setting Leave Type To StaffShift From Staff Leave
                     if (staffLeave != null) {
-                        ss.setLeaveType(staffLeave.getLeaveType());                      
+                        ss.setLeaveType(staffLeave.getLeaveType());
                     }
 
                     FingerPrintRecord fpr = null;
@@ -372,13 +383,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 //UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();
-                
+
                 //UPDATE LEave
                 ss.calLeaveTime();
 
                 //Update Staff Shift OT time if DayOff or Sleeping Day
                 if (ss.getShift().getDayType() == DayType.DayOff
-                        || ss.getShift().getDayType() == DayType.SleepingDay){
+                        || ss.getShift().getDayType() == DayType.SleepingDay) {
 //                        || ss instanceof StaffShiftReplace) {
                     ss.calExtraDuty();
                 }

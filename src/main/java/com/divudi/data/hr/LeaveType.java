@@ -23,6 +23,7 @@ public enum LeaveType {
     Lieu,
     LieuHalf,
     No_Pay,
+    No_Pay_Half,
     @Deprecated
     Absent,
     Other,
