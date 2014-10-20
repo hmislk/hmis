@@ -44,7 +44,8 @@ public class EnumController implements Serializable {
     }
 
     public LeaveType[] getLeaveType() {
-        LeaveType[] ltp = {LeaveType.Annual, LeaveType.Casual, LeaveType.Lieu, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical};
+        LeaveType[] ltp = {LeaveType.Annual,LeaveType.AnnualHalf, LeaveType.Casual,LeaveType.CasualHalf,
+            LeaveType.Lieu,LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical};
         return ltp;
     }
 
