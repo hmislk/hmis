@@ -273,5 +273,4 @@ public class ServiceSession extends Item implements Serializable {
     public void setRoomNo(int roomNo) {
         this.roomNo = roomNo;
     }
-
 }
