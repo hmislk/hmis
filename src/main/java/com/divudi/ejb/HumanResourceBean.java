@@ -827,7 +827,7 @@ public class HumanResourceBean {
     }
 
     public DayType isHolidayWithDayType(Date d) {
-        String sql = "Select d.dayType From PhDate d "
+        String sql = "Select d.phType From PhDate d "
                 + " Where d.retired=false"
                 + " and d.phDate=:dtd";
         HashMap hm = new HashMap();
