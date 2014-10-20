@@ -24,6 +24,12 @@ public class DepartmentAttendance {
         this.present = present;
     }
 
+    public DepartmentAttendance(Department department, Object object, Double present) {
+        this.department = department;
+        this.date = (Date) object;
+        this.present = present;
+    }
+
     public Department getDepartment() {
         return department;
     }
