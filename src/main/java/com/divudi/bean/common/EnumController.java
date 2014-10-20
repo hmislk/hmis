@@ -35,8 +35,6 @@ public class EnumController implements Serializable {
     private PaymentScheme paymentScheme;
 
     SessionNumberType[] sessionNumberTypes;
-    
-   
 
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
@@ -44,8 +42,9 @@ public class EnumController implements Serializable {
     }
 
     public LeaveType[] getLeaveType() {
-        LeaveType[] ltp = {LeaveType.Annual,LeaveType.AnnualHalf, LeaveType.Casual,LeaveType.CasualHalf,
-            LeaveType.Lieu,LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical};
+        LeaveType[] ltp = {LeaveType.Annual, LeaveType.AnnualHalf, LeaveType.Casual, LeaveType.CasualHalf,
+            LeaveType.Lieu, LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical,
+            LeaveType.No_Pay, LeaveType.No_Pay_Half};
         return ltp;
     }
 
@@ -218,8 +217,7 @@ public class EnumController implements Serializable {
 
         return b;
     }
-    
-    
+
     public BillType[] getPharmacyBillTypesForMovementReports() {
         BillType[] b = {
             BillType.PharmacySale,
@@ -229,8 +227,8 @@ public class EnumController implements Serializable {
             BillType.PharmacyBhtPre};
         return b;
     }
-    
-     public BillType[] getPharmacyBillTypes3() {
+
+    public BillType[] getPharmacyBillTypes3() {
         BillType[] b = {
             BillType.PharmacyPre,
             BillType.PharmacyAdjustment,

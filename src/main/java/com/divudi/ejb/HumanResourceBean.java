@@ -819,15 +819,11 @@ public class HumanResourceBean {
         hm.put("dtd", d);
         List<PhDate> tmp = getPhDateFacade().findBySQL(sql, hm, TemporalType.DATE);
 
-        if (!tmp.isEmpty()) {
-            return true;
-        }
-
-        return false;
+        return !tmp.isEmpty();
     }
 
     public DayType isHolidayWithDayType(Date d) {
-        String sql = "Select d.dayType From PhDate d "
+        String sql = "Select d.phType From PhDate d "
                 + " Where d.retired=false"
                 + " and d.phDate=:dtd";
         HashMap hm = new HashMap();
