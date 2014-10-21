@@ -95,6 +95,7 @@ public class StaffShift implements Serializable {
     double lateInLogged;
     double lateOutLogged;
     double leavedTime;
+    private double leavedTimeNoPay;
     @Column(name = "overTimeFromStartRecordLogged")
     double extraTimeFromStartRecordLogged;
     @Column(name = "overTimeFromEndRecordLogged")
@@ -145,10 +146,10 @@ public class StaffShift implements Serializable {
                 setLeavedTime((getStaff().getLeaveHour() * 60 * 60) / 0.5);
                 break;
             case No_Pay:
-                setLeavedTime(0 - (getStaff().getLeaveHour() * 60 * 60));
+                setLeavedTimeNoPay(getStaff().getLeaveHour() * 60 * 60);
                 break;
             case No_Pay_Half:
-                setLeavedTime(0 - ((getStaff().getLeaveHour() * 60 * 60) / 0.5));
+                setLeavedTimeNoPay((getStaff().getLeaveHour() * 60 * 60) / 0.5);
                 break;
         }
     }
@@ -864,6 +865,14 @@ public class StaffShift implements Serializable {
 
     public void setWorkedTimeVarified(double workedTimeVarified) {
         this.workedTimeVarified = workedTimeVarified;
+    }
+
+    public double getLeavedTimeNoPay() {
+        return leavedTimeNoPay;
+    }
+
+    public void setLeavedTimeNoPay(double leavedTimeNoPay) {
+        this.leavedTimeNoPay = leavedTimeNoPay;
     }
 
 }
