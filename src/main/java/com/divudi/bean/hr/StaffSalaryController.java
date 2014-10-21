@@ -298,7 +298,8 @@ public class StaffSalaryController implements Serializable {
             double overTime = workedWithinTimeFrameVarified - normalWorkTime;
             if (overTime > 0) {
                 //BUT Calculation SUm Needed
-                ss.setComponantValue(overTime);
+                double value = overTime * 1.5;
+                ss.setComponantValue(value);
             }
 
         } else {
@@ -343,9 +344,9 @@ public class StaffSalaryController implements Serializable {
         ss.setCreater(getSessionController().getLoggedUser());
         ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(getCurrent().getStaff(), getSessionController().getLoggedUser(), PaysheetComponentType.ExtraDuty));
         if (ss.getStaffPaysheetComponent() != null) {
-            double extraTime = getHumanResourceBean().calculateExtraDutyTime(getExtraDutyFromDate(), getExtraDutyToDate(), getCurrent().getStaff());
+            double extraTimeWithMultyplyingFactor = getHumanResourceBean().calculateExtraDutyTime(getExtraDutyFromDate(), getExtraDutyToDate(), getCurrent().getStaff());
             //Need Calculation Sum
-            ss.setComponantValue(extraTime);
+            ss.setComponantValue(extraTimeWithMultyplyingFactor);
         } else {
             return;
         }
