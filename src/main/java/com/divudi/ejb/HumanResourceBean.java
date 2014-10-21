@@ -828,7 +828,7 @@ public class HumanResourceBean {
                 + " and d.phDate=:dtd";
         HashMap hm = new HashMap();
         hm.put("dtd", d);
-        Object obj = getPhDateFacade().findObjectBySQL(sql, hm, TemporalType.DATE);
+        Object obj = getPhDateFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
 
         if (obj == null) {
             return null;
