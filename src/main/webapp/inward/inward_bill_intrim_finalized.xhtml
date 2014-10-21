@@ -391,7 +391,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{bi.item.category.name}"/>                                    
                                 </p:column>
-                                <p:column headerText="Gross Value">
+                                <p:column style="text-align: right;" headerText="Gross Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
@@ -399,7 +399,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                  <p:column headerText="Margin Value">
+                                  <p:column style="text-align: right;" headerText="Margin Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="MArgin Value"/>
                                     </f:facet>
@@ -407,7 +407,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount">
+                                <p:column style="text-align: right;" headerText="Discount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount"/>
                                     </f:facet>
@@ -415,7 +415,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Net Total">
+                                <p:column style="text-align: right;" headerText="Net Total">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Total"/>
                                     </f:facet>
@@ -538,7 +538,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{bf.billItem.item.name}"/>                                    
                                 </p:column>
-                                <p:column headerText="Gross Value">
+                                <p:column  headerText="Gross Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
@@ -546,7 +546,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount">
+                                <p:column  headerText="Discount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount"/>
                                     </f:facet>
@@ -750,17 +750,17 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>                               
-                                <p:column headerText="Total Value"  exportable="false">
+                                <p:column style="text-align: right;" headerText="Total Value"  exportable="false">
                                     <h:outputLabel  value="#{iss.grossValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Margin Value" exportable="false">
+                                <p:column style="text-align: right;" headerText="Margin Value" exportable="false">
                                     <h:outputLabel  value="#{iss.marginValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Gross Value" >
+                                <p:column style="text-align: right;" headerText="Gross Value" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
@@ -768,7 +768,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount Value">
+                                <p:column style="text-align: right;" headerText="Discount Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount Value"/>
                                     </f:facet>
@@ -776,7 +776,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Net Value">
+                                <p:column style="text-align: right;" headerText="Net Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value"/>
                                     </f:facet>
@@ -784,7 +784,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted Value">
+                                <p:column style="text-align: right;" headerText="Adjusted Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Adjusted Value"/>
                                     </f:facet>
@@ -1146,7 +1146,7 @@
                                              cellFontStyle="NORMAL"  
                                              fontName="Courier New"  />
                             </p:commandButton>
-                            <p:dataTable id="pay" scrollable="true" scrollHeight="300"  
+                            <p:dataTable id="pay"  
                                          value="#{bhtSummeryFinalizedController.paymentBills}" 
                                          var="p"
                                          rowStyleClass="#{(p.netTotal ne 0 )                                                                       
@@ -1161,17 +1161,21 @@
                                     <h:outputLabel value="#{p.insId}"/>
 
                                 </p:column>
-                                <p:column headerText="Value">
+                                <p:column style="text-align: right;" headerText="Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{p.netTotal}"/>
+                                    <h:outputLabel value="#{p.netTotal}">
+                                         <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}"></h:outputLabel>
+                                        <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}">
+                                         <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>     
-                                <p:column headerText="Created At" exportable="false">
-                                    <h:outputLabel value="#{p.createdAt}">
+                                <p:column style="text-align: center;" headerText="Created At" exportable="false">
+                                    <h:outputLabel  value="#{p.createdAt}">
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
@@ -1238,7 +1242,7 @@
                                              cellFontStyle="NORMAL"  
                                              fontName="Courier New"  />
                             </p:commandButton>
-                            <p:dataTable id="cre" scrollable="true" scrollHeight="300"  
+                            <p:dataTable id="cre" 
                                          value="#{bhtSummeryFinalizedController.creditPayment}" 
                                          var="cre">
                                 

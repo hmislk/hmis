@@ -756,7 +756,7 @@ public class BillController implements Serializable {
         HashMap m = new HashMap();
         jpql="Select b from Bill b where "
                 + "b.retired = false and "
-                + "upper(b.referralID) =:rid ";
+                + "upper(b.referralNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
         List<Bill> tempBills = getFacade().findBySQL(jpql,m);
         if(tempBills == null || tempBills.isEmpty()){
