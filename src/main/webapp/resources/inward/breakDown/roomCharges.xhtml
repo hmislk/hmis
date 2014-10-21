@@ -32,19 +32,19 @@
                 </h:outputLabel>
             </p:column>
 
-            <p:column headerText="Total Charge">
+            <p:column style="text-align: right;" headerText="Total Charge">
                 <h:outputLabel value="#{rm.calculatedRoomCharge}">
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column> 
-            <p:column headerText="Discount Charge">
+            <p:column style="text-align: right;" headerText="Discount Charge">
                 <h:outputLabel value="#{rm.discountRoomCharge}">
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column> 
-            <p:column headerText="Net Charge">
+            <p:column style="text-align: right;"  headerText="Net Charge">
                 <h:outputLabel value="#{rm.calculatedRoomCharge-rm.discountRoomCharge}">
-                    <f:convertNumber pattern="#,##0.00" />
+                    <f:convertNumber   pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column> 
         </p:dataTable>

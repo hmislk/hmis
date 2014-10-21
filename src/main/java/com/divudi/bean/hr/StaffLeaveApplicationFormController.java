@@ -116,15 +116,14 @@ public class StaffLeaveApplicationFormController implements Serializable {
             nc.setTime(nowDate);
 
             boolean dontAddLeave = false;
-            switch (nc.get(Calendar.DAY_OF_WEEK)) {
-//                case Calendar.SATURDAY:                    
-//                    continueFlag = true;
+//            switch (nc.get(Calendar.DAY_OF_WEEK)) {
+////                case Calendar.SATURDAY:                    
+////                    continueFlag = true;
+////                    break;
+//                case Calendar.SUNDAY:
+//                    dontAddLeave = true;
 //                    break;
-                case Calendar.SUNDAY:
-                    dontAddLeave = true;
-                    break;
-
-            }
+//            }
 
             DayType dayType = humanResourceBean.isHolidayWithDayType(nowDate);
 

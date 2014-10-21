@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.hr;
 
+import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Staff;
@@ -80,6 +81,7 @@ public class StaffShift implements Serializable {
     @ManyToOne
     StaffShift referenceStaffShift;
 
+    private double multiplyingFactor;
     double earlyInLogged;
     double earlyOutLogged;
     double earlyInVarified;
@@ -303,7 +305,7 @@ public class StaffShift implements Serializable {
 
     }
 
-    private void calOverTime() {
+    public void calExtraTimeWithStartOrEndRecord() {
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
         Long inSecond = 0l;
@@ -360,7 +362,7 @@ public class StaffShift implements Serializable {
 
     }
 
-    public void calExtraDuty() {
+    public void calExtraTimeComplete() {
 
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
@@ -409,7 +411,7 @@ public class StaffShift implements Serializable {
         calLoggedEndRecord();
         calWorkedTimeLogged();
         calWorkedTimeVarified();
-        calOverTime();
+
     }
 
     public double getEarlyInLogged() {
@@ -873,6 +875,35 @@ public class StaffShift implements Serializable {
 
     public void setLeavedTimeNoPay(double leavedTimeNoPay) {
         this.leavedTimeNoPay = leavedTimeNoPay;
+    }
+
+    public double getMultiplyingFactor() {
+        return multiplyingFactor;
+    }
+
+    public void setMultiplyingFactor(double multiplyingFactor) {
+        this.multiplyingFactor = multiplyingFactor;
+    }
+
+    public void calMultiplyingFactor(DayType dayType) {
+        switch (dayType) {
+            case MurchantileHoliday:
+                multiplyingFactor = 2.0;
+                break;
+            case Poya:
+                multiplyingFactor = 2.0;
+                break;
+            case PublicHoliday:
+                multiplyingFactor = 2.0;
+                break;
+            case DayOff:
+                multiplyingFactor = 2.0;
+                break;
+            case SleepingDay:
+                multiplyingFactor = 2.0;
+                break;
+        }
+
     }
 
 }
