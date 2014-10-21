@@ -16,7 +16,6 @@ import com.divudi.entity.hr.PayeeTaxRange;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import javax.inject.Named;
@@ -45,39 +44,16 @@ public class HrmVariablesController implements Serializable {
     List<HrmVariables> selectedItems;
     private HrmVariables current;
     private PayeeTaxRange currentPayeeTaxRange;
-    private List<HrmVariables> items = null;
-    String selectText = "";
 
-    public List<HrmVariables> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from HrmVariables c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        return selectedItems;
-    }
+    ;
 
-    public List<HrmVariables> completeHrmVariables(String qry) {
-        List<HrmVariables> a = null;
-        if (qry != null) {
-            a = getFacade().findBySQL("select c from HrmVariables c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
+   
     public void prepareAdd() {
         current = new HrmVariables();
     }
 
     public void setSelectedItems(List<HrmVariables> selectedItems) {
         this.selectedItems = selectedItems;
-    }
-
-    public String getSelectText() {
-        return selectText;
-    }
-
-    private void recreateModel() {
-        items = null;
     }
 
     public void saveSelected() {
@@ -91,12 +67,7 @@ public class HrmVariablesController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
-        recreateModel();
-        getItems();
-    }
 
-    public void setSelectText(String selectText) {
-        this.selectText = selectText;
     }
 
     public HrmVariablesFacade getEjbFacade() {
@@ -118,11 +89,17 @@ public class HrmVariablesController implements Serializable {
     public HrmVariablesController() {
     }
 
+    public void fetchHrmVariable() {
+        String sql = "select hv "
+                + " from HrmVariables hv"
+                + " where hv.retired=false ";
+
+        current = ejbFacade.findFirstBySQL(sql);
+    }
+
     public HrmVariables getCurrent() {
-        if (getItems() != null) {
-            current = getItems().get(0);
-        }
-        
+        fetchHrmVariable();
+
         if (current == null) {
             current = new HrmVariables();
 
@@ -147,19 +124,13 @@ public class HrmVariablesController implements Serializable {
         } else {
             UtilityController.addSuccessMessage("NothingToDelete");
         }
-        recreateModel();
-        getItems();
+        
         current = null;
         getCurrent();
     }
 
     private HrmVariablesFacade getFacade() {
         return ejbFacade;
-    }
-
-    public List<HrmVariables> getItems() {
-        items = getFacade().findAll("name", true);
-        return items;
     }
 
     private boolean errorCheck() {
@@ -181,37 +152,6 @@ public class HrmVariablesController implements Serializable {
         return false;
     }
 
-    public double getEpfRate() {
-        if (getItems() != null && getItems().get(0) != null) {
-            return getItems().get(0).getEpfRate();
-        }
-
-        return 8.0;
-    }
-
-    public double getEpfCompanyRate() {
-        if (getItems() != null && getItems().get(0) != null) {
-            return getItems().get(0).getEpfCompanyRate();
-        }
-
-        return 8.0;
-    }
-
-    public double getEtfRate() {
-        if (getItems() != null && getItems().get(0) != null) {
-            return getItems().get(0).getEtfRate();
-        }
-
-        return 3.0;
-    }
-
-    public double getEtfCompanyRate() {
-        if (getItems() != null && getItems().get(0) != null) {
-            return getItems().get(0).getEtfCompanyRate();
-        }
-
-        return 3.0;
-    }
 
     public void addTaxRange() {
         if (errorCheck()) {
