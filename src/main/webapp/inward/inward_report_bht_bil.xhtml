@@ -54,7 +54,7 @@
                                 <pe:exporter type="xlsx" target="tbl,tbl2" fileName="newly_added_report"  />
                             </p:commandButton>  
                         </h:panelGrid>
-                        
+
 
                     </p:panel>
 
@@ -127,18 +127,22 @@
                                 <h:outputLabel value="Payement Detail"/>
                             </f:facet>
                             <p:column headerText="Bill No">
-                                <h:outputLabel value="#{pay.insId}"></h:outputLabel>                                
+                                <h:outputLabel  value="#{pay.insId}"></h:outputLabel>                                
                             </p:column>
-                            <p:column headerText="Amount">
-                                <h:outputLabel value="#{pay.netTotal}"></h:outputLabel>
+                            <p:column headerText="Amount" style="text-align: right;" >
+                                <h:outputLabel  value="#{pay.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}"></h:outputLabel>
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
                                 </f:facet>
-                                
+
                             </p:column>
-                            
+
                         </p:dataTable>
-                        
+
                         <p:dataTable value="#{bhtSummeryFinalizedController.billItems}" var="cre" id="tbl4">
                             <f:facet name="header">
                                 <h:outputLabel value="Credit Company Payment Detail"/>
@@ -146,16 +150,18 @@
                             <p:column headerText="Bill No">
                                 <h:outputLabel value="#{cre.insId}"></h:outputLabel>                                
                             </p:column>
-                            <p:column headerText="Amount">
-                                <h:outputLabel value="#{cre.netValue}"></h:outputLabel>
+                            <p:column headerText="Amount" style="text-align: right;" >
+                                <h:outputLabel value="#{cre.netValue}">
+                                 <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{bhtSummeryFinalizedController.billItemNetValue}"></h:outputLabel>
                                 </f:facet>
-                                
+
                             </p:column>
-                            
+
                         </p:dataTable>
-                        
+
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Paid By Patient"/>
                             <h:outputLabel value="#{bhtSummeryFinalizedController.bill.paidAmount}"/>

@@ -31,17 +31,17 @@
                     <f:convertDateTime pattern="hh mm a"/>
                 </h:outputLabel>
             </p:column>
-            <p:column headerText="Total">
+            <p:column style="text-align: right;"  headerText="Total">
                 <h:outputLabel value="#{bil.total}" >
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column>
-            <p:column headerText="Discount">
+            <p:column style="text-align: right;"  headerText="Discount">
                 <h:outputLabel value="#{bil.discount}" >
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
             </p:column>
-            <p:column headerText="Net Value">
+            <p:column style="text-align: right;"  headerText="Net Value">
                 <h:outputLabel value="#{bil.netTotal}" >
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
