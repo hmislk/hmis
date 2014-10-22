@@ -20,7 +20,7 @@ public class PackegeFacade extends AbstractFacade<Packege> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public PackegeFacade() {

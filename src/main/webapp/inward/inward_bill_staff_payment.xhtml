@@ -111,7 +111,7 @@
                                             <h:outputLabel value="Charge"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.feeValue}" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -126,11 +126,11 @@
                                     <h:panelGrid columns="2" >
                                         <h:outputLabel value="Total Due" ></h:outputLabel>
                                         <h:outputLabel id="lblDue" value="#{inwardStaffPaymentBillController.totalDue}" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Paying This time" ></h:outputLabel>
                                         <h:outputLabel id="lblPay"  value="#{inwardStaffPaymentBillController.totalPaying }" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>  
                                     </h:panelGrid>
                                 </p:panel>

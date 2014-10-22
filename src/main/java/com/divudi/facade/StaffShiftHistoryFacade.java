@@ -22,7 +22,7 @@ public class StaffShiftHistoryFacade extends AbstractFacade<StaffShiftHistory> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public StaffShiftHistoryFacade() {

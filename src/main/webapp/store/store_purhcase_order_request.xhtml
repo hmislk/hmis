@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:st="http://java.sun.com/jsf/composite/store">
 
     <ui:define name="content">
         <h:form>
@@ -82,7 +82,7 @@
                             </p:selectOneMenu>
                             <h:outputLabel value="Total "/>
                             <p:outputLabel id="tot" style="font-weight: bold;" value="#{storePurchaseOrderRequestController.currentBill.netTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </p:outputLabel>
                             <h:outputLabel value="Qutation Number"/>
                             <p:inputText value="#{storePurchaseOrderRequestController.currentBill.qutationNumber}"/>
@@ -141,7 +141,7 @@
 
                 </p:dataTable>  
                 <p:spacer height="50"/>
-                <ph:history/>
+                <st:history/>
 
             </p:panel>            
         </h:form>

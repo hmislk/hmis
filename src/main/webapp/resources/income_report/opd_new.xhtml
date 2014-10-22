@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" >
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr">
             <f:facet name="header">
                 <p:outputLabel value="#{sessionController.institution.name}"/> &nbsp;<h:outputLabel/>
                     <p:outputLabel value="Book Keeping Summary "/><h:outputLabel/>   
@@ -50,7 +50,7 @@
               
                 <f:facet name="footer" rendered="#{cc.attrs.professional eq false}">
                     <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
             
@@ -70,7 +70,7 @@
                 <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
                 <f:facet name="footer">
                     <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
             </p:column>

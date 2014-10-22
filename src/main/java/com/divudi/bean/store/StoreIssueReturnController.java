@@ -12,7 +12,6 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.inward.InwardBeanController;
-import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
@@ -60,7 +59,7 @@ public class StoreIssueReturnController implements Serializable {
     @EJB
     private BillFacade billFacade;
     @EJB
-    private PharmacyBean pharmacyBean;
+    StoreBean storeBean;
     @EJB
     private BillItemFacade billItemFacade;
 
@@ -201,7 +200,7 @@ public class StoreIssueReturnController implements Serializable {
 
             //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
             //System.err.println("STOCK " + i.getPharmaceuticalBillItem().getStock());
-            getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
+            getStoreBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
 
             //   i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem().setRemainingQty(i.getRemainingQty() - i.getQty());
             //   getPharmaceuticalBillItemFacade().edit(i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem());
@@ -391,14 +390,14 @@ public class StoreIssueReturnController implements Serializable {
         this.billFacade = billFacade;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
+    public StoreBean getStoreBean() {
+        return storeBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
+    public void setStoreBean(StoreBean storeBean) {
+        this.storeBean = storeBean;
     }
-
+    
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }

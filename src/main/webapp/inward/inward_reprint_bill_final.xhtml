@@ -14,207 +14,189 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Reprint" styleClass="alignTop" >
-                        <h:panelGrid columns="1">
-                            <p:panel>
-                                <p:commandButton ajax="false" value="Cancel" action="inward_cancel_bill_final" disabled="#{inwardSearch.bill.cancelled}"  />
-                                <p:commandButton rendered="false" ajax="false" value="Update" action="#{inwardSearch.update()}"  />
-                                <p:commandButton rendered="false" ajax="false" value="Replace" action="#{inwardSearch.replace()}"  />
-                            </p:panel>
-
-                            <h:panelGrid columns="2">
-                                <p:panel header="CLAIMABLE" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton value="Patient Copy" ajax="false"   >
-                                            <p:printer target="claimablePatientCopy" ></p:printer>
-                                        </p:commandButton>                               
-                                        <p:commandButton value="Duplicate Copy" ajax="false"  >
-                                            <p:printer target="claimableDuplicate" ></p:printer>
-                                        </p:commandButton>
-
-                                        <p:commandButton value="Print Credit Company Letter" ajax="false"  >
-                                            <p:printer target="letter" ></p:printer>
-                                        </p:commandButton>
-
-
-                                    </h:panelGrid>
+                    <p:panel rendered="#{inwardSearch.patient.person ne null}">
+                        <p:panel header="Reprint" styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null}">
+                            <h:panelGrid columns="1">
+                                <p:panel>
+                                    <p:commandButton ajax="false" value="Cancel" action="inward_cancel_bill_final" disabled="#{inwardSearch.bill.cancelled}"  />
+                                    <p:commandButton rendered="false" ajax="false" value="Update" action="#{inwardSearch.update()}"  />
+                                    <p:commandButton rendered="false" ajax="false" value="Replace" action="#{inwardSearch.replace()}"  />
                                 </p:panel>
-                                <p:panel header="Not Claimable" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton value="Patient Copy without Professional" ajax="false"   >
-                                            <p:printer target="notClaimablePatientCopy" ></p:printer>
-                                        </p:commandButton>                              
-                                        <p:commandButton value="Duplicate wihout Professional" ajax="false"   >
-                                            <p:printer target="notClaimableDuplicate" ></p:printer>
-                                        </p:commandButton>  
-                                        <p:commandButton value="Professional Fees" ajax="false"   >
-                                            <p:printer target="professional" ></p:printer>
-                                        </p:commandButton>
-                                    </h:panelGrid>
-                                </p:panel>
-                                <p:panel header="CLAIMABLE" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton ajax="false" value="Green Sheet Print"  >
-                                            <p:printer target="finalBillGreenSheet" ></p:printer>
-                                        </p:commandButton>
-                                    </h:panelGrid>
-                                </p:panel>
-                                <p:panel header="Not Claimable" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton ajax="false" value="Green Sheet Print Without Professional"   >
-                                            <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
-                                        </p:commandButton>
-                                        <p:commandButton value="Professional Fees" ajax="false"   >
-                                            <p:printer target="professional" ></p:printer>
-                                        </p:commandButton>
-                                    </h:panelGrid>
-                                </p:panel>
+
+                                <h:panelGrid columns="2">
+                                    <p:panel header="CLAIMABLE" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
+                                        <h:panelGrid columns="1">
+                                            <p:commandButton value="Patient Copy" ajax="false"   >
+                                                <p:printer target="claimablePatientCopy" ></p:printer>
+                                            </p:commandButton>                               
+                                            <p:commandButton value="Duplicate Copy" ajax="false"  >
+                                                <p:printer target="claimableDuplicate" ></p:printer>
+                                            </p:commandButton>
+
+                                            <p:commandButton value="Print Credit Company Letter" ajax="false"  >
+                                                <p:printer target="letter" ></p:printer>
+                                            </p:commandButton>
+
+
+                                        </h:panelGrid>
+                                    </p:panel>
+                                    <p:panel header="Not Claimable" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">
+                                        <h:panelGrid columns="1">
+                                            <p:commandButton value="Patient Copy without Professional" ajax="false"   >
+                                                <p:printer target="notClaimablePatientCopy" ></p:printer>
+                                            </p:commandButton>                              
+                                            <p:commandButton value="Duplicate wihout Professional" ajax="false"   >
+                                                <p:printer target="notClaimableDuplicate" ></p:printer>
+                                            </p:commandButton>  
+                                            <p:commandButton value="Professional Fees" ajax="false"   >
+                                                <p:printer target="professional" ></p:printer>
+                                            </p:commandButton>
+                                        </h:panelGrid>
+                                    </p:panel>
+                                    <p:panel header="CLAIMABLE" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
+                                        <h:panelGrid columns="1">
+                                            <p:commandButton ajax="false" value="Green Sheet Print"  >
+                                                <p:printer target="finalBillGreenSheet" ></p:printer>
+                                            </p:commandButton>
+                                        </h:panelGrid>
+                                    </p:panel>
+                                    <p:panel header="Not Claimable" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
+                                        <h:panelGrid columns="1">
+                                            <p:commandButton ajax="false" value="Green Sheet Print Without Professional"   >
+                                                <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
+                                            </p:commandButton>
+                                            <p:commandButton value="Professional Fees" ajax="false"   >
+                                                <p:printer target="professional" ></p:printer>
+                                            </p:commandButton>
+                                        </h:panelGrid>
+                                    </p:panel>
+                                </h:panelGrid>
+
                             </h:panelGrid>
 
-                        </h:panelGrid>
+                        </p:panel>
 
-                    </p:panel>
+                        <p:panel>
+                            <p:panelGrid columns="2" style="width: 100%;">
+                                <p:panel header="Patient Detail" rendered="#{inwardSearch.patient.person ne null}">
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                        <h:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.name}" ></h:inputText>
+                                        <h:outputLabel value="Date of Birth" />
 
-                    <p:panel>
-                        <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel header="Patient Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                    <h:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.name}" ></h:inputText>
-                                    <h:outputLabel value="Age" />
-                                    <h:panelGrid columns="4">
-                                        <p:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" autocomplete="off"  id="year"  
-                                                     value="#{inwardSearch.yearMonthDay.year}" 
-                                                     style="width: 50px; ">
-                                            <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
 
-                                                    listener="#{inwardSearch.dateChangeListen()}"  />
-                                            <p:watermark for="year" value="Years"></p:watermark>
-                                        </p:inputText>
-
-                                        <p:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" autocomplete="off" id="month"
-                                                     style="width: 50px; " value="#{inwardSearch.yearMonthDay.month}">
-                                            <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{inwardSearch.dateChangeListen()}"  />
-                                            <p:watermark for="month" value="Months"></p:watermark>
-                                        </p:inputText>
-
-                                        <p:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" autocomplete="off" id="day" 
-                                                     style="width: 50px;" value="#{inwardSearch.yearMonthDay.day}">
-                                            <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{inwardSearch.dateChangeListen()}" />
-                                            <p:watermark for="day" value="Days"></p:watermark>
-                                        </p:inputText>
-
-                                        <p:calendar disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}"  value="#{inwardSearch.patient.person.dob}" 
+                                        <p:calendar disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}"  value="#{inwardSearch.bill.patient.person.dob}" 
                                                     id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
                                                     style="width: 100px!important;"
                                                     styleClass="shortinput">
-                                            <f:ajax event="dateSelect" />
+
                                         </p:calendar>
-                                    </h:panelGrid>
 
-                                    <h:outputLabel value="Sex" >
-                                    </h:outputLabel>
-                                    <p:selectOneMenu disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" id="txtNewSex"  value="#{inwardSearch.bill.patient.person.sex}" >
-                                        <f:selectItem itemLabel="Select Sex"/>
-                                        <f:selectItems value="#{inwardSearch.sex}"/>
-                                    </p:selectOneMenu>
-                                    
-                                    <h:outputLabel value="Phone" >
-                                    </h:outputLabel>
-                                    <p:inputMask mask="999-9999999" disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.phone}" >
-                                    </p:inputMask>
-                                    <p:commandButton value="Update" action="#{inwardSearch.updatePatiantDetails()}" ajax="false"></p:commandButton>
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
-                                    <h:outputLabel value="Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.grantTotal}" style="float: right;" >
-                                        <f:convertNumber pattern="#,000.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Discount :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.discount}" style="float: right;" >
-                                        <f:convertNumber pattern="#,000.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.netTotal}" style="float: right;" >
-                                        <f:convertNumber pattern="#,000.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Paid Amount : " ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.paidAmount+inwardSearch.bill.patientEncounter.paidByCreditCompany}" style="float: right;" >
-                                        <f:convertNumber pattern="#,000.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Due :" ></h:outputLabel>
-                                    <h:outputLabel value="#{inwardSearch.bill.netTotal-(inwardSearch.bill.paidAmount+inwardSearch.bill.patientEncounter.paidByCreditCompany)}" style="float: right;" >
-                                        <f:convertNumber pattern="#,000.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Credit Limit"/>
-                                    <p:inputText value="#{inwardSearch.bill.patientEncounter.creditLimit}"
-                                                 rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}" />
-                                    <p:commandButton ajax="false" value="SET CREDIT LIMIT"
-                                                     action="#{inwardSearch.edit()}"
-                                                     rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}"    />
-                                </p:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
 
-                        <in:finalTable bill="#{inwardSearch.bill}"/>
+                                        <h:outputLabel value="Sex" >
+                                        </h:outputLabel>
+                                        <p:selectOneMenu disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" id="txtNewSex"  value="#{inwardSearch.bill.patient.person.sex}" >
+                                            <f:selectItem itemLabel="Select Sex"/>
+                                            <f:selectItems value="#{inwardSearch.sex}"/>
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="Phone" >
+                                        </h:outputLabel>
+                                        <p:inputMask mask="999-9999999" disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.phone}" >
+                                        </p:inputMask>
+                                        <p:commandButton value="Update" action="#{inwardSearch.updatePatiantDetails()}" ajax="false"></p:commandButton>
+                                    </p:panelGrid>
+                                </p:panel>
+                                <p:panel header="Bill Detail">
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.grantTotal}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Discount :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.discount}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.netTotal}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Paid Amount : " ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.paidAmount+inwardSearch.bill.patientEncounter.paidByCreditCompany}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Due :" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.netTotal-(inwardSearch.bill.paidAmount+inwardSearch.bill.patientEncounter.paidByCreditCompany)}" style="float: right;" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Credit Limit"/>
+                                        <p:inputText value="#{inwardSearch.bill.patientEncounter.creditLimit}"
+                                                     rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}" />
+                                        <p:commandButton ajax="false" value="SET CREDIT LIMIT"
+                                                         action="#{inwardSearch.edit()}"
+                                                         rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}"    />
+                                    </p:panelGrid>
+                                </p:panel>
+                            </p:panelGrid>
+
+                            <in:finalTable bill="#{inwardSearch.bill}"/>
+                        </p:panel>
+
+
+
+
+
+
+
+                        <h:panelGroup id="claimablePatientCopy" styleClass="noBorder">                  
+                            <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="letter">
+                            <bi:credit_company_letter bill="#{inwardSearch.bill}"/> 
+                        </h:panelGroup>
+
+                        <h:panelGroup id="claimableHospitalCopy" styleClass="noBorder">                    
+                            <bi:finalBill  hosCopy="true"     showProfessional="true"                                  
+                                           bill="#{inwardSearch.bill}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="claimableDuplicate" styleClass="noBorder" >                    
+                            <bi:finalBill duplicate="true"   showProfessional="true"                                
+                                          bill="#{inwardSearch.bill}" />
+                        </h:panelGroup>
+
+                        <h:panelGroup id="notClaimablePatientCopy" styleClass="noBorder">
+                            <bi:finalBill  bill="#{inwardSearch.bill}" />
+                        </h:panelGroup>
+
+                        <h:panelGroup id="notClaimableHospitalCopy" styleClass="noBorder">                    
+                            <bi:finalBill  hosCopy="true" bill="#{inwardSearch.bill}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="professional" styleClass="noBorder">       
+                            <bi:finalProfessionalBill bill="#{inwardSearch.bill}"  />
+                        </h:panelGroup>
+
+                        <h:panelGroup id="notClaimableDuplicate" styleClass="noBorder">                
+                            <bi:finalBill duplicate="true"                                   
+                                          bill="#{inwardSearch.bill}" />
+                        </h:panelGroup>
+
+
+
+                        <h:panelGroup id="finalBillGreenSheet" styleClass="noBorder" >                  
+                            <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder" >                  
+                            <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="false"/>
+                        </h:panelGroup>
                     </p:panel>
-
-
-
-
-
-
-
-                    <h:panelGroup id="claimablePatientCopy" styleClass="noBorder">                  
-                        <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup id="letter">
-                        <bi:credit_company_letter bill="#{inwardSearch.bill}"/> 
-                    </h:panelGroup>
-
-                    <h:panelGroup id="claimableHospitalCopy" styleClass="noBorder">                    
-                        <bi:finalBill  hosCopy="true"     showProfessional="true"                                  
-                                       bill="#{inwardSearch.bill}"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup id="claimableDuplicate" styleClass="noBorder" >                    
-                        <bi:finalBill duplicate="true"   showProfessional="true"                                
-                                      bill="#{inwardSearch.bill}" />
-                    </h:panelGroup>
-
-                    <h:panelGroup id="notClaimablePatientCopy" styleClass="noBorder">
-                        <bi:finalBill  bill="#{inwardSearch.bill}" />
-                    </h:panelGroup>
-
-                    <h:panelGroup id="notClaimableHospitalCopy" styleClass="noBorder">                    
-                        <bi:finalBill  hosCopy="true" bill="#{inwardSearch.bill}"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup id="professional" styleClass="noBorder">       
-                        <bi:finalProfessionalBill bill="#{inwardSearch.bill}"  />
-                    </h:panelGroup>
-
-                    <h:panelGroup id="notClaimableDuplicate" styleClass="noBorder">                
-                        <bi:finalBill duplicate="true"                                   
-                                      bill="#{inwardSearch.bill}" />
-                    </h:panelGroup>
-
-
-
-                    <h:panelGroup id="finalBillGreenSheet" styleClass="noBorder" >                  
-                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="true"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder" >                  
-                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="false"/>
-                    </h:panelGroup>
-
                 </h:form>
+
             </ui:define>
 
 

@@ -28,6 +28,7 @@ import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.entity.inward.RoomCategory;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
@@ -76,6 +77,8 @@ public class InwardReportController1 implements Serializable {
     List<BillItem> billItemOutSide;
     List<BillItem> billItemAdimissionFee;
     List<BillItem> billItemGeneralIssuing;
+    List<Bill> paidbyPatient;
+    
     
     @EJB
     private CommonFunctions commonFunctions;
@@ -85,6 +88,8 @@ public class InwardReportController1 implements Serializable {
     BillItemFacade BillItemFacade;
     @EJB
     PatientRoomFacade patientRoomFacade;
+    @EJB
+    BillFacade billFacade;
 
     double billFreeGross;
     double billFeeMargin;
@@ -92,6 +97,9 @@ public class InwardReportController1 implements Serializable {
     double billFeeNet;
     double billfeePaidValue;
     double billItemNetValue;
+    
+    double paidbyPatientTotalValue;
+    double creditPaymentTotalValue;
 
     double opdSrviceGross;
     double opdServiceMargin;
@@ -1304,6 +1312,9 @@ public class InwardReportController1 implements Serializable {
         createTimedService();
         createInwardService();
         createFinalSummeryMonth();
+        createPaidByPatient();
+        createCreditPayment();
+        
 
     }
 
@@ -1387,6 +1398,153 @@ public class InwardReportController1 implements Serializable {
         dd.setValue1(tmp);
         finalValues.add(dd);
 
+    }
+    
+    public void createPaidByPatient(){
+        
+        String sql;
+        Map m = new HashMap();
+        sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:bty"
+                + " and b.patientEncounter.dateOfDischarge between :frmd and :td";
+        
+        m.put("bty", BillType.InwardPaymentBill);
+        m.put("frmd", fromDate);
+        m.put("td", toDate);
+        
+        
+        if(admissionType != null){
+            sql += " and b.patientEncounter.admissionType =:adty";
+            m.put("adty", admissionType);
+        }
+        
+        if(paymentMethod != null){
+            sql += " and b.patientEncounter.paymentMethod=:paymth";
+            m.put("paymth", paymentMethod);
+        }
+        
+        if(institution != null){
+            sql += " and b.patientEncounter.creditCompany=:crdcom";
+            m.put("crdcom",institution);
+        }
+        
+
+        paidbyPatient = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        totalofCreatePaidByPatient();
+        
+        
+    }
+    
+    public double totalofCreatePaidByPatient(){
+        
+        String sql;
+        Map m = new HashMap();
+        sql = "SELECT sum(b.netTotal) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:bty"
+                + " and b.patientEncounter.dateOfDischarge between :frmd and :td";
+        
+        m.put("bty", BillType.InwardPaymentBill);
+        m.put("frmd", fromDate);
+        m.put("td", toDate);
+        
+        
+        if(admissionType != null){
+            sql += " and b.patientEncounter.admissionType =:adty";
+            m.put("adty", admissionType);
+        }
+        
+        if(paymentMethod != null){
+            sql += " and b.patientEncounter.paymentMethod=:paymth";
+            m.put("paymth", paymentMethod);
+        }
+        
+        if(institution != null){
+            sql += " and b.patientEncounter.creditCompany=:crdcom";
+            m.put("crdcom",institution);
+        }
+        
+
+        paidbyPatientTotalValue = billFacade.findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        return paidbyPatientTotalValue;
+        
+        
+    }
+    
+    public void createCreditPayment(){
+        
+        String sql;
+        Map m = new HashMap();
+        sql = "SELECT bi FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill.billType=:bty"
+                + " and bi.patientEncounter.dateOfDischarge between :frmd and :td";
+                
+        
+        m.put("bty", BillType.CashRecieveBill);
+         m.put("frmd", fromDate);
+        m.put("td", toDate);
+        
+        if(admissionType != null){
+            sql += " and bi.patientEncounter.admissionType =:adty";
+            m.put("adty", admissionType);
+        }
+        
+        if(paymentMethod != null){
+            sql += " and bi.patientEncounter.paymentMethod=:paymth";
+            m.put("paymth", paymentMethod);
+        }
+        
+        if(institution != null){
+            sql += " and bi.patientEncounter.creditCompany=:crdcom";
+            m.put("crdcom",institution);
+        }
+        
+        
+        
+
+        billItems=BillItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        totalofCreateCreditPayment();
+        
+    }
+    
+    public double totalofCreateCreditPayment(){
+        
+        String sql;
+        Map m = new HashMap();
+        sql = "SELECT sum(bi.netValue) FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill.billType=:bty"
+                + " and bi.patientEncounter.dateOfDischarge between :frmd and :td";
+                
+        
+        m.put("bty", BillType.CashRecieveBill);
+         m.put("frmd", fromDate);
+        m.put("td", toDate);
+        
+        if(admissionType != null){
+            sql += " and bi.patientEncounter.admissionType =:adty";
+            m.put("adty", admissionType);
+        }
+        
+        if(paymentMethod != null){
+            sql += " and bi.patientEncounter.paymentMethod=:paymth";
+            m.put("paymth", paymentMethod);
+        }
+        
+        if(institution != null){
+            sql += " and bi.patientEncounter.creditCompany=:crdcom";
+            m.put("crdcom",institution);
+        }
+        
+        
+        
+
+        creditPaymentTotalValue=BillItemFacade.findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        
+        return creditPaymentTotalValue;
+        
     }
 
     public String processCategoryBillItems() {
@@ -2195,6 +2353,40 @@ public class InwardReportController1 implements Serializable {
     public void setInwardDiscount(double inwardDiscount) {
         this.inwardDiscount = inwardDiscount;
     }
+
+    public List<Bill> getPaidbyPatient() {
+        return paidbyPatient;
+    }
+
+    public void setPaidbyPatient(List<Bill> paidbyPatient) {
+        this.paidbyPatient = paidbyPatient;
+    }
+
+    public BillFacade getBillFacade() {
+        return billFacade;
+    }
+
+    public void setBillFacade(BillFacade billFacade) {
+        this.billFacade = billFacade;
+    }
+
+    public double getPaidbyPatientTotalValue() {
+        return paidbyPatientTotalValue;
+    }
+
+    public void setPaidbyPatientTotalValue(double paidbyPatientTotalValue) {
+        this.paidbyPatientTotalValue = paidbyPatientTotalValue;
+    }
+
+    public double getCreditPaymentTotalValue() {
+        return creditPaymentTotalValue;
+    }
+
+    public void setCreditPaymentTotalValue(double creditPaymentTotalValue) {
+        this.creditPaymentTotalValue = creditPaymentTotalValue;
+    }
+    
+    
 
     //DATA STRUCTURE
     public class OpdService {

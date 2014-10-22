@@ -49,17 +49,17 @@
                     </p:column>
                     <p:column headerText="Hospital Fee">
                         <h:outputLabel value="#{bill.hospitalFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="Professional Fee">
                         <h:outputLabel value="#{bill.professionalFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="Total">
                         <h:outputLabel value="#{bill.netTotal}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:columnGroup type="footer">
@@ -72,21 +72,21 @@
                             <p:column>
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{mdInwardReportController.hospitalTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{mdInwardReportController.professionalTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column>
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{mdInwardReportController.professionalTotal+mdInwardReportController.hospitalTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>

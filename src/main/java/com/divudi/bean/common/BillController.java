@@ -668,6 +668,7 @@ public class BillController implements Serializable {
         temp.setStaff(staff);
         temp.setToStaff(toStaff);
         temp.setReferredBy(referredBy);
+        temp.setReferralNumber(referralId);
         temp.setReferredByInstitution(referredByInstitution);
         temp.setCreditCompany(creditCompany);
         temp.setComments(comment);
@@ -755,7 +756,7 @@ public class BillController implements Serializable {
         HashMap m = new HashMap();
         jpql="Select b from Bill b where "
                 + "b.retired = false and "
-                + "upper(b.referralID) =:rid ";
+                + "upper(b.referralNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
         List<Bill> tempBills = getFacade().findBySQL(jpql,m);
         if(tempBills == null || tempBills.isEmpty()){
@@ -771,7 +772,7 @@ public class BillController implements Serializable {
             return true;
         }
         
-        if(referredByInstitution != null){
+        if(referredByInstitution != null && referredByInstitution.getInstitutionType()!=InstitutionType.CollectingCentre){
             if(referralId == null || referralId.trim().equals("")){
                 JsfUtil.addErrorMessage("Please Enter Referrance Number");
                 return true;
@@ -967,6 +968,7 @@ public class BillController implements Serializable {
         setSearchedPatient(null);
         setReferredBy(null);
         setReferredByInstitution(null);
+        setReferralId(null);
         setSessionDate(null);
         setCreditCompany(null);
         setYearMonthDay(null);

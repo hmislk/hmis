@@ -9,6 +9,8 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel  style="border: none;">
@@ -36,7 +38,10 @@
 
             </p:panel>
 
-            <p:dataTable id="acm"  value="#{cashSummeryController.dailyCash}" var="d">
+            <p:dataTable id="acm"  value="#{cashSummeryController.dailyCash}" var="d" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">
                     <h:outputLabel value="OPD Department Wise"/>
                 </f:facet>
@@ -57,19 +62,19 @@
                     </p:column>
                     <p:column style="text-align: right;">
                         <h:outputLabel value="#{s.subHosTotal}" rendered="#{s.subTotal!=0}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column style="text-align: right;">
 
                         <h:outputLabel value="#{s.subTotal-s.subHosTotal}" rendered="#{s.subTotal!=0}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>                          
 
                     </p:column>
                     <p:column  style="text-align: right;">
                         <h:outputLabel value="#{s.subTotal}" rendered="#{s.subTotal!=0}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>    
                     <p:columnGroup type="footer">
@@ -82,7 +87,7 @@
                             <p:column>
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{d.departmentTotal}" style="float: right;">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -99,7 +104,7 @@
                         <p:column style="text-align: right;">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{cashSummeryController.departmentTotal}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
@@ -110,52 +115,64 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="summms" value="#{cashSummeryController.summerizeTable}" var="d">
+            <p:dataTable id="summms" value="#{cashSummeryController.summerizeTable}" var="d" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column>
                     <h:outputLabel value="#{d.string}" />
                 </p:column>
                 <p:column style="text-align: right;">
                     <h:outputLabel value="#{d.value}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.collections}" var="sm">
+            <p:dataTable value="#{cashSummeryController.collections}" var="sm" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
                 </p:column>
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="#{sm.value}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.summerizeTableAfter}" var="sm">
+            <p:dataTable value="#{cashSummeryController.summerizeTableAfter}" var="sm" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
                 </p:column>
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="#{-sm.value}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.finalSummery}" var="s">
+            <p:dataTable value="#{cashSummeryController.finalSummery}" var="s" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <p:column>
                     <h:outputLabel value="#{s.string}"/>
                 </p:column>
                 <p:column style="text-align: right;">
                     <h:outputLabel value="#{s.value}" rendered="#{s.value!=0}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <h:outputLabel value="................" rendered="#{s.value==0}"/>
                 </p:column>
@@ -163,7 +180,10 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.bankingData}" var="b">
+            <p:dataTable value="#{cashSummeryController.bankingData}" var="b" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
                 <f:facet name="header">
                     <h:outputLabel value="Bank Deposit" />
                 </f:facet>

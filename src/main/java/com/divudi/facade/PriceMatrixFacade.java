@@ -20,7 +20,7 @@ public class PriceMatrixFacade extends AbstractFacade<PriceMatrix> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public PriceMatrixFacade() {

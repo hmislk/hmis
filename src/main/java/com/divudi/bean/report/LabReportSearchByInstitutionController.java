@@ -242,7 +242,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
                 + " or f.paymentMethod = :pm4)"
                 + " and f.institution=:billedIns "
                 + " and f.createdAt between :fromDate and :toDate "
-                + " and f.toInstitution=:ins ";
+                + " and f.toInstitution=:ins "; 
         tm = new HashMap();
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);

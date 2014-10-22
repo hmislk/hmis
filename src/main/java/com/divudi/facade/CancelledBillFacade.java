@@ -20,7 +20,7 @@ public class CancelledBillFacade extends AbstractFacade<CancelledBill> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public CancelledBillFacade() {

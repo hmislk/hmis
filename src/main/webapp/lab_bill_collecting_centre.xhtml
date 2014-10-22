@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp">
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
 
 
@@ -18,7 +19,7 @@
                 <p:panel style="min-height: 600px; position:relative;"  >
                     <f:facet name="header" >
                         <p:panelGrid columns="3">
-                            <p:autoComplete  forceSelection="true" value="#{labBillCollectingController.collectingCentre}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:autoComplete id="acColl" forceSelection="true" value="#{labBillCollectingController.collectingCentre}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:column>
                                     #{ix.name}
                                 </p:column>
@@ -26,6 +27,7 @@
                                     #{ix.institutionCode}
                                 </p:column>
                             </p:autoComplete>
+                            <p:watermark for="acColl" value="Collecting Centre" />
                             <p:commandButton ajax="false" action="#{labBillCollectingController.settleBill()}" value="Settle" onclick="onSubmitButton();" />
                             <p:commandButton ajax="false" action="lab_bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}" value="New Bill" onclick="onSubmitButton();" />
 
@@ -256,8 +258,30 @@
             </h:panelGroup>
 
             <h:panelGroup rendered="#{labBillCollectingController.printPreview}" >
+                
+                
+                <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+                        
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpBillPreviewCoop" ></p:printer>
+                            </p:commandButton>
 
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
 
+                            <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                     return false;"/>
+                        </div>
+                        <h:panelGroup id="gpBillPreviewCoop">
+                            <ui:repeat value="#{labBillCollectingController.bills}" var="b">
+                            <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
+                        </ui:repeat>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                <p:panelGrid rendered="#{sessionContinstitutionPreferenceference.printLabelForOPdBill eq false}">
                 <div class="nonPrintBlock" >
                     <p:commandButton value="Print" ajax="false" action="#">
                         <p:printer target="gpBillPreview" ></p:printer>
@@ -348,7 +372,7 @@
                                     <h:dataTable value="#{labBillCollectingController.lstBillEntries}" var="bip1"  >
                                         <h:column >
                                             <h:outputLabel  rendered="#{bip1.billItem.bill.id eq bill.id}"  value="#{bip1.billItem.grossValue}"  style="margin: 4px; font-size: 11px!important;" >
-                                                <f:convertNumber pattern="#,000.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </h:column>
                                     </h:dataTable>
@@ -373,7 +397,7 @@
                                             </td>
                                             <td style="text-align: right!important; ">
                                                 <h:outputLabel value="#{labBillCollectingController.current.total}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </td>
                                         </tr>
@@ -383,7 +407,7 @@
                                             </td>
                                             <td style="text-align: right!important; ">
                                                 <h:outputLabel rendered="#{bill.discount ne 0.0}"   value="#{labBillCollectingController.current.discount}"  style=" text-align: right!important;  font-size: 15px!important;   ">
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </td>
                                         </tr>
@@ -393,7 +417,7 @@
                                             </td>
                                             <td style="text-align: right!important; ">
                                                 <h:outputLabel  rendered="#{labBillCollectingController.current.discount ne 0.0}"    value="#{bill.netTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </td>
                                         </tr>
@@ -417,6 +441,7 @@
 
 
                 </div>
+                </p:panelGrid>
 
 
 

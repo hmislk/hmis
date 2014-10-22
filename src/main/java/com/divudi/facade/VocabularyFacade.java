@@ -20,7 +20,7 @@ public class VocabularyFacade extends AbstractFacade<Vocabulary> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public VocabularyFacade() {

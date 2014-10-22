@@ -85,7 +85,7 @@
                                         <h:outputLabel value="Purchase Rate(Avg)"/>    
                                     </f:facet>
                                     <h:outputLabel id="avg" value="#{i.purchaseRate}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>                                  
                                 </p:column>
 
@@ -95,7 +95,7 @@
                                     </f:facet>
                                     <h:outputLabel id="tots" 
                                                    value="#{i.purchaseRate*i.systemStock}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>                                  
                                 </p:column>
 
@@ -114,10 +114,10 @@
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{reportsStockVariant.systemStockValue}" rendered="#{reportsStockVariant.recordedBill.id eq null}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                                 <h:outputLabel value="#{reportsStockVariant.recordedBill.total}" rendered="#{reportsStockVariant.recordedBill.id ne null}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>

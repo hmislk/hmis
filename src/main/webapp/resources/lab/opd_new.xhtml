@@ -35,7 +35,7 @@
                 <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
                 <f:facet name="footer" rendered="#{cc.attrs.hospital eq true}">
                     <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
             
@@ -71,7 +71,7 @@
                 <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
                 <f:facet name="footer">
                     <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
             </p:column>

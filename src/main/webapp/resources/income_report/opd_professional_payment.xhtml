@@ -13,7 +13,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.departmentProfessionalPayments}" var="a" 
-                     rendered="#{bookKeepingSummery.departmentProfessionalPayments.size()!=0}"  >
+                     rendered="#{bookKeepingSummery.departmentProfessionalPayments.size()!=0}">
             <f:facet name="header">               
                 <p:outputLabel value="Professional Payment" />    
             </f:facet>
@@ -22,7 +22,7 @@
             </p:column>
             <p:column style="text-align: right;">
                 <h:outputLabel value="#{0-a.totalPayment}" rendered="#{a.totalPayment!=0}" >
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>                
             <p:columnGroup type="footer">
@@ -31,7 +31,7 @@
                     <p:column style="text-align: right;" footerText="#{0-bookKeepingSummery.departmentProfessionalPaymentTotal}">
                         <f:facet name="footer">
                             <h:outputLabel value="#{0-bookKeepingSummery.departmentProfessionalPaymentTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>   
                         </f:facet>
                     </p:column>

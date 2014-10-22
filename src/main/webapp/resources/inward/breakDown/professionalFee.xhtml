@@ -21,15 +21,17 @@
             <p:column headerText="Name">
                 #{pf.staff.person.nameWithTitle}
             </p:column>
-            <p:column headerText="Fee Value">
-                #{pf.feeValue}
+            <p:column style="text-align: right;"  headerText="Fee Value">
+                <h:outputLabel value="#{pf.feeValue}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
             </p:column>
             <p:column headerText="Fee At">
                 <h:outputLabel value="#{pf.feeAt}">
                     <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
                 </h:outputLabel>
             </p:column>
-           
+
         </p:dataTable>
     </cc:implementation>
 </html>

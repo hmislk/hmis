@@ -21,6 +21,7 @@ import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PatientItem;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientItemFacade;
@@ -55,12 +56,16 @@ public class InwardReportControllerBht implements Serializable {
     List<RoomChargeInward> roomChargeInwards;
     List<String1Value2> professionals;
     List<String2Value4> inwardCharges;
+    List<BillItem> creditPayment;
+    List<Bill> paidbyPatientBillList;
     @EJB
     BillFeeFacade billFeeFacade;
     @EJB
     PatientItemFacade patientItemFacade;
     @EJB
     PatientRoomFacade patientRoomFacade;
+    @EJB
+    BillFacade billFacade;
     double opdSrviceGross;
     double opdServiceMargin;
     double opdServiceDiscount;
@@ -77,6 +82,8 @@ public class InwardReportControllerBht implements Serializable {
     double total;
     double discount;
     double netTotal;
+    double creditPaymentTotalValue;
+    double paidbyPatientTotalValue;
 
     Bill finalBill;
 
@@ -586,6 +593,43 @@ public class InwardReportControllerBht implements Serializable {
 
     }
 
+    public List<BillItem> createCreditPayment(PatientEncounter pe) {
+
+        String sql;
+        Map m = new HashMap();
+        sql = "SELECT bi FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill.billType=:bty"
+                + " and bi.patientEncounter=:bhtno";
+
+        m.put("bty", BillType.CashRecieveBill);
+        m.put("bhtno", pe);
+
+        creditPayment = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        return creditPayment;
+
+    }
+
+    public List<Bill> createPaidByPatient(PatientEncounter pe) {
+
+        String sql;
+        Map m = new HashMap();
+        sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:bty"
+                + " and b.patientEncounter=:bhtno";
+
+        m.put("bty", BillType.InwardPaymentBill);
+        m.put("bhtno", pe);
+
+        paidbyPatientBillList = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        return paidbyPatientBillList;
+        
+
+    }
+
     public void createOpdServiceWithoutPro2() {
         String sql;
         Map m = new HashMap();
@@ -762,6 +806,28 @@ public class InwardReportControllerBht implements Serializable {
     @Inject
     InwardBeanController inwardBeanController;
 
+    public double calTotalCreditCompany(List<BillItem> list) {
+       if(list==null)return 0;
+       double dbl=0;
+        for (BillItem bi : list) {
+           
+            dbl += bi.getNetValue();
+        }
+        
+        return dbl;
+    }
+    
+    public double calPaidbyPatient(List<Bill> lst){
+    
+        if(lst == null)return 0.0;
+        double dbl = 0.0;
+        for(Bill b : lst){
+            dbl+=b.getNetTotal();        
+        }
+        return dbl;
+        
+    }
+
     public void process() {
         makeNull();
 
@@ -770,6 +836,12 @@ public class InwardReportControllerBht implements Serializable {
         createDoctorPaymentInward();
         createTimedService();
         createInwardService();
+        paidbyPatientBillList=createPaidByPatient(getPatientEncounter());
+        paidbyPatientTotalValue = calPaidbyPatient(paidbyPatientBillList);
+        
+        creditPayment = createCreditPayment(getPatientEncounter());
+        creditPaymentTotalValue = calTotalCreditCompany(creditPayment);
+
         finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
         calTotal();
     }
@@ -984,6 +1056,46 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setOpdNetTotal(double opdNetTotal) {
         this.opdNetTotal = opdNetTotal;
+    }
+
+    public List<BillItem> getCreditPayment() {
+        return creditPayment;
+    }
+
+    public void setCreditPayment(List<BillItem> creditPayment) {
+        this.creditPayment = creditPayment;
+    }
+
+    public double getCreditPaymentTotalValue() {
+        return creditPaymentTotalValue;
+    }
+
+    public void setCreditPaymentTotalValue(double creditPaymentTotalValue) {
+        this.creditPaymentTotalValue = creditPaymentTotalValue;
+    }
+
+    public List<Bill> getPaidbyPatientBillList() {
+        return paidbyPatientBillList;
+    }
+
+    public void setPaidbyPatientBillList(List<Bill> paidbyPatientBillList) {
+        this.paidbyPatientBillList = paidbyPatientBillList;
+    }
+
+    public BillFacade getBillFacade() {
+        return billFacade;
+    }
+
+    public void setBillFacade(BillFacade billFacade) {
+        this.billFacade = billFacade;
+    }
+
+    public double getPaidbyPatientTotalValue() {
+        return paidbyPatientTotalValue;
+    }
+
+    public void setPaidbyPatientTotalValue(double paidbyPatientTotalValue) {
+        this.paidbyPatientTotalValue = paidbyPatientTotalValue;
     }
 
     //DATA STRUCTURE

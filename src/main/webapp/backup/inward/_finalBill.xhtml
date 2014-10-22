@@ -134,7 +134,7 @@
                                                             <td  style="text-align: right;font-size: 8px!important;">
                                                                 <h:panelGroup rendered="#{fe.feeValue ne 0}">
                                                                     <h:outputLabel value="#{fe.feeValue}">
-                                                                        <f:convertNumber pattern="#,000.00" />
+                                                                        <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
                                                                 </h:panelGroup>
                                                             </td>
@@ -154,7 +154,7 @@
                                                             </td>
                                                             <td >
                                                                 <h:outputLabel value="#{fe.referencePatientRoom.admittedAt}" >
-                                                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a" />
+                                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" />
                                                                 </h:outputLabel>
                                                             </td>
                                                             <td>
@@ -162,7 +162,7 @@
                                                             </td>
                                                             <td >
                                                                 <h:outputLabel  value="#{fe.referencePatientRoom.dischargedAt}" >
-                                                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a" />
+                                                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" />
                                                                 </h:outputLabel>
                                                             </td>
                                                             <td>
@@ -170,7 +170,7 @@
                                                             </td>
                                                             <td>
                                                                 <h:outputLabel value="#{fe.referencePatientRoom.calculatedRoomCharge}" >
-                                                                    <f:convertNumber pattern="#,000.00" />
+                                                                    <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputLabel>
                                                             </td>
                                                         </tr>
@@ -181,7 +181,7 @@
                                     </td>
                                     <td  style="width: 30%;text-align: right;font-size: 13px!important;">                                        
                                         <h:outputLabel  value="#{bip.adjustedValue}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>
                                 </tr>
@@ -203,11 +203,11 @@
                                     <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
 
                                         <h:outputLabel rendered="#{!cc.attrs.showProfessionalOnly}" value="#{cc.attrs.bill.grantTotal}" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>  
 
                                         <h:outputLabel rendered="#{cc.attrs.showProfessionalOnly}" value="#{cc.attrs.bill.hospitalFee}" >
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>  
 
                                     </td>
@@ -224,7 +224,7 @@
                                 <td>&nbsp;</td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="(#{cc.attrs.bill.discount})" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
@@ -243,11 +243,11 @@
                                 <td>&nbsp;</td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel rendered="#{!cc.attrs.showProfessionalOnly}" value="#{cc.attrs.bill.netTotal}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>  
 
                                     <h:outputLabel rendered="#{cc.attrs.showProfessionalOnly}" value="#{cc.attrs.bill.hospitalFee}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>  
 
                                 </td>
@@ -269,7 +269,7 @@
                                 <td>&nbsp;</td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel  value="(#{cc.attrs.bill.paidAmount})" rendered="#{cc.attrs.bill.paidAmount !=0}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
@@ -282,7 +282,7 @@
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel  value="(#{cc.attrs.bill.patientEncounter.creditUsedAmount})" 
                                                     rendered="#{cc.attrs.bill.patientEncounter.creditUsedAmount != 0}" >
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>                                    
                                 </td>
                             </tr>

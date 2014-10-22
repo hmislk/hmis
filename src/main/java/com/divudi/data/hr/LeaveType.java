@@ -10,7 +10,9 @@ package com.divudi.data.hr;
  */
 public enum LeaveType {
     Casual, //7
+    CasualHalf,    
     Annual, //14
+    AnnualHalf,
     Medical, //14
     @Deprecated
     Maternity, 
@@ -19,7 +21,10 @@ public enum LeaveType {
     @Deprecated
     Sick, //    
     Lieu,
+    LieuHalf,
     No_Pay,
+    No_Pay_Half,
+    @Deprecated
     Absent,
     Other,
 }

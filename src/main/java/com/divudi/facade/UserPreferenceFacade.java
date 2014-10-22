@@ -22,7 +22,7 @@ public class UserPreferenceFacade extends AbstractFacade<UserPreference> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public UserPreferenceFacade() {

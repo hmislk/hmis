@@ -22,7 +22,7 @@ public class ReorderFacade extends AbstractFacade<Reorder> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public ReorderFacade() {

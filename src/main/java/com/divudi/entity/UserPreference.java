@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 
 /**
@@ -28,6 +29,8 @@ public class UserPreference implements Serializable {
     String abbreviationForInvestigations;
     String abbreviationForTreatments;
     String abbreviationForManagement;
+    @Lob
+    String pharmacyBillFooter;
     @ManyToOne
     WebUser webUser;
     @ManyToOne
@@ -134,6 +137,16 @@ public class UserPreference implements Serializable {
     public void setPrintLabelForOPdBill(boolean printLabelForOPdBill) {
         this.printLabelForOPdBill = printLabelForOPdBill;
     }
+
+    public String getPharmacyBillFooter() {
+        return pharmacyBillFooter;
+    }
+
+    public void setPharmacyBillFooter(String pharmacyBillFooter) {
+        this.pharmacyBillFooter = pharmacyBillFooter;
+    }
+    
+    
     
     
 

@@ -8,7 +8,9 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                 <h:panelGrid columns="6" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
@@ -72,7 +74,7 @@
                             <h:outputLabel value="Gross" />
                         </f:facet>
                         <h:outputLabel value="#{i.value1}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="Discount " style="text-align: right;">
@@ -80,7 +82,7 @@
                             <h:outputLabel value="Discount" />
                         </f:facet>
                         <h:outputLabel value="#{i.value2}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="Professional" style="text-align: right;">
@@ -88,7 +90,7 @@
                             <h:outputLabel value="Professional" />
                         </f:facet>
                         <h:outputLabel value="#{i.value3}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="Net Value" style="text-align: right;">
@@ -96,7 +98,7 @@
                             <h:outputLabel value="Net Value" />
                         </f:facet>
                         <h:outputLabel value="#{i.value1-(i.value2+i.value3)}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:columnGroup type="footer">
@@ -105,21 +107,21 @@
                             <p:column footerText="#{pharmacySaleReport.billedSummery.billedTotal}" style="text-align: right;">
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{pharmacySaleReport.billedSummery.billedTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.billedSummery.cancelledTotal}" style="text-align: right;">
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{pharmacySaleReport.billedSummery.cancelledTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{pharmacySaleReport.billedSummery.refundedTotal}" style="text-align: right;">
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{pharmacySaleReport.billedSummery.refundedTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -127,7 +129,7 @@
                             <p:column footerText="#{pharmacySaleReport.billedSummery.billedTotal-(pharmacySaleReport.billedSummery.cancelledTotal+pharmacySaleReport.billedSummery.refundedTotal)}" style="text-align: right;">
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{pharmacySaleReport.billedSummery.billedTotal-(pharmacySaleReport.billedSummery.cancelledTotal+pharmacySaleReport.billedSummery.refundedTotal)}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>

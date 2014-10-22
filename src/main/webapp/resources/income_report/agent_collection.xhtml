@@ -14,7 +14,7 @@
     <cc:implementation>
         <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.agentCollections}" var="a" 
                      rendered="#{bookKeepingSummery.agentCollections.size()>0}" 
-                     sortBy="#{a.institution.id}" >
+                     sortBy="#{a.institution.id}">
             <f:facet name="header">               
                 <p:outputLabel value="Agent Collection"/>                 
             </f:facet>
@@ -42,7 +42,7 @@
             <p:column/>
             <p:column style="text-align: right;" headerText="Total">
                 <h:outputLabel value="#{a.netTotal}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
             <p:columnGroup type="footer">
@@ -51,7 +51,7 @@
                     <p:column style="text-align: right;" footerText="#{bookKeepingSummery.agentPaymentTotal}" >
                         <f:facet name="footer">
                             <h:outputLabel value="#{bookKeepingSummery.agentPaymentTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>

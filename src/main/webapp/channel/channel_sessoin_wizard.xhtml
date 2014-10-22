@@ -10,7 +10,7 @@
         <h:form>
 
             <p:panel>
-                <p:wizard>
+                <p:wizard flowListener="#{channelSessionWizard.onFlowProcess}">
                     <p:tab title="Select Specility">
                         <h:outputLabel  value="Speciality" ></h:outputLabel>
                         <p:autoComplete  forceSelection="true" value="#{channelSessionWizard.speciality}" id="acSpeciality"
@@ -101,7 +101,14 @@
                                     </p:autoComplete>
                                     <p:outputLabel value="Refundable"/>
                                     <p:selectBooleanCheckbox value="#{channelSessionWizard.current.refundable}"/>
+                                    <p:outputLabel value="Channel Id"/>
                                     <p:outputLabel value="#{channelSessionWizard.current.id}"/>
+                                    <p:outputLabel value="Scan Fee Add"/>
+                                    <p:selectOneRadio id="console2" value="#{channelSessionWizard.current.scanFee}" >
+                                        <f:selectItem itemLabel="Yes" itemValue="true" />
+                                        <f:selectItem itemLabel="no" itemValue="false" />
+                                        <p:ajax process="console2" update="tblfee" event="change" listener="#{channelSessionWizard.scanFeeListner()}"/>
+                                    </p:selectOneRadio>
                                 </p:panelGrid>
                                 <br/>
                                 <p:tabView rendered="#{channelSessionWizard.createNewSession ne false}" >
@@ -125,92 +132,68 @@
 
                             </h:panelGrid>                   
                         </p:panel>
-
-                    </p:tab>
+                    </p:tab >
                     <p:tab title="Fee For Session">
-                        <p:panelGrid columns="3" >
-                            <p:panel header="Hospital Fee">
-                                <p:panelGrid columns="2" >
-                                <h:outputLabel value="Fee Name" >
-                                </h:outputLabel>
-                                <p:inputText value="#{channellingFeeController.fee.name}" ></p:inputText>
-
-                                <h:outputText value="Local Fee"/>
-                                <h:inputText autocomplete="off" id="txtFee" value="#{channellingFeeController.fee.fee}"/>
-
-                                <h:outputText value="Foreign Fee"/>
-                                <h:inputText autocomplete="off" id="txtFFee" value="#{channellingFeeController.fee.ffee}"/>
-
-
-
-                                <h:outputLabel value="Fee Type" >
-                                </h:outputLabel>
-                                <p:selectOneMenu value="#{channellingFeeController.fee.feeType}" >
-                                    <f:selectItem itemLabel="Select Fee Type" ></f:selectItem>
-                                    <f:selectItems value="#{enumController.feeTypes}" ></f:selectItems>
-                                    <f:ajax event="change" execute="@this" render="lblIns cmbIns lblDep cmbDep lblSpe cmbSpe lblStaff cmbStaff" ></f:ajax>
+                        <p:dataTable value="#{channelSessionWizard.fees}" var="i" id="tblfee">
+                            <f:facet name="header">
+                                <h:outputLabel value="Channel Fees" />
+                            </f:facet>
+                            <p:column headerText="Fee Name">
+                                <h:outputLabel value="#{i.name}"/>
+                            </p:column>
+                            <p:column headerText="Fee Type">
+                                <h:outputLabel value="#{i.feeType}"/>
+                            </p:column>
+                            <p:column headerText="Specility">
+                                <p:autoComplete id="acSpeciality" forceSelection="true" 
+                                                value="#{i.speciality}"
+                                                required="true"
+                                                completeMethod="#{specialityController.completeSpeciality}"
+                                                var="spe"
+                                                itemLabel="#{spe.name}" 
+                                                itemValue="#{spe}" 
+                                                style="width: 400px;"
+                                                rendered="#{i.feeType eq 'Staff'}">
+                                </p:autoComplete>
+                            </p:column>
+                            <p:column headerText="Staff" >
+                                <p:autoComplete   forceSelection="true" 
+                                                  value="#{i.staff}" id="acDoc"
+                                                  completeMethod="#{channellingFeeController.completeDoctors}" 
+                                                  var="mys" itemLabel="#{mys.person.nameWithTitle}" 
+                                                  itemValue="#{mys}"
+                                                  converter="stfcon"
+                                                  rendered="#{i.feeType eq 'Staff'}">   
+                                </p:autoComplete> 
+                            </p:column>
+                            <p:column headerText="Institution" >
+                                <p:selectOneMenu id="cmbInstitution" value="#{i.institution}"
+                                                 rendered="#{i.feeType eq 'OwnInstitution' or i.feeType eq 'Service'}" >
+                                    <f:selectItem itemLabel="Select Institution"/>
+                                    <f:selectItems value="#{institutionController.company}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/>                                        
                                 </p:selectOneMenu>
+                            </p:column>
+                            <p:column headerText="Department">
+                                <h:selectOneListbox id="cmbDepartment" size="1" 
+                                                    value="#{i.department}"
+                                                    rendered="#{i.feeType eq 'OwnInstitution' or i.feeType eq 'Service'}" >
+                                    <f:selectItem itemLabel="Select Department"/>
+                                    <f:selectItems value="#{channellingFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
+                                </h:selectOneListbox>
+                            </p:column>
+                            <p:column headerText="Local Fee">
+                                <p:inputText value="#{i.fee}" />
+                            </p:column>
+                            <p:column headerText="Foreign Fee">
+                                <p:inputText value="#{i.ffee}" />
+                            </p:column>
 
-
-
-
-                                <h:panelGroup id="lblIns" >
-                                    <h:outputLabel rendered="#{channellingFeeController.fee.feeType eq 'OwnInstitution'}" 
-                                                   value="Institution" ></h:outputLabel>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="cmbIns" >
-                                    <p:selectOneMenu id="cmbInstitution" value="#{channellingFeeController.fee.institution}"
-                                                     rendered="#{channellingFeeController.fee.feeType eq 'OwnInstitution'}" >
-                                        <f:selectItem itemLabel="Select Institution"/>
-                                        <f:selectItems value="#{institutionController.company}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                        <f:ajax execute="cmbInstitution" render="cmbDepartment" event="change"/>                                        
-                                    </p:selectOneMenu>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="lblDep" >
-                                    <h:outputText value="Department"  rendered="#{channellingFeeController.fee.feeType eq 'OwnInstitution'}" />
-                                </h:panelGroup>
-                                <h:panelGroup id="cmbDep" >
-                                    <h:selectOneListbox id="cmbDepartment" size="1" 
-                                                        value="#{channellingFeeController.fee.department}"
-                                                        rendered="#{channellingFeeController.fee.feeType eq 'OwnInstitution'}" >
-                                        <f:selectItem itemLabel="Select Department"/>
-                                        <f:selectItems value="#{channellingFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
-                                    </h:selectOneListbox>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="lblSpe" >
-                                    <h:outputText value="Speciality"  rendered="#{channellingFeeController.fee.feeType eq 'Staff'}" />
-                                </h:panelGroup>
-
-                                <h:panelGroup id="cmbSpe" >
-                                    <p:autoComplete converter="specilityCon"  forceSelection="true" 
-                                                    value="#{channellingFeeController.fee.speciality}"
-                                                    completeMethod="#{specialityController.completeSpeciality}"
-                                                    var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" 
-                                                    size="30"  style="width: 400px;"
-                                                    rendered="#{channellingFeeController.fee.feeType eq 'Staff'}">
-                                        <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
-                                    </p:autoComplete>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="lblStaff" >
-                                    <h:outputText value="Staff"  rendered="#{channellingFeeController.fee.feeType eq 'Staff'}"/>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="cmbStaff" >
-                                    <p:autoComplete converter="stfcon"  forceSelection="true" id="cmbDoc" 
-                                                    value="#{channellingFeeController.fee.staff}" 
-                                                    completeMethod="#{channellingFeeController.completeStaff}" var="st" itemLabel="#{st.person.name}" itemValue="#{st}" size="30"  style="width: 400px;"
-                                                    rendered="#{channellingFeeController.fee.feeType eq 'Staff'}">
-                                        <f:ajax execute="cmbSpe" event="keypress"/>
-                                    </p:autoComplete>
-                                </h:panelGroup>
-
-                            </p:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
+                            <p:column headerText="Update">
+                                <p:commandButton value="Update" action="#{channelSessionWizard.updateItemFee(i)}" >
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
                     </p:tab>
                 </p:wizard>
             </p:panel>

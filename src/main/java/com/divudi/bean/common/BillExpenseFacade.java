@@ -23,7 +23,7 @@ public class BillExpenseFacade extends AbstractFacade<BillExpense> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public BillExpenseFacade() {

@@ -65,7 +65,7 @@
                                 <h:panelGroup rendered="#{bb.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>                             
                             </p:column>
@@ -89,7 +89,7 @@
                             </p:column>
                             <p:column headerText="Value" >                              
                                 <h:outputLabel value="#{bb.total}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>                                  
                             </p:column>                                
                             <p:column headerText="Comments" >

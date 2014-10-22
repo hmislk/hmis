@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.divudi.entity.hr;
 
 import com.divudi.entity.Department;
@@ -12,27 +11,38 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class AmendmentForm extends HrForm {
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fromFDate;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fromTDate;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date toFDate;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date toTDate;
-    private Staff fromStaff;
-    private Staff toStaff;
-    private Shift fromShift;
-    private Shift toShift;
-    private Department fromDepartment;
-    private Department toDepartment;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fromDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date toDate;
+    @ManyToOne
+    private Staff fromStaff;
+    @ManyToOne
+    private Staff toStaff;
+    @ManyToOne
+    private StaffShift fromStaffShift;
+    @ManyToOne
+    private StaffShift toStaffShift;
+    @ManyToOne
+    Shift toShift;
+
+    public Shift getToShift() {
+        return toShift;
+    }
+
+    public void setToShift(Shift toShift) {
+        this.toShift = toShift;
+    }
+    
+    
 
     public Staff getFromStaff() {
         return fromStaff;
@@ -50,68 +60,36 @@ public class AmendmentForm extends HrForm {
         this.toStaff = toStaff;
     }
 
-    public Shift getFromShift() {
-        return fromShift;
+    public Date getFromDate() {
+        return fromDate;
     }
 
-    public void setFromShift(Shift fromShift) {
-        this.fromShift = fromShift;
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
     }
 
-    public Shift getToShift() {
-        return toShift;
+    public Date getToDate() {
+        return toDate;
     }
 
-    public void setToShift(Shift toShift) {
-        this.toShift = toShift;
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
-    public Department getFromDepartment() {
-        return fromDepartment;
+    public StaffShift getFromStaffShift() {
+        return fromStaffShift;
     }
 
-    public void setFromDepartment(Department fromDepartment) {
-        this.fromDepartment = fromDepartment;
+    public void setFromStaffShift(StaffShift fromStaffShift) {
+        this.fromStaffShift = fromStaffShift;
     }
 
-    public Department getToDepartment() {
-        return toDepartment;
+    public StaffShift getToStaffShift() {
+        return toStaffShift;
     }
 
-    public void setToDepartment(Department toDepartment) {
-        this.toDepartment = toDepartment;
+    public void setToStaffShift(StaffShift toStaffShift) {
+        this.toStaffShift = toStaffShift;
     }
 
-    public Date getFromFDate() {
-        return fromFDate;
-    }
-
-    public void setFromFDate(Date fromFDate) {
-        this.fromFDate = fromFDate;
-    }
-
-    public Date getFromTDate() {
-        return fromTDate;
-    }
-
-    public void setFromTDate(Date fromTDate) {
-        this.fromTDate = fromTDate;
-    }
-
-    public Date getToFDate() {
-        return toFDate;
-    }
-
-    public void setToFDate(Date toFDate) {
-        this.toFDate = toFDate;
-    }
-
-    public Date getToTDate() {
-        return toTDate;
-    }
-
-    public void setToTDate(Date toTDate) {
-        this.toTDate = toTDate;
-    }
-    
 }

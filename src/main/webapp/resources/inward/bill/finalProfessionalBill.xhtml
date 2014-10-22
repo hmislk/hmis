@@ -123,7 +123,7 @@
                                                               and fe.bill.cancelled eq false 
                                                               and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
                                         <h:outputLabel value="#{fe.feeAdjusted}">
-                                            <f:convertNumber pattern="#,000.00" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -133,7 +133,7 @@
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
                                                 <h:outputLabel  value="#{bip.netValue}">
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>

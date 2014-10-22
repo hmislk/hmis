@@ -76,7 +76,7 @@
                             <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                         </p:selectOneMenu>
                         <p:outputLabel id="tot" style="font-weight: bold;" value="#{purchaseOrderRequestController.currentBill.netTotal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </p:outputLabel>
                     </p:tab>
 
@@ -125,7 +125,7 @@
                     <p:column headerText="Total" style="width:20%">  
                         <h:panelGroup id="total">
                             <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </h:panelGroup>
                     </p:column>  

@@ -19,11 +19,11 @@
                         <h:panelGrid columns="2" >
                             <p:outputLabel value="From" ></p:outputLabel>
                             <p:calendar value="#{mdInwardReportController.fromDate}"
-                                        pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                                        pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
 
                             <p:calendar value="#{mdInwardReportController.toDate}" 
-                                        pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                                        pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
 
 
                             <p:outputLabel value="Admission Type"/>
@@ -41,7 +41,7 @@
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Credit Company : " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                            <p:selectOneMenu  id="lstCc"   value="#{mdInwardReportController.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
@@ -170,7 +170,7 @@
                                         <p:column footerText="#{mdInwardReportController.totalValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.totalValue}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
 
@@ -245,7 +245,7 @@
                                         <p:column footerText="#{mdInwardReportController.cancelledTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -322,7 +322,7 @@
                                         <p:column footerText="#{mdInwardReportController.refundTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.refundTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>

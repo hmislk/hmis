@@ -20,7 +20,7 @@ public class IxCalFacade extends AbstractFacade<IxCal> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public IxCalFacade() {

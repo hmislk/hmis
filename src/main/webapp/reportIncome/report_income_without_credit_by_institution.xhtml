@@ -17,6 +17,7 @@
 
 
                 <h:form>
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
                     <p:panel  styleClass="tem nonPrintBlock" >
                         <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
                         <h:panelGrid columns="3" style="min-width: 100%;">
@@ -73,8 +74,8 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill Id"/>
                                 </f:facet>
-                                <h:outputLabel value="#{b.insId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" ></h:outputLabel>
-                                <h:outputLabel value="#{b.billedBill.insId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}"></h:outputLabel>
+                                <h:outputLabel value="#{b.insId}"  ></h:outputLabel>
+                                <h:outputLabel value="// #{b.billedBill.insId}" ></h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Department Name" >

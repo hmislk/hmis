@@ -45,14 +45,14 @@
                 </p:column>
                 <p:column headerText="Approve at"  >
                     <h:outputLabel value="#{p.createdAt}" >
-                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                     </h:outputLabel>
                     <br/>
                     <h:panelGroup rendered="#{p.cancelled}" >
                         <h:outputLabel style="color: red;" value="Cancelled at " />
                         <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
                                        value="#{p.cancelledBill.createdAt}" >
-                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                         </h:outputLabel>
                     </h:panelGroup>                   
                 </p:column> 
@@ -96,14 +96,14 @@
                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                 <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                value="#{b.cancelledBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{b.refunded}" >
                                 <h:outputLabel style="color: red;" value="Refunded at " />
                                 <h:outputLabel style="color: red;" rendered="#{b.refunded}" 
                                                value="#{b.refundedBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:column> 

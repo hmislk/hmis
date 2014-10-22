@@ -116,7 +116,7 @@
                                             <h:outputLabel value="#{inwardReportControllerBht.finalBill.paidAmount}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
-                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.netTotal-inwardReportControllerBht.finalBill.paidAmount}" >
+                                            <h:outputLabel value="#{inwardReportControllerBht.finalBill.netTotal-inwardReportControllerBht.finalBill.paidAmount-inwardReportControllerBht.creditPaymentTotalValue}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </h:panelGrid>
@@ -139,11 +139,11 @@
                                         </h:outputLabel>                                    
                                         <h:outputLabel value="Date Of Admission"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
-                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <h:outputLabel value="Date Of Discharge"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
-                                            <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <h:outputLabel value="BHT Type"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.paymentMethod}"/>
@@ -391,26 +391,55 @@
 
                                 </p:column>
                             </p:dataTable>
-                            <p:dataTable value="#{inwardReportControllerBht.finalBill.backwardReferenceBills}" var="pay" id="tbl2">
+                            <p:dataTable value="#{inwardReportControllerBht.paidbyPatientBillList}" var="pay" id="tbl2">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Payement Detail"/>
+                                    <h:outputLabel value="Paid by Patient"/>
                                 </f:facet>
                                 <p:column headerText="Bill No">
                                     <h:outputLabel value="#{pay.insId}"></h:outputLabel>                                
                                 </p:column>
                                 <p:column headerText="Bill Date">
                                     <h:outputLabel value="#{pay.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                
                                 </p:column>
-                                <p:column headerText="Amount">
+                                <p:column style="text-align: right;" headerText="Amount">
                                     <h:outputLabel value="#{pay.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.paidbyPatientTotalValue}"></h:outputLabel>
+                                    </f:facet>
 
                                 </p:column>
 
                             </p:dataTable>
+                            
+                            
+                            <p:dataTable value="#{inwardReportControllerBht.creditPayment}" var="cre" id="tbl3">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Credit Company Payment"/>
+                                </f:facet>
+                                <p:column headerText="Bill No">
+                                    <h:outputLabel value="#{cre.bill.insId}"></h:outputLabel>                                
+                                </p:column>
+                                <p:column headerText="Bill Date">
+                                    <h:outputLabel value="#{cre.createdAt}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>                                
+                                </p:column>
+                                <p:column style="text-align: right;" headerText="Amount">
+                                    <h:outputLabel value="#{cre.netValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.creditPaymentTotalValue}"></h:outputLabel>
+                                    </f:facet>
+
+                                </p:column>
+
+                            </p:dataTable>
+                            
 
                             <p:panel header="Summery" style="text-align: center;">
                                 <p:panel style="text-align: left;">

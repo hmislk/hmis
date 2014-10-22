@@ -6,7 +6,6 @@
 package com.divudi.bean.store;
 
 import com.divudi.data.BillType;
-import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyErrorCheckingEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -82,10 +81,10 @@ public class StoreErrorChecking implements Serializable {
     @EJB
     private BillFacade billFacade;
     @EJB
-    private PharmacyBean pharmacyBean;
+    StoreBean storeBean;
 
     public double getItemStock() {
-        return getPharmacyBean().getStockQty(item, department);
+        return getStoreBean().getStockQty(item, department);
     }
 
     public void calculateTotals2() {
@@ -453,12 +452,12 @@ public class StoreErrorChecking implements Serializable {
         this.billFacade = billFacade;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
+    public StoreBean getStoreBean() {
+        return storeBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
+    public void setStoreBean(StoreBean storeBean) {
+        this.storeBean = storeBean;
     }
 
 }

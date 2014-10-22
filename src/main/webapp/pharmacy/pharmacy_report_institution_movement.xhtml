@@ -27,10 +27,10 @@
                             <h:outputLabel value="" ></h:outputLabel>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{pharmacyController.fromDate}"
-                                        pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                                        pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
                             <p:calendar value="#{pharmacyController.toDate}"
-                                        pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                                        pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="" ></h:outputLabel>
                             <p:commandButton ajax="false" value="Average By Date"
                                              actionListener="#{pharmacyController.averageByDate()}" ></p:commandButton>

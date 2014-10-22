@@ -18,10 +18,10 @@
 
                         <h:panelGrid columns="2" >
                             <p:outputLabel value="From Date :"/>
-                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             
                             <h:outputLabel value="To ;" ></h:outputLabel>
-                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             
                          
                             <p:outputLabel value="Admission Type :"/>
@@ -39,7 +39,7 @@
                             </p:selectOneMenu>
                             
                               <h:outputLabel value="Credit Company : " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                            <p:selectOneMenu  id="lstCc"   value="#{mdInwardReportController.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
@@ -48,15 +48,11 @@
                                 <h:outputLabel value="B H T No :" ></h:outputLabel>
                                 <h:panelGrid columns="1">
                                 <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                value="#{inwardReportController1.patientEncounter}"
+                                                value="#{mdInwardReportController.patientEncounter}"
                                                 completeMethod="#{admissionController.completePatientAll}" 
                                                 var="myItem" itemValue="#{myItem}" 
                                                 itemLabel="#{myItem.bhtNo}" 
-                                                size="30"  >
-                                    <p:ajax event="itemSelect" 
-                                            process="@this" 
-                                            update="@all" 
-                                            listener="#{bhtSummeryFinalizedController.selectLitener}"/>
+                                                size="30"  >/>
                                     <p:column>
                                         #{myItem.bhtNo}
                                     </p:column>
@@ -169,11 +165,11 @@
                                         <h:outputLabel value="Amount"/>
                                     </f:facet>                                    
                                     <h:outputLabel  value="#{i.netTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{mdInwardReportController.completePaymentsTotal}">
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>

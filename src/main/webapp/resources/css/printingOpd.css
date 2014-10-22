@@ -20,13 +20,14 @@ root {
 @media print{
     .fiveinchbill{
         // page-break-after:always!important; 
+        page-break-after:always!important; 
         font-family: sans-serif!important; 
         font-size: 11px!important; 
         position: relative!important;  
         margin: 0px!important; 
-        width: 12cm!important;
-        height: 14cm!important;
-        padding: 0px;
+        width: 95%;
+        height: 95%;
+        padding: 1px;
         font-size: 180%;
     }
 
@@ -343,7 +344,7 @@ root {
     position: absolute;
     left: 29%!important;
     top: 7%!important;
-    font-size: 15px;
+    font-size: 16px!important;
 }
 
 .receiptnoPrintingLabel{
@@ -364,7 +365,7 @@ root {
     position: absolute;
     left: 81%;
     top: 7%;
-    font-size: 15px;
+    font-size: 15px!important;
 
 }
 
@@ -387,15 +388,15 @@ root {
 .paymentPrinting{
     position: absolute;
     left: 29% !important;
-    top: 10%!important;
-    font-size: 15px;
+    top: 10.5%!important;
+    font-size: 15px!important;
 
 }
 
 .paymentPrintingLabel{
     position: absolute;
     left: 10% !important;
-    top: 10%;
+    top: 10.5%;
     font-size: 15px;
 
 }
@@ -403,7 +404,7 @@ root {
 .paymentPrintingLabelCol{
     position: absolute;
     left: 27% !important;
-    top: 10%;
+    top: 10.5%;
     font-size:15px;
 
 }
@@ -411,22 +412,45 @@ root {
 .billtimePrinting{
     position: absolute;
     left:81%;
-    top: 10%;
-    font-size: 15px;
+    top: 10.5%;
+    font-size: 15px!important;
 
 }
 
 .billtimePrintingLabel{
     position: absolute;
     left:71%;
-    top: 10%;
+    top: 10.5%;
     font-size: 15px
 
 }
 .billtimePrintingLabelCol{
     position: absolute;
     left:79%;
-    top: 10%;
+    top: 10.5%;
+    font-size: 15px;
+
+}
+
+.agePrinting{
+    position: absolute;
+    left:81%;
+    top: 14%;
+    font-size: 15px!important;
+
+}
+
+.agePrintingLabel{
+    position: absolute;
+    left:71%;
+    top: 14%;
+    font-size: 15px
+
+}
+.agePrintingLabelCol{
+    position: absolute;
+    left:79%;
+    top: 14%;
     font-size: 15px;
 
 }
@@ -434,15 +458,15 @@ root {
 .ptnamePrinting{
     position: absolute;
     left: 29% !important;
-    top: 13%;
-    font-size: 15px;
+    top: 14%;
+    font-size: 16px!important;
 
 }
 
 .ptnamePrintingLabel{
     position: absolute;
     left: 10% !important;
-    top: 13%;
+    top: 14%;
     font-size: 15px
 
 }
@@ -450,7 +474,7 @@ root {
 .ptnamePrintingLabelCol{
     position: absolute;
     left: 27% !important;
-    top: 13%;
+    top: 14%;
     font-size: 15px;
 
 }
@@ -481,15 +505,15 @@ root {
 .phonePrinting{
     position: absolute;
     left: 29%;
-    top: 16%;
-    font-size: 15px;
+    top: 17.5%;
+    font-size: 15px!important;
 
 }
 
 .phonePrintingLabel{
     position: absolute;
     left:10%;
-    top: 16%;
+    top: 17.5%;
     font-size: 15px
 
 }
@@ -497,7 +521,7 @@ root {
 .phonePrintingLabelCol{
     position: absolute;
     left: 27%;
-    top: 16%;
+    top: 17.5%;
     font-size: 15px; 
 
 }
@@ -505,15 +529,15 @@ root {
 .nicPrinting{
     position: absolute;
     left: 29%;
-    top: 19%;
-    font-size: 15px;
+    top: 21%;
+    font-size: 15px!important;
 
 }
 
 .nicPrintingLabel{
     position: absolute;
     left:10%;
-    top: 19%;
+    top: 21%;
     font-size: 15px
 
 }
@@ -521,7 +545,7 @@ root {
 .nicPrintingLabelCol{
     position: absolute;
     left: 27%;
-    top: 19%;
+    top: 21%;
     font-size: 15px; 
 
 }
@@ -559,6 +583,13 @@ root {
     left: 36%;
     top: 17.8%;
     
+}
+
+.collectingCenterPrinting{
+    position: absolute;
+    left:81%;
+    top: 16%;
+    font-size: 15px!important;    
 }
 
 .consult2{

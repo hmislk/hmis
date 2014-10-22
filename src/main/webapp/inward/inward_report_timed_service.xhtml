@@ -23,9 +23,9 @@
                     </f:facet>
                     <p:panel>
                         <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar id="fd" value="#{inwardTimedItemController.frmDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                        <p:calendar id="fd" value="#{inwardTimedItemController.frmDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                         <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar id="td" value="#{inwardTimedItemController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                        <p:calendar id="td" value="#{inwardTimedItemController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                         <p:autoComplete converter="timedIt" id="it" forceSelection="false" 
                                         value="#{inwardTimedItemController.current.item}"
                                         completeMethod="#{timedItemController.completeInvest}" var="ix" 
@@ -71,17 +71,17 @@
                             </p:column>
                             <p:column headerText="Discount">
                                 <h:outputLabel  value="#{ti.discount}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Adjusted Value">
                                 <h:outputLabel  value="#{ti.adjustedValue}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Total">
                                 <h:outputLabel  value="#{ti.serviceValue}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Creater">
@@ -103,7 +103,7 @@
                                     <p:column footerText="#{inwardTimedItemController.total}">
                                         <f:facet name="footer" >
                                             <p:outputLabel value="#{inwardTimedItemController.total}">
-                                                <f:convertNumber pattern="#,000.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </f:facet>
                                     </p:column>

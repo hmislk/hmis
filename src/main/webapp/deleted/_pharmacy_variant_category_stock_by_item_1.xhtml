@@ -88,7 +88,7 @@
                                         <p:column footerText="#{reportsStockVariant.systemStockValue}">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{reportsStockVariant.systemStockValue}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -96,14 +96,14 @@
                                         <p:column footerText="#{reportsStockVariant.physicalStockValue}">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{reportsStockVariant.calCulatedStockValue}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column footerText="#{reportsStockVariant.systemStockValue-reportsStockVariant.physicalStockValue}">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{reportsStockVariant.systemStockValue-reportsStockVariant.physicalStockValue}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>

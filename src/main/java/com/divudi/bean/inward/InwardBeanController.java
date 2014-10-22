@@ -99,6 +99,8 @@ public class InwardBeanController implements Serializable {
     private AdmissionFacade admissionFacade;
     @Inject
     BillBeanController billBean;
+    @Inject
+    InwardReportControllerBht inwardReportControllerBht;
 
     public List<BillItem> createBillItems(Item item, PatientEncounter patientEncounter) {
         String sql = "SELECT  b FROM BillItem b "
@@ -1069,6 +1071,8 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         return getPatientItemFacade().findBySQL(sql, hm);
     }
+    
+    
 
     public List<Bill> fetchPaymentBill(PatientEncounter patientEncounter) {
 
@@ -1082,6 +1086,8 @@ public class InwardBeanController implements Serializable {
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+    
 
     public double calPatientRoomChargeDiscount(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
@@ -1468,6 +1474,15 @@ public class InwardBeanController implements Serializable {
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
     }
+
+    public InwardReportControllerBht getInwardReportControllerBht() {
+        return inwardReportControllerBht;
+    }
+
+    public void setInwardReportControllerBht(InwardReportControllerBht inwardReportControllerBht) {
+        this.inwardReportControllerBht = inwardReportControllerBht;
+    }
+    
 
     public List<PatientRoom> getPatientRooms(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();

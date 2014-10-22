@@ -148,7 +148,7 @@
                             <p:cellEditor>  
                                 <f:facet name="output">
                                     <h:outputLabel value="#{i.componantValue}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                                 <f:facet name="input">
@@ -213,71 +213,7 @@
                         <h:outputLabel value="#{staffSalaryController.current.netSalary}"/>
                     </h:panelGrid>
                 </p:tab>
-                <p:tab title="Working Record For Salary">
-                    <p:dataTable value="#{staffSalaryController.current.transStaffShiftsSalary}" var="stEnd">
-                        <p:column headerText="Shift">
-                            <h:outputLabel value="#{stEnd.shift.name}"/>
-                        </p:column>
-                        <p:column headerText="Start">
-                            <h:outputLabel value="#{stEnd.startRecord.recordTimeStamp}">
-                                <f:convertDateTime pattern="dd MMMM h mm a" />
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="End">
-                            <h:outputLabel value="#{stEnd.endRecord.recordTimeStamp}">
-                                <f:convertDateTime pattern="dd MMMM h mm a" />
-                            </h:outputLabel>
-                        </p:column>
-                    </p:dataTable>
-                </p:tab>
-                <p:tab title="Working Record For Over Time">
-                    <p:dataTable value="#{staffSalaryController.current.transStaffShiftsOverTime}" var="stEnd">
-                        <p:column headerText="Shift">
-                            <h:outputLabel value="#{stEnd.shift.name}"/>
-                        </p:column>
-                        <p:column headerText="Start">
-                            <h:outputLabel value="#{stEnd.startRecord.recordTimeStamp}">
-                                <f:convertDateTime pattern="dd MMMM h mm a" />
-                            </h:outputLabel>
-                        </p:column>
-                        <p:column headerText="End">
-                            <h:outputLabel value="#{stEnd.endRecord.recordTimeStamp}">
-                                <f:convertDateTime pattern="dd MMMM h mm a" />
-                            </h:outputLabel>
-                        </p:column>
-                    </p:dataTable>
-                </p:tab>
-
-                <p:tab title="OT">
-                    <h:panelGrid columns="2">
-                        <h:outputLabel value="From : "/>
-                        <h:outputLabel value="#{staffSalaryController.current.tmpOtNormalSpecial.dateRange.fromDate}">
-                            <f:convertDateTime pattern="dd MM yyyy " />
-                        </h:outputLabel>
-                        <h:outputLabel value="To : "/>
-                        <h:outputLabel value="#{staffSalaryController.current.tmpOtNormalSpecial.dateRange.toDate}">
-                            <f:convertDateTime pattern="dd MM yyyy " />
-                        </h:outputLabel>
-                        <h:outputLabel value="Normal OT Min"/>
-                        <h:outputLabel value="#{staffSalaryController.current.tmpOtNormalSpecial.normalMin}"/>
-                        <h:outputLabel value="Normal OT Value"/>
-                        <h:outputLabel value="#{staffSalaryController.current.tmpOtNormalSpecial.normalValue}"/>
-                        <h:outputLabel value="Special OT Min"/>
-                        <h:outputLabel value="#{staffSalaryController.current.tmpOtNormalSpecial.specialMin}"/>
-                        <h:outputLabel value="Special OT Value"/>
-                        <h:outputLabel value="#{staffSalaryController.current.tmpOtNormalSpecial.specialValue}"/>
-                    </h:panelGrid>
-                </p:tab>
-                <p:tab title="Extra Duty">
-                    <p:dataTable value="#{staffSalaryController.current.tmpExtraDutyCount}" var="ex">
-                        <p:column headerText="Day Type">
-                            #{ex.extraDutyType}
-                        </p:column>
-                        <p:column headerText="Count">
-                            #{ex.count}
-                        </p:column>
-                    </p:dataTable>
-                </p:tab>
+               
             </p:tabView>
 
         </h:form>        

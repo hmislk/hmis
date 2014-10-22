@@ -22,7 +22,7 @@
             </p:column>
             <p:column style="text-align: right;">
                 <h:outputLabel value="#{-a.totalPayment}" rendered="#{a.totalPayment!=0}" >
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>                
             <p:columnGroup type="footer">
@@ -31,7 +31,7 @@
                     <p:column style="text-align: right;" footerText="#{-cc.attrs.controller.doctorPaymentTot}">
                         <f:facet name="footer">
                             <h:outputLabel value="#{-cc.attrs.controller.doctorPaymentTot}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>   
                         </f:facet>
                     </p:column>
@@ -50,7 +50,7 @@
             </p:column> 
             <p:column style="text-align: right;">
                 <h:outputLabel value="#{-b.value}" rendered="#{b.value!=0}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column> 
             <p:columnGroup type="footer">
@@ -63,7 +63,7 @@
                     <p:column style="text-align: right;">
                         <f:facet name="footer">
                             <h:outputLabel value="#{-cc.attrs.controller.inwardProfTot}">
-                                 <f:convertNumber pattern="#,000.00"/>
+                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>

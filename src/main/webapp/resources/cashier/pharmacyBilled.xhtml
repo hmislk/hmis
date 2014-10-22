@@ -45,7 +45,7 @@
                     <h:outputLabel value="Total."/>
                 </f:facet> 
                 <h:outputLabel value="#{bPh.total}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
 
@@ -55,7 +55,7 @@
                     <h:outputLabel value="Dis."/>
                 </f:facet> 
                 <h:outputLabel value="#{bPh.discount}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
 
@@ -64,7 +64,7 @@
                     <h:outputLabel value="Cash"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{bPh.paymentMethod=='Cash'}" value="#{bPh.netTotal}" >
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{bPh.paymentMethod!='Cash'}" value="0.00" />
             </p:column>
@@ -74,7 +74,7 @@
                     <h:outputLabel value="Credit"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{bPh.paymentMethod=='Credit'}" value="#{bPh.netTotal}"  >
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{bPh.paymentMethod!='Credit'}" value="0.00"/>
             </p:column>
@@ -84,7 +84,7 @@
                     <h:outputLabel value="C Card"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{bPh.paymentMethod=='Card'}" value="#{bPh.netTotal}" >
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{bPh.paymentMethod!='Card'}" value="0.00"/>
             </p:column>
@@ -94,7 +94,7 @@
                     <h:outputLabel value="Checque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{bPh.paymentMethod=='Cheque'}" value="#{bPh.netTotal}" >
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{bPh.paymentMethod!='Cheque'}" value="0.00"/>
             </p:column>
@@ -104,7 +104,7 @@
                     <h:outputLabel value="Slip"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{bPh.paymentMethod=='Slip'}" value="#{bPh.netTotal}" >
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{bPh.paymentMethod!='Slip'}" value="0.00"/>
             </p:column>
@@ -123,35 +123,35 @@
                     <p:column  style=" text-align: right">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.cash}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
                     <p:column  style=" text-align: right">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.credit}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
                     <p:column  style=" text-align: right">  
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.card}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
                     <p:column style=" text-align: right"> 
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.cheque}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
                     <p:column style=" text-align: right">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.slip}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>

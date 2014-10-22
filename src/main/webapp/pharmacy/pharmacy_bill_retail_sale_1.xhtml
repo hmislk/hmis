@@ -24,11 +24,19 @@
                     <p:defaultCommand  target="btnAdd" />  
 
                     <p:panel rendered="#{!pharmacySaleController1.billPreview}"  >
+                        <h:panelGroup id="panelError" >
+                            <h:panelGroup  
+                                rendered="#{pharmacySaleController1.errorMessage ne null}"
+                                style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
+                                <p:outputLabel value="#{pharmacySaleController1.errorMessage}" ></p:outputLabel>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
                         <p:panel>
-                            <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.resetAll()}" />
-                            <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.resetAll()}" />
-                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.resetAll()}" />
-                            <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.resetAll()}" />
+                            <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale}" />
+                            <p:commandButton disabled="true" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                         </p:panel>
                         <h:panelGrid id="sale" columns="2" class="alignTop" >
 
@@ -38,12 +46,6 @@
                                     <h:outputLabel value="Pharmacy Retail Bill(Sale 2)" />
                                 </f:facet>
                                 <h:panelGrid columns="1" >
-
-                                    <p:panel id="panelErrorMsg"  >
-                                        <h:outputLabel value="#{pharmacySaleController1.errorMessage}" style="padding: 5px; margin: 5px; color: red; background-color: yellow ; border: 1px solid red;"
-                                                       rendered="#{pharmacySaleController1.errorMessage ne ''}">
-                                        </h:outputLabel>
-                                    </p:panel>
 
                                     <h:panelGrid columns="6" >
                                         <h:panelGrid columns="1" >
@@ -100,7 +102,7 @@
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
                                                           action="#{pharmacySaleController1.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')}" 
-                                                          update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')}" ></p:commandButton>
+                                                          update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelError')} " ></p:commandButton>
 
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Rate" ></p:outputLabel>
@@ -493,6 +495,11 @@
                                              ajax="false" action="pharmacy_bill_retail_sale_1" 
                                              onclick="onSubmitButton();"
                                              actionListener="#{pharmacySaleController1.resetAll()}" ></p:commandButton>
+
+                            <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                            <p:commandButton disabled="true" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                            <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
                         </div>
                         <div >

@@ -9,6 +9,7 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel>
@@ -55,7 +56,10 @@
             <!--            <p:spacer height="30" />-->
 
             <p:dataTable id="opd"  value="#{bookKeepingSummery.opdList}" var="d" 
-                         rendered="#{bookKeepingSummery.opdList.size()>0}">                   
+                         rendered="#{bookKeepingSummery.opdList.size()>0}" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">                   
                 <f:facet name="header">
                     <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
                         <p:outputLabel value="#{sessionController.institution.name}"/><h:outputLabel/>
@@ -88,14 +92,14 @@
                 </p:column>
                 <p:column style="text-align: right;"  headerText="Hospital Fee">                               
                     <h:outputLabel value="#{d.value2}" rendered="#{d.summery eq false}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
 
 
                 </p:column>    
                 <p:column headerText="Sub Total" style="text-align: right;">
                     <h:outputLabel value="#{d.value2}" rendered="#{d.summery eq true}" style="font-weight: bold;">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
 
                 </p:column>
@@ -105,7 +109,7 @@
                         <p:column style="text-align: right;" footerText="#{bookKeepingSummery.opdHospitalTotal}" >
                             <f:facet name="footer">
                                 <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
