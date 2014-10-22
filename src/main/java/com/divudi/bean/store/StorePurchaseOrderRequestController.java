@@ -76,6 +76,9 @@ public class StorePurchaseOrderRequestController implements Serializable {
             //System.err.println("SerialNO " + b.getSearialNo());
             //System.err.println("Item " + b.getItem().getName());
             BillItem tmp = getBillItems().remove(b.getSearialNo());
+            tmp.setRetired(true);
+            billItemFacade.edit(tmp);
+            //billFacade.edit(currentBill);
             //System.err.println("Removed Item " + tmp.getItem().getName());
             calTotal();
         }
@@ -110,11 +113,14 @@ public class StorePurchaseOrderRequestController implements Serializable {
     public void removeItem(BillItem bi) {
         //System.err.println("5 " + bi.getItem().getName());
         //System.err.println("6 " + bi.getSearialNo());
-        getBillItems().remove(bi.getSearialNo());
-
-        calTotal();
-
-        currentBillItem = null;
+        System.out.println("bi = " + bi);
+        if (bi != null) {
+            getBillItems().remove(bi);
+            bi.setRetired(true);
+            billItemFacade.edit(bi);
+            //billFacade.edit(currentBill);
+            calTotal();
+        }
 
     }
 
