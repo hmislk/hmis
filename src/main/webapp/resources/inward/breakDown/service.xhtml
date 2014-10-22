@@ -25,17 +25,17 @@
             <p:column headerText="Inward Charge Type">
                 #{bi.item.inwardChargeType}
             </p:column>
-            <p:column headerText="Gross Value">
+            <p:column style="text-align: right;"  headerText="Gross Value">
                 <h:outputLabel value="#{bi.grossValue}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
-            <p:column headerText="Discount">
+            <p:column style="text-align: right;"  headerText="Discount">
                 <h:outputLabel value="#{bi.discount}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
-            <p:column headerText="Net Total">
+            <p:column style="text-align: right;"  headerText="Net Total">
                 <h:outputLabel value="#{bi.netValue}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>

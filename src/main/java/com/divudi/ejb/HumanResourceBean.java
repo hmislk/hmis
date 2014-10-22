@@ -1448,6 +1448,52 @@ public class HumanResourceBean {
 
     }
 
+    public double calculateWorkTimeAndLeave(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select sum(ss.workedWithinTimeFrameVarified+ss.leavedTime) "
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.shiftDate>=:fd "
+                + " and ss.shiftDate<=:td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+     public double calculateNoPay(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select sum(ss.leavedTimeNoPay) "
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.shiftDate>=:fd "
+                + " and ss.shiftDate<=:td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    
+    public double calculateExtraDutyTime(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactor) "
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.shiftDate>=:fd "
+                + " and ss.shiftDate<=:td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
     public void calculateBasic(Date fromDate, Date toDate, Staff staff) {
 
         //System.err.println("From : " + dateRange.getFromDate());

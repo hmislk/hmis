@@ -129,7 +129,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //
 //        return (AdditionalForm) formFacade.findBySQL(sql, hm);
 //    }
-
     public void createShiftTable() {
         if (errorCheck()) {
             return;
@@ -384,15 +383,23 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();
 
-                //UPDATE LEave
+                //Update Extra Time
+                ss.calExtraTimeWithStartOrEndRecord();
+
+                //UPDATE Leave
                 ss.calLeaveTime();
 
                 //Update Staff Shift OT time if DayOff or Sleeping Day
                 if (ss.getShift().getDayType() == DayType.DayOff
                         || ss.getShift().getDayType() == DayType.SleepingDay) {
 //                        || ss instanceof StaffShiftReplace) {
-                    ss.calExtraDuty();
+                    ss.calExtraTimeComplete();
+                    
                 }
+
+                ss.calMultiplyingFactor(ss.getShift().getDayType());
+                DayType dt = humanResourceBean.isHolidayWithDayType(ss.getShiftDate());
+                ss.calMultiplyingFactor(dt);
 
                 getStaffShiftFacade().edit(ss);
             }

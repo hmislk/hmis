@@ -83,7 +83,7 @@
                             <p:column headerText="Qty" style="text-align: right;">
                                 <h:outputLabel value="#{iss.qty}"/>                                
                             </p:column> 
-                            <p:column headerText="Total Value" style="text-align: right;">
+                            <p:column  headerText="Total Value" style="text-align: right;">
                                 <h:outputLabel value="#{iss.grossValue+iss.marginValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -168,7 +168,7 @@
                                     <h:outputLabel value="#{p.insId}"/>
 
                                 </p:column>
-                                <p:column headerText="Value">
+                                <p:column style="text-align: right;" headerText="Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Value"/>
                                     </f:facet>
@@ -248,7 +248,7 @@
                                     <h:outputLabel value="#{cre.bill.insId}"/>
 
                                 </p:column>
-                                <p:column headerText="Value">
+                                <p:column style="text-align: right;" headerText="Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Value"/>
                                     </f:facet>
