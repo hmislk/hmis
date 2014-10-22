@@ -115,11 +115,15 @@ public class StorePurchaseOrderRequestController implements Serializable {
         //System.err.println("6 " + bi.getSearialNo());
         System.out.println("bi = " + bi);
         if (bi != null) {
-            getBillItems().remove(bi);
-            bi.setRetired(true);
-            billItemFacade.edit(bi);
-            //billFacade.edit(currentBill);
+            getBillItems().remove(bi.getSearialNo());
+            if (bi.getId() != null) {
+                bi.setRetired(true);
+                bi.setCreater(getSessionController().getLoggedUser());
+                bi.setCreatedAt(new Date());
+                billItemFacade.edit(bi);
+            }
             calTotal();
+            billFacade.edit(currentBill);
         }
 
     }
@@ -238,8 +242,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
             UtilityController.addErrorMessage("Please Select Paymntmethod");
             return;
         }
-        
-        if(getCurrentBill().getToInstitution() == null){
+
+        if (getCurrentBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Distributor ?");
             return;
         }
@@ -249,7 +253,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
 //            UtilityController.addErrorMessage("Please enter purchase price for all");
 //            return;
 //        }
-
         calTotal();
 
         saveBill();
@@ -265,12 +268,14 @@ public class StorePurchaseOrderRequestController implements Serializable {
         double tmp = 0;
         int serialNo = 0;
         for (BillItem b : getBillItems()) {
+            System.out.println("b = " + b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getPurchaseRate());
             tmp += b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getPurchaseRate();
             b.setSearialNo(serialNo++);
         }
 
         getCurrentBill().setTotal(tmp);
         getCurrentBill().setNetTotal(tmp);
+        System.out.println("serialNo = " + tmp);
 
     }
 
