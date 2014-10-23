@@ -1407,7 +1407,7 @@ public class CommonReport implements Serializable {
     }
 
     public void createLabCashierSummeryReport() {
-        if (checkLabCashier()) {
+        if (checkLabCashier()) {            
             return;
         }
         
