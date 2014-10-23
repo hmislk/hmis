@@ -77,6 +77,7 @@ public class StockHistoryController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = CommonFunctionsController.getFirstDayOfYear(new Date());
+//            fillHistoryAvailableDays();
         }
         return fromDate;
     }
@@ -88,8 +89,16 @@ public class StockHistoryController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctionsController.getLastDayOfYear(new Date());
+//            fillHistoryAvailableDays();
         }
         return toDate;
+    }
+    
+    public String viewPharmacyStockHistory(){
+        getFromDate();
+        getToDate();
+        fillHistoryAvailableDays();
+        return "/pharmacy/pharmacy_department_stock_history";
     }
 
     public void setToDate(Date toDate) {

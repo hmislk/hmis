@@ -76,6 +76,9 @@ public class StorePurchaseOrderRequestController implements Serializable {
             //System.err.println("SerialNO " + b.getSearialNo());
             //System.err.println("Item " + b.getItem().getName());
             BillItem tmp = getBillItems().remove(b.getSearialNo());
+            tmp.setRetired(true);
+            billItemFacade.edit(tmp);
+            //billFacade.edit(currentBill);
             //System.err.println("Removed Item " + tmp.getItem().getName());
             calTotal();
         }
@@ -110,11 +113,18 @@ public class StorePurchaseOrderRequestController implements Serializable {
     public void removeItem(BillItem bi) {
         //System.err.println("5 " + bi.getItem().getName());
         //System.err.println("6 " + bi.getSearialNo());
-        getBillItems().remove(bi.getSearialNo());
-
-        calTotal();
-
-        currentBillItem = null;
+        System.out.println("bi = " + bi);
+        if (bi != null) {
+            getBillItems().remove(bi.getSearialNo());
+            if (bi.getId() != null) {
+                bi.setRetired(true);
+                bi.setCreater(getSessionController().getLoggedUser());
+                bi.setCreatedAt(new Date());
+                billItemFacade.edit(bi);
+            }
+            calTotal();
+            billFacade.edit(currentBill);
+        }
 
     }
 
@@ -232,8 +242,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
             UtilityController.addErrorMessage("Please Select Paymntmethod");
             return;
         }
-        
-        if(getCurrentBill().getToInstitution() == null){
+
+        if (getCurrentBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Distributor ?");
             return;
         }
@@ -243,7 +253,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
 //            UtilityController.addErrorMessage("Please enter purchase price for all");
 //            return;
 //        }
-
         calTotal();
 
         saveBill();
@@ -259,12 +268,14 @@ public class StorePurchaseOrderRequestController implements Serializable {
         double tmp = 0;
         int serialNo = 0;
         for (BillItem b : getBillItems()) {
+            System.out.println("b = " + b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getPurchaseRate());
             tmp += b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getPurchaseRate();
             b.setSearialNo(serialNo++);
         }
 
         getCurrentBill().setTotal(tmp);
         getCurrentBill().setNetTotal(tmp);
+        System.out.println("serialNo = " + tmp);
 
     }
 

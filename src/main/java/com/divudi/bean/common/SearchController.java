@@ -69,6 +69,7 @@ public class SearchController implements Serializable {
     private List<PatientInvestigation> patientInvestigations;
     private List<PatientInvestigation> patientInvestigationsSigle;
     Bill cancellingIssueBill;
+    Bill bill;
     ////////////
     Speciality speciality;
     Staff staff;
@@ -211,6 +212,16 @@ public class SearchController implements Serializable {
     public void createReturnBhtBillsStore() {
         createReturnBhtBills(BillType.StoreBhtPre);
     }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+    
+    
 
     private void createReturnBhtBills(BillType billType) {
 
@@ -481,7 +492,7 @@ public class SearchController implements Serializable {
                 + " and b.institution=:ins"
                 + " and type(b)=:class ";
 
-        if (getSearchKeyword().getRequestNo()!= null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+        if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
             sql += " and  (upper(b.invoiceNumber) like :requestNo )";
             m.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
         }
@@ -617,6 +628,52 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createIssueReport() {
+        String sql;
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        //tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bTp", BillType.PharmacyTransferIssue);
+        sql = "Select b From BilledBill b "
+                + " where b.retired=false "
+                //+ " and b.toDepartment=:dep "
+                + " and b.billType= :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(b.toStaff.person.name) like :stf )";
+            tmp.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getFrmDepartment() != null) {
+            sql += " and b.department=:frmdep";
+            tmp.put("frmdep", getSearchKeyword().getFrmDepartment());
+        }
+
+        if (getSearchKeyword().getTooDepartment() != null) {
+            sql += " and b.toDepartment=:tdep";
+            tmp.put("tdep", getSearchKeyword().getTooDepartment());
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        List<Bill> list = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP);
+        bills = new ArrayList<>();
+        netTotalValue = 0.0;
+        for (Bill b : list) {
+//            System.out.println("b = ");
+            
+            Bill refBill = getActiveRefBill(b);
+            if (refBill == null) {
+                System.out.println("b = " + refBill);
+                netTotalValue += b.getNetTotal();
+                bills.add(b);
+            }
+        }
+
+    }
+    
     public void createIssueTableStore() {
         String sql;
         HashMap tmp = new HashMap();
@@ -658,6 +715,18 @@ public class SearchController implements Serializable {
         String sql = "Select b From Bill b where b.retired=false "
                 + " and b.cancelled=false and b.billType=:btp and "
                 + " b.referenceBill=:ref";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        hm.put("btp", BillType.PharmacyTransferReceive);
+        return getBillFacade().findFirstBySQL(sql, hm);
+    }
+
+    private Bill getActiveRefBill(Bill b) {
+        String sql = "Select b From BilledBill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false"
+                + "  and b.billType=:btp"
+                + " and b.backwardReferenceBill=:ref";
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyTransferReceive);
@@ -1671,8 +1740,7 @@ public class SearchController implements Serializable {
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
-    
+
     public void createDueFeeTableAll() {
 
         String sql;
@@ -1875,7 +1943,7 @@ public class SearchController implements Serializable {
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createDueFeeReportInward() {
 
         String sql;
@@ -1886,7 +1954,6 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
                 + " and (b.feeValue - b.paidValue) > 0"
-                
                 + " and  b.bill.billDate between :fromDate and :toDate ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -1923,23 +1990,23 @@ public class SearchController implements Serializable {
             sql += " and  (upper(b.billItem.item.name) like :staff )";
             temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getPatientEncounter() != null ) {
+
+        if (getSearchKeyword().getPatientEncounter() != null) {
             sql += " and  b.bill.patientEncounter =:pe";
             temMap.put("pe", getSearchKeyword().getPatientEncounter());
         }
-        
-        if (getSearchKeyword().getAdmissionType() != null ) {
+
+        if (getSearchKeyword().getAdmissionType() != null) {
             sql += " and  b.bill.patientEncounter.admissionType =:adty";
             temMap.put("adty", getSearchKeyword().getAdmissionType());
         }
-        
-        if (getSearchKeyword().getPaymentMethod() != null ) {
+
+        if (getSearchKeyword().getPaymentMethod() != null) {
             sql += " and  b.bill.patientEncounter.paymentMethod =:payme";
             temMap.put("payme", getSearchKeyword().getPaymentMethod());
         }
-        
-        if (getSearchKeyword().getIns() != null ) {
+
+        if (getSearchKeyword().getIns() != null) {
             sql += " and  b.bill.patientEncounter.creditCompany=:is";
             temMap.put("is", getSearchKeyword().getIns());
         }

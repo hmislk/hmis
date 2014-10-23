@@ -119,7 +119,7 @@ public class StaffAmendmentFormController implements Serializable {
             toStaffShift = new StaffShift();
             toStaffShift.setStaff(fStaff);
             toStaffShift.setShift(getCurrAmendmentForm().getToShift());
-            toStaffShift.setShiftDate(toDate);
+            toStaffShift.setShiftDate(getCurrAmendmentForm().getToDate());
             staffShiftFacade.create(toStaffShift);
 
             fromStaffShift.setRetired(true);
@@ -246,13 +246,17 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public void fetchToShift() {
+        if (getCurrAmendmentForm().getToStaff() == null) {
+            return;
+        }
+
         HashMap hm = new HashMap();
         String sql = " select c from "
                 + " Shift c"
                 + " where c.retired=false "
                 + " and c.roster=:rs ";
 
-        hm.put("rs", getToStaff().getRoster());
+        hm.put("rs", getCurrAmendmentForm().getToStaff().getRoster());
 
         toShifts = shiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
