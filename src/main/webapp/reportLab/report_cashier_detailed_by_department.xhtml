@@ -12,7 +12,7 @@
 
 
     <ui:define name="content">
-<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -24,7 +24,7 @@
                             <h:outputLabel value="Cashier Summery Report - &nbsp;&nbsp; #{commonReport.webUser.webUserPerson.name}"/>
 
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
-                                             style="float: right;" actionListener="#{commonReport.createLabCashierSummeryReport}" />
+                                             style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" />
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
@@ -32,7 +32,7 @@
                             </p:commandButton>
 
                             <p:commandButton actionListener="#{commonReport.createLabCashierSummeryReport()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="sum1,sum2,sum3,sum4,sum5" fileName="Cashier_Detailed_Report"  />
+                                <pe:exporter type="xlsx" target="sum1,sum2,sum11,sum22" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
 
 
@@ -52,7 +52,7 @@
                                             forceSelection="true"
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                             value="#{commonReport.webUser}" ></p:autoComplete>
-                                            
+
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
@@ -179,7 +179,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="sum11" value="#{commonReport.cashInBills.bills}" var="cIn" rendered="#{commonReport.cashInBills.bills.size()>0}">
+                        <p:dataTable value="#{commonReport.cashInBills.bills}" var="cIn" rendered="#{commonReport.cashInBills.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH IN TRANSACTION"/>
                             </f:facet>
@@ -240,7 +240,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="sum12" value="#{commonReport.cashInBillsCancel.bills}" var="cInCan" rendered="#{commonReport.cashInBillsCancel.bills.size()>0}">
+                        <p:dataTable value="#{commonReport.cashInBillsCancel.bills}" var="cInCan" rendered="#{commonReport.cashInBillsCancel.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH IN TRANSACTION CANCELL"/>
                             </f:facet>
@@ -301,7 +301,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="sum13" value="#{commonReport.cashOutBills.bills}" var="cOut" rendered="#{commonReport.cashOutBills.bills.size()>0}">
+                        <p:dataTable value="#{commonReport.cashOutBills.bills}" var="cOut" rendered="#{commonReport.cashOutBills.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH OUT TRANSACTION"/>
                             </f:facet>
@@ -362,7 +362,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="sum15" value="#{commonReport.cashOutBillsCancel.bills}" var="cOutCan" rendered="#{commonReport.cashOutBillsCancel.bills.size()>0}">
+                        <p:dataTable value="#{commonReport.cashOutBillsCancel.bills}" var="cOutCan" rendered="#{commonReport.cashOutBillsCancel.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH OUT TRANSACTION CANCELL"/>
                             </f:facet>
@@ -423,7 +423,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="sum16" value="#{commonReport.cashAdjustmentBills.bills}" var="cAdj" rendered="#{commonReport.cashAdjustmentBills.bills.size()>0}">
+                        <p:dataTable value="#{commonReport.cashAdjustmentBills.bills}" var="cAdj" rendered="#{commonReport.cashAdjustmentBills.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH ADJUSTMENT"/>
                             </f:facet>
