@@ -276,7 +276,8 @@ public class HrReportController implements Serializable {
         String sql = "";
 
         HashMap hm = new HashMap();
-        sql = "select new com.divudi.data.hr.DepartmentAttendance(ss.staff.department,FUNC('Date',ss.shiftDate),count(distinct(ss.staff))) "
+        sql = "select new com.divudi.data.hr.DepartmentAttendance(ss.staff.department,"
+                + "FUNC('Date',ss.shiftDate),count(distinct(ss.staff))) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and (ss.startRecord.recordTimeStamp is not null "

@@ -296,6 +296,10 @@ public class StaffSalaryController implements Serializable {
 
             double normalWorkTime = numOfWeeks * hrmVariablesController.getCurrent().getWorkingHourPerWeek();
             double overTime = workedWithinTimeFrameVarified - normalWorkTime;
+            System.err.println("Date Count " + dateCount);
+            System.err.println("num of Week " + numOfWeeks);
+            System.err.println("normal Work Time " + normalWorkTime);
+            System.err.println("Over Time " + overTime);
             if (overTime > 0) {
                 //BUT Calculation SUm Needed
                 double value = overTime * 1.5;

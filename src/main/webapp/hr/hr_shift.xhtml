@@ -24,8 +24,8 @@
                             <h:panelGrid id="gpSelectText" >
                                 <p:selectOneListbox  id="lstSelect"   value="#{shiftController.current}" style="min-width: 223px;min-height: 300px;">
                                     <f:selectItems  value="#{shiftController.shiftList}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                    <f:ajax render="gpDetail" execute="@this" >
-                                    </f:ajax>
+                                    <p:ajax update="gpDetail" process="@this" >
+                                    </p:ajax>
                                 </p:selectOneListbox>                               
                             </h:panelGrid>
                             <h:panelGrid id="gpSelectButtons" columns="3"  >
