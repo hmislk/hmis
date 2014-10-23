@@ -756,6 +756,7 @@ public class BookKeepingSummery implements Serializable {
         n++;
 
         bookKeepingSummeryRows.addAll(t);
+        
     }
 
     public void createOPdListWithProDayEndTable(List<PaymentMethod> paymentMethods) {
