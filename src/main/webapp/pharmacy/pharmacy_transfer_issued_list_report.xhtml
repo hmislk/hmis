@@ -4,87 +4,98 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
         <h:form>
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/>                   
-                    <h:panelGrid columns="5" >
+                    <h:panelGrid columns="6" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
-                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createIssueReport()}"
-                                         />
-                        <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                        <h:panelGrid columns="3" style="float : right!important;">
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createIssueReport()}"/>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="datatable"  />
+                            </p:commandButton>
 
-                        <h:outputLabel value="From Department" ></h:outputLabel>
-                        <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{searchController.searchKeyword.frmDepartment}" converter="dep" >
-                            </p:autoComplete>
-                        
-                        <h:outputLabel value="To Department" ></h:outputLabel>
-                        <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{searchController.searchKeyword.tDepartment}" converter="dep" >
-                        </p:autoComplete>
-                        <h:outputLabel/>
+                            <p:commandButton actionListener="#{searchController.createIssueReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                                <pe:exporter type="xlsx" target="tbl1" fileName="Pharmacy_Transfer_Issued_List_Report"  />
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                    </h:panelGrid>
+                    <h:panelGrid columns="6">
                         <h:outputLabel value="Staff "/>                           
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
                         
-                        <h:outputLabel/><h:outputLabel/>
+                        <h:outputLabel  value="From Department"  ></h:outputLabel>
+                        <p:autoComplete  value="#{searchController.searchKeyword.frmDepartment}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept1"
+                                         itemValue="#{dept1}" itemLabel="#{dept1.name}" 
+                                         forceSelection="true" rendered="true">
+                        </p:autoComplete>
+                        
+                        <h:outputLabel  value="From Department"  ></h:outputLabel>
+                        <p:autoComplete  value="#{searchController.searchKeyword.tooDepartment}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept"
+                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                         forceSelection="true" rendered="true">
+                        </p:autoComplete>
                     </h:panelGrid>
                 </f:facet>              
 
+                <p:panel id="datatable">
+                <p:dataTable id="tbl1" value="#{searchController.bills}" var="p">                       
 
-                <p:dataTable value="#{searchController.bills}" var="p">                       
+                    <p:column headerText="Issue No">                        
+                        <h:outputLabel value="#{p.deptId}"/>                          
+                    </p:column>
+
+                    <p:column headerText="From Department">                       
+                        <h:outputLabel value="#{p.department.name}"/>                          
+                    </p:column>
                     
-                    <p:column headerText="Received">                   
+                    <p:column headerText="To Department">                       
+                        <h:outputLabel value="#{p.toDepartment.name}"/>                          
+                    </p:column>
+                    
+                    <p:column headerText="Billed At">                       
+                        <h:outputLabel value="#{p.createdAt}"/>                          
+                    </p:column>
+                    
+                    <p:column headerText="Billed By">                       
+                        <h:outputLabel value="#{p.creater.staff.person.nameWithTitle}"/>                          
+                    </p:column>
+                    
+                    <p:column headerText="Transporter">                       
+                        <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>                          
+                    </p:column>
+                    
+                    <p:column headerText="Value">                       
+                        <h:outputLabel value="#{p.netTotal}"/>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{searchController.netTotalValue}"/>
+                        </f:facet>
+                    </p:column>
+                    
+<!--                    <p:column headerText="Received">                   
                         <p:dataTable var="b" value="#{p.forwardReferenceBills}">                           
                             <p:column  >                                                               
                                 <h:outputLabel  value="#{b.deptId}"/>                                   
                             </p:column>
-                            <p:column >
-                                <h:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                </h:outputLabel>
-                                <br/>
-                                <h:panelGroup rendered="#{b.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                   value="#{b.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                    </h:outputLabel>
-                                </h:panelGroup>                               
-                            </p:column> 
-                            <p:column >                               
-                                <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
-                                </h:outputLabel>                                
-                                <br/>
-                                <h:panelGroup rendered="#{b.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled by " />
-                                    <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                   value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
-                                    </h:outputLabel>
-                                </h:panelGroup> 
-                            </p:column>                                                     
-                            <p:column >
-                                <h:outputLabel value="#{b.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>                                  
-                            </p:column>
-                            <p:column>
-                                <p:commandButton ajax="false" value="View Recieve Note" action="pharmacy_reprint_transfer_receive" 
-                                                 disabled="#{b.creater eq null}">
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                </p:commandButton>
-                            </p:column>
-
                         </p:dataTable>
-                    </p:column>
+                    </p:column>-->
 
                 </p:dataTable>
+                </p:panel>
+
             </p:panel>
         </h:form>
     </ui:define>  

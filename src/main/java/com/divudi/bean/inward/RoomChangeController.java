@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
@@ -43,7 +44,7 @@ import javax.persistence.TemporalType;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -92,12 +93,16 @@ public class RoomChangeController implements Serializable {
     }
 
     public void remove(PatientRoom pR) {
-        if (pR.getPreviousRoom() == null) {
+        AdmissionTypeEnum admissionTypeEnum = pR.getPatientEncounter().getAdmissionType().getAdmissionTypeEnum();
+
+        if (admissionTypeEnum == AdmissionTypeEnum.Admission
+                && pR.getPreviousRoom() == null) {
             UtilityController.addErrorMessage("To Delete Patient Room There should be Previus room U can ReSet Correct Room Facility and update");
             return;
         }
 
-        if (pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
+        if (admissionTypeEnum == AdmissionTypeEnum.Admission
+                && pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
             UtilityController.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
             return;
         }
@@ -107,14 +112,14 @@ public class RoomChangeController implements Serializable {
         pR.setRetiredAt(new Date());
         getPatientRoomFacade().edit(pR);
 
-        pR.getPreviousRoom().setDischarged(false);
-        pR.getPreviousRoom().setDischargedAt(null);
-        pR.getPreviousRoom().setDischargedBy(null);
-        getPatientRoomFacade().edit(pR.getPreviousRoom());
-
-        getCurrent().setCurrentPatientRoom(pR.getPreviousRoom());
-        getEjbFacade().edit(getCurrent());
-
+        if (admissionTypeEnum == AdmissionTypeEnum.Admission) {
+            pR.getPreviousRoom().setDischarged(false);
+            pR.getPreviousRoom().setDischargedAt(null);
+            pR.getPreviousRoom().setDischargedBy(null);
+            getPatientRoomFacade().edit(pR.getPreviousRoom());
+            getCurrent().setCurrentPatientRoom(pR.getPreviousRoom());
+            getEjbFacade().edit(getCurrent());
+        }
     }
 
     public void discharge(PatientRoom pR) {
@@ -137,8 +142,8 @@ public class RoomChangeController implements Serializable {
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
     }
-    
-     public void dischargeCancel(PatientRoom pR) {       
+
+    public void dischargeCancel(PatientRoom pR) {
         pR.setDischarged(false);
         pR.setDischargedBy(null);
         getPatientRoomFacade().edit(pR);

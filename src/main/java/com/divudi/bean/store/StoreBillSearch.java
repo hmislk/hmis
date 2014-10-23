@@ -71,6 +71,7 @@ public class StoreBillSearch implements Serializable {
     private Date toDate;
     //  private String comment;
     WebUser user;
+    StoreBean storeBean;
     ////////////////
     List<BillItem> refundingItems;
     List<Bill> bills;
@@ -831,6 +832,21 @@ public class StoreBillSearch implements Serializable {
 
         getBillFacade().edit(can);
     }
+    
+    public void unitCancell() {
+        
+        
+        Bill prebill = getStoreBean().reAddToStock(getBill(), getSessionController().getLoggedUser(),
+                getSessionController().getDepartment(), BillNumberSuffix.ISSCAN);
+
+        if (prebill != null) {
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(prebill);            
+            getBillFacade().edit(getBill());
+            
+            printPreview=true;
+        }
+    }
 
     private void pharmacyCancelBillItemsReduceStock(CancelledBill can) {
         for (BillItem nB : getBill().getBillItems()) {
@@ -1386,7 +1402,7 @@ public class StoreBillSearch implements Serializable {
             UtilityController.addErrorMessage("No Bill to cancel");
         }
     }
-
+    
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
         //System.err.println("Batch " + pharmaceuticalBillItem.getItemBatch());
         double stockQty = getStoreBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
