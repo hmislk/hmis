@@ -6,6 +6,7 @@
 package com.divudi.data.dataStructure;
 
 import com.divudi.data.PaymentMethod;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.inward.AdmissionType;
@@ -47,7 +48,10 @@ public class SearchKeyword {
     PatientEncounter patientEncounter;
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
-    Institution ins; 
+    Institution ins;
+    Department frmDepartment;
+    Department tooDepartment;
+    
 
     public String getServiceName() {
         return serviceName;
@@ -332,6 +336,22 @@ public class SearchKeyword {
 
     public void setIns(Institution ins) {
         this.ins = ins;
+    }
+
+    public Department getFrmDepartment() {
+        return frmDepartment;
+    }
+
+    public void setFrmDepartment(Department frmDepartment) {
+        this.frmDepartment = frmDepartment;
+    }
+
+    public Department getTooDepartment() {
+        return tooDepartment;
+    }
+
+    public void setTooDepartment(Department tooDepartment) {
+        this.tooDepartment = tooDepartment;
     }
     
     
