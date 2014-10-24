@@ -156,6 +156,7 @@ public class BookKeepingSummery implements Serializable {
         this.departmentProfessionalPayments = departmentPayments;
     }
 
+    
     public List<String1Value2> getFinalValues() {
         if (finalValues == null) {
             finalValues = new ArrayList<>();

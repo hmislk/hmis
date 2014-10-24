@@ -38,8 +38,11 @@ public class StockHistoryController implements Serializable {
     Date toDate;
     Date historyDate;
     Department department;
+    
+    
 
     public void fillHistoryAvailableDays() {
+        
         String jpql;
         Map m = new HashMap();
         m.put("fd", fromDate);
