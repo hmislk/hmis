@@ -42,6 +42,7 @@ import com.divudi.entity.Packege;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.inward.InwardService;
+import com.divudi.entity.inward.TheatreService;
 import com.divudi.entity.lab.InvestigationCategory;
 
 /**
@@ -410,13 +411,42 @@ public class ItemController implements Serializable {
                     + " and type(c)!=:pac "
                     + " and (type(c)=:ser "
                     + " or type(c)=:inv"
-                    + " or type(c)=:ward)  "
+                    + " or type(c)=:ward "
+                    + " or type(c)=:the)  "
                     + " and upper(c.name) like :q"
                     + " order by c.name";
             m.put("pac", Packege.class);
             m.put("ser", Service.class);
             m.put("inv", Investigation.class);
             m.put("ward", InwardService.class);
+            m.put("the", TheatreService.class);
+            m.put("q", "%" + query.toUpperCase() + "%");
+            //    //System.out.println(sql);
+            suggestions = getFacade().findBySQL(sql, m, 20);
+        }
+        return suggestions;
+    }
+    
+    public List<Item> completeTheatreItems(String query) {
+        List<Item> suggestions;
+        HashMap m = new HashMap();
+        String sql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c from Item c "
+                    + " where c.retired=false "
+                    + " and type(c)=:the "
+//                    + " and type(c)!=:pac "
+//                    + " and (type(c)=:ser "
+//                    + " or type(c)=:inv "
+//                    + " or type(c)=:the)  "
+                    + " and upper(c.name) like :q"
+                    + " order by c.name";
+//            m.put("pac", Packege.class);
+//            m.put("ser", Service.class);
+//            m.put("inv", Investigation.class);
+            m.put("the", TheatreService.class);
             m.put("q", "%" + query.toUpperCase() + "%");
             //    //System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, m, 20);
