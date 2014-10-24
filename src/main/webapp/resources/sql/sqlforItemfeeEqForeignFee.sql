@@ -1,0 +1,1 @@
+UPDATE fee SET `FEE` = `FEETYPE`;
