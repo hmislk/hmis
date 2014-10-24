@@ -72,7 +72,7 @@
                             <p:commandButton ajax="false" value="Update BillItems" action="#{bhtSummeryFinalizedController.updateAllBillItems()}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                             <p:commandButton ajax="false" value="Update BillFess" action="#{bhtSummeryFinalizedController.updateAllBillFees()}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
 
-                            <p:panelGrid columns="6" styleClass="Border normalFont">
+                            <p:panelGrid  columns="6" styleClass="Border normalFont" style="text-align: right;">
                                 <h:outputLabel value=""/>
                                 <h:outputLabel value="Gross Value"/>
                                 <h:outputLabel value="Margin"/>
@@ -107,27 +107,27 @@
                                           sortBy="#{bi.inwardChargeType}"
                                           >                               
 
-                                
-                                  <p:column headerText="Creted"
+
+                                <p:column headerText="Creted"
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Name"/>
                                     </f:facet>
-                                      <h:outputLabel value="#{bi.createdAt}"/>                                    
+                                    <h:outputLabel value="#{bi.createdAt}"/>                                    
                                 </p:column>
-                                 <p:column headerText="Creted"
+                                <p:column headerText="Creted"
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Name"/>
                                     </f:facet>
-                                     <h:outputLabel value="#{bi.creater.webUserPerson.name}"/>                                    
+                                    <h:outputLabel value="#{bi.creater.webUserPerson.name}"/>                                    
                                 </p:column>
-                                  <p:column headerText="Creted"
+                                <p:column headerText="Creted"
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Name"/>
                                     </f:facet>
-                                      <h:outputLabel value="#{bi.bill.deptId}"/>                                    
+                                    <h:outputLabel value="#{bi.bill.deptId}"/>                                    
                                 </p:column>
                                 <p:column headerText="Item Name"
                                           filterBy="#{bi.item.name}" filterMatchMode="contains">
@@ -151,18 +151,18 @@
                                     <h:outputLabel value="#{bi.item.inwardChargeType.label}"/>                                    
                                 </p:column>
 
-                                <p:column headerText="Gross Value" filterBy="#{bi.grossValue}" filterMatchMode="contains">
+                                <p:column  headerText="Gross Value" filterBy="#{bi.grossValue}" filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
-                                    <p:inputText value="#{bi.grossValue}">
+                                    <p:inputText style="text-align: right;" value="#{bi.grossValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column exportable="false">
                                     <p:dataTable value="#{bi.billFees}" var="bf">                                        
                                         <p:column>
-                                            <p:inputText value="#{bf.feeGrossValue}">
+                                            <p:inputText style="text-align: right;" value="#{bf.feeGrossValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </p:inputText>    
                                         </p:column>
@@ -172,14 +172,14 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="MArgin Value"/>
                                     </f:facet>
-                                    <p:inputText value="#{bi.marginValue}">
+                                    <p:inputText style="text-align: right;" value="#{bi.marginValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column exportable="false" >
                                     <p:dataTable value="#{bi.billFees}" var="bf">                                      
                                         <p:column>
-                                            <p:inputText value="#{bf.feeMargin}">
+                                            <p:inputText style="text-align: right;" value="#{bf.feeMargin}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </p:inputText>                                                
                                         </p:column>                                      
@@ -189,14 +189,14 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount"/>
                                     </f:facet>
-                                    <p:inputText value="#{bi.discount}">
+                                    <p:inputText style="text-align: right;" value="#{bi.discount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:inputText>                                  
                                 </p:column>
                                 <p:column exportable="false" >
                                     <p:dataTable value="#{bi.billFees}" var="bf">                                                                               
                                         <p:column>
-                                            <p:inputText value="#{bf.feeDiscount}">
+                                            <p:inputText style="text-align: right;" value="#{bf.feeDiscount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </p:inputText>    
                                         </p:column>                                        
@@ -206,14 +206,14 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Total"/>
                                     </f:facet>
-                                    <p:inputText value="#{bi.netValue}">
+                                    <p:inputText style="text-align: right;" value="#{bi.netValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:inputText>                                    
                                 </p:column>
                                 <p:column exportable="false" >
                                     <p:dataTable value="#{bi.billFees}" var="bf">                                     
                                         <p:column>
-                                            <p:inputText value="#{bf.feeValue}">
+                                            <p:inputText style="text-align: right;" value="#{bf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </p:inputText>                                                
                                         </p:column>                                      
@@ -259,7 +259,7 @@
 
                             <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculatePharmacy()}"/>
 
-                            <p:panelGrid columns="6" styleClass="Border normalFont">
+                            <p:panelGrid columns="6" styleClass="Border normalFont" style="text-align: right;">
                                 <h:outputLabel value=""/>
                                 <h:outputLabel value="Gross Value"/>
                                 <h:outputLabel value="Margin"/>
@@ -296,31 +296,39 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Total Value">
+                                <p:column style="text-align: right;" headerText="Total Value">
                                     <h:outputLabel  value="#{iss.grossValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>  
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Margin Value">
-                                    <h:inputText  value="#{iss.marginValue}"/>
+                                <p:column  headerText="Margin Value">
+                                    <h:inputText  value="#{iss.marginValue}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>  
+                                    </h:inputText>
                                 </p:column>
-                                <p:column headerText="Gross Value" >
+                                <p:column style="text-align: right;" headerText="Gross Value" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
                                     <h:outputLabel  value="#{iss.grossValue+iss.marginValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>  
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Discount Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount Value"/>
                                     </f:facet>
-                                    <h:inputText  value="#{iss.discount}"/>
+                                    <h:inputText  value="#{iss.discount}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/> 
+                                    </h:inputText>
+
                                 </p:column>
-                                <p:column headerText="Net Value">
+                                <p:column style="text-align: right;" headerText="Net Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value"/>
                                     </f:facet>
-                                    <h:outputLabel  value="#{iss.netValue}">
+                                    <h:outputLabel  value="#{iss.netValue}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>   
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
@@ -328,8 +336,8 @@
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
-                        
-                         <p:tab title="Store Issue">
+
+                        <p:tab title="Store Issue">
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
                                              >
@@ -340,9 +348,9 @@
                                              fontName="Courier New"  />
                             </p:commandButton>
 
-                             <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculateStore()}"/>
+                            <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculateStore()}"/>
 
-                            <p:panelGrid columns="6" styleClass="Border normalFont">
+                            <p:panelGrid columns="6" styleClass="Border normalFont" style="text-align: right;">
                                 <h:outputLabel value=""/>
                                 <h:outputLabel value="Gross Value"/>
                                 <h:outputLabel value="Margin"/>
@@ -379,31 +387,39 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Total Value">
+                                <p:column headerText="Total Value" style="text-align: right;">
                                     <h:outputLabel  value="#{iss.grossValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>  
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Margin Value">
-                                    <h:inputText  value="#{iss.marginValue}"/>
+                                    <h:inputText  value="#{iss.marginValue}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>  
+                                    </h:inputText>
                                 </p:column>
-                                <p:column headerText="Gross Value" >
+                                <p:column  style="text-align: right;" headerText="Gross Value" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
                                     <h:outputLabel  value="#{iss.grossValue+iss.marginValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>    
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Discount Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount Value"/>
                                     </f:facet>
-                                    <h:inputText  value="#{iss.discount}"/>
+                                    <h:inputText  value="#{iss.discount}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/> 
+                                    </h:inputText>
+
                                 </p:column>
-                                <p:column headerText="Net Value">
+                                <p:column headerText="Net Value" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value"/>
                                     </f:facet>
                                     <h:outputLabel  value="#{iss.netValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>   
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
@@ -445,7 +461,7 @@
                                         <f:convertDateTime pattern="dd/MM/yy hh mm"/>
                                     </h:outputLabel>                                                              
                                 </p:column>
-                                <p:column headerText="Total">
+                                <p:column style="text-align: right;" headerText="Total">
                                     <f:facet name="header">
                                         <h:outputLabel value="Total"/>
                                     </f:facet>
@@ -457,9 +473,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount"/>
                                     </f:facet>
-                                    <h:inputText value="#{pt.discount}"/>
+                                    <h:inputText value="#{pt.discount}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:inputText>
                                 </p:column>
-                                <p:column headerText="Net Total">
+                                <p:column style="text-align: right;" headerText="Net Total">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Total"/>
                                     </f:facet>
@@ -479,12 +497,12 @@
                                 <p:column headerText="Inward Charge Type" exportable="false">
                                     <h:outputLabel value="#{pt.item.inwardChargeType}"/>                                        
                                 </p:column>   
-                                 <p:column>
-                                     <p:commandButton ajax="false" process="@this" value="Update Bill Item" action="#{inwardReportControllerBht.updatePatientBillItem(pt)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                <p:column>
+                                    <p:commandButton ajax="false" process="@this" value="Update Bill Item" action="#{inwardReportControllerBht.updatePatientBillItem(pt)}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
-                        
+
                         <p:tab id="tabAdd" title="Out Side Charge Detail"  >
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
@@ -508,7 +526,7 @@
                                     <h:outputLabel  value="#{bil.singleBillItem.inwardChargeType}">                                     
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Total">
+                                <p:column style="text-align: right;" headerText="Total">
                                     <f:facet name="header">
                                         <h:outputLabel value="Total"/>
                                     </f:facet>
@@ -516,7 +534,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column> 
-                                <p:column headerText="Discount">
+                                <p:column style="text-align: right;" headerText="Discount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount"/>
                                     </f:facet>
@@ -524,7 +542,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column> 
-                                <p:column headerText="Net Total">
+                                <p:column style="text-align: right;" headerText="Net Total">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Total"/>
                                     </f:facet>
@@ -562,7 +580,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{pf.staff.speciality.name}"/>                                    
                                 </p:column> 
-                                <p:column headerText="Fee Value">
+                                <p:column style="text-align: right;" headerText="Fee Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Fee Value"/>
                                     </f:facet>
@@ -600,7 +618,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{pf.staff.speciality.name}"/>                                    
                                 </p:column>
-                                <p:column headerText="Fee Value">
+                                <p:column style="text-align: right;" headerText="Fee Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Fee Value"/>
                                     </f:facet>
@@ -632,11 +650,14 @@
                                     <h:outputLabel value="#{p.insId}"/>
 
                                 </p:column>
-                                <p:column headerText="Value">
+                                <p:column style="text-align: right;" headerText="Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{p.netTotal}"/>                                    
+                                    <h:outputLabel value="#{p.netTotal}"> 
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+
                                 </p:column>     
 
                             </p:dataTable>
@@ -645,17 +666,22 @@
                             <p:dataTable id="room"    value="#{bhtSummeryFinalizedController.patientRooms}" var="rm">                                
 
                                 <p:column headerText="Room Charge">  
-                                    <h:panelGrid columns="2">
+                                    <h:panelGrid  style="text-align: right;" columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedRoomCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
-                                        <h:outputLabel value="Added"/>
-                                        <h:inputText value="#{rm.addedRoomCharge}"/>
+                                        <h:outputLabel value="Added" />
+                                        <h:inputText value="#{rm.addedRoomCharge}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:inputText>
+
 
                                         <h:outputLabel value="Discount"/>
-                                        <h:inputText value="#{rm.discountRoomCharge}"/>
-                                             
+                                        <h:inputText value="#{rm.discountRoomCharge}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:inputText>
+
                                         <h:outputLabel value="Net"/>
                                         <h:outputLabel value="#{rm.calculatedRoomCharge-rm.discountRoomCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -664,33 +690,42 @@
                                     </h:panelGrid>
                                 </p:column>
                                 <p:column headerText="Maintain Charge">
-                                    <h:panelGrid columns="2">
+                                    <h:panelGrid  style="text-align: right;" columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedMaintainCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
                                         <h:outputLabel value="Added"/>
-                                        <h:inputText value="#{rm.addedMaintainCharge}"/>
+                                        <h:inputText value="#{rm.addedMaintainCharge}"  style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:inputText>
                                         <h:outputLabel value="Discount"/>
-                                        <p:inputText value="#{rm.discountMaintainCharge}"/>
+                                        <p:inputText value="#{rm.discountMaintainCharge}"  style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:inputText>
                                         <h:outputLabel value="Net"/>
                                         <h:outputLabel value="#{rm.calculatedMaintainCharge-rm.discountMaintainCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
 
                                     </h:panelGrid>                                   
-                                </p:column>    
+                                </p:column>     
                                 <p:column headerText="MO Charge">
-                                    <h:panelGrid columns="2">
+                                    <h:panelGrid style="text-align: right;" columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedMoCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
                                         <h:outputLabel value="Added"/>
-                                        <h:inputText value="#{rm.addedMoCharge}"/>
+                                        <h:inputText value="#{rm.addedMoCharge}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/> 
+                                        </h:inputText>
+
                                         <h:outputLabel value="Discount"/>
-                                        <h:inputText value="#{rm.discountMoCharge}"/>
-                                            
+                                        <h:inputText value="#{rm.discountMoCharge}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:inputText>
+
                                         <h:outputLabel value="Net"/>
                                         <h:outputLabel value="#{rm.calculatedMoCharge-rm.discountMoCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -698,13 +733,15 @@
                                     </h:panelGrid>
                                 </p:column>                                        
                                 <p:column headerText="Nursing Charge">
-                                    <h:panelGrid columns="2">
+                                    <h:panelGrid style="text-align: right;" columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedNursingCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
                                         <h:outputLabel value="Added"/>
-                                        <h:inputText value="#{rm.addedNursingCharge}"/>
+                                        <h:inputText value="#{rm.addedNursingCharge}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:inputText>
                                         <h:outputLabel value="Discount"/>
                                         <h:outputLabel value="#{rm.discountNursingCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -713,17 +750,19 @@
                                         <h:outputLabel value="#{rm.calculatedNursingCharge-rm.discountNursingCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
-                                        
+
                                     </h:panelGrid>                                   
                                 </p:column> 
                                 <p:column headerText="Linen Charge">
-                                    <h:panelGrid columns="2">
+                                    <h:panelGrid style="text-align: right;" columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedLinenCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
                                         <h:outputLabel value="Added"/>
-                                        <h:inputText value="#{rm.addedLinenCharge}"/>
+                                        <h:inputText value="#{rm.addedLinenCharge}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:inputText>
                                         <h:outputLabel value="Discount"/>
                                         <h:outputLabel value="#{rm.discountLinenCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -732,17 +771,19 @@
                                         <h:outputLabel value="#{rm.calculatedLinenCharge-rm.discountLinenCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
-                                        
+
                                     </h:panelGrid> 
                                 </p:column> 
                                 <p:column headerText="Administration Charge">
-                                    <h:panelGrid columns="2">
+                                    <h:panelGrid style="text-align: right;" columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
                                         <h:outputLabel value="Added"/>
-                                        <h:inputText value="#{rm.addedAdministrationCharge}"/>
+                                        <h:inputText value="#{rm.addedAdministrationCharge}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:inputText>
                                         <h:outputLabel value="Discount"/>
                                         <h:outputLabel value="#{rm.discountAdministrationCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -751,17 +792,20 @@
                                         <h:outputLabel value="#{rm.calculatedAdministrationCharge-rm.discountAdministrationCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
-                                        
+
                                     </h:panelGrid> 
                                 </p:column> 
                                 <p:column headerText="Madical Care Charge">
-                                    <h:panelGrid columns="2">
+                                    <h:panelGrid  style="text-align: right;" columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
                                         <h:outputLabel value="Added"/>
-                                        <h:inputText value="#{rm.addedMedicalCareCharge}"/>
+                                        <h:inputText value="#{rm.addedMedicalCareCharge}"  style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>   
+                                        </h:inputText>
+
                                         <h:outputLabel value="Discount"/>
                                         <h:outputLabel value="#{rm.discountMedicalCareCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -770,7 +814,7 @@
                                         <h:outputLabel value="#{rm.calculatedMedicalCareCharge-rm.discountMedicalCareCharge}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel> 
-                                        
+
                                     </h:panelGrid>
                                 </p:column>   
                                 <p:column>
