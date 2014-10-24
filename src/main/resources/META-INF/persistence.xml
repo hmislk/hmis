@@ -4,6 +4,8 @@
     <jta-data-source>neohr</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <shared-cache-mode>ALL</shared-cache-mode>
-    <properties/> 
+    <properties>
+      <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
+    </properties>
   </persistence-unit>
 </persistence>

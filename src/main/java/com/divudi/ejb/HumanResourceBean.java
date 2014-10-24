@@ -627,7 +627,7 @@ public class HumanResourceBean {
                 + " Where s.retired=false "
                 + " and s.roster=:rs "
 //                + " order by s.person.name  ";
-                + " order by s.codeInteger ";
+                + " order by s.codeInterger ";
         HashMap hm = new HashMap();
         hm.put("rs", roster);
         List<Staff> list = getStaffFacade().findBySQL(sql, hm);
