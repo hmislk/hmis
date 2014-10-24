@@ -186,7 +186,8 @@ public class HumanResourceBean {
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
-                + " and ss.shiftDate=:date";
+                + " and ss.shiftDate=:date"
+                + " order by ss.staff.code ";
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
@@ -614,7 +615,7 @@ public class HumanResourceBean {
         String sql = "Select s From Shift s "
                 + " Where s.retired=false "
                 + " and s.roster=:rs ";
-        //    + " order by s.shiftOrder  ";
+        //    + "  order by s.shiftOrder  ";
         HashMap hm = new HashMap();
         hm.put("rs", roster);
 
@@ -625,11 +626,12 @@ public class HumanResourceBean {
         String sql = "Select s From Staff s "
                 + " Where s.retired=false "
                 + " and s.roster=:rs "
-                + " order by s.person.name  ";
+//                + " order by s.person.name  ";
+                + " order by s.codeInteger ";
         HashMap hm = new HashMap();
         hm.put("rs", roster);
         List<Staff> list = getStaffFacade().findBySQL(sql, hm);
-        System.err.println("Staff " + list);
+        
         return list;
     }
 
