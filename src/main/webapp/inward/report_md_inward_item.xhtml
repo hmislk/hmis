@@ -105,7 +105,7 @@
                     <p:column headerText="Count">
                         <h:outputLabel value="#{iwf.count}"/>
                     </p:column>
-                    <p:column headerText="Hospital Fee">
+                    <p:column style="text-align: right;" headerText="Hospital Fee">
                         <h:outputLabel value="#{iwf.hospitalFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -115,7 +115,7 @@
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
-                    <p:column headerText="Professional Fee">
+                    <p:column style="text-align: right;" headerText="Professional Fee">
                         <h:outputLabel value="#{iwf.proFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -125,7 +125,7 @@
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
-                    <p:column headerText="Total">
+                    <p:column style="text-align: right;" headerText="Total">
                         <h:outputLabel value="#{iwf.hospitalFee+iwf.proFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
