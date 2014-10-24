@@ -35,7 +35,7 @@ import javax.inject.Named;
 public class ShiftTableController implements Serializable {
 
     Date fromDate;
-    Date toDate;    
+    Date toDate;
     Long dateRange;
     Roster roster;
     Shift shift;
@@ -157,6 +157,7 @@ public class ShiftTableController implements Serializable {
             }
 
             for (Staff stf : getHumanResourceBean().fetchStaff(getRoster())) {
+                System.err.println("Code " + stf.getCode());
                 List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShift(nowDate, stf);
 //                System.err.println("1");
                 if (staffShifts.isEmpty()) {
@@ -322,7 +323,5 @@ public class ShiftTableController implements Serializable {
     public void setStaffShift(StaffShift staffShift) {
         this.staffShift = staffShift;
     }
-    
-    
 
 }
