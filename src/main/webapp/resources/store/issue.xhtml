@@ -10,6 +10,7 @@
     <cc:interface>
         <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
+        <cc:attribute name="referenceBill" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -37,7 +38,7 @@
             <div class="headingBill">
                 <h:outputLabel value="Issue Bill" rendered="#{cc.attrs.bill.toDepartment ne null}"  />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" /> 
             </div>
 
             <div class="billline">
@@ -305,7 +306,7 @@
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
                             <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />   
+                                <f:convertNumber pattern="#,##0.0000" />   
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -315,7 +316,7 @@
                         </td>
                         <td  class="totalsBlock">
                             <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
-                                <f:convertNumber pattern="#,##0.00" />
+                                <f:convertNumber pattern="#,##0" />
                             </h:outputLabel>
                         </td>
                     </tr>

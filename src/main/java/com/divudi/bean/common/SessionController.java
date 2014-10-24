@@ -387,7 +387,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     sql = "select p from UserPreference p where p.webUser=:u ";
                     m = new HashMap();
-                    m.put("u", u);
+                    m.put("u", null);
                     insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
                     if (insPre == null) {
                         insPre = new UserPreference();
