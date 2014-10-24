@@ -627,7 +627,7 @@ public class HumanResourceBean {
                 + " Where s.retired=false "
                 + " and s.roster=:rs "
 //                + " order by s.person.name  ";
-                + " order by s.codeInteger ";
+                + " order by s.codeInterger ";
         HashMap hm = new HashMap();
         hm.put("rs", roster);
         List<Staff> list = getStaffFacade().findBySQL(sql, hm);
@@ -830,7 +830,7 @@ public class HumanResourceBean {
                 + " and d.phDate=:dtd";
         HashMap hm = new HashMap();
         hm.put("dtd", d);
-        Object obj = getPhDateFacade().findObjectBySQL(sql, hm, TemporalType.DATE);
+        Object obj = getPhDateFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
 
         if (obj == null) {
             return null;
