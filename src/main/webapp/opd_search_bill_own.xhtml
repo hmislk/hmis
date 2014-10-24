@@ -96,7 +96,7 @@
                             </p:column>    
                             <p:column headerText="Client">                               
                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />                                   
-                                <h:commandLink value="(edit)" action="patient" >
+                                <h:commandLink value="(edit)" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                     <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                 </h:commandLink>                                
                             </p:column>
