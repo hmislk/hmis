@@ -172,9 +172,14 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{p.netTotal}"/>
+                                    <h:outputLabel value="#{p.netTotal}">
+                                       <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}"></h:outputLabel>
+                                        <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}">
+                                         <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>     
                                 <p:column headerText="Created At" exportable="false">

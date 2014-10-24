@@ -69,17 +69,17 @@
                                     <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Discount">
+                            <p:column style="text-align: right;" headerText="Discount">
                                 <h:outputLabel  value="#{ti.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Adjusted Value">
+                            <p:column style="text-align: right;" headerText="Adjusted Value">
                                 <h:outputLabel  value="#{ti.adjustedValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Total">
+                            <p:column style="text-align: right;" headerText="Total">
                                 <h:outputLabel  value="#{ti.serviceValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -100,7 +100,7 @@
                                             <p:outputLabel value="Total"></p:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column footerText="#{inwardTimedItemController.total}">
+                                    <p:column style="text-align: right;" footerText="#{inwardTimedItemController.total}">
                                         <f:facet name="footer" >
                                             <p:outputLabel value="#{inwardTimedItemController.total}">
                                                 <f:convertNumber pattern="#,##0.00" />

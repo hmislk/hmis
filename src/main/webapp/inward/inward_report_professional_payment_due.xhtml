@@ -123,8 +123,11 @@
                                 <h:outputLabel value="#{bf.billItem.item.name}" />
                             </p:column>
 
-                            <p:column headerText="Charge">
-                                <h:outputLabel value="#{bf.feeValue}" />
+                            <p:column style="text-align: right;"  headerText="Charge">
+                                <h:outputLabel value="#{bf.feeValue}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
                             </p:column>
 
                         </p:dataTable>

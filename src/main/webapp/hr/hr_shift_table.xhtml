@@ -55,7 +55,7 @@
                 </f:facet>
                 <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
                              var="data" value="#{shiftTableController.shiftTables}" >
-                    <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine" >
+                    <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine">
                         <p:column headerText="Staff Name" rendered="#{data.flag eq true}">                      
                             <h:outputLabel value="#{sts.staff.person.name}" />
 
