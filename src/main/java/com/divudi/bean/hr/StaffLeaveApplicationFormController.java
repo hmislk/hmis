@@ -127,16 +127,20 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
             DayType dayType = humanResourceBean.isHolidayWithDayType(nowDate);
 
-            switch (dayType) {
-                case MurchantileHoliday:
-                    dontAddLeave = true;
-                    break;
-                case Poya:
-                    dontAddLeave = true;
-                    break;
-                case PublicHoliday:
-                    dontAddLeave = true;
-                    break;
+            if (dayType == null) {
+                return;
+            } else {
+                switch (dayType) {
+                    case MurchantileHoliday:
+                        dontAddLeave = true;
+                        break;
+                    case Poya:
+                        dontAddLeave = true;
+                        break;
+                    case PublicHoliday:
+                        dontAddLeave = true;
+                        break;
+                }
             }
 
             if (!dontAddLeave) {

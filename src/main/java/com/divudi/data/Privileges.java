@@ -32,6 +32,7 @@ public enum Privileges {
     OpdCancel,
     OpdReturn,
     OpdReactivate,
+    OpdBillSearchEdit,
     InwardAdmissions,
     InwardAdmissionsAdmission,
     InwardAdmissionsEditAdmission,
