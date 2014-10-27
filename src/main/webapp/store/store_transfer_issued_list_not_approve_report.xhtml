@@ -20,13 +20,13 @@
                         <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
                         <h:panelGrid columns="3" style="float : right!important;">
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createIssuePharmacyReport()}"/>
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPoNotStoreApproveReport()}"/>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="datatable"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{searchController.createIssuePharmacyReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="tbl1" fileName="Pharmacy_Transfer_Issued_List_Report"  />
+                            <p:commandButton actionListener="#{searchController.createPoNotStoreApproveReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                                <pe:exporter type="xlsx" target="tbl1" fileName="Pharmacy_PurchaseOrder_Not_Approved"  />
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -35,19 +35,14 @@
                         <h:outputLabel value="Staff "/>                           
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
                         
-                        <h:outputLabel  value="From Department"  ></h:outputLabel>
+                        <h:outputLabel  value="From Department"></h:outputLabel>
                         <p:autoComplete  value="#{searchController.searchKeyword.frmDepartment}"  
                                          completeMethod="#{departmentController.completeDept}" var="dept1"
                                          itemValue="#{dept1}" itemLabel="#{dept1.name}" 
                                          forceSelection="true" rendered="true">
                         </p:autoComplete>
                         
-                        <h:outputLabel  value="From Department"  ></h:outputLabel>
-                        <p:autoComplete  value="#{searchController.searchKeyword.tooDepartment}"  
-                                         completeMethod="#{departmentController.completeDept}" var="dept"
-                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
-                                         forceSelection="true" rendered="true">
-                        </p:autoComplete>
+                        
                     </h:panelGrid>
                 </f:facet>              
 
@@ -62,20 +57,12 @@
                         <h:outputLabel value="#{p.department.name}"/>                          
                     </p:column>
                     
-                    <p:column headerText="To Department">                       
-                        <h:outputLabel value="#{p.toDepartment.name}"/>                          
-                    </p:column>
-                    
                     <p:column headerText="Billed At">                       
                         <h:outputLabel value="#{p.createdAt}"/>                          
                     </p:column>
                     
                     <p:column headerText="Billed By">                       
                         <h:outputLabel value="#{p.creater.staff.person.nameWithTitle}"/>                          
-                    </p:column>
-                    
-                    <p:column headerText="Transporter">                       
-                        <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>                          
                     </p:column>
                     
                     <p:column headerText="Value">                       
