@@ -24,6 +24,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
@@ -110,6 +111,7 @@ public class BillSearch implements Serializable {
     @Inject
     private PharmacyPreSettleController pharmacyPreSettleController;
     private SearchKeyword searchKeyword;
+    Institution creditCompany;
 
     public BillSearch() {
     }
@@ -119,7 +121,12 @@ public class BillSearch implements Serializable {
     private BillItemFacade billItemFacade;
 
     public void updateBill() {
-
+        
+        if (bill.getPatientEncounter()==null) {
+            bill.setCreditCompany(creditCompany);
+        } else {
+            bill.getPatientEncounter().setCreditCompany(creditCompany);
+        }
         bill.setEditedAt(new Date());
         bill.setEditor(sessionController.getLoggedUser());
         billFacade.edit(bill);
@@ -1802,6 +1809,20 @@ public class BillSearch implements Serializable {
 
     public Bill getBillSearch() {
         return bill;
+    }
+
+    public Institution getCreditCompany() {
+        if (getBillSearch().getPatientEncounter()==null) {
+            creditCompany=getBillSearch().getCreditCompany();
+        }else{
+            creditCompany=getBillSearch().getPatientEncounter().getCreditCompany();
+        }
+        
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
     public void setBillSearch(Bill bill) {
