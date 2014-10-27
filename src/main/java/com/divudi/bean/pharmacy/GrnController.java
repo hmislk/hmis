@@ -300,21 +300,49 @@ public class GrnController implements Serializable {
         }
     }
 
+//    public void generateBillComponent() {
+//
+//        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {        
+//            double remains = getPharmacyCalculation().calQtyInTwoSql(i);
+//            
+//            if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
+//                BillItem bi = new BillItem();
+//                bi.setSearialNo(getBillItems().size());
+//                bi.setItem(i.getBillItem().getItem());
+//                bi.setReferanceBillItem(i.getBillItem());
+//                bi.setQty(i.getQtyInUnit() - remains);
+//                bi.setTmpQty(i.getQtyInUnit() - remains);
+//                //Set Suggession
+////                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
+//
+//                PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+//                ph.setBillItem(bi);
+//                double tmpQty = bi.getQty();
+//                ph.setQtyInUnit((double) tmpQty);
+//                ph.setPurchaseRate(i.getPurchaseRate());
+//                ph.setRetailRate(i.getRetailRate());
+//                ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
+//
+//                bi.setPharmaceuticalBillItem(ph);
+//
+//                getBillItems().add(bi);
+//                //  getBillItems().r
+//            }
+//
+//        }
+//    }
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            //System.err.println("Qty Unit : " + i.getQtyInUnit());
-//            //System.err.println("Remaining Qty : " + i.getRemainingQty());
-            double remains = getPharmacyCalculation().calQtyInTwoSql(i);
-            //System.err.println("Tot GRN Qty : " + remains);
-            //System.err.println("QTY : " + i.getQtyInUnit());
-            if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
+            double remains = i.getQtyInUnit() - getPharmacyCalculation().calQtyInTwoSql(i);
+
+            if (remains > 0) {
                 BillItem bi = new BillItem();
                 bi.setSearialNo(getBillItems().size());
                 bi.setItem(i.getBillItem().getItem());
                 bi.setReferanceBillItem(i.getBillItem());
-                bi.setQty(i.getQtyInUnit() - remains);
-                bi.setTmpQty(i.getQtyInUnit() - remains);
+                bi.setQty(remains);
+                bi.setTmpQty(remains);
                 //Set Suggession
 //                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
 

@@ -137,9 +137,9 @@ public class StaffLeaveApplicationFormController implements Serializable {
                     case Poya:
                         dontAddLeave = true;
                         break;
-                    case PublicHoliday:
-                        dontAddLeave = true;
-                        break;
+//                    case PublicHoliday:
+//                        dontAddLeave = true;
+//                        break;
                 }
             }
 

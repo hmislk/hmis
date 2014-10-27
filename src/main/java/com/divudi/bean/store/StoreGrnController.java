@@ -415,22 +415,40 @@ public class StoreGrnController implements Serializable {
         System.out.println("getBillItems() = " + getBillItems());
 
     }
+//
+//    public void generateBillComponent() {
+//
+//        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
+//            System.err.println("Qty Unit : " + i.getQtyInUnit());
+////            System.err.println("Remaining Qty : " + i.getRemainingQty());
+//            double remains = storeCalculation.calQtyInTwoSql(i);
+//            System.err.println("Tot GRN Qty : " + remains);
+////            System.err.println("QTY : " + i.getQtyInUnit());
+//            if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
+//                if (i.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
+//                    for (int index = (int) remains; index > 0; index++) {
+//                        createBillItems(i, 1);
+//                    }
+//                } else {
+//                    createBillItems(i, (i.getQtyInUnit() - remains));
+//                }
+//            }
+//
+//        }
+//    }
 
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            System.err.println("Qty Unit : " + i.getQtyInUnit());
-//            System.err.println("Remaining Qty : " + i.getRemainingQty());
-            double remains = storeCalculation.calQtyInTwoSql(i);
-            System.err.println("Tot GRN Qty : " + remains);
-//            System.err.println("QTY : " + i.getQtyInUnit());
-            if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
+
+            double remains = i.getQtyInUnit() - storeCalculation.calQtyInTwoSql(i);
+            if (remains > 0) {
                 if (i.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
                     for (int index = (int) remains; index > 0; index++) {
                         createBillItems(i, 1);
                     }
                 } else {
-                    createBillItems(i, (i.getQtyInUnit() - remains));
+                    createBillItems(i, remains);
                 }
             }
 

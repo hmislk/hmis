@@ -139,21 +139,23 @@ public class BillSearch implements Serializable {
     }
 
     public void updateBillFeeRetierd(BillFee bf) {
-
-        bf.setRetiredAt(new Date());
-        bf.setRetirer(sessionController.getLoggedUser());
-        getBillFeeFacade().edit(bf);
-        UtilityController.addSuccessMessage("Bill Fee Retired");
-
+        if (bf.isRetired()) {
+            bf.setRetiredAt(new Date());
+            bf.setRetirer(sessionController.getLoggedUser());
+            getBillFeeFacade().edit(bf);
+            UtilityController.addSuccessMessage("Bill Fee Retired");
+        }
     }
 
     public void updateBillItemRetierd(BillItem bi) {
 
-        bi.setRetiredAt(new Date());
-        bi.setRetirer(sessionController.getLoggedUser());
-        getBillItemFacade().edit(bi);
-        UtilityController.addSuccessMessage("Bill Item Retired");
+        if (bi.isRetired()) {
 
+            bi.setRetiredAt(new Date());
+            bi.setRetirer(sessionController.getLoggedUser());
+            getBillItemFacade().edit(bi);
+            UtilityController.addSuccessMessage("Bill Item Retired");
+        }
     }
 
     public void createCashReturnBills() {
@@ -504,14 +506,13 @@ public class BillSearch implements Serializable {
             if (!calculateRefundTotal()) {
                 return "";
             }
-            
-            for(BillItem trbi :refundingItems){
-                if(patientInvestigationController.sampledForBillItem(trbi)){
+
+            for (BillItem trbi : refundingItems) {
+                if (patientInvestigationController.sampledForBillItem(trbi)) {
                     UtilityController.addErrorMessage("One or more bill Item has been already undersone process at the Lab. Can not return.");
                     return "";
                 }
             }
-            
 
             RefundBill rb = (RefundBill) createRefundBill();
 
@@ -839,7 +840,7 @@ public class BillSearch implements Serializable {
             return true;
         }
 
-        System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill)) ;
+        System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
         if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
             UtilityController.addErrorMessage("Sample Already collected can't cancel");
             return true;
@@ -1740,10 +1741,9 @@ public class BillSearch implements Serializable {
     public void setFilteredBill(List<Bill> filteredBill) {
         this.filteredBill = filteredBill;
     }
-    
+
     @Inject
     PatientInvestigationController patientInvestigationController;
-    
 
     private boolean checkCollectedReported() {
         return patientInvestigationController.sampledForAnyItemInTheBill(bill);
@@ -1812,9 +1812,9 @@ public class BillSearch implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         createBillItemsForRetire();
     }
-    
-    public void fillBillTypeIncomeRecords(){
-        
+
+    public void fillBillTypeIncomeRecords() {
+
         String jpql;
         jpql = "select new com.divudi.bean.common.BillTypeIncomeRecord(b.billType,sum(b.netTotal)) from Bill b "
                 + " where b.billType in :bts "
@@ -1822,7 +1822,8 @@ public class BillSearch implements Serializable {
                 + " order by b.billType";
     }
 
-    public class BillTypeIncomeRecord{
+    public class BillTypeIncomeRecord {
+
         BillType billType;
         Double netTotal;
 
@@ -1846,9 +1847,7 @@ public class BillSearch implements Serializable {
         public void setNetTotal(Double netTotal) {
             this.netTotal = netTotal;
         }
-        
-        
-        
+
     }
-    
+
 }

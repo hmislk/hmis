@@ -9,7 +9,7 @@ package com.divudi.data.hr;
  * @author Buddhika
  */
 public enum LeaveType {
-    Casual, //7
+    Casual, //7 working Days
     CasualHalf,    
     Annual, //14
     AnnualHalf,
