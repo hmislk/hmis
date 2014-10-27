@@ -48,25 +48,25 @@
 
                                         <h:outputLabel value="Bill No (Dept Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.deptId}" />
-                                        
+
                                         <h:outputLabel value="Forward ref Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.forwardReferenceBill}" />
-                                        
+
                                         <h:outputLabel value="Forward ref Bill(Ins Id) :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.insId}" ></h:outputLabel>
-                                        
+
                                         <h:outputLabel value="Forward ref Bill(Dept Id) :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.deptId}" ></h:outputLabel>
-                                        
+
                                         <h:outputLabel value="Paid Amount :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.paidAmount}" />
-                                        
+
                                         <h:outputLabel value="Backword ref Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.backwardReferenceBill}" />
-                                        
+
                                         <h:outputLabel value="Backword ref Bill(Ins Id) :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.insId}" ></h:outputLabel>
-                                        
+
                                         <h:outputLabel value="Backword ref Bill(Dept Id) :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.deptId}" ></h:outputLabel>
 
@@ -130,15 +130,24 @@
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                                         value="#{billSearch.billSearch.fromDepartment}" converter="dep"/>
 
+                                        <h:outputLabel value="Company Name : " />  
+                                        <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
+                                                        value="#{billSearch.creditCompany}"  
+                                                        completeMethod="#{creditCompanyController.completeCredit}" 
+                                                        var="ix" itemLabel="#{ix.name}" 
+                                                        itemValue="#{ix}" size="30" disabled="#{billSearch.billSearch.paymentMethod ne 'Credit'}">  
+                                        </p:autoComplete>
+
                                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <p:selectOneMenu   id="pay" value="#{billSearch.billSearch.paymentMethod}">     
+                                        <p:selectOneMenu   id="pay" value="#{billSearch.billSearch.paymentMethod}" >     
                                             <f:selectItems value="#{enumController.paymentMethods}"  />
+                                            <f:ajax event="change" execute="@this" render="acCreditCompany" />
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="Cheque No :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.chequeRefNo}"/>
-                                        
-                                        
+
+
                                         <h:outputLabel value="Cheque Date :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.chequeDate}"/>
 
@@ -153,10 +162,10 @@
 
                                         <h:outputLabel value="Net Total :" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.netTotal}"/>
-                                        
+
                                         <h:outputLabel value="PerformInstitutionFee" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.performInstitutionFee}" ></h:outputLabel>
-                                        
+
                                         <h:outputLabel value="Staff Fee" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.staffFee}" ></h:outputLabel>
 

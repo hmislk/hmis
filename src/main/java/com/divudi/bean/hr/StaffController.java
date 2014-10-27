@@ -219,8 +219,6 @@ public class StaffController implements Serializable {
     public void setRoster(Roster roster) {
         this.roster = roster;
     }
-    
-    
 
     public List<Staff> completeRosterStaff(String query) {
 
@@ -486,6 +484,9 @@ public class StaffController implements Serializable {
         } else {
             getPersonFacade().edit(current.getPerson());
         }
+
+        getCurrent().chageCodeToInteger();
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("savedOldSuccessfully");
@@ -500,6 +501,15 @@ public class StaffController implements Serializable {
 
         recreateModel();
         getItems();
+    }
+
+    public void updateCodeToIntege() {
+        for (Staff staff : ejbFacade.findAll()) {
+            staff.chageCodeToInteger();
+            ejbFacade.edit(staff);
+
+        }
+
     }
 
     private void updateStaffEmployment() {

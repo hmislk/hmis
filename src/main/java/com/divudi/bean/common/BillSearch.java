@@ -24,6 +24,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
@@ -110,6 +111,7 @@ public class BillSearch implements Serializable {
     @Inject
     private PharmacyPreSettleController pharmacyPreSettleController;
     private SearchKeyword searchKeyword;
+    Institution creditCompany;
 
     public BillSearch() {
     }
@@ -119,7 +121,12 @@ public class BillSearch implements Serializable {
     private BillItemFacade billItemFacade;
 
     public void updateBill() {
-
+        
+        if (bill.getPatientEncounter()==null) {
+            bill.setCreditCompany(creditCompany);
+        } else {
+            bill.getPatientEncounter().setCreditCompany(creditCompany);
+        }
         bill.setEditedAt(new Date());
         bill.setEditor(sessionController.getLoggedUser());
         billFacade.edit(bill);
@@ -139,21 +146,23 @@ public class BillSearch implements Serializable {
     }
 
     public void updateBillFeeRetierd(BillFee bf) {
-
-        bf.setRetiredAt(new Date());
-        bf.setRetirer(sessionController.getLoggedUser());
-        getBillFeeFacade().edit(bf);
-        UtilityController.addSuccessMessage("Bill Fee Retired");
-
+        if (bf.isRetired()) {
+            bf.setRetiredAt(new Date());
+            bf.setRetirer(sessionController.getLoggedUser());
+            getBillFeeFacade().edit(bf);
+            UtilityController.addSuccessMessage("Bill Fee Retired");
+        }
     }
 
     public void updateBillItemRetierd(BillItem bi) {
 
-        bi.setRetiredAt(new Date());
-        bi.setRetirer(sessionController.getLoggedUser());
-        getBillItemFacade().edit(bi);
-        UtilityController.addSuccessMessage("Bill Item Retired");
+        if (bi.isRetired()) {
 
+            bi.setRetiredAt(new Date());
+            bi.setRetirer(sessionController.getLoggedUser());
+            getBillItemFacade().edit(bi);
+            UtilityController.addSuccessMessage("Bill Item Retired");
+        }
     }
 
     public void createCashReturnBills() {
@@ -504,14 +513,13 @@ public class BillSearch implements Serializable {
             if (!calculateRefundTotal()) {
                 return "";
             }
-            
-            for(BillItem trbi :refundingItems){
-                if(patientInvestigationController.sampledForBillItem(trbi)){
+
+            for (BillItem trbi : refundingItems) {
+                if (patientInvestigationController.sampledForBillItem(trbi)) {
                     UtilityController.addErrorMessage("One or more bill Item has been already undersone process at the Lab. Can not return.");
                     return "";
                 }
             }
-            
 
             RefundBill rb = (RefundBill) createRefundBill();
 
@@ -839,7 +847,7 @@ public class BillSearch implements Serializable {
             return true;
         }
 
-        System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill)) ;
+        System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
         if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
             UtilityController.addErrorMessage("Sample Already collected can't cancel");
             return true;
@@ -1740,10 +1748,9 @@ public class BillSearch implements Serializable {
     public void setFilteredBill(List<Bill> filteredBill) {
         this.filteredBill = filteredBill;
     }
-    
+
     @Inject
     PatientInvestigationController patientInvestigationController;
-    
 
     private boolean checkCollectedReported() {
         return patientInvestigationController.sampledForAnyItemInTheBill(bill);
@@ -1804,6 +1811,20 @@ public class BillSearch implements Serializable {
         return bill;
     }
 
+    public Institution getCreditCompany() {
+        if (getBillSearch().getPatientEncounter()==null) {
+            creditCompany=getBillSearch().getCreditCompany();
+        }else{
+            creditCompany=getBillSearch().getPatientEncounter().getCreditCompany();
+        }
+        
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
+    }
+
     public void setBillSearch(Bill bill) {
 
         recreateModel();
@@ -1812,9 +1833,9 @@ public class BillSearch implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         createBillItemsForRetire();
     }
-    
-    public void fillBillTypeIncomeRecords(){
-        
+
+    public void fillBillTypeIncomeRecords() {
+
         String jpql;
         jpql = "select new com.divudi.bean.common.BillTypeIncomeRecord(b.billType,sum(b.netTotal)) from Bill b "
                 + " where b.billType in :bts "
@@ -1822,7 +1843,8 @@ public class BillSearch implements Serializable {
                 + " order by b.billType";
     }
 
-    public class BillTypeIncomeRecord{
+    public class BillTypeIncomeRecord {
+
         BillType billType;
         Double netTotal;
 
@@ -1846,9 +1868,7 @@ public class BillSearch implements Serializable {
         public void setNetTotal(Double netTotal) {
             this.netTotal = netTotal;
         }
-        
-        
-        
+
     }
-    
+
 }
