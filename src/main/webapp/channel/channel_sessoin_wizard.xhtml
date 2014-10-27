@@ -104,11 +104,14 @@
                                     <p:outputLabel value="Channel Id"/>
                                     <p:outputLabel value="#{channelSessionWizard.current.id}"/>
                                     <p:outputLabel value="Scan Fee Add"/>
-                                    <p:selectOneRadio id="console2" value="#{channelSessionWizard.current.scanFee}" >
+                                    <p:selectBooleanCheckbox id="console2" value="#{channelSessionWizard.current.scanFee}" >
+                                        <p:ajax process="console2" update="tblfee" event="change" listener="#{channelSessionWizard.scanFeeListner()}"/>
+                                    </p:selectBooleanCheckbox>
+<!--                                    <p:selectOneRadio id="console2" value="#{channelSessionWizard.current.scanFee}" >
                                         <f:selectItem itemLabel="Yes" itemValue="true" />
                                         <f:selectItem itemLabel="no" itemValue="false" />
                                         <p:ajax process="console2" update="tblfee" event="change" listener="#{channelSessionWizard.scanFeeListner()}"/>
-                                    </p:selectOneRadio>
+                                    </p:selectOneRadio>-->
                                 </p:panelGrid>
                                 <br/>
                                 <p:tabView rendered="#{channelSessionWizard.createNewSession ne false}" >
@@ -159,7 +162,7 @@
                             <p:column headerText="Staff" >
                                 <p:autoComplete   forceSelection="true" 
                                                   value="#{i.staff}" id="acDoc"
-                                                  completeMethod="#{channellingFeeController.completeDoctors}" 
+                                                  completeMethod="#{channelSessionWizard.completeDoctors}" 
                                                   var="mys" itemLabel="#{mys.person.nameWithTitle}" 
                                                   itemValue="#{mys}"
                                                   converter="stfcon"
@@ -179,7 +182,7 @@
                                                     value="#{i.department}"
                                                     rendered="#{i.feeType eq 'OwnInstitution' or i.feeType eq 'Service'}" >
                                     <f:selectItem itemLabel="Select Department"/>
-                                    <f:selectItems value="#{channellingFeeController.institutionDepatrments}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
+                                    <f:selectItems value="#{channelSessionWizard.getInstitutionDepatrments(i.institution)}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
                                 </h:selectOneListbox>
                             </p:column>
                             <p:column headerText="Local Fee">
@@ -190,7 +193,7 @@
                             </p:column>
 
                             <p:column headerText="Update">
-                                <p:commandButton value="Update" action="#{channelSessionWizard.updateItemFee(i)}" >
+                                <p:commandButton ajax="false" value="Update" action="#{channelSessionWizard.updateItemFee(i)}" >
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
