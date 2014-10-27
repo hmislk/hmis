@@ -697,7 +697,18 @@ a:hover {
 
 .autoComplete75px .ui-autocomplete-input.ui-inputfield{
     width : 75px !important;
-    
+    height: 5px!important;
+    padding: 0px;
+}
+
+.autoComplete75Editpx .ui-autocomplete-input.ui-inputfield .ui-datatable .ui-datatable-data tr{
+    width : 1px !important;
+    height: 1px!important;
+    padding: 0px;
+}
+
+.rowHeightClass{
+    height: 1px!important;
 }
 
 
@@ -737,6 +748,7 @@ a:hover {
     //overflow:hidden;
     overflow-x: visible!important;
     text-overflow:ellipsis!important;
+    
 }
 
 .fonts{
