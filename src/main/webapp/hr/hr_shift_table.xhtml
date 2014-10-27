@@ -122,20 +122,25 @@
                     <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine,"   >
                         <p:column  rendered="#{data.flag eq true}" styleClass="singleLine," >                      
                             <h:outputLabel value="#{sts.staff.person.name}"  style="font-size: 10px!important; text-wrap:none!important;
-    white-space:nowrap!important;
-    //overflow:hidden;
-    overflow-x: visible!important;
-    text-overflow:ellipsis!important;" />
+                                           white-space:nowrap!important;
+                                           //overflow:hidden;
+                                           overflow-x: visible!important;
+                                           text-overflow:ellipsis!important;" />
 
                         </p:column>
+                        
                         <p:column rendered="#{data.flag eq true}" styleClass="singleLine," >                        
                             <h:outputLabel value="#{sts.staff.code}"/>
+                        </p:column>
+                        
+                        <p:column rendered="#{data.flag eq true}" styleClass="singleLine," >                        
+                            <h:outputLabel value="#{sts.staff.designation.code}"/>
                         </p:column>
 
                         <p:column rendered="#{data.date ne null}">
                             <f:facet name="header">                            
                                 <h:outputLabel value="#{data.date}" >
-                                    <f:convertDateTime pattern="dd"/>
+                                    <f:convertDateTime pattern="dd E"/>
                                 </h:outputLabel>
                             </f:facet>
 
