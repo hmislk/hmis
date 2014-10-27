@@ -8,7 +8,9 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
@@ -16,6 +18,7 @@ import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
@@ -50,6 +53,8 @@ public class ChannelSessionWizard implements Serializable {
     private ItemFee staffFee;
     private ItemFee scanFee;
     private List<ItemFee> fees;
+    List<Department> departments = new ArrayList<>();
+    List<Staff> doctors = new ArrayList<>();
     @EJB
     StaffFacade staffFacade;
     @EJB
@@ -58,10 +63,18 @@ public class ChannelSessionWizard implements Serializable {
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
+    @EJB
+    DepartmentFacade departmentFacade;
     @Inject
     SessionController sessionController;
 
     public ChannelSessionWizard() {
+    }
+
+    public void makeNullAll() {
+        current = null;
+        speciality = null;
+        currentStaff = null;
     }
 
     public void prepareAdd() {
@@ -180,6 +193,46 @@ public class ChannelSessionWizard implements Serializable {
         return suggestions;
     }
 
+    public List<Staff> completeDoctors(String query) {
+        String sql;
+        Map m = new HashMap();
+        if (query == null) {
+            doctors = new ArrayList<>();
+        } else {
+            m.put("qry", "%" + query.toUpperCase() + "%");
+            if (speciality == null) {
+                sql = "select p from Staff p "
+                        + " where p.retired=false "
+                        + " and (upper(p.person.name) like :qry "
+                        + " or upper(p.code) like :qry ) "
+                        + " order by p.person.name";
+            } else {
+                sql = "select p from Staff p "
+                        + " where p.speciality=:spe "
+                        + " and p.retired=false "
+                        + " and (upper(p.person.name) like :qry "
+                        + " or  upper(p.code) like :qry) "
+                        + " order by p.person.name";
+                m.put("spe", speciality);
+            }
+            doctors = getStaffFacade().findBySQL(sql, m);
+        }
+        return doctors;
+    }
+
+    public List<Department> getInstitutionDepatrments(Institution institution) {
+        if (institution == null) {
+            departments = new ArrayList<>();
+            return departments;
+        } else {
+            String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
+            Map m = new HashMap();
+            m.put("ins", institution);
+            departments = getDepartmentFacade().findBySQL(sql, m);
+        }
+        return departments;
+    }
+
     public List<ServiceSession> getItems() {
         List<ServiceSession> items;
         String sql;
@@ -266,7 +319,7 @@ public class ChannelSessionWizard implements Serializable {
                     + " order by f.id";
             m.put("ses", current);
             fees = getItemFeeFacade().findBySQL(sql, m);
-            
+
             if (fees.isEmpty()) {
                 createScanFee();
                 System.out.println("Scan Fee Created");
@@ -407,6 +460,14 @@ public class ChannelSessionWizard implements Serializable {
 
     public void setScanFee(ItemFee scanFee) {
         this.scanFee = scanFee;
+    }
+
+    public DepartmentFacade getDepartmentFacade() {
+        return departmentFacade;
+    }
+
+    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
+        this.departmentFacade = departmentFacade;
     }
 
 }
