@@ -6,7 +6,9 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core">
 
+
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css" />
         <h:form id="form">  
             <h:panelGrid columns="2">
                 <h:outputLabel value="From Date"/>
@@ -108,7 +110,7 @@
 
             <p:panel id="print">
                 <f:facet name="header">
-                    <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
+                    <h:outputLabel value=" Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
@@ -119,28 +121,49 @@
                 </f:facet>
                 <p:dataGrid columns="#{shiftTableController.dateRange}"
                             var="data" value="#{shiftTableController.shiftTables}" >
-                    <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine,"   >
-                        <p:column  rendered="#{data.flag eq true}" styleClass="singleLine," >                      
-                            <h:outputLabel value="#{sts.staff.person.name}"  style="font-size: 10px!important; text-wrap:none!important;
+                    <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine,noBorder" 
+                                 style="border: none!important; border-top:none!important;
+                                 font-family: Verdana!important;
+                                 font-size: 11.5px!important;"  >
+                        <p:column  rendered="#{data.flag eq true}" styleClass="singleLine,noBorder" >                      
+                            <h:outputLabel value="#{sts.staff.person.name}" 
+                                           style="font-size: 11.5px!important;
+                                           text-wrap:none!important;
                                            white-space:nowrap!important;
                                            //overflow:hidden;
                                            overflow-x: visible!important;
                                            text-overflow:ellipsis!important;" />
 
                         </p:column>
-                        
-                        <p:column rendered="#{data.flag eq true}" styleClass="singleLine," >                        
-                            <h:outputLabel value="#{sts.staff.code}"/>
-                        </p:column>
-                        
-                        <p:column rendered="#{data.flag eq true}" styleClass="singleLine," >                        
-                            <h:outputLabel value="#{sts.staff.designation.code}"/>
+                        <p:column rendered="#{data.flag eq true}" styleClass="singleLine,noBorder" >                        
+                            <h:outputLabel value="#{sts.staff.code}"
+                                           style="font-size: 11.5px!important;
+                                           text-wrap:none!important;
+                                           white-space:nowrap!important;
+                                           //overflow:hidden;
+                                           overflow-x: visible!important;
+                                           text-overflow:ellipsis!important;" />
                         </p:column>
 
-                        <p:column rendered="#{data.date ne null}">
+                        <p:column rendered="#{data.flag eq true}"
+                                  styleClass="singleLine,noBorder" >                        
+                            <h:outputLabel value="#{sts.staff.designation.code}"
+                                           style="font-size: 11.5px!important;
+                                           text-wrap:none!important;
+                                           white-space:nowrap!important;
+                                           //overflow:hidden;
+                                           overflow-x: visible!important;
+                                           text-overflow:ellipsis!important;" />
+                        </p:column>
+
+                        <p:column rendered="#{data.date ne null}"  
+                                  style="width: 75px!important;                          
+                                  padding-top: 0px!important;
+                                  padding-bottom: 0px!important;
+                                  font-size: 14px!important;" >
                             <f:facet name="header">                            
                                 <h:outputLabel value="#{data.date}" >
-                                    <f:convertDateTime pattern="dd"/>
+                                    <f:convertDateTime pattern="dd E"/>
                                 </h:outputLabel>
                             </f:facet>
 
