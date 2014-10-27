@@ -101,9 +101,13 @@ public class StaffAmendmentFormController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        currAmendmentForm.setCreatedAt(new Date());
-        currAmendmentForm.setCreater(getSessionController().getLoggedUser());
-        getAmendmentFormFacade().create(currAmendmentForm);
+        if (currAmendmentForm.getId() == null) {
+            currAmendmentForm.setCreatedAt(new Date());
+            currAmendmentForm.setCreater(getSessionController().getLoggedUser());
+            getAmendmentFormFacade().create(currAmendmentForm);
+        }else{
+            getAmendmentFormFacade().edit(currAmendmentForm);
+        }
 
         //Change Shifts
         StaffShift fromStaffShift = getCurrAmendmentForm().getFromStaffShift();
@@ -217,17 +221,17 @@ public class StaffAmendmentFormController implements Serializable {
     public void viewAmendmentForm(AmendmentForm amendmentForm) {
         currAmendmentForm = amendmentForm;
     }
-    
-    public void deleteAmmendmentForm(AmendmentForm af){
-        if (af==null) {
+
+    public void deleteAmmendmentForm() {
+        if (currAmendmentForm == null) {
             return;
         }
-        af.setRetired(true);
-        af.setRetiredAt(new Date());
-        af.setRetirer(getSessionController().getLoggedUser());
-        getAmendmentFormFacade().edit(af);
+        currAmendmentForm.setRetired(true);
+        currAmendmentForm.setRetiredAt(new Date());
+        currAmendmentForm.setRetirer(getSessionController().getLoggedUser());
+        getAmendmentFormFacade().edit(currAmendmentForm);
         UtilityController.addSuccessMessage("Deleted");
-        currAmendmentForm=new AmendmentForm();
+        clear();
     }
 
     public void fetchFromStaffShift() {
@@ -392,7 +396,7 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getFromStaff() {
-        
+
         return fromStaff;
     }
 
@@ -401,7 +405,7 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getToStaff() {
-        
+
         return toStaff;
     }
 
