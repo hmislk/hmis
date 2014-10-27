@@ -444,7 +444,7 @@ public class StoreGrnController implements Serializable {
             double remains = i.getQtyInUnit() - storeCalculation.calQtyInTwoSql(i);
             if (remains > 0) {
                 if (i.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
-                    for (int index = (int) remains; index > 0; index++) {
+                    for (int index = (int) remains; index > 0; index--) {
                         createBillItems(i, 1);
                     }
                 } else {
