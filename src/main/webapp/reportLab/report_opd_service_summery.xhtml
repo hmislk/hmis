@@ -94,6 +94,10 @@
                 <p:column headerText="Billed Bill No">
                     <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
                 </p:column>
+                
+                <p:column headerText="Item Name">
+                    <p:outputLabel value="#{d.billItem.item.name}" />
+                </p:column>
 
                 <p:column headerText="BHT No" rendered="">
                     <f:facet name="header">
