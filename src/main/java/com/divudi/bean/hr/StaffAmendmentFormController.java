@@ -6,6 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AmendmentForm;
@@ -216,6 +217,18 @@ public class StaffAmendmentFormController implements Serializable {
     public void viewAmendmentForm(AmendmentForm amendmentForm) {
         currAmendmentForm = amendmentForm;
     }
+    
+    public void deleteAmmendmentForm(AmendmentForm af){
+        if (af==null) {
+            return;
+        }
+        af.setRetired(true);
+        af.setRetiredAt(new Date());
+        af.setRetirer(getSessionController().getLoggedUser());
+        getAmendmentFormFacade().edit(af);
+        UtilityController.addSuccessMessage("Deleted");
+        currAmendmentForm=new AmendmentForm();
+    }
 
     public void fetchFromStaffShift() {
         HashMap hm = new HashMap();
@@ -349,6 +362,9 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = commonFunctions.getStartOfMonth(new Date());
+        }
         return fromDate;
     }
 
@@ -357,6 +373,9 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = commonFunctions.getEndOfMonth(new Date());
+        }
         return toDate;
     }
 
@@ -373,9 +392,7 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getFromStaff() {
-        if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth(new Date());
-        }
+        
         return fromStaff;
     }
 
@@ -384,9 +401,7 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getToStaff() {
-        if (toDate == null) {
-            toDate = commonFunctions.getEndOfMonth(new Date());
-        }
+        
         return toStaff;
     }
 

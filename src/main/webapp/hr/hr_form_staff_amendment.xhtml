@@ -120,7 +120,9 @@
                                 <p:commandButton ajax="false" value="Search Approved Date" action="#{staffAmendmentFormController.createAmmendmentTableApprovedDate()}" />
                             </h:panelGrid>
                             <p:dataTable value="#{staffAmendmentFormController.amendmentForms}" var="add" 
-                                         rowStyleClass="#{add.retired eq true ? 'redText':''}">
+                                         rowStyleClass="#{add.retired eq true ? 'redText':''}"
+                                         scrollable="true"
+                                         scrollHeight="400">
                                 <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" action="#{staffAmendmentFormController.viewAmendmentForm(add)}" disabled="#{add.retired}"></p:commandButton>
                                 </p:column>
@@ -150,6 +152,9 @@
                                     <p:outputLabel value="#{add.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                     <br></br>
                                     <p:outputLabel value="Deleted By  #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Delete">
+                                    <p:commandButton value="Delete" action="#{staffAmendmentFormController.deleteAmmendmentForm(add)}" ajax="false" disabled="#{add.retired eq true}" ></p:commandButton>
                                 </p:column>
 
                             </p:dataTable>
