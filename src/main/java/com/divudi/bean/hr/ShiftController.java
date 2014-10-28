@@ -238,6 +238,15 @@ public class ShiftController implements Serializable {
 
         shiftList = getFacade().findBySQL(sql, hm);
     }
+    
+    public void createShiftListReport() {
+        String sql = "Select s From Shift s "
+                + " where s.retired=false "
+                + " order by s.roster.name " ;
+                
+
+        shiftList = getFacade().findBySQL(sql);
+    }
 
     public List<Shift> getShiftList() {
         return shiftList;
