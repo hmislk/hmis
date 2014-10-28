@@ -512,6 +512,16 @@ public class StoreIssueController implements Serializable {
 
     @EJB
     private CashTransactionBean cashTransactionBean;
+    
+    public boolean checkIssue(){
+        if(getPreBill().getInvoiceNumber()==null || getPreBill().getInvoiceNumber().trim().equals("")){
+            JsfUtil.addErrorMessage("Please Input Issue Number");
+            System.out.println("invoice number = " + getPreBill().getInvoiceNumber());
+            return true;
+        }
+        
+        return false;
+    }
 
     public void settleBill() {
 
@@ -519,6 +529,12 @@ public class StoreIssueController implements Serializable {
         //   System.out.println("editingQty = " + editingQty);
         errorMessage = null;
         //   System.out.println("errorMessage = " + errorMessage);
+        
+         if(checkIssue()){
+            
+            return;
+        }
+        
         if (checkAllBillItem()) {
             //   System.out.println("Check all bill Ietems");
             return;
@@ -528,7 +544,7 @@ public class StoreIssueController implements Serializable {
             //   System.out.println("Error for sale bill");
             return;
         }
-
+       
         getPreBill().setPaidAmount(getPreBill().getTotal());
         //   System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
