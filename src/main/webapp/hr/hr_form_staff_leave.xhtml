@@ -49,7 +49,7 @@
                             </p:calendar>
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffLeaveApplicationFormController.currentLeaveForm.comments}" />
-                            <p:commandButton id="btnAdd" ajax="false" value="Add" 
+                            <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                              action="#{staffLeaveApplicationFormController.saveLeaveform()}"/>
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffLeaveApplicationFormController.clear}"/>
@@ -89,7 +89,10 @@
                             </p:panelGrid>
                         </p:panel>
                         <p:panel>
-                            <p:dataTable value="#{staffLeaveApplicationFormController.leaveForms}" var="l" rowStyleClass="#{l.retired eq true ? 'redText':''}" >
+                            <p:dataTable value="#{staffLeaveApplicationFormController.leaveForms}" var="l" 
+                                         rowStyleClass="#{l.retired eq true ? 'redText':''}"
+                                         scrollable="true"
+                                         scrollHeight="300" >
                                 <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" action="#{staffLeaveApplicationFormController.viewLeaveForm(l)}" disabled="#{l.retired}"></p:commandButton>
                                 </p:column>
