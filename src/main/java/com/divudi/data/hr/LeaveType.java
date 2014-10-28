@@ -18,6 +18,8 @@ public enum LeaveType {
     Maternity, 
     Maternity1st, // 84 working days 
     Maternity2nd, // 42 working Days
+    Maternity1stHalf, //For Saturday
+    Maternity2ndHalf, //For Saturday
     @Deprecated
     Sick, //    
     Lieu,
