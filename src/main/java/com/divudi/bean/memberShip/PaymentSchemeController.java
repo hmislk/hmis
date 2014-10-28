@@ -91,7 +91,7 @@ public class PaymentSchemeController implements Serializable {
                 UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
                 return true;
             }
-
+            
         }
 
         if (paymentMethod == PaymentMethod.Slip) {
