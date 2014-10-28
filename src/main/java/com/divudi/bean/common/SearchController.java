@@ -1959,6 +1959,49 @@ public class SearchController implements Serializable {
         }
 
     }
+    
+    double totalPaying;
+    
+    public void fillDocPayingBillFee() {
+
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "select b from BillItem b where b.retired=false "
+                + " and b.bill.billType=:btp "
+                + " and b.referenceBill.billType=:refType "
+                + " and b.paidForBillFee.bill.cancelled=false "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+
+        if (speciality != null) {
+            sql += " and b.paidForBillFee.staff.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        if (currentStaff != null) {
+            sql += " and b.paidForBillFee.staff=:cs";
+            m.put("cs", currentStaff);
+        }
+
+        sql += " order by b.bill.insId ";
+
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("btp", BillType.PaymentBill);
+        m.put("refType", BillType.OpdBill);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        totalPaying = 0.0;
+        if (billItems == null) {
+            return;
+        }
+        for (BillItem dFee : billItems) {
+            totalPaying += dFee.getPaidForBillFee().getFeeValue();
+        }
+
+    }
 
     public void createDueFeeTableInward() {
 
@@ -4237,6 +4280,14 @@ public class SearchController implements Serializable {
 
     public void setDoneTotal(double doneTotal) {
         this.doneTotal = doneTotal;
+    }
+
+    public double getTotalPaying() {
+        return totalPaying;
+    }
+
+    public void setTotalPaying(double totalPaying) {
+        this.totalPaying = totalPaying;
     }
 
 }
