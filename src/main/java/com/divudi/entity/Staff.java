@@ -66,7 +66,7 @@ public class Staff implements Serializable {
     String registration;
     @Lob
     String qualification;
-    String code;
+    String code = "";
     @ManyToOne
     Person person;
     @ManyToOne
@@ -119,11 +119,32 @@ public class Staff implements Serializable {
 
     double workingHourPerShift;
     double leaveHour;
-    
+
     double annualWelfareQualified;
     double annualWelfareUtilized;
-    
-    
+    Integer codeInterger;
+
+    public Integer getCodeInterger() {
+        return codeInterger;
+    }
+
+    public void setCodeInterger(Integer codeInterger) {
+        this.codeInterger = codeInterger;
+    }
+
+    public void chageCodeToInteger() {
+        if (code == null || code.isEmpty()) {
+            return;
+        }
+
+        try {
+            codeInterger = Integer.parseInt(code);
+            
+        } catch (Exception e) {
+
+        }
+
+    }
 
 //    public double getBasic() {
 //        double tmp2=0.0;
@@ -133,9 +154,6 @@ public class Staff implements Serializable {
 //        
 //        return tmp2;
 //    }
-    
-    
-    
     public double getLeaveHour() {
         return leaveHour;
     }
@@ -266,6 +284,7 @@ public class Staff implements Serializable {
 
     public void setCode(String code) {
         this.code = code;
+        chageCodeToInteger();
     }
 
     public Speciality getSpeciality() {
@@ -551,7 +570,5 @@ public class Staff implements Serializable {
     public void setAnnualWelfareUtilized(double annualWelfareUtilized) {
         this.annualWelfareUtilized = annualWelfareUtilized;
     }
-
-    
 
 }

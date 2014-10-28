@@ -140,7 +140,7 @@ public class mdInwardReportController implements Serializable {
                 tmp += b.getHospitalFee();
             }
         }
-
+        System.out.println("tmp = " + tmp);
         return tmp;
     }
 
@@ -236,7 +236,7 @@ public class mdInwardReportController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
+        
         if (bills == null) {
             bills = new ArrayList<>();
 

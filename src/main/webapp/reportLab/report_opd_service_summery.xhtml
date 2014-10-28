@@ -9,6 +9,7 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
             <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
             <p:panel>
@@ -92,6 +93,10 @@
 
                 <p:column headerText="Billed Bill No">
                     <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
+                </p:column>
+                
+                <p:column headerText="Item Name">
+                    <p:outputLabel value="#{d.billItem.item.name}" />
                 </p:column>
 
                 <p:column headerText="BHT No" rendered="">

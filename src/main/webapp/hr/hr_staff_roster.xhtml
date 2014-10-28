@@ -38,6 +38,9 @@
                                 <p:column>
                                     <h:outputLabel value="#{s.person.nameWithTitle}"/>
                                 </p:column>
+                                 <p:column>
+                                    <h:outputLabel value="#{s.code}"/>
+                                </p:column>
                                 <p:column>
                                     <p:commandLink ajax="false" value="Remove" action="#{rosterStaffController.remove}" >  
                                         <f:setPropertyActionListener value="#{s}" target="#{rosterStaffController.currentStaff}"/>

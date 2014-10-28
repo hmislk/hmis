@@ -88,7 +88,7 @@
                                             <p:inputText autocomplete="off" value="#{staffController.current.annualWelfareQualified}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </p:inputText>
-                                            
+
                                             <h:outputLabel value="Utilized Welfare Value for this year" ></h:outputLabel>
                                             <h:outputLabel value="#{staffController.current.annualWelfareUtilized}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -162,6 +162,28 @@
 
                                             <h:outputText  value="Account No" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.bankAccount.accountNo}"  />
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Working and Leave Hour">
+                                        <h:panelGrid columns="2">                                           
+                                            <h:outputText  value="Minimum Working Hour Per Shift" ></h:outputText>
+                                            <p:inputText autocomplete="off"  
+                                                         value="#{staffController.current.workingHourPerShift}"  />
+                                            <h:outputText  value="Minimum Leave Hour Per Day" ></h:outputText>
+                                            <p:inputText autocomplete="off"  
+                                                         value="#{staffController.current.leaveHour}"  />
+                                        </h:panelGrid>
+                                    </p:tab>
+                                    
+                                     <p:tab title="Leave Entitle">
+                                        <h:panelGrid columns="2">                                           
+                                            <h:outputText  value="Annual" ></h:outputText>
+                                            <p:inputText autocomplete="off"  
+                                                         value="#{staffController.current.workingHourPerShift}"  />
+                                            <h:outputText  value="Minimum Leave Hour Per Day" ></h:outputText>
+                                            <p:inputText autocomplete="off"  
+                                                         value="#{staffController.current.leaveHour}"  />
                                         </h:panelGrid>
                                     </p:tab>
 

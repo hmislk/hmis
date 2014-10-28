@@ -32,7 +32,7 @@ public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalB
     }
     
      public List<PharmaceuticalBillItem> getPharmaceuticalBillItems(Bill bill) {
-        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.bill=:b ";
+        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.bill=:b and p.billItem.retired=false";
         HashMap hm = new HashMap();
         hm.put("b", bill);
         List<PharmaceuticalBillItem> btm= findBySQL(sql, hm);

@@ -20,21 +20,44 @@ import javax.persistence.TemporalType;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class LeaveForm extends HrForm {
 
-    @ManyToOne
-    StaffLeave staffLeave;
     @Temporal(TemporalType.TIMESTAMP)
     private Date requestedDate;  
     @ManyToOne
     private Shift shift;
     private double numberOfLeave;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date fromDate;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date toDate;
+    @Enumerated(EnumType.STRING)
+    LeaveType leaveType;
 
-    public StaffLeave getStaffLeave() {
-        return staffLeave;
+    public Date getFromDate() {
+        return fromDate;
     }
 
-    public void setStaffLeave(StaffLeave staffLeave) {
-        this.staffLeave = staffLeave;
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
     }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public LeaveType getLeaveType() {
+        return leaveType;
+    }
+
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
+    }
+    
+    
+  
 
     public Date getRequestedDate() {
         return requestedDate;

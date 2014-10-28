@@ -6,6 +6,7 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.LeaveType;
+import com.divudi.entity.Form;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -19,7 +20,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 /**
  *
@@ -48,10 +48,59 @@ public class StaffLeave implements Serializable {
     private LeaveType leaveType;
     @OneToOne
     private Staff staff;
-    @Temporal(TemporalType.DATE)
-    private Date fromDate;
-    @Temporal(TemporalType.DATE)
-    private Date toDate;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date leaveDate;
+    double qty;
+    @ManyToOne
+    Form form;
+
+    public Date getLeaveDate() {
+        return leaveDate;
+    }
+
+    public void setLeaveDate(Date leaveDate) {
+        this.leaveDate = leaveDate;
+    }
+
+    public Form getForm() {
+        return form;
+    }
+
+    public void setForm(Form form) {
+        this.form = form;
+    }
+
+    public void calLeaveQty() {
+        if (leaveType == null) {
+            return;
+        }
+
+        switch (getLeaveType()) {
+            case Annual:
+            case Casual:
+            case Lieu:
+            case No_Pay:
+                qty = 1;
+                break;
+            case AnnualHalf:
+            case CasualHalf:
+            case LieuHalf:
+            case No_Pay_Half:
+                qty = 0.5;
+                break;
+            default:
+                qty = 1;
+
+        }
+    }
+
+    public double getQty() {
+        return qty;
+    }
+
+    public void setQty(double qty) {
+        this.qty = qty;
+    }
 
     public Long getId() {
         return id;
@@ -93,24 +142,6 @@ public class StaffLeave implements Serializable {
     public void setLeaveType(LeaveType leaveType) {
         this.leaveType = leaveType;
     }
-
-    public Date getFromDate() {
-        return fromDate;
-    }
-
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    public Date getToDate() {
-        return toDate;
-    }
-
-    public void setToDate(Date toDate) {
-        this.toDate = toDate;
-    }
-
- 
 
     public WebUser getCreater() {
         return creater;

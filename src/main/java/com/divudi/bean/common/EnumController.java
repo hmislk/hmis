@@ -42,7 +42,9 @@ public class EnumController implements Serializable {
     }
 
     public LeaveType[] getLeaveType() {
-        LeaveType[] ltp = {LeaveType.Annual, LeaveType.Casual, LeaveType.Lieu, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical};
+        LeaveType[] ltp = {LeaveType.Annual, LeaveType.AnnualHalf, LeaveType.Casual, LeaveType.CasualHalf,
+            LeaveType.Lieu, LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical,
+            LeaveType.No_Pay, LeaveType.No_Pay_Half};
         return ltp;
     }
 
@@ -208,6 +210,27 @@ public class EnumController implements Serializable {
     public BillType[] getPharmacyBillTypes2() {
         BillType[] b = {
             BillType.PharmacySale,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre};
+
+        return b;
+    }
+
+    public BillType[] getPharmacyBillTypesForMovementReports() {
+        BillType[] b = {
+            BillType.PharmacySale,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre};
+        return b;
+    }
+
+    public BillType[] getPharmacyBillTypes3() {
+        BillType[] b = {
+            BillType.PharmacyPre,
             BillType.PharmacyAdjustment,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyIssue,

@@ -1415,17 +1415,17 @@ public class InwardReportController1 implements Serializable {
         
         
         if(admissionType != null){
-            sql += " and bi.patientEncounter.admissionType =:adty";
+            sql += " and b.patientEncounter.admissionType =:adty";
             m.put("adty", admissionType);
         }
         
         if(paymentMethod != null){
-            sql += " and bi.patientEncounter.paymentMethod=:paymth";
+            sql += " and b.patientEncounter.paymentMethod=:paymth";
             m.put("paymth", paymentMethod);
         }
         
         if(institution != null){
-            sql += " and bi.patientEncounter.creditCompany=:crdcom";
+            sql += " and b.patientEncounter.creditCompany=:crdcom";
             m.put("crdcom",institution);
         }
         
@@ -1451,17 +1451,17 @@ public class InwardReportController1 implements Serializable {
         
         
         if(admissionType != null){
-            sql += " and bi.patientEncounter.admissionType =:adty";
+            sql += " and b.patientEncounter.admissionType =:adty";
             m.put("adty", admissionType);
         }
         
         if(paymentMethod != null){
-            sql += " and bi.patientEncounter.paymentMethod=:paymth";
+            sql += " and b.patientEncounter.paymentMethod=:paymth";
             m.put("paymth", paymentMethod);
         }
         
         if(institution != null){
-            sql += " and bi.patientEncounter.creditCompany=:crdcom";
+            sql += " and b.patientEncounter.creditCompany=:crdcom";
             m.put("crdcom",institution);
         }
         

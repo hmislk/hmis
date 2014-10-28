@@ -6,15 +6,15 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import static com.divudi.bean.common.UtilityController.addSuccessMessage;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
-import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.hr.AmendmentForm;
+import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.AmendmentFormFacade;
+import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -101,35 +101,52 @@ public class StaffAmendmentFormController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        currAmendmentForm.setCreatedAt(new Date());
-        currAmendmentForm.setCreater(getSessionController().getLoggedUser());
-        getAmendmentFormFacade().create(currAmendmentForm);
+        if (currAmendmentForm.getId() == null) {
+            currAmendmentForm.setCreatedAt(new Date());
+            currAmendmentForm.setCreater(getSessionController().getLoggedUser());
+            getAmendmentFormFacade().create(currAmendmentForm);
+        }else{
+            getAmendmentFormFacade().edit(currAmendmentForm);
+        }
 
-        //CHange SHifts
+        //Change Shifts
         StaffShift fromStaffShift = getCurrAmendmentForm().getFromStaffShift();
-        StaffShift toStaffShift = getCurrAmendmentForm().getToStaffShift();
-        Staff fromStaff = getCurrAmendmentForm().getFromStaff();
-        Staff toStaff = getCurrAmendmentForm().getToStaff();
+        Staff tStaff = getCurrAmendmentForm().getToStaff();
+        fromStaffShift.setStaff(tStaff);
+        staffShiftFacade.edit(fromStaffShift);
 
-        fromStaffShift.setStaff(toStaff);
-        toStaffShift.setStaff(fromStaff);
+        StaffShift toStaffShift = getCurrAmendmentForm().getToStaffShift();
+        Staff fStaff = getCurrAmendmentForm().getFromStaff();
+        if (toStaffShift != null) {
+            toStaffShift.setStaff(fStaff);
+            staffShiftFacade.edit(toStaffShift);
+        } else {
+            toStaffShift = new StaffShift();
+            toStaffShift.setStaff(fStaff);
+            toStaffShift.setShift(getCurrAmendmentForm().getToShift());
+            toStaffShift.setShiftDate(getCurrAmendmentForm().getToDate());
+            staffShiftFacade.create(toStaffShift);
+
+            fromStaffShift.setRetired(true);
+            fromStaffShift.setRetirer(sessionController.getLoggedUser());
+            fromStaffShift.setRetiredAt(new Date());
+            staffShiftFacade.edit(fromStaffShift);
+        }
+        ///////////////////////Finish Amendment
 
         StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
         staffShiftHistory.setCreatedAt(new Date());
         staffShiftHistory.setCreater(sessionController.getLoggedUser());
-        staffShiftHistory.setStaff(fromStaff);
+        staffShiftHistory.setStaff(fStaff);
         staffShiftHistory.setStaffShift(fromStaffShift);
         staffShiftHistoryFacade.create(staffShiftHistory);
 
         staffShiftHistory = new StaffShiftHistory();
         staffShiftHistory.setCreatedAt(new Date());
         staffShiftHistory.setCreater(sessionController.getLoggedUser());
-        staffShiftHistory.setStaff(toStaff);
+        staffShiftHistory.setStaff(tStaff);
         staffShiftHistory.setStaffShift(toStaffShift);
         staffShiftHistoryFacade.create(staffShiftHistory);
-
-        staffShiftFacade.edit(fromStaffShift);
-        staffShiftFacade.edit(toStaffShift);
 
         JsfUtil.addSuccessMessage("Sucessfully Saved");
         clear();
@@ -205,6 +222,18 @@ public class StaffAmendmentFormController implements Serializable {
         currAmendmentForm = amendmentForm;
     }
 
+    public void deleteAmmendmentForm() {
+        if (currAmendmentForm == null) {
+            return;
+        }
+        currAmendmentForm.setRetired(true);
+        currAmendmentForm.setRetiredAt(new Date());
+        currAmendmentForm.setRetirer(getSessionController().getLoggedUser());
+        getAmendmentFormFacade().edit(currAmendmentForm);
+        UtilityController.addSuccessMessage("Deleted");
+        clear();
+    }
+
     public void fetchFromStaffShift() {
         HashMap hm = new HashMap();
         String sql = "select c from "
@@ -231,6 +260,34 @@ public class StaffAmendmentFormController implements Serializable {
         hm.put("stf", getCurrAmendmentForm().getToStaff());
 
         toStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void fetchToShift() {
+        if (getCurrAmendmentForm().getToStaff() == null) {
+            return;
+        }
+
+        HashMap hm = new HashMap();
+        String sql = " select c from "
+                + " Shift c"
+                + " where c.retired=false "
+                + " and c.roster=:rs ";
+
+        hm.put("rs", getCurrAmendmentForm().getToStaff().getRoster());
+
+        toShifts = shiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    @EJB
+    ShiftFacade shiftFacade;
+    List<Shift> toShifts;
+
+    public List<Shift> getToShifts() {
+        return toShifts;
+    }
+
+    public void setToShifts(List<Shift> toShifts) {
+        this.toShifts = toShifts;
     }
 
     public List<StaffShift> getFromStaffShifts() {
@@ -309,6 +366,9 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = commonFunctions.getStartOfMonth(new Date());
+        }
         return fromDate;
     }
 
@@ -317,6 +377,9 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = commonFunctions.getEndOfMonth(new Date());
+        }
         return toDate;
     }
 
@@ -333,9 +396,7 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getFromStaff() {
-        if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth(new Date());
-        }
+
         return fromStaff;
     }
 
@@ -344,9 +405,7 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getToStaff() {
-        if (toDate == null) {
-            toDate = commonFunctions.getEndOfMonth(new Date());
-        }
+
         return toStaff;
     }
 
