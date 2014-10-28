@@ -53,7 +53,7 @@ import javax.persistence.TemporalType;
 public class StoreCalculation {
 
     @EJB
-    private PharmacyBean pharmacyBean;
+    StoreBean storeBean;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -421,7 +421,7 @@ public class StoreCalculation {
         oldPrice = tmp.getPurchaseRate();
         newPrice = i.getPurchaseRate();
 
-        double max = oldPrice + (oldPrice * (getPharmacyBean().getMaximumPurchasePriceChange() / 100.0));
+        double max = oldPrice + (oldPrice * (getStoreBean().getMaximumPurchasePriceChange() / 100.0));
         //System.err.println("Old Pur Price : " + oldPrice);
         //System.err.println("New Pur Price : " + newPrice);
         //System.err.println("MAX Price : " + max);
@@ -444,7 +444,7 @@ public class StoreCalculation {
 //
 ////        //System.err.println("Old Ret Price : " + oldPrice);
 ////        //System.err.println("New Ret Price : " + newPrice);
-//        double max = oldPrice + (oldPrice * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
+//        double max = oldPrice + (oldPrice * (getStoreBean().getMaximumRetailPriceChange() / 100));
 //
 //        //System.err.println("Old Ret Price : " + oldPrice);
 //        //System.err.println("New Ret Price : " + newPrice);
@@ -458,7 +458,7 @@ public class StoreCalculation {
 //    }
     public boolean checkRetailPrice(PharmaceuticalBillItem i) {
 
-        double max = i.getPurchaseRate() + (i.getPurchaseRate() * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
+        double max = i.getPurchaseRate() + (i.getPurchaseRate() * (getStoreBean().getMaximumRetailPriceChange() / 100));
 
         //System.err.println("Purchase Price : " + i.getPurchaseRate());
         //System.err.println("Retail Price : " + i.getRetailRate());
@@ -626,8 +626,8 @@ public class StoreCalculation {
 //        BillItem tmp = new BillItem();
 //        tmp.setBill(b);
 //        tmp.setItem(i);
-//        //  tmp.setQty(getPharmacyBean().getOrderingQty(i, s.getDepartment()));
-//        // tmp.setRate(getPharmacyBean().getPurchaseRate(i, s.getDepartment()));
+//        //  tmp.setQty(getStoreBean().getOrderingQty(i, s.getDepartment()));
+//        // tmp.setRate(getStoreBean().getPurchaseRate(i, s.getDepartment()));
 //        // tmp.setNetValue(tmp.getQty() * tmp.getRate());
 //
 //        getBillItemFacade().create(tmp);
@@ -713,15 +713,14 @@ public class StoreCalculation {
 //        if (itb.getId() != null) {
 //           
 //        }
+    public StoreBean getStoreBean() {
+        return storeBean;
+    }
+
+    public void setStoreBean(StoreBean storeBean) {
+        this.storeBean = storeBean;
+    }
 //    }
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
-    }
-
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
-    }
-
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }

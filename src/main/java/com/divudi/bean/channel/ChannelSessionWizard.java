@@ -8,12 +8,19 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
+import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
+import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.FeeFacade;
+import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
@@ -24,9 +31,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import org.primefaces.event.FlowEvent;
 
 /**
  *
@@ -40,19 +49,32 @@ public class ChannelSessionWizard implements Serializable {
     Speciality speciality;
     Staff currentStaff;
     Boolean createNewSession;
-    private Fee hospitalFee;
-    private Fee staffFee;
-    private Fee scanFee;
+    private ItemFee hospitalFee;
+    private ItemFee staffFee;
+    private ItemFee scanFee;
+    private List<ItemFee> fees;
+    List<Department> departments = new ArrayList<>();
+    List<Staff> doctors = new ArrayList<>();
     @EJB
     StaffFacade staffFacade;
+    @EJB
+    ItemFeeFacade itemFeeFacade;
     @EJB
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
+    @EJB
+    DepartmentFacade departmentFacade;
     @Inject
     SessionController sessionController;
 
     public ChannelSessionWizard() {
+    }
+
+    public void makeNullAll() {
+        current = null;
+        speciality = null;
+        currentStaff = null;
     }
 
     public void prepareAdd() {
@@ -171,6 +193,46 @@ public class ChannelSessionWizard implements Serializable {
         return suggestions;
     }
 
+    public List<Staff> completeDoctors(String query) {
+        String sql;
+        Map m = new HashMap();
+        if (query == null) {
+            doctors = new ArrayList<>();
+        } else {
+            m.put("qry", "%" + query.toUpperCase() + "%");
+            if (speciality == null) {
+                sql = "select p from Staff p "
+                        + " where p.retired=false "
+                        + " and (upper(p.person.name) like :qry "
+                        + " or upper(p.code) like :qry ) "
+                        + " order by p.person.name";
+            } else {
+                sql = "select p from Staff p "
+                        + " where p.speciality=:spe "
+                        + " and p.retired=false "
+                        + " and (upper(p.person.name) like :qry "
+                        + " or  upper(p.code) like :qry) "
+                        + " order by p.person.name";
+                m.put("spe", speciality);
+            }
+            doctors = getStaffFacade().findBySQL(sql, m);
+        }
+        return doctors;
+    }
+
+    public List<Department> getInstitutionDepatrments(Institution institution) {
+        if (institution == null) {
+            departments = new ArrayList<>();
+            return departments;
+        } else {
+            String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
+            Map m = new HashMap();
+            m.put("ins", institution);
+            departments = getDepartmentFacade().findBySQL(sql, m);
+        }
+        return departments;
+    }
+
     public List<ServiceSession> getItems() {
         List<ServiceSession> items;
         String sql;
@@ -191,26 +253,49 @@ public class ChannelSessionWizard implements Serializable {
     }
 
     public void createStaffFee() {
-        staffFee = new Fee();
+        staffFee = new ItemFee();
         staffFee.setName("Staff Fee");
         staffFee.setFeeType(FeeType.Staff);
+        staffFee.setFee(0.0);
+        staffFee.setFfee(0.0);
         staffFee.setInstitution(getSessionController().getLoggedUser().getInstitution());
         staffFee.setSpeciality(speciality);
         staffFee.setStaff(currentStaff);
+        staffFee.setServiceSession(current);
+        getItemFeeFacade().create(staffFee);
     }
 
     public void createHospitalFee() {
-        hospitalFee = new Fee();
+        hospitalFee = new ItemFee();
         hospitalFee.setName("Hospital Fee");
         hospitalFee.setFeeType(FeeType.OwnInstitution);
+        hospitalFee.setFee(0.0);
+        hospitalFee.setFfee(0.0);
         hospitalFee.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        hospitalFee.setServiceSession(current);
+        getItemFeeFacade().create(hospitalFee);
     }
 
     public void createScanFee() {
-        scanFee = new Fee();
+        scanFee = new ItemFee();
         scanFee.setName("Scan Fee");
+        scanFee.setFee(0.0);
+        scanFee.setFfee(0.0);
         scanFee.setFeeType(FeeType.Service);
         scanFee.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        scanFee.setServiceSession(current);
+        getItemFeeFacade().create(scanFee);
+    }
+
+    public void fillFees() {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select f from ItemFee f "
+                + " where f.retired=false and "
+                + " f.serviceSession=:ses "
+                + " order by f.id";
+        m.put("ses", current);
+        fees = getItemFeeFacade().findBySQL(sql, m);
     }
 
     public void sessionListner() {
@@ -220,10 +305,57 @@ public class ChannelSessionWizard implements Serializable {
     }
 
     public ServiceSession getCurrent() {
-        if (current == null) {
-            current = new ServiceSession();
-        }
         return current;
+    }
+
+    public void scanFeeListner() {
+        if (current.isScanFee()) {
+            String sql;
+            Map m = new HashMap();
+            sql = "Select f from ItemFee f "
+                    + " where f.retired=false "
+                    + " and f.serviceSession=:ses "
+                    + " and f.serviceSession.scanFee=true "
+                    + " order by f.id";
+            m.put("ses", current);
+            fees = getItemFeeFacade().findBySQL(sql, m);
+
+            if (fees.isEmpty()) {
+                createScanFee();
+                System.out.println("Scan Fee Created");
+            }
+        }
+    }
+
+    public void feesListner() {
+        System.out.println("view");
+        fillFees();
+        System.out.println("fees = " + fees);
+        if (fees.isEmpty()) {
+            System.out.println("Create New Fees");
+            createHospitalFee();
+            createStaffFee();
+
+            if (current.isScanFee()) {
+                createScanFee();
+            }
+        }
+        fillFees();
+    }
+
+    public void updateItemFee(ItemFee itemFee) {
+        getItemFeeFacade().edit(itemFee);
+        UtilityController.addSuccessMessage("Sucessfull Updated");
+    }
+
+    public String onFlowProcess(FlowEvent event) {
+
+        if (current != null) {
+            feesListner();
+        }
+
+        return event.getNewStep();
+
     }
 
     public void setCurrent(ServiceSession current) {
@@ -270,14 +402,6 @@ public class ChannelSessionWizard implements Serializable {
         this.serviceSessionFacade = serviceSessionFacade;
     }
 
-    public Fee getHospitalFee() {
-        return hospitalFee;
-    }
-
-    public void setHospitalFee(Fee hospitalFee) {
-        this.hospitalFee = hospitalFee;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
     }
@@ -294,21 +418,56 @@ public class ChannelSessionWizard implements Serializable {
         this.sessionNumberGeneratorFacade = sessionNumberGeneratorFacade;
     }
 
-    public Fee getStaffFee() {
+    public List<ItemFee> getFees() {
+        if (fees == null) {
+            fees = new ArrayList<>();
+        }
+
+        return fees;
+    }
+
+    public void setFees(List<ItemFee> fees) {
+        this.fees = fees;
+    }
+
+    public ItemFeeFacade getItemFeeFacade() {
+        return itemFeeFacade;
+    }
+
+    public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
+        this.itemFeeFacade = itemFeeFacade;
+    }
+
+    public ItemFee getHospitalFee() {
+        return hospitalFee;
+    }
+
+    public void setHospitalFee(ItemFee hospitalFee) {
+        this.hospitalFee = hospitalFee;
+    }
+
+    public ItemFee getStaffFee() {
         return staffFee;
     }
 
-    public void setStaffFee(Fee staffFee) {
+    public void setStaffFee(ItemFee staffFee) {
         this.staffFee = staffFee;
     }
 
-    public Fee getScanFee() {
-
+    public ItemFee getScanFee() {
         return scanFee;
     }
 
-    public void setScanFee(Fee scanFee) {
+    public void setScanFee(ItemFee scanFee) {
         this.scanFee = scanFee;
+    }
+
+    public DepartmentFacade getDepartmentFacade() {
+        return departmentFacade;
+    }
+
+    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
+        this.departmentFacade = departmentFacade;
     }
 
 }

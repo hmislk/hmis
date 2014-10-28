@@ -39,7 +39,7 @@
                                 <p:inputText autocomplete="off"  value="#{phDateController.current.name}"  />
                                 <h:outputLabel value="Select Day Type"/>
                                 <p:selectOneMenu  value="#{phDateController.current.phType}">                                   
-                                    <f:selectItems value="#{phDateController.dayTypesForPh}"/>
+                                    <f:selectItems value="#{enumController.dayTypesForPh}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Holiday"/>
                                 <p:calendar id="calS" mode="inline" value="#{phDateController.current.phDate}" pattern="dd MMMM yyyy" >                                   

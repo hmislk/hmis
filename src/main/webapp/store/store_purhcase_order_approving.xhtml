@@ -10,10 +10,10 @@
     <ui:define name="content">
         <h:form>
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderApproval')}" >
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('StorePurchaseOrderApprove')}" >
                 You are NOT authorized
             </h:panelGroup>
-            <p:panel  rendered="#{webUserController.hasPrivilege('PharmacyOrderApproval')}" >
+            <p:panel  rendered="#{webUserController.hasPrivilege('StorePurchaseOrderApprove')}" >
                 <p:panel rendered="#{!storePurchaseOrderController.printPreview}">
                     <f:facet name="header">
                         <h:panelGrid columns="5" style="min-width: 100%;">

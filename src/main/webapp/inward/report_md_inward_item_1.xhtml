@@ -102,7 +102,7 @@
                     <p:column headerText="Name" >
                         <h:outputLabel value="#{i.billItem.item.name}"/>
                     </p:column>
-                    <p:column headerText="Hospital Fee">
+                    <p:column style="text-align: right;" headerText="Hospital Fee">
                         <h:outputLabel value="#{i.fee.fee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>

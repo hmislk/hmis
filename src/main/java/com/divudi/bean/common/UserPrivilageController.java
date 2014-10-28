@@ -71,6 +71,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node05 = new PrivilageNode("Cancel", node0, Privileges.OpdCancel);
         TreeNode node06 = new PrivilageNode("Return", node0, Privileges.OpdReturn);
         TreeNode node07 = new PrivilageNode("Reactivate", node0, Privileges.OpdReactivate);
+        TreeNode node08 = new PrivilageNode("OPD Bill Search Edit", node0, Privileges.OpdBillSearchEdit);
 
         TreeNode node1 = new PrivilageNode("Inward", tmproot);
         TreeNode node10 = new PrivilageNode("Inward Menu", node1, Privileges.Inward);
@@ -141,6 +142,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node214 = new PrivilageNode("Report Print", node2, Privileges.LabPrinting);
         TreeNode node215 = new PrivilageNode("Lab Report Formats Editing", node2, Privileges.LabReportFormatEditing);
         TreeNode node216 = new PrivilageNode("Lab Summeries", node2, Privileges.LabSummeriesLevel1);
+        TreeNode node221 = new PrivilageNode("Lab Investigation Fees", node2, Privileges.LabInvestigationFee);
 
         TreeNode node3 = new PrivilageNode("Pharmacy", tmproot);
         TreeNode node300 = new PrivilageNode("Pharmacy Menu", node3, Privileges.Pharmacy);
@@ -252,6 +254,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node20023 = new PrivilageNode("GRN Recive", node2002, Privileges.StorePurchaseGRNRecive);
         TreeNode node20024 = new PrivilageNode("GRN Return", node2002, Privileges.StorePurchaseGRNReturn);
         TreeNode node20025 = new PrivilageNode("Purchase", node2002, Privileges.StorePurchasePurchase);
+        TreeNode node20026 = new PrivilageNode("PO Approve Search", node2002, Privileges.StorePurchaseOrderApproveSearch);
         TreeNode node2003 = new PrivilageNode("Transfer", node20);
         TreeNode node20030 = new PrivilageNode("Transfer Menu", node2003, Privileges.StoreTransfer);
         TreeNode node20031 = new PrivilageNode("Request", node2003, Privileges.StoreTransferRequest);

@@ -37,6 +37,17 @@ public class ReportKeyWord {
     PaymentMethod paymentMethod;
     Item item;
     StaffShift staffShift;
+    LeaveType leaveType;
+
+    public LeaveType getLeaveType() {
+        return leaveType;
+    }
+
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
+    }
+    
+    
 
     public StaffShift getStaffShift() {
         return staffShift;

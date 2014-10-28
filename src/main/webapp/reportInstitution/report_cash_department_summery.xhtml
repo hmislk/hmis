@@ -9,6 +9,8 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel  style="border: none;">
@@ -36,7 +38,7 @@
 
             </p:panel>
 
-            <p:dataTable id="acm"  value="#{cashSummeryController.dailyCash}" var="d" rows="10"
+            <p:dataTable id="acm"  value="#{cashSummeryController.dailyCash}" var="d" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">
@@ -113,7 +115,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable id="summms" value="#{cashSummeryController.summerizeTable}" var="d" rows="10"
+            <p:dataTable id="summms" value="#{cashSummeryController.summerizeTable}" var="d" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">
@@ -129,7 +131,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.collections}" var="sm" rows="10"
+            <p:dataTable value="#{cashSummeryController.collections}" var="sm" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">
@@ -145,7 +147,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.summerizeTableAfter}" var="sm" rows="10"
+            <p:dataTable value="#{cashSummeryController.summerizeTableAfter}" var="sm" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">
@@ -161,7 +163,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.finalSummery}" var="s" rows="10"
+            <p:dataTable value="#{cashSummeryController.finalSummery}" var="s" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">
@@ -178,7 +180,7 @@
 
             <p:spacer height="30"/>
 
-            <p:dataTable value="#{cashSummeryController.bankingData}" var="b" rows="10"
+            <p:dataTable value="#{cashSummeryController.bankingData}" var="b" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">

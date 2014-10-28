@@ -5,6 +5,12 @@
  */
 package com.divudi.data.dataStructure;
 
+import com.divudi.data.PaymentMethod;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
+import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.inward.AdmissionType;
+
 /**
  *
  * @author safrin
@@ -39,6 +45,13 @@ public class SearchKeyword {
     private String insId;
     private String deptId;
     String serviceName;
+    PatientEncounter patientEncounter;
+    PaymentMethod paymentMethod;
+    AdmissionType admissionType;
+    Institution ins;
+    Department frmDepartment;
+    Department tooDepartment;
+    
 
     public String getServiceName() {
         return serviceName;
@@ -292,4 +305,56 @@ public class SearchKeyword {
     public void setDeptId(String deptId) {
         this.deptId = deptId;
     }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public Institution getIns() {
+        return ins;
+    }
+
+    public void setIns(Institution ins) {
+        this.ins = ins;
+    }
+
+    public Department getFrmDepartment() {
+        return frmDepartment;
+    }
+
+    public void setFrmDepartment(Department frmDepartment) {
+        this.frmDepartment = frmDepartment;
+    }
+
+    public Department getTooDepartment() {
+        return tooDepartment;
+    }
+
+    public void setTooDepartment(Department tooDepartment) {
+        this.tooDepartment = tooDepartment;
+    }
+    
+    
+    
+    
 }

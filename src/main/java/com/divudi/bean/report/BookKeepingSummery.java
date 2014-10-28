@@ -156,6 +156,7 @@ public class BookKeepingSummery implements Serializable {
         this.departmentProfessionalPayments = departmentPayments;
     }
 
+    
     public List<String1Value2> getFinalValues() {
         if (finalValues == null) {
             finalValues = new ArrayList<>();
@@ -755,6 +756,7 @@ public class BookKeepingSummery implements Serializable {
         n++;
 
         bookKeepingSummeryRows.addAll(t);
+        
     }
 
     public void createOPdListWithProDayEndTable(List<PaymentMethod> paymentMethods) {

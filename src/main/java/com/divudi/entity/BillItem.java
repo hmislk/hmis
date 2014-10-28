@@ -255,6 +255,15 @@ public class BillItem implements Serializable {
             return false;
         }
         BillItem other = (BillItem) object;
+        
+        if(this.id == null && other.id==null){
+          if(this.searialNo==other.searialNo){
+              return true;
+          }   else{
+              return false;
+          }
+        }
+        
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }

@@ -54,10 +54,10 @@
                             <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5" fileName="BHT_Income_by_Categories"  />
                         </p:commandButton>  
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
-                            <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panelGrid  columns="2" style="width: 100%;">
                                 <p:panel header="Summery" style="text-align: center;">
-                                    <p:panel header="Bill Summery" style="text-align: center;">
-                                        <h:panelGrid columns="4"  style="min-width: 100%;">
+                                    <p:panel  header="Bill Summery" style="text-align: center;">
+                                        <h:panelGrid  columns="4"  style="min-width: 100%; text-align: right;" >
                                             <h:outputLabel value=" &nbsp;"/>
                                             <h:outputLabel value="Report Total">
                                             </h:outputLabel>                                      
@@ -101,7 +101,7 @@
 
                                     </p:panel>
                                     <p:panel header=" Payment Summery" style="text-align: center;">
-                                        <h:panelGrid columns="4"  style="min-width: 100%;">
+                                        <h:panelGrid columns="4"  style="min-width: 100%; text-align: right;">
                                             <h:outputLabel value="Payment &nbsp;"/>
                                             <h:outputLabel value="Final Bill Total">
                                             </h:outputLabel>                                      
@@ -403,7 +403,7 @@
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                
                                 </p:column>
-                                <p:column headerText="Amount">
+                                <p:column style="text-align: right;" headerText="Amount">
                                     <h:outputLabel value="#{pay.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -428,7 +428,7 @@
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                
                                 </p:column>
-                                <p:column headerText="Amount">
+                                <p:column style="text-align: right;" headerText="Amount">
                                     <h:outputLabel value="#{cre.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -443,7 +443,7 @@
 
                             <p:panel header="Summery" style="text-align: center;">
                                 <p:panel style="text-align: left;">
-                                    <h:panelGrid columns="4"  style="min-width: 100%;">
+                                    <h:panelGrid columns="4"  style="min-width: 100%; text-align: right;">
                                         <h:outputLabel value="Gross &nbsp;"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.total}">
                                             <f:convertNumber pattern="#,##0.00" />
