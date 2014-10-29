@@ -263,6 +263,7 @@ public class StoreReportsTransfer implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", BillType.StoreIssue);
+        
         if (fromDepartment != null) {
             sql += " and b.fromDepartment=:fdept ";
             m.put("fdept", fromDepartment);
@@ -272,11 +273,14 @@ public class StoreReportsTransfer implements Serializable {
             sql += " and b.toDepartment=:tdept  ";
             m.put("tdept", toDepartment);
         }
+        
         sql+= " order by b.id";
+        
         transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
+        
         for (Bill b : transferBills) {
             totalsValue = totalsValue + (b.getTotal());
             discountsValue = discountsValue + b.getDiscount();
