@@ -254,17 +254,25 @@ public class StoreReportsTransfer implements Serializable {
     public void fillDepartmentUnitIssueByBillStore() {
         Map m = new HashMap();
         String sql;
+
+        sql = "select b from Bill b where "
+                + " b.createdAt "
+                + " between :fd and :td"
+                + " and b.billType=:bt";
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", BillType.StoreIssue);
-        m.put("fdept", fromDepartment);
-        m.put("tdept", toDepartment);
-        sql = "select b from Bill b where "
-                + " b.fromDepartment=:fdept and "
-                + " b.toDepartment=:tdept and "
-                + " b.createdAt "
-                + " between :fd and :td and "
-                + " b.billType=:bt order by b.id";
+        if (fromDepartment != null) {
+            sql += " and b.fromDepartment=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment=:tdept  ";
+            m.put("tdept", toDepartment);
+        }
+        sql+= " order by b.id";
         transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
@@ -333,38 +341,37 @@ public class StoreReportsTransfer implements Serializable {
         netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
 
     }
-    
+
     public void fillAssetTransferlist() {
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", BillType.StoreTransferIssue);
-        
+
         sql = "select bi from BillItem bi where "
-                    + " bi.bill.createdAt between :fd and :td "
-                    + " and  bi.bill.billType=:bt";
+                + " bi.bill.createdAt between :fd and :td "
+                + " and  bi.bill.billType=:bt";
 
         if (fromDepartment != null) {
             m.put("fdept", fromDepartment);
             sql += " and bi.bill.department=:fdept ";
         }
-        
+
         if (toDepartment != null) {
             m.put("tdept", toDepartment);
             sql += " and bi.bill.toDepartment=:tdept ";
         }
-        
+
         sql += " order by bi.bill.toDepartment.name, bi.item.category.name, bi.item.name, bi.id";
 
-
         transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
-        purchaseValue=0.0;
+
+        purchaseValue = 0.0;
         for (BillItem bi : transferItems) {
-            purchaseValue+=(bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getPharmaceuticalBillItem().getQtyInUnit());
+            purchaseValue += (bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getPharmaceuticalBillItem().getQtyInUnit());
         }
-        
+
     }
 
     public void fillDepartmentTransfersIssueByBillItem() {
@@ -475,8 +482,8 @@ public class StoreReportsTransfer implements Serializable {
             dbr.getBill().setNetTotal(dbr.getBill().getNetTotal() + ts.getNetValue());
             dbr.getBill().setGrantTotal(dbr.getBill().getGrantTotal() + ts.getQty());
 
-            purchaseValue+=ts.getNetValue();
-            
+            purchaseValue += ts.getNetValue();
+
         }
 
     }
@@ -633,8 +640,8 @@ public class StoreReportsTransfer implements Serializable {
     }
 
     public Date getFromDate() {
-        if (fromDate==null) {
-            fromDate=getCommonFunctions().getStartOfMonth(new Date());
+        if (fromDate == null) {
+            fromDate = getCommonFunctions().getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -644,8 +651,8 @@ public class StoreReportsTransfer implements Serializable {
     }
 
     public Date getToDate() {
-        if (toDate==null) {
-            toDate=getCommonFunctions().getEndOfMonth(new Date());
+        if (toDate == null) {
+            toDate = getCommonFunctions().getEndOfMonth(new Date());
         }
         return toDate;
     }

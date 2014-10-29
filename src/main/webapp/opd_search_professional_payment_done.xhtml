@@ -12,7 +12,7 @@
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >                         
-                            <h:panelGrid columns="6" >
+                            <h:panelGrid columns="7" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
@@ -21,15 +21,17 @@
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPaymentTable}"/>
                                 <h:outputLabel/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
                                 <h:outputLabel value="Opd Bill No"/>
+                                <h:outputLabel value="Payment Bill No"/>
                                 <h:outputLabel value="Patient Name"/>
                                 <h:outputLabel value="Speciality"/> 
                                 <h:outputLabel value="Staff Name"/>      
                                 <h:outputLabel value="Service Name"/>  
                                 <h:outputLabel value="Charges"/>                              
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
@@ -49,7 +51,10 @@
                             </p:column>
                             <p:column headerText="Opd Bill No" >
                                 <h:outputLabel value="#{bi.paidForBillFee.bill.insId}" ></h:outputLabel>
-                            </p:column>  
+                            </p:column>
+                            <p:column headerText="Payment Bill No" >
+                                <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
+                            </p:column>
                             <p:column headerText="Specility" >
                                 <h:outputLabel value="#{bi.paidForBillFee.staff.speciality.name}" ></h:outputLabel>
                             </p:column>    
