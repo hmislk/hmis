@@ -62,21 +62,14 @@ public class HrmVariables implements Serializable {
     private double etfCompanyRate;
     private double payeeCompanyRate;
     private double payeeLimit;
-    double workingHourPerWeek;
+  
 
     @OneToMany(mappedBy = "hrmVariables", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PayeeTaxRange> taxRanges = new ArrayList<>();
 
-    public double getWorkingHourPerWeek() {
-        return workingHourPerWeek;
-    }
+   
 
-    public void setWorkingHourPerWeek(double workingHourPerWeek) {
-        this.workingHourPerWeek = workingHourPerWeek;
-    }
-
-    
-    
+   
     @Override
     public int hashCode() {
         int hash = 0;

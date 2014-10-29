@@ -650,7 +650,7 @@ public class CommonReport implements Serializable {
             temMap.put("ins", getReferenceInstitution());
         }
 
-        sql += " order by b.deptId  ";
+        sql += " order by b.id  ";
 
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
