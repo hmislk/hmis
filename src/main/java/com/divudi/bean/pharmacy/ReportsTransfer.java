@@ -449,17 +449,29 @@ public class ReportsTransfer implements Serializable {
     public void fillDepartmentUnitIssueByBill() {
         Map m = new HashMap();
         String sql;
+        
+        sql = "select b from Bill b where "                
+                + " b.createdAt "
+                + " between :fd and :td  "
+                + " and b.billType=:bt ";
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", BillType.PharmacyIssue);
-        m.put("fdept", fromDepartment);
-        m.put("tdept", toDepartment);
-        sql = "select b from Bill b where "
-                + " b.fromDepartment=:fdept and "
-                + " b.toDepartment=:tdept and "
-                + " b.createdAt "
-                + " between :fd and :td and "
-                + " b.billType=:bt order by b.id";
+        
+        if(fromDepartment != null){
+            sql +=" and b.fromDepartment=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+        
+        if(toDepartment != null){
+            sql +=" and b.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+        
+        
+        
+        sql+= " order by b.id";
+        
         transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
