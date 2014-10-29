@@ -27,10 +27,14 @@
             </h:panelGrid>
 
             <h:panelGrid columns="6">                
-                <p:commandButton ajax="false" value="Fill"
+                <p:commandButton ajax="false" value="Fill New"
                                  actionListener="#{shiftTableController.makeTableNull()}"
                                  action="#{shiftTableController.createShiftTable()}"
-                                 onclick="onSubmitButton();" />       
+                                 onclick="onSubmitButton();" />   
+                <p:commandButton ajax="false" value="Fill Old"
+                                 actionListener="#{shiftTableController.makeTableNull()}"
+                                 action="#{shiftTableController.fetchShiftTable()}"
+                                 onclick="onSubmitButton();" />   
                 <p:commandButton ajax="false" value="Hide" 
                                  action="#{shiftTableController.hide}" onclick="onSubmitButton();" />
                 <p:commandButton ajax="false" value="Visible" 
