@@ -9,7 +9,9 @@ import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.hr.StaffLeaveBallance;
+import com.divudi.data.hr.StaffShiftAggrgation;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
@@ -19,6 +21,7 @@ import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -93,7 +96,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs";
+            sql += " and ss.roster=:rs";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
@@ -134,7 +137,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs ";
+            sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
@@ -204,7 +207,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs ";
+            sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
@@ -257,7 +260,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs ";
+            sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
@@ -307,7 +310,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs ";
+            sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
@@ -315,6 +318,96 @@ public class HrReportController implements Serializable {
                 + " order by ss.shiftDate,ss.staff.department.name";
 
         departmentAttendances = (List<DepartmentAttendance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+    }
+
+    List<StaffShiftAggrgation> staffShiftAggrgations;
+
+    public List<StaffShiftAggrgation> getStaffShiftAggrgations() {
+        return staffShiftAggrgations;
+    }
+
+    public void setStaffShiftAggrgations(List<StaffShiftAggrgation> staffShiftAggrgations) {
+        this.staffShiftAggrgations = staffShiftAggrgations;
+    }
+
+    @EJB
+    FinalVariables finalVariables;
+
+    public void createStaffWorkingTime() {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select new com.divudi.data.hr.StaffShiftAggrgation(ss.staff,"
+                + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime)) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and (ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ) "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " group by ss.staff "
+                //                + "  having (sum(ss.workedWithinTimeFrameVarified)+sum(ss.leavedTime))> 0 "
+                + " order by ss.staff.codeInterger";
+
+        staffShiftAggrgations = (List<StaffShiftAggrgation>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+    }
+
+    public void createStaffWorkingTimeBelow28() {
+        createStaffWorkingTime();
+        if (staffShiftAggrgations == null) {
+            return;
+        }
+
+        Long datRange = commonFunctions.getDayCount(getFromDate(), getToDate());
+        Long mul = datRange / 7;
+        double maxLimitInSec = mul * finalVariables.getMinimumWorkingHourPerWeek() * 60 * 60;
+        System.err.println("Max Limit " + maxLimitInSec);
+        List<StaffShiftAggrgation> list = new ArrayList<>();
+
+        for (StaffShiftAggrgation ssa : staffShiftAggrgations) {
+            double sum = 0;
+
+            if (ssa.getWorkingTime() != null) {
+                sum += ssa.getWorkingTime();
+            }
+
+            if (ssa.getLeavedTime() != null) {
+                sum += ssa.getLeavedTime();
+            }
+
+            if (sum < maxLimitInSec) {
+                list.add(ssa);
+            }
+        }
+
+        staffShiftAggrgations = list;
     }
 
     List<DepartmentAttendance> departmentAttendances;
@@ -326,8 +419,6 @@ public class HrReportController implements Serializable {
     public void setDepartmentAttendances(List<DepartmentAttendance> departmentAttendances) {
         this.departmentAttendances = departmentAttendances;
     }
-    
-    
 
     public void createStaffShift() {
         String sql = "";
@@ -464,7 +555,6 @@ public class HrReportController implements Serializable {
     public void setFingerPrintRecords(List<FingerPrintRecord> fingerPrintRecords) {
         this.fingerPrintRecords = fingerPrintRecords;
     }
-    
 
     public StaffShiftFacade getStaffShiftFacade() {
         return staffShiftFacade;
@@ -473,7 +563,5 @@ public class HrReportController implements Serializable {
     public void setStaffShiftFacade(StaffShiftFacade staffShiftFacade) {
         this.staffShiftFacade = staffShiftFacade;
     }
-
-    
 
 }

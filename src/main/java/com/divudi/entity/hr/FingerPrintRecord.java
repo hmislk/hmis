@@ -43,6 +43,8 @@ public class FingerPrintRecord implements Serializable {
     FingerPrintRecord loggedRecord;
     @ManyToOne
     Staff staff;
+    @ManyToOne
+    Roster roster;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date recordTimeStamp;
@@ -70,6 +72,16 @@ public class FingerPrintRecord implements Serializable {
     @Enumerated(EnumType.STRING)
     DayType dayType;
     String comments = "";
+
+    public Roster getRoster() {
+        return roster;
+    }
+
+    public void setRoster(Roster roster) {
+        this.roster = roster;
+    }
+    
+    
 
     public DayType getDayType() {
         return dayType;
