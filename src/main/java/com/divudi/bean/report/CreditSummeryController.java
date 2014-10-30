@@ -226,14 +226,6 @@ public class CreditSummeryController implements Serializable {
         return tmp;
     }
     
-    public double getDepartmentNetTotalByBill() {
-        double tmp = 0.0;
-        for (DailyCredit d : getDailyCreditByBill()) {
-            tmp += d.getDiscountTotal() + d.getNetTotal();
-        }
-
-        return tmp;
-    }
 
     public List<DailyCash> getDailyCredit() {
         // //System.out.println("Starting : ");
