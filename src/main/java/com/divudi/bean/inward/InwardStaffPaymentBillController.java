@@ -91,7 +91,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     List<String1Value1> list;
     List<String2Value1> list1;
     List<BillFee> docPayingBillFee;
-    List<BillItem>billItems1;
+    List<BillItem> billItems1;
 
     public void makenull() {
         currentStaff = null;
@@ -156,6 +156,8 @@ public class InwardStaffPaymentBillController implements Serializable {
             sql += " and bf.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
             m.put("cd", institution);
         }
+
+        sql += " order by bf.bill.insId ";
 
         m.put("fd", fromDate);
         m.put("td", toDate);

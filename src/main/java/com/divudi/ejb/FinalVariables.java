@@ -13,8 +13,15 @@ import javax.ejb.Stateless;
 @Stateless
 public class FinalVariables {
 
-    
-    
+
+    public double getMaximumWorkingHourPerWeek() {
+        return 45;
+    }
+
+    public double getMinimumWorkingHourPerWeek() {
+        return 28;
+    }
+
     public Integer getSessionSessionDayCounter() {
         return 5;
     }
@@ -22,8 +29,8 @@ public class FinalVariables {
     public double getCahnnelingDurationMinute() {
         return 10.0;
     }
-    
-    public double getOtTime(){
+
+    public double getOtTime() {
         return 45;
     }
     // Add business logic below. (Right-click in editor and choose

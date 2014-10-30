@@ -10,6 +10,7 @@ import com.divudi.data.dataStructure.ExtraDutyCount;
 import com.divudi.data.dataStructure.OtNormalSpecial;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.StaffPaysheetComponent;
@@ -283,7 +284,11 @@ public class StaffSalaryController implements Serializable {
 //        getCurrent().getStaffSalaryComponants().add(ss);
 //
 //    }
+    @EJB
+    FinalVariables finalVariables;
+
     private void setOT() {
+
         StaffSalaryComponant ss = new StaffSalaryComponant();
         ss.setCreatedAt(new Date());
         ss.setCreater(getSessionController().getLoggedUser());
@@ -294,7 +299,7 @@ public class StaffSalaryController implements Serializable {
             Long dateCount = commonFunctions.getDayCount(getOverTimeFromDate(), getOverTimeToDate());
             Long numOfWeeks = dateCount / 7;
 
-            double normalWorkTime = numOfWeeks * hrmVariablesController.getCurrent().getWorkingHourPerWeek();
+            double normalWorkTime = numOfWeeks * finalVariables.getMaximumWorkingHourPerWeek();
             double overTime = workedWithinTimeFrameVarified - normalWorkTime;
             System.err.println("Date Count " + dateCount);
             System.err.println("num of Week " + numOfWeeks);
