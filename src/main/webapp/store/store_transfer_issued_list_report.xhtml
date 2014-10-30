@@ -20,12 +20,12 @@
                         <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
                         <h:panelGrid columns="3" style="float : right!important;">
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createIssuePharmacyReport()}"/>
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createIssueStoreReport()}"/>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="datatable"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{searchController.createIssuePharmacyReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                            <p:commandButton actionListener="#{searchController.createIssueStoreReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
                                 <pe:exporter type="xlsx" target="tbl1" fileName="Pharmacy_Transfer_Issued_List_Report"  />
                             </p:commandButton>
                         </h:panelGrid>
