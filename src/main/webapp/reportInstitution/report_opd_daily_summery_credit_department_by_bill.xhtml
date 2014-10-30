@@ -118,8 +118,22 @@
                 </p:subTable>
                 <p:columnGroup type="footer">
                     <p:row>
-                        <p:column footerText="Total Collection" style="font-weight: bold;"/>                         
-                        <p:column footerText="#{creditSummeryController.departmentTotalByBill}" colspan="4" style="text-align: right; font-weight: bold;">
+                        
+                        <p:column footerText="Total Collection" style="font-weight: bold;" />   
+                        
+                        <p:column footerText="#{creditSummeryController.departmentTotalByBill}" colspan="2" style="text-align: right; font-weight: bold;">
+                            <h:outputLabel value="#{creditSummeryController.departmentNetTotalByBill}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        
+                         <p:column footerText="#{creditSummeryController.departmentTotalByBill}" colspan="1" style="text-align: right; font-weight: bold;">
+                            <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel> 
+                        </p:column>
+                        
+                        <p:column footerText="#{creditSummeryController.departmentTotalByBill}" colspan="2" style="text-align: right; font-weight: bold;">
                             <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
