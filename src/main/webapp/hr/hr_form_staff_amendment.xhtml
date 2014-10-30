@@ -46,10 +46,11 @@
                                     <h:outputLabel value="To Date "/>
                                     <p:calendar id="toDate" value="#{staffAmendmentFormController.currAmendmentForm.toDate}"
                                                 pattern="yyyy MM dd HH:mm:ss">
+                                        
                                     </p:calendar>                                   
                                     <p:commandButton ajax="false" value="Process Staff Shift" 
                                                      action="#{staffAmendmentFormController.fetchToStaffShift()}" />
-                                    <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toStaffShift}"   >
+                                    <p:selectOneMenu id="s1" value="#{staffAmendmentFormController.currAmendmentForm.toStaffShift}"   >
                                         <f:selectItem itemLabel="Select Staff Shift"/>
                                         <f:selectItems value="#{staffAmendmentFormController.toStaffShifts}"
                                                        var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
@@ -78,10 +79,11 @@
                                     </p:calendar>
                                     <h:outputLabel value="Comment"/>
                                     <p:inputTextarea value="#{staffAmendmentFormController.currAmendmentForm.comments}" />
-                                    <p:commandButton id="btnAdd" ajax="false" value="Add" 
+                                    <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                                      action="#{staffAmendmentFormController.saveAmendmentForm()}"/>
 
                                     <p:commandButton ajax="false" value="Clear" action="#{staffAmendmentFormController.clear()}"/>
+                                    <p:commandButton value="Delete" action="#{staffAmendmentFormController.deleteAmmendmentForm}" ajax="false"></p:commandButton>
                                 </p:panelGrid>
                             </p:panel>
                         </p:panel>
@@ -120,7 +122,9 @@
                                 <p:commandButton ajax="false" value="Search Approved Date" action="#{staffAmendmentFormController.createAmmendmentTableApprovedDate()}" />
                             </h:panelGrid>
                             <p:dataTable value="#{staffAmendmentFormController.amendmentForms}" var="add" 
-                                         rowStyleClass="#{add.retired eq true ? 'redText':''}">
+                                         rowStyleClass="#{add.retired eq true ? 'redText':''}"
+                                         scrollable="true"
+                                         scrollHeight="400">
                                 <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" action="#{staffAmendmentFormController.viewAmendmentForm(add)}" disabled="#{add.retired}"></p:commandButton>
                                 </p:column>
@@ -151,7 +155,6 @@
                                     <br></br>
                                     <p:outputLabel value="Deleted By  #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"></p:outputLabel>
                                 </p:column>
-
                             </p:dataTable>
                         </p:panel>
                     </h:panelGrid>

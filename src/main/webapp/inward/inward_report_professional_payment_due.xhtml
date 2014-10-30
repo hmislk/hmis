@@ -10,6 +10,10 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+
+                    <!--sdfsdfsdf-->
+                    <!--Done for Demonstration-->
+
                     <p:panel header="Search Bills" >
                         <f:facet name="header"></f:facet>
 
@@ -80,6 +84,7 @@
 
                         <p:defaultCommand target="btnSearch" />
 
+
                         <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
@@ -123,8 +128,11 @@
                                 <h:outputLabel value="#{bf.billItem.item.name}" />
                             </p:column>
 
-                            <p:column headerText="Charge">
-                                <h:outputLabel value="#{bf.feeValue}" />
+                            <p:column style="text-align: right;"  headerText="Charge">
+                                <h:outputLabel value="#{bf.feeValue}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
                             </p:column>
 
                         </p:dataTable>

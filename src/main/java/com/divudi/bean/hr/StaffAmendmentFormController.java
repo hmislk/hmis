@@ -6,6 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AmendmentForm;
@@ -100,9 +101,13 @@ public class StaffAmendmentFormController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        currAmendmentForm.setCreatedAt(new Date());
-        currAmendmentForm.setCreater(getSessionController().getLoggedUser());
-        getAmendmentFormFacade().create(currAmendmentForm);
+        if (currAmendmentForm.getId() == null) {
+            currAmendmentForm.setCreatedAt(new Date());
+            currAmendmentForm.setCreater(getSessionController().getLoggedUser());
+            getAmendmentFormFacade().create(currAmendmentForm);
+        }else{
+            getAmendmentFormFacade().edit(currAmendmentForm);
+        }
 
         //Change Shifts
         StaffShift fromStaffShift = getCurrAmendmentForm().getFromStaffShift();
@@ -119,7 +124,7 @@ public class StaffAmendmentFormController implements Serializable {
             toStaffShift = new StaffShift();
             toStaffShift.setStaff(fStaff);
             toStaffShift.setShift(getCurrAmendmentForm().getToShift());
-            toStaffShift.setShiftDate(toDate);
+            toStaffShift.setShiftDate(getCurrAmendmentForm().getToDate());
             staffShiftFacade.create(toStaffShift);
 
             fromStaffShift.setRetired(true);
@@ -215,6 +220,18 @@ public class StaffAmendmentFormController implements Serializable {
 
     public void viewAmendmentForm(AmendmentForm amendmentForm) {
         currAmendmentForm = amendmentForm;
+    }
+
+    public void deleteAmmendmentForm() {
+        if (currAmendmentForm == null) {
+            return;
+        }
+        currAmendmentForm.setRetired(true);
+        currAmendmentForm.setRetiredAt(new Date());
+        currAmendmentForm.setRetirer(getSessionController().getLoggedUser());
+        getAmendmentFormFacade().edit(currAmendmentForm);
+        UtilityController.addSuccessMessage("Deleted");
+        clear();
     }
 
     public void fetchFromStaffShift() {
@@ -349,6 +366,9 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = commonFunctions.getStartOfMonth(new Date());
+        }
         return fromDate;
     }
 
@@ -357,6 +377,9 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = commonFunctions.getEndOfMonth(new Date());
+        }
         return toDate;
     }
 
@@ -373,9 +396,7 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getFromStaff() {
-        if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth(new Date());
-        }
+
         return fromStaff;
     }
 
@@ -384,9 +405,7 @@ public class StaffAmendmentFormController implements Serializable {
     }
 
     public Staff getToStaff() {
-        if (toDate == null) {
-            toDate = commonFunctions.getEndOfMonth(new Date());
-        }
+
         return toStaff;
     }
 

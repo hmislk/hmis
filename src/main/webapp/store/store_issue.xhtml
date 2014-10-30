@@ -83,7 +83,7 @@
                                                 </p:column>
                                                 <p:column headerText="Stocks"  style="text-align: right; padding-right: 10px;">
                                                     <h:outputLabel value="#{i.stock}" >
-                                                        <f:convertNumber pattern="#,##0.0" ></f:convertNumber>
+                                                        
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Expiary">
@@ -225,7 +225,7 @@
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Issue Bill"  
                                                          onclick="onSubmitButton();"
-                                                         ajax="false" action="/pharmacy/pharmacy_issue"
+                                                         ajax="false" action="/store_issue"
                                                          actionListener="#{storeIssueController.resetAll()}"  ></p:commandButton>
 
 

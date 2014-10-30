@@ -109,9 +109,12 @@
                                 </h:commandLink>
                             </p:column>
 
-                            <p:column headerText="Charge">
+                            <p:column style="text-align: right;" headerText="Charge">
                                 <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.feeValue}" />
+                                    <h:outputLabel value="#{bf.feeValue}" >
+                                         <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                 </h:commandLink>
                             </p:column>

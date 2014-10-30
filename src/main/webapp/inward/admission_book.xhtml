@@ -194,7 +194,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Total">
+                                <p:column style="text-align: right;"  headerText="Total">
                                     <h:outputLabel value="#{i.transTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -205,7 +205,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Paid">
+                                <p:column style="text-align: right;"  headerText="Paid">
                                     <h:outputLabel value="#{i.transPaid}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -216,7 +216,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Due">
+                                <p:column style="text-align: right;" headerText="Due">
                                     <h:outputLabel value="#{i.transTotal-i.transPaid}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>

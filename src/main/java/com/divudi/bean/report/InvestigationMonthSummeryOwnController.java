@@ -65,6 +65,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private List<InvestigationSummeryData> items;
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
+    List<InvestigationSummeryData> itemsLab;
 
     /**
      * Creates a new instance of CashierReportController
@@ -74,6 +75,14 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
+    }
+
+    public List<InvestigationSummeryData> getItemsLab() {
+        return itemsLab;
+    }
+
+    public void setItemsLab(List<InvestigationSummeryData> itemsLab) {
+        this.itemsLab = itemsLab;
     }
 
     public void setBillComponentFacade(BillComponentFacade billComponentFacade) {
@@ -149,23 +158,37 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         return items;
     }
-    
-    public List<InvestigationSummeryData> getItems3() {
-        items = new ArrayList<>();
+    private long countTotal;
 
+    public void createItemList3() {
+        itemsLab = new ArrayList<>();
+        countTotal = 0;
         for (Item w : getInvestigations3()) {
             InvestigationSummeryData temp = new InvestigationSummeryData();
             temp.setInvestigation(w);
-            setCountTotal3(temp, w);
+            long temCoint = calculateInvestigationBilledCount(w);
+            temp.setCount(temCoint);
+            countTotal += temCoint;
             if (temp.getCount() != 0) {
-                items.add(temp);
+                itemsLab.add(temp);
             }
         }
+//        countTotal = 0;
+//
+//        long billed = getCount2(new BilledBill());
+//        System.out.println("billed = " + billed);
+//        long cancelled = getCount2(new CancelledBill());
+//        System.out.println("cancelled = " + cancelled);
+//        long refunded = getCount2(new RefundBill());
+//        System.out.println("refunded = " + refunded);
+//
+//        countTotal = billed - (refunded + cancelled);
+    }
+
+    public List<InvestigationSummeryData> getItems3() {
 
         return items;
     }
-
-    private long countTotal;
 
     public List<InvestigationSummeryData> getItemsWithoutC() {
         items = new ArrayList<>();
@@ -202,7 +225,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         for (BillItem b : temps) {
             if (b.getBill() != null && b.getBill().isCancelled() == false) {
-                if (b.isRefunded()== null || b.isRefunded() == false) {
+                if (b.isRefunded() == null || b.isRefunded() == false) {
                     if (b.getItem().getId() == w.getId()) {
                         tot += b.getNetValue();
                         c++;
@@ -247,9 +270,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    
-     private long getCount3(Bill bill, Item item) {
+
+    private long getCount3(Bill bill, Item item) {
         String sql;
         Map temMap = new HashMap();
         sql = "select count(bi) FROM BillItem bi where bi.bill.billType=:bType and bi.item =:itm"
@@ -264,7 +286,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-
 
     private long getCount(Bill bill) {
         String sql;
@@ -312,8 +333,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-     private double getTotal2(Item item) {
+
+    private double getTotal2(Item item) {
         String sql;
         Map temMap = new HashMap();
         sql = "select sum(bi.netValue) FROM BillItem bi where bi.bill.billType=:bType and bi.item =:itm"
@@ -327,9 +348,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-     
-     
-     private double getTotal3(Item item) {
+
+    private double getTotal3(Item item) {
         String sql;
         Map temMap = new HashMap();
         sql = "select sum(bi.netValue) FROM BillItem bi where bi.bill.billType=:bType and bi.item =:itm"
@@ -367,7 +387,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         is.setTotal(getTotal2(w));
     }
-    
+
     private void setCountTotal3(InvestigationSummeryData is, Item w) {
 
         long billed = getCount3(new BilledBill(), w);
@@ -378,6 +398,13 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         is.setCount(net);
 
         is.setTotal(getTotal3(w));
+    }
+
+    private long calculateInvestigationBilledCount(Item w) {
+        long billed = getCount3(new BilledBill(), w);
+        long cancelled = getCount3(new CancelledBill(), w);
+        long refunded = getCount3(new RefundBill(), w);
+        return billed - (cancelled + refunded);
     }
 
     public void setItems(List<InvestigationSummeryData> items) {
@@ -438,8 +465,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         return investigations;
     }
-    
-     public List<Item> getInvestigations3() {
+
+    public List<Item> getInvestigations3() {
         Map temMap = new HashMap();
         String sql = "select distinct ix from BillItem bi join bi.item ix "
                 + " where type(ix) =:ixtype  "
@@ -580,7 +607,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         countTotal = billed - (refunded + cancelled);
 
-      //  //System.err.println("Billed : " + billed);
+        //  //System.err.println("Billed : " + billed);
         //   //System.err.println("Cancelled : " + cancelled);
         //   //System.err.println("Refunded : " + refunded);
         //   //System.err.println("Gross Tot : " + countTotal);
@@ -588,15 +615,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     }
 
     public long getCountTotal2() {
-        countTotal = 0;
 
-        long billed = getCount2(new BilledBill());
-        long cancelled = getCount2(new CancelledBill());
-        long refunded = getCount2(new RefundBill());
-
-        countTotal = billed - (refunded + cancelled);
-
-      //  //System.err.println("Billed : " + billed);
+        //  //System.err.println("Billed : " + billed);
         //  //System.err.println("Cancelled : " + cancelled);
         //  //System.err.println("Refunded : " + refunded);
         //  //System.err.println("Gross Tot : " + countTotal);

@@ -9,7 +9,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel header="Leave Application Form">
-                <p:panelGrid columns="2" >
+                <h:panelGrid columns="2" >
                     <p:panel header="Leave Form Details">
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Staff : "/>
@@ -23,11 +23,7 @@
                             <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.leaveType}">
                                 <f:selectItem itemLabel="Select Day Type"/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
-                            </p:selectOneMenu>                                                 
-                            <h:outputLabel value="Requested Date"/>
-                            <p:calendar id="requestedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.requestedDate}"
-                                        pattern="dd MMMM yyyy">
-                            </p:calendar>                     
+                            </p:selectOneMenu>                                                    
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.fromDate}"
                                         pattern="dd MMMM yyyy">     
@@ -35,7 +31,18 @@
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.toDate}"
                                         pattern="dd MMMM yyyy">
-                            </p:calendar>     
+                            </p:calendar>   
+                            <p:commandButton ajax="false" value="Leave Count" action="#{staffLeaveApplicationFormController.calLeaveCount()}"/>
+                            <h:panelGrid columns="2">
+                                <h:outputLabel value="Leave"/>
+                                <h:outputLabel value="Ballance"/>
+                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaved}"/>
+                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaveUtilize - staffLeaveApplicationFormController.leaved}"/>
+                            </h:panelGrid>
+                            <h:outputLabel value="Requested Date"/>
+                            <p:calendar id="requestedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.requestedDate}"
+                                        pattern="dd MMMM yyyy">
+                            </p:calendar>
                             <h:outputLabel value="Leave Approved Person"/>
                             <p:autoComplete id="staffApp"  forceSelection="true"
                                             value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"
@@ -49,11 +56,16 @@
                             </p:calendar>
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffLeaveApplicationFormController.currentLeaveForm.comments}" />
-                            <p:commandButton id="btnAdd" ajax="false" value="Add" 
-                                             action="#{staffLeaveApplicationFormController.saveLeaveform()}"/>
+                            <h:outputLabel/>
+                            <h:panelGroup>
+                                <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                                                 action="#{staffLeaveApplicationFormController.saveLeaveform()}"/>
 
-                            <p:commandButton ajax="false" value="Clear" action="#{staffLeaveApplicationFormController.clear}"/>
-                            <p:commandButton ajax="false" value="Delete" action="#{staffLeaveApplicationFormController.deleteLeaveForm()}"/>
+                                <p:commandButton ajax="false" value="Clear" 
+                                                 action="#{staffLeaveApplicationFormController.clear}"/>
+                                <p:commandButton ajax="false" value="Delete" 
+                                                 action="#{staffLeaveApplicationFormController.deleteLeaveForm()}"/>
+                            </h:panelGroup>                     
                         </h:panelGrid>
                     </p:panel> 
                     <p:panel header="Search Leave Forms" >
@@ -89,7 +101,10 @@
                             </p:panelGrid>
                         </p:panel>
                         <p:panel>
-                            <p:dataTable value="#{staffLeaveApplicationFormController.leaveForms}" var="l" rowStyleClass="#{l.retired eq true ? 'redText':''}" >
+                            <p:dataTable value="#{staffLeaveApplicationFormController.leaveForms}" var="l" 
+                                         rowStyleClass="#{l.retired eq true ? 'redText':''}"
+                                         scrollable="true"
+                                         scrollHeight="300" >
                                 <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" action="#{staffLeaveApplicationFormController.viewLeaveForm(l)}" disabled="#{l.retired}"></p:commandButton>
                                 </p:column>
@@ -120,7 +135,7 @@
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
-                </p:panelGrid>              
+                </h:panelGrid>              
             </p:panel>
         </h:form>
     </ui:define> 

@@ -433,6 +433,10 @@ public class BillPackageController implements Serializable {
         if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
             return true;
         }
+        if (paymentMethod == PaymentMethod.Credit && creditCompany==null) {
+            UtilityController.addErrorMessage("Plase Select Credit Company");
+            return true;
+        }
 
 //        if (paymentScheme.getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
