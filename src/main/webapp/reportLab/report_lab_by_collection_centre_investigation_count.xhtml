@@ -47,7 +47,9 @@
                 </f:facet>
                 <br/><br/>
                 
-                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.items3}" var="c" >
+                <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnController.createItemList3()}" ></p:commandButton>
+                
+                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" >
 
                     <f:facet name="header">
 
