@@ -423,36 +423,7 @@
                                     <p:tabView id="tblBillItem" >
 
 
-                                        <p:tab id="tblBillTotals" title="Totals" >
-                                            <h:panelGroup id="panelBillTotals" >
-                                                <p:panel header="Bill Details" id="pBillDetails"  >
-                                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
-                                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                                        <h:outputLabel id="tot" value="#{billController.total}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Discount" ></h:outputLabel>
-                                                        <h:outputLabel id="dis" value="#{billController.discount}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                                        <h:outputLabel id="netTotal" value="#{billController.netTotal}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Tendered" ></h:outputLabel>
-                                                        <p:inputText autocomplete="off"  id="paid" value="#{billController.strTenderedValue}" >
-                                                            <p:ajax process="netTotal paid" update="balance" event="change"/>
-                                                        </p:inputText>
-                                                        <h:outputLabel  value="Balance " ></h:outputLabel>
-                                                        <h:outputLabel id="balance" value="#{billController.cashBalance}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </p:panelGrid>
-
-                                                </p:panel>
-                                            </h:panelGroup>
-
-                                        </p:tab>
+                                        
 
 
                                         <p:tab id="tabBillItems" title="Bill Items" >
@@ -545,7 +516,36 @@
                                 </h:panelGroup>
 
 
+                                <h:panelGroup>
+                                            <h:panelGroup id="panelBillTotals" >
+                                                <p:panel header="Bill Details" id="pBillDetails"  >
+                                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
+                                                        <h:outputLabel value="Total" ></h:outputLabel>
+                                                        <h:outputLabel id="tot" value="#{billController.total}" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                        <h:outputLabel value="Discount" ></h:outputLabel>
+                                                        <h:outputLabel id="dis" value="#{billController.discount}" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                        <h:outputLabel value="Net Total" ></h:outputLabel>
+                                                        <h:outputLabel id="netTotal" value="#{billController.netTotal}" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                        <h:outputLabel value="Tendered" ></h:outputLabel>
+                                                        <p:inputText autocomplete="off"  id="paid" value="#{billController.strTenderedValue}" >
+                                                            <p:ajax process="netTotal paid" update="balance" event="change"/>
+                                                        </p:inputText>
+                                                        <h:outputLabel  value="Balance " ></h:outputLabel>
+                                                        <h:outputLabel id="balance" value="#{billController.cashBalance}" >
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </p:panelGrid>
 
+                                                </p:panel>
+                                            </h:panelGroup>
+
+                                </h:panelGroup>
 
 
                             </h:panelGrid>
