@@ -610,8 +610,8 @@ public class StoreBean {
             s.setStock(s.getStock() + qty);
             //System.err.println("Initial Stock After Updation" + s.getStock());
             double number = s.getStock();
-            number = Math.round(number * 100);
-            number = number / 100;
+            number = Math.round(number * 1000);
+            number = number / 1000;
             s.setStock(number);
 
             getStockFacade().create(s);
@@ -621,8 +621,8 @@ public class StoreBean {
             s.setStock(s.getStock() + qty);
             //System.err.println("After Stock Updation " + s.getStock());
             double number = s.getStock();
-            number = Math.round(number * 100);
-            number = number / 100;
+            number = Math.round(number * 1000);
+            number = number / 1000;
             s.setStock(number);
 
             getStockFacade().edit(s);
@@ -651,8 +651,8 @@ public class StoreBean {
             s.setCode(pharmaceuticalBillItem.getCode());
             //System.err.println("Initial Stock After Updation" + s.getStock());
             double number = s.getStock();
-            number = Math.round(number * 100);
-            number = number / 100;
+            number = Math.round(number * 1000);
+            number = number / 1000;
             s.setStock(number);
 
             getStockFacade().create(s);
@@ -662,8 +662,8 @@ public class StoreBean {
             //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() + qty);
             double number = s.getStock();
-            number = Math.round(number * 100);
-            number = number / 100;
+            number = Math.round(number * 1000);
+            number = number / 1000;
             s.setStock(number);
 
             //System.err.println("After Stock Updation " + s.getStock());
@@ -691,8 +691,8 @@ public class StoreBean {
         s.setStock(s.getStock() - qty);
 
         double number = s.getStock();
-        number = Math.round(number * 100);
-        number = number / 100;
+        number = Math.round(number * 1000);
+        number = number / 1000;
         s.setStock(number);
 
         if (s.getId() == null || s.getId() == 0) {
@@ -731,8 +731,8 @@ public class StoreBean {
             s.setStock(s.getStock() - qty);
             //System.err.println("Initial Stock After Updation" + s.getStock());
             double number = s.getStock();
-            number = Math.round(number * 100);
-            number = number / 100;
+            number = Math.round(number * 1000);
+            number = number / 1000;
             s.setStock(number);
 
             getStockFacade().create(s);
@@ -741,8 +741,8 @@ public class StoreBean {
             //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() - qty);
             double number = s.getStock();
-            number = Math.round(number * 100);
-            number = number / 100;
+            number = Math.round(number * 1000);
+            number = number / 1000;
             s.setStock(number);
 
             //System.err.println("After Stock Updation " + s.getStock());
@@ -765,8 +765,8 @@ public class StoreBean {
         }
         s.setStock(s.getStock() - qty);
                 double number = s.getStock();
-        number = Math.round(number * 100);
-        number = number / 100;
+        number = Math.round(number * 1000);
+        number = number / 1000;
         s.setStock(number);
 
         if (s.getId() == null || s.getId() == 0) {
@@ -865,8 +865,8 @@ public class StoreBean {
         //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
                 double number = stock.getStock();
-        number = Math.round(number * 100);
-        number = number / 100;
+        number = Math.round(number * 1000);
+        number = number / 1000;
         stock.setStock(number);
 
         //System.err.println("After  Update " + stock.getStock());
@@ -894,8 +894,8 @@ public class StoreBean {
         //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
                 double number = stock.getStock();
-        number = Math.round(number * 100);
-        number = number / 100;
+        number = Math.round(number * 1000);
+        number = number / 1000;
         stock.setStock(number);
 
         //System.err.println("After  Update " + stock.getStock());
@@ -1106,8 +1106,8 @@ public class StoreBean {
         stock.setStock(stock.getStock() + qty);
 
         double number = stock.getStock();
-        number = Math.round(number * 100);
-        number = number / 100;
+        number = Math.round(number * 1000);
+        number = number / 1000;
         stock.setStock(number);
 
         //System.err.println("After Update " + stock.getStock());
@@ -1135,8 +1135,8 @@ public class StoreBean {
         stock.setStock(stock.getStock() + qty);
 
         double number = stock.getStock();
-        number = Math.round(number * 100);
-        number = number / 100;
+        number = Math.round(number * 1000);
+        number = number / 1000;
         stock.setStock(number);
 
         //System.err.println("After Update " + stock.getStock());
