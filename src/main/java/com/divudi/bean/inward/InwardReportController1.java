@@ -965,17 +965,17 @@ public class InwardReportController1 implements Serializable {
                 + " and b.createdAt between :frm and :to ";
 
         if (category != null) {
-            sql += "b.bill.item.category=:cat";
+            sql += " and b.bill.item.category=:cat";
             hm.put("cat", category);
         }
 
         if (institution != null) {
-            sql += "b.referenceBill.creditCompany=:ins";
+            sql += " and b.referenceBill.creditCompany=:ins";
             hm.put("ins", institution);
         }
 
         if (service != null) {
-            sql += "b.bill.item=:itm";
+            sql += " and b.bill.item=:itm";
             hm.put("itm", service);
         }
 
