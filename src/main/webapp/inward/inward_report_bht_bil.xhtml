@@ -51,7 +51,7 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                <pe:exporter type="xlsx" target="tbl,tbl2" fileName="newly_added_report"  />
+                                <pe:exporter type="xlsx" target="tbl,tbl3,tbl4" fileName="newly_added_report"  />
                             </p:commandButton>  
                         </h:panelGrid>
 
@@ -109,7 +109,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Net Value"  style="text-align: right;">
+                            <p:column headerText="Net Value"  style="text-align: right;" >
                                 <h:outputLabel  value="#{bip.netValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
@@ -133,7 +133,8 @@
                                 <h:outputLabel  value="#{pay.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <f:facet name="footer">
+                                <f:facet name="footer" >
+                                  
                                     <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
