@@ -249,6 +249,17 @@
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>  
+                                     <p:column>
+                                        <f:facet name="header">Adjusted Value</f:facet>
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip.feeAdjusted}"/>
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip.feeAdjusted}"/>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
                                     <p:column>
                                         <f:facet name="header">Fee Name</f:facet>
                                         <h:outputLabel value="#{bip.fee.name}"/>
@@ -321,6 +332,16 @@
                                             </f:facet>
                                             <f:facet name="input" >
                                                 <p:inputText value="#{bip21.netValue}" />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                     <p:column headerText="Fee Adjusted" >
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.adjustedValue}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.adjustedValue}" />
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>
