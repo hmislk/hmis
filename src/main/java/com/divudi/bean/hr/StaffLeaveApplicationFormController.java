@@ -9,6 +9,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.LeaveForm;
@@ -56,6 +57,48 @@ public class StaffLeaveApplicationFormController implements Serializable {
     Date toDate;
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
+    double leaveUtilize;
+    double leaved;
+    @EJB
+    FinalVariables finalVariables;
+
+    public double getLeaveUtilize() {
+        return leaveUtilize;
+    }
+
+    public void setLeaveUtilize(double leaveUtilize) {
+        this.leaveUtilize = leaveUtilize;
+    }
+
+    public double getLeaved() {
+        return leaved;
+    }
+
+    public void setLeaved(double leaved) {
+        this.leaved = leaved;
+    }
+
+    public PhDateController getPhDateController() {
+        return phDateController;
+    }
+
+    public void setPhDateController(PhDateController phDateController) {
+        this.phDateController = phDateController;
+    }
+
+    public HumanResourceBean getHumanResourceBean() {
+        return humanResourceBean;
+    }
+
+    public void setHumanResourceBean(HumanResourceBean humanResourceBean) {
+        this.humanResourceBean = humanResourceBean;
+    }
+
+    public void calLeaveCount() {
+        leaveUtilize = getLeaveType().getLeaveUtilization();
+        
+        
+    }
 
     public StaffLeaveFacade getStaffLeaveFacade() {
         return staffLeaveFacade;

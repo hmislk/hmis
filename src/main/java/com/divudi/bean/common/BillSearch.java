@@ -121,8 +121,8 @@ public class BillSearch implements Serializable {
     private BillItemFacade billItemFacade;
 
     public void updateBill() {
-        
-        if (bill.getPatientEncounter()==null) {
+
+        if (bill.getPatientEncounter() == null) {
             bill.setCreditCompany(creditCompany);
         } else {
             bill.getPatientEncounter().setCreditCompany(creditCompany);
@@ -1378,6 +1378,28 @@ public class BillSearch implements Serializable {
         this.bill = bill;
         paymentMethod = bill.getPaymentMethod();
         createBillItems();
+
+        Double[] billItemValues = billBean.fetchBillItemValues(bill);
+        double billItemTotal = billItemValues[0];
+        double billItemDiscount = billItemValues[1];
+        double billItemNetTotal = billItemValues[2];
+
+        if (billItemTotal != bill.getTotal() || billItemDiscount != bill.getDiscount()
+                || billItemNetTotal != bill.getNetTotal()) {
+            bill.setTransError(true);
+            return;
+        }
+
+        Double[] billFeeValues = billBean.fetchBillFeeValues(bill);
+        double billFeeTotal = billFeeValues[0];
+        double billFeeDiscount = billFeeValues[1];
+        double billFeeNetTotal = billFeeValues[2];
+
+        if (billFeeTotal != bill.getTotal() || billFeeDiscount != bill.getDiscount()
+                || billFeeNetTotal != bill.getNetTotal()) {
+            bill.setTransError(true);
+         
+        }
     }
 
     public List<BillEntry> getBillEntrys() {
@@ -1812,12 +1834,12 @@ public class BillSearch implements Serializable {
     }
 
     public Institution getCreditCompany() {
-        if (getBillSearch().getPatientEncounter()==null) {
-            creditCompany=getBillSearch().getCreditCompany();
-        }else{
-            creditCompany=getBillSearch().getPatientEncounter().getCreditCompany();
+        if (getBillSearch().getPatientEncounter() == null) {
+            creditCompany = getBillSearch().getCreditCompany();
+        } else {
+            creditCompany = getBillSearch().getPatientEncounter().getCreditCompany();
         }
-        
+
         return creditCompany;
     }
 

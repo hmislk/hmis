@@ -517,8 +517,8 @@ public class StoreBean {
         return getStockFacade().findDoubleByJpql(sql, m);
 
     }
-    
-     public double getStockQty(Item item) {
+
+    public double getStockQty(Item item) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -609,12 +609,22 @@ public class StoreBean {
             //System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() + qty);
             //System.err.println("Initial Stock After Updation" + s.getStock());
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             getStockFacade().create(s);
         } else {
 //            addToStockHistory(pharmaceuticalBillItem, s, staff);
             //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() + qty);
             //System.err.println("After Stock Updation " + s.getStock());
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             getStockFacade().edit(s);
         }
         return s;
@@ -629,7 +639,7 @@ public class StoreBean {
         hm.put("dep", department);
         Stock s = getStockFacade().findFirstBySQL(sql, hm);
 //        //System.err.println("ss" + s);
-        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType()== DepartmentType.Inventry ) {
+        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
             s = new Stock();
             s.setDepartment(department);
             s.setCode(pharmaceuticalBillItem.getCode());
@@ -640,12 +650,22 @@ public class StoreBean {
             s.setStock(s.getStock() + qty);
             s.setCode(pharmaceuticalBillItem.getCode());
             //System.err.println("Initial Stock After Updation" + s.getStock());
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             getStockFacade().create(s);
             addToStockHistoryInitial(pharmaceuticalBillItem, s, department);
         } else {
             addToStockHistory(pharmaceuticalBillItem, s, department);
             //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() + qty);
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             //System.err.println("After Stock Updation " + s.getStock());
             getStockFacade().edit(s);
         }
@@ -669,6 +689,12 @@ public class StoreBean {
             return false;
         }
         s.setStock(s.getStock() - qty);
+
+        double number = s.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        s.setStock(number);
+
         if (s.getId() == null || s.getId() == 0) {
             getStockFacade().create(s);
         } else {
@@ -704,11 +730,21 @@ public class StoreBean {
             //System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() - qty);
             //System.err.println("Initial Stock After Updation" + s.getStock());
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             getStockFacade().create(s);
         } else {
 //            addToStockHistory(pharmaceuticalBillItem, s, staff);
             //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() - qty);
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             //System.err.println("After Stock Updation " + s.getStock());
             getStockFacade().edit(s);
         }
@@ -728,6 +764,11 @@ public class StoreBean {
             s.setItemBatch(batch);
         }
         s.setStock(s.getStock() - qty);
+                double number = s.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        s.setStock(number);
+
         if (s.getId() == null || s.getId() == 0) {
             getStockFacade().create(s);
         } else {
@@ -822,9 +863,12 @@ public class StoreBean {
         stock = getStockFacade().find(stock.getId());
 
         //System.err.println("Before Update " + stock.getStock());
-        float stk=stock.getStock().floatValue();
-        
-        stock.setStock(stk - qty);
+        stock.setStock(stock.getStock() - qty);
+                double number = stock.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        stock.setStock(number);
+
         //System.err.println("After  Update " + stock.getStock());
         getStockFacade().edit(stock);
 
@@ -849,6 +893,11 @@ public class StoreBean {
 
         //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
+                double number = stock.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        stock.setStock(number);
+
         //System.err.println("After  Update " + stock.getStock());
         getStockFacade().edit(stock);
 
@@ -1055,6 +1104,12 @@ public class StoreBean {
 
         //System.err.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
+
+        double number = stock.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        stock.setStock(number);
+
         //System.err.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
 
@@ -1078,6 +1133,12 @@ public class StoreBean {
 
         //System.err.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
+
+        double number = stock.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        stock.setStock(number);
+
         //System.err.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
 
