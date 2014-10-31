@@ -72,6 +72,8 @@ public class Bill implements Serializable {
 
     @ManyToOne
     private Category category;
+    @Transient
+    boolean transError;
 
     static final long serialVersionUID = 1L;
     @Id
@@ -278,7 +280,7 @@ public class Bill implements Serializable {
     Date paidAt;
     @ManyToOne
     Bill paidBill;
-    
+
     private boolean paid;
 
     public Bill getPaidBill() {
@@ -1509,6 +1511,14 @@ public class Bill implements Serializable {
 
     public void setReferralNumber(String referralNumber) {
         this.referralNumber = referralNumber;
+    }
+
+    public boolean isTransError() {
+        return transError;
+    }
+
+    public void setTransError(boolean transError) {
+        this.transError = transError;
     }
 
     

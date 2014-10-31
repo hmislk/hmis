@@ -52,9 +52,6 @@
                             <p:inputText value="#{billController.comment}" id="comment"/>
                             <p:watermark value="Comment" for="comment"/>
 
-<!--                            <h:panelGroup id="cash" style="display: #{billController.paymentMethod ne 'Cash' ? 'none' : 'block'} ; ">
-    <pa:cash paymentMethodData="#{billController.paymentMethodData}"/>
-</h:panelGroup>-->
 
                             <h:panelGroup id="creditCard" style="display: #{billController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                 <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
@@ -174,7 +171,7 @@
                                                                         value="#{billController.newPatient.person.area}" ></p:autoComplete>
                                                         <p:inputMask mask="999999999V" value="#{billController.newPatient.person.nic}" />
                                                     </td>
-                                                    
+
                                                 </tr>
                                             </table>
 
@@ -423,7 +420,7 @@
                                     <p:tabView id="tblBillItem" >
 
 
-                                        
+
 
 
                                         <p:tab id="tabBillItems" title="Bill Items" >
@@ -517,33 +514,33 @@
 
 
                                 <h:panelGroup>
-                                            <h:panelGroup id="panelBillTotals" >
-                                                <p:panel header="Bill Details" id="pBillDetails"  >
-                                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
-                                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                                        <h:outputLabel id="tot" value="#{billController.total}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Discount" ></h:outputLabel>
-                                                        <h:outputLabel id="dis" value="#{billController.discount}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                                        <h:outputLabel id="netTotal" value="#{billController.netTotal}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                        <h:outputLabel value="Tendered" ></h:outputLabel>
-                                                        <p:inputText autocomplete="off"  id="paid" value="#{billController.strTenderedValue}" >
-                                                            <p:ajax process="netTotal paid" update="balance" event="change"/>
-                                                        </p:inputText>
-                                                        <h:outputLabel  value="Balance " ></h:outputLabel>
-                                                        <h:outputLabel id="balance" value="#{billController.cashBalance}" >
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </p:panelGrid>
+                                    <h:panelGroup id="panelBillTotals" >
+                                        <p:panel header="Bill Details" id="pBillDetails"  >
+                                            <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
+                                                <h:outputLabel value="Total" ></h:outputLabel>
+                                                <h:outputLabel id="tot" value="#{billController.total}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                                <h:outputLabel value="Discount" ></h:outputLabel>
+                                                <h:outputLabel id="dis" value="#{billController.discount}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                                <h:outputLabel value="Net Total" ></h:outputLabel>
+                                                <h:outputLabel id="netTotal" value="#{billController.netTotal}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                                <h:outputLabel value="Tendered" ></h:outputLabel>
+                                                <p:inputText autocomplete="off"  id="paid" value="#{billController.strTenderedValue}" >
+                                                    <p:ajax process="netTotal paid" update="balance" event="change"/>
+                                                </p:inputText>
+                                                <h:outputLabel  value="Balance " ></h:outputLabel>
+                                                <h:outputLabel id="balance" value="#{billController.cashBalance}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:panelGrid>
 
-                                                </p:panel>
-                                            </h:panelGroup>
+                                        </p:panel>
+                                    </h:panelGroup>
 
                                 </h:panelGroup>
 
@@ -556,9 +553,9 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{billController.printPreview}" >
-                    
+
                     <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
-                        
+
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -569,18 +566,18 @@
 
                             <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
                                              onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                     return false;"/>
+                                                         return false;"/>
                         </div>
                         <h:panelGroup id="gpBillPreview">
-                        <ui:repeat value="#{billController.bills}" var="bill">
-                            <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
-                        </ui:repeat>
+                            <ui:repeat value="#{billController.bills}" var="bill">
+                                <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
+                            </ui:repeat>
                         </h:panelGroup>
                     </h:panelGroup>
-                    
-                        
+
+
                     <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
-                        
+
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreviewCoop" ></p:printer>
@@ -591,15 +588,15 @@
 
                             <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
                                              onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                     return false;"/>
+                                                         return false;"/>
                         </div>
                         <h:panelGroup id="gpBillPreviewCoop">
-                        <ui:repeat value="#{billController.bills}" var="b">
-                            <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
-                        </ui:repeat>
+                            <ui:repeat value="#{billController.bills}" var="b">
+                                <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
+                            </ui:repeat>
                         </h:panelGroup>
                     </h:panelGroup>
-                    
+
                 </h:panelGroup>
 
             </h:form>
