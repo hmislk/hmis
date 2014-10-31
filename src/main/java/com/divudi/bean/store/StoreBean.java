@@ -822,7 +822,9 @@ public class StoreBean {
         stock = getStockFacade().find(stock.getId());
 
         //System.err.println("Before Update " + stock.getStock());
-        stock.setStock(stock.getStock() - qty);
+        float stk=stock.getStock().floatValue();
+        
+        stock.setStock(stk - qty);
         //System.err.println("After  Update " + stock.getStock());
         getStockFacade().edit(stock);
 
