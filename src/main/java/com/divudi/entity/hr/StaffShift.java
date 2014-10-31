@@ -131,6 +131,46 @@ public class StaffShift implements Serializable {
     HrForm hrForm;
     @ManyToOne
     Roster roster;
+    double lieuQty;
+    boolean lieuPaid;
+    boolean lieuOrPaymentAllowed;
+    boolean lieuAndPaymentAllowed;
+
+    public double getLieuQty() {
+        return lieuQty;
+    }
+
+    public void setLieuQty(double lieuQty) {
+        this.lieuQty = lieuQty;
+    }
+
+    public boolean isLieuPaid() {
+        return lieuPaid;
+    }
+
+    public void setLieuPaid(boolean lieuPaid) {
+        this.lieuPaid = lieuPaid;
+    }
+
+    public boolean isLieuOrPaymentAllowed() {
+        return lieuOrPaymentAllowed;
+    }
+
+    public void setLieuOrPaymentAllowed(boolean lieuOrPaymentAllowed) {
+        this.lieuOrPaymentAllowed = lieuOrPaymentAllowed;
+    }
+
+    public void calLieu(DayType dayType) {
+        switch (dayType) {
+            case DayOff:
+                lieuAndPaymentAllowed = true;
+                break;
+            case MurchantileHoliday:
+            case Poya:
+                lieuOrPaymentAllowed = true;
+                break;
+        }
+    }
 
     public Roster getRoster() {
         return roster;
@@ -963,7 +1003,5 @@ public class StaffShift implements Serializable {
     public void setBasicPerSecond(double basicPerSecond) {
         this.basicPerSecond = basicPerSecond;
     }
-    
-    
 
 }

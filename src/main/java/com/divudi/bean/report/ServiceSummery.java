@@ -566,7 +566,7 @@ public class ServiceSummery implements Serializable {
     }
 
     List<BillItemWithFee> billItemWithFees;
-
+   
     public List<BillItemWithFee> getBillItemWithFees() {
         return billItemWithFees;
     }

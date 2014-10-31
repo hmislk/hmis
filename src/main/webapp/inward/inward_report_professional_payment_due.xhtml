@@ -10,6 +10,10 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+
+                    <!--sdfsdfsdf-->
+                    <!--Done for Demonstration-->
+
                     <p:panel header="Search Bills" >
                         <f:facet name="header"></f:facet>
 
@@ -79,6 +83,7 @@
                         <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeReportInward()}" onclick="onSubmitButton();" />
 
                         <p:defaultCommand target="btnSearch" />
+
 
                         <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
                             <p:column headerText="No" styleClass="alignTop">

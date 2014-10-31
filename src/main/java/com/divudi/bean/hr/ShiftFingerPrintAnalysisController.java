@@ -395,6 +395,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 DayType dt = humanResourceBean.isHolidayWithDayType(ss.getShiftDate());
                 ss.calMultiplyingFactor(dt);
 
+                //Update Lieu Leave
+                ss.calLieu(dt);
+
                 getStaffShiftFacade().edit(ss);
             }
         }
