@@ -200,11 +200,16 @@ public class PreReturnController implements Serializable {
         }
 
     }
-    
+
     @EJB
     StaffBean staffBean;
 
     public void settle() {
+
+        if (getReturnBill().getTotal() == 0) {
+            UtilityController.addErrorMessage("Total is Zero cant' return");
+            return;
+        }
 
         saveReturnBill();
         saveComponent();
@@ -225,7 +230,6 @@ public class PreReturnController implements Serializable {
 //                getBillFacade().edit(getReturnBill());
 //            }
 //        }
-
         /// setOnlyReturnValue();
         printPreview = true;
         UtilityController.addSuccessMessage("Successfully Returned");
