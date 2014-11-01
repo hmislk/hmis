@@ -1500,6 +1500,7 @@ public class PharmacySaleReport implements Serializable {
                 if (pi == null || !itemBatch.equals(pi)) {
                     r = new CategoryMovementReportRow();
                     r.setItemBatch(itemBatch);
+                    r.setStock(stock);
                     r.setDepartmentIssue(0.0);
                     r.setInwardIssue(0.0);
                     r.setMarginValue(0.0);
