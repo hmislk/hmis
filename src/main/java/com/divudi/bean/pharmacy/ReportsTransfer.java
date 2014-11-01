@@ -404,6 +404,7 @@ public class ReportsTransfer implements Serializable {
             return;
         }
 
+        netTotalValues = 0;
         for (Object[] obj : list) {
             Department item = (Department) obj[0];
             Double dbl = (Double) obj[1];
@@ -415,9 +416,9 @@ public class ReportsTransfer implements Serializable {
             newD.setSummery(false);
             listz.add(newD);
 
-        }
+            netTotalValues += dbl;
 
-        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItem(fromDate, toDate, department);
+        }
 
     }
 
@@ -449,29 +450,27 @@ public class ReportsTransfer implements Serializable {
     public void fillDepartmentUnitIssueByBill() {
         Map m = new HashMap();
         String sql;
-        
-        sql = "select b from Bill b where "                
+
+        sql = "select b from Bill b where "
                 + " b.createdAt "
                 + " between :fd and :td  "
                 + " and b.billType=:bt ";
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", BillType.PharmacyIssue);
-        
-        if(fromDepartment != null){
-            sql +=" and b.fromDepartment=:fdept ";
+
+        if (fromDepartment != null) {
+            sql += " and b.fromDepartment=:fdept ";
             m.put("fdept", fromDepartment);
         }
-        
-        if(toDepartment != null){
-            sql +=" and b.toDepartment=:tdept ";
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
-        
-        
-        sql+= " order by b.id";
-        
+
+        sql += " order by b.id";
+
         transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
