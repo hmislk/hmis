@@ -135,6 +135,24 @@
 
                     <p:column  style="text-align: right;">
                         <f:facet name="header">
+                            <h:outputLabel value="Pharmacy Transfer Issue" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.transferOut}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>                       
+                    </p:column>
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Pharmacy Transfer Receive" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.transferIn}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>                       
+                    </p:column>
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
                             <h:outputLabel value="Total" />
                         </f:facet>
                         <h:outputLabel value="#{i.total}">

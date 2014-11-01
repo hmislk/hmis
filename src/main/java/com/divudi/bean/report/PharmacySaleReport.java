@@ -30,6 +30,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -1312,7 +1313,7 @@ public class PharmacySaleReport implements Serializable {
         m.put("td", toDate);
 
         jpql = "select pbi.billItem.bill.billType, "
-                + " pbi.billItem.item, "
+                + " pbi.itemBatch, "
                 + " sum(pbi.billItem.netValue), "
                 + " sum(pbi.itemBatch.purcahseRate*pbi.qty) "
                 + " from PharmaceuticalBillItem pbi "
@@ -1328,12 +1329,12 @@ public class PharmacySaleReport implements Serializable {
             jpql = jpql + " and pbi.billItem.bill.department=:dept ";
             m.put("dept", department);
         }
-        
-        jpql = jpql + " group by pbi.billItem.bill.billType, pbi.billItem.item ";
+
+        jpql = jpql + " group by pbi.billItem.bill.billType, pbi.itemBatch ";
         jpql = jpql + " order by pbi.billItem.item.name ";
         List<Object[]> objs = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
         categoryMovementReportRows = new ArrayList<>();
-        Item pi = null;
+        ItemBatch pi = null;
         CategoryMovementReportRow r;
         r = new CategoryMovementReportRow();
         totalOpdSale = 0.0;
@@ -1346,11 +1347,11 @@ public class PharmacySaleReport implements Serializable {
 
             try {
 
-                Item ti;
+                ItemBatch ti;
                 BillType tbt;
                 double sv;
                 double cv;
-                ti = (Item) o[1];
+                ti = (ItemBatch) o[1];
 
                 tbt = (BillType) o[0];
 
@@ -1363,9 +1364,9 @@ public class PharmacySaleReport implements Serializable {
                 System.out.println("ti = " + ti);
 
                 if (pi == null || !ti.equals(pi)) {
-                    System.out.println("new item - " + ti.getName());
+                    System.out.println("new item - " + ti.getItem().getName());
                     r = new CategoryMovementReportRow();
-                    r.setItem(ti);
+                    r.setItemBatch(ti);
                     r.setDepartmentIssue(0.0);
                     r.setInwardIssue(0.0);
                     r.setMarginValue(0.0);
@@ -1405,16 +1406,16 @@ public class PharmacySaleReport implements Serializable {
                         System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         break;
                     case PharmacyTransferIssue:
-                        System.out.println("tx issue ");
-                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
-                        r.setTransferIn(r.getTransferIn() + sv);
-                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
+//                        System.out.println("tx issue ");
+//                        System.out.println("r.getTransferIn() = " + r.getTransferOut());
+                        r.setTransferOut(r.getTransferOut() + sv);
+//                        System.out.println("r.getTransferIn() = " + r.getTransferOut());
                         break;
                     case PharmacyTransferReceive:
-                        System.out.println("tx issue ");
-                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
-                        r.setTransferOut(r.getTransferOut() + sv);
-                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
+//                        System.out.println("tx issue ");
+//                        System.out.println("r.getTransferOut() = " + r.getTransferIn());
+                        r.setTransferIn(r.getTransferIn() + sv);
+//                        System.out.println("r.getTransferOut() = " + r.getTransferIn());
                         break;
 
                     default:
@@ -3223,7 +3224,7 @@ public class PharmacySaleReport implements Serializable {
 
     public class CategoryMovementReportRow {
 
-        Item item;
+        ItemBatch itemBatch;
         double opdSale;
         double inwardIssue;
         double departmentIssue;
@@ -3234,12 +3235,12 @@ public class PharmacySaleReport implements Serializable {
         double transferIn;
         double transferOut;
 
-        public Item getItem() {
-            return item;
+        public ItemBatch getItemBatch() {
+            return itemBatch;
         }
 
-        public void setItem(Item item) {
-            this.item = item;
+        public void setItemBatch(ItemBatch itemBatch) {
+            this.itemBatch = itemBatch;
         }
 
         public double getOpdSale() {
