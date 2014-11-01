@@ -1448,7 +1448,6 @@ public class PharmacySaleReport implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-
         jpql = "select pbi.billItem.bill.billType,"
                 + " pbi.itemBatch, "
                 + " sum(pbi.billItem.netValue), "
@@ -1569,7 +1568,7 @@ public class PharmacySaleReport implements Serializable {
             totalOpdSale += r.getOpdSale();
             totalInwardIssue += r.getInwardIssue();
             totalDepartmentIssue += r.getDepartmentIssue();
-            totalPurchaseValue += r.getPurchaseValue();
+            totalPurchaseValue += r.getStock().getStock() * r.getItemBatch().getPurcahseRate();
             totalTatalValue += r.getTotal();
             totalMargineValue += r.getMarginValue();
         }

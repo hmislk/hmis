@@ -95,7 +95,9 @@
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Rate" />
                         </f:facet>
-                        <h:outputLabel value="#{i.itemBatch.purcahseRate}" />
+                        <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputLabel>
                     </p:column>
 
 
@@ -103,7 +105,9 @@
                         <f:facet name="header">
                             <h:outputLabel value="Retail Rate" />
                         </f:facet>
-                        <h:outputLabel value="#{i.itemBatch.retailsaleRate}" />
+                        <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputLabel>
                     </p:column>
 
                     <p:column >
@@ -169,44 +173,62 @@
                         </f:facet>
                     </p:column>
 
-
-
                     <p:column  style="text-align: right;">
                         <f:facet name="header">
-                            <h:outputLabel value="Total" />
+                            <h:outputLabel value="Movement Qty" />
                         </f:facet>
-                        <h:outputLabel value="#{i.total}">
+                        <h:outputLabel value="#{i.opdSaleQty+i.inwardIssueQty+i.departmentIssueQty}">
                             <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{pharmacySaleReport.totalTatalValue}" style="float:  right;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </f:facet>
+                        </h:outputLabel>                      
                     </p:column>
 
-                    <p:column  style="text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Purchase Value" />
-                        </f:facet>
-                        <h:outputLabel value="#{0-i.purchaseValue}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{0-pharmacySaleReport.totalPurchaseValue}" style="float:  right;">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
 
                     <p:column  style="text-align: right;">
                         <f:facet name="header">
-                            <h:outputLabel value="Stock" />
+                            <h:outputLabel value="Movement Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.opdSale+i.inwardIssue+i.departmentIssue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>                      
+                    </p:column>
+
+                    <!--                    <p:column  style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Purchase Value " />
+                                            </f:facet>
+                                            <h:outputLabel value="#{0-i.purchaseValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{0-pharmacySaleReport.totalPurchaseValue}" style="float:  right;">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>-->
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Stock Qty" />
                         </f:facet>
                         <h:outputLabel value="#{i.stock.stock}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
 
+                    </p:column>
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Stock Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.stock.stock*i.itemBatch.purcahseRate}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{0-pharmacySaleReport.totalPurchaseValue}"
+                                           style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
                     </p:column>
 
                 </p:dataTable>
