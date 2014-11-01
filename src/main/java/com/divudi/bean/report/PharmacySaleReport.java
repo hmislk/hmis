@@ -87,10 +87,10 @@ public class PharmacySaleReport implements Serializable {
     private PharmacyDetail cancelledDetail;
     private PharmacyDetail refundedDetail;
     private PharmacyPaymetMethodSummery billedPaymentSummery;
-  //  private List<DatedBills> billDetail;
+    //  private List<DatedBills> billDetail;
 
     SearchKeyword searchKeyword;
-    
+
     ///pharmacy summery all///
     double totalPSCashBV = 0.0;
     double totalPSCashRV = 0.0;
@@ -203,8 +203,7 @@ public class PharmacySaleReport implements Serializable {
 //        return saleValue;
 //
 //    }
-    
-    public void createGRNBillItemTable(){
+    public void createGRNBillItemTable() {
 //select bi from BillItem bi where  bi.retired=false  and bi.bill.billType=:bt  and bi.bill.createdAt bettween :fd and :td  and bi.bill.depId like :di  and bi.bill.referenceBill.deptId like :po;
         String sql;
         Map m = new HashMap();
@@ -212,31 +211,31 @@ public class PharmacySaleReport implements Serializable {
                 + " bi.retired=false "
                 + " and bi.bill.billType=:bt "
                 + " and bi.bill.createdAt between :fd and :td ";
-        
-        if(searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")){
+
+        if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")) {
             sql += " and (upper(bi.bill.depId) like :di) ";
-            m.put("di", "%"+searchKeyword.getBillNo().toUpperCase().trim()+"%");
+            m.put("di", "%" + searchKeyword.getBillNo().toUpperCase().trim() + "%");
         }
 //        BillItem bi = new BillItem();
 //        bi.getBill().getReferenceBill().getDeptId();
 //        bi.getBill().getFromInstitution();
-        if(searchKeyword.getRefBillNo() != null && !searchKeyword.getRefBillNo().toUpperCase().trim().equals("")){
+        if (searchKeyword.getRefBillNo() != null && !searchKeyword.getRefBillNo().toUpperCase().trim().equals("")) {
             sql += " and (upper(bi.bill.referenceBill.deptId) like :po) ";
-            m.put("po", "%"+searchKeyword.getRefBillNo().toUpperCase().trim()+"%");
+            m.put("po", "%" + searchKeyword.getRefBillNo().toUpperCase().trim() + "%");
         }
-        
-        if(searchKeyword.getIns() != null){
+
+        if (searchKeyword.getIns() != null) {
             sql += " and bi.bill.fromInstitution=:de ";
             m.put("de", searchKeyword.getIns());
         }
-        
+
         m.put("bt", BillType.PharmacyGrnBill);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
-        
+
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
-    
+
     private double getSaleValueByDepartment(Date date, Bill bill) {
 
         Date fd = getCommonFunctions().getStartOfDay(date);
@@ -1308,30 +1307,28 @@ public class PharmacySaleReport implements Serializable {
     public void createCategoryMovementReport() {
         String jpql;
         Map m = new HashMap();
-        PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
-//        pbi.getBillItem().getBill().getCreatedAt();
-//        pbi.getBillItem().getBill().getBillType();
-//        pbi.getBillItem().getItem();
-//        pbi.getPurchaseRate();
-//
-//        pbi.getBillItem().getBill().getDepartment();
-//        pbi.getBillItem().getNetValue();
-//        pbi.getItemBatch().getPurcahseRate();
-//        pbi.getQty();
-
         m.put("bc", PreBill.class);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("cat", category);
-        jpql = "select pbi.billItem.bill.billType, pbi.billItem.item, sum(pbi.billItem.netValue), sum(pbi.itemBatch.purcahseRate*pbi.qty) "
+
+        jpql = "select pbi.billItem.bill.billType, "
+                + " pbi.billItem.item, "
+                + " sum(pbi.billItem.netValue), "
+                + " sum(pbi.itemBatch.purcahseRate*pbi.qty) "
                 + " from PharmaceuticalBillItem pbi "
                 + " where type(pbi.billItem.bill)=:bc "
-                + " and pbi.billItem.bill.createdAt between :fd and :td "
-                + " and pbi.billItem.item.category=:cat ";
+                + " and pbi.billItem.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            jpql += " and pbi.billItem.item.category=:cat ";
+            m.put("cat", category);
+        }
+
         if (department != null) {
             jpql = jpql + " and pbi.billItem.bill.department=:dept ";
             m.put("dept", department);
         }
+        
         jpql = jpql + " group by pbi.billItem.bill.billType, pbi.billItem.item ";
         jpql = jpql + " order by pbi.billItem.item.name ";
         List<Object[]> objs = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
@@ -3214,7 +3211,7 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public SearchKeyword getSearchKeyword() {
-        if (searchKeyword == null){
+        if (searchKeyword == null) {
             searchKeyword = new SearchKeyword();
         }
         return searchKeyword;
@@ -3224,7 +3221,6 @@ public class PharmacySaleReport implements Serializable {
         this.searchKeyword = searchKeyword;
     }
 
-    
     public class CategoryMovementReportRow {
 
         Item item;
