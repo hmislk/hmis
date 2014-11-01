@@ -1,0 +1,225 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                <h:panelGrid columns="2" styleClass="noPrintButton">
+
+                    <h:outputLabel  rendered="true" value="Department"/>
+                    <p:autoComplete rendered="true" styleClass="noPrintButton"  
+                                    value="#{pharmacySaleReport.department}"  
+                                    style="text-align: left; margin: 5px; padding: 5px;" 
+                                    completeMethod="#{departmentController.completeDept}" 
+                                    var="dept" itemValue="#{dept}" required="false"
+                                    itemLabel="#{dept.name}" forceSelection="true"
+                                    requiredMessage="You must select a department" >
+                    </p:autoComplete>
+
+                    <h:outputLabel  rendered="true" value="Category"/>
+                    <p:autoComplete rendered="true" styleClass="noPrintButton" 
+                                    value="#{pharmacySaleReport.category}"  
+                                    style="text-align: left; margin: 5px; padding: 5px;"  
+                                    completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
+                                    var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"
+                                    forceSelection="true" 
+                                    requiredMessage="You must select a category" >
+                    </p:autoComplete>
+
+
+
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
+                    </p:calendar>
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" 
+                                pattern="dd MMMM yyyy hh:mm:ss a" >
+                    </p:calendar>
+
+
+                </h:panelGrid>
+
+                <h:panelGrid columns="3">
+                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createCategoryMovementReportByItemBatch()}"/>
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
+                    </p:commandButton>
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                </h:panelGrid>
+
+                <h:panelGrid styleClass="printBlock" columns="2">
+                    <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
+                    <h:outputLabel value="CATEGORY-VICE MOVEMENT REPORT"/>                   
+                    <h:outputLabel value="From Date :  "/>
+                    <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    </h:outputLabel>
+                    <h:outputLabel value="To Date"/>
+                    <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    </h:outputLabel>   
+                    <h:outputLabel value="Category"/>                   
+                    <h:outputLabel value="#{pharmacySaleReport.category.name}"/>
+
+                </h:panelGrid>
+
+
+                <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i">   
+                    <f:facet name="header">
+                        <p:outputLabel value="CATEGORY-VICE MOVEMENT REPORT" />
+                    </f:facet>
+
+                    <p:column >
+                        <f:facet name="header">
+                            <h:outputLabel value="Item" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.itemBatch.item.name}" />
+                    </p:column>
+
+                    <p:column >
+                        <f:facet name="header">
+                            <h:outputLabel value="Code" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.itemBatch.item.code}" />
+                    </p:column>
+
+                    <p:column >
+                        <f:facet name="header">
+                            <h:outputLabel value="Purchase Rate" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.itemBatch.purcahseRate}" />
+                    </p:column>
+
+
+                    <p:column >
+                        <f:facet name="header">
+                            <h:outputLabel value="Retail Rate" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.itemBatch.retailsaleRate}" />
+                    </p:column>
+
+                    <p:column >
+                        <f:facet name="header">
+                            <h:outputLabel value="Opd Sale Qty" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.opdSaleQty}" />
+                    </p:column>
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Opd Sale Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.opdSale}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.totalOpdSale}" style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+                    <p:column >
+                        <f:facet name="header">
+                            <h:outputLabel value="Inward Issue Qty" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.inwardIssueQty}" />
+                    </p:column>
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Inward Issue Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.inwardIssue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.totalInwardIssue}" style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+                    <p:column >
+                        <f:facet name="header">
+                            <h:outputLabel value="Department Issue Qty" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.departmentIssueQty}" />
+                    </p:column>
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Department Issue Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.departmentIssue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.totalDepartmentIssue}" style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Total" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.total}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.totalTatalValue}" style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Purchase Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{0-i.purchaseValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{0-pharmacySaleReport.totalPurchaseValue}" style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Stock" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.stock.stock}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+
+                    </p:column>
+
+                </p:dataTable>
+
+
+
+            </p:panel>         
+
+
+        </h:form>
+
+    </ui:define>
+
+
+
+</ui:composition>

@@ -129,7 +129,7 @@
 
                         </h:panelGroup>
                         
-                        <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionContinstitutionPreferenceference.printLabelForOPdBill eq true}">
+                        <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                     <p:printer target="gpBillPreviewCoop" ></p:printer>
