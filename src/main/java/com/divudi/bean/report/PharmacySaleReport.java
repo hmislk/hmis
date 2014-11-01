@@ -1448,8 +1448,7 @@ public class PharmacySaleReport implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        Stock stk = new Stock();
-        stk.getItemBatch()
+
         jpql = "select pbi.billItem.bill.billType,"
                 + " pbi.itemBatch, "
                 + " sum(pbi.billItem.netValue), "
