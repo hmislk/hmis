@@ -84,13 +84,6 @@
                         <h:outputLabel value="#{i.item.name}" />
                     </p:column>
 
-                    <p:column >
-                        <f:facet name="header">
-                            <h:outputLabel value="Code" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.item.code}" />
-                    </p:column>
-
                     <p:column  style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Opd Sale" />
@@ -131,24 +124,6 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
-                    </p:column>
-
-                    <p:column  style="text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Pharmacy Transfer Issue" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.transferOut}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>                       
-                    </p:column>
-
-                    <p:column  style="text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Pharmacy Transfer Receive" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.transferIn}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>                       
                     </p:column>
 
                     <p:column  style="text-align: right;">
