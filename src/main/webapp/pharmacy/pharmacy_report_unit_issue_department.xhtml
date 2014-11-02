@@ -16,13 +16,18 @@
 
                     <p:panel header="Unit Issue Report" >
 
-                        <h:panelGrid columns="6" >
+                        <h:panelGrid columns="4" >
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.fromDepartment}" converter="dep" >
                             </p:autoComplete>
-                            
+
+                            <h:outputLabel value="Issue To" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsTransfer.toDepartment}" converter="dep" >
+                            </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
@@ -47,7 +52,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Unit Issue From "/>
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
-                                    
+
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{reportsTransfer.fromDate}">
@@ -59,7 +64,7 @@
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
-                                
+
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>

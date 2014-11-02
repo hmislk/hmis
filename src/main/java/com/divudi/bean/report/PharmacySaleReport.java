@@ -30,15 +30,15 @@ import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ItemFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -87,10 +87,10 @@ public class PharmacySaleReport implements Serializable {
     private PharmacyDetail cancelledDetail;
     private PharmacyDetail refundedDetail;
     private PharmacyPaymetMethodSummery billedPaymentSummery;
-  //  private List<DatedBills> billDetail;
+    //  private List<DatedBills> billDetail;
 
     SearchKeyword searchKeyword;
-    
+
     ///pharmacy summery all///
     double totalPSCashBV = 0.0;
     double totalPSCashRV = 0.0;
@@ -203,8 +203,7 @@ public class PharmacySaleReport implements Serializable {
 //        return saleValue;
 //
 //    }
-    
-    public void createGRNBillItemTable(){
+    public void createGRNBillItemTable() {
 //select bi from BillItem bi where  bi.retired=false  and bi.bill.billType=:bt  and bi.bill.createdAt bettween :fd and :td  and bi.bill.depId like :di  and bi.bill.referenceBill.deptId like :po;
         String sql;
         Map m = new HashMap();
@@ -212,31 +211,31 @@ public class PharmacySaleReport implements Serializable {
                 + " bi.retired=false "
                 + " and bi.bill.billType=:bt "
                 + " and bi.bill.createdAt between :fd and :td ";
-        
-        if(searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")){
+
+        if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")) {
             sql += " and (upper(bi.bill.depId) like :di) ";
-            m.put("di", "%"+searchKeyword.getBillNo().toUpperCase().trim()+"%");
+            m.put("di", "%" + searchKeyword.getBillNo().toUpperCase().trim() + "%");
         }
 //        BillItem bi = new BillItem();
 //        bi.getBill().getReferenceBill().getDeptId();
 //        bi.getBill().getFromInstitution();
-        if(searchKeyword.getRefBillNo() != null && !searchKeyword.getRefBillNo().toUpperCase().trim().equals("")){
+        if (searchKeyword.getRefBillNo() != null && !searchKeyword.getRefBillNo().toUpperCase().trim().equals("")) {
             sql += " and (upper(bi.bill.referenceBill.deptId) like :po) ";
-            m.put("po", "%"+searchKeyword.getRefBillNo().toUpperCase().trim()+"%");
+            m.put("po", "%" + searchKeyword.getRefBillNo().toUpperCase().trim() + "%");
         }
-        
-        if(searchKeyword.getIns() != null){
+
+        if (searchKeyword.getIns() != null) {
             sql += " and bi.bill.fromInstitution=:de ";
             m.put("de", searchKeyword.getIns());
         }
-        
+
         m.put("bt", BillType.PharmacyGrnBill);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
-        
+
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
-    
+
     private double getSaleValueByDepartment(Date date, Bill bill) {
 
         Date fd = getCommonFunctions().getStartOfDay(date);
@@ -1436,6 +1435,140 @@ public class PharmacySaleReport implements Serializable {
             totalInwardIssue += r.getInwardIssue();
             totalDepartmentIssue += r.getDepartmentIssue();
             totalPurchaseValue += r.getPurchaseValue();
+            totalTatalValue += r.getTotal();
+            totalMargineValue += r.getMarginValue();
+        }
+    }
+
+    public void createCategoryMovementReportByItemBatch() {
+        String jpql;
+        Map m = new HashMap();
+
+        m.put("bc", PreBill.class);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        jpql = "select pbi.billItem.bill.billType,"
+                + " pbi.itemBatch, "
+                + " sum(pbi.billItem.netValue), "
+                + " sum(pbi.qty),"
+                + " stk"
+                + " from PharmaceuticalBillItem pbi,Stock stk "
+                + " where type(pbi.billItem.bill)=:bc "
+                + " and stk.itemBatch=pbi.itemBatch "
+                + " and pbi.billItem.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            jpql = jpql + " and pbi.billItem.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        if (department != null) {
+            jpql = jpql + " and pbi.billItem.bill.department=:dept ";
+            m.put("dept", department);
+        }
+        jpql = jpql + " group by pbi.billItem.bill.billType, pbi.itemBatch ";
+        jpql = jpql + " order by pbi.itemBatch.item.name ";
+        List<Object[]> objs = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
+        categoryMovementReportRows = new ArrayList<>();
+        ItemBatch pi = null;
+        CategoryMovementReportRow r;
+        r = new CategoryMovementReportRow();
+        totalOpdSale = 0.0;
+        totalInwardIssue = 0.0;
+        totalDepartmentIssue = 0.0;
+        totalPurchaseValue = 0.0;
+        totalTatalValue = 0.0;
+        totalMargineValue = 0.0;
+        for (Object o[] : objs) {
+
+            try {
+
+                ItemBatch itemBatch;
+                BillType billType;
+                Stock stock;
+                double netValue;
+                double qty;
+
+                billType = (BillType) o[0];
+                itemBatch = (ItemBatch) o[1];
+                netValue = (double) o[2];
+                qty = (double) o[3];
+                stock = (Stock) o[4];
+
+                if (pi == null || !itemBatch.equals(pi)) {
+                    r = new CategoryMovementReportRow();
+                    r.setItemBatch(itemBatch);
+                    r.setStock(stock);
+                    r.setDepartmentIssue(0.0);
+                    r.setInwardIssue(0.0);
+                    r.setMarginValue(0.0);
+                    r.setOpdSale(0.0);
+                    r.setPurchaseValue(0.0);
+                    r.setTotal(0.0);
+                    r.setTransfer(0.0);
+                    r.setTransferIn(0.0);
+                    r.setTransferOut(0.0);
+                    pi = itemBatch;
+                    categoryMovementReportRows.add(r);
+//                    System.out.println("size = " + categoryMovementReportRows.size());
+                }
+
+//                System.out.println("tbt = " + tbt);
+                switch (billType) {
+                    case PharmacySale:
+                    case PharmacyPre:
+//                        System.out.println("pharmacy sale");
+//                        System.out.println("r.getOpdSale() = " + r.getOpdSale());
+                        r.setOpdSale(r.getOpdSale() + netValue);
+                        r.setOpdSaleQty(qty);
+                        r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * r.getOpdSaleQty()));
+                        break;
+                    case PharmacyBhtPre:
+//                        System.out.println("bht sale ");
+//                        System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+                        r.setInwardIssue(r.getInwardIssue() + netValue);
+                        r.setInwardIssueQty(qty);
+                        r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * r.getInwardIssueQty()));
+//                        System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+                        break;
+                    case PharmacyIssue:
+//                        System.out.println("pharmacy issue ");
+//                        System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+                        r.setDepartmentIssue(r.getDepartmentIssue() + netValue);
+                        r.setDepartmentIssueQty(qty);
+                        r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * r.getDepartmentIssueQty()));
+//                        System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+                        break;
+                    case PharmacyTransferIssue:
+//                        System.out.println("tx issue ");
+//                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
+                        r.setTransferIn(r.getTransferIn() + netValue);
+//                        System.out.println("r.getTransferIn() = " + r.getTransferIn());
+                        break;
+                    case PharmacyTransferReceive:
+//                        System.out.println("tx issue ");
+//                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
+                        r.setTransferOut(r.getTransferOut() + netValue);
+//                        System.out.println("r.getTransferOut() = " + r.getTransferOut());
+                        break;
+
+                    default:
+                        System.out.println("other bill type");
+                }
+
+            } catch (Exception e) {
+                System.out.println("e = " + e);
+            }
+
+            r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
+            System.out.println("r.getTotal() = " + r.getTotal());
+            r.setMarginValue(r.getTotal() + r.getPurchaseValue());
+
+            totalOpdSale += r.getOpdSale();
+            totalInwardIssue += r.getInwardIssue();
+            totalDepartmentIssue += r.getDepartmentIssue();
+            totalPurchaseValue += r.getStock().getStock() * r.getItemBatch().getPurcahseRate();
             totalTatalValue += r.getTotal();
             totalMargineValue += r.getMarginValue();
         }
@@ -3214,7 +3347,7 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public SearchKeyword getSearchKeyword() {
-        if (searchKeyword == null){
+        if (searchKeyword == null) {
             searchKeyword = new SearchKeyword();
         }
         return searchKeyword;
@@ -3224,19 +3357,41 @@ public class PharmacySaleReport implements Serializable {
         this.searchKeyword = searchKeyword;
     }
 
-    
     public class CategoryMovementReportRow {
 
         Item item;
+        ItemBatch itemBatch;
+        Stock stock;
         double opdSale;
+        double opdSaleQty;
         double inwardIssue;
+        double inwardIssueQty;
         double departmentIssue;
+        double departmentIssueQty;
         double total;
         double purchaseValue;
         double marginValue;
         double transfer;
         double transferIn;
+        double transferInQty;
         double transferOut;
+        double transferOutQty;
+
+        public Stock getStock() {
+            return stock;
+        }
+
+        public void setStock(Stock stock) {
+            this.stock = stock;
+        }
+
+        public ItemBatch getItemBatch() {
+            return itemBatch;
+        }
+
+        public void setItemBatch(ItemBatch itemBatch) {
+            this.itemBatch = itemBatch;
+        }
 
         public Item getItem() {
             return item;
@@ -3316,6 +3471,46 @@ public class PharmacySaleReport implements Serializable {
 
         public void setTransferOut(double transferOut) {
             this.transferOut = transferOut;
+        }
+
+        public double getOpdSaleQty() {
+            return opdSaleQty;
+        }
+
+        public void setOpdSaleQty(double opdSaleQty) {
+            this.opdSaleQty = opdSaleQty;
+        }
+
+        public double getInwardIssueQty() {
+            return inwardIssueQty;
+        }
+
+        public void setInwardIssueQty(double inwardIssueQty) {
+            this.inwardIssueQty = inwardIssueQty;
+        }
+
+        public double getDepartmentIssueQty() {
+            return departmentIssueQty;
+        }
+
+        public void setDepartmentIssueQty(double departmentIssueQty) {
+            this.departmentIssueQty = departmentIssueQty;
+        }
+
+        public double getTransferInQty() {
+            return transferInQty;
+        }
+
+        public void setTransferInQty(double transferInQty) {
+            this.transferInQty = transferInQty;
+        }
+
+        public double getTransferOutQty() {
+            return transferOutQty;
+        }
+
+        public void setTransferOutQty(double transferOutQty) {
+            this.transferOutQty = transferOutQty;
         }
 
     }
