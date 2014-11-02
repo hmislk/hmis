@@ -31,16 +31,22 @@
 
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
-                                <p:outputLabel value="Sale Report - By Bill" />
+                                <p:outputLabel value="Sale Summery" />
                             </f:facet>    
                             <p:commandButton styleClass="linkButton" ajax="false" 
-                                             value="Sale Summery"
+                                             value="Sale Summery - By Bill Type"
                                              action="pharmacy_report_sale_by_date_summery.xhtml"
                                              actionListener="#{pharmacySaleReport.makeNull}"/>   
                             <p:commandButton styleClass="linkButton" ajax="false" 
-                                             value="Sale Summery - By Paymentmethod"
+                                             value="Sale Summery - By Paymentmethod "
                                              action="pharmacy_report_sale_by_date_summery_payment_method.xhtml" 
-                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>                          
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Sale Detail" />
+                            </f:facet>                               
                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Sale Detail" 
                                              action="pharmacy_report_sale_by_date_detail.xhtml"
@@ -55,7 +61,7 @@
                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                         </h:panelGrid>
 
-                       
+
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="GRN" />

@@ -10,7 +10,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <h:panelGrid columns="6" styleClass="noPrintButton">
+                <h:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
                     </p:calendar>
@@ -19,6 +19,14 @@
                     </p:calendar>
                     <h:outputLabel value="Department"/>
                     <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    </p:autoComplete>
+                    <h:outputLabel  rendered="true" value="Category"/>
+                    <p:autoComplete rendered="true" styleClass="noPrintButton" 
+                                    value="#{pharmacySaleReport.category}"  
+                                    style="text-align: left; margin: 5px; padding: 5px;"  
+                                    completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
+                                    var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"
+                                    forceSelection="true"  >
                     </p:autoComplete>
 
 
@@ -48,18 +56,15 @@
                 </h:panelGrid>
 
 
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i">   
-                    <f:facet name="header">
+                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i" >   
+                    <f:facet name="header" >
                         <p:outputLabel value="Sales Summery Report By Date" />
                     </f:facet>
 
-                    <p:column headerText="Date">
-                        <f:facet name="header">
-                            <h:outputLabel value="Date" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.string}" />
+                    <p:column headerText="Date">                       
+                        <h:outputLabel value="#{i.date}" />
                     </p:column>
-                    <p:column headerText="Billed" style="text-align: right;">
+                    <p:column headerText="Billed" style="text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="Billed" />
                         </f:facet>
@@ -67,7 +72,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column headerText="Cancelled" style="text-align: right;">
+                    <p:column headerText="Cancelled" style="text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="Cancelled" />
                         </f:facet>
@@ -128,12 +133,12 @@
                     </p:columnGroup>
                 </p:dataTable>
 
-<!--                <h:panelGrid columns="2" style="min-width: 100%;">
-                    <h:outputLabel value="Net Amount"/>
-                    <h:outputLabel value="#{pharmacySaleReport.billedSummery.billedTotal-(pharmacySaleReport.billedSummery.cancelledTotal+pharmacySaleReport.billedSummery.refundedTotal)}" style="float:  right;">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>                    
-                </h:panelGrid>-->
+                <!--                <h:panelGrid columns="2" style="min-width: 100%;">
+                                    <h:outputLabel value="Net Amount"/>
+                                    <h:outputLabel value="#{pharmacySaleReport.billedSummery.billedTotal-(pharmacySaleReport.billedSummery.cancelledTotal+pharmacySaleReport.billedSummery.refundedTotal)}" style="float:  right;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>                    
+                                </h:panelGrid>-->
 
             </p:panel>         
 
