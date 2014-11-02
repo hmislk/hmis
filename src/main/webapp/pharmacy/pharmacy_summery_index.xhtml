@@ -48,8 +48,12 @@
                                 <p:outputLabel value="Sale Detail" />
                             </f:facet>                               
                             <p:commandButton styleClass="linkButton" ajax="false"
-                                             value="Sale Detail" 
+                                             value="Sale Detail - By Bill " 
                                              action="pharmacy_report_sale_by_date_detail.xhtml"
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                            <p:commandButton styleClass="linkButton" ajax="false"
+                                             value="Sale Detail - By Bill Items" 
+                                             action="pharmacy_report_sale_by_billItems.xhtml"
                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Sale Detail -By Payment Scheme"

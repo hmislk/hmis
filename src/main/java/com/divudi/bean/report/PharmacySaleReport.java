@@ -64,7 +64,7 @@ import javax.persistence.TemporalType;
 public class PharmacySaleReport implements Serializable {
 
     Category category;
-
+    Item item;
     private Date fromDate;
     private Date toDate;
     List<String1Value6> saleValuesCash;
@@ -156,6 +156,14 @@ public class PharmacySaleReport implements Serializable {
 
     PaymentScheme paymentScheme;
     PaymentMethod paymentMethod;
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
 
     public Category getCategory() {
         return category;
@@ -294,6 +302,36 @@ public class PharmacySaleReport implements Serializable {
         sql += " group by FUNC('Date',i.createdAt),i.bill.billClassType"
                 + " order by i.createdAt,i.bill.billClassType ";
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createSaleBillItems() {
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", BillType.PharmacySale);
+        sql = "select i "
+                + " from BillItem i "
+                + "where i.bill.referenceBill.department=:d "
+                + " and i.bill.billType=:btp "
+                + "and type(i.bill)!=:cl "
+                + "and i.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            sql += " and i.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        if (item != null) {
+            sql += " and i.item=:itm";
+            m.put("itm", item);
+        }
+
+        sql += "  order by i.item.name,i.createdAt,i.bill.billClassType ";
+        billItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1209,7 +1247,7 @@ public class PharmacySaleReport implements Serializable {
             sql += " and i.item.category=:cat";
             m.put("cat", category);
         }
-        
+
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
