@@ -370,17 +370,19 @@ public class ReportsTransfer implements Serializable {
         m.put("td", toDate);
         m.put("bt", BillType.PharmacyBhtPre);
         m.put("fdept", fromDepartment);
-        sql = "select b from Bill b where "
-                + " b.department=:fdept and b.createdAt "
-                + " between :fd and :td and"
-                + "  b.billType=:bt order by b.id";
+        sql = "select b from Bill b "
+                + " where b.department=:fdept "
+                + " and b.createdAt  between :fd and :td "
+                + " and b.billType=:bt order by b.id";
         transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
+        marginValue = 0;
         for (Bill b : transferBills) {
             totalsValue = totalsValue + (b.getTotal());
             discountsValue = discountsValue + b.getDiscount();
+            marginValue += b.getMargin();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
     }
@@ -554,7 +556,8 @@ public class ReportsTransfer implements Serializable {
                 + " sum(b.grossValue),"
                 + " sum(b.marginValue),"
                 + " sum(b.discount),"
-                + " sum(b.netValue)"
+                + " sum(b.netValue),"
+                + " sum(b.pharmaceuticalBillItem.qty)"
                 + " from BillItem b "
                 + " where b.bill.department=:fdept ";
 
@@ -562,7 +565,7 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.surgeryBillType=:surg";
             m.put("surg", surgeryBillType);
         } else {
-            sql += " and b.bill.surgeryBillType is null ";
+//            sql += " and b.bill.surgeryBillType is null ";
         }
 
         if (toDepartment != null) {
@@ -570,10 +573,10 @@ public class ReportsTransfer implements Serializable {
             m.put("tdept", toDepartment);
         }
 
-        sql += " and b.bill.createdAt between :fd and :td"
-                + " and b.bill.billType=:bt"
+        sql += " and b.bill.createdAt between :fd and :td "
+                + " and b.bill.billType=:bt "
                 + " group by b.pharmaceuticalBillItem.itemBatch "
-                + " order by b.item.name";
+                + " order by b.item.name ";
 
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
@@ -807,15 +810,14 @@ public class ReportsTransfer implements Serializable {
             row.setDiscount((Double) obj[3]);
             row.setNet((Double) obj[4]);
 
-            Double pre = calCount(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
-            Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
-            Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
-            System.err.println("PRE " + pre);
-            System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
+//            Double pre = calCount(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
+//            Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
+//            Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
+//            System.err.println("PRE " + pre);
+//            System.err.println("PRE CAN " + preCancel);
+//            System.err.println("Return " + returned);
 //            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
-
-            row.setCount(pre - (preCancel + returned));
+            row.setCount((Double) obj[5]);
 
             totalsValue += row.getGross();
             marginValue += row.getMargin();

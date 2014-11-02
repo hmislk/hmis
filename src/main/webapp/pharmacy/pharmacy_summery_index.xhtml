@@ -108,8 +108,10 @@
                             <f:facet name="header">
                                 <p:outputLabel value="BHT ISSUE" />
                             </f:facet>   
-                            <p:commandButton styleClass="linkButton" ajax="false" value="BHT Pharmacy Issue Report" action="pharmacy_report_bht_issue_bill" actionListener="#{pharmacySaleReport.makeNull}"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="BHT Pharmacy Staff Issue Report" action="pharmacy_report_staff_issue_bill" />
+                            <p:commandButton styleClass="linkButton" ajax="false"
+                                             value="BHT Pharmacy Issue Report" action="pharmacy_report_bht_issue_bill" actionListener="#{pharmacySaleReport.makeNull}"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             value="BHT Pharmacy Staff Issue Report" action="pharmacy_report_staff_issue_bill" />
                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="BHT Issue by Item" 
                                              action="/inward/report_bht_issue_by_item.xhtml"/>
@@ -129,7 +131,6 @@
                                 <p:outputLabel value="Category-vice Movement Report" />
                             </f:facet>    
                             <p:commandButton styleClass="linkButton" ajax="false" value="Movement Report Stock By Date" action="pharmacy_report_category_vice_movement.xhtml" />
-
                             <p:commandButton styleClass="linkButton" ajax="false" value="Movement Report Stock By Date-By Batch" action="pharmacy_report_category_vice_movement_item_batch.xhtml" />
                         </h:panelGrid>
 

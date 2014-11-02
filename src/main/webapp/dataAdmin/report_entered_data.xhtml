@@ -44,71 +44,13 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Credit Card Compaies" action="credit_companies" onclick="onSubmitButton();"/> 
 
                         </h:panelGrid>
-                        
+
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="Check Deleted data"/>
                             </f:facet>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Dealor List" action="deleted_distributors" onclick="onSubmitButton();"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Deleted Bht List" action="deleted_admission_book" onclick="onSubmitButton();"/>
-
-                        </h:panelGrid>
-
-
-                        <h:panelGrid columns="3">
-                            <f:facet name="header">
-                                <p:outputLabel value="Update Entered Data"/>
-                            </f:facet>
-                            <p:panel rendered="false">
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset GRN Value" action="#{pharmacyItemExcelManager.resetGrnValue()}" onclick="onSubmitButton();" />
-                                <p:commandButton styleClass="linkButton" ajax="false" value="1) Reset Qty Value" action="#{pharmacyItemExcelManager.resetQtyValue()}" onclick="onSubmitButton();" />
-                                <p:commandButton styleClass="linkButton" ajax="false" value="2) Reset Transfer Issue Value" action="#{pharmacyItemExcelManager.resetTransferIssueValue()}" onclick="onSubmitButton();" />
-                                <p:commandButton styleClass="linkButton" ajax="false"  value="3) Reset Transfer History Value" action="#{pharmacyItemExcelManager.resetTransferHistoryValue()}" onclick="onSubmitButton();" />
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset GRN Reference" action="#{pharmacyItemExcelManager.resetGrnReference()}" onclick="onSubmitButton();" />
-
-
-
-                            </p:panel>
-                            <p:panel>
-                                <f:facet name="header">
-                                    <p:outputLabel value="OPD Update Entered Data"/>
-                                </f:facet>
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}" onclick="onSubmitButton();" />
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset Item Session Number Type" 
-                                                 action="#{pharmacyItemExcelManager.resetSessionBillNumberType()}" onclick="onSubmitButton();" />
-                               
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Remove Store Item" action="#{pharmacyItemExcelManager.removeStoreItem()}" onclick="onSubmitButton();" />
-
-                            </p:panel>
-                            <p:panel>
-                                <f:facet name="header">
-                                    <p:outputLabel value="Inward Charge Type Update Entered Data"/>
-                                </f:facet>
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset Inward Charge Type " 
-                                                 action="#{pharmacyItemExcelManager.resetInwardChargeType()}" onclick="onSubmitButton();" />
-                                
-                                   <p:commandButton styleClass="linkButton" ajax="false" value="Reset Paid Amount " 
-                                                 action="#{pharmacyItemExcelManager.resetFinalBillPaidValue()}" onclick="onSubmitButton();" />
-
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Set Credit Used Amount " 
-                                                 action="#{pharmacyItemExcelManager.restCreditUsedAmount()}" onclick="onSubmitButton();" />
-
-
-                            </p:panel>
-                            
-                            <p:panel>
-                                <f:facet name="header">
-                                    <p:outputLabel value="Channel Rest"/>
-                                </f:facet>
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset Channel Session Number" 
-                                                 action="#{sheduleController.resetSessionNumbers()}" onclick="onSubmitButton();" />
-                                
-                            </p:panel>
-                            
-                            <p:panel>
-                                <p:commandButton ajax="false" value="Update Staff Code to Integer"
-                                                 action="#{staffController.updateCodeToIntege}"/>
-                            </p:panel>
 
                         </h:panelGrid>
 

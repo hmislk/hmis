@@ -42,7 +42,8 @@
 
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{reportsTransfer.transferBills}" var="i"  >
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont"
+                                         value="#{reportsTransfer.transferBills}" var="i"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT Issue From"/>
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
@@ -57,7 +58,7 @@
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
-                                
+
                                 <p:column headerText="BHT No">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
@@ -88,33 +89,64 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Value" style="text-align: right;">
+                                <p:column headerText="Gross Value" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Remarks"/>
+                                        <h:outputLabel value="Gross Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.netTotal}"  >
+                                    <h:outputLabel value="#{i.total}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>                                  
+                                    </h:outputLabel>  
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.totalsValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Margin Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Margin Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.margin}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel> 
+                                      <f:facet name="footer">
+                                          <h:outputLabel value="#{reportsTransfer.marginValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Discount Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discount Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.discount}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>  
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.discountsValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
 
 
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column colspan="3" footerText="Totals">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="Totals" ></h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
+                                <p:column headerText="Net Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>     
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.netTotalValues}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
-                                        <p:column style="text-align: right;"  footerText="#{reportsTransfer.netTotalValues}" >
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsTransfer.netTotalValues}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
+
 
                             </p:dataTable>
                         </h:panelGroup>
