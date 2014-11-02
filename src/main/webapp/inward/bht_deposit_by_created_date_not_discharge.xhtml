@@ -76,7 +76,7 @@
                                 </p:column>
                             </p:autoComplete>   
 
-                            <h:panelGroup>
+                            <p:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateNotDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
@@ -84,9 +84,9 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Deposite_of_Undischaged_Patient"  />
+                                <pe:exporter type="xlsx" target="tbl,tbl2,tbl3" fileName="Deposite_of_Undischaged_Patient"  />
                             </p:commandButton> 
-                            </h:panelGroup>
+                            </p:panelGrid>
                         </h:panelGrid>
 
 
@@ -146,12 +146,14 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Amount">
+                                <p:column headerText="Amount" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Amount"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel  value="#{i.netTotal}">
-                                    </h:outputLabel>
+                                    </f:facet>  
+                                    <p:outputLabel value="#{i.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                   
                                 </p:column>
 
                                 <p:column headerText="Comment">
@@ -221,12 +223,14 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Amount">
+                                <p:column headerText="Amount" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Amount"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel  value="#{can.netTotal}">
-                                    </h:outputLabel>
+                                    </f:facet> 
+                                    <p:outputLabel value="#{can.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                    
                                 </p:column>
 
                                 <p:column headerText="Comment">
@@ -298,12 +302,14 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Amount">
+                                <p:column headerText="Amount" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Amount"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel  value="#{ref.netTotal}">
-                                    </h:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ref.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                   
                                 </p:column>
 
                                 <p:column headerText="Comment">
@@ -318,7 +324,7 @@
 
                                     <p:row>
 
-                                        <p:column colspan="5" footerText="Total"></p:column>
+                                        <p:column colspan="5" footerText="Total" />
                                         <p:column footerText="#{mdInwardReportController.refundTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.refundTotal}">
@@ -334,7 +340,7 @@
 
                             </p:dataTable>
 
-                            <p:panelGrid columns="2" styleClass="noBorder normalFont">
+                            <p:panelGrid columns="2" styleClass="noBorder normalFont"  style="text-align: right;"> 
                                 <p:outputLabel value="Net Bill Total"/>
                                 <p:outputLabel value="#{mdInwardReportController.totalValue}">
                                     <f:convertNumber pattern="#000.00"></f:convertNumber></p:outputLabel>
