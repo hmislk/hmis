@@ -16,65 +16,136 @@
 
                     <h:form>
 
-                        <p:panelGrid columns="3" >
-                            <p:panelGrid columns="2" >
-                                <p:outputLabel value="From Date" ></p:outputLabel>
-                                <p:calendar id="calFromDate" value="#{stockHistoryController.fromDate}" pattern="dd MMMM yyyy" >
-                                    <f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>
-                                </p:calendar>
+                        <p:panelGrid columns="3" styleClass="alignTop" >
+                            <p:panelGrid  >
 
-                                <p:outputLabel value="To Date" ></p:outputLabel>
-                                <p:calendar id="calToDate" value="#{stockHistoryController.toDate}"  pattern="dd MMMM yyyy" >
-                                    <f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>
-                                </p:calendar>
+                                <p:row >
+                                    <p:column >
+                                        <p:outputLabel value="From Date" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column >
+                                        <p:calendar id="calFromDate" value="#{stockHistoryController.fromDate}" pattern="dd MMMM yyyy" >
+                                            <f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>
+                                        </p:calendar>
+                                    </p:column>
+                                </p:row>
 
-                                <p:outputLabel value="Department" ></p:outputLabel>
-                                <p:autoComplete completeMethod="#{departmentController.completeDept}"
-                                                var="d" itemLabel="#{d.name}"
-                                                itemValue="#{d}"
-                                                value="#{stockHistoryController.department}"
-                                                converter="dep" >
-                                    <f:ajax event="itemSelect" execute="@this" render=":#{p:component('tblHistories')}" ></f:ajax>
-                                </p:autoComplete>
-                                
-                                
+                                <p:row>
+                                    <p:column >
+                                        <p:outputLabel value="To Date" ></p:outputLabel>
+                                    </p:column>
+
+                                    <p:column >
+                                        <p:calendar id="calToDate" value="#{stockHistoryController.toDate}"  pattern="dd MMMM yyyy" >
+                                            <f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>
+                                        </p:calendar>
+                                    </p:column>
+
+                                </p:row>
+
+                                <p:row >
+                                    <p:column >
+
+                                        <p:outputLabel value="Department" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column >
+                                        <p:autoComplete completeMethod="#{departmentController.completeDept}"
+                                                        var="d" itemLabel="#{d.name}"
+                                                        itemValue="#{d}"
+                                                        value="#{stockHistoryController.department}"
+                                                        converter="dep" >
+                                            <f:ajax event="itemSelect" execute="@this" render=":#{p:component('tblHistories')}" ></f:ajax>
+                                        </p:autoComplete>
+
+                                    </p:column>
+                                </p:row>
+
+
+                                <p:row >
+                                    <p:column colspan="2" >
+                                        <p:commandButton ajax="false" 
+                                                         action="#{stockHistoryController.fillHistoryAvailableDays()}" 
+                                                         value="Display Available Days"  ></p:commandButton>
+                                        <p:commandButton ajax="false" 
+                                                         action="#{stockHistoryController.recordHistory()}" 
+                                                         value="Record History Now"  ></p:commandButton>
+
+                                    </p:column>
+
+                                </p:row>
+
+
+
                             </p:panelGrid>
+                            <p:panelGrid styleClass="alignTop" >
+                                <p:row >
+                                    <p:column >
+                                        <p:dataTable id="tblDates" 
+                                                     value="#{stockHistoryController.pharmacyStockHistoryDays}" 
+                                                     var="d" selection="#{stockHistoryController.historyDate}" 
+                                                     rowKey="#{d}" selectionMode="single" 
+                                                     paginator="true" paginatorAlwaysVisible="false"
+                                                     rows="5"
+                                                     rowsPerPageTemplate="5,10,15,20"
+                                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                     >
+<!--                                            <p:ajax event="rowSelect" listener="#{stockHistoryController.fillStockHistories()}" update=":#{p:component('tblHistories')}" />
+                                            <p:ajax event="rowUnselect" listener="#{stockHistoryController.fillStockHistories}" update=":#{p:component('tblHistories')}" />-->
+                                            <p:column headerText="History Availabe Days" >
+                                                <p:outputLabel value="#{d}" >
+                                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:column>
+                                </p:row>
 
 
-                            <p:commandButton ajax="false" action="#{stockHistoryController.fillHistoryAvailableDays()}" value="Display History"  ></p:commandButton>
+                                <p:row >
+                                    <p:column >
+                                        <p:commandButton id="btnHx" ajax="false" action="#{stockHistoryController.fillStockHistories()}" 
+                                                         value="Display History" process="@this :#{p:component('tblDates')}" update=":#{p:component('tblHistories')}" ></p:commandButton>
+                                    </p:column>
 
-                            <p:dataTable id="tblDates" value="#{stockHistoryController.pharmacyStockHistoryDays}" var="d" selection="#{stockHistoryController.historyDate}" rowKey="#{d}" selectionMode="single" >
-                                <p:ajax event="rowSelect" listener="#{stockHistoryController.fillStockHistories()}" update=":#{p:component('tblHistories')}" />
-                                <p:ajax event="rowUnselect" listener="#{stockHistoryController.fillStockHistories}" update=":#{p:component('tblHistories')}" />
-                                <p:column headerText="History Availabe Days" >
-                                    <p:outputLabel value="#{d}" >
-                                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
-                                    </p:outputLabel>
-                                </p:column>
-                            </p:dataTable>
+                                </p:row>
+
+                            </p:panelGrid>
 
                         </p:panelGrid>
 
-                        <p:dataTable id="tblHistories" value="#{stockHistoryController.pharmacyStockHistories}" var="item"
-                                     
+                        <p:dataTable id="tblHistories" value="#{stockHistoryController.pharmacyStockHistories}"
+                                     rowKey="#{item.id}"
+                                     var="item"
+                                     paginator="true"
+                                     rows="10"
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      >
-                            <p:column rendered="#{stockHistoryController.department eq null}">
+                            <p:column rendered="#{stockHistoryController.department eq null}" 
+                                      sortBy="department.name"
+                                      filterBy="department.name"
+                                      filterMatchMode="contains"
+                                      >
                                 <f:facet name="header">
-                                    <h:outputText value="Department"/>
+                                    <p:outputLabel value="Department"/>
                                 </f:facet>
-                                <h:outputText value="#{item.department.name}"/>
+
+                                <p:outputLabel value="#{item.department.name}"/>
+
                             </p:column>
-                            <p:column>
+                            <p:column sortBy="item.name"
+                                      filterBy="item.name"
+                                      filterMatchMode="contains">
                                 <f:facet name="header">
-                                    <h:outputText value="Item"/>
+                                    <p:outputLabel value="Item"/>
                                 </f:facet>
-                                <h:outputText value="#{item.item.name}"/>
+                                <p:outputLabel value="#{item.item.name}"/>
                             </p:column>
-                            <p:column>
+                            <p:column style="text-align: right;">
                                 <f:facet name="header">
-                                    <h:outputText value="Stock"/>
+                                    <p:outputLabel value="Stock"/>
                                 </f:facet>
-                                <h:outputText value="#{item.stockQty}"/>
+                                <p:outputLabel value="#{item.stockQty}"/>
                             </p:column>
                         </p:dataTable>
                     </h:form>
