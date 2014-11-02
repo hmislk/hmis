@@ -21,12 +21,12 @@
             <p:column headerText="Name">
                 <p:outputLabel value="#{bil.comments}" />
             </p:column>
-            <p:column headerText="Added Date">
+            <p:column headerText="Added Date" style="text-align: center;">
                 <h:outputLabel value="#{bil.createdAt}">
                     <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
                 </h:outputLabel>
             </p:column>
-            <p:column headerText="Added Time">
+            <p:column headerText="Added Time" style="text-align: center;">
                 <h:outputLabel value="#{bil.createdAt}">
                     <f:convertDateTime pattern="hh mm a"/>
                 </h:outputLabel>
