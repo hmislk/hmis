@@ -387,6 +387,47 @@ public class ReportsTransfer implements Serializable {
         }
     }
 
+    Item item;
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public void fillDepartmentBHTIssueByBillItems() {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", BillType.PharmacyBhtPre);
+        m.put("fdept", fromDepartment);
+        sql = "select b from BillItem b "
+                + " where b.bill.department=:fdept "
+                + " and b.createdAt  between :fd and :td ";
+
+        if (item != null) {
+            sql += " and b.item=:itm ";
+            m.put("itm", item);
+        }
+
+        sql += " and b.bill.billType=:bt "
+                + " order by b.item.name";
+        transferItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        totalsValue = 0.0;
+        discountsValue = 0.0;
+        netTotalValues = 0.0;
+        marginValue = 0;
+        for (BillItem b : transferItems) {
+            totalsValue = totalsValue + (b.getGrossValue());
+            discountsValue = discountsValue + b.getDiscount();
+            marginValue += b.getMarginValue();
+            netTotalValues = netTotalValues + b.getNetValue();
+        }
+    }
+
     List<String1Value3> listz;
 
     public List<String1Value3> getListz() {
