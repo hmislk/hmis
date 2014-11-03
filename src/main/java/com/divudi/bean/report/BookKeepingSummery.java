@@ -96,7 +96,7 @@ public class BookKeepingSummery implements Serializable {
     double grantTotal;
     @Inject
     SessionController sessionController;
-    
+
     public void makeNull() {
         //List
         opdList = null;
@@ -156,7 +156,6 @@ public class BookKeepingSummery implements Serializable {
         this.departmentProfessionalPayments = departmentPayments;
     }
 
-    
     public List<String1Value2> getFinalValues() {
         if (finalValues == null) {
             finalValues = new ArrayList<>();
@@ -502,14 +501,12 @@ public class BookKeepingSummery implements Serializable {
 
     List<bookKeepingSummeryRow> bookKeepingSummeryRows;
 
-     public void createOPdLabListWithProDayEndTable() {
-         
-         
+    public void createOPdLabListWithProDayEndTable() {
+
         Map temMap = new HashMap();
         bookKeepingSummeryRows = new ArrayList<>();
 
         List t = new ArrayList();
-       
 
         String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
@@ -756,7 +753,11 @@ public class BookKeepingSummery implements Serializable {
         n++;
 
         bookKeepingSummeryRows.addAll(t);
-        
+        opdHospitalTotal = 0.0;
+        for (bookKeepingSummeryRow bksr : bookKeepingSummeryRows) {
+            opdHospitalTotal += bksr.getTotal();
+        }
+
     }
 
     public void createOPdListWithProDayEndTable(List<PaymentMethod> paymentMethods) {
@@ -1020,7 +1021,7 @@ public class BookKeepingSummery implements Serializable {
                 + " and type(paidBillItem.bill)=:class"
                 + "  and  paidBillItem.createdAt between :fromDate and :toDate "
                 + " and paidBillItem.bill.billType=:paidBtp)  ";
-        
+
         temMap.put("class", BilledBill.class);
 
         if (institution != null) {
@@ -1386,8 +1387,8 @@ public class BookKeepingSummery implements Serializable {
             }
         }
     }
-    
-    public void viewOutSideDepartmentBills(){
+
+    public void viewOutSideDepartmentBills() {
         getBillBean().createOutSideDepartment(getFromDate(), getToDate(), getInstitution());
     }
 
@@ -2064,8 +2065,6 @@ public class BookKeepingSummery implements Serializable {
         this.loggediInstitution = loggediInstitution;
     }
 
-    
-
     public class ProfessionalPaymentsByAdmissionTypeAndCategory {
 
         String admissionType;
@@ -2303,6 +2302,4 @@ public class BookKeepingSummery implements Serializable {
         this.creditCompanyTotalInward = creditCompanyTotalInward;
     }
 
-    
-    
 }
