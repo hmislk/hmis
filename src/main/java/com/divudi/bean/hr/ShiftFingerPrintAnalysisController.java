@@ -372,6 +372,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 //Fetch Basic
                 StaffPaysheetComponent basic = humanResourceBean.getBasic(ss.getStaff());
+                
+                
                 ss.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
 
                 //UPDATE Staff Shift Time Only if working days

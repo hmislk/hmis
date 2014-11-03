@@ -356,7 +356,7 @@ public class Bill implements Serializable {
         grantTotal = 0 - bill.getGrantTotal();
         staffFee = 0 - bill.getStaffFee();
         hospitalFee = 0 - bill.getHospitalFee();
-
+        margin = 0 - bill.getMargin();
     }
 
     public void invertValue() {
@@ -415,6 +415,7 @@ public class Bill implements Serializable {
         this.total = (bill.getTotal());
         this.staffFee = bill.getStaffFee();
         this.hospitalFee = bill.getHospitalFee();
+        this.margin = bill.getMargin();
     }
 
     public List<BillComponent> getBillComponents() {
@@ -1521,6 +1522,4 @@ public class Bill implements Serializable {
         this.transError = transError;
     }
 
-    
-    
 }

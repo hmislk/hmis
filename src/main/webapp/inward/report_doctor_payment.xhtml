@@ -54,7 +54,7 @@
                             <p:watermark for="acSpeciality" value="Speciality" />
                             <p:watermark for="scStaff" value="Staff / Doctor" />
                         </p:panel>
-                        <p:panel>
+                        <p:panelGrid columns="4">
                             <p:commandButton ajax="false" value="Fill By Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByCreatedDate}" onclick="onSubmitButton();"  />
                             <p:commandButton ajax="false" value="Fill By Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByDischargeDate}" onclick="onSubmitButton();"  />
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -66,10 +66,23 @@
                             </p:commandButton>
 
 
-                        </p:panel>
+                        </p:panelGrid>
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">
                                 <p:dataTable id="tbl" value="#{inwardStaffPaymentBillController.billItems1}" var="bf" >
+
+                                    <f:facet name="header">
+
+                                        <h:outputLabel value="Doctor Payment #{inwardStaffPaymentBillController.currentStaff.person}"/>
+                                        <h:outputLabel value=" : "/>
+                                        <h:outputLabel value="#{inwardStaffPaymentBillController.fromDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value=" -- "/>
+                                        <h:outputLabel value="#{inwardStaffPaymentBillController.toDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        </h:outputLabel>
+                                    </f:facet>
 
 
                                     <!--                                    <p:column headerText="BHT">
@@ -81,17 +94,7 @@
                                                                             </p:outputLabel>
                                                                         </p:column>-->
 
-                                    <f:facet name="header">
-                                        <h:outputLabel value="#{mys.person.nameWithTitle}"/>
-                                        <h:outputLabel value=" : "/>
-                                        <h:outputLabel value="#{inwardStaffPaymentBillController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="--"/>
-                                        <h:outputLabel value="#{inwardStaffPaymentBillController.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
-                                        </h:outputLabel>
-                                    </f:facet>
+
 
                                     <p:column headerText="Paid By">
                                         <f:facet name="header">

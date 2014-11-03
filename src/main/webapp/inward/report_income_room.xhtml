@@ -4,7 +4,9 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core" >
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
 
     <body>
 
@@ -39,32 +41,56 @@
                             </p:selectOneMenu>
 
                         </h:panelGrid>
-
+                           
+                        <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.processPatientRooms()}" onclick="onSubmitButton();"  ></p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" >
-                            <p:dataExporter target="tbl" type="xls" fileName="BHT_Category_Report" ></p:dataExporter>
-                        </p:commandButton>
+
                         <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
 
+                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                            <pe:exporter type="xlsx" target="so1,so2,so3,so4,so5,so6,so7"  fileName="BHT_Category_Report" />
+                        </p:commandButton> 
+                        </p:panelGrid>
+                        
                         <p:dataTable value="#{inwardReportController1.patientRooms}" 
                                      var="rm" 
                                      paginator="true" 
                                      rows="5" 
-                                     rowsPerPageTemplate="5,10,15,20">
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     id="so1">
                             <f:facet name="header">
-                                Room Charge
+                                <p:outputLabel value="Room Charge" />
                             </f:facet>
                             <p:column headerText="BHT">
-                                #{rm.patientEncounter.bhtNo}
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.patientEncounter.bhtNo}" />
                             </p:column>
-                            <p:column headerText="Calculated">
-                                #{rm.calculatedRoomCharge-rm.addedRoomCharge}
+                            <p:column headerText="Calculated" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Calculated"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.calculatedRoomCharge-rm.addedRoomCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Added">
-                                #{rm.addedRoomCharge}
+                            <p:column headerText="Added" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Added"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.addedRoomCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Discount">
-                                #{rm.discountRoomCharge}
+                            <p:column headerText="Discount" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.discountRoomCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
@@ -72,21 +98,43 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
-                                     rowsPerPageTemplate="5,10,15,20">
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     id="so2">
                             <f:facet name="header">
-                                Maintain Charge
+                                <p:outputLabel value="Maintain Charge" /> 
                             </f:facet>
                             <p:column headerText="BHT">
-                                #{rm.patientEncounter.bhtNo}
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.patientEncounter.bhtNo}" />
+
                             </p:column>
-                            <p:column headerText="Calculated">
-                                #{rm.calculatedMaintainCharge-rm.addedMaintainCharge}
+                            <p:column headerText="Calculated" style="text-align: right;">
+
+                                <f:facet name="header">
+                                    <h:outputLabel value="Calculated"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.calculatedMaintainCharge-rm.addedMaintainCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+
                             </p:column>
-                            <p:column headerText="Added">
-                                #{rm.addedMaintainCharge}
+                            <p:column headerText="Added" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Added"/> 
+                                </f:facet>  
+                                <p:outputLabel value="#{rm.addedMaintainCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Discount">
-                                #{rm.discountMaintainCharge}
+                            <p:column headerText="Discount" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.discountMaintainCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
@@ -94,21 +142,42 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
-                                     rowsPerPageTemplate="5,10,15,20">
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     id="so3">
                             <f:facet name="header">
-                                Administration Charge
+                                <p:outputLabel value="Administration Charge" /> 
                             </f:facet>
                             <p:column headerText="BHT">
-                                #{rm.patientEncounter.bhtNo}
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.patientEncounter.bhtNo}"/> 
+
                             </p:column>
-                            <p:column headerText="Calculated">
-                                #{rm.calculatedAdministrationCharge-rm.addedAdministrationCharge}
+                            <p:column headerText="Calculated" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Calculated"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.calculatedAdministrationCharge-rm.addedAdministrationCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Added">
-                                #{rm.addedAdministrationCharge}
+                            <p:column headerText="Added" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Added"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.addedAdministrationCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+
                             </p:column>
-                            <p:column headerText="Discount">
-                                #{rm.discountAdministrationCharge}
+                            <p:column headerText="Discount" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.discountAdministrationCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
@@ -116,21 +185,44 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
-                                     rowsPerPageTemplate="5,10,15,20">
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     id="so4">
                             <f:facet name="header">
-                                Linen Charge
+                                <p:outputLabel value="Linen Charge" />
+
                             </f:facet>
                             <p:column headerText="BHT">
-                                #{rm.patientEncounter.bhtNo}
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.patientEncounter.bhtNo}" />
+
                             </p:column>
-                            <p:column headerText="Calculated">
-                                #{rm.calculatedLinenCharge-rm.addedLinenCharge}
+                            <p:column headerText="Calculated" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Calculated"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.calculatedLinenCharge-rm.addedLinenCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+
                             </p:column>
-                            <p:column headerText="Added">
-                                #{rm.addedLinenCharge}
+                            <p:column headerText="Added" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Added"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.addedLinenCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+
                             </p:column>
-                            <p:column headerText="Discount">
-                                #{rm.discountLinenCharge}
+                            <p:column headerText="Discount" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.discountLinenCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
@@ -138,21 +230,41 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
-                                     rowsPerPageTemplate="5,10,15,20">
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     id="so5">
                             <f:facet name="header">
-                                Medical Care Charge
+                                <p:outputLabel value=" Medical Care Charge" />
+
                             </f:facet>
                             <p:column headerText="BHT">
-                                #{rm.patientEncounter.bhtNo}
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.patientEncounter.bhtNo}" />
+                                0                            </p:column>
+                            <p:column headerText="Calculated" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Calculated"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.calculatedMedicalCareCharge-rm.addedMedicalCareCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Calculated">
-                                #{rm.calculatedMedicalCareCharge-rm.addedMedicalCareCharge}
+                            <p:column headerText="Added" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Added"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.addedMedicalCareCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>   
                             </p:column>
-                            <p:column headerText="Added">
-                                #{rm.addedMedicalCareCharge}
-                            </p:column>
-                            <p:column headerText="Discount">
-                                #{rm.discountMedicalCareCharge}
+                            <p:column headerText="Discount" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.discountMedicalCareCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
@@ -160,21 +272,44 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
-                                     rowsPerPageTemplate="5,10,15,20">
-                            <f:facet name="header">
-                                MO Charge
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     id="so6">
+                            <f:facet name="header"> 
+                                <p:outputLabel value="MO Charge" />
+
                             </f:facet>
                             <p:column headerText="BHT">
-                                #{rm.patientEncounter.bhtNo}
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>  
+                                <p:outputLabel value="#{rm.patientEncounter.bhtNo}" />
+
                             </p:column>
-                            <p:column headerText="Calculated">
-                                #{rm.calculatedMoCharge-rm.addedMoCharge}
+                            <p:column headerText="Calculated" style="text-align: right;">
+                              <f:facet name="header">
+                                    <h:outputLabel value="Calculated"/> 
+                                </f:facet>  
+                                <p:outputLabel value="#{rm.calculatedMoCharge-rm.addedMoCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                              
                             </p:column>
-                            <p:column headerText="Added">
-                                #{rm.addedMoCharge}
+                            <p:column headerText="Added" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Added"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.addedMoCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Discount">
-                                #{rm.discountMoCharge}
+                            <p:column headerText="Discount" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.discountMoCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                               
                             </p:column>
                         </p:dataTable>
                         <p:spacer height="30"/>
@@ -182,21 +317,45 @@
                                      var="rm"
                                      paginator="true" 
                                      rows="5" 
-                                     rowsPerPageTemplate="5,10,15,20">
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     id="so7">
                             <f:facet name="header">
-                                Nursing Charge
+                                <p:outputLabel value=" Nursing Charge" />
+                               
                             </f:facet>
                             <p:column headerText="BHT">
-                                #{rm.patientEncounter.bhtNo}
+                              <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet> 
+                                <p:outputLabel value="#{rm.patientEncounter.bhtNo}" />
+                                
                             </p:column>
-                            <p:column headerText="Calculated">
-                                #{rm.calculatedNursingCharge-rm.addedNursingCharge}
+                            <p:column headerText="Calculated" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Calculated"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.calculatedNursingCharge-rm.addedNursingCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                               
                             </p:column>
-                            <p:column headerText="Added">
-                                #{rm.addedNursingCharge}
+                            <p:column headerText="Added" style="text-align: right;">
+                              <f:facet name="header">
+                                    <h:outputLabel value="Added"/> 
+                                </f:facet>  
+                              <p:outputLabel value="#{rm.addedNursingCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>  
+                               
                             </p:column>
-                            <p:column headerText="Discount">
-                                #{rm.discountNursingCharge}
+                            <p:column headerText="Discount" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.discountNursingCharge}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                              
                             </p:column>
                         </p:dataTable>
 

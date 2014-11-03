@@ -277,18 +277,26 @@
                         </p:tab>
 
 
-                        <p:tab id="tabTimed" title="Timed Service Detail"  >           
-                            <p:commandButton value="Export Excel" ajax="false" 
-                                             styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx"
-                                             target="timed" fileName="Timed_Service"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
-                            </p:commandButton>
+                        <p:tab id="tabTimed" title="Timed Service Detail"  >  
+
+                            <p:panelGrid columns="1">
+                                <p:commandButton value="Export Excel" ajax="false" 
+                                                 styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                    <pe:exporter type="xlsx"
+                                                 target="timed" fileName="Timed_Service"
+                                                 facetFontStyle="BOLD"  
+                                                 cellFontStyle="NORMAL"  
+                                                 fontName="Courier New"  />
+                                </p:commandButton>
+                            </p:panelGrid>
 
                             <p:dataTable id="timed"  value="#{bhtSummeryFinalizedController.patientItems}" var="pt">
+
+                                <f:facet name="header">
+                                    <p:outputLabel value="Inward Payment Bill BHT #{bhtSummeryFinalizedController.patientEncounter.bhtNo} - Timed Service Details"/>
+                                </f:facet>
                                 <p:column headerText="Service Name">
+
                                     <f:facet name="header">
                                         <h:outputLabel value="Service Name"/>
                                     </f:facet>
@@ -334,7 +342,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>       
                                 </p:column>                                
-                                <p:column headerText="Added User" exportable="false" >
+                                <p:column headerText="Added User" exportable="false"  style="text-align: center;">
                                     <h:outputLabel value="#{pt.creater.webUserPerson.name}"/>     
                                     <br/>
                                     <h:panelGroup rendered="#{pt.retired}" >
@@ -343,7 +351,7 @@
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>     
-                                <p:column headerText="Inward Charge Type" exportable="false">
+                                <p:column headerText="Inward Charge Type" exportable="false" style="text-align: center;">
                                     <h:outputLabel value="#{pt.item.inwardChargeType}"/>                                        
                                 </p:column>   
 
@@ -351,15 +359,17 @@
                         </p:tab>
 
                         <p:tab id="tabSer" title="Service Detail BillItem"  >
-                            <p:commandButton value="Export Excel" ajax="false" 
-                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
-                                             >
-                                <pe:exporter type="xlsx"
-                                             target="serv" fileName="Service"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
-                            </p:commandButton>
+                            <p:panelGrid columns="1">
+                                <p:commandButton value="Export Excel" ajax="false" 
+                                                 styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                                 >
+                                    <pe:exporter type="xlsx"
+                                                 target="serv" fileName="Service"
+                                                 facetFontStyle="BOLD"  
+                                                 cellFontStyle="NORMAL"  
+                                                 fontName="Courier New"  />
+                                </p:commandButton>
+                            </p:panelGrid>
 
                             <p:dataTable  value="#{bhtSummeryFinalizedController.billItems}"
                                           id="serv"
@@ -371,6 +381,10 @@
                                                            or 
                                                            (bi.bill.billedBill ne null 
                                                            and bi.bill.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}">                               
+
+                                <f:facet name="header">
+                                    <p:outputLabel value="Inward Payment Bill BHT #{bhtSummeryFinalizedController.patientEncounter.bhtNo} - Service Detail Bill Item"/>
+                                </f:facet>
 
 
                                 <p:column headerText="Bill Id">
@@ -424,15 +438,21 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Comments" exportable="false">                                    
+                                <p:column headerText="Comments" exportable="false" style="text-align: center;">  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comments"/> 
+                                    </f:facet>
                                     <h:outputLabel value="#{bi.descreption}"/>
                                 </p:column>
                                 <p:column headerText="Inward Charge Type" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Inward Charge Type"/> 
+                                    </f:facet>
                                     <h:outputLabel value="#{bi.item.inwardChargeType}"/>                                    
                                 </p:column>
                                 <p:column exportable="false" >
                                     <p:dataTable value="#{bi.billFees}" var="bf">
-                                        <p:column>
+                                        <p:column >
                                             <h:outputLabel value="#{bf.fee.feeType}">                                              
                                             </h:outputLabel>
                                         </p:column>
@@ -440,22 +460,22 @@
                                             <h:outputLabel value="#{bf.staff.speciality.name}">                                              
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column>
+                                        <p:column style="text-align: right;">
                                             <h:outputLabel value="#{bf.feeGrossValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>                                            
                                         </p:column>
-                                        <p:column>
+                                        <p:column style="text-align: right;">
                                             <h:outputLabel value="#{bf.feeMargin}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column>
+                                        <p:column style="text-align: right;">
                                             <h:outputLabel value="#{bf.feeDiscount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column>
+                                        <p:column style="text-align: right;">
                                             <h:outputLabel value="#{bf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -463,6 +483,9 @@
                                     </p:dataTable>
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Created At"/> 
+                                    </f:facet>
                                     <h:outputLabel value="#{bi.bill.createdAt}">
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
@@ -477,6 +500,9 @@
                                 </p:column>
 
                                 <p:column headerText="Billed By" exportable="false" >
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Billed By"/> 
+                                </f:facet>
                                     <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}"/>     
                                     <br/>
                                     <h:panelGroup rendered="#{bi.bill.cancelled}" >
@@ -487,6 +513,9 @@
                                     </h:panelGroup>
                                 </p:column>   
                                 <p:column headerText="Edited" exportable="false">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Edited"/> 
+                                </f:facet>
                                     <h:panelGroup  rendered="#{bi.bill.editor ne null}" >
                                         <h:outputLabel style="color: #008000;" value="Edited By " />
                                         <h:outputLabel style="color: #008000;" 
@@ -502,6 +531,9 @@
                                     </h:panelGroup>
                                 </p:column>
                                 <p:column headerText="Checked" exportable="false">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Checked"/> 
+                                </f:facet>
                                     <h:panelGroup  rendered="#{bi.bill.checkedBy ne null}" >
 
                                         <h:outputLabel style="color: #008000;" 
@@ -794,6 +826,9 @@
                                 </p:column>
 
                                 <p:column headerText="Created At" exportable="false">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Created At"/> 
+                                </f:facet>
                                     <h:outputLabel value="#{iss.bill.createdAt}">
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
@@ -808,6 +843,9 @@
                                 </p:column>
 
                                 <p:column headerText="Billed By" exportable="false" >
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Billed By"/> 
+                                </f:facet>
                                     <h:outputLabel value="#{iss.bill.creater.webUserPerson.name}"/>     
                                     <br/>
                                     <h:panelGroup rendered="#{iss.bill.cancelled}" >
@@ -818,6 +856,9 @@
                                     </h:panelGroup>
                                 </p:column>   
                                 <p:column headerText="Edited" exportable="false">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Edited"/> 
+                                </f:facet>
                                     <h:panelGroup  rendered="#{iss.bill.editor ne null}" >
                                         <h:outputLabel style="color: #008000;" value="Edited By " />
                                         <h:outputLabel style="color: #008000;" 
@@ -833,6 +874,9 @@
                                     </h:panelGroup>
                                 </p:column>
                                 <p:column headerText="Checked" exportable="false">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Checked"/> 
+                                </f:facet>
                                     <h:panelGroup  rendered="#{iss.bill.checkedBy ne null}" >
 
                                         <h:outputLabel style="color: #008000;" 
