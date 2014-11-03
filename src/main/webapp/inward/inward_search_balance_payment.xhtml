@@ -47,8 +47,10 @@
                                 </h:panelGrid>
                             </h:panelGroup>
                         </f:facet>
-                        <p:panel id="gpBillPreview" header="From #{mdInwardReportController.fromDate} To #{mdInwardReportController.fromDate} All Balance Payment Bills" styleClass="noBorder summeryBorder">
-                            <f:facet name="header" >
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
+                         
+                            <p:dataTable id="tblBills" value="#{mdInwardReportController.bills}" var="bb" style="width: 100%">
+                                 <f:facet name="header" >
                                 <p:outputLabel value="From "/>
                                 <p:outputLabel value="#{mdInwardReportController.fromDate}" >
                                     <f:convertDateTime pattern="dd MMM yyyy"/>
@@ -59,8 +61,6 @@
                                 </p:outputLabel>
                                 <p:outputLabel value=" All Balance Payment Bills" />
                             </f:facet>
-                            <p:dataTable id="tblBills" value="#{mdInwardReportController.bills}" var="bb" style="width: 100%">
-
                                 <p:column headerText="Bht No" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Bht No"/>
@@ -89,14 +89,16 @@
                                     <h:outputLabel value="#{bb.createdAt}" >
                                         <f:convertDateTime pattern="dd MMM yy"/>
                                     </h:outputLabel>
-                                    <br/>
-                                    <h:panelGroup rendered="#{bb.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled at " >
+                                   
+                                        <h:outputLabel style="color: red;" value=" - " rendered="#{bb.cancelled}">
+                                        </h:outputLabel>
+                                   
+                                        <h:outputLabel style="color: red;" value="Canceled at " rendered="#{bb.cancelled}">
                                         </h:outputLabel>
                                         <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
                                             <f:convertDateTime pattern="dd MMM yy"/>
                                         </h:outputLabel>
-                                    </h:panelGroup>                             
+                                                         
                                 </p:column>
 
                                 <p:column headerText="Bill No">

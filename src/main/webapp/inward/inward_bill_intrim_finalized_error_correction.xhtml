@@ -35,10 +35,11 @@
                                         update="@all" 
                                         listener="#{bhtSummeryFinalizedController.createTablesFinalized()}"/>
                                 <p:column>
-                                    #{myItem.bhtNo}
+                                    <p:outputLabel value="#{myItem.bhtNo}" />
                                 </p:column>
                                 <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
+                                    <p:outputLabel value="#{myItem.patient.person.nameWithTitle}" />
+
                                 </p:column>
                                 <p:column>
                                     <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
@@ -58,19 +59,23 @@
 
                     <p:tabView  id="tvPt" style="min-height: 75%;"  >                     
                         <p:tab id="tabSer" title="Service Detail BillItem"  >
-                            <p:commandButton value="Export Excel" ajax="false" 
-                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
-                                             >
-                                <pe:exporter type="xlsx"
-                                             target="serv" fileName="Service_Detail_BillItem"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
-                            </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculateService()}"/>
-                            <p:commandButton ajax="false" value="Update BillItems" action="#{bhtSummeryFinalizedController.updateAllBillItems()}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
-                            <p:commandButton ajax="false" value="Update BillFess" action="#{bhtSummeryFinalizedController.updateAllBillFees()}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                            <p:panelGrid columns="4">
+                                <p:commandButton value="Export Excel" ajax="false" 
+                                                 styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                                 >
+                                    <pe:exporter type="xlsx"
+                                                 target="serv" fileName="Service_Detail_BillItem"
+                                                 facetFontStyle="BOLD"  
+                                                 cellFontStyle="NORMAL"  
+                                                 fontName="Courier New"  />
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculateService()}"/>
+                                <p:commandButton ajax="false" value="Update BillItems" action="#{bhtSummeryFinalizedController.updateAllBillItems()}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                <p:commandButton ajax="false" value="Update BillFess" action="#{bhtSummeryFinalizedController.updateAllBillFees()}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+
+                            </p:panelGrid>
 
                             <p:panelGrid  columns="6" styleClass="Border normalFont" style="text-align: right;">
                                 <h:outputLabel value=""/>
@@ -138,7 +143,9 @@
                                 </p:column>
 
                                 <p:column headerText="Category"
+
                                           filterBy="#{bi.item.category.name}" filterMatchMode="contains">
+                                    
                                     <f:facet name="header">
                                         <h:outputLabel value="Category"/>
                                     </f:facet>
@@ -148,6 +155,9 @@
 
                                 <p:column headerText="Inward Charge Type"
                                           filterBy="#{bi.item.inwardChargeType.label}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Inward Charge Type"/> 
+                                </f:facet>
                                     <h:outputLabel value="#{bi.item.inwardChargeType.label}"/>                                    
                                 </p:column>
 
@@ -297,11 +307,17 @@
                                 </p:column>
 
                                 <p:column style="text-align: right;" headerText="Total Value">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Total Value"/> 
+                                </f:facet>
                                     <h:outputLabel  value="#{iss.grossValue}">
                                         <f:convertNumber pattern="#,##0.00"/>  
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column  headerText="Margin Value">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Margin Value"/> 
+                                </f:facet>
                                     <h:inputText  value="#{iss.marginValue}" style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00"/>  
                                     </h:inputText>
@@ -523,6 +539,9 @@
                                     <h:outputLabel  value="#{bil.comments}"/>
                                 </p:column>           
                                 <p:column headerText="Inward Charge Type" exportable="false">
+                                    <f:facet name="header">
+                                    <h:outputLabel value="Inward Charge Type"/> 
+                                </f:facet>
                                     <h:outputLabel  value="#{bil.singleBillItem.inwardChargeType}">                                     
                                     </h:outputLabel>
                                 </p:column>
