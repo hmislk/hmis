@@ -8,9 +8,11 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.data.HistoryType;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.entity.Department;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.StockHistoryFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -106,6 +108,18 @@ public class StockHistoryController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+    
+    @EJB
+    StockHistoryRecorder stockHistoryRecorder;
+    
+    public void recordHistory(){
+        try{
+            stockHistoryRecorder.myTimer();
+            JsfUtil.addSuccessMessage("History Saved");
+        }catch (Exception e){
+            JsfUtil.addErrorMessage("Failed due to " + e.getMessage());
+        }
     }
 
     public List<Date> getPharmacyStockHistoryDays() {

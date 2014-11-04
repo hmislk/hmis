@@ -125,7 +125,7 @@ public class StaffSalaryController implements Serializable {
         getStaffSalaryFacade().create(getCurrent());
 
         updateComponent(list);
-        updateStaffShifts();
+//        updateStaffShifts();
 
         getCurrent().setStaffSalaryComponants(list);
         getStaffSalaryFacade().edit(getCurrent());
@@ -152,19 +152,19 @@ public class StaffSalaryController implements Serializable {
         this.staffShiftFacade = staffShiftFacade;
     }
 
-    private void updateStaffShifts() {
-        Set<StaffShift> staffShifts = new HashSet<>();
-
-        staffShifts.addAll(getCurrent().getTransStaffShiftsSalary());
-        staffShifts.addAll(getCurrent().getTransStaffShiftsOverTime());
-        staffShifts.addAll(getCurrent().getTransStaffShiftsExtraDuty());
-
-        for (StaffShift ss : staffShifts) {
-            ss.setStaffSalary(getCurrent());
-            getStaffShiftFacade().edit(ss);
-        }
-
-    }
+//    private void updateStaffShifts() {
+//        Set<StaffShift> staffShifts = new HashSet<>();
+//
+//        staffShifts.addAll(getCurrent().getTransStaffShiftsSalary());
+//        staffShifts.addAll(getCurrent().getTransStaffShiftsOverTime());
+//        staffShifts.addAll(getCurrent().getTransStaffShiftsExtraDuty());
+//
+//        for (StaffShift ss : staffShifts) {
+//            ss.setStaffSalary(getCurrent());
+//            getStaffShiftFacade().edit(ss);
+//        }
+//
+//    }
 
     public void onEdit(RowEditEvent event) {
         ////System.out.println("Runn");

@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
         <h:form>
@@ -19,12 +20,15 @@
                     <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
+                    
+                    <p:panelGrid columns="2" >
                     <p:commandButton ajax="false" value="Process By Added Date" 
                                      action="#{mdInwardReportController.createServiceBillsByAddedDate}"
                                      style="float: right;" onclick="onSubmitButton();" />
                     <p:commandButton ajax="false" value="Process By Discharge Date" 
                                      action="#{mdInwardReportController.createServiceBillsByDischargeDate()}"
                                      style="float: right;" onclick="onSubmitButton();" />
+                    </p:panelGrid>
                 </h:panelGrid>   
 
                 <p:dataTable id="tbl" value="#{mdInwardReportController.bills}" rowIndexVar="i" var="bill" filteredValue="#{mdInwardReportController.fillterBill}" sortBy="#{bill.institution.id}">

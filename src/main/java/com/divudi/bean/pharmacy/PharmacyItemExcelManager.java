@@ -72,6 +72,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -406,6 +407,40 @@ public class PharmacyItemExcelManager implements Serializable {
         for (Item i : list) {
             i.setInwardChargeType(InwardChargeType.Laboratory);
             getItemFacade().edit(i);
+        }
+    }
+
+    public void resetMarginAndDiscountAndNetTotal() {
+        String sql = "Select b from Bill b "
+                + " where b.retired=false "
+                + " and b.billType=:btp ";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.PharmacyBhtPre);
+        List<Bill> list = billFacade.findBySQL(sql, hm);
+
+        for (Bill b : list) {
+            sql = "select sum(b.marginValue),"
+                    + " sum(b.discount),"
+                    + " sum(b.netValue)"
+                    + " from BillItem b "
+                    + " where b.retired=false"
+                    + " and b.bill=:bil";
+            hm.clear();
+            hm.put("bil", b);
+
+            Object[] obj = billItemFacade.findAggregateModified(sql, hm, TemporalType.DATE);
+
+            if (obj == null) {
+                continue;
+            }
+
+            Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
+
+            b.setMargin(dbl[0]);
+            b.setDiscount(dbl[1]);
+            b.setNetTotal(dbl[2]);
+            billFacade.edit(b);
+
         }
     }
 
@@ -1001,7 +1036,6 @@ public class PharmacyItemExcelManager implements Serializable {
 //            billFacade.edit(obj);
 //
 //        }
-
     }
 
     @EJB

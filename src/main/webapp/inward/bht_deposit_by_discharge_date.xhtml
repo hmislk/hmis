@@ -54,7 +54,7 @@
 
 
 
-                        <h:panelGrid columns="3">
+                        <p:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.disBhtPySummerries()}" onclick="onSubmitButton();" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -64,23 +64,23 @@
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.disBhtPySummerries()}">
                                 <pe:exporter type="xlsx" target="tbl,tbl2,tbl3" fileName="Complete_Paymaents_of_Dischagede_Patient"  />
                             </p:commandButton>  
-                        </h:panelGrid>
+                        </p:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{mdInwardReportController.bil}" var="i"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="Total Payment Summery (Discharge B.H.T. only) - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
-                                    <h:panelGrid columns="4">
+                              
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" />
                                         </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="--   To  "/>
                                         <h:outputLabel value="#{mdInwardReportController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" />
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                          
                                 </f:facet>
 
                                 <p:column headerText="B H T No">
@@ -120,7 +120,7 @@
                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Amount">
+                                <p:column headerText="Amount" style="text-align: right">
                                     <f:facet name="header">
                                         <h:outputLabel value="Amount"/>
                                     </f:facet>                                    
@@ -141,7 +141,7 @@
 
                                     <p:row>
 
-                                        <p:column colspan="4" footerText="Total"></p:column>
+                                        <p:column colspan="5" footerText="Total"></p:column>
                                         <p:column footerText="#{mdInwardReportController.totalValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.totalValue}">
@@ -196,7 +196,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Amount">
+                                <p:column headerText="Amount" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Amount"/>
                                     </f:facet>                                    
@@ -217,7 +217,7 @@
 
                                     <p:row>
 
-                                        <p:column colspan="4" footerText="Total"></p:column>
+                                        <p:column colspan="5" footerText="Total"></p:column>
                                         <p:column footerText="#{mdInwardReportController.cancelledTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledTotal}">
@@ -275,7 +275,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Amount">
+                                <p:column headerText="Amount" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Amount"/>
                                     </f:facet>                                    
@@ -296,7 +296,7 @@
 
                                     <p:row>
 
-                                        <p:column colspan="4" footerText="Total"></p:column>
+                                        <p:column colspan="5" footerText="Total"></p:column>
                                         <p:column footerText="#{mdInwardReportController.refundTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.refundTotal}">
@@ -312,7 +312,7 @@
 
                             </p:dataTable>
 
-                            <p:panelGrid columns="2" styleClass="noBorder normalFont">
+                            <p:panelGrid columns="2" styleClass="noBorder normalFont" style="text-align: right;">
                                 <p:outputLabel value="Billed Total"/>
                                 <p:outputLabel value="#{mdInwardReportController.totalValue}">
                                     <f:convertNumber pattern="#000.00"></f:convertNumber></p:outputLabel>

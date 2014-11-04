@@ -67,6 +67,7 @@
                             <p:watermark for="acPt" value="BHT No" />
                         </h:panelGrid>
 
+                        <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createBHTDiscountTable()}" onclick="onSubmitButton();"  ></p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController1.createBHTDiscountTable()}">
                             <pe:exporter type="xlsx" target="tb1" fileName="bht_Discount" />
@@ -74,6 +75,8 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
+                        </p:panelGrid>
+                        
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
 
                             <p:dataTable id="tb1" value="#{inwardReportController1.billItems}" var="bi" 
