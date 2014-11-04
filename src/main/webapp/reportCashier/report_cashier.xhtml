@@ -54,7 +54,8 @@
                                 <p:outputLabel value="Doctor Payments" />
                             </f:facet>                           
                             <p:commandButton styleClass="linkButton" ajax="false" value="OPD Doctor Payments and Due" action="/opd_search_professional_payment_due_1" actionListener="#{searchController.makeListNull2()}"/>                                
-                            <p:commandButton styleClass="linkButton" ajax="false" value="OPD Doctor Payments" action="report_doctor_payment_opd" actionListener="#{searchController.makeListNull2()}"/>                                
+                            <p:commandButton styleClass="linkButton" ajax="false" value="OPD Doctor Payments(By Bill Item)" action="report_doctor_payment_opd" actionListener="#{searchController.makeListNull2()}"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="OPD Doctor Payments(By Bill)" action="report_doctor_payment_opd_by_bill" actionListener="#{searchController.makeListNull2()}"/>
                         </h:panelGrid>
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
