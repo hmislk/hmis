@@ -352,23 +352,26 @@ public class BillBeanController implements Serializable {
     }
 
     public double calOutSideInstitutionFees(Date fromDate, Date toDate, Institution institution) {
-        PaymentMethod[] pms = {PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
-        List<PaymentMethod> pmsList = Arrays.asList(pms);
-        String sql = "SELECT sum(bf.feeValue) "
-                + " FROM BillFee bf"
-                + " WHERE bf.bill.institution=:ins "
-                + " and bf.bill.toDepartment.institution!=:ins "
-                + " and bf.fee.feeType!=:ftp "
-                + " and bf.bill.createdAt between :fromDate and :toDate "
-                + " and bf.bill.paymentMethod in :pm1 ";
+        String sql = "SELECT sum(bf.performInstitutionFee) "
+                + " FROM Bill bf"
+                + " WHERE bf.institution=:ins "
+                + " and bf.toDepartment.institution!=:ins "
+                //  + " and bf.fee.feeType=:ftp "
+                + " and bf.createdAt between :fromDate and :toDate "
+                + " and (bf.paymentMethod = :pm1 "
+                + " or bf.paymentMethod = :pm2 "
+                + " or bf.paymentMethod = :pm3 "
+                + " or bf.paymentMethod = :pm4)";
 
         HashMap temMap = new HashMap();
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", institution);
-        temMap.put("ftp", FeeType.Staff);
-        temMap.put("pm1", pmsList);
-
+        //   temMap.put("ftp", feeType);
+        temMap.put("pm1", PaymentMethod.Cash);
+        temMap.put("pm2", PaymentMethod.Card);
+        temMap.put("pm3", PaymentMethod.Cheque);
+        temMap.put("pm4", PaymentMethod.Slip);
         double val = getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return val;
@@ -1662,7 +1665,7 @@ public class BillBeanController implements Serializable {
         return dbl;
     }
 
-    public Double[] fetchBillFeeValues(Bill b) {
+      public Double[] fetchBillFeeValues(Bill b) {
         String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue) "
                 + " from BillFee bf where "
                 + " bf.retired=false "
@@ -1684,6 +1687,7 @@ public class BillBeanController implements Serializable {
         return dbl;
     }
 
+    
     public void setPaymentMethodData(Bill b, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
 
         if (paymentMethod.equals(PaymentMethod.Cheque)) {
