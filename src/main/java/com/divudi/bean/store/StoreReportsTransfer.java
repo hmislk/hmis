@@ -346,7 +346,6 @@ public class StoreReportsTransfer implements Serializable {
         }
 
 //        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
-
     }
 
     public void fillAssetTransferlist() {
@@ -387,18 +386,26 @@ public class StoreReportsTransfer implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 //        m.put("bt1", BillType.StoreTransferIssue);
-        m.put("bt2", BillType.StoreIssue);
+        m.put("bt1", BillType.StoreIssue);
+
+        sql = " select bi from BillItem bi where "
+                + "  bi.bill.createdAt between :fd  and :td "
+                + " and (bi.bill.billType=:bt1)  ";
 
         if (fromDepartment != null) {
             m.put("fdept", fromDepartment);
-            sql = "select bi from BillItem bi where bi.bill.department=:fdept "
-                    + " and  bi.bill.createdAt between :fd "
-                    + " and :td and  (bi.bill.billType=:bt1)  ";
-        } else {
-            sql = "select bi from BillItem bi where bi.bill.createdAt "
-                    + " between :fd and :td and (bi.bill.billType=:bt1 or bi.bill.billType=:bt2) ";
+            sql += " and bi.bill.department=:fdept ";
         }
-        sql += " order by bi.bill.toDepartment.name, bi.item.category.name, bi.item.name, bi.id";
+
+        if (toDepartment != null) {
+            m.put("tdept", toDepartment);
+            sql += " and bi.bill.toDepartment=:tdept ";
+        }
+
+        sql += " order by bi.bill.toDepartment.name, "
+                + " bi.item.category.name, "
+                + " bi.item.name, "
+                + " bi.id";
 
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
@@ -489,10 +496,11 @@ public class StoreReportsTransfer implements Serializable {
             dbr.getBill().setNetTotal(dbr.getBill().getNetTotal() + ts.getNetValue());
             dbr.getBill().setGrantTotal(dbr.getBill().getGrantTotal() + ts.getQty());
 
-            purchaseValue += ts.getNetValue();
+//            purchaseValue += ts.getNetValue();
 
         }
 
+        purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
     }
 
     public void fillDepartmentTransfersIssueByBill() {
