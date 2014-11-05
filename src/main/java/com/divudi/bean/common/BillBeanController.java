@@ -355,8 +355,8 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.performInstitutionFee) "
                 + " FROM Bill bf"
                 + " WHERE bf.institution=:ins "
-                + " and bf.toDepartment.institution!=:ins "
-                //  + " and bf.fee.feeType=:ftp "
+                + " and bf.toInstitution!=:ins "
+                  + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -367,6 +367,7 @@ public class BillBeanController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", institution);
+        temMap.put("bt", BillType.OpdBill);
         //   temMap.put("ftp", feeType);
         temMap.put("pm1", PaymentMethod.Cash);
         temMap.put("pm2", PaymentMethod.Card);
