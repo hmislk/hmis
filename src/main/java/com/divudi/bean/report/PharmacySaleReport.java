@@ -2954,6 +2954,10 @@ public class PharmacySaleReport implements Serializable {
         refundedDetail.setCreditTotal(calGrantTotalByPaymentMethod(PaymentMethod.Credit, new RefundBill()));
         refundedDetail.setCardTotal(calGrantTotalByPaymentMethod(PaymentMethod.Card, new RefundBill()));
 
+        grantCardTotal = 0;
+        grantCashTotal = 0;
+        grantCreditTotal = 0;
+        grantDiscount = 0;
         grantCardTotal = grantCardTotal + calGrantTotalByPaymentMethod(PaymentMethod.Card);
         grantCashTotal = grantCashTotal + calGrantTotalByPaymentMethod(PaymentMethod.Cash);
         grantCreditTotal = grantCreditTotal + calGrantTotalByPaymentMethod(PaymentMethod.Credit);
