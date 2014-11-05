@@ -29,7 +29,7 @@
                             <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy" ></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <p:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.listInBhtBillItems()}" onclick="onSubmitButton();"  ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
@@ -39,7 +39,7 @@
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
                                 <pe:exporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
                             </p:commandButton>  
-                        </h:panelGrid>
+                        </p:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
@@ -47,16 +47,16 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bht Issue Bill Item "/>
                                     <h:outputLabel value="#{mdInwardReportController.dept.name}"/> 
-                                    <h:panelGrid columns="4">
+                                  
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="-- To --"/>
                                         <h:outputLabel value="#{mdInwardReportController.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                                  
                                 </f:facet>
 
                                 <p:column headerText="Bill No">
