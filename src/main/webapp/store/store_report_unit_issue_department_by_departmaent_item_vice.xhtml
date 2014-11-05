@@ -36,7 +36,9 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter subTable="true" type="xlsx" target="tbl" fileName="Unit_Issue_Report_by_department"  />
+                            </p:commandButton> 
                         </h:panelGrid>
 
 
@@ -104,7 +106,7 @@
 
 
                                 <f:facet name="footer">
-                                     <h:outputLabel value="All Department Total" ></h:outputLabel>
+                                    <h:outputLabel value="All Department Total" ></h:outputLabel>
                                     <h:outputLabel value="#{storeReportsTransfer.purchaseValue}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber> 
                                     </h:outputLabel>
