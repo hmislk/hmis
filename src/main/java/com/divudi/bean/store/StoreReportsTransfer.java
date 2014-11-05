@@ -396,7 +396,7 @@ public class StoreReportsTransfer implements Serializable {
                     + " and :td and  (bi.bill.billType=:bt1)  ";
         } else {
             sql = "select bi from BillItem bi where bi.bill.createdAt "
-                    + " between :fd and :td and (bi.bill.billType=:bt1 or bi.bill.billType=:bt2) ";
+                    + " between :fd and :td and (bi.bill.billType=:bt1) ";
         }
         sql += " order by bi.bill.toDepartment.name, bi.item.category.name, bi.item.name, bi.id";
 
