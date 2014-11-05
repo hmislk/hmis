@@ -2059,6 +2059,48 @@ public class SearchController implements Serializable {
         }
 
     }
+    
+    public void fillDocPayingBill() {
+
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "select distinct(b.bill) from BillItem b where b.retired=false "
+                + " and b.bill.billType=:btp "
+                + " and b.referenceBill.billType=:refType "
+                + " and b.paidForBillFee.bill.cancelled=false "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+
+        if (speciality != null) {
+            sql += " and b.paidForBillFee.staff.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        if (currentStaff != null) {
+            sql += " and b.paidForBillFee.staff=:cs";
+            m.put("cs", currentStaff);
+        }
+
+        sql += " order by b.bill.insId ";
+
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("btp", BillType.PaymentBill);
+        m.put("refType", BillType.OpdBill);
+
+//        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        bills=getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        totalPaying = 0.0;
+        if (bills == null) {
+            return;
+        }
+        for (Bill b : bills) {
+            totalPaying += b.getNetTotal();
+        }
+
+    }
 
     public void createDueFeeTableInward() {
 

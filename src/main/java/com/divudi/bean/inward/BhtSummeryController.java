@@ -709,13 +709,24 @@ public class BhtSummeryController implements Serializable {
             System.err.println("Issue Discount % " + pm.getDiscountPercent());
             System.err.println("Issue Discount Value " + dis);
             System.err.println("//////////////////");
-            disTot += dis;
+//            disTot += dis;
             bf.setDiscount(dis);
             bf.setNetValue(value - dis);
             getBillItemFacade().edit(bf);
         }
 
+        disTot = getInwardBean().calIssueBillItemDiscountByInwardChargeType(getPatientEncounter(), billType);
+
         disTot += calDiscountServicePatientItems(inwardChargeType);
+
+        List<Bill> bills = getInwardBean().fetchIssueBills(getPatientEncounter(), billType);
+
+        for (Bill b : bills) {
+            Double[] dbl = inwardBean.fetchDiscountAndNetTotalByBillItem(b);
+            b.setDiscount(dbl[0]);
+            b.setNetTotal(dbl[1]);
+            billFacade.edit(b);
+        }
 
         return disTot;
     }
@@ -1503,8 +1514,8 @@ public class BhtSummeryController implements Serializable {
 
         createPatientRooms();
         createPatientItems();
-        pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(),BillType.PharmacyBhtPre);
-        storeIssues =  getInwardBean().fetchIssueTable(getPatientEncounter(),BillType.StoreBhtPre);
+        pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre);
+        storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre);
         departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter());
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter());

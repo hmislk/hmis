@@ -21,12 +21,12 @@
             <p:column headerText="Room Name">
                 #{rm.roomFacilityCharge.name}
             </p:column>                                                                          
-            <p:column headerText="In At">
+            <p:column headerText="In At" style="text-align: center;">
                 <h:outputLabel value="#{rm.admittedAt}">
                     <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
                 </h:outputLabel>
             </p:column>
-            <p:column headerText="Out At">
+            <p:column headerText="Out At" style="text-align: center;">
                 <h:outputLabel value="#{rm.dischargedAt}">
                     <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
                 </h:outputLabel>

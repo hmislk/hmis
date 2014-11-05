@@ -276,7 +276,7 @@ public class PharmacyController implements Serializable {
                 + " group by i.department"
                 + " having sum(i.stock) > 0 ";
 
-        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
+        return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -329,7 +329,7 @@ public class PharmacyController implements Serializable {
                 + " and i.createdAt between :frm and :to"
                 + " group by i.bill.toDepartment";
 
-        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
+        return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -361,20 +361,19 @@ public class PharmacyController implements Serializable {
 //                + " and i.bill.billType=:btp "
 //                + " and i.createdAt between :frm and :to"
 //                + " group by i.bill.toDepartment";
-        
-         sql = "select i.billItem.bill.toDepartment,"
+
+        sql = "select i.billItem.bill.toDepartment,"
                 + " sum(i.stock.itemBatch.purcahseRate*i.qty),"
                 + " sum(i.qty) "
                 + " from PharmaceuticalBillItem i "
                 + " where i.billItem.bill.toDepartment.institution=:ins "
-//                + " and i.billItem.bill.department=:curr "
+                //                + " and i.billItem.bill.department=:curr "
                 + " and i.billItem.item=:i"
                 + " and i.billItem.bill.billType=:btp "
                 + " and i.billItem.createdAt between :frm and :to"
                 + " group by i.billItem.bill.toDepartment";
-         
 
-        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
+        return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -401,11 +400,11 @@ public class PharmacyController implements Serializable {
                 + " from BillItem i where i.bill.fromDepartment.institution=:ins and i.bill.department=:dep "
                 + " and i.item=:i and i.bill.billType=:btp and i.createdAt between :frm and :to group by i.bill.fromDepartment";
 
-        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
+        return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
 
-    public List<Object[]> calDepartmentBhtIssue(Institution institution,BillType billType) {
+    public List<Object[]> calDepartmentBhtIssue(Institution institution, BillType billType) {
         Item item;
 
         if (pharmacyItem instanceof Ampp) {
@@ -431,7 +430,7 @@ public class PharmacyController implements Serializable {
                 + " and i.createdAt between :frm and :to  "
                 + " group by i.bill.department";
 
-        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
+        return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -463,7 +462,7 @@ public class PharmacyController implements Serializable {
                 + " and i.createdAt between :frm and :to  "
                 + " group by i.bill.department";
 
-        return getBillItemFacade().findAggregates(sql, m,TemporalType.TIMESTAMP);
+        return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -687,8 +686,6 @@ public class PharmacyController implements Serializable {
     public void setInstitutionBhtIssue(List<InstitutionSale> institutionBhtIssue) {
         this.institutionBhtIssue = institutionBhtIssue;
     }
-    
-    
 
     public void createInstitutionBhtIssue() {
         List<Institution> insList = getCompany();
@@ -702,7 +699,7 @@ public class PharmacyController implements Serializable {
             List<DepartmentSale> list = new ArrayList<>();
             double totalValue = 0;
             double totalQty = 0;
-            List<Object[]> objs = calDepartmentBhtIssue(ins,BillType.PharmacyBhtPre);
+            List<Object[]> objs = calDepartmentBhtIssue(ins, BillType.PharmacyBhtPre);
 
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
@@ -901,7 +898,6 @@ public class PharmacyController implements Serializable {
         createPoTable();
         createDirectPurchaseTable();
         createInstitutionIssue();
-        
 
     }
 
@@ -921,7 +917,7 @@ public class PharmacyController implements Serializable {
         grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
+
 //    public void createPhrmacyIssueTable() {
 //
 //        // //System.err.println("Getting GRNS : ");
@@ -938,7 +934,6 @@ public class PharmacyController implements Serializable {
 //        institutionIssue = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 //
 //    }
-
     public void createDirectPurchaseTable() {
 
         // //System.err.println("Getting GRNS : ");
@@ -1072,7 +1067,7 @@ public class PharmacyController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
 //            Date date = ;
-            fromDate = getCommonFunctions().getAddedDate(new Date(), -30);
+            fromDate = getCommonFunctions().getAddedDate(commonFunctions.getStartOfDay(new Date()), -30);
         }
         return fromDate;
     }
@@ -1084,7 +1079,7 @@ public class PharmacyController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = new Date();
+            toDate = commonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }

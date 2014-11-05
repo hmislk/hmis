@@ -181,7 +181,10 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Fee"/> 
                                 </f:facet>
-                                <h:outputLabel value="#{rm.netValue}"/>
+                                <p:outputLabel value="#{rm.netValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                               
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{inwardReportController1.inwardGeneralIssuingNetValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -202,7 +205,7 @@
 
                         <p:dataTable id="tbl4" value="#{inwardReportController1.billItemOutSide}" var="rm" rowIndexVar="i" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">
-                                Out Side
+                               <p:outputLabel value="Out Side" />
                             </f:facet>
 
                             <p:column headerText="No">
@@ -223,7 +226,10 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Fee"/> 
                                 </f:facet>
-                                <h:outputLabel value="#{rm.netValue}"/>
+                                <p:outputLabel value="#{rm.netValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                               
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{inwardReportController1.inwardOutSideNetValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
