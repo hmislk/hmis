@@ -14,7 +14,7 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Doctor Payment" >
+                    <p:panel header="Doctor Payment(By Bill)" >
                         <p:panel>
                             <h:panelGrid columns="2">
                                 <p:outputLabel value="From" />
@@ -38,7 +38,7 @@
                             <p:watermark for="scStaff" value="Staff / Doctor" />
                         </p:panel>
                         <p:panel>
-                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{searchController.fillDocPayingBillFee}" onclick="onSubmitButton();"  />
+                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{searchController.fillDocPayingBill}" onclick="onSubmitButton();"  />
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -47,7 +47,7 @@
                         </p:panel>
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">
-                                <p:dataTable id="tbl" value="#{searchController.billItems}" var="bf">
+                                <p:dataTable id="tbl" value="#{searchController.bills}" var="b">
                                     <f:facet name="header">                                        
                                         <p:outputLabel value="Opd Doctor Payment Report"/><h:outputLabel/>   
                                         <h:outputLabel/><h:outputLabel/>
@@ -64,7 +64,7 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Paid By" />
                                         </f:facet>
-                                        <p:outputLabel value="#{bf.bill.creater.webUserPerson.nameWithTitle}" >
+                                        <p:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" >
                                         </p:outputLabel>
                                     </p:column>
                                     
@@ -72,7 +72,7 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Date/Time" />
                                         </f:facet>
-                                        <p:outputLabel value="#{bf.createdAt}" >
+                                        <p:outputLabel value="#{b.createdAt}" >
                                             <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
                                         </p:outputLabel>
                                     </p:column>
@@ -81,43 +81,27 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Bill No" />
                                         </f:facet>
-                                        <p:outputLabel value="#{bf.bill.insId}" >
+                                        <p:outputLabel value="#{b.insId}" >
                                         </p:outputLabel>
                                     </p:column>
-
-                                    <p:column headerText="Paid For" style="font-size: 12px;">
-                                        <f:facet name="header">
-                                            <p:outputLabel value="Paid For" />
-                                        </f:facet>
-                                        <p:outputLabel value="#{bf.paidForBillFee.bill.insId}" >
-                                        </p:outputLabel>
-                                    </p:column>
-
-                                    <!--                                    <p:column headerText="Name">
-                                                                            <f:facet name="header">
-                                                                                <p:outputLabel value="Name" />
-                                                                            </f:facet>
-                                                                            <p:outputLabel value="#{bf.paidForBillFee.staff.person.nameWithTitle}" >
-                                                                            </p:outputLabel>
-                                                                        </p:column>
                                     
-                                                                        <p:column headerText="Speciality">
-                                                                            <f:facet name="header">
-                                                                                <p:outputLabel value="Speciality" />
-                                                                            </f:facet>
-                                                                            <p:outputLabel value="#{bf.paidForBillFee.speciality.name}" >
-                                                                            </p:outputLabel>
-                                                                        </p:column>-->
+                                     <p:column headerText="Cancell Bill No" style="font-size: 12px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Cancel Bill No" />
+                                        </f:facet>
+                                         <p:outputLabel value="#{b.cancelledBill.insId}" >
+                                        </p:outputLabel>
+                                    </p:column>
 
                                     <p:column headerText="Paid Amount" style="text-align: right; font-size: 12px;">
                                         <f:facet name="header">
                                             <p:outputLabel value="Paid Amount" />
                                         </f:facet>
-                                        <p:outputLabel value="#{bf.paidForBillFee.feeValue}" >
+                                        <p:outputLabel value="#{-b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </p:outputLabel>
                                         <f:facet name="footer">
-                                            <h:outputLabel value="#{searchController.totalPaying}" >
+                                            <h:outputLabel value="#{-searchController.totalPaying}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
                                         </f:facet>

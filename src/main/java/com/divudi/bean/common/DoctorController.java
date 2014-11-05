@@ -13,6 +13,7 @@ import java.util.TimeZone;
 import com.divudi.entity.Person;
 import com.divudi.facade.DoctorFacade;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.Speciality;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,6 +49,9 @@ public class DoctorController implements Serializable {
     private Doctor current;
     private List<Doctor> items = null;
     String selectText = "";
+    List<Doctor> doctors;
+    Speciality speciality;
+    
 
     public List<Doctor> completeDoctor(String query) {
         List<Doctor> suggestions;
@@ -66,6 +70,12 @@ public class DoctorController implements Serializable {
         return suggestions;
     }
 
+    public void listDoctors(){
+         String temSql;
+            temSql = "SELECT d FROM Doctor d where d.retired=false ";
+            doctors = getFacade().findBySQL(temSql);   
+
+    }
     public List<Doctor> getSelectedItems() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -195,6 +205,14 @@ public class DoctorController implements Serializable {
         this.current = current;
     }
 
+    public List<Doctor> getDoctors() {
+        return doctors;
+    }
+
+    public void setDoctors(List<Doctor> doctors) {
+        this.doctors = doctors;
+    }
+
     private DoctorFacade getFacade() {
         return ejbFacade;
     }
@@ -216,6 +234,16 @@ public class DoctorController implements Serializable {
         this.personFacade = personFacade;
     }
 
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+
+    
+    
     /**
      *
      */

@@ -96,7 +96,10 @@
 
                     <p:tabView  id="tvPt" style="min-height: 75%;"  >                     
                         <p:tab id="tabNewPt" title="Room Detail" >                              
-                            <p:dataTable id="room"    value="#{bhtSummeryFinalizedController.patientRooms}" var="rm">                                
+                            <p:dataTable id="room"    value="#{bhtSummeryFinalizedController.patientRooms}" var="rm">   
+                                <p:column>
+                                    <h:outputLabel value="#{rm.id}"/>
+                                </p:column>
                                 <p:column headerText="Room Name">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Actutual" />

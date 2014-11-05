@@ -34,7 +34,7 @@
                                        value=" THIS BILL IS NOT VALID PLEASE CANCEL"/>
                     </div>
                     <div class="receiptnoPrintingRuhunu"
-                         style="font-size: 12px!important; position: absolute!important; left: 36%!important; top: 6.5%!important;">
+                         style="font-size: 14px!important; position: absolute!important; left: 36%!important; top: 6.5%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq false}"/>
 
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
@@ -52,9 +52,12 @@
                     </div>
 
                     <div class="billdatePrintingRuhunu" >
-                        <h:outputLabel value="#{cc.attrs.bill.billDate}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
-                        </h:outputLabel>
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Date"></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.billDate}">
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </h:outputLabel>
+                        </h:panelGrid>
                     </div>
 
                     <div class="paymentPrintingRuhunu" >
@@ -64,9 +67,12 @@
                     </div>
 
                     <div class="billtimePrintingRuhunu" >
-                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
-                            <f:convertDateTime pattern="hh:mm a"/>
-                        </h:outputLabel>
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Time"></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.billTime}">
+                                <f:convertDateTime pattern="hh:mm a"/>
+                            </h:outputLabel>
+                        </h:panelGrid>
                     </div>
 
                     <div class="ptnamePrintingRuhunu" >
