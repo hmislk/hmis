@@ -14,16 +14,16 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="B.H.T. DEPOSIT PAYMENT  SUMMERIES " >
+                    <p:panel header="ALL PAYMENT  SUMMERIES (Discharge B.H.T. only)" >
 
                         <h:panelGrid columns="2" >
                             <p:outputLabel value="From :" ></p:outputLabel>
                             <p:calendar value="#{mdInwardReportController.fromDate}"
-                                        pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                                        pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To :" ></h:outputLabel>
 
                             <p:calendar value="#{mdInwardReportController.toDate}" 
-                                        pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                                        pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
 
 
                             <p:outputLabel value="Admission Type :"/>
@@ -36,7 +36,7 @@
                             <p:outputLabel value="B.H.T. Type :"/>
                             <p:selectOneMenu   id="cmbPs" value="#{mdInwardReportController.paymentMethod}">
                                 <f:selectItem itemLabel="Select" />                           
-                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                              
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                           
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Credit Company : " ></h:outputLabel>
@@ -52,7 +52,11 @@
                                                 completeMethod="#{admissionController.completePatientAll}" 
                                                 var="myItem" itemValue="#{myItem}" 
                                                 itemLabel="#{myItem.bhtNo}" 
-                                                size="30"  >                                    
+                                                size="30"  >
+                                    <p:ajax event="itemSelect" 
+                                            process="@this" 
+                                            update="@all" 
+                                            listener="#{bhtSummeryFinalizedController.selectLitener}"/>
                                     <p:column>
                                         #{myItem.bhtNo}
                                     </p:column>
@@ -73,8 +77,9 @@
                             </h:panelGrid>
                         </h:panelGrid>
 
+
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateDischargedAll()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createAllPaymentByCreatedDateDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -89,7 +94,7 @@
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{mdInwardReportController.bil}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="B.H.T. DEPOSIT PAYMENT  SUMMERIES  #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
+                                    <h:outputLabel value="B.H.T. DEPOSIT PAYMENT  SUMMERIES (Discharge B.H.T. only)#{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">
@@ -102,23 +107,12 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-                                <p:column headerText="Discharge At">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Discharge At"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.patientEncounter.dateOfDischarge}" >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                </p:column>
-
                                 <p:column headerText="B H T No">
                                     <f:facet name="header">
                                         <h:outputLabel value="B H T No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>
                                 </p:column>
-
-
 
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
@@ -176,7 +170,7 @@
                                             <f:facet name="footer">
 
                                                 <p:outputLabel value="#{mdInwardReportController.totalValue}">
-                                                    <f:convertNumber pattern="#,000.00"/>
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </p:outputLabel>
 
                                             </f:facet>
@@ -253,7 +247,7 @@
                                         <p:column footerText="#{mdInwardReportController.cancelledTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -330,7 +324,7 @@
                                         <p:column footerText="#{mdInwardReportController.refundTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.refundTotal}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>
