@@ -14,7 +14,7 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="Unit Issue Report" >
+                    <p:panel header="Unit Issue Report" styleClass="noBorder summeryBorder" >
 
                         <h:panelGrid columns="6" >
                             <h:outputLabel value="Issue From" ></h:outputLabel>
@@ -29,17 +29,15 @@
                             <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <p:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentTransfersIssueByBillItem}" />
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" />
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter subTable="true" type="xlsx" target="tbl" fileName="Unit_Issue_Report_by_department"  />
-                            </p:commandButton> 
-                        </h:panelGrid>
+                           
+                        </p:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
@@ -82,14 +80,21 @@
                                             <p:column headerText="Item" >
                                                 <h:outputText value="#{ibr.item.name}"></h:outputText>
                                             </p:column>
-                                            <p:column headerText="App. Rate">
-                                                <h:outputText value="#{ibr.bill.netTotal / ibr.bill.grantTotal}" />
+                                            <p:column headerText="App. Rate"  style="text-align: right;">
+                                                <h:outputText value="#{ibr.bill.netTotal / ibr.bill.grantTotal}" >
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                                </h:outputText>
                                             </p:column>
-                                            <p:column>
-                                                <h:outputText value="#{ibr.bill.grantTotal}" />
+                                            <p:column  style="text-align: right;">
+                                                <h:outputText value="#{ibr.bill.grantTotal}" >
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                                </h:outputText>
+                                                
                                             </p:column>
-                                            <p:column>
-                                                <h:outputText value="#{ibr.bill.netTotal}" />
+                                            <p:column  style="text-align: right;">
+                                                <h:outputText value="#{ibr.bill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                                </h:outputText>
                                             </p:column>
                                         </p:subTable>
 
@@ -105,7 +110,7 @@
                                 </p:column>
 
 
-                                <f:facet name="footer">
+                                <f:facet name="footer" >
                                     <h:outputLabel value="All Department Total" ></h:outputLabel>
                                     <h:outputLabel value="#{storeReportsTransfer.purchaseValue}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber> 

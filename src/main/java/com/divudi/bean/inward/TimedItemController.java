@@ -67,10 +67,13 @@ public class TimedItemController implements Serializable {
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
         //System.out.println("gettin ins dep ");
+        if(current==null){
+             return new ArrayList<>();
+        }
         if (getCurrent().getInstitution() == null) {
             return new ArrayList<>();
         } else {
-            String sql = "Select d From Department d where d.retired=false and d.institution=:ins";
+            String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
             HashMap hm = new HashMap();
             hm.put("ins", getCurrent().getInstitution());
             d = getDepartmentFacade().findBySQL(sql, hm);
@@ -218,6 +221,7 @@ public class TimedItemController implements Serializable {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Theatre);
         selectedItems = getFacade().findBySQL(sql, m);
+        System.out.println("selectedItems = " + selectedItems);
         return selectedItems;
     }
 
@@ -229,6 +233,7 @@ public class TimedItemController implements Serializable {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Inward);
         selectedItems = getFacade().findBySQL(sql, m);
+        System.out.println("selectedItems = " + selectedItems);
         return selectedItems;
     }
 
@@ -278,9 +283,14 @@ public class TimedItemController implements Serializable {
 
     private void recreateModel() {
         items = null;
+        selectedItems = null;
     }
 
     public void saveSelected() {
+        if(current==null){
+            UtilityController.addErrorMessage("Nothing to save. Please click add button.");
+            return;
+        }
         if (getCurrent().getDepartment() == null) {
             UtilityController.addErrorMessage("Please Select Department");
             return;
@@ -291,29 +301,32 @@ public class TimedItemController implements Serializable {
             return;
         }
 
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            if (billedAs == false) {
-                //System.out.println("2");
-                getCurrent().setBilledAs(getCurrent());
-
-            }
-            if (reportedAs == false) {
-                getCurrent().setReportedAs(getCurrent());
-            }
-            getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
-        } else {
+        if (getCurrent().getId() == null) {
+//            if (billedAs == false) {
+//                //System.out.println("2");
+//                getCurrent().setBilledAs(getCurrent());
+//
+//            }
+//            if (reportedAs == false) {
+//                getCurrent().setReportedAs(getCurrent());
+//            }
+            System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
-            getFacade().create(getCurrent());
-            if (billedAs == false) {
-                getCurrent().setBilledAs(getCurrent());
-            }
-            if (reportedAs == false) {
-                getCurrent().setReportedAs(getCurrent());
-            }
+            getFacade().create(current);
+            UtilityController.addSuccessMessage("Updated Successfully");
+        } else {
+//            
+//            getFacade().create(getCurrent());
+//            if (billedAs == false) {
+//                getCurrent().setBilledAs(getCurrent());
+//            }
+//            if (reportedAs == false) {
+//                getCurrent().setReportedAs(getCurrent());
+//            }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         //  getItems();
@@ -343,26 +356,26 @@ public class TimedItemController implements Serializable {
     }
 
     public TimedItem getCurrent() {
-        if (current == null) {
-            current = new TimedItem();
-        }
+//        if (current == null) {
+//            current = new TimedItem();
+//        }
         return current;
     }
 
     public void setCurrent(TimedItem current) {
         this.current = current;
-        if (current != null) {
-            if (current.getBilledAs() == current) {
-                billedAs = false;
-            } else {
-                billedAs = true;
-            }
-            if (current.getReportedAs() == current) {
-                reportedAs = false;
-            } else {
-                reportedAs = true;
-            }
-        }
+//        if (current != null) {
+//            if (current.getBilledAs() == current) {
+//                billedAs = false;
+//            } else {
+//                billedAs = true;
+//            }
+//            if (current.getReportedAs() == current) {
+//                reportedAs = false;
+//            } else {
+//                reportedAs = true;
+//            }
+//        }
     }
 
     public void delete() {

@@ -871,7 +871,7 @@ public class BillBeanController implements Serializable {
         String sql = "Select sum(b.netTotal)"
                 + " from Bill b "
                 + " where b.retired=false"
-                + " and  b.billType=:bType"
+                + " and b.billType=:bType"
                 + " and b.referenceBill.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and (b.paymentMethod = :pm1 "
