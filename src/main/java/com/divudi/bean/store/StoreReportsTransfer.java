@@ -263,7 +263,7 @@ public class StoreReportsTransfer implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", BillType.StoreIssue);
-        
+
         if (fromDepartment != null) {
             sql += " and b.fromDepartment=:fdept ";
             m.put("fdept", fromDepartment);
@@ -273,14 +273,14 @@ public class StoreReportsTransfer implements Serializable {
             sql += " and b.toDepartment=:tdept  ";
             m.put("tdept", toDepartment);
         }
-        
-        sql+= " order by b.id";
-        
+
+        sql += " order by b.id";
+
         transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
-        
+
         for (Bill b : transferBills) {
             totalsValue = totalsValue + (b.getTotal());
             discountsValue = discountsValue + b.getDiscount();
@@ -329,6 +329,8 @@ public class StoreReportsTransfer implements Serializable {
             return;
         }
 
+        netTotalValues = 0;
+
         for (Object[] obj : list) {
             Department item = (Department) obj[0];
             Double dbl = (Double) obj[1];
@@ -337,12 +339,13 @@ public class StoreReportsTransfer implements Serializable {
             String1Value3 newD = new String1Value3();
             newD.setString(item.getName());
             newD.setValue1(dbl);
+            netTotalValues += dbl;
             newD.setSummery(false);
             listz.add(newD);
 
         }
 
-        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
+//        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
 
     }
 
@@ -383,14 +386,14 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bt1", BillType.StoreTransferIssue);
+//        m.put("bt1", BillType.StoreTransferIssue);
         m.put("bt2", BillType.StoreIssue);
 
         if (fromDepartment != null) {
             m.put("fdept", fromDepartment);
             sql = "select bi from BillItem bi where bi.bill.department=:fdept "
                     + " and  bi.bill.createdAt between :fd "
-                    + " and :td and  (bi.bill.billType=:bt1 or bi.bill.billType=:bt2)  ";
+                    + " and :td and  (bi.bill.billType=:bt1)  ";
         } else {
             sql = "select bi from BillItem bi where bi.bill.createdAt "
                     + " between :fd and :td and (bi.bill.billType=:bt1 or bi.bill.billType=:bt2) ";
