@@ -1,0 +1,256 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Inward Charge" ></h:outputLabel>
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss" ></p:calendar>
+                            <h:outputLabel value="To : " ></h:outputLabel>
+                            <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss" ></p:calendar>
+                            <h:outputLabel value="Admission Type : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
+                                <f:selectItem itemLabel="All Admission Types"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="BHT Type : " ></h:outputLabel>
+                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
+                                <f:selectItem itemLabel="All BHT Types" />                           
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
+                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                                <f:selectItem itemLabel="All Credit Companies"/>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <p:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.processInwardCharges()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" >
+                                <pe:exporter target="tbl1,tbl2,tbl3,tbl4" type="xlsx" fileName="inward_charge" >
+                                </pe:exporter>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
+                        </p:panelGrid>
+
+
+                        <p:dataTable id="tbl1" value="#{inwardReportController1.billItemAdimissionFee}" var="rm" rowIndexVar="i" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20" >
+
+                            <f:facet name="header">
+
+                                <h:outputLabel value="Inward Charges"/>
+                                <h:outputLabel value=" : "/>
+                                <h:outputLabel value="#{inwardReportController1.fromDate}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" -- "/>
+                                <h:outputLabel value="#{inwardReportController1.toDate}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                            </f:facet>
+
+                            <f:facet name="header">
+                               
+                                    <br>
+                                        <h:outputLabel value="Room Charge" /> </br>
+                             
+                                
+                            </f:facet>
+
+                            <p:column headerText="No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{i+1}"/>                           
+                            </p:column>
+
+                            <p:column headerText="BHT">
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.bill.patientEncounter.bhtNo}"/>                              
+                            </p:column>
+
+                            <p:column headerText="Fee" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Fee"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.netValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                              
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{inwardReportController1.inwardAdmissionFeeNetValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Created At"  style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Created At"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.createdAt}" >
+                                    <f:convertDateTime pattern=" dd mm yyyy hh:mm"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:dataTable id="tbl2" value="#{inwardReportController1.billItemMediciene}" var="rm" rowIndexVar="i" rows="10" rowsPerPageTemplate="5,10,15,20" paginator="true">
+                            <f:facet name="header">
+                                <p:outputLabel value="Medicine" />
+                            </f:facet>
+
+                            <p:column headerText="No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{i+1}"/>                      
+                            </p:column>
+
+                            <p:column headerText="BHT">
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.bill.patientEncounter.bhtNo}"/>                 
+                            </p:column>
+
+                            <p:column headerText="Fee" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Fee"/> 
+                                </f:facet>
+                                <p:outputLabel value="#{rm.netValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{inwardReportController1.inwardMedicieneNetValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Created At" style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Created At"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.createdAt}" >
+                                    <f:convertDateTime pattern=" dd mm yyyy hh:mm"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:dataTable id="tbl3" value="#{inwardReportController1.billItemGeneralIssuing}" var="rm" rowIndexVar="i" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
+                            <f:facet name="header">
+                                <p:outputLabel value="General Issuing" />  
+                            </f:facet>
+
+                            <p:column headerText="No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{i+1}"/>                               
+                            </p:column>
+
+                            <p:column headerText="BHT">
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.bill.patientEncounter.bhtNo}"/>                     
+                            </p:column>
+
+                            <p:column headerText="Fee" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Fee"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.netValue}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{inwardReportController1.inwardGeneralIssuingNetValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Created At" style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Created At"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.createdAt}" >
+                                    <f:convertDateTime pattern=" dd mm yyyy hh:mm"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:dataTable id="tbl4" value="#{inwardReportController1.billItemOutSide}" var="rm" rowIndexVar="i" paginator="true" rows="10" rowsPerPageTemplate="5,10,15,20">
+                            <f:facet name="header">
+                                Out Side
+                            </f:facet>
+
+                            <p:column headerText="No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{i+1}"/>                             
+                            </p:column>
+
+                            <p:column headerText="BHT">
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.bill.patientEncounter.bhtNo}"/>                                
+                            </p:column>
+
+                            <p:column headerText="Fee" style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Fee"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.netValue}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{inwardReportController1.inwardOutSideNetValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Created At" style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Created At"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{rm.createdAt}" >
+                                    <f:convertDateTime pattern=" dd mm yyyy hh:mm"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

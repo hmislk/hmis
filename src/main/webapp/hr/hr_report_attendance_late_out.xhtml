@@ -55,12 +55,12 @@
                                 <p:column headerText="Department Name">
                                     #{ss.staff.department.name}
                                 </p:column>
-                                <p:column headerText="Staff Category" rendered="false">
+<!--                                <p:column headerText="Staff Category" >
                                     #{ss.staff.staffCategory.name}
                                 </p:column>
-                                <p:column headerText="Staff Designation" rendered="false">
+                                <p:column headerText="Staff Designation" >
                                     #{ss.staff.designation.name}
-                                </p:column>
+                                </p:column>-->
                                 <p:column headerText="Staff Roster" >
                                     #{ss.staff.roster.name}
                                 </p:column>
@@ -72,17 +72,17 @@
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                 </p:column> 
-                                <p:column headerText="Out Actual ">
+<!--                                <p:column headerText="Out Actual " >
                                     <h:outputLabel value="#{ss.endRecord.loggedRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                     <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
                                 </p:column>      
-                                <p:column headerText="Late Out Minute Logged">
+                                <p:column headerText="Late Out Minute Logged" >
                                     <h:outputLabel value="#{ss.lateOutLogged/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
-                                </p:column>   
+                                </p:column>   -->
                                 <p:column headerText="Out Checked ">
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>

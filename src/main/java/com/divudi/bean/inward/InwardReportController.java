@@ -285,6 +285,53 @@ public class InwardReportController implements Serializable {
         }
     }
 
+    public void calTotalDischargedNoChanges() {
+        if (patientEncounters == null) {
+            return;
+        }
+
+        total = 0;
+        paid = 0;
+        calTotal = 0;
+        creditPaid = 0;
+        creditUsed = 0;
+        for (PatientEncounter p : patientEncounters) {
+            p.setTransPaidByPatient(calPaidByPatient(p));
+            p.setTransPaidByCompany(calPaidByCompany(p));
+
+            total += p.getFinalBill().getNetTotal();
+            paid += p.getTransPaidByPatient();
+            creditPaid += p.getTransPaidByCompany();
+        }
+    }
+
+    private double calPaidByPatient(PatientEncounter patientEncounter) {
+        Map m = new HashMap();
+        String sql = "select sum(b.netTotal) from Bill b "
+                + " where b.patientEncounter=:pe"
+                + " and b.billType=:btp "
+                + " and b.createdAt <= :td ";
+
+        m.put("btp", BillType.InwardPaymentBill);
+        m.put("td", toDate);
+        m.put("pe", patientEncounter);
+        return getPeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    private double calPaidByCompany(PatientEncounter patientEncounter) {
+        Map m = new HashMap();
+        String sql = "select sum(b.netValue) "
+                + "  from BillItem b "
+                + " where b.bill.patientEncounter=:pe"
+                + " and b.bill.billType=:btp "
+                + " and b.bill.createdAt <= :td ";
+
+        m.put("btp", BillType.CashRecieveBill);
+        m.put("td", toDate);
+        m.put("pe", patientEncounter);
+        return getPeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
     public void fillDischargeBookPaymentNotFinalized() {
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
@@ -348,9 +395,94 @@ public class InwardReportController implements Serializable {
 
         calTotalDischarged();
     }
-    
-    public  void makeListNull(){
-        billItems=null;
+
+    public void fillDischargeBookPaymentFinalizedNoChanges() {
+        Map m = new HashMap();
+        String sql = "select b from PatientEncounter b "
+                + " where b.retired=false "
+                + " and b.discharged=true "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.creditCompany =:ins ";
+            m.put("ins", institution);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        calTotalDischargedNoChanges();
+    }
+
+    public void fillDischargeBookPaymentFinalizedNoChangesOnlyDue() {
+        Map m = new HashMap();
+        String sql = "select b from PatientEncounter b "
+                + " where b.retired=false "
+                + " and b.discharged=true "
+                + " and b.paymentFinalized=true "
+                + " and b.dateOfDischarge between :fd and :td ";
+
+        if (admissionType != null) {
+            sql += " and b.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.creditCompany =:ins ";
+            m.put("ins", institution);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+        sql += " order by  b.dateOfDischarge";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        calTotalDischargedNoChanges();
+
+        List<PatientEncounter> list = patientEncounters;
+        patientEncounters = null;
+        patientEncounters = new ArrayList<>();
+        for (PatientEncounter p : list) {
+            p.setTransPaidByPatient(calPaidByPatient(p));
+            p.setTransPaidByCompany(calPaidByCompany(p));
+
+            double paidValue = p.getTransPaidByPatient() + p.getTransPaidByCompany();
+            double dueValue = p.getFinalBill().getNetTotal() - paidValue;
+
+            if (dueValue != 0) {
+                total += p.getFinalBill().getNetTotal();
+                paid += p.getTransPaidByPatient();
+                creditPaid += p.getTransPaidByCompany();
+
+                patientEncounters.add(p);
+            }
+
+        }
+
+    }
+
+    public void makeListNull() {
+        billItems = null;
     }
 
     public void updateOutSideBill() {
@@ -396,7 +528,7 @@ public class InwardReportController implements Serializable {
         }
 
     }
-    
+
     public void createOutSideBillsByDischargeDate() {
         makeListNull();
         String sql;
@@ -931,5 +1063,5 @@ public class InwardReportController implements Serializable {
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
     }
-    
+
 }

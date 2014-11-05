@@ -99,6 +99,12 @@ public class CashSummeryController implements Serializable {
     private double inwardProfTot;
     @Inject
     private AdmissionTypeController admissionTypeController;
+    boolean paginator;
+    
+    public void makePaginatorFalse(){
+        paginator=false;
+    }
+    
 
     public long getCountTotal() {
         long countTotal = 0;

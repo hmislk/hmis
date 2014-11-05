@@ -70,28 +70,28 @@
                         </p:column>
                         <p:column headerText="Cash" style="text-align: right; ">
                             <h:outputLabel value="#{commonReport.userBillsOwn.cash}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Credit" style="text-align: right; " >
                             <h:outputLabel value="#{commonReport.userBillsOwn.credit}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
 
                         </p:column>
                         <p:column  headerText="C Card" style="text-align: right; ">
                             <h:outputLabel value="#{commonReport.userBillsOwn.card}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column> 
                         <p:column  headerText="Cheque" style="text-align: right; ">
                             <h:outputLabel value="#{commonReport.userBillsOwn.cheque}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column> 
                         <p:column  headerText="Slip" style="text-align: right; ">
                             <h:outputLabel value="#{commonReport.userBillsOwn.slip}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column> 
                         <p:column/>
@@ -142,23 +142,23 @@
                     <h:panelGrid columns="2" style="min-width: 100%;" >
                         <h:outputLabel value="Final Credit Total : "/>
                         <h:outputLabel style="font-weight: bold;float: right; "  value="#{commonReport.finalCreditTotal}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <h:outputLabel value="Final Credit Card Total : "/>
                         <h:outputLabel style="font-weight: bold;float: right; "  value="#{commonReport.finalCreditCardTotal}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <h:outputLabel value="Final Cheque Total : "/>
                         <h:outputLabel value="#{commonReport.finalChequeTot}" style="font-weight: bold;float: right; "  >
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <h:outputLabel value="Final Slip Total : "/>
                         <h:outputLabel  value="#{commonReport.finalSlipTot}" style="font-weight: bold;float: right; "   >
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <h:outputLabel value="Final Cash Total : "/>
                         <h:outputLabel style="font-weight: bold;float: right; "  value="#{commonReport.finalCashTotal}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </h:panelGrid>
 

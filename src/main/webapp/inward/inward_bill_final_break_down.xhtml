@@ -83,7 +83,7 @@
                             <p:column headerText="Qty" style="text-align: right;">
                                 <h:outputLabel value="#{iss.qty}"/>                                
                             </p:column> 
-                            <p:column headerText="Total Value" style="text-align: right;">
+                            <p:column  headerText="Total Value" style="text-align: right;">
                                 <h:outputLabel value="#{iss.grossValue+iss.marginValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -151,6 +151,128 @@
                     </p:panel>
                     <p:spacer height="30"/>
                     <breakDown:professionalFee/>
+                    <p:spacer height="30"/>
+                    <p:panel header="Paid by Patient">
+                        <p:dataTable id="pay"   
+                                         value="#{bhtSummeryFinalizedController.paymentBills}" 
+                                         var="p"
+                                         rowStyleClass="#{(p.netTotal ne 0 )                                                                       
+                                                          and                                                                        
+                                                          ((p.billClass eq 'class com.divudi.entity.BilledBill')
+                                                          or 
+                                                          (p.billedBill eq null and p.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}" >
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{p.insId}"/>
+
+                                </p:column>
+                                <p:column style="text-align: right;" headerText="Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{p.netTotal}">
+                                       <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}">
+                                         <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>     
+                                <p:column headerText="Created At" exportable="false">
+                                    <h:outputLabel value="#{p.createdAt}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>                                                   
+                                    <br/>
+                                    <h:panelGroup rendered="#{p.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
+                                                       value="#{p.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Billed By" exportable="false">
+                                    <h:outputLabel value="#{p.creater.webUserPerson.name}"/>     
+                                    <br/>
+                                    <h:panelGroup rendered="#{p.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled By " />
+                                        <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
+                                                       value="#{p.cancelledBill.creater.webUserPerson.name}" >                                       
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>   
+                                <p:column headerText="Edited" exportable="false">
+                                    <h:panelGroup  rendered="#{p.editor ne null}" >
+                                        <h:outputLabel style="color: #008000;" value="Edited By " />
+                                        <h:outputLabel style="color: #008000;" 
+                                                       value="#{p.editor.webUserPerson.name}" >
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup  rendered="#{p.editedAt ne null}" >
+                                        <h:outputLabel style="color: #008000;" value="Edited at " />
+                                        <h:outputLabel style="color: #008000;" 
+                                                       value="#{p.editedAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Checked" exportable="false">
+                                    <h:panelGroup  rendered="#{p.checkedBy ne null}" >
+
+                                        <h:outputLabel style="color: #008000;" 
+                                                       value="#{p.checkedBy.webUserPerson.name}" >
+                                        </h:outputLabel>
+                                    </h:panelGroup><br/>
+                                    <h:panelGroup  rendered="#{p.checkeAt ne null}" >
+
+                                        <h:outputLabel style="color: #008000;" 
+                                                       value="#{p.checkeAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>                        
+                                </p:column>
+
+                            </p:dataTable>
+                    </p:panel>
+                    
+                    <p:spacer height="30"/>
+                    <p:panel header="Credit Company Payment">
+                        <p:dataTable id="cre"  
+                                         value="#{bhtSummeryFinalizedController.creditPayment}" 
+                                         var="cre">
+                                
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{cre.bill.insId}"/>
+
+                                </p:column>
+                                <p:column style="text-align: right;" headerText="Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{cre.netValue}"/>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{bhtSummeryFinalizedController.creditCompanyPaymentTotal}"></h:outputLabel>
+                                    </f:facet>
+                                </p:column>     
+                                
+                                <p:column headerText="Created At" exportable="false">
+                                    <h:outputLabel value="#{cre.createdAt}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                    </h:outputLabel>
+                                    
+                                </p:column>
+
+                            </p:dataTable>
+                    </p:panel>
+                    
                 </p:panel>
 
             </p:panel>

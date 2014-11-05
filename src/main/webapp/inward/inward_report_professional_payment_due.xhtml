@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+
+                    <!--sdfsdfsdf-->
+                    <!--Done for Demonstration-->
+
+                    <p:panel header="Search Bills" >
+                        <f:facet name="header"></f:facet>
+
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                            </p:calendar>
+
+                            <h:outputLabel value="Speciality"/>
+                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
+
+                            <h:outputLabel value="Doctor Name"/>      
+
+                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
+
+
+                            <h:outputLabel value="Admission Type"/>
+                            <p:selectOneMenu value="#{searchController.searchKeyword.admissionType}">
+                                <f:selectItem itemLabel="Select Admission Type"/>
+                                <f:selectItems  value="#{mdInwardReportController.admissionTy}" var="myItem" 
+                                                itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Payment Method"/>
+                            <p:selectOneMenu   id="cmbPs" value="#{searchController.searchKeyword.paymentMethod}">
+                                <f:selectItem itemLabel="Select" />                           
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                           
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Institution"/>
+                            <p:selectOneMenu  id="lstCc"   value="#{searchController.searchKeyword.ins}" >
+                                <f:selectItem itemLabel="All Credit Companies"/>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <h:outputLabel value="BHT No"/>
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{searchController.searchKeyword.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientAll}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
+                                </p:column>
+                            </p:autoComplete>
+
+
+
+                        </h:panelGrid>
+
+                       
+                        <p:panelGrid columns="3">
+                          
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeReportInward()}" onclick="onSubmitButton();" />
+
+                                <p:defaultCommand target="btnSearch" />
+
+                                <p:commandButton value="Excel" ajax="false" style="float: right;">
+                                    <pe:exporter type="xlsx" target="tblFee" fileName="doctor_payment_due_report_inward"/>
+                                </p:commandButton>
+                            
+                        </p:panelGrid>
+
+
+
+                        <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                            
+                            
+                <f:facet name="header">
+                     <h:outputLabel value="Doctor Dayment Due inward Deport : "/>
+                    <h:outputLabel value="#{searchController.fromDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="--"/>
+                    <h:outputLabel value="#{searchController.toDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                </f:facet>
+
+                            <p:column headerText="No" styleClass="alignTop">
+                                <f:facet name="header">
+                                    <p:outputLabel value="No"/>
+                                </f:facet>
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+
+                            <p:column>
+
+                                <p:commandButton ajax="false" value="Pay Professional" action="inward_bill_staff_payment" onclick="onSubmitButton();" >
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{inwardStaffPaymentBillController.currentStaff}"/>
+                                </p:commandButton>
+                            </p:column>
+
+                            <p:column headerText="Speciality">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Speciality"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bf.staff.speciality.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Doctor" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Doctor"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bf.staff.person.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Patient" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Patient"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
+                            </p:column>
+
+                            <p:column headerText="Bill No">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bill No"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bf.bill.insId}">
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bht No">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bht No"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bf.bill.patientEncounter.bhtNo}">
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="BilledAt" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="BilledAt"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bf.bill.createdAt}">
+                                </h:outputLabel>
+                            </p:column>
+
+
+                            <p:column headerText="Test" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Test"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bf.billItem.item.name}" />
+                            </p:column>
+
+                            <p:column  headerText="Charge" style="text-align: right;" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Charge"/>
+                                </f:facet>
+                                <h:outputLabel value="#{bf.feeValue}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

@@ -101,7 +101,7 @@
                                             <p:column>
                                                 <h:outputLabel value="#{ix.total}" 
                                                                rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>  
                                             <p:ajax event="itemSelect" process="acIx ct" update="@all" />
@@ -119,7 +119,7 @@
 
                                         <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
                                                     id="billedTimeStamp"
-                                                    pattern="dd MM yyyy hh mm ss a" >                               
+                                                    pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
                                         </p:calendar>
 
                                         <p:watermark for="acIx" value="Item"/>
@@ -198,7 +198,7 @@
                                                 <h:inputText autocomplete="off" value="#{bif.feeGrossValue}" 
                                                              disabled="#{!bif.billItem.item.userChangable
                                                                          or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                     <f:ajax event="keyup" execute="@this" 
                                                             render=" :#{p:component('tblRequests')}  
                                                             :#{p:component('pBillDetails')} matrix feeValue" 
@@ -209,14 +209,14 @@
                                             <p:column>
                                                 <f:facet name="header">Matrix Value</f:facet>  
                                                 <h:outputLabel id="matrix" value="#{bif.feeMargin}">
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
 
                                             <p:column >
                                                 <f:facet name="header">Fee Value</f:facet>
                                                 <h:outputLabel id="feeValue"  value="#{bif.feeValue}"  >
-                                                    <f:convertNumber pattern="#,000.00" />
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
 

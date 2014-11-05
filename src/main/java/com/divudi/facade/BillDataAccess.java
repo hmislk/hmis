@@ -5,7 +5,6 @@
 package com.divudi.facade;
 
 import com.divudi.entity.Bill;
-import com.divudi.entity.pharmacy.AdjustmentCategory;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,7 +20,7 @@ public class BillDataAccess extends AbstractFacade<Bill> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public BillDataAccess() {

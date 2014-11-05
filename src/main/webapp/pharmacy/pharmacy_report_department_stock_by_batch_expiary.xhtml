@@ -24,11 +24,11 @@
 
                             <p:spacer width="10" ></p:spacer>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsStock.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{reportsStock.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
 
                             <p:spacer width="10" ></p:spacer>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsStock.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{reportsStock.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
 
                             <p:commandButton ajax="false" value="Three Months Expiary" actionListener="#{reportsStock.fillThreeMonthsExpiary()}" ></p:commandButton>
                             <p:commandButton ajax="false" value="Six Months Expiary" actionListener="#{reportsStock.fillSixMonthsExpiary()}" ></p:commandButton>

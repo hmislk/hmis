@@ -22,7 +22,7 @@ public class AssetCategoryFacade extends AbstractFacade<AssetCategory> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public AssetCategoryFacade() {

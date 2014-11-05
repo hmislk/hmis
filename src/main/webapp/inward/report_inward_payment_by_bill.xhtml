@@ -19,9 +19,9 @@
                         <h:panelGrid columns="6" >
                             
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
@@ -138,42 +138,42 @@
                                         <p:column footerText="#{mdInwardReportController.billedCashValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.billedCashValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
                                         <p:column footerText="#{mdInwardReportController.billedCreditCardValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.billedCreditCardValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
                                         <p:column footerText="#{mdInwardReportController.billedCreditValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.billedCreditValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
                                         <p:column footerText="#{mdInwardReportController.billedChequeValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.billedChequeValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
                                         <p:column footerText="#{mdInwardReportController.billedSlipValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.billedSlipValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
                                         <p:column footerText="#{mdInwardReportController.billedAgentValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.billedAgentValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
 
@@ -271,7 +271,7 @@
                                         <p:column footerText="#{mdInwardReportController.cancelledCashValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledCashValue}">
-                                                    <f:convertNumber pattern="#,000.00"></f:convertNumber>
+                                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -279,35 +279,35 @@
                                         <p:column footerText="#{mdInwardReportController.cancelledCreditCardValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledCreditCardValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
                                         <p:column footerText="#{mdInwardReportController.cancelledCreditValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledCreditValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
                                         <p:column footerText="#{mdInwardReportController.cancelledChequeValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledChequeValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
                                         <p:column footerText="#{mdInwardReportController.cancelledSlipValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledSlipValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         
                                         <p:column footerText="#{mdInwardReportController.cancelledAgentValue}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledAgentValue}">
-                                                <f:convertNumber pattern="#,000.00"></f:convertNumber></p:outputLabel>
+                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
 

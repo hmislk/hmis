@@ -54,38 +54,55 @@
                                 <p:commandButton value="(1) Shift Report" 
                                                  action="hr_report_staff_shift" 
                                                  actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="(2) Entered Shift Report" 
+                                                 action="hr_shift_report" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
                             </h:panelGrid>
                         </p:panel>
-                        
-                         <p:panel header="Finger Print Records">
+
+                        <p:panel header="Finger Print Records">
                             <h:panelGrid columns="1">
                                 <p:commandButton value="(1) Finger Print Record By Logged" 
                                                  action="hr_report_finger_print_record_logged" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
-                                 <p:commandButton value="(2) Finger Print Record By Verified" 
+                                <p:commandButton value="(2) Finger Print Record By Verified" 
                                                  action="hr_report_finger_print_record_verified" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
                             </h:panelGrid>
                         </p:panel>
-                        <p:panel header="Extra Time">
-                              <p:commandButton value="(1) Over Time Report " 
-                                                 action="hr_report_over_time" 
-                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" /> 
+                        <p:panel header="Head Count">
+                            <p:commandButton value="(1) Head Count " 
+                                             action="hr_report_head_count" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
+
+
                         </p:panel>
                         <p:panel header="Leave" >
-                            
+                            <p:commandButton value="(1) Leave Report " 
+                                             action="hr_report_leave" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
+                            <p:commandButton value="(2) Leave Report Summery " 
+                                             action="hr_report_leave_summery" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
                         </p:panel>
 
-                        <p:panel header="Extra Working Time">
-                             <p:commandButton value="(1) Over Time" 
-                                                 action="hr_report_over_time" 
-                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" /> 
-                            
+                        <p:panel header="Working Time">
+                            <p:commandButton value="(1) Working Time " 
+                                             action="hr_report_working_time" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
+                            <p:commandButton value="(2) Over Time" 
+                                             action="hr_report_over_time" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
+
                         </p:panel>
 
                     </h:panelGrid>

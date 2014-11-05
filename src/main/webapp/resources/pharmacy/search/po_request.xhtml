@@ -97,7 +97,7 @@
             <p:column headerText="Net Value" filterBy="#{bill.netTotal}" style="text-align: right;"  >
                 <h:commandLink action="pharmacy_reprint_order_request" >
                     <h:outputLabel value="#{bill.netTotal}" >
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>

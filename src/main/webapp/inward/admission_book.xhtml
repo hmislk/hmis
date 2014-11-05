@@ -19,9 +19,9 @@
                         <h:panelGrid columns="6" >
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
@@ -111,7 +111,7 @@
                                         <h:outputLabel value="Admited By"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -120,7 +120,7 @@
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfAdmission}"  >
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -194,7 +194,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Total">
+                                <p:column style="text-align: right;"  headerText="Total">
                                     <h:outputLabel value="#{i.transTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -205,7 +205,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Paid">
+                                <p:column style="text-align: right;"  headerText="Paid">
                                     <h:outputLabel value="#{i.transPaid}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -216,7 +216,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Due">
+                                <p:column style="text-align: right;" headerText="Due">
                                     <h:outputLabel value="#{i.transTotal-i.transPaid}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>

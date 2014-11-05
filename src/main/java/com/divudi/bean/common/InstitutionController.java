@@ -52,6 +52,7 @@ public class InstitutionController implements Serializable {
     String selectText = "";
     private Boolean codeDisabled = false;
     private InstitutionType[] institutionTypes;
+    List<Institution> institution;
 
     public List<Institution> getSelectedItems() {
         if (selectText.trim().equals("")) {
@@ -69,8 +70,15 @@ public class InstitutionController implements Serializable {
 //    }
     public List<Institution> completeIns(String qry) {
         String sql;
-        sql = "select c from Institution c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-        return getFacade().findBySQL(sql);
+        HashMap hm=new HashMap();
+        sql = "select c "
+                + " from Institution c "
+                + " where c.retired=false "
+                + " and (upper(c.name) like :q "
+                + " or upper(c.institutionCode) like :q ) "
+                + " order by c.name";
+        hm.put("q", "%"+ qry.toUpperCase()+"%");
+        return getFacade().findBySQL(sql,hm);
     }
 
     public List<Institution> completeCompany(String qry) {
@@ -81,7 +89,17 @@ public class InstitutionController implements Serializable {
 
         return getFacade().findBySQL(sql, hm);
     }
-    List<Institution> institution;
+
+    
+    
+    public List<Institution> CompleteCompanyBydepartment(String qry) {
+        String sql;
+        HashMap hm = new HashMap();
+        hm.put("type", InstitutionType.Company);
+        sql = "select c from Institution c where c.retired=false and c.institutionType=:type and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+
+        return getFacade().findBySQL(sql, hm);
+    }
 
     public List<Institution> completeCreditCompany(String qry) {
         String sql;

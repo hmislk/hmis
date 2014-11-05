@@ -51,10 +51,10 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                <pe:exporter type="xlsx" target="tbl,tbl2" fileName="newly_added_report"  />
+                                <pe:exporter type="xlsx" target="tbl,tbl3,tbl4" fileName="newly_added_report"  />
                             </p:commandButton>  
                         </h:panelGrid>
-                        
+
 
                     </p:panel>
 
@@ -90,58 +90,88 @@
                             </p:column>
                             <p:column headerText="Total Value" style="text-align: right;">
                                 <h:outputLabel  value="#{bip.grossValue}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
                                     <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.grantTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>                            
                             <p:column headerText="Discount Value"  style="text-align: right;">
                                 <h:outputLabel  value="#{bip.discount}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
                                     <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.discount}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Net Value"  style="text-align: right;">
+                            <p:column headerText="Net Value"  style="text-align: right;" >
                                 <h:outputLabel  value="#{bip.netValue}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
                                     <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.netTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
 
                         </p:dataTable>
 
-                        <p:dataTable value="#{bhtSummeryFinalizedController.bill.backwardReferenceBills}" var="pay" id="tbl2">
+                        <p:dataTable value="#{bhtSummeryFinalizedController.paidbyPatientBillList}" var="pay" id="tbl3">
                             <f:facet name="header">
                                 <h:outputLabel value="Payement Detail"/>
                             </f:facet>
                             <p:column headerText="Bill No">
-                                <h:outputLabel value="#{pay.insId}"></h:outputLabel>                                
+                                <h:outputLabel  value="#{pay.insId}"></h:outputLabel>                                
                             </p:column>
-                            <p:column headerText="Amount">
-                                <h:outputLabel value="#{pay.netTotal}"></h:outputLabel>
-                                
+                            <p:column headerText="Amount" style="text-align: right;" >
+                                <h:outputLabel  value="#{pay.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer" >
+                                  
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+
                             </p:column>
-                            
+
                         </p:dataTable>
-                        
+
+                        <p:dataTable value="#{bhtSummeryFinalizedController.billItems}" var="cre" id="tbl4">
+                            <f:facet name="header">
+                                <h:outputLabel value="Credit Company Payment Detail"/>
+                            </f:facet>
+                            <p:column headerText="Bill No">
+                                <h:outputLabel value="#{cre.insId}"></h:outputLabel>                                
+                            </p:column>
+                            <p:column headerText="Amount" style="text-align: right;" >
+                                <h:outputLabel value="#{cre.netValue}">
+                                 <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.billItemNetValue}"></h:outputLabel>
+                                </f:facet>
+
+                            </p:column>
+
+                        </p:dataTable>
+
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Paid By Patient"/>
                             <h:outputLabel value="#{bhtSummeryFinalizedController.bill.paidAmount}"/>
+                            <h:outputLabel value="Credit Payment"/>
+                            <h:outputLabel value="#{bhtSummeryFinalizedController.billItemNetValue}"/>
                             <h:outputLabel value="Due"/>
                             <h:outputLabel value="#{bhtSummeryFinalizedController.bill.netTotal
-                                                    -bhtSummeryFinalizedController.bill.paidAmount}"/>
+                                                    -bhtSummeryFinalizedController.bill.paidAmount
+                                                    -bhtSummeryFinalizedController.billItemNetValue}"/>
                         </h:panelGrid>
                     </p:panel>
 

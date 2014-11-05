@@ -55,7 +55,7 @@
                         </p:column>
                         <p:column headerText="Cash Payment" style="text-align: right;" rendered="#{commonReport.paymentCashTot!=0.0}"  >
                             <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
                         </p:column>
@@ -64,7 +64,7 @@
                                 Cash Total:
                             </p:column>
                             <p:column style="text-align: right;">
-                                <h:outputLabel value="#{commonReport.paymentCashTot}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                                <h:outputLabel value="#{commonReport.paymentCashTot}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
                             </p:column>
                         </p:summaryRow>
                         

@@ -48,7 +48,7 @@
                         <p:panelGrid columns="2">
                             <h:outputLabel value="Total Payments"/>
                             <h:outputLabel value="#{inwardRefundController.paidAmount}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:panelGrid>
                     </p:panel>
@@ -76,7 +76,7 @@
                         <h:panelGrid columns="2">
                             <p:outputLabel value="Amount"/>
                             <p:inputText autocomplete="off" value="#{inwardRefundController.current.total}">
-                                 <f:convertNumber pattern="#,000.00" />
+                                 <f:convertNumber pattern="#,##0.00" />
                             </p:inputText>
                             <p:commandButton id="btnRefund" ajax="false" value="Refund" 
                                              action="#{inwardRefundController.pay}"/>

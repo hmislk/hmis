@@ -12,7 +12,6 @@ import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -64,7 +63,7 @@ public class StoreTransferReceiveController implements Serializable {
     private BillItemFacade billItemFacade;
     ////
     @EJB
-    private PharmacyBean pharmacyBean;
+    StoreBean storeBean;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -171,11 +170,11 @@ public class StoreTransferReceiveController implements Serializable {
             double qty = Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit());
 
             //    Deduct Staff Stock
-            boolean returnFlag = getPharmacyBean().deductFromStock(tmpPh, Math.abs(qty), getIssuedBill().getToStaff());
+            boolean returnFlag = getStoreBean().deductFromStock(tmpPh, Math.abs(qty), getIssuedBill().getToStaff());
 
             if (returnFlag) {
                 //     Add Stock To Department
-                Stock addedStock = getPharmacyBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
+                Stock addedStock = getStoreBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
 
                 tmpPh.setStock(addedStock);
             } else {
@@ -184,7 +183,7 @@ public class StoreTransferReceiveController implements Serializable {
             }
 
 //            //Temprory Solution
-//            Stock addedStock = getPharmacyBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
+//            Stock addedStock = getStoreBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
 //            tmpPh.setStock(addedStock);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
 
@@ -229,7 +228,7 @@ public class StoreTransferReceiveController implements Serializable {
     }
 
 //    public void onEdit(BillItem tmp) {
-//        double availableStock = getPharmacyBean().getStockQty(tmp.getPharmaceuticalBillItem().getItemBatch(), getReceivedBill().getFromStaff());
+//        double availableStock = getStoreBean().getStockQty(tmp.getPharmaceuticalBillItem().getItemBatch(), getReceivedBill().getFromStaff());
 //        double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
 //        if (availableStock < tmp.getQty()) {
 //            tmp.setQty(oldValue);
@@ -240,7 +239,7 @@ public class StoreTransferReceiveController implements Serializable {
 //    }
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
-//        double availableStock = getPharmacyBean().getStockQty(tmp.getPharmaceuticalBillItem().getStaffStock(), getIssuedBill().getToStaff());
+//        double availableStock = getStoreBean().getStockQty(tmp.getPharmaceuticalBillItem().getStaffStock(), getIssuedBill().getToStaff());
         //   double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
         if (tmp.getPharmaceuticalBillItem().getStaffStock().getStock() < tmp.getQty()) {
             tmp.setTmpQty(0.0);
@@ -289,12 +288,12 @@ public class StoreTransferReceiveController implements Serializable {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
+    public StoreBean getStoreBean() {
+        return storeBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
+    public void setStoreBean(StoreBean storeBean) {
+        this.storeBean = storeBean;
     }
 
     public SessionController getSessionController() {

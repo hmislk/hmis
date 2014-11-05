@@ -21,6 +21,7 @@ import javax.persistence.criteria.Predicate;
 /**
  *
  * @author Dr. M H B Ariyaratne <buddhika.ari at gmail.com>
+ * @param <T>
  */
 public abstract class AbstractFacade<T> {
 
@@ -171,7 +172,7 @@ public abstract class AbstractFacade<T> {
             } else {
                 qry.setParameter(pPara, pVal);
             }
-            // System.out.println("Parameter " + pPara + "\tVal" + pVal);
+            
         }
         return qry.getResultList();
     }
@@ -232,6 +233,30 @@ public abstract class AbstractFacade<T> {
         }
         return qry.getSingleResult();
     }
+    
+    
+    public List<Date> findDateListBySQL(String temSQL, Map<String, Object> parameters) {
+        return findDateListBySQL(temSQL, parameters, TemporalType.DATE);
+    }
+    
+    public List<Date> findDateListBySQL(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<Date> qry = getEntityManager().createQuery(temSQL, Date.class);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal = m.getValue();
+            String pPara = (String) m.getKey();
+            if (pVal instanceof Date) {
+                Date d = (Date) pVal;
+                qry.setParameter(pPara, d, tt);
+            } else {
+                qry.setParameter(pPara, pVal);
+            }
+            //    //System.out.println("Parameter " + pPara + "\tVal" + pVal);
+        }
+        return qry.getResultList();
+    }
 
     public List<Object> findObjectBySQL(String temSQL) {
         TypedQuery<Object> qry = getEntityManager().createQuery(temSQL, Object.class);
@@ -283,6 +308,31 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    public Date findDateByJpql(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<Date> qry = (TypedQuery<Date>) getEntityManager().createQuery(temSQL);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal = m.getValue();
+            String pPara = (String) m.getKey();
+            if (pVal instanceof Date) {
+//                //System.out.println("pval is a date");
+                Date d = (Date) pVal;
+                qry.setParameter(pPara, d, tt);
+            } else {
+//                //System.out.println("p val is NOT a date");
+                qry.setParameter(pPara, pVal);
+            }
+//            //System.out.println("Parameter " + pPara + "\t and Val\t " + pVal);
+        }
+        try {
+            return (Date) qry.getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
     public long findLongByJpql(String temSQL, Map<String, Object> parameters) {
         return findLongByJpql(temSQL, parameters, TemporalType.DATE);
     }
@@ -314,6 +364,11 @@ public abstract class AbstractFacade<T> {
         return findDoubleByJpql(temSQL, parameters, TemporalType.DATE);
     }
 
+    
+    public Date findDateByJpql(String temSQL, Map<String, Object> parameters) {
+        return findDateByJpql(temSQL, parameters, TemporalType.DATE);
+    }
+    
     public List<T> findBySQL(String temSQL, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
@@ -352,6 +407,27 @@ public abstract class AbstractFacade<T> {
 //            //System.out.println("Parameter " + pPara + "\tVal" + pVal);
         }
         qry.setMaxResults(maxRecords);
+        qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+        return qry.getResultList();
+    }
+    
+       public List<T> findBySQLWithoutCache(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal = m.getValue();
+            String pPara = (String) m.getKey();
+            if (pVal instanceof Date) {
+                Date d = (Date) pVal;
+                qry.setParameter(pPara, d, tt);
+            } else {
+                qry.setParameter(pPara, pVal);
+            }
+//            //System.out.println("Parameter " + pPara + "\tVal" + pVal);
+        }
+//        qry.setMaxResults(maxRecords);
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
         return qry.getResultList();
     }

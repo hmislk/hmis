@@ -238,7 +238,7 @@
                     </tr>
 
                     <tr>
-                        <td colspan="4" >
+                        <td colspan="4" class="billline">
                             <h:outputLabel value="-----------------------------------------------"   />                           
                         </td>
                     </tr>
@@ -369,7 +369,10 @@
             <div class="footer">
                 <br/>
                 THANK YOU. PLEASE COME AGAIN<br/>
-                #{labels.pharmacyBillMessage1}No Return Accepted<br/>
+                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
+                <h:panelGroup  rendered="#{sessionController.institutionPreference.pharmacyBillFooter ne null}">
+                    <br/>
+                </h:panelGroup>
                 Software by www.lakmedi.com - 0776285007<br/>
             </div>
 

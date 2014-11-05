@@ -71,12 +71,12 @@
                                 </p:column>
                                 <p:column headerText="Paid Amount">
                                     <h:outputLabel value="#{ix.paidAmount}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Value">
                                     <h:outputLabel value="#{ix.netTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <f:ajax event="itemSelect" execute="@this" 
@@ -84,7 +84,7 @@
                                         listener="#{pharmacyDealorBill.selectListener()}"/>
                             </p:autoComplete>
                             <p:inputText autocomplete="off" id="netValue" value="#{pharmacyDealorBill.currentBillItem.netValue}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </p:inputText>
                             <p:commandButton id="btnAddIx" value="Add" action="#{pharmacyDealorBill.addToBill()}" ajax="false"/>
                         </h:panelGrid>
@@ -106,27 +106,27 @@
                             </p:column> 
                             <p:column headerText="GRN Amount">
                                 <p:outputLabel value="#{-b.referenceBill.netTotal}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="GRN Return Amount">
                                 <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Paid Amount">
                                 <p:outputLabel value="#{b.referenceBill.paidAmount}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Recievable Amount">
                                 <p:outputLabel value="#{0-(b.referenceBill.netTotal+b.referenceBill.tmpReturnTotal+b.referenceBill.paidAmount)}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Paying Amount">
                                 <p:outputLabel value="#{b.netValue}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Remove">
@@ -140,7 +140,7 @@
                         <p:panelGrid  columns="2">
                             <p:outputLabel value="Net Total" />
                             <p:outputLabel id="tot" value="#{pharmacyDealorBill.current.netTotal}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
 
                             <p:outputLabel value="Description"/>

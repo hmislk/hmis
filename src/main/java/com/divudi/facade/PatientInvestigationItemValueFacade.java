@@ -20,7 +20,7 @@ public class PatientInvestigationItemValueFacade extends AbstractFacade<Investig
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public PatientInvestigationItemValueFacade() {

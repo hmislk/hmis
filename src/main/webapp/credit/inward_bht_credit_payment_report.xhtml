@@ -38,14 +38,9 @@
                             <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
-                                                itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
+                                                itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
                             </p:selectOneMenu>
-
-
                         </h:panelGrid>
-
-
-
 
                         <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.bhtCreditPayments()}" onclick="onSubmitButton();"  ></p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
@@ -61,6 +56,12 @@
                                 </p:column>
                                 <p:column headerText="Patient ">
                                     #{rm.patientEncounter.patient.person.name}
+                                </p:column>
+                                <p:column headerText="Net Value">
+                                    <h:outputLabel value="#{rm.netValue}"></h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController1.billItemNetValue}"></h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Admitted">
                                     #{rm.patientEncounter.dateOfAdmission}

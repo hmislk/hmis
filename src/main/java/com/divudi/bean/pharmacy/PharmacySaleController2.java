@@ -162,6 +162,10 @@ public class PharmacySaleController2 implements Serializable {
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
 
+    public String pharmacyRetailSale() {
+        return "/pharmacy/pharmacy_bill_retail_sale_2";
+    }
+
     public void searchPatientListener() {
         System.err.println("1");
         //  createPaymentSchemeItems();
@@ -385,6 +389,24 @@ public class PharmacySaleController2 implements Serializable {
 
     public List<Stock> getReplaceableStocks() {
         return replaceableStocks;
+    }
+
+    Integer intQty;
+
+    public Integer getIntQty() {
+        if (qty == null) {
+            return null;
+        }
+        return qty.intValue();
+    }
+
+    public void setIntQty(Integer intQty) {
+        this.intQty = intQty;
+        if (intQty == null) {
+            setQty(null);
+        } else {
+            setQty(intQty.doubleValue());
+        }
     }
 
     public Double getQty() {
@@ -920,7 +942,7 @@ public class PharmacySaleController2 implements Serializable {
     }
 
     private void savePreBillFinally(Patient pt) {
-      
+
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 

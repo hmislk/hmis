@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="ConsultantEditDlg" widgetVar="ConsultantEditDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.EditConsultantTitle}">
+            <h:form id="ConsultantEditForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{consultantController.selected != null}">
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_baImage}" for="baImage" />
+                        <p:inputTextarea rows="4" cols="30" id="baImage" value="#{consultantController.selected.baImage}" title="#{bundle.EditConsultantTitle_baImage}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_fileName}" for="fileName" />
+                        <p:inputText id="fileName" value="#{consultantController.selected.fileName}" title="#{bundle.EditConsultantTitle_fileName}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_fileType}" for="fileType" />
+                        <p:inputText id="fileType" value="#{consultantController.selected.fileType}" title="#{bundle.EditConsultantTitle_fileType}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_id}" for="id" />
+                        <p:inputText id="id" value="#{consultantController.selected.id}" title="#{bundle.EditConsultantTitle_id}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_person}" for="person" />
+                        <p:selectOneMenu id="person" value="#{consultantController.selected.person}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{personController.itemsAvailableSelectOne}"
+                                           var="personItem"
+                                           itemValue="#{personItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_creater}" for="creater" />
+                        <p:selectOneMenu id="creater" value="#{consultantController.selected.creater}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{webUserController.itemsAvailableSelectOne}"
+                                           var="createrItem"
+                                           itemValue="#{createrItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_createdAt}" for="createdAt" />
+                        <p:calendar id="createdAt" pattern="MM/dd/yyyy HH:mm:ss" value="#{consultantController.selected.createdAt}" title="#{bundle.EditConsultantTitle_createdAt}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_retirer}" for="retirer" />
+                        <p:selectOneMenu id="retirer" value="#{consultantController.selected.retirer}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{webUserController.itemsAvailableSelectOne}"
+                                           var="retirerItem"
+                                           itemValue="#{retirerItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_retiredAt}" for="retiredAt" />
+                        <p:calendar id="retiredAt" pattern="MM/dd/yyyy HH:mm:ss" value="#{consultantController.selected.retiredAt}" title="#{bundle.EditConsultantTitle_retiredAt}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_retireComments}" for="retireComments" />
+                        <p:inputText id="retireComments" value="#{consultantController.selected.retireComments}" title="#{bundle.EditConsultantTitle_retireComments}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_code}" for="code" />
+                        <p:inputText id="code" value="#{consultantController.selected.code}" title="#{bundle.EditConsultantTitle_code}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_speciality}" for="speciality" />
+                        <p:selectOneMenu id="speciality" value="#{consultantController.selected.speciality}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{specialityController.itemsAvailableSelectOne}"
+                                           var="specialityItem"
+                                           itemValue="#{specialityItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_registration}" for="registration" />
+                        <p:inputText id="registration" value="#{consultantController.selected.registration}" title="#{bundle.EditConsultantTitle_registration}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_qualification}" for="qualification" />
+                        <p:inputTextarea rows="4" cols="30" id="qualification" value="#{consultantController.selected.qualification}" title="#{bundle.EditConsultantTitle_qualification}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_institution}" for="institution" />
+                        <p:selectOneMenu id="institution" value="#{consultantController.selected.institution}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{institutionController.itemsAvailableSelectOne}"
+                                           var="institutionItem"
+                                           itemValue="#{institutionItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_department}" for="department" />
+                        <p:selectOneMenu id="department" value="#{consultantController.selected.department}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{departmentController.itemsAvailableSelectOne}"
+                                           var="departmentItem"
+                                           itemValue="#{departmentItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_staffCode}" for="staffCode" />
+                        <p:inputText id="staffCode" value="#{consultantController.selected.staffCode}" title="#{bundle.EditConsultantTitle_staffCode}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_shiftPreference}" for="shiftPreference" />
+                        <p:selectOneMenu id="shiftPreference" value="#{consultantController.selected.shiftPreference}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{shiftPreferenceController.itemsAvailableSelectOne}"
+                                           var="shiftPreferenceItem"
+                                           itemValue="#{shiftPreferenceItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_shift}" for="shift" />
+                        <p:inputText id="shift" value="#{consultantController.selected.shift}" title="#{bundle.EditConsultantTitle_shift}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_repeatedDay}" for="repeatedDay" />
+                        <p:inputText id="repeatedDay" value="#{consultantController.selected.repeatedDay}" title="#{bundle.EditConsultantTitle_repeatedDay}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_workingDepartment}" for="workingDepartment" />
+                        <p:selectOneMenu id="workingDepartment" value="#{consultantController.selected.workingDepartment}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{departmentController.itemsAvailableSelectOne}"
+                                           var="workingDepartmentItem"
+                                           itemValue="#{workingDepartmentItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_employeeLeavingStatus}" for="employeeLeavingStatus" />
+                        <p:inputText id="employeeLeavingStatus" value="#{consultantController.selected.employeeLeavingStatus}" title="#{bundle.EditConsultantTitle_employeeLeavingStatus}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_employeeStatus}" for="employeeStatus" />
+                        <p:inputText id="employeeStatus" value="#{consultantController.selected.employeeStatus}" title="#{bundle.EditConsultantTitle_employeeStatus}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_payingMethod}" for="payingMethod" />
+                        <p:inputText id="payingMethod" value="#{consultantController.selected.payingMethod}" title="#{bundle.EditConsultantTitle_payingMethod}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_salaryPaymentMethod}" for="salaryPaymentMethod" />
+                        <p:inputText id="salaryPaymentMethod" value="#{consultantController.selected.salaryPaymentMethod}" title="#{bundle.EditConsultantTitle_salaryPaymentMethod}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_dateJoined}" for="dateJoined" />
+                        <p:calendar id="dateJoined" pattern="MM/dd/yyyy" value="#{consultantController.selected.dateJoined}" title="#{bundle.EditConsultantTitle_dateJoined}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_dateLeft}" for="dateLeft" />
+                        <p:calendar id="dateLeft" pattern="MM/dd/yyyy" value="#{consultantController.selected.dateLeft}" title="#{bundle.EditConsultantTitle_dateLeft}"  showOn="button"/>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_designation}" for="designation" />
+                        <p:selectOneMenu id="designation" value="#{consultantController.selected.designation}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{designationController.itemsAvailableSelectOne}"
+                                           var="designationItem"
+                                           itemValue="#{designationItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_grade}" for="grade" />
+                        <p:selectOneMenu id="grade" value="#{consultantController.selected.grade}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{gradeController.itemsAvailableSelectOne}"
+                                           var="gradeItem"
+                                           itemValue="#{gradeItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_staffCategory}" for="staffCategory" />
+                        <p:selectOneMenu id="staffCategory" value="#{consultantController.selected.staffCategory}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{staffCategoryController.itemsAvailableSelectOne}"
+                                           var="staffCategoryItem"
+                                           itemValue="#{staffCategoryItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_paysheetComponent}" for="paysheetComponent" />
+                        <p:selectOneMenu id="paysheetComponent" value="#{consultantController.selected.paysheetComponent}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{paysheetComponentController.itemsAvailableSelectOne}"
+                                           var="paysheetComponentItem"
+                                           itemValue="#{paysheetComponentItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_orderNo}" for="orderNo" />
+                        <p:inputText id="orderNo" value="#{consultantController.selected.orderNo}" title="#{bundle.EditConsultantTitle_orderNo}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_staffEmployment}" for="staffEmployment" />
+                        <p:selectOneMenu id="staffEmployment" value="#{consultantController.selected.staffEmployment}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{staffEmploymentController.itemsAvailableSelectOne}"
+                                           var="staffEmploymentItem"
+                                           itemValue="#{staffEmploymentItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_basic}" for="basic" />
+                        <p:inputText id="basic" value="#{consultantController.selected.basic}" title="#{bundle.EditConsultantTitle_basic}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_bankAccount}" for="bankAccount" />
+                        <p:selectOneMenu id="bankAccount" value="#{consultantController.selected.bankAccount}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{bankAccountController.itemsAvailableSelectOne}"
+                                           var="bankAccountItem"
+                                           itemValue="#{bankAccountItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_epfNo}" for="epfNo" />
+                        <p:inputText id="epfNo" value="#{consultantController.selected.epfNo}" title="#{bundle.EditConsultantTitle_epfNo}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_roster}" for="roster" />
+                        <p:selectOneMenu id="roster" value="#{consultantController.selected.roster}" >
+                            <f:selectItem itemLabel="#{bundle.SelectOneMessage}"/>
+                            <f:selectItems value="#{rosterController.itemsAvailableSelectOne}"
+                                           var="rosterItem"
+                                           itemValue="#{rosterItem}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_acNo}" for="acNo" />
+                        <p:inputText id="acNo" value="#{consultantController.selected.acNo}" title="#{bundle.EditConsultantTitle_acNo}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_workingHour}" for="workingHour" />
+                        <p:inputText id="workingHour" value="#{consultantController.selected.workingHour}" title="#{bundle.EditConsultantTitle_workingHour}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_charge}" for="charge" />
+                        <p:inputText id="charge" value="#{consultantController.selected.charge}" title="#{bundle.EditConsultantTitle_charge}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_annualWelfareQualified}" for="annualWelfareQualified" />
+                        <p:inputText id="annualWelfareQualified" value="#{consultantController.selected.annualWelfareQualified}" title="#{bundle.EditConsultantTitle_annualWelfareQualified}" />
+                        <p:outputLabel value="#{bundle.EditConsultantLabel_annualWelfareUtilized}" for="annualWelfareUtilized" />
+                        <p:inputText id="annualWelfareUtilized" value="#{consultantController.selected.annualWelfareUtilized}" title="#{bundle.EditConsultantTitle_annualWelfareUtilized}" />
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{consultantController.update}" value="#{bundle.Save}" update="display,:ConsultantListForm:datalist,:growl" oncomplete="handleSubmit(args, 'ConsultantEditDialog');"/>
+                    <p:commandButton value="#{bundle.Cancel}" onclick="ConsultantEditDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition template="/template.xhtml">
+
+
+        <ui:define name="title">
+            <h:outputText value="#{bundle.ListConsultantTitle}"></h:outputText>
+        </ui:define>
+
+        <ui:define name="body">
+            <h:form id="ConsultantListForm">
+                <p:panel header="#{bundle.ListConsultantTitle}">
+                    <p:dataTable id="datalist" value="#{consultantController.items}" var="item"
+                                 selectionMode="single" selection="#{consultantController.selected}"
+                                 paginator="true"
+                                 rowKey="#{item.id}"
+                                 rows="10"
+                                 rowsPerPageTemplate="10,20,30,40,50"
+                                 >
+
+                        <p:ajax event="rowSelect"   update="createButton viewButton editButton deleteButton"/>
+                        <p:ajax event="rowUnselect" update="createButton viewButton editButton deleteButton"/>
+
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_baImage}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.baImage}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_fileName}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.fileName}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_fileType}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.fileType}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_id}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.id}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_person}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.person}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_creater}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.creater}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_createdAt}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.createdAt}">
+                                <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_retirer}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.retirer}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_retiredAt}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.retiredAt}">
+                                <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_retireComments}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.retireComments}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_code}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.code}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_speciality}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.speciality}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_registration}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.registration}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_qualification}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.qualification}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_institution}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.institution}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_department}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.department}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_staffCode}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.staffCode}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_shiftPreference}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.shiftPreference}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_shift}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.shift}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_repeatedDay}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.repeatedDay}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_workingDepartment}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.workingDepartment}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_employeeLeavingStatus}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.employeeLeavingStatus}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_employeeStatus}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.employeeStatus}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_payingMethod}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.payingMethod}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_salaryPaymentMethod}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.salaryPaymentMethod}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_dateJoined}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.dateJoined}">
+                                <f:convertDateTime pattern="MM/dd/yyyy" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_dateLeft}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.dateLeft}">
+                                <f:convertDateTime pattern="MM/dd/yyyy" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_designation}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.designation}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_grade}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.grade}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_staffCategory}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.staffCategory}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_paysheetComponent}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.paysheetComponent}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_orderNo}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.orderNo}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_staffEmployment}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.staffEmployment}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_basic}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.basic}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_bankAccount}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.bankAccount}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_epfNo}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.epfNo}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_roster}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.roster}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_acNo}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.acNo}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_workingHour}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.workingHourPerShift}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_charge}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.charge}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_annualWelfareQualified}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.annualWelfareQualified}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{bundle.ListConsultantTitle_annualWelfareUtilized}"/>
+                            </f:facet>
+                            <h:outputText value="#{item.annualWelfareUtilized}"/>
+                        </p:column>
+                        <f:facet name="footer">
+                            <p:commandButton id="createButton" icon="ui-icon-plus"   value="#{bundle.Create}" actionListener="#{consultantController.prepareCreate}" update=":ConsultantCreateForm" oncomplete="PF('ConsultantCreateDialog').show()"/>
+                            <p:commandButton id="viewButton"   icon="ui-icon-search" value="#{bundle.View}" update=":ConsultantViewForm" oncomplete="PF('ConsultantViewDialog').show()" disabled="#{empty consultantController.selected}"/>
+                            <p:commandButton id="editButton"   icon="ui-icon-pencil" value="#{bundle.Edit}" update=":ConsultantEditForm" oncomplete="PF('ConsultantEditDialog').show()" disabled="#{empty consultantController.selected}"/>
+                            <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="#{bundle.Delete}" actionListener="#{consultantController.destroy}" update=":growl,datalist" disabled="#{empty consultantController.selected}"/>
+                        </f:facet>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+
+            <ui:include src="Create.xhtml"/>
+            <ui:include src="Edit.xhtml"/>
+            <ui:include src="View.xhtml"/>
+        </ui:define>
+    </ui:composition>
+
+</html>

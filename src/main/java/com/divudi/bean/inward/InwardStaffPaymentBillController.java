@@ -91,6 +91,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     List<String1Value1> list;
     List<String2Value1> list1;
     List<BillFee> docPayingBillFee;
+    List<BillItem> billItems1;
 
     public void makenull() {
         currentStaff = null;
@@ -121,7 +122,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = "select bf.paidForBillFee from BillItem bf "
+        sql = "select bf from BillItem bf "
                 + " where bf.retired=false "
                 + " and bf.bill.billType=:btp"
                 + " and (bf.paidForBillFee.bill.billType=:refBtp1"
@@ -156,20 +157,22 @@ public class InwardStaffPaymentBillController implements Serializable {
             m.put("cd", institution);
         }
 
+        sql += " order by bf.bill.insId ";
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("btp", BillType.PaymentBill);
         m.put("refBtp1", BillType.InwardBill);
         m.put("refBtp2", BillType.InwardProfessional);
 
-        docPayingBillFee = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems1 = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         totalPaying = 0.0;
-        if (docPayingBillFee == null) {
+        if (billItems1 == null) {
             return;
         }
-        for (BillFee dFee : docPayingBillFee) {
-            totalPaying += dFee.getFeeValue();
+        for (BillItem dFee : billItems1) {
+            totalPaying += dFee.getPaidForBillFee().getFeeValue();
         }
 
     }
@@ -812,6 +815,14 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public List<BillItem> getBillItems1() {
+        return billItems1;
+    }
+
+    public void setBillItems1(List<BillItem> billItems1) {
+        this.billItems1 = billItems1;
     }
 
 }

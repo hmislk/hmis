@@ -20,7 +20,7 @@ public class InvestigationItemValueFacade extends AbstractFacade<InvestigationIt
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public InvestigationItemValueFacade() {

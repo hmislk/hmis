@@ -57,9 +57,9 @@
                                 </p:selectBooleanCheckbox>
                             </p:column>
                             <p:column >
-                                <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="dd MM yyyy hh mm ss a" value="#{patientInvestigationController.sampledOutsideDate}" ></p:calendar>
+                                <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="dd/MMM/yyyy - hh:mm:ss a" value="#{patientInvestigationController.sampledOutsideDate}" ></p:calendar>
                                 <h:outputLabel rendered="#{smpIx.collected}"  id="lblSampledDate" value="#{smpIx.sampledAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a"  />
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"  />
                                 </h:outputLabel>
                             </p:column>
                             <p:column >

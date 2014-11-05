@@ -379,20 +379,24 @@ public class ReportsStock implements Serializable {
         }
         Map m = new HashMap();
         String sql;
-        sql = "select s from Stock s where s.department=:d and s.stock > 0 and s.itemBatch.item not in (select bi.item FROM BillItem bi where  bi.bill.department=:d and (bi.bill.billType=:t1 or bi.bill.billType=:t2) and bi.bill.billDate between :fd and :td group by bi.item having SUM(bi.qty) > 0 ) order by s.itemBatch.dateOfExpire";
+        sql = "select s from Stock s where s.department=:d and s.stock > 0 and s.itemBatch.item.id not in (select bi.item.id FROM BillItem bi where  bi.bill.department=:d and (bi.bill.billType=:t1 or bi.bill.billType=:t2  or bi.bill.billType=:t3) and bi.bill.billDate between :fd and :td group by bi.item having SUM(bi.qty) > 0 ) order by s.itemBatch.dateOfExpire";
         m.put("d", department);
         m.put("t1", BillType.PharmacyTransferIssue);
         m.put("t2", BillType.PharmacyPre);
+        m.put("t3", BillType.PharmacyBhtPre);
         m.put("fd", getFromDateE());
         m.put("td", getToDateE());
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
         stocks = getStockFacade().findBySQL(sql, m);
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        for (Stock ts : stocks) {
-//            ts.getItemBatch().getDateOfExpire()
-            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
-            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-        }
+//        stockPurchaseValue = 0.0;
+//        stockSaleValue = 0.0;
+        System.out.println("stocks.size() = " + stocks.size());
+//        for (Stock ts : stocks) {
+////            ts.getItemBatch().getDateOfExpire()
+//            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+//            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+//        }
     }
 
     public void fillStaffStocks() {

@@ -66,7 +66,7 @@ public class Staff implements Serializable {
     String registration;
     @Lob
     String qualification;
-    String code;
+    String code = "";
     @ManyToOne
     Person person;
     @ManyToOne
@@ -117,12 +117,34 @@ public class Staff implements Serializable {
 
     String acNo;
 
-    double workingHour;
-    
+    double workingHourPerShift;
+    double leaveHour;
+
     double annualWelfareQualified;
     double annualWelfareUtilized;
-    
-    
+    Integer codeInterger;
+
+    public Integer getCodeInterger() {
+        return codeInterger;
+    }
+
+    public void setCodeInterger(Integer codeInterger) {
+        this.codeInterger = codeInterger;
+    }
+
+    public void chageCodeToInteger() {
+        if (code == null || code.isEmpty()) {
+            return;
+        }
+
+        try {
+            codeInterger = Integer.parseInt(code);
+            
+        } catch (Exception e) {
+
+        }
+
+    }
 
 //    public double getBasic() {
 //        double tmp2=0.0;
@@ -132,6 +154,14 @@ public class Staff implements Serializable {
 //        
 //        return tmp2;
 //    }
+    public double getLeaveHour() {
+        return leaveHour;
+    }
+
+    public void setLeaveHour(double leaveHour) {
+        this.leaveHour = leaveHour;
+    }
+
     public byte[] getBaImage() {
         return baImage;
     }
@@ -254,6 +284,7 @@ public class Staff implements Serializable {
 
     public void setCode(String code) {
         this.code = code;
+        chageCodeToInteger();
     }
 
     public Speciality getSpeciality() {
@@ -508,12 +539,12 @@ public class Staff implements Serializable {
         this.acNo = acNo;
     }
 
-    public double getWorkingHour() {
-        return workingHour;
+    public double getWorkingHourPerShift() {
+        return workingHourPerShift;
     }
 
-    public void setWorkingHour(double workingHour) {
-        this.workingHour = workingHour;
+    public void setWorkingHourPerShift(double workingHourPerShift) {
+        this.workingHourPerShift = workingHourPerShift;
     }
 
     public double getCharge() {
@@ -539,7 +570,5 @@ public class Staff implements Serializable {
     public void setAnnualWelfareUtilized(double annualWelfareUtilized) {
         this.annualWelfareUtilized = annualWelfareUtilized;
     }
-
-    
 
 }

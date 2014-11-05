@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" >
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr">
             <f:facet name="header">
                 <p:outputLabel value="#{sessionController.institution.name}"/> &nbsp;<h:outputLabel/>
                     <p:outputLabel value="Book Keeping Summary "/><h:outputLabel/>   
@@ -30,17 +30,29 @@
                     </h:outputLabel>
                     <h:outputLabel value="OPD Service"/>     
                 </f:facet>
-            <p:column  headerText="Category">
+            <p:column  headerText="Category" >
+                <f:facet name="header">
+                    <p:outputLabel value="Category"/>
+              </f:facet>
                 <p:outputLabel value="#{sr.categoryName}" rendered="#{sr.catRow}" ></p:outputLabel>
             </p:column>
             <p:column headerText="Item/Service" >
+                 <f:facet name="header">
+                    <p:outputLabel value="Item/Service" />
+              </f:facet>
                 <p:outputLabel value="#{sr.itemName}"/> 
             </p:column>
             <p:column headerText="Count" >
+                 <f:facet name="header">
+                    <p:outputLabel value="Count" />
+              </f:facet>
                 <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
 
             </p:column>
             <p:column headerText="Hospital Fee" styleClass="numberCol" >
+                <f:facet name="header">
+                    <p:outputLabel value="Hospital Fee" />
+              </f:facet>
                 <p:outputLabel value="#{sr.hosFee}" rendered="#{!sr.catRow and sr.totalRow eq false}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
@@ -50,7 +62,7 @@
               
                 <f:facet name="footer" rendered="#{cc.attrs.professional eq false}">
                     <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
             
@@ -70,7 +82,7 @@
                 <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
                 <f:facet name="footer">
                     <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
             </p:column>

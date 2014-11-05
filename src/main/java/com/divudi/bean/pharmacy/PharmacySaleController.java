@@ -126,6 +126,7 @@ public class PharmacySaleController implements Serializable {
     //BillItem removingBillItem;
     BillItem editingBillItem;
     Double qty;
+    Integer intQty;
     Stock stock;
     Stock replacableStock;
 
@@ -387,6 +388,22 @@ public class PharmacySaleController implements Serializable {
         return replaceableStocks;
     }
 
+    public Integer getIntQty() {
+        if (qty == null) {
+            return null;
+        }
+        return qty.intValue();
+    }
+
+    public void setIntQty(Integer intQty) {
+        this.intQty = intQty;
+        if (intQty == null) {
+            setQty(null);
+        } else {
+            setQty(intQty.doubleValue());
+        }
+    }
+
     public Double getQty() {
         return qty;
     }
@@ -463,6 +480,10 @@ public class PharmacySaleController implements Serializable {
         clearBill();
         clearBillItem();
         billPreview = false;
+    }
+    
+    public String pharmacyRetailSale(){
+        return "/pharmacy/pharmacy_bill_retail_sale";
     }
 
     public List<Item> completeRetailSaleItems(String qry) {

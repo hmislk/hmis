@@ -5,17 +5,23 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.data.hr.StaffLeaveBallance;
+import com.divudi.data.hr.StaffShiftAggrgation;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.hr.FingerPrintRecord;
+import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.facade.FingerPrintRecordFacade;
+import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -90,7 +96,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs";
+            sql += " and ss.roster=:rs";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
@@ -131,7 +137,7 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs ";
+            sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
@@ -141,6 +147,277 @@ public class HrReportController implements Serializable {
         }
 
         return sql;
+    }
+
+    List<StaffLeave> staffLeaves;
+    @EJB
+    StaffLeaveFacade staffLeaveFacade;
+
+    public FingerPrintRecordFacade getFingerPrintRecordFacade() {
+        return fingerPrintRecordFacade;
+    }
+
+    public void setFingerPrintRecordFacade(FingerPrintRecordFacade fingerPrintRecordFacade) {
+        this.fingerPrintRecordFacade = fingerPrintRecordFacade;
+    }
+
+    public List<StaffLeave> getStaffLeaves() {
+        return staffLeaves;
+    }
+
+    public void setStaffLeaves(List<StaffLeave> staffLeaves) {
+        this.staffLeaves = staffLeaves;
+    }
+
+    public StaffLeaveFacade getStaffLeaveFacade() {
+        return staffLeaveFacade;
+    }
+
+    public void setStaffLeaveFacade(StaffLeaveFacade staffLeaveFacade) {
+        this.staffLeaveFacade = staffLeaveFacade;
+    }
+
+    public void createStaffLeave() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffLeave ss "
+                + " where ss.retired=false "
+                + " and ss.leaveDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getLeaveType() != null) {
+            sql += " and ss.leaveType=:ltp ";
+            hm.put("ltp", getReportKeyWord().getLeaveType());
+        }
+
+        staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    List<StaffLeaveBallance> staffLeaveBallances;
+
+    public List<StaffLeaveBallance> getStaffLeaveBallances() {
+        return staffLeaveBallances;
+    }
+
+    public void setStaffLeaveBallances(List<StaffLeaveBallance> staffLeaveBallances) {
+        this.staffLeaveBallances = staffLeaveBallances;
+    }
+
+    public void createStaffLeaveAggregate() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select new com.divudi.data.hr.StaffLeaveBallance(ss.staff,ss.leaveType,sum(ss.qty)) "
+                + " from StaffLeave ss "
+                + " where ss.retired=false "
+                + " and ss.leaveDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getLeaveType() != null) {
+            sql += " and ss.leaveType=:ltp ";
+            hm.put("ltp", getReportKeyWord().getLeaveType());
+        }
+
+        sql += " group by ss.staff,ss.leaveType"
+                + " order by ss.staff.person.name,ss.leaveType ";
+
+        staffLeaveBallances = (List<StaffLeaveBallance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+    }
+
+    public void createStaffAttendanceAggregate() {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select new com.divudi.data.hr.DepartmentAttendance(ss.staff.department,"
+                + "FUNC('Date',ss.shiftDate),count(distinct(ss.staff))) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and (ss.startRecord.recordTimeStamp is not null "
+                + " or ss.endRecord.recordTimeStamp is not null ) "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " group by FUNC('Date',ss.shiftDate),ss.staff.department"
+                + " order by ss.shiftDate,ss.staff.department.name";
+
+        departmentAttendances = (List<DepartmentAttendance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+    }
+
+    List<StaffShiftAggrgation> staffShiftAggrgations;
+
+    public List<StaffShiftAggrgation> getStaffShiftAggrgations() {
+        return staffShiftAggrgations;
+    }
+
+    public void setStaffShiftAggrgations(List<StaffShiftAggrgation> staffShiftAggrgations) {
+        this.staffShiftAggrgations = staffShiftAggrgations;
+    }
+
+    @EJB
+    FinalVariables finalVariables;
+
+    public void createStaffWorkingTime() {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select new com.divudi.data.hr.StaffShiftAggrgation(ss.staff,"
+                + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime)) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and (ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ) "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " group by ss.staff "
+                //                + "  having (sum(ss.workedWithinTimeFrameVarified)+sum(ss.leavedTime))> 0 "
+                + " order by ss.staff.codeInterger";
+
+        staffShiftAggrgations = (List<StaffShiftAggrgation>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+    }
+
+    public void createStaffWorkingTimeBelow28() {
+        createStaffWorkingTime();
+        if (staffShiftAggrgations == null) {
+            return;
+        }
+
+        Long datRange = commonFunctions.getDayCount(getFromDate(), getToDate());
+        Long mul = datRange / 7;
+        double maxLimitInSec = mul * finalVariables.getMinimumWorkingHourPerWeek() * 60 * 60;
+        System.err.println("Max Limit " + maxLimitInSec);
+        List<StaffShiftAggrgation> list = new ArrayList<>();
+
+        for (StaffShiftAggrgation ssa : staffShiftAggrgations) {
+            double sum = 0;
+
+            if (ssa.getWorkingTime() != null) {
+                sum += ssa.getWorkingTime();
+            }
+
+            if (ssa.getLeavedTime() != null) {
+                sum += ssa.getLeavedTime();
+            }
+
+            if (sum < maxLimitInSec) {
+                list.add(ssa);
+            }
+        }
+
+        staffShiftAggrgations = list;
+    }
+
+    List<DepartmentAttendance> departmentAttendances;
+
+    public List<DepartmentAttendance> getDepartmentAttendances() {
+        return departmentAttendances;
+    }
+
+    public void setDepartmentAttendances(List<DepartmentAttendance> departmentAttendances) {
+        this.departmentAttendances = departmentAttendances;
     }
 
     public void createStaffShift() {
@@ -155,8 +432,8 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
-        sql += " and (ss.startRecord.allowedOverTime=true or "
-                + " ss.endRecord.allowedOverTime=true )";
+        sql += " and (ss.startRecord.allowedExtraDuty=true or "
+                + " ss.endRecord.allowedExtraDuty=true )";
 //        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 

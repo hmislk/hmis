@@ -300,9 +300,12 @@ public class SaleReturnController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
-
-
     public void settle() {
+        if (getReturnBill().getTotal() == 0) {
+            UtilityController.addErrorMessage("Total is Zero cant' return");
+            return;
+        }
+
         savePreReturnBill();
         savePreComponent();
 
@@ -318,7 +321,6 @@ public class SaleReturnController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getReturnBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
 
-     
         printPreview = true;
         UtilityController.addSuccessMessage("Successfully Returned");
 

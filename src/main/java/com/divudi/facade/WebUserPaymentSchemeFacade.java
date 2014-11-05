@@ -20,7 +20,7 @@ public class WebUserPaymentSchemeFacade extends AbstractFacade<WebUserPaymentSch
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public WebUserPaymentSchemeFacade() {

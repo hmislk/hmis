@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="SpecialityViewDlg" widgetVar="SpecialityViewDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.ViewSpecialityTitle}">
+            <h:form id="SpecialityViewForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{specialityController.selected != null}">
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_categoryClass}"/>
+                        <h:outputText value="#{specialityController.selected.categoryClass}" title="#{bundle.ViewSpecialityTitle_categoryClass}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_symanticType}"/>
+                        <h:outputText value="#{specialityController.selected.symanticType}" title="#{bundle.ViewSpecialityTitle_symanticType}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_code}"/>
+                        <h:outputText value="#{specialityController.selected.code}" title="#{bundle.ViewSpecialityTitle_code}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_saleMargin}"/>
+                        <h:outputText value="#{specialityController.selected.saleMargin}" title="#{bundle.ViewSpecialityTitle_saleMargin}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_wholeSaleMargin}"/>
+                        <h:outputText value="#{specialityController.selected.wholeSaleMargin}" title="#{bundle.ViewSpecialityTitle_wholeSaleMargin}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_dblValue}"/>
+                        <h:outputText value="#{specialityController.selected.dblValue}" title="#{bundle.ViewSpecialityTitle_dblValue}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_longValue}"/>
+                        <h:outputText value="#{specialityController.selected.longValue}" title="#{bundle.ViewSpecialityTitle_longValue}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_parentCategory}"/>
+                        <h:outputText value="#{specialityController.selected.parentCategory}" title="#{bundle.ViewSpecialityTitle_parentCategory}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_createdAt}"/>
+                        <h:outputText value="#{specialityController.selected.createdAt}" title="#{bundle.ViewSpecialityTitle_createdAt}">
+                            <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_creater}"/>
+                        <h:outputText value="#{specialityController.selected.creater}" title="#{bundle.ViewSpecialityTitle_creater}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_description}"/>
+                        <h:outputText value="#{specialityController.selected.description}" title="#{bundle.ViewSpecialityTitle_description}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_name}"/>
+                        <h:outputText value="#{specialityController.selected.name}" title="#{bundle.ViewSpecialityTitle_name}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_retireComments}"/>
+                        <h:outputText value="#{specialityController.selected.retireComments}" title="#{bundle.ViewSpecialityTitle_retireComments}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_retiredAt}"/>
+                        <h:outputText value="#{specialityController.selected.retiredAt}" title="#{bundle.ViewSpecialityTitle_retiredAt}">
+                            <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_retirer}"/>
+                        <h:outputText value="#{specialityController.selected.retirer}" title="#{bundle.ViewSpecialityTitle_retirer}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_orderNo}"/>
+                        <h:outputText value="#{specialityController.selected.orderNo}" title="#{bundle.ViewSpecialityTitle_orderNo}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_id}"/>
+                        <h:outputText value="#{specialityController.selected.id}" title="#{bundle.ViewSpecialityTitle_id}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_tName}"/>
+                        <h:outputText value="#{specialityController.selected.tName}" title="#{bundle.ViewSpecialityTitle_tName}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_sName}"/>
+                        <h:outputText value="#{specialityController.selected.sName}" title="#{bundle.ViewSpecialityTitle_sName}"/>
+                        <h:outputText value="#{bundle.ViewSpecialityLabel_entityClass}"/>
+                        <h:outputText value="#{specialityController.selected.entityClass}" title="#{bundle.ViewSpecialityTitle_entityClass}"/>
+                    </p:panelGrid>
+                    <p:commandButton value="#{bundle.Close}" onclick="SpecialityViewDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

@@ -10,7 +10,7 @@
 
 
     <ui:define name="content">
-        
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:panelGroup rendered="true" >
             <h:form>
 
@@ -61,7 +61,7 @@
                             <h:outputLabel value="#{c.count}"/>
                         </p:column>
                         <p:column headerText="Total" style="text-align: right;" >
-                            <h:outputLabel value="#{c.total}"><f:convertNumber pattern="#,000.00" /></h:outputLabel>
+                            <h:outputLabel value="#{c.total}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
                         </p:column>
 
                     </p:dataTable>

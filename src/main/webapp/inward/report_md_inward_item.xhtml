@@ -65,7 +65,7 @@
                             <p:column>
                                 <h:outputLabel value="#{ix.total}" 
                                                rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>  
                             <p:ajax event="itemSelect" process="acIx ct" update="@all" />
@@ -105,33 +105,33 @@
                     <p:column headerText="Count">
                         <h:outputLabel value="#{iwf.count}"/>
                     </p:column>
-                    <p:column headerText="Hospital Fee">
+                    <p:column style="text-align: right;" headerText="Hospital Fee">
                         <h:outputLabel value="#{iwf.hospitalFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
-                    <p:column headerText="Professional Fee">
+                    <p:column style="text-align: right;" headerText="Professional Fee">
                         <h:outputLabel value="#{iwf.proFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{mdInwardReportController.itemProfessionalTotal}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
-                    <p:column headerText="Total">
+                    <p:column style="text-align: right;" headerText="Total">
                         <h:outputLabel value="#{iwf.hospitalFee+iwf.proFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal+mdInwardReportController.itemProfessionalTotal}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>                 

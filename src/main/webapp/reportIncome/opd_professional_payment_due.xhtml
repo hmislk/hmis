@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                 <h:outputStylesheet library="css" name="printing.css" />
+
+                <h:form>
+                    <p:panel header="Search Bills" >
+                        <f:facet name="header">
+                            <h:panelGrid columns="6" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                                <h:outputLabel/>
+                                <h:outputLabel/>
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
+                                <h:outputLabel value="Opd Bill No"/>
+                                <h:outputLabel value="Patient Name"/>
+                                <h:outputLabel value="Speciality"/> 
+                                <h:outputLabel value="Doctor Name"/>      
+                                <h:outputLabel value="Service Name"/>  
+                                <h:outputLabel value="Charges"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
+
+                            </h:panelGrid>
+                            <h:panelGrid columns="3">
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAll()}"/>
+                                <p:commandButton value="Print" ajax="false" action="#" >
+                                    <p:printer target="tblFee" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{searchController.createDueFeeTableAll()}">
+                                    <pe:exporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
+                                </p:commandButton> 
+                            </h:panelGrid>
+
+                        </f:facet>
+                        <br/><br/>
+
+                        <p:defaultCommand target="btnSearch" />
+
+                        <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                            <p:column headerText="No" styleClass="alignTop">
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+
+                            <p:column headerText="Speciality">
+                                <h:commandLink action="payment_staff_bill" >
+                                    <h:outputLabel value="#{bf.staff.speciality.name}">
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                </h:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Doctor" >
+                                <h:commandLink action="payment_staff_bill" >
+                                    <h:outputLabel value="#{bf.staff.person.name}">
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                </h:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Patient" >
+                                <h:commandLink action="payment_staff_bill" >
+                                    <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
+
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                </h:commandLink>
+                            </p:column>
+
+                            <p:column headerText="Bill No">
+                                <h:commandLink action="payment_staff_bill" >
+                                    <h:outputLabel value="#{bf.bill.insId}">
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                </h:commandLink>
+                            </p:column>
+
+                            <p:column headerText="BilledAt" >
+                                <h:commandLink action="payment_staff_bill" >
+                                    <h:outputLabel value="#{bf.bill.createdAt}">
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                </h:commandLink>
+                            </p:column>
+
+
+                            <p:column headerText="Test" >
+                                <h:commandLink action="payment_staff_bill" >
+                                    <h:outputLabel value="#{bf.billItem.item.name}" />
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                </h:commandLink>
+                            </p:column>
+
+                            <p:column style="text-align: right;" headerText="Charge">
+                                <h:commandLink action="payment_staff_bill" >
+                                    <h:outputLabel value="#{bf.feeValue}" >
+                                         <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                </h:commandLink>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

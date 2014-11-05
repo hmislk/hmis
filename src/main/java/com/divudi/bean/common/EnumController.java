@@ -13,7 +13,9 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
+import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.data.hr.Times;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
@@ -37,6 +39,17 @@ public class EnumController implements Serializable {
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
+    }
+
+    public LeaveType[] getLeaveType() {
+        LeaveType[] ltp = {LeaveType.Annual, LeaveType.AnnualHalf, LeaveType.Casual, LeaveType.CasualHalf,
+            LeaveType.Lieu, LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical,
+            LeaveType.No_Pay, LeaveType.No_Pay_Half};
+        return ltp;
+    }
+
+    public Times[] getTimeses() {
+        return Times.values();
     }
 
     public void setSessionNumberTypes(SessionNumberType[] sessionNumberTypes) {
@@ -156,25 +169,23 @@ public class EnumController implements Serializable {
 
         return b;
     }
-    
-    public BillType[] getStoreBillTypes(){
-    
-       BillType[] b={
-           BillType.StoreGrnBill,
-           BillType.StoreGrnReturn,
-           BillType.StoreOrder,
-           BillType.StoreOrderApprove,
-           BillType.StorePre,
-           BillType.StorePurchase,
-           BillType.StoreSale,
-           BillType.StoreAdjustment,
-           BillType.StorePurchaseReturn,
-           BillType.StoreTransferRequest,
-           BillType.StoreTransferIssue,
-       };
-           
-       
-       return b;
+
+    public BillType[] getStoreBillTypes() {
+
+        BillType[] b = {
+            BillType.StoreGrnBill,
+            BillType.StoreGrnReturn,
+            BillType.StoreOrder,
+            BillType.StoreOrderApprove,
+            BillType.StorePre,
+            BillType.StorePurchase,
+            BillType.StoreSale,
+            BillType.StoreAdjustment,
+            BillType.StorePurchaseReturn,
+            BillType.StoreTransferRequest,
+            BillType.StoreTransferIssue,};
+
+        return b;
     }
 
     public BillType[] getPharmacyBillTypes() {
@@ -199,6 +210,27 @@ public class EnumController implements Serializable {
     public BillType[] getPharmacyBillTypes2() {
         BillType[] b = {
             BillType.PharmacySale,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre};
+
+        return b;
+    }
+
+    public BillType[] getPharmacyBillTypesForMovementReports() {
+        BillType[] b = {
+            BillType.PharmacySale,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre};
+        return b;
+    }
+
+    public BillType[] getPharmacyBillTypes3() {
+        BillType[] b = {
+            BillType.PharmacyPre,
             BillType.PharmacyAdjustment,
             BillType.PharmacyTransferIssue,
             BillType.PharmacyIssue,

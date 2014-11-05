@@ -53,7 +53,7 @@ public class HrmVariables implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     private String name;
     private double epfRate;
     private double etfRate;
@@ -61,11 +61,15 @@ public class HrmVariables implements Serializable {
     private double epfCompanyRate;
     private double etfCompanyRate;
     private double payeeCompanyRate;
-    private double payeeLimit;  
+    private double payeeLimit;
+  
 
-    @OneToMany(mappedBy = "hrmVariables",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private List<PayeeTaxRange> taxRanges=new ArrayList<>();
+    @OneToMany(mappedBy = "hrmVariables", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PayeeTaxRange> taxRanges = new ArrayList<>();
 
+   
+
+   
     @Override
     public int hashCode() {
         int hash = 0;
@@ -75,7 +79,7 @@ public class HrmVariables implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof HrmVariables)) {
             return false;
         }
@@ -148,9 +152,9 @@ public class HrmVariables implements Serializable {
     }
 
     public List<PayeeTaxRange> getTaxRanges() {
-       if(taxRanges==null){
-       taxRanges=new ArrayList<>();
-       }
+        if (taxRanges == null) {
+            taxRanges = new ArrayList<>();
+        }
         return taxRanges;
     }
 

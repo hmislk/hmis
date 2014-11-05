@@ -10,6 +10,7 @@
 
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
 
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Lab Credit Sale Report">
@@ -90,7 +91,7 @@
                             <h:outputLabel value="Discount"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.discount}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>                    
                     <p:column headerText="Net Total" style="text-align: right;">
@@ -98,7 +99,7 @@
                             <h:outputLabel value="Net Total"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.netTotal}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:columnGroup type="footer">  
@@ -107,7 +108,7 @@
                             <p:column footerText="#{commonReport.total}" style=" text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{commonReport.total}" style=" text-align: right;">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>                             

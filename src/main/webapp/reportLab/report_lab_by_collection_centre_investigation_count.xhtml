@@ -10,6 +10,7 @@
 
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
 
             <p:panel id="panelPrint"  styleClass="noBorder summeryBorder" header="Collecting Centre Sale Report">
@@ -46,7 +47,9 @@
                 </f:facet>
                 <br/><br/>
                 
-                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.items3}" var="c" >
+                <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnController.createItemList3()}" ></p:commandButton>
+                
+                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" >
 
                     <f:facet name="header">
 

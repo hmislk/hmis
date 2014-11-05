@@ -19,9 +19,9 @@
                         <h:panelGrid columns="2" >
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
@@ -174,90 +174,90 @@
                                         <h:outputLabel value="Biiled By"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.finalBill.creater.webUserPerson.name}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Final Bill Total">
+                                <p:column style="text-align: right;" headerText="Final Bill Total">
                                     <f:facet name="header">
                                         <h:outputLabel value="Final Bill Total"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.finalBill.netTotal}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportController.total}"  >
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Paid BY PATIENT">
+                                <p:column style="text-align: right;" headerText="Paid BY PATIENT">
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid BY PATIENT"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.finalBill.paidAmount}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportController.paid}"  >
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Credit Paid Amount">
+                                <p:column style="text-align: right;" headerText="Credit Paid Amount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Paid Amount"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creditPaidAmount}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportController.creditPaid}"  >
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Due Amount">
+                                <p:column style="text-align: right;" headerText="Due Amount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Due Amount"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.finalBill.netTotal-(i.finalBill.paidAmount+i.paidByCreditCompany)}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportController.total-(inwardReportController.paid+inwardReportController.creditPaid)}"  >
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Calculated Amount">
+                                <p:column style="text-align: right;" headerText="Calculated Amount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Calculated Amount"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.transTotal}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportController.calTotal}"  >
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Differance Amount">
+                                <p:column style="text-align: right;" headerText="Differance Amount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Differance Amount"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.finalBill.netTotal-i.transTotal}"  >
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{inwardReportController.total-inwardReportController.calTotal}"  >
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>

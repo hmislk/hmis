@@ -1,0 +1,1 @@
+UPDATE reportitem SET `CSSFONTSIZE` = '96' WHERE `ID` > 0

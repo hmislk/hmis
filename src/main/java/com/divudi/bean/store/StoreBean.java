@@ -62,6 +62,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -71,8 +72,7 @@ import javax.persistence.TemporalType;
  *
  * @author Buddhika
  */
-@Named
-@ApplicationScoped
+@Singleton
 public class StoreBean {
 
     @EJB
@@ -517,8 +517,8 @@ public class StoreBean {
         return getStockFacade().findDoubleByJpql(sql, m);
 
     }
-    
-     public double getStockQty(Item item) {
+
+    public double getStockQty(Item item) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -609,12 +609,22 @@ public class StoreBean {
             //System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() + qty);
             //System.err.println("Initial Stock After Updation" + s.getStock());
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             getStockFacade().create(s);
         } else {
 //            addToStockHistory(pharmaceuticalBillItem, s, staff);
             //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() + qty);
             //System.err.println("After Stock Updation " + s.getStock());
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             getStockFacade().edit(s);
         }
         return s;
@@ -629,7 +639,7 @@ public class StoreBean {
         hm.put("dep", department);
         Stock s = getStockFacade().findFirstBySQL(sql, hm);
 //        //System.err.println("ss" + s);
-        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType()== DepartmentType.Inventry ) {
+        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
             s = new Stock();
             s.setDepartment(department);
             s.setCode(pharmaceuticalBillItem.getCode());
@@ -640,12 +650,22 @@ public class StoreBean {
             s.setStock(s.getStock() + qty);
             s.setCode(pharmaceuticalBillItem.getCode());
             //System.err.println("Initial Stock After Updation" + s.getStock());
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             getStockFacade().create(s);
             addToStockHistoryInitial(pharmaceuticalBillItem, s, department);
         } else {
             addToStockHistory(pharmaceuticalBillItem, s, department);
             //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() + qty);
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             //System.err.println("After Stock Updation " + s.getStock());
             getStockFacade().edit(s);
         }
@@ -669,6 +689,12 @@ public class StoreBean {
             return false;
         }
         s.setStock(s.getStock() - qty);
+
+        double number = s.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        s.setStock(number);
+
         if (s.getId() == null || s.getId() == 0) {
             getStockFacade().create(s);
         } else {
@@ -704,11 +730,21 @@ public class StoreBean {
             //System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() - qty);
             //System.err.println("Initial Stock After Updation" + s.getStock());
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             getStockFacade().create(s);
         } else {
 //            addToStockHistory(pharmaceuticalBillItem, s, staff);
             //System.err.println("Before Stock Updation " + s.getStock());
             s.setStock(s.getStock() - qty);
+            double number = s.getStock();
+            number = Math.round(number * 1000);
+            number = number / 1000;
+            s.setStock(number);
+
             //System.err.println("After Stock Updation " + s.getStock());
             getStockFacade().edit(s);
         }
@@ -728,6 +764,11 @@ public class StoreBean {
             s.setItemBatch(batch);
         }
         s.setStock(s.getStock() - qty);
+                double number = s.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        s.setStock(number);
+
         if (s.getId() == null || s.getId() == 0) {
             getStockFacade().create(s);
         } else {
@@ -823,6 +864,11 @@ public class StoreBean {
 
         //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
+                double number = stock.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        stock.setStock(number);
+
         //System.err.println("After  Update " + stock.getStock());
         getStockFacade().edit(stock);
 
@@ -847,6 +893,11 @@ public class StoreBean {
 
         //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
+                double number = stock.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        stock.setStock(number);
+
         //System.err.println("After  Update " + stock.getStock());
         getStockFacade().edit(stock);
 
@@ -1053,6 +1104,12 @@ public class StoreBean {
 
         //System.err.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
+
+        double number = stock.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        stock.setStock(number);
+
         //System.err.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
 
@@ -1076,6 +1133,12 @@ public class StoreBean {
 
         //System.err.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
+
+        double number = stock.getStock();
+        number = Math.round(number * 1000);
+        number = number / 1000;
+        stock.setStock(number);
+
         //System.err.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
 
@@ -1615,7 +1678,7 @@ public class StoreBean {
 //        String sql;
 //        sql = "Select bi.pharmaceuticalBillItem.purchaseRate from BillItem bi where bi.retired=false and bi.bill.cancelled=false and bi.pharmaceuticalBillItem.itemBatch.item=:i and bi.bill.billType=:t order by bi.id desc";
 //        m.put("i", item);
-//        m.put("t", BillType.PharmacyGrnBill);
+//        m.put("t", BillType.StoreGrnBill);
 //        return getBillItemFacade().findDoubleByJpql(sql, m);
 //    }
     public double getLastPurchaseRate(Item item, Department dept) {
@@ -1634,8 +1697,8 @@ public class StoreBean {
                 + " order by bi.id desc";
         m.put("i", item);
         m.put("d", dept);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1662,8 +1725,8 @@ public class StoreBean {
                 + " order by bi.id desc";
         m.put("i", item);
         m.put("ins", ins);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1699,8 +1762,8 @@ public class StoreBean {
                 + " and (bi.bill.billType=:t or bi.bill.billType=:t1) "
                 + " order by bi.id desc";
         m.put("i", item);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1725,8 +1788,8 @@ public class StoreBean {
                 + " order by bi.id desc";
         m.put("i", item);
         m.put("ins", ins);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1750,8 +1813,8 @@ public class StoreBean {
                 + " and (bi.bill.billType=:t or bi.bill.billType=:t1) "
                 + " order by bi.id desc";
         m.put("i", item);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
@@ -1776,8 +1839,8 @@ public class StoreBean {
                 + " order by bi.id desc";
         m.put("i", item);
         m.put("d", dept);
-        m.put("t", BillType.PharmacyGrnBill);
-        m.put("t1", BillType.PharmacyPurchaseBill);
+        m.put("t", BillType.StoreGrnBill);
+        m.put("t1", BillType.StorePurchase);
         ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {

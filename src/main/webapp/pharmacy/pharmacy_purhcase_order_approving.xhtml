@@ -81,7 +81,7 @@
                         <p:column headerText="Total" style="width:25px!important;text-align: right;">  
                             <h:panelGroup id="total">
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </h:panelGroup>
                         </p:column>  

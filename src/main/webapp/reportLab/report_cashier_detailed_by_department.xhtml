@@ -24,7 +24,7 @@
                             <h:outputLabel value="Cashier Summery Report - &nbsp;&nbsp; #{commonReport.webUser.webUserPerson.name}"/>
 
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
-                                             style="float: right;" actionListener="#{commonReport.createLabCashierSummeryReport}" />
+                                             style="float: right;" actionListener="#{commonReport.createLabCashierSummeryReport()}" />
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
@@ -52,7 +52,7 @@
                                             forceSelection="true"
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                             value="#{commonReport.webUser}" ></p:autoComplete>
-                                            
+
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
@@ -156,7 +156,7 @@
                             </p:column>
                             <p:column style="font-weight: bold;text-align:right;" >
                                 <h:outputLabel value="#{i.value}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>                
@@ -172,7 +172,7 @@
                             </p:column>
                             <p:column style="font-weight: bold;text-align:right;" >
                                 <h:outputLabel value="#{i.value}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>
@@ -209,28 +209,28 @@
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashInBills.cash}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBills.cash}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashInBills.credit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBills.credit}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashInBills.cheque}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBills.cheque}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashInBills.slip}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBills.slip}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
@@ -270,28 +270,28 @@
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashInBillsCancel.cash}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBillsCancel.cash}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashInBillsCancel.credit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBillsCancel.credit}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashInBillsCancel.cheque}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBillsCancel.cheque}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashInBillsCancel.slip}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashInBillsCancel.slip}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
@@ -331,28 +331,28 @@
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashOutBills.cash}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBills.cash}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashOutBills.credit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBills.credit}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashOutBills.cheque}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBills.cheque}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashOutBills.slip}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBills.slip}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
@@ -392,28 +392,28 @@
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashOutBillsCancel.cash}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBillsCancel.cash}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashOutBillsCancel.credit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBillsCancel.credit}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashOutBillsCancel.cheque}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBillsCancel.cheque}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashOutBillsCancel.slip}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashOutBillsCancel.slip}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
@@ -453,28 +453,28 @@
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashAdjustmentBills.cash}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashAdjustmentBills.cash}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashAdjustmentBills.credit}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashAdjustmentBills.credit}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashAdjustmentBills.cheque}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashAdjustmentBills.cheque}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
                                     <p:column style="text-align: right;" footerText="#{commonReport.cashAdjustmentBills.slip}">
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{commonReport.cashAdjustmentBills.slip}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>   
                                         </f:facet>
                                     </p:column>
@@ -494,7 +494,7 @@
                             </p:column>
                             <p:column style="font-weight: bold;text-align:right;" >
                                 <h:outputLabel value="#{i.value}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>                
@@ -511,7 +511,7 @@
                             </p:column>
                             <p:column style="font-weight: bold;text-align:right;" >
                                 <h:outputLabel value="#{i.value}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>                
@@ -527,7 +527,7 @@
                             </p:column>
                             <p:column style="font-weight: bold;text-align:right;" >
                                 <h:outputLabel value="#{i.value}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>

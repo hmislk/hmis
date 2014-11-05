@@ -20,7 +20,7 @@ public class CategoryFacade extends AbstractFacade<Category> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public CategoryFacade() {

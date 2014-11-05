@@ -9,6 +9,7 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel  style="border: none;">
@@ -26,6 +27,7 @@
                     </p:commandButton>
 
 
+
                     <p:panelGrid columns="5" style="min-width: 100%;border: none;">
 
                         <h:outputLabel value="From Date"/>
@@ -40,7 +42,11 @@
 
             </p:panel>
             <p:dataGrid  value="#{creditSummeryController.dailyCredit}" var="d" columns="1">
-                <p:dataTable id="safrin" value="#{d.categoryWitmItems}" var="s" rendered="#{d.departmentTotal!=0}">                       
+                <p:dataTable id="safrin" value="#{d.categoryWitmItems}" var="s" rendered="#{d.departmentTotal!=0}"
+                             
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">                       
                     <p:columnGroup type="header">
                         <p:row>
                             <p:column headerText="Item Name"/>                         
@@ -62,17 +68,17 @@
                         </p:column>
                         <p:column style="text-align: right;" rendered="#{i.total!=0}">                               
                             <h:outputLabel value="#{i.hospitalFee}" style="text-align: right;">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>                                        
                         </p:column>
                         <p:column style="text-align: right;">                               
                             <h:outputLabel value="#{i.proFee}" rendered="#{i.total!=0}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column style="text-align: right;">                               
                             <h:outputLabel value="#{i.total}" rendered="#{i.total!=0}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
@@ -86,7 +92,7 @@
                                 <p:column style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{s.subHosTotal}">
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -94,14 +100,14 @@
                                 <p:column style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{s.subTotal-s.subHosTotal}">
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{s.subTotal}">
-                                            <f:convertNumber pattern="#,000.00"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -120,7 +126,7 @@
                             <p:column style="text-align: right;" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{d.departmentTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -130,7 +136,7 @@
                 <f:facet name="footer">
                     <h:outputLabel value="Total Collection" />
                     <h:outputLabel value="#{creditSummeryController.departmentTotal}" style="float: right;">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
 

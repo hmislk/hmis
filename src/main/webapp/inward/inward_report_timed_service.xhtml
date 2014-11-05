@@ -23,9 +23,9 @@
                     </f:facet>
                     <p:panel>
                         <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar id="fd" value="#{inwardTimedItemController.frmDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                        <p:calendar id="fd" value="#{inwardTimedItemController.frmDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                         <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar id="td" value="#{inwardTimedItemController.toDate}" pattern="dd MM yyyy hh mm ss a" ></p:calendar>
+                        <p:calendar id="td" value="#{inwardTimedItemController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                         <p:autoComplete converter="timedIt" id="it" forceSelection="false" 
                                         value="#{inwardTimedItemController.current.item}"
                                         completeMethod="#{timedItemController.completeInvest}" var="ix" 
@@ -50,61 +50,106 @@
                     </p:panel>
                     <p:panel header="Timed Sevice" id="gpBillPreview">                          
                         <p:dataTable id="tbl" value="#{inwardTimedItemController.items}" var="ti">
+                            
+                            
+                <f:facet name="header">
+                    <h:outputLabel value="#{inwardTimedItemController.current.item.name}"/>
+                    <h:outputLabel value=" : "/>
+                    <h:outputLabel value="#{inwardTimedItemController.frmDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="--"/>
+                    <h:outputLabel value="#{inwardTimedItemController.toDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                </f:facet>
+                            
+                            
                             <p:column headerText="BHT Number">
+                                <f:facet name="header">
+                                    <p:outputLabel value="BHT Number"/>
+                                </f:facet>
                                 <p:outputLabel value="#{ti.patientEncounter.bhtNo}" />
                             </p:column>
                             <p:column headerText="Service Name">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Service Name"/>
+                                </f:facet>
                                 <p:outputLabel value="#{ti.item.name}" />
                             </p:column>
                             <p:column headerText="Inward Charge Type">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Inward Charge Type"/>
+                                </f:facet>
                                 <p:outputLabel value="#{ti.item.inwardChargeType}" />
                             </p:column>
                             <p:column headerText="Start Time">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Start Time"/>
+                                </f:facet>
                                 <h:outputLabel value="#{ti.fromTime}"   >
                                     <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>                               
                             <p:column headerText="Stopped Time">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Stopped Time"/>
+                                </f:facet>
                                 <h:outputLabel value="#{ti.toTime}"   >
                                     <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Discount">
+                            <p:column style="text-align: right;" headerText="Discount">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Discount"/>
+                                </f:facet>
                                 <h:outputLabel  value="#{ti.discount}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Adjusted Value">
+                            <p:column style="text-align: right;" headerText="Adjusted Value">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Adjusted Value"/>
+                                </f:facet>
                                 <h:outputLabel  value="#{ti.adjustedValue}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Total">
+                            <p:column style="text-align: right;" headerText="Total">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Total"/>
+                                </f:facet>
                                 <h:outputLabel  value="#{ti.serviceValue}">
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Creater">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Creator"/>
+                                </f:facet>
+
                                 <h:outputLabel value="#{ti.creater.webUserPerson.name}"/>     
-                                <br/>
+
                                 <h:panelGroup rendered="#{ti.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted By " />
+
                                     <h:outputLabel style="color: red;"  value="#{ti.retirer.webUserPerson.name}" >                                       
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column footerText="Total" colspan="6">
+                                    <p:column footerText="Total" colspan="7">
                                         <f:facet name="footer" >
                                             <p:outputLabel value="Total"></p:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                    <p:column footerText="#{inwardTimedItemController.total}">
+                                    <p:column style="text-align: right;" footerText="#{inwardTimedItemController.total}">
+
                                         <f:facet name="footer" >
-                                            <p:outputLabel value="#{inwardTimedItemController.total}">
-                                                <f:convertNumber pattern="#,000.00" />
-                                            </p:outputLabel>
+                                            <h:outputLabel value="#{inwardTimedItemController.total}">
+                                                <f:convertNumber pattern="#,#00.00" />
+                                            </h:outputLabel>
                                         </f:facet>
                                     </p:column>
                                 </p:row>

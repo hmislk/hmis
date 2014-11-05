@@ -10,19 +10,20 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Investigation Summery"  styleClass="noPrintButton" />
                     <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.createOPdLabListWithProDayEndTable()}"/>
+                                     action="#{bookKeepingSummery.createOPdLabListWithProDayEndTable}"/>
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="tbl1"
+                        <pe:exporter type="xlsx" target="opd_new:opd_new"
                                      fileName="Book_Keeping_Summery_without_pro_day"
                                      facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                      fontName="Courier New"  />
@@ -38,11 +39,7 @@
                         </p:calendar>
 
                         <h:outputLabel value="Select Institution"/>
-
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
-                                        forceSelection="true"
-                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
-                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                        <p:inputText value="#{sessionController.loggedUser.institution.name}"></p:inputText>
                     </h:panelGrid>
 
                 </f:facet>

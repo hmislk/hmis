@@ -8,6 +8,7 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form>
             <p:panel>
 
@@ -41,7 +42,10 @@
 
                 <p:dataTable id="tbl" value="#{mdReportController.itemWithFees}"
                              rowIndexVar="i"
-                             var="iwf" filteredValue="#{mdReportController.fillterItemWithFees}" >
+                             var="iwf" filteredValue="#{mdReportController.fillterItemWithFees}" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">
 
                     <f:facet name="header">
                         <h:outputLabel value="Report By Item (OPD) From &nbsp;&nbsp; : "/>
@@ -84,19 +88,19 @@
 
                     <p:column headerText="Hospital Fee" style="text-align: right;">
                         <h:outputLabel value="#{iwf.hospitalFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
                     <p:column headerText="Professional Fee" style="text-align: right;">
                         <h:outputLabel value="#{iwf.proFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
                     <p:column headerText="Total" style="text-align: right;">
                         <h:outputLabel value="#{iwf.hospitalFee+iwf.proFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:columnGroup type="footer">
@@ -111,21 +115,21 @@
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{mdReportController.itemHospitalTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{mdReportController.itemProfessionalTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{mdReportController.itemHospitalTotal+mdReportController.itemProfessionalTotal}">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>

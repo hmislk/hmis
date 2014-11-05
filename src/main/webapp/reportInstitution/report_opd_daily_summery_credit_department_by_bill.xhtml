@@ -9,6 +9,7 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel  style="border: none;">
@@ -43,17 +44,23 @@
                 </f:facet>
 
             </p:panel>            
-            <p:dataTable id="safrin" value="#{creditSummeryController.dailyCreditByBill}" var="d" >                       
+            <p:dataTable id="safrin" value="#{creditSummeryController.dailyCreditByBill}" var="d" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">                       
                 <p:columnGroup type="header">
                     <p:row>
-                        <p:column headerText="Bill No"/>                         
+
+                        <p:column headerText="Bill No"/>                      
                         <p:column headerText="Patient Name"/>
                         <p:column headerText="Discount"/>
                         <p:column headerText="Net Total"/>
                         <p:column headerText="Total"/>
+
                     </p:row>
                 </p:columnGroup>
                 <p:subTable value="#{d.bills}" var="b" >
+                    
                     <f:facet name="header" >
                         <p:outputLabel value="#{d.department.name}" />                                  
                     </f:facet>
@@ -63,19 +70,19 @@
                     <p:column>
                         <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
                     </p:column>
-                    <p:column style="text-align: right;">                               
+                    <p:column style="text-align: right;">        
                         <h:outputLabel value="#{b.discount}" style="text-align: right;">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>                                        
                     </p:column>
                     <p:column style="text-align: right;">                               
                         <h:outputLabel value="#{b.netTotal}" >
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column style="text-align: right;">                               
                         <h:outputLabel value="#{b.total}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
 
@@ -90,14 +97,14 @@
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{d.discountTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{d.netTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -105,7 +112,7 @@
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{d.discountTotal+d.netTotal}">
-                                        <f:convertNumber pattern="#,000.00"/>
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>                           
@@ -114,21 +121,23 @@
                 </p:subTable>
                 <p:columnGroup type="footer">
                     <p:row>
-                        <p:column footerText="Total Collection" style="font-weight: bold;"/>                         
+
+                        <p:column footerText="Total Collection" style="font-weight: bold;" />   
+
                         <p:column footerText="#{creditSummeryController.departmentTotalByBill}" colspan="4" style="text-align: right; font-weight: bold;">
                             <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
                     </p:row>
                 </p:columnGroup>
 
-<!--                <f:facet name="footer">
-                    <h:outputLabel value="Total Collection" />
-                    <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
-                        <f:convertNumber pattern="#,000.00"/>
-                    </h:outputLabel>
-                </f:facet>-->
+                <!--                <f:facet name="footer">
+                                    <h:outputLabel value="Total Collection" />
+                                    <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>-->
 
             </p:dataTable>
 

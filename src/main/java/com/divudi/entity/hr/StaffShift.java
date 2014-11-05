@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.hr;
 
+import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Staff;
@@ -80,6 +81,13 @@ public class StaffShift implements Serializable {
     @ManyToOne
     StaffShift referenceStaffShift;
 
+    //Multiplying Factor Always come by subtrating 1
+    // if Multiplying Factor for Salary is 1 ,but actual value is 2
+    @Column(name = "multiplyingFactor")
+    private double multiplyingFactorSalary;
+    //Multyiplying factor for Ot is Actual one.there is no substration
+    double multiplyingFactorOverTime;
+    double basicPerSecond;
     double earlyInLogged;
     double earlyOutLogged;
     double earlyInVarified;
@@ -94,6 +102,9 @@ public class StaffShift implements Serializable {
     double lateOutVarified;
     double lateInLogged;
     double lateOutLogged;
+    double leavedTime;
+    private double leavedTimeNoPay;
+    double leavedTimeOther;
     @Column(name = "overTimeFromStartRecordLogged")
     double extraTimeFromStartRecordLogged;
     @Column(name = "overTimeFromEndRecordLogged")
@@ -116,6 +127,112 @@ public class StaffShift implements Serializable {
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
     double qty;
+    @ManyToOne
+    HrForm hrForm;
+    @ManyToOne
+    Roster roster;
+    double lieuQty;
+    boolean lieuPaid;
+    boolean lieuOrPaymentAllowed;
+    boolean lieuAndPaymentAllowed;
+
+    public double getLieuQty() {
+        return lieuQty;
+    }
+
+    public void setLieuQty(double lieuQty) {
+        this.lieuQty = lieuQty;
+    }
+
+    public boolean isLieuPaid() {
+        return lieuPaid;
+    }
+
+    public void setLieuPaid(boolean lieuPaid) {
+        this.lieuPaid = lieuPaid;
+    }
+
+    public boolean isLieuOrPaymentAllowed() {
+        return lieuOrPaymentAllowed;
+    }
+
+    public void setLieuOrPaymentAllowed(boolean lieuOrPaymentAllowed) {
+        this.lieuOrPaymentAllowed = lieuOrPaymentAllowed;
+    }
+
+    public void calLieu(DayType dayType) {
+        if (dayType == null) {
+            return;
+        }
+
+        switch (dayType) {
+            case DayOff:
+                lieuAndPaymentAllowed = true;
+                break;
+            case MurchantileHoliday:
+            case Poya:
+                lieuOrPaymentAllowed = true;
+                break;
+        }
+    }
+
+    public Roster getRoster() {
+        return roster;
+    }
+
+    public void setRoster(Roster roster) {
+        this.roster = roster;
+    }
+
+    public double getLeavedTime() {
+        return leavedTime;
+    }
+
+    public void setLeavedTime(double leavedTime) {
+        this.leavedTime = leavedTime;
+    }
+
+    public void calLeaveTime() {
+        if (leaveType == null) {
+            return;
+        }
+
+        switch (getLeaveType()) {
+            case Annual:
+            case Casual:
+            case Lieu:
+                setLeavedTime(getStaff().getLeaveHour() * 60 * 60);
+                break;
+            case Maternity1st:
+            case Maternity2nd:
+            case Medical:
+                setLeavedTimeOther(getStaff().getLeaveHour() * 60 * 60);
+                break;
+            case No_Pay:
+                setLeavedTimeNoPay(getStaff().getLeaveHour() * 60 * 60);
+                break;
+            case AnnualHalf:
+            case CasualHalf:
+            case LieuHalf:
+                setLeavedTime((getStaff().getLeaveHour() * 60 * 60) / 0.5);
+                break;
+            case Maternity1stHalf:
+            case Maternity2ndHalf:
+                setLeavedTimeOther((getStaff().getLeaveHour() * 60 * 60) / 0.5);
+                break;
+            case No_Pay_Half:
+                setLeavedTimeNoPay((getStaff().getLeaveHour() * 60 * 60) / 0.5);
+                break;
+        }
+    }
+
+    public HrForm getHrForm() {
+        return hrForm;
+    }
+
+    public void setHrForm(HrForm hrForm) {
+        this.hrForm = hrForm;
+    }
 
     private void calLoggedStartRecord() {
         Calendar fromCalendar = Calendar.getInstance();
@@ -258,13 +375,13 @@ public class StaffShift implements Serializable {
 
     }
 
-    private void calOverTime() {
+    public void calExtraTimeWithStartOrEndRecord() {
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
         Long inSecond = 0l;
         //Over Time From Start Record Logged 
         extraTimeFromStartRecordLogged = 0;
-        if (getStartRecord().isAllowedOverTime()
+        if (getStartRecord().isAllowedExtraDuty()
                 && getStartRecord().getLoggedRecord() != null
                 && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null) {
 
@@ -278,7 +395,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From End Record Logged 
         extraTimeFromEndRecordLogged = 0;
-        if (getEndRecord().isAllowedOverTime()
+        if (getEndRecord().isAllowedExtraDuty()
                 && getEndRecord().getLoggedRecord() != null
                 && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null) {
 
@@ -292,7 +409,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From Start Record Varified 
         extraTimeFromStartRecordVarified = 0;
-        if (getStartRecord().isAllowedOverTime()) {
+        if (getStartRecord().isAllowedExtraDuty()) {
 
             if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
@@ -304,8 +421,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From End Record Varified
         extraTimeFromEndRecordVarified = 0;
-        if (getEndRecord().isAllowedOverTime()) {
-
+        if (getEndRecord().isAllowedExtraDuty()) {
             if (getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());
@@ -316,7 +432,7 @@ public class StaffShift implements Serializable {
 
     }
 
-    public void calOverTimeAll() {
+    public void calExtraTimeComplete() {
 
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
@@ -325,10 +441,10 @@ public class StaffShift implements Serializable {
         //Logged 
         if (getStartRecord().getLoggedRecord() != null
                 && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null
-                && getStartRecord().getLoggedRecord().isAllowedOverTime()
+                && getStartRecord().getLoggedRecord().isAllowedExtraDuty()
                 && getEndRecord().getLoggedRecord() != null
                 && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null
-                && getEndRecord().getLoggedRecord().isAllowedOverTime()) {
+                && getEndRecord().getLoggedRecord().isAllowedExtraDuty()) {
             fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
             toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -337,9 +453,9 @@ public class StaffShift implements Serializable {
 
         //Varified 
         if (getStartRecord().getRecordTimeStamp() != null
-                && getStartRecord().isAllowedOverTime()
+                && getStartRecord().isAllowedExtraDuty()
                 && getEndRecord().getRecordTimeStamp() != null
-                && getEndRecord().isAllowedOverTime()) {
+                && getEndRecord().isAllowedExtraDuty()) {
             fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
             toCalendar.setTime(getEndRecord().getRecordTimeStamp());
             inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -365,7 +481,7 @@ public class StaffShift implements Serializable {
         calLoggedEndRecord();
         calWorkedTimeLogged();
         calWorkedTimeVarified();
-        calOverTime();
+
     }
 
     public double getEarlyInLogged() {
@@ -821,6 +937,78 @@ public class StaffShift implements Serializable {
 
     public void setWorkedTimeVarified(double workedTimeVarified) {
         this.workedTimeVarified = workedTimeVarified;
+    }
+
+    public double getLeavedTimeNoPay() {
+        return leavedTimeNoPay;
+    }
+
+    public void setLeavedTimeNoPay(double leavedTimeNoPay) {
+        this.leavedTimeNoPay = leavedTimeNoPay;
+    }
+
+    public double getMultiplyingFactorSalary() {
+        return multiplyingFactorSalary;
+    }
+
+    public void setMultiplyingFactorSalary(double multiplyingFactorSalary) {
+        this.multiplyingFactorSalary = multiplyingFactorSalary;
+    }
+
+    public void calMultiplyingFactor(DayType dayType) {
+        if (dayType == null) {
+            return;
+        }
+
+        // Multiplying Factor Salary if 2 day Payment = 1
+        // if one and half day  payment= 0.5
+        switch (dayType) {
+            case MurchantileHoliday:
+                multiplyingFactorSalary = 1.0;//two day payments
+                multiplyingFactorOverTime = 1.5;
+                break;
+            case Poya:
+                multiplyingFactorSalary = 0.5;// One and Half Payment
+                multiplyingFactorOverTime = 1.5;
+                break;
+            case DayOff:
+                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorOverTime = 2.5;
+                break;
+            case SleepingDay:
+                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorOverTime = 2.5;
+                break;
+            default:
+                multiplyingFactorSalary = 0.0;
+                multiplyingFactorOverTime = 1.5;
+                break;
+        }
+
+    }
+
+    public double getMultiplyingFactorOverTime() {
+        return multiplyingFactorOverTime;
+    }
+
+    public void setMultiplyingFactorOverTime(double multiplyingFactorOverTime) {
+        this.multiplyingFactorOverTime = multiplyingFactorOverTime;
+    }
+
+    public double getLeavedTimeOther() {
+        return leavedTimeOther;
+    }
+
+    public void setLeavedTimeOther(double leavedTimeOther) {
+        this.leavedTimeOther = leavedTimeOther;
+    }
+
+    public double getBasicPerSecond() {
+        return basicPerSecond;
+    }
+
+    public void setBasicPerSecond(double basicPerSecond) {
+        this.basicPerSecond = basicPerSecond;
     }
 
 }

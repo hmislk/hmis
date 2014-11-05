@@ -58,7 +58,7 @@ public class StockHistoryRecorder {
                 for (Item amp : fetchStockItem(d)) {
                     if (!amp.isRetired()) {
                         StockHistory h = new StockHistory();
-                        h.setFromDate(new Date());
+                        h.setFromDate(startTime);
                         h.setHistoryType(HistoryType.MonthlyRecord);
                         h.setDepartment(d);
                         h.setItem(amp);
@@ -69,8 +69,8 @@ public class StockHistoryRecorder {
                         h.setHxMonth(Calendar.getInstance().get(Calendar.MONTH));
                         h.setHxWeek(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
                         h.setHxYear(Calendar.getInstance().get(Calendar.YEAR));
-                        h.setStockAt(new Date());
-                        h.setCreatedAt(new Date());
+                        h.setStockAt(startTime);
+                        h.setCreatedAt(startTime);
 
                         getStockHistoryFacade().create(h);
                     }

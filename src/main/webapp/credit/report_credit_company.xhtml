@@ -74,7 +74,7 @@
                             </p:column>
                             <p:column headerText="Value" style="text-align:right;"  >                              
                                 <h:outputLabel value="#{i.netTotal}" >    
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>                            
                             <p:columnGroup type="footer">  
@@ -83,7 +83,7 @@
                                     <p:column style="text-align:right;" >
                                         <f:facet name="footer">
                                             <h:outputLabel value="#{creditCompanyDueController.creditTotal}">
-                                                <f:convertNumber pattern="#,000.00"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>

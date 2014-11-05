@@ -697,8 +697,8 @@ a:hover {
 
 .autoComplete75px .ui-autocomplete-input.ui-inputfield{
     width : 75px !important;
+    
 }
-
 
 
 
@@ -732,10 +732,16 @@ a:hover {
 
 .singleLine
 {
-    text-wrap:none;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    text-wrap:none!important;
+    white-space:nowrap!important;
+    //overflow:hidden;
+    overflow-x: visible!important;
+    text-overflow:ellipsis!important;
+}
+
+.fonts{
+    font-size: 11px!important;
+    
 }
 
 .greentext{
@@ -822,3 +828,14 @@ a:hover {
     width: 100px!important;
 }
     
+
+
+.standardList{
+    height: 300px;
+    width: 300px!important;
+}
+
+.standardText{
+    width: 300px!important;
+    font-size: 22px;
+}

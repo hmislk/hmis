@@ -10,7 +10,7 @@
 
 
     <ui:define name="content">
-
+<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:panelGroup rendered="true" >
             <h:form>
                 <p:panel  id="panelPrint" styleClass="noBorder summeryBorder" header="Report by Refering Doctor">
@@ -82,7 +82,7 @@
                                 <h:outputLabel value="Discount"/>
                             </f:facet>
                             <h:outputLabel value="#{d.discount}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>                    
                         <p:column headerText="Net Total" style="text-align: right;" >
@@ -90,7 +90,7 @@
                                 <h:outputLabel value="Net Total"/>
                             </f:facet>
                             <h:outputLabel value="#{d.netTotal}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
                     </p:dataTable>

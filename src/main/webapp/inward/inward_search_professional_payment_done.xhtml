@@ -12,7 +12,7 @@
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >                         
-                            <h:panelGrid columns="7" >
+                            <h:panelGrid columns="8" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
@@ -22,8 +22,9 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createProfessionalPaymentTableInward}" onclick="onSubmitButton();" />
                                 <h:outputLabel/> <h:outputLabel/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
-                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/> <h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/> <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
                                 <h:outputLabel value="Inward Bill No"/>
+                                <h:outputLabel value="Payment Bill No"/>
                                 <h:outputLabel value="Bht No"/>
                                 <h:outputLabel value="Patient Name"/> 
                                 <h:outputLabel value="Speciality"/> 
@@ -31,6 +32,7 @@
                                 <h:outputLabel value="Service Name"/>  
                                 <h:outputLabel value="Charges"/>                              
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
@@ -53,6 +55,9 @@
                             <p:column headerText="Inward Bill No" >
                                 <h:outputLabel  value="#{bi.paidForBillFee.bill.insId}"  ></h:outputLabel>
                             </p:column>  
+                            <p:column headerText="Payment Bill No" >
+                                <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
+                            </p:column>
                             <p:column headerText="Bht No" >
                                 <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.bhtNo}" ></h:outputLabel>
                             </p:column>  
@@ -64,13 +69,13 @@
                             </p:column>                         
                             <p:column headerText="Paid at"  >
                                 <h:outputLabel value="#{bi.bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bi.bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bi.bill.cancelled}" value="#{bi.bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  
@@ -86,12 +91,12 @@
                             </p:column>    
                             <p:column headerText="Service Name"  >
                                 <h:outputLabel value="#{bi.paidForBillFee.billItem.item.name}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Charges"  >
                                 <h:outputLabel value="#{bi.paidForBillFee.feeValue}" >
-                                    <f:convertNumber pattern="#,000.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 

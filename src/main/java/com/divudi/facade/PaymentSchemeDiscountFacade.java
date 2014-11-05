@@ -22,7 +22,7 @@ public class PaymentSchemeDiscountFacade extends AbstractFacade<PaymentSchemeDis
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public PaymentSchemeDiscountFacade() {

@@ -12,6 +12,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <p:commandButton ajax="false" value="View Bills" action="view_all_outside_bills" actionListener="#{bookKeepingSummery.viewOutSideDepartmentBills()}" />
         <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.outSideFees}" var="th" 
                      rendered="#{bookKeepingSummery.outSideFees.size()>0}">
             <f:facet name="header">
@@ -27,7 +28,7 @@
                     <h:outputLabel value="Hospital Fee"/>
                 </f:facet>
                 <h:outputLabel value="#{th.value1}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>  
             <p:column style="text-align: right;" >
@@ -35,7 +36,7 @@
                     <h:outputLabel value="Professional Fee"/>
                 </f:facet>
                 <h:outputLabel value="#{th.value2}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>  
             <p:columnGroup type="footer">
@@ -44,7 +45,7 @@
                     <p:column style="text-align: right;" footerText="#{bookKeepingSummery.outSideFeeTotal}" >
                         <f:facet name="footer">
                             <h:outputLabel value="#{bookKeepingSummery.outSideFeeTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>

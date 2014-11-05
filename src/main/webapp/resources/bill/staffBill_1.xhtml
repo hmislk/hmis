@@ -139,7 +139,7 @@
                                 </h:panelGroup>
 
                                 <h:outputLabel value="#{bip.netValue}"  style="margin: 4px; font-size:  11px; text-align: right;" >
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>
@@ -150,7 +150,7 @@
                                 </td>
                                 <td style="min-width: 30%;text-align: right;font-size: 120%;">
                                     <h:outputLabel value="#{-cc.attrs.bill.netTotal}"  style="text-align: right!important;  font-size: 15px!important; font-weight: bold;">
-                                        <f:convertNumber pattern="#,000.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>

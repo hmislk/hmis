@@ -51,6 +51,9 @@
             <p:calendar  value="#{cc.attrs.controller.newPatient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
                 <f:ajax event="dateSelect" />
             </p:calendar>
+            <h:outputLabel value="Nic"/>
+            <p:inputMask mask="999999999V" id="txtNewPtNic" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.nic}">
+            </p:inputMask>
 
             <p:watermark value="YEAR" for="year" />
             <p:watermark value="MONTH" for="month" />

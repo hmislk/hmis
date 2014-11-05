@@ -62,6 +62,7 @@ import com.divudi.facade.PackegeFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -725,6 +726,7 @@ public class BillBeanController implements Serializable {
                 + " FROM Bill bf"
                 + " WHERE bf.institution=:ins"
                 + " and bf.toInstitution!=:ins "
+                + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -742,6 +744,7 @@ public class BillBeanController implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
+        temMap.put("bt", BillType.OpdBill);
 
         List<Object[]> list = getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -777,11 +780,14 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public List<Object[]> fetchOutSideDepartment(Date fromDate, Date toDate, Institution institution) {
-        String sql = "SELECT bf.toDepartment,sum(bf.performInstitutionFee),sum(bf.staffFee)"
-                + " FROM Bill bf"
-                + " WHERE bf.institution=:ins"
+    List<Bill> bills;
+
+    public void createOutSideDepartment(Date fromDate, Date toDate, Institution institution) {
+        String sql = "SELECT bf "
+                + " FROM Bill bf "
+                + " WHERE bf.institution=:ins "
                 + " and bf.toDepartment.institution!=:ins "
+                + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -800,6 +806,37 @@ public class BillBeanController implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
+        temMap.put("bt", BillType.OpdBill);
+
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Object[]> fetchOutSideDepartment(Date fromDate, Date toDate, Institution institution) {
+        String sql = "SELECT bf.toDepartment,sum(bf.performInstitutionFee),sum(bf.staffFee)"
+                + " FROM Bill bf"
+                + " WHERE bf.institution=:ins"
+                + " and bf.toDepartment.institution!=:ins "
+                + " and bf.billType=:bt "
+                + " and bf.createdAt between :fromDate and :toDate "
+                + " and (bf.paymentMethod = :pm1 "
+                + " or bf.paymentMethod = :pm2 "
+                + " or bf.paymentMethod = :pm3 "
+                + " or bf.paymentMethod = :pm4)"
+                + " group by bf.toDepartment "
+                + " order by bf.toDepartment.name ";
+
+        HashMap temMap = new HashMap();
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", institution);
+        // temMap.put("ftp1", FeeType.OwnInstitution);
+        //   temMap.put("ftp2", FeeType.Staff);
+        temMap.put("pm1", PaymentMethod.Cash);
+        temMap.put("pm2", PaymentMethod.Card);
+        temMap.put("pm3", PaymentMethod.Cheque);
+        temMap.put("pm4", PaymentMethod.Slip);
+        temMap.put("bt", BillType.OpdBill);
 
         return getDepartmentFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -1606,6 +1643,51 @@ public class BillBeanController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, hm);
     }
 
+    public Double[] fetchBillItemValues(Bill b) {
+        String sql = "Select sum(bf.grossValue),sum(bf.discount),sum(bf.netValue) "
+                + " from BillItem bf where "
+                + " bf.retired=false "
+                + " and bf.bill=:bill ";
+        HashMap hm = new HashMap();
+        hm.put("bill", b);
+        Object[] obj = getBillFacade().findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
+
+        if (obj == null) {
+            Double[] dbl = new Double[3];
+            dbl[0] = 0.0;
+            dbl[1] = 0.0;
+            dbl[2] = 0.0;
+            return dbl;
+        }
+
+        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
+
+        return dbl;
+    }
+
+      public Double[] fetchBillFeeValues(Bill b) {
+        String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue) "
+                + " from BillFee bf where "
+                + " bf.retired=false "
+                + " and bf.bill=:bill ";
+        HashMap hm = new HashMap();
+        hm.put("bill", b);
+        Object[] obj = getBillFacade().findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
+
+        if (obj == null) {
+            Double[] dbl = new Double[3];
+            dbl[0] = 0.0;
+            dbl[1] = 0.0;
+            dbl[2] = 0.0;
+            return dbl;
+        }
+
+        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
+
+        return dbl;
+    }
+
+    
     public void setPaymentMethodData(Bill b, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
 
         if (paymentMethod.equals(PaymentMethod.Cheque)) {
@@ -2688,6 +2770,14 @@ public class BillBeanController implements Serializable {
 
     public void setAllowedPaymentMethodFacade(AllowedPaymentMethodFacade allowedPaymentMethodFacade) {
         this.allowedPaymentMethodFacade = allowedPaymentMethodFacade;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
     }
 
 }

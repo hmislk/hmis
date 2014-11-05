@@ -133,7 +133,7 @@
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </p:column>
-                                <p:column headerText="Room Charge">  
+                                <p:column style="text-align: right;" headerText="Room Charge">  
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedRoomCharge}">
@@ -153,7 +153,7 @@
                                         </h:outputLabel> 
                                     </h:panelGrid>
                                 </p:column>
-                                <p:column headerText="Maintain Charge">
+                                <p:column style="text-align: right;" headerText="Maintain Charge">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedMaintainCharge}">
@@ -173,7 +173,7 @@
                                         </h:outputLabel> 
                                     </h:panelGrid>                                   
                                 </p:column>    
-                                <p:column headerText="MO Charge">
+                                <p:column style="text-align: right;" headerText="MO Charge">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedMoCharge}">
@@ -193,7 +193,7 @@
                                         </h:outputLabel> 
                                     </h:panelGrid>
                                 </p:column>                                        
-                                <p:column headerText="Nursing Charge">
+                                <p:column style="text-align: right;" headerText="Nursing Charge">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedNursingCharge}">
@@ -213,7 +213,7 @@
                                         </h:outputLabel> 
                                     </h:panelGrid>                                   
                                 </p:column> 
-                                <p:column headerText="Linen Charge">
+                                <p:column style="text-align: right;" headerText="Linen Charge">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedLinenCharge}">
@@ -233,7 +233,7 @@
                                         </h:outputLabel> 
                                     </h:panelGrid> 
                                 </p:column> 
-                                <p:column headerText="Administration Charge">
+                                <p:column style="text-align: right;" headerText="Administration Charge">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
@@ -253,7 +253,7 @@
                                         </h:outputLabel> 
                                     </h:panelGrid> 
                                 </p:column> 
-                                <p:column headerText="Madical Care Charge">
+                                <p:column style="text-align: right;" headerText="Madical Care Charge">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Total"/>
                                         <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
@@ -277,7 +277,9 @@
                         </p:tab>
 
 
-                        <p:tab id="tabTimed" title="Timed Service Detail"  >           
+                        <p:tab id="tabTimed" title="Timed Service Detail"  >  
+                            
+                            <p:panelGrid columns="1">
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx"
@@ -286,9 +288,15 @@
                                              cellFontStyle="NORMAL"  
                                              fontName="Courier New"  />
                             </p:commandButton>
+                            </p:panelGrid>
 
                             <p:dataTable id="timed"  value="#{bhtSummeryFinalizedController.patientItems}" var="pt">
+
+                                <f:facet name="header">
+                                    <p:outputLabel value="Inward Payment Bill BHT #{bhtSummeryFinalizedController.patientEncounter.bhtNo} - Timed Service Details"/>
+                                </f:facet>
                                 <p:column headerText="Service Name">
+
                                     <f:facet name="header">
                                         <h:outputLabel value="Service Name"/>
                                     </f:facet>
@@ -310,7 +318,7 @@
                                         <f:convertDateTime pattern="dd/MM/yy hh mm ss"/>
                                     </h:outputLabel>                                                              
                                 </p:column>
-                                <p:column headerText="Total">
+                                <p:column style="text-align: right;" headerText="Total">
                                     <f:facet name="header">
                                         <h:outputLabel value="Total"/>
                                     </f:facet>
@@ -318,7 +326,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount">
+                                <p:column style="text-align: right;" headerText="Discount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount"/>
                                     </f:facet>
@@ -326,7 +334,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Net Total">
+                                <p:column style="text-align: right;" headerText="Net Total">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Total"/>
                                     </f:facet>
@@ -334,7 +342,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>       
                                 </p:column>                                
-                                <p:column headerText="Added User" exportable="false" >
+                                <p:column headerText="Added User" exportable="false"  style="text-align: center;">
                                     <h:outputLabel value="#{pt.creater.webUserPerson.name}"/>     
                                     <br/>
                                     <h:panelGroup rendered="#{pt.retired}" >
@@ -343,7 +351,7 @@
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>     
-                                <p:column headerText="Inward Charge Type" exportable="false">
+                                <p:column headerText="Inward Charge Type" exportable="false" style="text-align: center;">
                                     <h:outputLabel value="#{pt.item.inwardChargeType}"/>                                        
                                 </p:column>   
 
@@ -351,6 +359,7 @@
                         </p:tab>
 
                         <p:tab id="tabSer" title="Service Detail BillItem"  >
+                            <p:panelGrid columns="1">
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
                                              >
@@ -360,6 +369,7 @@
                                              cellFontStyle="NORMAL"  
                                              fontName="Courier New"  />
                             </p:commandButton>
+                            </p:panelGrid>
 
                             <p:dataTable  value="#{bhtSummeryFinalizedController.billItems}"
                                           id="serv"
@@ -372,7 +382,11 @@
                                                            (bi.bill.billedBill ne null 
                                                            and bi.bill.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}">                               
 
-
+                                 <f:facet name="header">
+                                    <p:outputLabel value="Inward Payment Bill BHT #{bhtSummeryFinalizedController.patientEncounter.bhtNo} - Service Detail Bill Item"/>
+                                </f:facet>
+                                
+                                
                                 <p:column headerText="Bill Id">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill Id"/>
@@ -391,7 +405,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{bi.item.category.name}"/>                                    
                                 </p:column>
-                                <p:column headerText="Gross Value">
+                                <p:column style="text-align: right;" headerText="Gross Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
@@ -399,7 +413,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                  <p:column headerText="Margin Value">
+                                <p:column style="text-align: right;" headerText="Margin Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="MArgin Value"/>
                                     </f:facet>
@@ -407,7 +421,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount">
+                                <p:column style="text-align: right;" headerText="Discount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount"/>
                                     </f:facet>
@@ -415,7 +429,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Net Total">
+                                <p:column style="text-align: right;" headerText="Net Total">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Total"/>
                                     </f:facet>
@@ -424,7 +438,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Comments" exportable="false">                                    
+                                <p:column headerText="Comments" exportable="false" style="text-align: center;">                                    
                                     <h:outputLabel value="#{bi.descreption}"/>
                                 </p:column>
                                 <p:column headerText="Inward Charge Type" >
@@ -432,7 +446,7 @@
                                 </p:column>
                                 <p:column exportable="false" >
                                     <p:dataTable value="#{bi.billFees}" var="bf">
-                                        <p:column>
+                                        <p:column >
                                             <h:outputLabel value="#{bf.fee.feeType}">                                              
                                             </h:outputLabel>
                                         </p:column>
@@ -440,22 +454,22 @@
                                             <h:outputLabel value="#{bf.staff.speciality.name}">                                              
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column>
+                                        <p:column style="text-align: right;">
                                             <h:outputLabel value="#{bf.feeGrossValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>                                            
                                         </p:column>
-                                        <p:column>
+                                        <p:column style="text-align: right;">
                                             <h:outputLabel value="#{bf.feeMargin}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column>
+                                        <p:column style="text-align: right;">
                                             <h:outputLabel value="#{bf.feeDiscount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column>
+                                        <p:column style="text-align: right;">
                                             <h:outputLabel value="#{bf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -464,14 +478,14 @@
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{bi.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{bi.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{bi.bill.cancelled}" 
                                                        value="#{bi.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -497,7 +511,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{bi.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -512,7 +526,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{bi.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -538,7 +552,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{bf.billItem.item.name}"/>                                    
                                 </p:column>
-                                <p:column headerText="Gross Value">
+                                <p:column  headerText="Gross Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
@@ -546,7 +560,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount">
+                                <p:column  headerText="Discount">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount"/>
                                     </f:facet>
@@ -568,21 +582,21 @@
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{bf.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{bf.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{bi.bill.cancelled}" 
                                                        value="#{bf.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
 
                             </p:dataTable>
                         </p:tab>
-                        
+
                         <p:tab title="Store Issue">                          
                             <p:dataTable value="#{bhtSummeryFinalizedController.storeItems}" var="iss" scrollable="true"
                                          scrollHeight="300"
@@ -609,17 +623,17 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>                               
-                                <p:column headerText="Total Value"  exportable="false">
+                                <p:column style="text-align: right;" headerText="Total Value"  exportable="false">
                                     <h:outputLabel  value="#{iss.grossValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Margin Value" exportable="false">
+                                <p:column style="text-align: right;" headerText="Margin Value" exportable="false">
                                     <h:outputLabel  value="#{iss.marginValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Gross Value" >
+                                <p:column style="text-align: right;" headerText="Gross Value" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
@@ -627,7 +641,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount Value">
+                                <p:column style="text-align: right;" headerText="Discount Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount Value"/>
                                     </f:facet>
@@ -635,7 +649,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Net Value">
+                                <p:column style="text-align: right;" headerText="Net Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value"/>
                                     </f:facet>
@@ -643,7 +657,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted Value">
+                                <p:column style="text-align: right;" headerText="Adjusted Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Adjusted Value"/>
                                     </f:facet>
@@ -654,14 +668,14 @@
 
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{iss.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{iss.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
                                                        value="#{iss.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -687,7 +701,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{iss.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -702,14 +716,14 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{iss.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
 
                             </p:dataTable>
                         </p:tab>
-                        
+
                         <p:tab title="Madicine Issue">
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
@@ -750,17 +764,17 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>                               
-                                <p:column headerText="Total Value"  exportable="false">
+                                <p:column style="text-align: right;" headerText="Total Value"  exportable="false">
                                     <h:outputLabel  value="#{iss.grossValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Margin Value" exportable="false">
+                                <p:column style="text-align: right;" headerText="Margin Value" exportable="false">
                                     <h:outputLabel  value="#{iss.marginValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Gross Value" >
+                                <p:column style="text-align: right;" headerText="Gross Value" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
@@ -768,7 +782,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount Value">
+                                <p:column style="text-align: right;" headerText="Discount Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount Value"/>
                                     </f:facet>
@@ -776,7 +790,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Net Value">
+                                <p:column style="text-align: right;" headerText="Net Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value"/>
                                     </f:facet>
@@ -784,7 +798,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted Value">
+                                <p:column style="text-align: right;" headerText="Adjusted Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Adjusted Value"/>
                                     </f:facet>
@@ -795,14 +809,14 @@
 
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{iss.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{iss.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
                                                        value="#{iss.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -828,7 +842,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{iss.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -843,7 +857,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{iss.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -877,7 +891,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{bil.toInstitution.name}"/>
                                 </p:column>
-                                <p:column headerText="Cost">
+                                <p:column style="text-align: right;" headerText="Cost">
                                     <f:facet name="header">
                                         <h:outputLabel value="Cost"/>
                                     </f:facet>
@@ -891,14 +905,14 @@
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{bil.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{bil.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{bil.cancelled}" 
                                                        value="#{bil.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -924,7 +938,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{bil.editedAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -939,7 +953,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{bil.checkeAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -969,7 +983,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{pf.staff.person.nameWithTitle}"/>                                    
                                 </p:column>
-                                <p:column headerText="Fee Value">
+                                <p:column style="text-align: right;" headerText="Fee Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Fee Value"/>
                                     </f:facet>
@@ -984,14 +998,14 @@
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{pf.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{pf.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}" 
                                                        value="#{pf.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1017,7 +1031,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{pf.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1032,7 +1046,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{pf.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -1066,7 +1080,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{pf.staff.person.nameWithTitle}"/>                                    
                                 </p:column>
-                                <p:column headerText="Fee Value">
+                                <p:column style="text-align: right;" headerText="Fee Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Fee Value"/>
                                     </f:facet>
@@ -1081,14 +1095,14 @@
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{pf.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{pf.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}" 
                                                        value="#{pf.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1114,7 +1128,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{pf.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1129,7 +1143,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{pf.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -1146,7 +1160,7 @@
                                              cellFontStyle="NORMAL"  
                                              fontName="Courier New"  />
                             </p:commandButton>
-                            <p:dataTable id="pay" scrollable="true" scrollHeight="300"  
+                            <p:dataTable id="pay"  
                                          value="#{bhtSummeryFinalizedController.paymentBills}" 
                                          var="p"
                                          rowStyleClass="#{(p.netTotal ne 0 )                                                                       
@@ -1161,22 +1175,29 @@
                                     <h:outputLabel value="#{p.insId}"/>
 
                                 </p:column>
-                                <p:column headerText="Value">
+                                <p:column style="text-align: right;" headerText="Value">
                                     <f:facet name="header">
                                         <h:outputLabel value="Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{p.netTotal}"/>                                    
+                                    <h:outputLabel value="#{p.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{bhtSummeryFinalizedController.paidbyPatientTotalValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>     
-                                <p:column headerText="Created At" exportable="false">
-                                    <h:outputLabel value="#{p.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh mm ss a"/>
+                                <p:column style="text-align: center;" headerText="Created At" exportable="false">
+                                    <h:outputLabel  value="#{p.createdAt}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{p.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
                                                        value="#{p.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1202,7 +1223,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{p.editedAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1217,9 +1238,51 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{p.checkeAt}" >
-                                            <f:convertDateTime pattern="dd MMM yyyy hh mm ss a"/>
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:tab>
+
+                        <p:tab id="tabC" title="Credit Payments"  >
+                            <p:commandButton value="Export Excel" ajax="false" 
+                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             >
+                                <pe:exporter type="xlsx"
+                                             target="cre" fileName="Credit Company Payment"
+                                             facetFontStyle="BOLD"  
+                                             cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
+                            <p:dataTable id="cre" 
+                                         value="#{bhtSummeryFinalizedController.creditPayment}" 
+                                         var="cre">
+
+                                <p:column headerText="Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{cre.bill.insId}"/>
+
+                                </p:column>
+                                <p:column style="text-align: right;" headerText="Value">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{cre.netValue}"/>
+
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{bhtSummeryFinalizedController.creditCompanyPaymentTotal}"></h:outputLabel>
+                                    </f:facet>
+                                </p:column>     
+
+                                <p:column headerText="Created At" exportable="false">
+                                    <h:outputLabel value="#{cre.createdAt}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                    </h:outputLabel>
+
                                 </p:column>
 
                             </p:dataTable>

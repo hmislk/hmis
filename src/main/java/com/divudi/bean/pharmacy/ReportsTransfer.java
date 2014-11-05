@@ -13,6 +13,8 @@ import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -117,8 +119,6 @@ public class ReportsTransfer implements Serializable {
     public void setCategory(Category category) {
         this.category = category;
     }
-    
-    
 
     public void fillMovingWithStock() {
         String sql;
@@ -137,7 +137,7 @@ public class ReportsTransfer implements Serializable {
                 + "(bi.bill.billType=:t1 or bi.bill.billType=:t2) and "
                 + "bi.bill.billDate between :fd and :td group by bi.item "
                 + "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
-        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m);
+        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecordsQty = new ArrayList<>();
         for (Object[] obj : objs) {
             StockReportRecord r = new StockReportRecord();
@@ -162,16 +162,20 @@ public class ReportsTransfer implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         List<BillType> bts = Arrays.asList(billTypes);
+        Class[] btsa = {PreBill.class, CancelledBill.class, RefundBill.class, BilledBill.class};
+        List<Class> bcts = Arrays.asList(btsa);
         m.put("bt", bts);
+        m.put("bct", bcts);
         BillItem bi = new BillItem();
 
         sql = "select bi.item, abs(SUM(bi.pharmaceuticalBillItem.qty)), "
                 + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)), "
                 + "abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.qty))  "
                 + "FROM BillItem bi where "
-                + " bi.retired=false "
+                + " type(bi.bill) in :bct "
+                + " and bi.retired=false "
                 + " and bi.bill.department=:d "
-                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.billType in :bt "
                 + " group by bi.item ";
 
@@ -180,10 +184,14 @@ public class ReportsTransfer implements Serializable {
         } else {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
         }
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
-        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecords = new ArrayList<>();
+        if (objs == null) {
+            System.out.println("objs = " + objs);
+            return;
+        }
         for (Object[] obj : objs) {
             StockReportRecord r = new StockReportRecord();
             r.setItem((Item) obj[0]);
@@ -208,6 +216,9 @@ public class ReportsTransfer implements Serializable {
         m.put("td", toDate);
         m.put("bt", bts);
 
+        Class[] btsa = {PreBill.class, CancelledBill.class, RefundBill.class, BilledBill.class};
+        List<Class> bcts = Arrays.asList(btsa);
+        m.put("bct", bcts);
         BillItem bi = new BillItem();
 
         sql = "select bi.item, "
@@ -218,7 +229,8 @@ public class ReportsTransfer implements Serializable {
                 + " where bi.retired=false "
                 + " and  bi.bill.department=:d "
                 + " and bi.bill.billType in :bt "
-                + " and bi.bill.billDate between :fd and :td "
+                + " and type(bi.bill) in :bct "
+                + " and bi.bill.createdAt between :fd and :td "
                 + " group by bi.item ";
 
         if (!fast) {
@@ -228,6 +240,9 @@ public class ReportsTransfer implements Serializable {
         }
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecordsQty = new ArrayList<>();
+        if (objs == null) {
+            return;
+        }
         for (Object[] obj : objs) {
             StockReportRecord r = new StockReportRecord();
             r.setItem((Item) obj[0]);
@@ -434,17 +449,29 @@ public class ReportsTransfer implements Serializable {
     public void fillDepartmentUnitIssueByBill() {
         Map m = new HashMap();
         String sql;
+        
+        sql = "select b from Bill b where "                
+                + " b.createdAt "
+                + " between :fd and :td  "
+                + " and b.billType=:bt ";
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", BillType.PharmacyIssue);
-        m.put("fdept", fromDepartment);
-        m.put("tdept", toDepartment);
-        sql = "select b from Bill b where "
-                + " b.fromDepartment=:fdept and "
-                + " b.toDepartment=:tdept and "
-                + " b.createdAt "
-                + " between :fd and :td and "
-                + " b.billType=:bt order by b.id";
+        
+        if(fromDepartment != null){
+            sql +=" and b.fromDepartment=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+        
+        if(toDepartment != null){
+            sql +=" and b.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+        
+        
+        
+        sql+= " order by b.id";
+        
         transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
@@ -501,11 +528,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.bill.createdAt between :fd and :td"
@@ -535,8 +562,8 @@ public class ReportsTransfer implements Serializable {
         if (surgeryBillType != null) {
             sql += " and b.bill.surgeryBillType=:surg";
             m.put("surg", surgeryBillType);
-        }else{
-            sql+=" and b.bill.surgeryBillType is null ";
+        } else {
+            sql += " and b.bill.surgeryBillType is null ";
         }
 
         if (toDepartment != null) {
@@ -568,11 +595,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.createdAt between :fd and :td"
@@ -597,11 +624,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.createdAt between :fd and :td"
@@ -626,11 +653,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.createdAt between :fd and :td"
@@ -655,11 +682,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.createdAt between :fd and :td"
@@ -805,7 +832,7 @@ public class ReportsTransfer implements Serializable {
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
 
     }
-    
+
     public void fillItemCountsBhtSurgery() {
 
         List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre, SurgeryBillType.PharmacyItem);
@@ -929,13 +956,12 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
-        
 
         sql += " and b.bill.createdAt between :fd and :td"
                 + " and b.bill.billType=:bt";
@@ -966,11 +992,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.bill.createdAt between :fd and :td"
@@ -1002,11 +1028,11 @@ public class ReportsTransfer implements Serializable {
             sql += " and b.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (category != null) {
             sql += " and b.item.category=:cat";
             m.put("cat", category);
-            
+
         }
 
         sql += " and b.bill.createdAt between :fd and :td"
@@ -1232,7 +1258,7 @@ public class ReportsTransfer implements Serializable {
 
     public BillType[] getBillTypes() {
         if (billTypes == null) {
-            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue};
+            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue, BillType.PharmacyPre};
         }
         return billTypes;
     }

@@ -11,6 +11,7 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.lab.InvestigationItem;
+import com.divudi.entity.lab.InvestigationValidator;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.entity.pharmacy.MeasurementUnit;
@@ -139,10 +140,10 @@ public class Item implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     Date effectiveFrom;
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date effectiveTo;
-    
+    private Date effectiveTo;
+    private boolean scanFee;
+
     //Matara Phrmacy Sale Autocomplete
-    
     @ManyToOne
     private Vmp vmp;
 
@@ -245,6 +246,9 @@ public class Item implements Serializable {
     List<ItemFee> itemFees;
 
     public List<ItemFee> getItemFees() {
+        if (itemFees == null) {
+            itemFees = new ArrayList<>();
+        }
         return itemFees;
     }
 
@@ -746,7 +750,23 @@ public class Item implements Serializable {
     public void setVmp(Vmp vmp) {
         this.vmp = vmp;
     }
-    
+
+    public Date getEffectiveTo() {
+        return effectiveTo;
+    }
+
+    public void setEffectiveTo(Date effectiveTo) {
+        this.effectiveTo = effectiveTo;
+    }
+
+    public boolean isScanFee() {
+        return scanFee;
+    }
+
+    public void setScanFee(boolean scanFee) {
+        this.scanFee = scanFee;
+    }
+
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override

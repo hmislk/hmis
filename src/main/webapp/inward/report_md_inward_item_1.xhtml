@@ -65,7 +65,7 @@
                             <p:column>
                                 <h:outputLabel value="#{ix.total}" 
                                                rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
-                                    <f:convertNumber pattern="#,000.00" />
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>  
                             <p:ajax event="itemSelect" process="acIx ct" update="@all" />
@@ -102,23 +102,23 @@
                     <p:column headerText="Name" >
                         <h:outputLabel value="#{i.billItem.item.name}"/>
                     </p:column>
-                    <p:column headerText="Hospital Fee">
+                    <p:column style="text-align: right;" headerText="Hospital Fee">
                         <h:outputLabel value="#{i.fee.fee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{mdInwardReportController.total}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
 <!--                    <p:column headerText="Total">
                         <h:outputLabel value="#{i.fee.professionalFee+i.fee.hospitalFee}">
-                            <f:convertNumber pattern="#,000.00" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{mdInwardReportController.itemHospitalTotal}">
-                                <f:convertNumber pattern="#,000.00" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>                 -->

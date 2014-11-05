@@ -9,6 +9,7 @@
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <p:panel>
@@ -48,7 +49,10 @@
             </p:panel>
             <p:spacer height="30"/>
 
-            <p:dataTable id="opd" rowIndexVar="i"  value="#{serviceSummery.billItemWithFees}" var="d">                   
+            <p:dataTable id="opd" rowIndexVar="i"  value="#{serviceSummery.billItemWithFees}" var="d" 
+                         paginator="false"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="5,10,15,20">                   
 
                 <f:facet name="header">
                     <h:outputLabel value="#{serviceSummery.category.name}"/>
@@ -126,11 +130,11 @@
                         <h:outputLabel value="Professional Fee" />
                     </f:facet>
                     <p:outputLabel value="#{d.proFee}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.proFeeTotal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
@@ -140,11 +144,11 @@
                         <h:outputLabel value="Hospital Fee" />
                     </f:facet>
                     <p:outputLabel value="#{d.hospitalFee}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.hosFeeTotal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
@@ -154,11 +158,11 @@
                         <h:outputLabel value="Hospital Fee Gross" />
                     </f:facet>
                     <p:outputLabel value="#{d.hospitalFeeGross}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.hosFeeGrossValueTotal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
@@ -168,11 +172,11 @@
                         <h:outputLabel value="Hospital Fee Discount" />
                     </f:facet>
                     <p:outputLabel value="#{d.hospitalFeeDiscount}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.hosFeeDisTotal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
@@ -182,11 +186,11 @@
                         <h:outputLabel value="Hospital Fee Margin" />
                     </f:facet>
                     <p:outputLabel value="#{d.hospitalFeeMargin}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.hosFeeMarginTotal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
@@ -196,11 +200,11 @@
                         <h:outputLabel value="Out Side Fee" />
                     </f:facet>
                     <p:outputLabel value="#{d.outSideFee}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.outSideFeeTotoal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
@@ -210,11 +214,11 @@
                         <h:outputLabel value="Total Fee" />
                     </f:facet>
                     <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee}">
-                        <f:convertNumber pattern="#,000.00"/>
+                        <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal}">
-                            <f:convertNumber pattern="#,000.00"/>
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
                 </p:column>

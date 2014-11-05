@@ -65,7 +65,7 @@
                     <h:outputLabel value="Total"/>
                 </f:facet>
                 <h:outputLabel value="#{0-ch.netTotal}">
-                    <f:convertNumber pattern="#,000.00"/>
+                    <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>      
             </p:column>
 
@@ -76,7 +76,7 @@
                     <p:column style="text-align: right;" footerText="#{0-bookKeepingSummery.slipTotal}">
                         <f:facet name="footer">
                             <h:outputLabel value="#{0-bookKeepingSummery.slipTotal}">
-                                <f:convertNumber pattern="#,000.00"/>
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>   
                         </f:facet>
                     </p:column>

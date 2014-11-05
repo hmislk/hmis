@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="DoctorSpecialityEditDlg" widgetVar="DoctorSpecialityEditDialog" modal="true" resizable="false" appendTo="@(body)" header="Edit Speciality">
+            <h:form id="DoctorSpecialityEditForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{doctorSpecialityController.selected != null}">
+                        
+                        <p:outputLabel value="Name"  />
+                        <p:inputText id="name" value="#{doctorSpecialityController.selected.name}"/>
+                        
+
+                        <p:outputLabel value="Code" for="code" />
+                        <p:inputText id="code" value="#{doctorSpecialityController.selected.code}" />
+                    
+                        <p:outputLabel value="Description" for="description" />
+                        <p:inputText id="description" value="#{doctorSpecialityController.selected.description}"/>
+                    
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{doctorSpecialityController.updateSelected()}" value="Save" update="display,:DoctorSpecialityListForm:datalist" oncomplete="handleSubmit(args, 'DoctorSpecialityEditDialog');"/>
+                    <p:commandButton value="Cancel" onclick="DoctorSpecialityEditDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

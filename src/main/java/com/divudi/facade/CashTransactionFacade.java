@@ -22,7 +22,7 @@ public class CashTransactionFacade extends AbstractFacade<CashTransaction> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+        if(em == null){}return em;
     }
 
     public CashTransactionFacade() {
