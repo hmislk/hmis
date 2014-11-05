@@ -16,4 +16,5 @@ public enum DepartmentType {
     Kitchen,
     Opd,
     Inventry,
+    Inward,
 }
