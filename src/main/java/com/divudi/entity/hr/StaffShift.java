@@ -161,6 +161,10 @@ public class StaffShift implements Serializable {
     }
 
     public void calLieu(DayType dayType) {
+        if (dayType == null) {
+            return;
+        }
+
         switch (dayType) {
             case DayOff:
                 lieuAndPaymentAllowed = true;
@@ -952,9 +956,12 @@ public class StaffShift implements Serializable {
     }
 
     public void calMultiplyingFactor(DayType dayType) {
+        if (dayType == null) {
+            return;
+        }
+
         // Multiplying Factor Salary if 2 day Payment = 1
         // if one and half day  payment= 0.5
-
         switch (dayType) {
             case MurchantileHoliday:
                 multiplyingFactorSalary = 1.0;//two day payments

@@ -45,8 +45,8 @@
                         </h:panelGrid>
 
 
+                        <p:panelGrid columns="3">
                         
-
                         <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createRoomTime()}" onclick="onSubmitButton();"  ></p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
@@ -54,8 +54,27 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
+                         
+                        </p:panelGrid>
+                        
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{inwardReportController1.categoryTimes}" var="rm">
+                                
+                                 <f:facet name="header">
+                                       
+                                          <h:outputLabel value="BHT Income"/>
+                                        <h:outputLabel value=" : "/>
+                                        <h:outputLabel value="#{inwardReportController1.fromDate}">
+                                             <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value=" -- "/>
+                                        <h:outputLabel value="#{inwardReportController1.toDate}">
+                                             <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+
+                                
+                                
                                 <p:column exportable="false">
                                     <p:commandButton ajax="false" value="view Detail" 
                                                      action="inward_report_room_detail" 

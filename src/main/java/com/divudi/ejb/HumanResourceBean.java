@@ -1526,7 +1526,7 @@ public class HumanResourceBean {
     }
 
     public double calculateExtraDutyTime(Date fromDate, Date toDate, Staff staff) {
-        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactor) "
+        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime) "
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.shiftDate>=:fd "

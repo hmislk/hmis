@@ -33,7 +33,7 @@
                                         <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                         itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                                     </p:selectOneMenu>
-                                    
+
                                 </h:panelGrid>
                                 <h:panelGrid columns="3">
                                     <p:commandButton ajax="false" action="#{mdInwardReportController.createInwardBalancePaymentBills1()}" value="Search" onclick="onSubmitButton();" />
@@ -47,20 +47,20 @@
                                 </h:panelGrid>
                             </h:panelGroup>
                         </f:facet>
-                        <p:panel id="gpBillPreview" header="From #{mdInwardReportController.fromDate} To #{mdInwardReportController.fromDate} All Balance Payment Bills" styleClass="noBorder summeryBorder">
-                            <f:facet name="header" >
-                                <p:outputLabel value="From "/>
-                                <p:outputLabel value="#{mdInwardReportController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy"/>
-                                </p:outputLabel>
-                                <p:outputLabel value=" To " />
-                                <p:outputLabel value="#{mdInwardReportController.toDate}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy"/>
-                                </p:outputLabel>
-                                <p:outputLabel value=" All Balance Payment Bills" />
-                            </f:facet>
-                            <p:dataTable id="tblBills" value="#{mdInwardReportController.billItem}" var="bb" style="width: 100%">
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
 
+                            <p:dataTable id="tblBills" value="#{mdInwardReportController.billItem}" var="bb" style="width: 100%">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="From "/>
+                                    <p:outputLabel value="#{mdInwardReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                    </p:outputLabel>
+                                    <p:outputLabel value=" To " />
+                                    <p:outputLabel value="#{mdInwardReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                    </p:outputLabel>
+                                    <p:outputLabel value=" All Balance Payment Bills" />
+                                </f:facet>
                                 <p:column headerText="Bht No" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Bht No"/>
@@ -89,7 +89,7 @@
                                     <h:outputLabel value="#{bb.createdAt}" >
                                         <f:convertDateTime pattern="dd MMM yy"/>
                                     </h:outputLabel>
-                                    <br/>
+                               
                                     <h:panelGroup rendered="#{bb.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " >
                                         </h:outputLabel>
@@ -105,7 +105,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{bb.bill.insId}" />                                      
                                 </p:column>
-                                
+
                                 <p:column headerText="Credit Company">
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Company"/>

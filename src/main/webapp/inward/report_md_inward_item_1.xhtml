@@ -75,10 +75,16 @@
                         <p:watermark for="acIx" value="Item"/>
                         <p:watermark for="dept" value="Department"/>
                         <p:watermark for="ins" value="Institution"/>
+                        
+                        <p:panelGrid columns="2">
                         <p:commandButton ajax="false" value="Process by Added Date" 
                                          action="#{mdInwardReportController.createItemWithFeeByAddedDate1}" style="float: right;" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Process by Discharge Date" 
                                          action="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" style="float: right;" onclick="onSubmitButton();" />
+                        </p:panelGrid>
+                        
+                    
+                    
                     </h:panelGrid>
 
                 </p:panel>   

@@ -14,18 +14,13 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Doctor Payment" >
+                    <p:panel header="Doctor Payment(By Bill)" >
                         <p:panel>
                             <h:panelGrid columns="2">
                                 <p:outputLabel value="From" />
                                 <p:calendar id="fdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
                                 <p:outputLabel value="To" />
                                 <p:calendar id="tdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
-                                <h:outputLabel  value="Speciality" ></h:outputLabel>
-                                <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
-                                                completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon"   >
-                                </p:autoComplete>
                                 <h:outputLabel value="Admission Type : " ></h:outputLabel>
                                 <p:selectOneMenu  id="lstAdmissionType"   
                                                   value="#{inwardStaffPaymentBillController.admissionType}" >
@@ -42,55 +37,95 @@
                                     <f:selectItem itemLabel="All Credit Companies"/>
                                     <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                     itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
-                                </p:selectOneMenu>   
+                                </p:selectOneMenu>
+                                <h:outputLabel  value="Speciality" ></h:outputLabel>
+                                <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
+                                                completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                converter="specilityCon"   >
+                                </p:autoComplete>
+                                <h:outputLabel  value="Staff / Doctor" ></h:outputLabel>
+                                <p:autoComplete style="width: 400px;" forceSelection="true" value="#{inwardStaffPaymentBillController.currentStaff}" id="scStaff"
+                                                completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                converter="stfcon"   >
+                                </p:autoComplete>
                             </h:panelGrid>
                             <p:watermark for="fdate" value="From Date" />
                             <p:watermark for="tdate" value="To Date" />
                             <p:watermark for="acSpeciality" value="Speciality" />
+                            <p:watermark for="scStaff" value="Staff / Doctor" />
                         </p:panel>
-                        <p:panel>
-                            <p:commandButton ajax="false" value="Fill Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryCreatedDate()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryDischargeDate()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#"  >
+                        <p:panelGrid columns="4">
+                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByCreatedDate}" onclick="onSubmitButton();"  />
+                            <p:commandButton ajax="false" value="Fill By Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByDischargeDate}" onclick="onSubmitButton();"  />
+                            <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
+                                <pe:exporter type="xlsx" target="tbl" fileName="doctor_payment_report" />
                             </p:commandButton>
-                        </p:panel>
+
+
+                        </p:panelGrid>
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">
-                                <p:dataTable id="tb" value="#{inwardStaffPaymentBillController.list1}" var="bf" >
-                                    
+                                <p:dataTable id="tbl" value="#{inwardStaffPaymentBillController.bills}" var="b" >
+
                                     <f:facet name="header">
-                                        <h:outputLabel value="Payments For :  #{inwardStaffPaymentBillController.speciality}"/>
+
+                                        <h:outputLabel value="Doctor Payment #{inwardStaffPaymentBillController.currentStaff.person}"/>
+                                        <h:outputLabel value=" : "/>
+                                        <h:outputLabel value="#{inwardStaffPaymentBillController.fromDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value=" -- "/>
+                                        <h:outputLabel value="#{inwardStaffPaymentBillController.toDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                        </h:outputLabel>
                                     </f:facet>
 
-                                    <p:column headerText="Code">
+                                    <p:column headerText="Paid By">
                                         <f:facet name="header">
-                                            <p:outputLabel value="Code" />
+                                            <p:outputLabel value="Paid By" />
                                         </f:facet>
-                                        <p:outputLabel value="#{bf.string2}" >
+                                        <p:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" >
                                         </p:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Name">
+                                    <p:column headerText="Date/Time">
                                         <f:facet name="header">
-                                            <p:outputLabel value="Name" />
+                                            <p:outputLabel value="Date/Time" />
                                         </f:facet>
-                                        <p:outputLabel value="#{bf.string1}" >
+                                        <p:outputLabel value="#{b.createdAt}" >
+                                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Bill No">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Bill No" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{b.insId}" >
                                         </p:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Paid Amount" style="text-align: right;">
                                         <f:facet name="header">
-                                            <p:outputLabel value="Paid Amount" />
+                                            <h:outputLabel value="Paid Amount" />
                                         </f:facet>
-                                        <p:outputLabel value="#{bf.value}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <p:outputLabel value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </p:outputLabel>
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{inwardStaffPaymentBillController.totalPaying}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </f:facet>
+
+
                                     </p:column>
+
+
                                 </p:dataTable>
                             </p:panelGrid>
                         </p:panel>
