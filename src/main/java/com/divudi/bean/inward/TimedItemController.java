@@ -218,6 +218,7 @@ public class TimedItemController implements Serializable {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Theatre);
         selectedItems = getFacade().findBySQL(sql, m);
+        System.out.println("selectedItems = " + selectedItems);
         return selectedItems;
     }
 
@@ -229,6 +230,7 @@ public class TimedItemController implements Serializable {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Inward);
         selectedItems = getFacade().findBySQL(sql, m);
+        System.out.println("selectedItems = " + selectedItems);
         return selectedItems;
     }
 
@@ -278,6 +280,7 @@ public class TimedItemController implements Serializable {
 
     private void recreateModel() {
         items = null;
+        selectedItems = null;
     }
 
     public void saveSelected() {
@@ -301,7 +304,7 @@ public class TimedItemController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully");
         } else {
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
@@ -312,8 +315,8 @@ public class TimedItemController implements Serializable {
             if (reportedAs == false) {
                 getCurrent().setReportedAs(getCurrent());
             }
-            getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            getFacade().create(getCurrent());
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         //  getItems();
