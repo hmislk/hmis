@@ -84,6 +84,14 @@
                                         <p:outputLabel value="#{b.insId}" >
                                         </p:outputLabel>
                                     </p:column>
+                                    
+                                     <p:column headerText="Cancell Bill No" style="font-size: 12px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Cancel Bill No" />
+                                        </f:facet>
+                                         <p:outputLabel value="#{b.cancelledBill.insId}" >
+                                        </p:outputLabel>
+                                    </p:column>
 
                                     <p:column headerText="Paid Amount" style="text-align: right; font-size: 12px;">
                                         <f:facet name="header">

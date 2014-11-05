@@ -23,14 +23,14 @@
                             <p:panelGrid columns="3" style="width: 100%;">
                                 <p:dataTable id="tbl" value="#{doctorController.doctors}" var="dc" >
 
-                                    <p:column headerText="Doctor Speciality">
+                                    <p:column headerText="Doctor Speciality" filterBy="#{dc.speciality.name}" filterMatchMode="contains">
                                         <f:facet name="header">
                                             <p:outputLabel value="Doctor Speciality" />
                                         </f:facet>
                                         <p:outputLabel value="#{dc.speciality.name}" >
                                         </p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Doctor Name">
+                                    <p:column headerText="Doctor Name" filterBy="#{dc.person.name}" filterMatchMode="contains">
                                         <f:facet name="header">
                                             <p:outputLabel value="Doctor Name" />
                                         </f:facet>
