@@ -10,7 +10,7 @@
         <h:panelGroup >
             <h:form id="form"  >
                 <p:growl autoUpdate="true" />
-                <p:panel header="Manage Timed Item" >
+                <p:panel header="Manage Timed Item (Inward Only)" >
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel header="Search Timed Item" >
@@ -90,7 +90,12 @@
 
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{timedItemController.current.discountAllowed}" itemLabel="Discount Allowed"/>
+
+                                    <h:outputText value="" ></h:outputText>
+                                    <h:outputText value="#{timedItemController.current.departmentType}" ></h:outputText>
+                                    
                                 </h:panelGrid>
+
                             </h:panelGrid>
                         </p:panel>
                     </h:panelGrid>
