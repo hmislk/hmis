@@ -35,7 +35,7 @@
                                     </p:column>
                                     <p:column headerText="Stocks">
                                         <h:outputLabel value="#{i.stock}" >
-                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                            
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Expiary">
@@ -43,6 +43,22 @@
                                             <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
+                                    
+                                    <p:column headerText="Retired">
+                                        <h:outputLabel value="#{i.itemBatch.item.retired}" >                                            
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="id">
+                                        <h:outputLabel value="#{i.itemBatch.item.id}" >                                            
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="id">
+                                        <h:outputLabel value="#{i.itemBatch.batchNo}">                                            
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
                                     <f:ajax event="itemSelect" execute="@this" render="det"/>
                                 </p:autoComplete>
                                 <h:outputLabel value="New Quentity" ></h:outputLabel>

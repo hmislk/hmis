@@ -66,22 +66,22 @@
                                         <p:inputText autocomplete="off" id="txtDes" value="#{inwardProfessionalBillController.proEncounterComponent.description}" ></p:inputText>
 
                                         <h:outputText value="Speciality"/>
-                                        <p:autoComplete converter="specilityCon"  forceSelection="true" id="cmbSpe" 
+                                        <p:autoComplete converter="specilityCon"   forceSelection="true" id="cmbSpe" 
                                                         value="#{inwardProfessionalBillController.proEncounterComponent.billFee.speciality}" 
                                                         completeMethod="#{specialityController.completeSpeciality}" var="sp" 
                                                         itemLabel="#{sp.name}" 
                                                         itemValue="#{sp}" size="30"  style="width: 400px;">
-                                            <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
+                                            <p:ajax process="@this" update="cmbDoc" event="itemSelect"/>
                                         </p:autoComplete>
 
 
                                         <h:outputText value="Doctor/Staff"/>
                                         <p:autoComplete converter="stfcon"  forceSelection="true" id="cmbDoc" 
                                                         value="#{inwardProfessionalBillController.proEncounterComponent.billFee.staff}" 
-                                                        completeMethod="#{staffController.completeItems}" var="st" 
+                                                        completeMethod="#{inwardProfessionalBillController.completeItems}" var="st" 
                                                         itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30" 
                                                         style="width: 400px;">
-                                            <f:ajax execute="cmbSpe" event="keypress"/>
+                                            <p:ajax process="cmbDoc" event="itemSelect"/>
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Fee"/>
