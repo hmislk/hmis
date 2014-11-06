@@ -129,6 +129,15 @@ public class ServiceController implements Serializable {
         }
         return selectedItems;
     }
+    
+    public List<Service> getRetiredSelectedItems() {
+        if (selectText.trim().equals("")) {
+            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=true order by c.name");
+        } else {
+            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=true and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        }
+        return selectedItems;
+    }
 
     public boolean isBilledAs() {
         return billedAs;
@@ -332,13 +341,13 @@ public class ServiceController implements Serializable {
     }
 
     public void delete() {
-
-        for (ItemFee it : getFees(current)) {
-            it.setRetired(true);
-            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            it.setRetirer(getSessionController().getLoggedUser());
-            getItemFeeFacade().edit(it);
-        }
+//
+//        for (ItemFee it : getFees(current)) {
+//            it.setRetired(true);
+//            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//            it.setRetirer(getSessionController().getLoggedUser());
+//            getItemFeeFacade().edit(it);
+//        }
 
         if (current != null) {
             current.setRetired(true);
@@ -353,25 +362,23 @@ public class ServiceController implements Serializable {
 
     }
     
-    public void actDeact() {
-        
-       // if(current)
-
-        for (ItemFee it : getFees(current)) {
-            it.setRetired(true);
-            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            it.setRetirer(getSessionController().getLoggedUser());
-            getItemFeeFacade().edit(it);
-        }
+    public void activateService() {
+//              
+//        for (ItemFee it : getFees(current)) {
+//            it.setRetired(false);
+//            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//            it.setRetirer(getSessionController().getLoggedUser());
+//            getItemFeeFacade().edit(it);
+//        }
 
         if (current != null) {
-            current.setRetired(true);
+            current.setRetired(false);
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Activated Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing To Activate");
         }
         recreateModel();
 
@@ -482,7 +489,13 @@ public class ServiceController implements Serializable {
     }
 
     private List<ItemFee> getFees(Item i) {
+        
+        //HashMap m = new HashMap();
+        
         String sql = "Select f From ItemFee f where f.retired=false and f.item.id=" + i.getId();
+        
+        //m.put("itm", i);
+        
 
         return getItemFeeFacade().findBySQL(sql);
     }

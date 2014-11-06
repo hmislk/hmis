@@ -55,7 +55,7 @@
                                     </h:inputText>
 
                                     <p:selectOneListbox converter="serv"   id="lstSelectInAct"   value="#{serviceController.current}" style="min-width: 223px; height: 300px;">
-                                        <f:selectItems  value="#{serviceController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                                        <f:selectItems  value="#{serviceController.retiredSelectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                         </f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="lstSelectInAct" >
                                         </p:ajax>
@@ -64,8 +64,8 @@
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtonsInAct" columns="3"  >                                    
-                                    <h:commandButton id="btnDeleteInAct" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{serviceController.delete()}"  value="Deactivate"  >
+                                    <h:commandButton id="btnActivate" onclick="if (!confirm('Are you sure you want to Activate this record?'))
+                                                return false;" action="#{serviceController.activateService()}"  value="Activate"  >
                                     </h:commandButton>
                                 </h:panelGrid>
                             </p:panel>
