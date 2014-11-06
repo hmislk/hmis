@@ -59,9 +59,13 @@
                                 <pe:exporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
                             </p:commandButton>
                         </p:panel>
-                        <p:panel id="gpBillPreview" header="Payements For #{inwardStaffPaymentBillController.speciality}">
+                        <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">
                                 <p:dataTable id="tb" value="#{inwardStaffPaymentBillController.list1}" var="bf" >
+                                    
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Payments For :  #{inwardStaffPaymentBillController.speciality}"/>
+                                    </f:facet>
 
                                     <p:column headerText="Code">
                                         <f:facet name="header">

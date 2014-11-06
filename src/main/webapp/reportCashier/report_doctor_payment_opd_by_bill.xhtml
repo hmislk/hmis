@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Doctor Payment(By Bill)" >
+                        <p:panel>
+                            <h:panelGrid columns="2">
+                                <p:outputLabel value="From" />
+                                <p:calendar id="fdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{searchController.fromDate}"></p:calendar>
+                                <p:outputLabel value="To" />
+                                <p:calendar id="tdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{searchController.toDate}"></p:calendar>
+                                <h:outputLabel  value="Speciality" ></h:outputLabel>
+                                <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
+                                                completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                converter="specilityCon"   >
+                                </p:autoComplete>
+                                <h:outputLabel  value="Staff / Doctor" ></h:outputLabel>
+                                <p:autoComplete style="width: 400px;" forceSelection="true" value="#{searchController.currentStaff}" id="scStaff"
+                                                completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                converter="stfcon"   >
+                                </p:autoComplete>
+                            </h:panelGrid>
+                            <p:watermark for="fdate" value="From Date" />
+                            <p:watermark for="tdate" value="To Date" />
+                            <p:watermark for="acSpeciality" value="Speciality" />
+                            <p:watermark for="scStaff" value="Staff / Doctor" />
+                        </p:panel>
+                        <p:panel>
+                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{searchController.fillDocPayingBill}" onclick="onSubmitButton();"  />
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+
+                        </p:panel>
+                        <p:panel id="gpBillPreview">
+                            <p:panelGrid columns="3" style="width: 100%;">
+                                <p:dataTable id="tbl" value="#{searchController.bills}" var="b">
+                                    <f:facet name="header">                                        
+                                        <p:outputLabel value="Opd Doctor Payment Report"/><h:outputLabel/>   
+                                        <h:outputLabel/><h:outputLabel/>
+                                        <h:outputLabel value="  From : "  />
+                                        <h:outputLabel  value="#{searchController.fromDate}" >
+                                            <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="  To : "/> 
+                                        <h:outputLabel  value="#{searchController.toDate}">
+                                            <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <p:column headerText="Paid By" style="font-size: 12px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Paid By" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" >
+                                        </p:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Date/Time" style="font-size: 12px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Date/Time" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{b.createdAt}" >
+                                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Bill No" style="font-size: 12px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Bill No" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{b.insId}" >
+                                        </p:outputLabel>
+                                    </p:column>
+                                    
+                                     <p:column headerText="Cancell Bill No" style="font-size: 12px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Cancel Bill No" />
+                                        </f:facet>
+                                         <p:outputLabel value="#{b.cancelledBill.insId}" >
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Paid Amount" style="text-align: right; font-size: 12px;">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Paid Amount" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{-b.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{-searchController.totalPaying}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panelGrid>
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

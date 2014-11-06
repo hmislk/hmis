@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Doctor Payment" >
+
+                        
+                        <p:commandButton ajax="false" value="List" action="#{doctorController.listDoctors()}"></p:commandButton>
+
+                        <p:panel id="gpBillPreview">
+                            <p:panelGrid columns="3" style="width: 100%;">
+                                <p:dataTable id="tbl" value="#{doctorController.doctors}" var="dc" >
+
+                                    <p:column headerText="Doctor Speciality" filterBy="#{dc.speciality.name}" filterMatchMode="contains">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Doctor Speciality" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{dc.speciality.name}" >
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Doctor Name" filterBy="#{dc.person.name}" filterMatchMode="contains">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Doctor Name" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{dc.person.name}" >
+                                        </p:outputLabel>
+                                    </p:column>
+
+
+                                </p:dataTable>
+                            </p:panelGrid>
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -81,7 +81,13 @@ public class StaffShift implements Serializable {
     @ManyToOne
     StaffShift referenceStaffShift;
 
-    private double multiplyingFactor;
+    //Multiplying Factor Always come by subtrating 1
+    // if Multiplying Factor for Salary is 1 ,but actual value is 2
+    @Column(name = "multiplyingFactor")
+    private double multiplyingFactorSalary;
+    //Multyiplying factor for Ot is Actual one.there is no substration
+    double multiplyingFactorOverTime;
+    double basicPerSecond;
     double earlyInLogged;
     double earlyOutLogged;
     double earlyInVarified;
@@ -98,6 +104,7 @@ public class StaffShift implements Serializable {
     double lateOutLogged;
     double leavedTime;
     private double leavedTimeNoPay;
+    double leavedTimeOther;
     @Column(name = "overTimeFromStartRecordLogged")
     double extraTimeFromStartRecordLogged;
     @Column(name = "overTimeFromEndRecordLogged")
@@ -122,6 +129,60 @@ public class StaffShift implements Serializable {
     double qty;
     @ManyToOne
     HrForm hrForm;
+    @ManyToOne
+    Roster roster;
+    double lieuQty;
+    boolean lieuPaid;
+    boolean lieuOrPaymentAllowed;
+    boolean lieuAndPaymentAllowed;
+
+    public double getLieuQty() {
+        return lieuQty;
+    }
+
+    public void setLieuQty(double lieuQty) {
+        this.lieuQty = lieuQty;
+    }
+
+    public boolean isLieuPaid() {
+        return lieuPaid;
+    }
+
+    public void setLieuPaid(boolean lieuPaid) {
+        this.lieuPaid = lieuPaid;
+    }
+
+    public boolean isLieuOrPaymentAllowed() {
+        return lieuOrPaymentAllowed;
+    }
+
+    public void setLieuOrPaymentAllowed(boolean lieuOrPaymentAllowed) {
+        this.lieuOrPaymentAllowed = lieuOrPaymentAllowed;
+    }
+
+    public void calLieu(DayType dayType) {
+        if (dayType == null) {
+            return;
+        }
+
+        switch (dayType) {
+            case DayOff:
+                lieuAndPaymentAllowed = true;
+                break;
+            case MurchantileHoliday:
+            case Poya:
+                lieuOrPaymentAllowed = true;
+                break;
+        }
+    }
+
+    public Roster getRoster() {
+        return roster;
+    }
+
+    public void setRoster(Roster roster) {
+        this.roster = roster;
+    }
 
     public double getLeavedTime() {
         return leavedTime;
@@ -142,13 +203,22 @@ public class StaffShift implements Serializable {
             case Lieu:
                 setLeavedTime(getStaff().getLeaveHour() * 60 * 60);
                 break;
+            case Maternity1st:
+            case Maternity2nd:
+            case Medical:
+                setLeavedTimeOther(getStaff().getLeaveHour() * 60 * 60);
+                break;
+            case No_Pay:
+                setLeavedTimeNoPay(getStaff().getLeaveHour() * 60 * 60);
+                break;
             case AnnualHalf:
             case CasualHalf:
             case LieuHalf:
                 setLeavedTime((getStaff().getLeaveHour() * 60 * 60) / 0.5);
                 break;
-            case No_Pay:
-                setLeavedTimeNoPay(getStaff().getLeaveHour() * 60 * 60);
+            case Maternity1stHalf:
+            case Maternity2ndHalf:
+                setLeavedTimeOther((getStaff().getLeaveHour() * 60 * 60) / 0.5);
                 break;
             case No_Pay_Half:
                 setLeavedTimeNoPay((getStaff().getLeaveHour() * 60 * 60) / 0.5);
@@ -877,33 +947,68 @@ public class StaffShift implements Serializable {
         this.leavedTimeNoPay = leavedTimeNoPay;
     }
 
-    public double getMultiplyingFactor() {
-        return multiplyingFactor;
+    public double getMultiplyingFactorSalary() {
+        return multiplyingFactorSalary;
     }
 
-    public void setMultiplyingFactor(double multiplyingFactor) {
-        this.multiplyingFactor = multiplyingFactor;
+    public void setMultiplyingFactorSalary(double multiplyingFactorSalary) {
+        this.multiplyingFactorSalary = multiplyingFactorSalary;
     }
 
     public void calMultiplyingFactor(DayType dayType) {
+        if (dayType == null) {
+            return;
+        }
+
+        // Multiplying Factor Salary if 2 day Payment = 1
+        // if one and half day  payment= 0.5
         switch (dayType) {
             case MurchantileHoliday:
-                multiplyingFactor = 2.0;
+                multiplyingFactorSalary = 1.0;//two day payments
+                multiplyingFactorOverTime = 1.5;
                 break;
             case Poya:
-                multiplyingFactor = 2.0;
-                break;
-            case PublicHoliday:
-                multiplyingFactor = 2.0;
+                multiplyingFactorSalary = 0.5;// One and Half Payment
+                multiplyingFactorOverTime = 1.5;
                 break;
             case DayOff:
-                multiplyingFactor = 2.0;
+                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorOverTime = 2.5;
                 break;
             case SleepingDay:
-                multiplyingFactor = 2.0;
+                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorOverTime = 2.5;
+                break;
+            default:
+                multiplyingFactorSalary = 0.0;
+                multiplyingFactorOverTime = 1.5;
                 break;
         }
 
+    }
+
+    public double getMultiplyingFactorOverTime() {
+        return multiplyingFactorOverTime;
+    }
+
+    public void setMultiplyingFactorOverTime(double multiplyingFactorOverTime) {
+        this.multiplyingFactorOverTime = multiplyingFactorOverTime;
+    }
+
+    public double getLeavedTimeOther() {
+        return leavedTimeOther;
+    }
+
+    public void setLeavedTimeOther(double leavedTimeOther) {
+        this.leavedTimeOther = leavedTimeOther;
+    }
+
+    public double getBasicPerSecond() {
+        return basicPerSecond;
+    }
+
+    public void setBasicPerSecond(double basicPerSecond) {
+        this.basicPerSecond = basicPerSecond;
     }
 
 }

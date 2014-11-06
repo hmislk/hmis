@@ -135,7 +135,7 @@ public class BillController implements Serializable {
     String opdEncounterComments = "";
     int patientSearchTab = 0;
     String comment;
-    
+
     //Print Last Bill
     Bill billPrint;
     List<Bill> billsPrint;
@@ -143,8 +143,6 @@ public class BillController implements Serializable {
     private List<BillFee> lstBillFeesPrint;
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
-    
-
 
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
@@ -201,10 +199,6 @@ public class BillController implements Serializable {
 //    public void setRecurseCount(int recurseCount) {
 //        this.recurseCount = recurseCount;
 //    }
-
-   
-    
-    
     public boolean findByFilter(String property, String value) {
         String sql = "Select b From Bill b where b.retired=false and upper(b." + property + ") like '%" + value.toUpperCase() + " %'";
         Bill b = getBillFacade().findFirstBySQL(sql);
@@ -527,15 +521,15 @@ public class BillController implements Serializable {
 
         return true;
     }
-    
-    public void setPrintigBill(){
+
+    public void setPrintigBill() {
         System.out.println("In Print");
-        billPrint=bill;
-        billsPrint=bills;
-        lstBillComponentsPrint=lstBillComponents;
-        lstBillEntriesPrint=lstBillEntries;
-        lstBillFeesPrint=lstBillFees;
-        lstBillItemsPrint=lstBillItems;
+        billPrint = bill;
+        billsPrint = bills;
+        lstBillComponentsPrint = lstBillComponents;
+        lstBillEntriesPrint = lstBillEntries;
+        lstBillFeesPrint = lstBillFees;
+        lstBillItemsPrint = lstBillItems;
         System.out.println("Out Print");
     }
 
@@ -543,7 +537,7 @@ public class BillController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        
+
         savePatient();
 
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
@@ -582,7 +576,32 @@ public class BillController implements Serializable {
 
         UtilityController.addSuccessMessage("Bill Saved");
         setPrintigBill();
+        checkBillValues();
         printPreview = true;
+    }
+
+    public void checkBillValues() {
+        for (Bill b : getBills()) {
+            Double[] billItemValues = billBean.fetchBillItemValues(b);
+            double billItemTotal = billItemValues[0];
+            double billItemDiscount = billItemValues[1];
+            double billItemNetTotal = billItemValues[2];
+
+            if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()) {
+                b.setTransError(true);
+                return;
+            }
+
+            Double[] billFeeValues = billBean.fetchBillFeeValues(b);
+            double billFeeTotal = billFeeValues[0];
+            double billFeeDiscount = billFeeValues[1];
+            double billFeeNetTotal = billFeeValues[2];
+
+            if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
+                b.setTransError(true);
+                return;
+            }
+        }
     }
 
     @EJB
@@ -750,19 +769,19 @@ public class BillController implements Serializable {
         return false;
 
     }
-    
-    private boolean institutionReferranceNumberExist(){
+
+    private boolean institutionReferranceNumberExist() {
         String jpql;
         HashMap m = new HashMap();
-        jpql="Select b from Bill b where "
+        jpql = "Select b from Bill b where "
                 + "b.retired = false and "
                 + "upper(b.referralNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
-        List<Bill> tempBills = getFacade().findBySQL(jpql,m);
-        if(tempBills == null || tempBills.isEmpty()){
+        List<Bill> tempBills = getFacade().findBySQL(jpql, m);
+        if (tempBills == null || tempBills.isEmpty()) {
             return false;
         }
-        return true; 
+        return true;
     }
 
     private boolean errorCheck() {
@@ -771,19 +790,19 @@ public class BillController implements Serializable {
             UtilityController.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
-        
-        if(referredByInstitution != null && referredByInstitution.getInstitutionType()!=InstitutionType.CollectingCentre){
-            if(referralId == null || referralId.trim().equals("")){
+
+        if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
+            if (referralId == null || referralId.trim().equals("")) {
                 JsfUtil.addErrorMessage("Please Enter Referrance Number");
                 return true;
-            }else{
-                
-                if(institutionReferranceNumberExist()){
-                    
+            } else {
+
+                if (institutionReferranceNumberExist()) {
+
                     JsfUtil.addErrorMessage("Alredy Entered");
                     return true;
                 }
-                    
+
             }
 
         }
@@ -1691,8 +1710,6 @@ public class BillController implements Serializable {
     public void setReferralId(String referralId) {
         this.referralId = referralId;
     }
-    
-    
 
     /**
      *

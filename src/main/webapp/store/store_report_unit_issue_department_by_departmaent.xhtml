@@ -22,7 +22,7 @@
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{storeReportsTransfer.fromDepartment}" converter="dep" >
                             </p:autoComplete>
-                            
+
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
@@ -47,7 +47,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Unit Issue From "/>
                                     <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
-                                    
+
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{storeReportsTransfer.fromDate}">
@@ -59,7 +59,7 @@
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
-                                
+
                                 <p:column headerText="Department">
                                     <f:facet name="header">
                                         <h:outputLabel value="Department"/>
@@ -74,12 +74,16 @@
                                     <h:outputLabel value="#{i.value1}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                    
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{storeReportsTransfer.netTotalValues}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>  
                                 </p:column>
 
                             </p:dataTable>
-                            
-                            
+
+
                         </h:panelGroup>
                     </p:panel>
                 </h:form>

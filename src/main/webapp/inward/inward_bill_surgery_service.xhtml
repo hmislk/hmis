@@ -85,7 +85,7 @@
                                             <h:outputLabel value="#{ix.total}" 
                                                            rendered="#{ix.chargesVisibleForInward}"/>
                                         </p:column>  
-                                        <f:ajax event="itemSelect" execute="acIx" render="txtQty" ></f:ajax>
+                                        <p:ajax event="itemSelect" process="acIx" update="@all" />
                                     </p:autoComplete>
 
                                     <p:inputText autocomplete="off" id="txtQty"

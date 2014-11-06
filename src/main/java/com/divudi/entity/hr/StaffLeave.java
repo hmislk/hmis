@@ -53,6 +53,18 @@ public class StaffLeave implements Serializable {
     double qty;
     @ManyToOne
     Form form;
+    @ManyToOne
+    Roster roster;
+
+    public Roster getRoster() {
+        return roster;
+    }
+
+    public void setRoster(Roster roster) {
+        this.roster = roster;
+    }
+    
+    
 
     public Date getLeaveDate() {
         return leaveDate;

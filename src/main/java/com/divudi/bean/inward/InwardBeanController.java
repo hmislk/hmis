@@ -50,6 +50,7 @@ import com.divudi.facade.RoomFacade;
 import com.divudi.facade.TimedItemFeeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -229,6 +230,59 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
 
         return getBillItemFacade().findBySQL(sql, hm);
+
+    }
+
+    public Double[] fetchDiscountAndNetTotalByBillItem(Bill b) {
+        String sql = "Select sum(s.discount),"
+                + " sum(s.netValue) "
+                + "  From BillItem s"
+                + " where s.retired=false"
+                + " and s.bill=:bill";
+
+        HashMap hm = new HashMap();
+        hm.put("bill", b);
+
+        Object[] obj = getBillItemFacade().findAggregateModified(sql, hm, TemporalType.DATE);
+
+        if (obj == null) {
+            Double[] dbl = new Double[2];
+            dbl[0] = 0.0;
+            dbl[0] = 0.0;
+
+            return dbl;
+        }
+
+        return Arrays.copyOf(obj, obj.length, Double[].class);
+
+    }
+
+    public List<Bill> fetchIssueBills(PatientEncounter patientEncounter, BillType billType) {
+        String sql = "Select distinct(s.bill)"
+                + "  From BillItem s"
+                + " where s.retired=false"
+                + " and s.bill.billType=:btp"
+                + " and s.bill.patientEncounter=:pe ";
+
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("pe", patientEncounter);
+
+        return billFacade.findBySQL(sql, hm);
+
+    }
+
+    public double calIssueBillItemDiscountByInwardChargeType(PatientEncounter patientEncounter, BillType billType) {
+        String sql = "Select sum(s.discount) From BillItem s"
+                + " where s.retired=false"
+                + " and s.bill.billType=:btp"
+                + " and s.bill.patientEncounter=:pe ";
+
+        HashMap hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("pe", patientEncounter);
+
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
 
@@ -1071,8 +1125,6 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         return getPatientItemFacade().findBySQL(sql, hm);
     }
-    
-    
 
     public List<Bill> fetchPaymentBill(PatientEncounter patientEncounter) {
 
@@ -1086,8 +1138,6 @@ public class InwardBeanController implements Serializable {
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
-    
 
     public double calPatientRoomChargeDiscount(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
@@ -1482,7 +1532,6 @@ public class InwardBeanController implements Serializable {
     public void setInwardReportControllerBht(InwardReportControllerBht inwardReportControllerBht) {
         this.inwardReportControllerBht = inwardReportControllerBht;
     }
-    
 
     public List<PatientRoom> getPatientRooms(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();

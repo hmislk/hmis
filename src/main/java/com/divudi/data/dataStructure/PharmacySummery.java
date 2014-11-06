@@ -15,10 +15,9 @@ import java.util.List;
 public class PharmacySummery {
 
     private List<String1Value3> bills;
-    private double billedTotal;
-    private double cancelledTotal;
-    private double refundedTotal;
-
+    private Double billedTotal = 0.0;
+    private Double cancelledTotal = 0.0;
+    private Double refundedTotal = 0.0;
 
     public List<String1Value3> getBills() {
         return bills;
@@ -28,27 +27,27 @@ public class PharmacySummery {
         this.bills = bills;
     }
 
-    public double getBilledTotal() {
+    public Double getBilledTotal() {
         return billedTotal;
     }
 
-    public void setBilledTotal(double billedTotal) {
+    public void setBilledTotal(Double billedTotal) {
         this.billedTotal = billedTotal;
     }
 
-    public double getCancelledTotal() {
+    public Double getCancelledTotal() {
         return cancelledTotal;
     }
 
-    public void setCancelledTotal(double cancelledTotal) {
+    public void setCancelledTotal(Double cancelledTotal) {
         this.cancelledTotal = cancelledTotal;
     }
 
-    public double getRefundedTotal() {
+    public Double getRefundedTotal() {
         return refundedTotal;
     }
 
-    public void setRefundedTotal(double refundedTotal) {
+    public void setRefundedTotal(Double refundedTotal) {
         this.refundedTotal = refundedTotal;
     }
 

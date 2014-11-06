@@ -173,6 +173,7 @@
                                                                                   and fe.bill.cancelled eq false 
                                                                                   and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
                                                             <tr>
+                                                               
                                                                 <td style="text-align: left;font-size: 8px!important;">
                                                                     <h:panelGroup>                       
                                                                         #{fe.staff.person.nameWithTitle} 
@@ -196,7 +197,7 @@
                                                         <h:panelGroup >
                                                             <tr>
                                                                 <td>
-                                                                    <h:outputLabel value="#{fe.referencePatientRoom.id}"   style="text-align: center;font-size: 9px!important;"/>
+                                                                    <h:outputLabel value="#{fe.referencePatientRoom.name}"   style="text-align: center;font-size: 9px!important;"/>
                                                                 </td>
                                                                 <td>
                                                                     <h:outputLabel value=" || " style="text-align: center;font-size: 9px!important;"/>
