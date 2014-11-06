@@ -71,7 +71,7 @@
                                                         completeMethod="#{specialityController.completeSpeciality}" var="sp" 
                                                         itemLabel="#{sp.name}" 
                                                         itemValue="#{sp}" size="30"  style="width: 400px;">
-                                            <p:ajax process="@this" update="cmbDoc" event="itemSelect"/>
+                                            <f:ajax event="itemSelect" execute="cmbSpe" render="cmbDoc pIxAdd" />
                                         </p:autoComplete>
 
 
@@ -81,7 +81,7 @@
                                                         completeMethod="#{inwardProfessionalBillController.completeItems}" var="st" 
                                                         itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30" 
                                                         style="width: 400px;">
-                                            <p:ajax process="cmbDoc" event="itemSelect"/>
+                                            <f:ajax event="itemSelect" execute="cmbDoc" render="pIxAdd"  />
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Fee"/>
