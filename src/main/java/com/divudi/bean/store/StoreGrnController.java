@@ -988,6 +988,7 @@ public class StoreGrnController implements Serializable {
                     BillItem bi = new BillItem();
                     bi.copy(getCurrentBillItem());
                     bi.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
+                    bi.getPharmaceuticalBillItem().setBillItem(bi);
                     bi.getPharmaceuticalBillItem().copy(getCurrentBillItem().getPharmaceuticalBillItem());
                     System.out.println("Item Number = " + i);
                     bi.getPharmaceuticalBillItem().setQty(1);
