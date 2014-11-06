@@ -74,17 +74,18 @@ public class SessionController implements Serializable, HttpSessionListener {
     @EJB
     private CashTransactionBean cashTransactionBean;
     boolean paginator;
-    
-    public void updateUserPreferences(){
-        if(institutionPreference!=null){
-            if(institutionPreference.getId()==null || institutionPreference.getId()==0){
+    WebUser webUser;
+
+    public void updateUserPreferences() {
+        if (institutionPreference != null) {
+            if (institutionPreference.getId() == null || institutionPreference.getId() == 0) {
                 userPreferenceFacade.create(institutionPreference);
                 JsfUtil.addErrorMessage("Preferences Saved");
-            }else{
+            } else {
                 userPreferenceFacade.edit(institutionPreference);
                 JsfUtil.addErrorMessage("Preferences Updated");
             }
-            
+
         }
     }
 
@@ -92,17 +93,25 @@ public class SessionController implements Serializable, HttpSessionListener {
         paginator = true;
     }
 
-    public void makePaginatorFalse(){
+    public void makePaginatorFalse() {
         paginator = false;
 
     }
-    
+
     public Date getCurrentDate() {
         return new Date();
     }
 
     public void update() {
         getFacede().edit(getLoggedUser());
+        getCashTransactionBean().updateDrawers();
+    }
+
+    public void updateOtherUser() {
+        if (webUser == null) {
+            return;
+        }
+        getFacede().edit(webUser);
         getCashTransactionBean().updateDrawers();
     }
 
@@ -368,9 +377,9 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
-                    
+
                     String sql;
-                    
+
                     UserPreference uf;
                     sql = "select p from UserPreference p where p.webUser=:u ";
                     Map m = new HashMap();
@@ -395,8 +404,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                         getUserPreferenceFacade().create(insPre);
                     }
                     setInstitutionPreference(insPre);
-                    
-                    
+
                     recordLogin();
 
                     UtilityController.addSuccessMessage("Logged successfully");
@@ -809,7 +817,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.userPreference = userPreference;
     }
 
+    public WebUser getWebUser() {
+        return webUser;
+    }
 
-    
-    
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
 }

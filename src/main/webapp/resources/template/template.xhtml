@@ -228,7 +228,15 @@
                                     <p:menuitem  ajax="false"  action="/inward/inward_bill_surgery_professional" 
                                                  value="Add Professional Fee"
                                                  actionListener="#{inwardProfessionalBillController.makeNull()}"
-                                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />                                        
+                                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
+                                    
+                                    <p:submenu label="Transfer" rendered="#{webUserController.hasPrivilege('TheaterTransfer')}" >
+                                        <p:menuitem  ajax="false" action="/theater/theater_transfer_request"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRequest')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request_list"  value="Issue" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferIssue')}" ></p:menuitem>                                           
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list"  value="Recieve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRecieve')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_report_transfer"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferReport')}" ></p:menuitem>
+                                    </p:submenu>
+                                    
                                     <p:menuitem  ajax="false"  action="/inward/inward_bill_surgery_issue" 
                                                  value="Pharmacy Issue "
                                                  actionListener="#{pharmacySaleBhtController.makeNull()}"
@@ -237,6 +245,9 @@
                                     <p:menuitem ajax="false" action="/inward/inward_search_surgery" value="Search"
                                                 actionListener="#{searchController.makeListNull}"
                                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
+                                    
+                                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index"  value="Reports" rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index"  value="Summeries" rendered="#{webUserController.hasPrivilege('TheaterSummeries')}" ></p:menuitem>
                                 </p:submenu>
 
 
