@@ -352,6 +352,30 @@ public class ServiceController implements Serializable {
         recreateModel();
 
     }
+    
+    public void actDeact() {
+        
+       // if(current)
+
+        for (ItemFee it : getFees(current)) {
+            it.setRetired(true);
+            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            it.setRetirer(getSessionController().getLoggedUser());
+            getItemFeeFacade().edit(it);
+        }
+
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            UtilityController.addSuccessMessage("DeleteSuccessfull");
+        } else {
+            UtilityController.addSuccessMessage("NothingToDelete");
+        }
+        recreateModel();
+
+    }
 
     private ServiceFacade getFacade() {
         return ejbFacade;

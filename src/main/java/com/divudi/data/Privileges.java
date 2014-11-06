@@ -135,9 +135,16 @@ public enum Privileges {
     PharmacySummery,
     PharmacyAdministration,
     PharmacySetReorderLevel,
+    //theater
     Theatre,
     TheatreAddSurgery,
     TheatreBilling,
+    TheaterTransfer,
+    TheaterTransferRequest,
+    TheaterTransferIssue,
+    TheaterTransferRecieve,
+    TheaterTransferReport,
+    
     ClinicalPatientSummery,
     ClinicalPatientDetails,
     ClinicalPatientPhoto,
