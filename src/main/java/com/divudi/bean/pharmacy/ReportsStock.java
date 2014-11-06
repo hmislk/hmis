@@ -379,7 +379,17 @@ public class ReportsStock implements Serializable {
         }
         Map m = new HashMap();
         String sql;
-        sql = "select s from Stock s where s.department=:d and s.stock > 0 and s.itemBatch.item.id not in (select bi.item.id FROM BillItem bi where  bi.bill.department=:d and (bi.bill.billType=:t1 or bi.bill.billType=:t2  or bi.bill.billType=:t3) and bi.bill.billDate between :fd and :td group by bi.item having SUM(bi.qty) > 0 ) order by s.itemBatch.dateOfExpire";
+        sql = "select s from Stock s "
+                + " where s.department=:d "
+                + " and s.stock > 0 "
+                + " and s.itemBatch.item.id not in "
+                + " (select bi.item.id "
+                + " FROM BillItem bi where  "
+                + " bi.bill.department=:d "
+                + " and (bi.bill.billType=:t1 or bi.bill.billType=:t2  or bi.bill.billType=:t3)"
+                + "  and bi.bill.billDate between :fd and :td "
+                + " group by bi.item having SUM(bi.qty) > 0 ) "
+                + " order by s.itemBatch.dateOfExpire";
         m.put("d", department);
         m.put("t1", BillType.PharmacyTransferIssue);
         m.put("t2", BillType.PharmacyPre);

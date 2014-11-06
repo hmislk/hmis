@@ -74,6 +74,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     private BillItemFacade billItemFacade;
     private Bill current;
     private List<Bill> items = null;
+    List<Bill> bills;
 
     Staff currentStaff;
     List<BillFee> dueBillFees;
@@ -173,6 +174,74 @@ public class InwardStaffPaymentBillController implements Serializable {
         }
         for (BillItem dFee : billItems1) {
             totalPaying += dFee.getPaidForBillFee().getFeeValue();
+        }
+
+    }
+
+    public void fillDocPayingBillByCreatedDate() {
+        fillDocPayingBill(false);
+    }
+
+    public void fillDocPayingBillByDischargeDate() {
+        fillDocPayingBill(true);
+    }
+
+    public void fillDocPayingBill(boolean dischargeDate) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select distinct(bf.bill) from BillItem bf "
+                + " where bf.retired=false "
+                + " and bf.bill.billType=:btp"
+                + " and (bf.paidForBillFee.bill.billType=:refBtp1"
+                + " or bf.paidForBillFee.bill.billType=:refBtp2)";
+
+        if (dischargeDate) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
+        } else {
+            sql += " and bf.createdAt between :fd and :td ";
+        }
+
+        if (speciality != null) {
+            sql += " and bf.paidForBillFee.staff.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        if (currentStaff != null) {
+            sql += " and bf.paidForBillFee.staff=:cs";
+            m.put("cs", currentStaff);
+        }
+
+        if (admissionType != null) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
+            m.put("admTp", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
+            m.put("pm", paymentMethod);
+        }
+        if (institution != null) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
+            m.put("cd", institution);
+        }
+
+        sql += " order by bf.bill.insId ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("btp", BillType.PaymentBill);
+        m.put("refBtp1", BillType.InwardBill);
+        m.put("refBtp2", BillType.InwardProfessional);
+
+        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        totalPaying = 0.0;
+        if (bills == null) {
+            return;
+        }
+        for (Bill b : bills) {
+            totalPaying += b.getNetTotal();
         }
 
     }
@@ -823,6 +892,14 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setBillItems1(List<BillItem> billItems1) {
         this.billItems1 = billItems1;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
     }
 
 }

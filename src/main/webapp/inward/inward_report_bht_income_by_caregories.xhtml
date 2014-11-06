@@ -380,7 +380,7 @@
                                 </p:column>
                             </p:dataTable>
                             
-                            <p:dataTable value="#{inwardReportController1.paidbyPatient}" id="tbl7" var="pa">
+                            <p:dataTable value="#{inwardReportController1.paidbyPatient}" id="tbl7" var="pa" rendered="false">
                                 <f:facet name="header">
                                     <h:outputLabel value="Paid by Patient"/>
                                 </f:facet>
@@ -407,7 +407,7 @@
                                 </p:column>                                                               
                             </p:dataTable>
                             
-                            <p:dataTable value="#{inwardReportController1.billItems}" id="tbl8" var="bi">
+                            <p:dataTable value="#{inwardReportController1.billItems}" id="tbl8" var="bi" rendered="false">
                                 <f:facet name="header">
                                     <h:outputLabel value="Credit Company Payment"/>
                                 </f:facet>
