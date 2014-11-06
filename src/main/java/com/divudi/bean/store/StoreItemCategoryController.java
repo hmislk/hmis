@@ -10,7 +10,9 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.entity.pharmacy.AssetCategory;
 import com.divudi.entity.pharmacy.StoreItemCategory;
+import com.divudi.facade.AssetCategoryFacade;
 import com.divudi.facade.StoreItemCategoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,6 +44,8 @@ public class StoreItemCategoryController implements Serializable {
     SessionController sessionController;
     @EJB
     private StoreItemCategoryFacade ejbFacade;
+    @EJB
+    AssetCategoryFacade assetCategoryFacade;
     private StoreItemCategory current;
     private List<StoreItemCategory> items = null;
 
@@ -53,6 +57,22 @@ public class StoreItemCategoryController implements Serializable {
                 + " c.retired=false and (upper(c.name) like :n) order by c.name";
 
         a = getFacade().findBySQL(sql, m, 20);
+        //System.out.println("a size is " + a.size());
+
+        if (a == null) {
+            a = new ArrayList<>();
+        }
+        return a;
+    }
+    
+    public List<AssetCategory> completeAssetCategory(String qry) {
+        List<AssetCategory> a = null;
+        Map m = new HashMap();
+        m.put("n", "%" + qry + "%");
+        String sql = "select c from AssetCategory c where "
+                + " c.retired=false and (upper(c.name) like :n) order by c.name";
+
+        a = getAssetCategoryFacade().findBySQL(sql, m, 20);
         //System.out.println("a size is " + a.size());
 
         if (a == null) {
@@ -111,6 +131,16 @@ public class StoreItemCategoryController implements Serializable {
         }
         return current;
     }
+
+    public AssetCategoryFacade getAssetCategoryFacade() {
+        return assetCategoryFacade;
+    }
+
+    public void setAssetCategoryFacade(AssetCategoryFacade assetCategoryFacade) {
+        this.assetCategoryFacade = assetCategoryFacade;
+    }
+    
+    
 
     public void setCurrent(StoreItemCategory current) {
         this.current = current;
