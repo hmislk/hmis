@@ -45,8 +45,8 @@ import javax.persistence.TemporalType;
  * @author Buddhika
  */
 @Named
-@RequestScoped
-public class InvestigationMonthSummeryOwnController implements Serializable {
+@SessionScoped
+public class InvestigationMonthSummeryOwnControllerSession implements Serializable {
 
     @Inject
     private SessionController sessionController;
@@ -74,7 +74,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     /**
      * Creates a new instance of CashierReportController
      */
-    public InvestigationMonthSummeryOwnController() {
+    public InvestigationMonthSummeryOwnControllerSession() {
     }
 
     public Institution getCollectingCentre() {

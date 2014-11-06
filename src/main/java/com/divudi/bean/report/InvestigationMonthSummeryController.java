@@ -57,6 +57,8 @@ public class InvestigationMonthSummeryController implements Serializable {
     public InvestigationMonthSummeryController() {
     }
 
+    
+    
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
     }
