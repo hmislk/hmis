@@ -74,14 +74,14 @@
 
                     </p:column>  
 
-                    <p:column headerText="Parent Item Name" style="width: 250px!important;"  > 
+                    <p:column headerText="Parent Item Name" style="width: 100px!important;"  > 
 
                         <h:outputText  value="#{bi.parentBillItem.item.name}" >                                   
                         </h:outputText>
 
                     </p:column>  
 
-                    <p:column headerText="Inventory Code" >  
+                    <p:column headerText="Inventory Code" style="width: 200px!important;">  
                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.code}"/>
                     </p:column>  
 
@@ -282,7 +282,7 @@
                                 <h:outputLabel value="Select Item"/>                             
                                 <p:autoComplete   value="#{storeGrnController.currentBillItem.item}" 
                                                 forceSelection="true"
-                                                completeMethod="#{itemController.completeStoreItem}" 
+                                                completeMethod="#{itemController.completeStoreInventryItem}" 
                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" >
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -310,7 +310,7 @@
                                              value="#{storeGrnController.currentBillItem.tmpQty}" style="width:100%" />  
                                 <h:outputLabel value="Free"/>
                                 <p:inputText autocomplete="off" styleClass="numericTxt" 
-                                             value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.freeQty}" style="width:100%" /> 
+                                             value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.freeQty}" style="width:100%" disabled="true" /> 
                                 <h:outputLabel value="Purchase Rate"/>
                                 <p:inputText autocomplete="off"  styleClass="numericTxt" 
                                              value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
