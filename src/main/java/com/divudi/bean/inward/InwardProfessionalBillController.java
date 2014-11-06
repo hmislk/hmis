@@ -85,7 +85,7 @@ public class InwardProfessionalBillController implements Serializable {
     @Inject
     private BillBeanController billBean;
     @EJB
-    BillNumberGenerator billNumberBean;
+    BillNumberGenerator billNumberBean;    
     @EJB
     CommonFunctions commonFunctions;
     //////////////////    
@@ -114,6 +114,24 @@ public class InwardProfessionalBillController implements Serializable {
     List<EncounterComponent> proEncounterComponents;
     @EJB
     EncounterComponentFacade encounterComponentFacade;
+
+    public List<Staff> completeItems(String qry) {
+        HashMap hm = new HashMap();
+        String sql = "select c from Staff c "
+                + " where c.retired=false ";
+
+        if (getProEncounterComponent() != null && getProEncounterComponent().getBillFee() != null && getProEncounterComponent().getBillFee().getSpeciality() != null) {
+            sql += " and c.speciality=:sp";
+            hm.put("sp", getProEncounterComponent().getBillFee().getSpeciality());
+            System.err.println("SSS "+getProEncounterComponent().getBillFee().getSpeciality());
+        }
+        sql += " and upper(c.person.name) like :q "
+                + " or upper(c.code) like :q "
+                + " order by c.person.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        List<Staff> s = getStaffFacade().findBySQL(sql, hm, 20);
+        return s;
+    }
 
     public EncounterComponentFacade getEncounterComponentFacade() {
         return encounterComponentFacade;
