@@ -117,7 +117,8 @@ public class InwardProfessionalBillController implements Serializable {
 
     public List<Staff> completeItems(String qry) {
         HashMap hm = new HashMap();
-        String sql = "select c from Staff c "
+        String sql;
+        sql= "select c from Staff c "
                 + " where c.retired=false ";
 
         if (getProEncounterComponent() != null && getProEncounterComponent().getBillFee() != null && getProEncounterComponent().getBillFee().getSpeciality() != null) {
@@ -125,11 +126,13 @@ public class InwardProfessionalBillController implements Serializable {
             hm.put("sp", getProEncounterComponent().getBillFee().getSpeciality());
             System.err.println("SSS "+getProEncounterComponent().getBillFee().getSpeciality());
         }
-        sql += " and upper(c.person.name) like :q "
-                + " or upper(c.code) like :q "
+        sql += " and (upper(c.person.name) like :q "
+                + " or upper(c.code) like :q )"
                 + " order by c.person.name";
+        
         hm.put("q", "%" + qry.toUpperCase() + "%");
         List<Staff> s = getStaffFacade().findBySQL(sql, hm, 20);
+        System.out.println("s = " + s);
         return s;
     }
 

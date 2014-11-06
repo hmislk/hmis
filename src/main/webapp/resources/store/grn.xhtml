@@ -96,7 +96,8 @@
                         <f:facet name="header">
                             <h:outputLabel value="Item" style="font-weight: bold!important; " />
                         </f:facet>
-                        <h:outputLabel value="#{bip.item.name}"/>
+                        <h:outputLabel value="#{bip.item.name}"  rendered="#{bip.parentBillItem==null}"/>
+                        <h:outputLabel value="&nbsp;&nbsp;#{bip.item.name}"  rendered="#{bip.parentBillItem!=null}"/>
                     </p:column>
                     <p:column style="text-align: left!important;"  >
                         <f:facet name="header">
