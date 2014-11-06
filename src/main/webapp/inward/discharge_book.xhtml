@@ -49,7 +49,7 @@
 
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <p:panelGrid columns="6">
                             <p:commandButton ajax="false" value="Fill Discharged All" action="#{inwardReportController.fillDischargeBook()}" onclick="onSubmitButton();" ></p:commandButton>                                                                                     
                             <p:commandButton ajax="false" value="Fill Discharged and Payment Not Finalized " action="#{inwardReportController.fillDischargeBookPaymentNotFinalized()}" onclick="onSubmitButton();" ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill Discharged and Payment Finalized" action="#{inwardReportController.fillDischargeBookPaymentFinalized()}" onclick="onSubmitButton();" ></p:commandButton>
@@ -60,7 +60,7 @@
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
                             </p:commandButton>  
-                        </h:panelGrid>
+                        </p:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
@@ -144,7 +144,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Admited By">
+                                <p:column headerText="Admitted By">
                                     <f:facet name="header">
                                         <h:outputLabel value="Admited By"/>
                                     </f:facet>                                    
@@ -152,7 +152,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Admited Date">
+                                <p:column headerText="Admitted Date">
                                     <f:facet name="header">
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
@@ -248,9 +248,9 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Differance Amount">
+                                <p:column style="text-align: right;" headerText="Difference Amount">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Differance Amount"/>
+                                        <h:outputLabel value="Differece Amount"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.finalBill.netTotal-i.transTotal}"  >
                                         <f:convertNumber pattern="#,##0.00"/>

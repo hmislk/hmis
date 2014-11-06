@@ -11,31 +11,13 @@
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-        
+
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
-        
+
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summery With Pro (Month)"  styleClass="noPrintButton" />
-                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.createCashCategoryWithProMonth}"/>
 
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
-                                     outside:outside,
-                                     pharmacy:pharmacy,
-                                     inward:inward,                                     
-                                     col,
-                                     opd_professional:opd_professional,
-                                     inward_professional:inward_professional,                                     
-                                     finalSum" 
-                                     fileName="Book_Keeping_Summery_with_pro_day"
-                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
-                    </p:commandButton>
 
                     <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
                         <h:outputLabel value="From Date"/>
@@ -54,6 +36,29 @@
                                         value="#{bookKeepingSummery.institution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
+
+                    <h:panelGrid columns="3">
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
+                                         outside:outside,
+                                         pharmacy:pharmacy,
+                                         inward:inward,                                     
+                                         col,
+                                         opd_professional:opd_professional,
+                                         inward_professional:inward_professional,                                     
+                                         finalSum" 
+                                         fileName="Book_Keeping_Summery_with_pro_day"
+                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
+
+                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                         action="#{bookKeepingSummery.createCashCategoryWithProMonth}"/>
+                    </h:panelGrid>
+
 
                 </f:facet>
             </p:panel>

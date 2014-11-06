@@ -82,7 +82,7 @@
                             </p:autoComplete>
                         </h:panelGroup>
 
-                        <h:panelGrid columns="3">
+                        <p:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.allBhtPySummerriesByCreatedDate()}" onclick="onSubmitButton();" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
@@ -90,16 +90,16 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.allBhtPySummerriesByCreatedDate}">
-                                <pe:exporter type="xlsx" target="tbl,tbl2" fileName="All_Payment_by_Created_Date_Date"  />
+                                <pe:exporter type="xlsx" target="tbl2" fileName="All_Payment_by_Created_Date_Date"  />
                             </p:commandButton>  
-                        </h:panelGrid>
+                        </p:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.completePayments}" var="i"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="B.H.T. DEPOSIT PAYMENT  SUMMERIES - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
-                                    <h:panelGrid columns="4">
+                             
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a" />
@@ -108,7 +108,7 @@
                                         <h:outputLabel value="#{mdInwardReportController.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a" />
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                              
                                 </f:facet>
 
                                 <p:column headerText="B H T No">

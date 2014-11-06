@@ -11,37 +11,14 @@
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-        
+
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
 
             <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summery Without Pro (DAY)"  styleClass="noPrintButton" />
-                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                     action="#{bookKeepingSummery.createCashCategoryWithoutProDay}"/>
 
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd_new:opd_new,
-                                     outside:outside,
-                                     pharmacy:pharmacy,
-                                     inward_collection:inward_collection,
-                                     agent_collection:agent_collection,
-                                     credit_collection:credit_collection,
-                                     credit_collection_inward:credit_collection_inward,
-                                     col,
-                                     inward_professional:inward_professional,
-                                     credit_card:credit_card,
-                                     slip:slip,
-                                     cheque:cheque,
-                                     finalSum"
-                                     fileName="Book_Keeping_Summery_without_pro_day_by_category_dat_end"
-                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
-                    </p:commandButton>
 
                     <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
                         <h:outputLabel value="From Date"/>
@@ -59,6 +36,34 @@
                                         requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
+
+                    <h:panelGrid columns="3">
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd_new:opd_new,
+                                         outside:outside,
+                                         pharmacy:pharmacy,
+                                         inward_collection:inward_collection,
+                                         agent_collection:agent_collection,
+                                         credit_collection:credit_collection,
+                                         credit_collection_inward:credit_collection_inward,
+                                         col,
+                                         inward_professional:inward_professional,
+                                         credit_card:credit_card,
+                                         slip:slip,
+                                         cheque:cheque,
+                                         finalSum"
+                                         fileName="Book_Keeping_Summery_without_pro_day_by_category_dat_end"
+                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
+
+                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                         action="#{bookKeepingSummery.createCashCategoryWithoutProDay}"/>
+                    </h:panelGrid>
+
 
                 </f:facet>
             </p:panel>
@@ -192,7 +197,7 @@
                             </f:facet>
                         </p:column>
                     </p:row>
-                    
+
                     <p:row>
                         <p:column headerText=" " style="text-align: left">
                             <f:facet name="header">
@@ -210,7 +215,7 @@
                             </f:facet>
                         </p:column>
                     </p:row>
-                    
+
                     <p:row>
                         <p:column headerText=" " style="text-align: left">
                             <f:facet name="header">
@@ -419,7 +424,7 @@
                             </f:facet>
                         </p:column>
                     </p:row>
-                   
+
 
                 </p:columnGroup>
 

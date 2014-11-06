@@ -102,12 +102,23 @@
                                     </h:panelGrid>
                                 </f:facet>
 
+                                <p:column headerText="Discharge At">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discharge At"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.patientEncounter.dateOfDischarge}" >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
                                 <p:column headerText="B H T No">
                                     <f:facet name="header">
                                         <h:outputLabel value="B H T No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>
                                 </p:column>
+
+
 
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
@@ -179,6 +190,16 @@
 
                             <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.cancel}" 
                                          var="can">
+
+                                <p:column headerText="Discharge At">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discharge At"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.patientEncounter.dateOfDischarge}" >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
 
                                 <p:column headerText="B H T No">
                                     <f:facet name="header">
@@ -256,6 +277,16 @@
 
                             <p:dataTable id="tbl3" styleClass="noBorder normalFont" value="#{mdInwardReportController.refund}" 
                                          var="ref">
+
+                                <p:column headerText="Discharge At">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discharge At"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.patientEncounter.dateOfDischarge}" >
+                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
 
                                 <p:column headerText="B H T No">
                                     <f:facet name="header">

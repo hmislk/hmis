@@ -48,7 +48,7 @@
                         </h:panelGrid>
 
 
-                        <p:panel >
+                        <p:panelGrid columns="3" >
                             <p:commandButton ajax="false" value="Process" action="#{inwardReportControllerBht.process()}" onclick="onSubmitButton();"  ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -58,7 +58,7 @@
                                 <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tbl2,tbl3" fileName="BHT_Income_by_Categories"  />
                             </p:commandButton>  
 
-                        </p:panel>
+                        </p:panelGrid>
 
                         <p:panelGrid  columns="2" style="width: 100%;" >   
                             <f:facet name="header">

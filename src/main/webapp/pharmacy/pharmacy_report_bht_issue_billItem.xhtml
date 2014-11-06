@@ -22,6 +22,17 @@
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.fromDepartment}" converter="dep" >
                             </p:autoComplete>
+                            <p:autoComplete id="exItem" value="#{reportsTransfer.item}"
+                                            forceSelection="true"
+                                            completeMethod="#{itemController.completeAmpItem}" var="vt"
+                                            itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column headerText="Item" >
+                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Code" >
+                                    <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                </p:column>                         
+                            </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
@@ -29,7 +40,7 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.fillDepartmentBHTIssueByBill}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.fillDepartmentBHTIssueByBillItems}" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -43,7 +54,8 @@
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
-                                         value="#{reportsTransfer.transferBills}" var="i"  >
+                                         value="#{reportsTransfer.transferItems}" var="i" 
+                                         rowIndexVar="n">
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT Issue From"/>
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
@@ -58,26 +70,43 @@
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
-
+                                <p:column>
+                                    #{n+1}
+                                </p:column>
+                                
                                 <p:column headerText="BHT No">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.patientEncounter.bhtNo}" ></h:outputLabel>                                    
+                                    <h:outputLabel value="#{i.bill.patientEncounter.bhtNo}" ></h:outputLabel>                                    
                                 </p:column>
 
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.deptId}" ></h:outputLabel>                                    
+                                    <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>                                    
                                 </p:column>
 
                                 <p:column headerText="Cancelled No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Cancelled No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.cancelledBill.deptId}" ></h:outputLabel>                                    
+                                    <h:outputLabel value="#{i.bill.cancelledBill.deptId}" ></h:outputLabel>                                    
+                                </p:column>
+
+                                <p:column headerText="Item Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.item.name}" ></h:outputLabel>                                    
+                                </p:column>
+
+                                <p:column headerText="Deleted" rendered="false">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Deleted"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.retired}" ></h:outputLabel>                                    
                                 </p:column>
 
                                 <p:column headerText="Date">
@@ -93,7 +122,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.total}"  >
+                                    <h:outputLabel value="#{i.grossValue}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>  
                                     <f:facet name="footer">
@@ -107,11 +136,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Margin Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.margin}"  >
+                                    <h:outputLabel value="#{i.marginValue}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel> 
-                                      <f:facet name="footer">
-                                          <h:outputLabel value="#{reportsTransfer.marginValue}" >
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.marginValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
@@ -136,7 +165,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.netTotal}"  >
+                                    <h:outputLabel value="#{i.netValue}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>     
                                     <f:facet name="footer">

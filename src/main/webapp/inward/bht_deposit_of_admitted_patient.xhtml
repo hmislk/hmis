@@ -58,16 +58,16 @@
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{mdInwardReportController.bil}" var="i"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="Total Payment Summery (Not Discharge B.H.T. only) - #{mdInwardReportController.admissionType} -  #{mdInwardReportController.paymentMethod}"/>
-                                    <h:panelGrid columns="4">
+                                    
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="--To--"/>
                                         <h:outputLabel value="#{mdInwardReportController.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                                  
                                 </f:facet>
 
                                 <p:column headerText="B H T No">
