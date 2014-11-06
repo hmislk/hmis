@@ -144,6 +144,8 @@ public enum Privileges {
     TheaterTransferIssue,
     TheaterTransferRecieve,
     TheaterTransferReport,
+    TheaterReports,
+    TheaterSummeries,
     
     ClinicalPatientSummery,
     ClinicalPatientDetails,
