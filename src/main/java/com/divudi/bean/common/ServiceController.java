@@ -67,10 +67,12 @@ public class ServiceController implements Serializable {
     @EJB
     private CategoryFacade categoryFacade;
     List<Service> selectedItems;
+    List<Service> selectedRetiredItems;
     private Service current;
     private List<Service> items = null;
     private List<Service> filterItem;
     String selectText = "";
+    String selectRetiredText = "";
     String bulkText = "";
     boolean billedAs;
     boolean reportedAs;
@@ -94,6 +96,24 @@ public class ServiceController implements Serializable {
             getFacade().edit(s);
         }
     }
+
+    public List<Service> getSelectedRetiredItems() {
+        return selectedRetiredItems;
+    }
+
+    public void setSelectedRetiredItems(List<Service> selectedRetiredItems) {
+        this.selectedRetiredItems = selectedRetiredItems;
+    }
+
+    public String getSelectRetiredText() {
+        return selectRetiredText;
+    }
+
+    public void setSelectRetiredText(String selectRetiredText) {
+        this.selectRetiredText = selectRetiredText;
+    }
+    
+    
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
@@ -128,6 +148,15 @@ public class ServiceController implements Serializable {
             selectedItems = getFacade().findBySQL("select c from Service c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
+    }
+    
+    public List<Service> getRetiredSelectedItems() {
+        if (selectRetiredText.trim().equals("")) {
+            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true order by c.name");
+        } else {
+            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true and upper(c.name) like '%" + getSelectRetiredText().toUpperCase() + "%' order by c.name");
+        }
+        return selectedRetiredItems;
     }
 
     public boolean isBilledAs() {
@@ -332,13 +361,13 @@ public class ServiceController implements Serializable {
     }
 
     public void delete() {
-
-        for (ItemFee it : getFees(current)) {
-            it.setRetired(true);
-            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            it.setRetirer(getSessionController().getLoggedUser());
-            getItemFeeFacade().edit(it);
-        }
+//
+//        for (ItemFee it : getFees(current)) {
+//            it.setRetired(true);
+//            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//            it.setRetirer(getSessionController().getLoggedUser());
+//            getItemFeeFacade().edit(it);
+//        }
 
         if (current != null) {
             current.setRetired(true);
@@ -349,6 +378,34 @@ public class ServiceController implements Serializable {
         } else {
             UtilityController.addSuccessMessage("NothingToDelete");
         }
+        
+        getSelectedItems();
+        getRetiredSelectedItems();
+        recreateModel();
+
+    }
+    
+    public void activateService() {
+//              
+//        for (ItemFee it : getFees(current)) {
+//            it.setRetired(false);
+//            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//            it.setRetirer(getSessionController().getLoggedUser());
+//            getItemFeeFacade().edit(it);
+//        }
+
+        if (current != null) {
+            current.setRetired(false);
+            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            UtilityController.addSuccessMessage("Activated Successfully");
+        } else {
+            UtilityController.addSuccessMessage("Nothing To Activate");
+        }
+        
+        getSelectedItems();
+        getRetiredSelectedItems();
         recreateModel();
 
     }
@@ -458,7 +515,13 @@ public class ServiceController implements Serializable {
     }
 
     private List<ItemFee> getFees(Item i) {
+        
+        //HashMap m = new HashMap();
+        
         String sql = "Select f From ItemFee f where f.retired=false and f.item.id=" + i.getId();
+        
+        //m.put("itm", i);
+        
 
         return getItemFeeFacade().findBySQL(sql);
     }

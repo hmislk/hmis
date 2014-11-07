@@ -32,6 +32,7 @@ import com.divudi.facade.StockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,6 +95,7 @@ public class PharmacyAdjustmentController implements Serializable {
     private Double pr;
     private Double rsr;
     private Double wsr;
+    Date exDate;
 
     private YearMonthDay yearMonthDay;
 
@@ -374,6 +376,49 @@ public class PharmacyAdjustmentController implements Serializable {
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
 
+    
+     private void saveExDateAdjustmentBillItems() {
+        billItem = null;
+        BillItem tbi = getBillItem();
+        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
+        ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
+        ph.setBillItem(null);
+//        ph.setPurchaseRate(itemBatch.getPurcahseRate());
+//        ph.setRetailRate(itemBatch.getRetailsaleRate());
+        ph.setDoe(itemBatch.getDateOfExpire());
+        //tbi.setItem(getStock().getItemBatch().getItem());
+        itemBatch.setDateOfExpire(exDate);
+        //tbi.setRate(rsr);
+        //pharmaceutical Bill Item
+        //ph.setStock(stock);
+        //Rates
+        //Values
+        tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
+        tbi.setNetValue(getStock().getStock() * tbi.getNetRate());
+        tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
+        tbi.setInwardChargeType(InwardChargeType.Medicine);
+        tbi.setItem(getStock().getItemBatch().getItem());
+        tbi.setBill(getDeptAdjustmentPreBill());
+        tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
+        tbi.setCreatedAt(Calendar.getInstance().getTime());
+        tbi.setCreater(getSessionController().getLoggedUser());
+
+        if (ph.getId() == null) {
+            getPharmaceuticalBillItemFacade().create(ph);
+        }
+        tbi.setPharmaceuticalBillItem(ph);
+
+        if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        }
+
+        ph.setBillItem(tbi);
+        getPharmaceuticalBillItemFacade().edit(ph);
+//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+        getDeptAdjustmentPreBill().getBillItems().add(tbi);
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+    }
+    
     private boolean errorCheck() {
         if (getStock() == null) {
             UtilityController.addErrorMessage("Please Select Stocke");
@@ -418,8 +463,19 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void adjustRetailRate() {
         saveDeptAdjustmentBill();
-        saveRsrAdjustmentBillItems();
+        saveExDateAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
+        getItemBatchFacade().edit(getStock().getItemBatch());
+        bill = billFacade.find(getDeptAdjustmentPreBill().getId());
+//        clearBill();
+//        clearBillItem();
+        printPreview = true;
+    }
+    
+    public void adjustExDate() {
+        saveDeptAdjustmentBill();
+        saveRsrAdjustmentBillItems();
+        getStock().getItemBatch().setDateOfExpire(exDate);
         getItemBatchFacade().edit(getStock().getItemBatch());
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 //        clearBill();
@@ -442,6 +498,7 @@ public class PharmacyAdjustmentController implements Serializable {
         rsr = null;
         wsr = null;
         stock = null;
+        
     }
 
     public SessionController getSessionController() {
@@ -527,6 +584,16 @@ public class PharmacyAdjustmentController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
+
+    public Date getExDate() {
+        return exDate;
+    }
+
+    public void setExDate(Date exDate) {
+        this.exDate = exDate;
+    }
+    
+    
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;

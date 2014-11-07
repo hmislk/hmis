@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -62,6 +63,9 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private Institution creditCompany;
+    Institution institution;
+    Institution collectingCentre;
+    Item item;
     private List<InvestigationSummeryData> items;
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
@@ -71,6 +75,34 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
      * Creates a new instance of CashierReportController
      */
     public InvestigationMonthSummeryOwnController() {
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public String ixCountByInstitutionAndCollectingCentre() {
+        return "/reportLab/ix_count_by_institution_and_collecting_centre";
     }
 
     public BillComponentFacade getBillComponentFacade() {
@@ -158,7 +190,165 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         return items;
     }
+
     private long countTotal;
+
+    List<ItemInstitutionCollectingCentreCountRow> insInvestigationCountRows;
+
+    public void createIxCountByInstitutionAndCollectingCentre() {
+        String jpql;
+        Map m;
+        m = new HashMap();
+
+        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
+                + " from BillItem bi "
+                + " join bi.bill b "
+                + " join b.institution ins "
+                + " join b.collectingCentre cs "
+                + " join bi.item item "
+                + " where b.createdAt between :fd and :td "
+                + " and type(item) =:ixbt "
+                + " and bi.retired=false "
+                + " and b.retired=false "
+                + " and b.cancelled=false ";
+
+        if (institution != null) {
+            jpql = jpql + " and ins=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql = jpql + " and cs=:cs ";
+            m.put("cs", collectingCentre);
+        }
+
+        if (item != null) {
+            jpql = jpql + " and item=:item ";
+            m.put("item", item);
+        }
+
+        jpql = jpql + " group by item, ins, cs ";
+        jpql = jpql + " order by ins.name, cs.name, item.name ";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("ixbt", Investigation.class);
+        insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.DATE);
+
+        if (collectingCentre != null) {
+            return;
+        }
+
+        m = new HashMap();
+        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution) "
+                + " from BillItem bi "
+                + " join bi.bill b "
+                + " join b.institution ins "
+                + " join bi.item item "
+                + " where b.createdAt between :fd and :td "
+                + " and b.collectingCentre is null "
+                + " and type(item) =:ixbt "
+                + " and bi.retired=false "
+                + " and b.retired=false "
+                + " and b.cancelled=false ";
+        if (institution != null) {
+            jpql = jpql + " and ins=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (item != null) {
+            jpql = jpql + " and item=:item ";
+            m.put("item", item);
+        }
+
+        jpql = jpql + " group by item, ins ";
+        jpql = jpql + " order by ins.name, item.name ";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        m.put("ixbt", Investigation.class);
+
+        insInvestigationCountRows.addAll((List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.DATE));
+
+        int c =1;
+        for (ItemInstitutionCollectingCentreCountRow r: insInvestigationCountRows){
+            r.setId(c);
+            c++;
+        }
+
+    }
+
+//    public void createIxCountByInstitutionAndCollectingCentreIndividual() {
+//        String jpql;
+//        Map m = new HashMap();
+//        jpql = "Select item, count(bi), ins, cs "
+//                + " from BillItem bi "
+//                + " join bi.bill b "
+//                + " join b.institution ins "
+//                + " join b.collectingCentre cs "
+//                + " join bi.item item "
+//                + " where b.createdAt between :fd and :td "
+//                + " and type(item) =:ixbt "
+//                + " and bi.retired=false "
+//                + " and b.retired=false "
+//                + " and b.cancelled=false ";
+//
+//        if (institution != null) {
+//            jpql = jpql + " and ins=:ins ";
+//            m.put("ins", institution);
+//        }
+//        jpql = jpql + " group by item, ins, cs ";
+//
+//        jpql = jpql + " order by ins.name, cs.name, item.name ";
+//
+////        New Way
+//        jpql = "Select item, count(bi), ins"
+//                + " from BillItem bi "
+//                + " join bi.bill b "
+//                + " join b.institution ins "
+//                + " join bi.item item "
+//                + " where b.createdAt between :fd and :td "
+//                + " and type(item) =:ixbt "
+//                + " and bi.retired=false "
+//                + " and b.retired=false "
+//                + " and b.cancelled=false ";
+//        if (institution != null) {
+//            jpql = jpql + " and ins=:ins ";
+//            m.put("ins", institution);
+//        }
+//        jpql = jpql + " group by item, ins ";
+//        jpql = jpql + " order by ins.name, item.name ";
+//
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//        m.put("ixbt", Investigation.class);
+//
+//        List<Object[]> bojsl = billFacade.findAggregates(jpql, m, TemporalType.DATE);
+//        System.out.println("bojsl = " + bojsl);
+//        insInvestigationCountRows = new ArrayList<>();
+//
+//        Map<Institution, ItemInstitutionCollectingCentreCountRow> map = new HashMap<>();
+//
+//        for (Object[] bobj : bojsl) {
+//            if (bobj.length < 3) {
+//                continue;
+//            }
+//            
+//            ItemInstitutionCollectingCentreCountRow r = new ItemInstitutionCollectingCentreCountRow();
+//            r.setItem((Item) bobj[0]);
+//            r.setCount((Long) bobj[1]);
+//            r.setInstitution((Institution) bobj[2]);
+////            if(bobj[3]!=null){
+////                r.setCollectingCentre((Institution) bobj[3]);
+////            }
+//            insInvestigationCountRows.add(r);
+//        }
+//        System.out.println("sql = " + jpql);
+//        System.out.println("m = " + m);
+//        System.out.println("insInvestigationCountRows.size() = " + insInvestigationCountRows.size());
+//    }
+    public List<ItemInstitutionCollectingCentreCountRow> getInsInvestigationCountRows() {
+        return insInvestigationCountRows;
+    }
 
     public void createItemList3() {
         itemsLab = new ArrayList<>();
@@ -642,4 +832,62 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
     }
+
+    public class institutionInvestigationCountRow {
+
+        Institution institution;
+        Institution collectingCentre;
+        Item item;
+        Investigation investigation;
+        Double count;
+
+        public institutionInvestigationCountRow(Institution institution, Institution collectingCentre, Item item, Double count) {
+            this.institution = institution;
+            this.collectingCentre = collectingCentre;
+            this.item = item;
+            this.count = count;
+        }
+
+        public Institution getInstitution() {
+            return institution;
+        }
+
+        public void setInstitution(Institution institution) {
+            this.institution = institution;
+        }
+
+        public Institution getCollectingCentre() {
+            return collectingCentre;
+        }
+
+        public void setCollectingCentre(Institution collectingCentre) {
+            this.collectingCentre = collectingCentre;
+        }
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public Investigation getInvestigation() {
+            return investigation;
+        }
+
+        public void setInvestigation(Investigation investigation) {
+            this.investigation = investigation;
+        }
+
+        public Double getCount() {
+            return count;
+        }
+
+        public void setCount(Double count) {
+            this.count = count;
+        }
+
+    }
+
 }

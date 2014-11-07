@@ -462,6 +462,11 @@ public class InwardReportController implements Serializable {
         List<PatientEncounter> list = patientEncounters;
         patientEncounters = null;
         patientEncounters = new ArrayList<>();
+        total = 0;
+        paid = 0;
+        calTotal = 0;
+        creditPaid = 0;
+        creditUsed = 0;
         for (PatientEncounter p : list) {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
@@ -469,7 +474,7 @@ public class InwardReportController implements Serializable {
             double paidValue = p.getTransPaidByPatient() + p.getTransPaidByCompany();
             double dueValue = p.getFinalBill().getNetTotal() - paidValue;
 
-            if (dueValue != 0) {
+            if (Math.abs(dueValue) != 0) {
                 total += p.getFinalBill().getNetTotal();
                 paid += p.getTransPaidByPatient();
                 creditPaid += p.getTransPaidByCompany();

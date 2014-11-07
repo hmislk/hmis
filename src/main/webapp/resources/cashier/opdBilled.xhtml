@@ -18,14 +18,14 @@
                 <h:outputLabel value="Opd Bills "/>
             </f:facet>     
 
-            <p:column headerText="Billed Id" >
+            <p:column headerText="Billed Id" style=" text-align: right">
                 <f:facet name="header">  
                     <h:outputLabel value="Billed Id"/>
                 </f:facet> 
                 <h:outputLabel value="#{b.insId}" >
                 </h:outputLabel>
             </p:column>
-            <p:column headerText="Time"   >
+            <p:column headerText="Time"   style=" text-align: right">
                 <f:facet name="header">  
                     <h:outputLabel value="Time"/>
                 </f:facet> 
@@ -34,13 +34,13 @@
                 </h:outputLabel>
             </p:column>
 
-            <p:column headerText="Total">
+            <p:column headerText="Total" style=" text-align: right">
                 <h:outputLabel value="#{b.total}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
             
-              <p:column headerText="Discount">
+              <p:column headerText="Discount" style=" text-align: right">
                 <h:outputLabel value="#{b.discount}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
@@ -65,6 +65,7 @@
                 <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
 
             </p:column>
+            
             <p:column headerText="C Card" style=" text-align: right" >
                 <f:facet name="header">  
                     <h:outputLabel value="C Card"/>

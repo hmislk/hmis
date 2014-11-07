@@ -608,8 +608,10 @@ public class StoreCalculation {
     }
 
     public void editBillItem(PharmaceuticalBillItem i, WebUser w) {
-
-        i.getBillItem().setNetValue(0 - (i.getQty() * i.getPurchaseRate()));
+        if (i.getQty()!=0 && i.getPurchaseRate()!= 0) {
+            i.getBillItem().setNetValue(0 - (i.getQty() * i.getPurchaseRate()));
+        }
+        
 
         i.getBillItem().setCreatedAt(Calendar.getInstance().getTime());
         i.getBillItem().setCreater(w);

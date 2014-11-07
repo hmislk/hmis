@@ -436,6 +436,63 @@ public class ServiceSummery implements Serializable {
         
     }
 
+    public void createServiceSummeryLabNew() {
+        
+         long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
+
+        if (Math.abs(lng) > 2) {
+            UtilityController.addErrorMessage("Date Range is too Long");
+            return;
+        }
+        
+        
+        serviceSummery = new ArrayList<>();
+        for (BillItem i : getBillItem(BillType.OpdBill, service, department, paymentMethod, false)) {
+            BillItemWithFee bi = new BillItemWithFee();
+            bi.setBillItem(i);
+            bi.setReagentFee(calFee(i, FeeType.Chemical));
+            bi.setProFee(calFee(i, FeeType.Staff));
+            bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
+            System.out.println("bi = " + bi);
+            serviceSummery.add(bi);
+        }
+
+//        calCountTotalItem(BillType.OpdBill, false);
+//        System.out.println("proFeeTotal = " + proFeeTotal);
+//        System.out.println("hosFeeTotal = " + hosFeeTotal);
+//        System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
+//        System.out.println("reagentFeeTotal = " + reagentFeeTotal);
+        proFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
+        hosFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
+        outSideFeeTotoal = calServiceTot(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
+        reagentFeeTotal=calServiceTot(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
+//        List<BillFee> billfees =new ArrayList<>();
+//        billfees=createBillFees(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
+//        for (BillFee bf : billfees) {
+//            proFeeTotal+=bf.getFeeValue();
+//            System.out.println("bf.getFeeValue = " + bf.getFeeValue());
+//            System.out.println("proFeeTotal = " + proFeeTotal);
+//            System.out.println("date = " + bf.getBill().getCreatedAt());
+//        }
+//        billfees=createBillFees(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
+//        for (BillFee bf : billfees) {
+//            hosFeeTotal+=bf.getFeeValue();
+//            System.out.println("hosFeeTotal = " + hosFeeTotal);
+//        }
+//        billfees=createBillFees(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
+//        for (BillFee bf : billfees) {
+//            outSideFeeTotoal+=bf.getFeeValue();
+//            System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
+//        }
+//        billfees=createBillFees(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
+//        for (BillFee bf : billfees) {
+//            reagentFeeTotal+=bf.getFeeValue();
+//            System.out.println("reagentFeeTotal = " + reagentFeeTotal);
+//        }
+        
+    }
+
+    
     public void createServiceSummeryInwardAdded() {
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.InwardBill, service, false)) {

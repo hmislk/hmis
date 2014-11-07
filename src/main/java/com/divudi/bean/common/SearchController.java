@@ -2027,7 +2027,7 @@ public class SearchController implements Serializable {
         sql = "select b from BillItem b where b.retired=false "
                 + " and b.bill.billType=:btp "
                 + " and b.referenceBill.billType=:refType "
-                + " and b.paidForBillFee.bill.cancelled=false "
+//                + " and b.paidForBillFee.bill.cancelled=false "
                 + " and b.createdAt between :fromDate and :toDate ";
 
 
@@ -2068,7 +2068,7 @@ public class SearchController implements Serializable {
         sql = "select distinct(b.bill) from BillItem b where b.retired=false "
                 + " and b.bill.billType=:btp "
                 + " and b.referenceBill.billType=:refType "
-                + " and b.paidForBillFee.bill.cancelled=false "
+//                + " and b.paidForBillFee.bill.cancelled=false "
                 + " and b.createdAt between :fromDate and :toDate ";
 
 

@@ -355,8 +355,8 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.performInstitutionFee) "
                 + " FROM Bill bf"
                 + " WHERE bf.institution=:ins "
-                + " and bf.toDepartment.institution!=:ins "
-                //  + " and bf.fee.feeType=:ftp "
+                + " and bf.toInstitution!=:ins "
+                  + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -367,6 +367,7 @@ public class BillBeanController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", institution);
+        temMap.put("bt", BillType.OpdBill);
         //   temMap.put("ftp", feeType);
         temMap.put("pm1", PaymentMethod.Cash);
         temMap.put("pm2", PaymentMethod.Card);
@@ -870,7 +871,7 @@ public class BillBeanController implements Serializable {
         String sql = "Select sum(b.netTotal)"
                 + " from Bill b "
                 + " where b.retired=false"
-                + " and  b.billType=:bType"
+                + " and b.billType=:bType"
                 + " and b.referenceBill.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and (b.paymentMethod = :pm1 "
@@ -1123,13 +1124,11 @@ public class BillBeanController implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select bf.toDepartment,sum(bf.netTotal) "
+        sql = "select sum(bf.netTotal) "
                 + " FROM Bill bf "
                 + " where bf.department=:ins "
                 + " and  bf.billType= :bTp  "
-                + " and  bf.createdAt between :fromDate and :toDate "
-                + " group by bf.toDepartment"
-                + " order by bf.toDepartment.name  ";
+                + " and  bf.createdAt between :fromDate and :toDate ";
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", department);

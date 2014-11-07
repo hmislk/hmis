@@ -235,7 +235,7 @@ public class InwardBeanController implements Serializable {
 
     public Double[] fetchDiscountAndNetTotalByBillItem(Bill b) {
         String sql = "Select sum(s.discount),"
-                + " sum(s.netTotal) "
+                + " sum(s.netValue) "
                 + "  From BillItem s"
                 + " where s.retired=false"
                 + " and s.bill=:bill";

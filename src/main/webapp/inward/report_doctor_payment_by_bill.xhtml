@@ -73,14 +73,14 @@
 
                                     <f:facet name="header">
 
-                                        <h:outputLabel value="Doctor Payment #{inwardStaffPaymentBillController.currentStaff.person}"/>
+                                        <h:outputLabel value="Inward Doctor Payment #{inwardStaffPaymentBillController.currentStaff.person}"/>
                                         <h:outputLabel value=" : "/>
                                         <h:outputLabel value="#{inwardStaffPaymentBillController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                                         </h:outputLabel>
                                         <h:outputLabel value=" -- "/>
                                         <h:outputLabel value="#{inwardStaffPaymentBillController.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </f:facet>
 
