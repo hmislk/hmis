@@ -6,6 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.PaymentMethod;
@@ -39,6 +40,10 @@ public class EnumController implements Serializable {
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
+    }
+
+    public DepartmentType[] getDepartmentType() {
+        return DepartmentType.values();
     }
 
     public LeaveType[] getLeaveType() {

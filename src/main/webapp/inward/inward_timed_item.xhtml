@@ -50,8 +50,8 @@
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
                             </f:facet>
-                            <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">
+                            <h:panelGrid id="gpDetail" columns="1" >
+                                <h:panelGrid id="gpDetailText" columns="2" rendered="#{timedItemController.current ne null}">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtName" value="#{timedItemController.current.name}" required="true" ></h:inputText>
                                     <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
@@ -82,6 +82,13 @@
                                     <h:selectOneListbox id="cmbDep" size="1" value="#{timedItemController.current.department}" >
                                         <f:selectItem itemLabel="Please select a Department"/>
                                         <f:selectItems value="#{timedItemController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                    </h:selectOneListbox>
+                                    
+                                     <h:outputText value="Department Type" ></h:outputText>
+                                    <h:selectOneListbox size="1" 
+                                                        value="#{timedItemController.current.departmentType}" >
+                                        <f:selectItem itemLabel="Please select a Department Type"/>
+                                        <f:selectItems value="#{enumController.departmentType}" />
                                     </h:selectOneListbox>
 
                                     <h:outputText value="Inward Charge Category" ></h:outputText>
