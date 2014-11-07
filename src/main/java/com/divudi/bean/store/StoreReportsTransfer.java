@@ -410,7 +410,7 @@ public class StoreReportsTransfer implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
 
-        transferItems = getBillItemFacade().findBySQL(sql, m);
+        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         purchaseValue = 0.0;
         saleValue = 0.0;
         Map<Item, ItemBillRow> ibrs = new HashMap<>();
