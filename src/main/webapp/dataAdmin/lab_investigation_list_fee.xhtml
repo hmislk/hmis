@@ -64,7 +64,12 @@
                             </f:facet>
                             <h:outputLabel value="#{ix.fee}" rendered="#{ix.feeType=='Staff'}" ></h:outputLabel>
                         </p:column>
-                        
+                        <p:column headerText="Regent Fee" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Regent Fee"/>    
+                            </f:facet>
+                            <h:outputLabel value="#{ix.fee}" rendered="#{ix.feeType=='Chemical'}" ></h:outputLabel>
+                        </p:column>
                         <p:column headerText="Total" >
                             <f:facet name="header">
                                 <h:outputLabel value="Total"/>    
