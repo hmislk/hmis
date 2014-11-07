@@ -1,7 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:h="http://java.sun.com/jsf/html">
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
     <body>
 
@@ -9,12 +12,17 @@
 
             <ui:define name="content">
 
-<!--                <form  action="www.lakmedi.com">
-                    <input type="text" >Name</input>
-                    <input type="submit" >Ok</input>
-                    <button type="submit" value="OK"  ></button>
-                </form>-->
+                <p:panelGrid columns="2" >
 
+
+                    <h:form >
+                        <p:commandButton value="Calculate Net Total"
+                                         action="#{storeGrnController.addTest1()}" ajax="false" ></p:commandButton>
+
+                    </h:form>
+
+
+                </p:panelGrid>
 
             </ui:define>
 

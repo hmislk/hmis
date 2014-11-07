@@ -48,22 +48,22 @@
                             </p:panel>
                             
                             <p:panel header="Search Inactive Service" >
-                                <h:panelGrid id="gpSelectTextInAct" >
+                                <h:panelGrid id="gpSelectTextAct" >
 
-                                    <h:inputText autocomplete="off" id="txtSearchInAct" value="#{serviceController.selectText}" >
-                                        <f:ajax execute="txtSearchInAct" render="lstSelectInAct" event="keyup" />
+                                    <h:inputText autocomplete="off" id="txtSearchAct" value="#{serviceController.selectRetiredText}" >
+                                        <f:ajax execute="txtSearchAct" render="lstSelectAct" event="keyup" />
                                     </h:inputText>
 
-                                    <p:selectOneListbox converter="serv"   id="lstSelectInAct"   value="#{serviceController.current}" style="min-width: 223px; height: 300px;">
+                                    <p:selectOneListbox converter="serv"   id="lstSelectAct"   value="#{serviceController.current}" style="min-width: 223px; height: 300px;">
                                         <f:selectItems  value="#{serviceController.retiredSelectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                         </f:selectItems>
-                                        <p:ajax event="change"   update="gpDetail" process="lstSelectInAct" >
+                                        <p:ajax event="change"   update="gpDetail" process="lstSelectAct" >
                                         </p:ajax>
                                     </p:selectOneListbox>
 
 
                                 </h:panelGrid>
-                                <h:panelGrid id="gpSelectButtonsInAct" columns="3"  >                                    
+                                <h:panelGrid id="gpSelectButtonsAct" columns="3"  >                                    
                                     <h:commandButton id="btnActivate" onclick="if (!confirm('Are you sure you want to Activate this record?'))
                                                 return false;" action="#{serviceController.activateService()}"  value="Activate"  >
                                     </h:commandButton>

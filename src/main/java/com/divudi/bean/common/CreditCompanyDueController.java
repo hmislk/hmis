@@ -314,16 +314,20 @@ public class CreditCompanyDueController implements Serializable {
 
             Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
 
-            double finalValue = (Math.abs(b.getCreditUsedAmount()) - Math.abs(b.getCreditPaidAmount()));
+            double finalValue = b.getFinalBill().getNetTotal() - (b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+                dataTable5Value.getValue1PatientEncounters().add(b);
             } else if (dayCount < 60) {
                 dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+                dataTable5Value.getValue2PatientEncounters().add(b);
             } else if (dayCount < 90) {
                 dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+                dataTable5Value.getValue3PatientEncounters().add(b);
             } else {
                 dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+                dataTable5Value.getValue4PatientEncounters().add(b);
             }
 
         }

@@ -67,10 +67,12 @@ public class ServiceController implements Serializable {
     @EJB
     private CategoryFacade categoryFacade;
     List<Service> selectedItems;
+    List<Service> selectedRetiredItems;
     private Service current;
     private List<Service> items = null;
     private List<Service> filterItem;
     String selectText = "";
+    String selectRetiredText = "";
     String bulkText = "";
     boolean billedAs;
     boolean reportedAs;
@@ -94,6 +96,24 @@ public class ServiceController implements Serializable {
             getFacade().edit(s);
         }
     }
+
+    public List<Service> getSelectedRetiredItems() {
+        return selectedRetiredItems;
+    }
+
+    public void setSelectedRetiredItems(List<Service> selectedRetiredItems) {
+        this.selectedRetiredItems = selectedRetiredItems;
+    }
+
+    public String getSelectRetiredText() {
+        return selectRetiredText;
+    }
+
+    public void setSelectRetiredText(String selectRetiredText) {
+        this.selectRetiredText = selectRetiredText;
+    }
+    
+    
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
@@ -131,12 +151,12 @@ public class ServiceController implements Serializable {
     }
     
     public List<Service> getRetiredSelectedItems() {
-        if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=true order by c.name");
+        if (selectRetiredText.trim().equals("")) {
+            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=true and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true and upper(c.name) like '%" + getSelectRetiredText().toUpperCase() + "%' order by c.name");
         }
-        return selectedItems;
+        return selectedRetiredItems;
     }
 
     public boolean isBilledAs() {
@@ -358,6 +378,9 @@ public class ServiceController implements Serializable {
         } else {
             UtilityController.addSuccessMessage("NothingToDelete");
         }
+        
+        getSelectedItems();
+        getRetiredSelectedItems();
         recreateModel();
 
     }
@@ -380,6 +403,9 @@ public class ServiceController implements Serializable {
         } else {
             UtilityController.addSuccessMessage("Nothing To Activate");
         }
+        
+        getSelectedItems();
+        getRetiredSelectedItems();
         recreateModel();
 
     }

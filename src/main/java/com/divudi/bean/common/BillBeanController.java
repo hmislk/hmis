@@ -1124,13 +1124,11 @@ public class BillBeanController implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select bf.toDepartment,sum(bf.netTotal) "
+        sql = "select sum(bf.netTotal) "
                 + " FROM Bill bf "
                 + " where bf.department=:ins "
                 + " and  bf.billType= :bTp  "
-                + " and  bf.createdAt between :fromDate and :toDate "
-                + " group by bf.toDepartment"
-                + " order by bf.toDepartment.name  ";
+                + " and  bf.createdAt between :fromDate and :toDate ";
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", department);
