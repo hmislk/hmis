@@ -45,8 +45,8 @@ import javax.persistence.TemporalType;
  * @author Buddhika
  */
 @Named
-@RequestScoped
-public class InvestigationMonthSummeryOwnController implements Serializable {
+@SessionScoped
+public class InvestigationMonthSummeryOwnControllerSession implements Serializable {
 
     @Inject
     private SessionController sessionController;
@@ -74,7 +74,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     /**
      * Creates a new instance of CashierReportController
      */
-    public InvestigationMonthSummeryOwnController() {
+    public InvestigationMonthSummeryOwnControllerSession() {
     }
 
     public Institution getCollectingCentre() {
@@ -195,7 +195,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     List<ItemInstitutionCollectingCentreCountRow> insInvestigationCountRows;
 
-    public void createIxCountByInstitutionAndCollectingCentre() {
+    public void createIxCountByInstitutionAndCollectingCentreOld() {
         String jpql;
         Map m;
         m = new HashMap();
@@ -276,6 +276,49 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         }
 
     }
+    
+    
+    public void createIxCountByInstitutionAndCollectingCentre() {
+        String jpql;
+        Map m;
+        m = new HashMap();
+
+        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
+                + " from BillItem bi "
+                + " join bi.bill b "
+                + " left join b.institution ins "
+                + " left join b.collectingCentre cs "
+                + " left join bi.item item "
+                + " where b.createdAt between :fd and :td "
+                + " and type(item) =:ixbt "
+                + " and bi.retired=false "
+                + " and b.retired=false "
+                + " and b.cancelled=false ";
+
+        if (institution != null) {
+            jpql = jpql + " and ins=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql = jpql + " and cs=:cs ";
+            m.put("cs", collectingCentre);
+        }
+
+        if (item != null) {
+            jpql = jpql + " and item=:item ";
+            m.put("item", item);
+        }
+
+        jpql = jpql + " group by item, ins, cs ";
+        jpql = jpql + " order by ins.name, cs.name, item.name ";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("ixbt", Investigation.class);
+        insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
+
+    }
+    
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {
 //        String jpql;

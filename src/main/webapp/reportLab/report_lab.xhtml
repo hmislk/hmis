@@ -9,22 +9,22 @@
     <body>
 
         <ui:composition template="/resources/template/template.xhtml">
-<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <ui:define name="content">
 
                 <h:form>
 
-                    <h:panelGrid columns="4"  >   
+                    <h:panelGrid columns="4" styleClass="alignTop"  >   
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="Lab Investigation With Credit" />
                             </f:facet>                            
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Month End Detail" action="report_lab_investigation_month_end_detail"/>
 
-                           
+
                         </h:panelGrid>
-                        
-                         <h:panelGrid columns="1" >
+
+                        <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="Lab Investigation Without Credit" />
                             </f:facet>                            
@@ -33,10 +33,20 @@
 
                         </h:panelGrid>
 
-                        <p:commandButton styleClass="linkButton" ajax="false" 
-                                         value="Fees for outside institutions" 
-                                         action="#{commonReport.displayOutsideBillFees()}"/>
-                        
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Lab Investigation Counts" />
+                            </f:facet>              
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             value="Fees for outside institutions" 
+                                             action="#{commonReport.displayOutsideBillFees()}"/>
+
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             value="Investigation Counts by Institution And Collecting Centre" 
+                                             action="#{investigationMonthSummeryOwnController.ixCountByInstitutionAndCollectingCentre()}"/>
+
+                        </h:panelGrid>
+
                     </h:panelGrid>
 
                 </h:form>
