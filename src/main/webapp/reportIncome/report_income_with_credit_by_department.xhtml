@@ -13,38 +13,51 @@
 
             <ui:define name="content">
                 <h:form>
-                     <h:outputStylesheet library="css" name="printing.css" />
+                    <h:outputStylesheet library="css" name="printing.css" />
 
                     <p:panel id="panelReport" styleClass="noBorder summeryBorder">
 
                         <f:facet name ="header" >
+
                             <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
-                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
-                            </p:calendar>
-                            <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
-                            </p:calendar>
-                            <h:outputLabel styleClass="noPrintButton" value="Department" style="text-align: left; margin: 5px; padding: 5px;" >
-                            </h:outputLabel>
-                            <p:autoComplete styleClass="noPrintButton"  value="#{labReportSearchByDepartmentController.department}" 
-                                            style="text-align: left; margin: 5px; padding: 5px;" 
-                                            completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
-                                            itemLabel="#{dept.name}" forceSelection="true" rendered="true"
-                                            requiredMessage="You must select a department" >
-                            </p:autoComplete>
-                            
-                            <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" >
-                            </p:commandButton>
-                            <p:defaultCommand target="btnRefresh"/>
-                            
-                            <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
-                                <p:printer target="panelReport" />
-                            </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="DepartmentIncome"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
-                            </p:commandButton>
+
+                            <h:panelGrid columns="15">
+
+                                <h:outputLabel value="From" />
+
+                                <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                </p:calendar>
+
+                                <p:spacer width="20" height="0"/>
+                                <h:outputLabel value="To" />
+                                <p:calendar styleClass="noPrintButton" value="#{labReportSearchByDepartmentController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                </p:calendar>
+
+                                <p:spacer width="20" height="0"/>
+                                <h:outputLabel  value="Department" />
+
+                                <p:autoComplete styleClass="noPrintButton"  value="#{labReportSearchByDepartmentController.department}" 
+                                                style="text-align: left; margin: 5px; padding: 5px;" 
+                                                completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
+                                                itemLabel="#{dept.name}" forceSelection="true" rendered="true"
+                                                requiredMessage="You must select a department" >
+                                </p:autoComplete>
+                                
+                                <p:spacer width="85" height="0"/>
+                                <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" >
+                                </p:commandButton>
+                                <p:defaultCommand target="btnRefresh"/>
+
+                                <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
+                                    <p:printer target="panelReport" />
+                                </p:commandButton>
+                                <p:commandButton value="Excel" ajax="false">
+                                    <pe:exporter type="xlsx" target="tbl" fileName="DepartmentIncome"
+                                                 facetBackground="#008000" facetFontSize="15" 
+                                                 facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                                 fontName="Courier New"  />
+                                </p:commandButton>
+                            </h:panelGrid>
                         </f:facet>
 
 
@@ -55,7 +68,7 @@
                             <h:outputLabel value="#{labReportSearchByDepartmentController.department.name}"  >
                             </h:outputLabel>
                             <h:outputLabel value=" - Handover Report" />
-                            <br/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
                             <h:outputLabel value="From : " />
                             <h:outputLabel value="#{labReportSearchByDepartmentController.fromDate}"  >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />

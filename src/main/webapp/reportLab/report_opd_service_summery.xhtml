@@ -164,11 +164,11 @@
                 </p:column>    
 
                 <p:column headerText="Total Fee" style="text-align: right;">
-                    <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee}">
+                    <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee+d.reagentFee}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
-                        <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal}">
+                        <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal+serviceSummery.reagentFeeTotal}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
