@@ -70,6 +70,19 @@ public class ServiceSummery implements Serializable {
     double outSideFeeDiscountTotal;
     double outSideFeeMarginTotal;
     double reagentFeeTotal;
+    
+    double proFeeTotalC;
+    double hosFeeTotalC;
+    double reagentFeeTotalC;
+    double outSideFeeTotoalC;
+    
+    double proFeeTotalR;
+    double hosFeeTotalR;
+    double reagentFeeTotalR;
+    double outSideFeeTotoalR;
+    
+    
+    
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -175,6 +188,53 @@ public class ServiceSummery implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
+        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        
+        System.out.println("sql = " + sql);
+
+        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    public double calServiceTotNew(BillType billType,Item item, FeeType feeType,Department department,PaymentMethod paymentMethod, boolean discharged, Bill bill) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(bi.feeValue) FROM BillFee bi "
+                + " where  bi.bill.institution=:ins"
+                + " and  bi.bill.billType= :bTp "
+                + " and bi.fee.feeType=:ftp "
+                + " and type(bi.bill)=:dtype";
+        
+        if (item != null) {
+            sql += " and bi.item=:itm ";
+            temMap.put("itm", item);
+        }
+        
+        if (department != null) {
+            sql += " and bi.bill.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and bi.bill.paymentMethod=:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (discharged) {
+            sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        } else {
+            sql += " and bi.bill.createdAt between :fromDate and :toDate ";
+        }
+
+        
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bTp", billType);
+        temMap.put("ftp", feeType);
+        temMap.put("dtype", bill.getClass());
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         
         System.out.println("sql = " + sql);
@@ -357,6 +417,48 @@ public class ServiceSummery implements Serializable {
 
     }
 
+    private List<BillItem> getBillItemNew(BillType billType, Item item, Department department, PaymentMethod paymentMethod, boolean discharged, Bill bill) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select bi FROM BillItem bi where "
+                + " bi.bill.institution=:ins "
+                + " and bi.bill.billType=:bTp "
+                + " and type(bi.bill)=:dtype ";
+
+        if (item != null) {
+            sql += " and bi.item=:itm ";
+            temMap.put("itm", item);
+        }
+
+        if (department != null) {
+            sql += " and bi.bill.department=:dep ";
+            temMap.put("dep", department);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and bi.bill.paymentMethod=:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (discharged) {
+            sql += " and  bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        } else {
+            sql += " and  bi.bill.createdAt between :fromDate and :toDate ";
+        }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bTp", billType);
+        temMap.put("dtype", bill.getClass());
+
+        List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        return tmp;
+
+    }
+    
     public void createServiceSummery() {
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.OpdBill, service, false)) {
@@ -446,53 +548,41 @@ public class ServiceSummery implements Serializable {
         }
         
         
-        serviceSummery = new ArrayList<>();
-        for (BillItem i : getBillItem(BillType.OpdBill, service, department, paymentMethod, false)) {
+        serviceSummeryBill = new ArrayList<>();
+        serviceSummeryCancelBill = new ArrayList<>();
+        serviceSummeryRefundBill = new ArrayList<>();
+        
+        createBilList(new BilledBill(), serviceSummeryBill);
+        createBilList(new CancelledBill(), serviceSummeryCancelBill);
+        createBilList(new RefundBill(), serviceSummeryRefundBill);
+        
+        proFeeTotal = calServiceTotNew(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false, new BilledBill());
+        hosFeeTotal = calServiceTotNew(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false, new BilledBill());
+        outSideFeeTotoal = calServiceTotNew(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false, new BilledBill());
+        reagentFeeTotal=calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new BilledBill());
+        
+        proFeeTotalC = calServiceTotNew(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false, new CancelledBill());
+        hosFeeTotalC = calServiceTotNew(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false, new CancelledBill());
+        outSideFeeTotoalC = calServiceTotNew(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false, new CancelledBill());
+        reagentFeeTotalC=calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new CancelledBill());
+        
+        proFeeTotalR = calServiceTotNew(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false, new RefundBill());
+        hosFeeTotalR = calServiceTotNew(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false, new RefundBill());
+        outSideFeeTotoalR = calServiceTotNew(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false, new RefundBill());
+        reagentFeeTotalR=calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new RefundBill());
+    }
+
+    public void createBilList(Bill bill, List<BillItemWithFee> billItemWithFees){
+        for (BillItem i : getBillItemNew(BillType.OpdBill, service, department, paymentMethod, false, bill)) {
             BillItemWithFee bi = new BillItemWithFee();
             bi.setBillItem(i);
             bi.setReagentFee(calFee(i, FeeType.Chemical));
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
             System.out.println("bi = " + bi);
-            serviceSummery.add(bi);
+            billItemWithFees.add(bi);
         }
-
-//        calCountTotalItem(BillType.OpdBill, false);
-//        System.out.println("proFeeTotal = " + proFeeTotal);
-//        System.out.println("hosFeeTotal = " + hosFeeTotal);
-//        System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
-//        System.out.println("reagentFeeTotal = " + reagentFeeTotal);
-        proFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
-        hosFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
-        outSideFeeTotoal = calServiceTot(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
-        reagentFeeTotal=calServiceTot(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
-//        List<BillFee> billfees =new ArrayList<>();
-//        billfees=createBillFees(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
-//        for (BillFee bf : billfees) {
-//            proFeeTotal+=bf.getFeeValue();
-//            System.out.println("bf.getFeeValue = " + bf.getFeeValue());
-//            System.out.println("proFeeTotal = " + proFeeTotal);
-//            System.out.println("date = " + bf.getBill().getCreatedAt());
-//        }
-//        billfees=createBillFees(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
-//        for (BillFee bf : billfees) {
-//            hosFeeTotal+=bf.getFeeValue();
-//            System.out.println("hosFeeTotal = " + hosFeeTotal);
-//        }
-//        billfees=createBillFees(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
-//        for (BillFee bf : billfees) {
-//            outSideFeeTotoal+=bf.getFeeValue();
-//            System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
-//        }
-//        billfees=createBillFees(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
-//        for (BillFee bf : billfees) {
-//            reagentFeeTotal+=bf.getFeeValue();
-//            System.out.println("reagentFeeTotal = " + reagentFeeTotal);
-//        }
-        
     }
-
-    
     public void createServiceSummeryInwardAdded() {
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.InwardBill, service, false)) {
@@ -527,6 +617,10 @@ public class ServiceSummery implements Serializable {
     }
 
     List<BillItemWithFee> serviceSummery;
+    
+    List<BillItemWithFee> serviceSummeryBill;
+    List<BillItemWithFee> serviceSummeryCancelBill;
+    List<BillItemWithFee> serviceSummeryRefundBill;
 
     public List<BillItemWithFee> getServiceSummery() {
         return serviceSummery;
@@ -1188,6 +1282,102 @@ public class ServiceSummery implements Serializable {
 
     public void setReagentFeeTotal(double reagentFeeTotal) {
         this.reagentFeeTotal = reagentFeeTotal;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+
+    public List<BillItemWithFee> getServiceSummeryBill() {
+        return serviceSummeryBill;
+    }
+
+    public void setServiceSummeryBill(List<BillItemWithFee> serviceSummeryBill) {
+        this.serviceSummeryBill = serviceSummeryBill;
+    }
+
+    public List<BillItemWithFee> getServiceSummeryCancelBill() {
+        return serviceSummeryCancelBill;
+    }
+
+    public void setServiceSummeryCancelBill(List<BillItemWithFee> serviceSummeryCancelBill) {
+        this.serviceSummeryCancelBill = serviceSummeryCancelBill;
+    }
+
+    public List<BillItemWithFee> getServiceSummeryRefundBill() {
+        return serviceSummeryRefundBill;
+    }
+
+    public void setServiceSummeryRefundBill(List<BillItemWithFee> serviceSummeryRefundBill) {
+        this.serviceSummeryRefundBill = serviceSummeryRefundBill;
+    }
+
+    public double getProFeeTotalC() {
+        return proFeeTotalC;
+    }
+
+    public void setProFeeTotalC(double proFeeTotalC) {
+        this.proFeeTotalC = proFeeTotalC;
+    }
+
+    public double getHosFeeTotalC() {
+        return hosFeeTotalC;
+    }
+
+    public void setHosFeeTotalC(double hosFeeTotalC) {
+        this.hosFeeTotalC = hosFeeTotalC;
+    }
+
+    public double getReagentFeeTotalC() {
+        return reagentFeeTotalC;
+    }
+
+    public void setReagentFeeTotalC(double reagentFeeTotalC) {
+        this.reagentFeeTotalC = reagentFeeTotalC;
+    }
+
+    public double getOutSideFeeTotoalC() {
+        return outSideFeeTotoalC;
+    }
+
+    public void setOutSideFeeTotoalC(double outSideFeeTotoalC) {
+        this.outSideFeeTotoalC = outSideFeeTotoalC;
+    }
+
+    public double getProFeeTotalR() {
+        return proFeeTotalR;
+    }
+
+    public void setProFeeTotalR(double proFeeTotalR) {
+        this.proFeeTotalR = proFeeTotalR;
+    }
+
+    public double getHosFeeTotalR() {
+        return hosFeeTotalR;
+    }
+
+    public void setHosFeeTotalR(double hosFeeTotalR) {
+        this.hosFeeTotalR = hosFeeTotalR;
+    }
+
+    public double getReagentFeeTotalR() {
+        return reagentFeeTotalR;
+    }
+
+    public void setReagentFeeTotalR(double reagentFeeTotalR) {
+        this.reagentFeeTotalR = reagentFeeTotalR;
+    }
+
+    public double getOutSideFeeTotoalR() {
+        return outSideFeeTotoalR;
+    }
+
+    public void setOutSideFeeTotoalR(double outSideFeeTotoalR) {
+        this.outSideFeeTotoalR = outSideFeeTotoalR;
     }
     
 }
