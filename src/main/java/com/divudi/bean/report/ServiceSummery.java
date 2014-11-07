@@ -12,6 +12,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillItemWithFee;
+import com.divudi.data.table.String1Value5;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -81,6 +82,12 @@ public class ServiceSummery implements Serializable {
     double reagentFeeTotalR;
     double outSideFeeTotoalR;
     
+    double proFeeTotalGT;
+    double hosFeeTotalGT;
+    double reagentFeeTotalGT;
+    double outSideFeeTotoalGT;
+    
+    List<String1Value5> string1Value5;
     
     
     @EJB
@@ -570,7 +577,48 @@ public class ServiceSummery implements Serializable {
         hosFeeTotalR = calServiceTotNew(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false, new RefundBill());
         outSideFeeTotoalR = calServiceTotNew(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false, new RefundBill());
         reagentFeeTotalR=calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new RefundBill());
+
+        
+        
+        string1Value5 = new ArrayList<>();
+        
+        createSummaryTable(new BilledBill());
+        createSummaryTable(new CancelledBill());
+        createSummaryTable(new RefundBill());
+        
+        for (String1Value5 svItem : string1Value5) {
+            proFeeTotalGT+=svItem.getValue1();
+            hosFeeTotalGT+=svItem.getValue2();
+            outSideFeeTotoalGT+=svItem.getValue3();
+            reagentFeeTotalGT+=svItem.getValue4();
+        }
+        
+    
     }
+    
+    public void createSummaryTable(Bill bill){
+        
+        double pro=0.0;
+        double hos=0.0;
+        double out=0.0;
+        double reg=0.0;
+        
+        pro = calServiceTotNew(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false, bill);
+        hos = calServiceTotNew(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false, bill);
+        out = calServiceTotNew(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false, bill);
+        reg = calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, bill);
+        
+        String1Value5 str = new String1Value5();
+        
+        str.setString(bill.getBillClassType().name());
+        str.setValue1(pro);
+        str.setValue2(hos);
+        str.setValue3(out);
+        str.setValue4(reg);
+        
+        string1Value5.add(str);
+    }
+        
 
     public void createBilList(Bill bill, List<BillItemWithFee> billItemWithFees){
         for (BillItem i : getBillItemNew(BillType.OpdBill, service, department, paymentMethod, false, bill)) {
@@ -1378,6 +1426,46 @@ public class ServiceSummery implements Serializable {
 
     public void setOutSideFeeTotoalR(double outSideFeeTotoalR) {
         this.outSideFeeTotoalR = outSideFeeTotoalR;
+    }
+
+    public List<String1Value5> getString1Value5() {
+        return string1Value5;
+    }
+
+    public void setString1Value5(List<String1Value5> string1Value5) {
+        this.string1Value5 = string1Value5;
+    }
+
+    public double getProFeeTotalGT() {
+        return proFeeTotalGT;
+    }
+
+    public void setProFeeTotalGT(double proFeeTotalGT) {
+        this.proFeeTotalGT = proFeeTotalGT;
+    }
+
+    public double getHosFeeTotalGT() {
+        return hosFeeTotalGT;
+    }
+
+    public void setHosFeeTotalGT(double hosFeeTotalGT) {
+        this.hosFeeTotalGT = hosFeeTotalGT;
+    }
+
+    public double getReagentFeeTotalGT() {
+        return reagentFeeTotalGT;
+    }
+
+    public void setReagentFeeTotalGT(double reagentFeeTotalGT) {
+        this.reagentFeeTotalGT = reagentFeeTotalGT;
+    }
+
+    public double getOutSideFeeTotoalGT() {
+        return outSideFeeTotoalGT;
+    }
+
+    public void setOutSideFeeTotoalGT(double outSideFeeTotoalGT) {
+        this.outSideFeeTotoalGT = outSideFeeTotoalGT;
     }
     
 }
