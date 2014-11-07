@@ -23,7 +23,9 @@
                     <p:calendar id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                         <f:ajax event="dateSelect"   listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
-
+                    
+                    
+                    <h:panelGrid columns="4">
                     <p:commandButton id="btnRefresh" ajax="false" value="Refresh" style="float: right;"/>
                     <p:defaultCommand target="btnRefresh"/>
 
@@ -37,6 +39,7 @@
                     <p:commandButton value="Print" ajax="false" >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
+                    </h:panelGrid>
 
                 </h:panelGrid>   
 

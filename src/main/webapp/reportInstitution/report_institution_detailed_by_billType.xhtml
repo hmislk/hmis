@@ -12,13 +12,15 @@
 
 
     <ui:define name="content">
-<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
 
                     <f:facet name="header" >
+
+                        <h:outputLabel value="Day-End Detailed Report - By Bill Type"/>
                         <h:outputLabel value="#{labels.company_name}"/> <br/>
 
                         <p:commandButton  id="btnRefresh"  ajax="false" value="Refresh" styleClass="noPrintButton" 
@@ -74,7 +76,7 @@
                         <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
 
-                        
+
 
                         <h:outputLabel value="Select Bill Type"/>
                         <h:selectOneMenu value="#{commonReport.billType}">
@@ -83,13 +85,13 @@
                         </h:selectOneMenu>
                     </h:panelGrid>
 
-                 
+
                     <h:panelGroup rendered="#{commonReport.billType eq 'OpdBill'}" >                       
                         <p:dataTable id="billed"  value="#{commonReport.billedBills.bills}" var="b" rowStyleClass="noDisplayRow"
                                      rendered="#{commonReport.billedBills.bills.size()>0}" sortBy="#{b.billType}"  style="width: 95%;" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
 
                             <f:facet name="header">  
                                 <h:outputLabel value="Opd Bills "/> 
@@ -255,9 +257,9 @@
 
                         <p:dataTable id="cancelled"  value="#{commonReport.cancellededBills.bills}" var="b1" 
                                      rendered="#{commonReport.cancellededBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled"/>
                             </f:facet> 
@@ -416,9 +418,9 @@
 
                         <p:dataTable id="refunded" value="#{commonReport.refundedBills.bills}" var="b"
                                      sortBy="#{b.billType}"  rendered="#{commonReport.refundedBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Refunded" />
                             </f:facet> 
@@ -579,9 +581,9 @@
 
                     <h:panelGroup rendered="#{commonReport.billType eq 'PharmacySale'}" >      
                         <p:dataTable id="billedPh"  value="#{commonReport.billedBills.bills}" var="b" rendered="#{commonReport.billedBills.bills.size()>0}" sortBy="#{b.billType}"  
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
 
                             <f:facet name="header">  
                                 <h:outputLabel value="Opd Bills "/>
@@ -744,9 +746,9 @@
                         <p:spacer height="30"/>
 
                         <p:dataTable id="cancelledPh"  value="#{commonReport.cancellededBills.bills}" var="b1"  rendered="#{commonReport.cancellededBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled"/>
                             </f:facet> 
@@ -897,9 +899,9 @@
                         <p:spacer height="30"/>
 
                         <p:dataTable id="refundPh" value="#{commonReport.refundedBills.bills}" var="b" sortBy="#{b.billType}"  rendered="#{commonReport.refundedBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Refunded" />
                             </f:facet> 
@@ -1054,9 +1056,9 @@
                     <h:panelGroup rendered="#{commonReport.billType eq 'PaymentBill'}">
                         <p:dataTable id="payment" value="#{commonReport.billedBills.bills}" var="b" 
                                      sortBy="#{b.billType}" rendered="#{commonReport.billedBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Payments"/>
                             </f:facet> 
@@ -1126,9 +1128,9 @@
                                      value="#{commonReport.cancellededBills.bills}"
                                      var="b"   sortBy="#{b.billType}" 
                                      rendered="#{commonReport.cancellededBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="PaymentsCancel" />
                             </f:facet> 
@@ -1200,9 +1202,9 @@
                         <p:dataTable id="petty" value="#{commonReport.billedBills.bills}"
                                      var="b4"   sortBy="#{b4.billType}"
                                      rendered="#{commonReport.billedBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Petty Cash Payment"/>
                             </f:facet>
@@ -1306,9 +1308,9 @@
                         <p:dataTable id="pettyCancel" value="#{commonReport.cancellededBills.bills}" 
                                      var="b4"   sortBy="#{b4.billType}" 
                                      rendered="#{commonReport.cancellededBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel  value="Petty Cash Payment Cancel"/>
                             </f:facet>
@@ -1414,9 +1416,9 @@
                         <p:dataTable id="companyPay" value="#{commonReport.billedBills.bills}"
                                      var="b7"   sortBy="#{b7.billType}" 
                                      rendered="#{commonReport.billedBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Credit Company Payment Recieve"/>
                             </f:facet> 
@@ -1524,9 +1526,9 @@
                         <p:dataTable id="companyCancel" value="#{commonReport.cancellededBills.bills}"
                                      var="b7"   sortBy="#{b7.billType}" 
                                      rendered="#{commonReport.cancellededBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Credit Company Payment Cancel"/>
                             </f:facet> 
@@ -1657,9 +1659,9 @@
                         <p:dataTable id="agent" value="#{commonReport.billedBills.bills}" 
                                      var="b7"   sortBy="#{b7.billType}"
                                      rendered="#{commonReport.billedBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cashier Agent Payment Detail Report"/>
                             </f:facet> 
@@ -1769,9 +1771,9 @@
                         <p:dataTable id="agentCancel"  value="#{commonReport.cancellededBills.bills}"
                                      var="b7"   sortBy="#{b7.billType}"
                                      rendered="#{commonReport.cancellededBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Agent Payment Cancel"/>
                             </f:facet>
@@ -1905,9 +1907,9 @@
                         <p:dataTable id="inward" value="#{commonReport.billedBills.bills}" 
                                      var="b"   sortBy="#{b.billType}"
                                      rendered="#{commonReport.billedBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Inward Payments" />
                             </f:facet> 
@@ -1972,9 +1974,9 @@
                         <p:dataTable id="inwardCancel" value="#{commonReport.cancellededBills.bills}" 
                                      var="b"   sortBy="#{b.billType}"
                                      rendered="#{commonReport.cancellededBills.bills.size()>0}" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Inward Payments Cancel"/>
                             </f:facet> 
@@ -2054,9 +2056,9 @@
                     <p:spacer height="30"/>
 
                     <p:dataTable id="sum" value="#{commonReport.dataTableDataByType2}"  var="i" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20">
+                                 paginator="false"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15,20">
                         <f:facet name="header">
                             Summery
                         </f:facet>
