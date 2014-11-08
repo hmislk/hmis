@@ -65,13 +65,13 @@
                         <p:column headerText="Test Name" >
                             <h:outputLabel value="#{c.investigation.name}"  />
                         </p:column>
-                        <p:column headerText="Count" >
+                        <p:column headerText="Count" style="text-align:right" >
                             <h:outputLabel value="#{c.count}" />
                         </p:column>
                         <p:columnGroup type="footer">  
                             <p:row>                              
                                 <p:column footerText="Total" colspan="1"/>
-                                <p:column footerText="#{investigationMonthSummeryOwnController.countTotal}" >
+                                <p:column footerText="#{investigationMonthSummeryOwnController.countTotal}"  style="text-align:right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal}">
 
