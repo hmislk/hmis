@@ -9,6 +9,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.LeaveForm;
@@ -56,6 +57,48 @@ public class StaffLeaveApplicationFormController implements Serializable {
     Date toDate;
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
+    double leaveUtilize;
+    double leaved;
+    @EJB
+    FinalVariables finalVariables;
+
+    public double getLeaveUtilize() {
+        return leaveUtilize;
+    }
+
+    public void setLeaveUtilize(double leaveUtilize) {
+        this.leaveUtilize = leaveUtilize;
+    }
+
+    public double getLeaved() {
+        return leaved;
+    }
+
+    public void setLeaved(double leaved) {
+        this.leaved = leaved;
+    }
+
+    public PhDateController getPhDateController() {
+        return phDateController;
+    }
+
+    public void setPhDateController(PhDateController phDateController) {
+        this.phDateController = phDateController;
+    }
+
+    public HumanResourceBean getHumanResourceBean() {
+        return humanResourceBean;
+    }
+
+    public void setHumanResourceBean(HumanResourceBean humanResourceBean) {
+        this.humanResourceBean = humanResourceBean;
+    }
+
+    public void calLeaveCount() {
+        leaveUtilize = getLeaveType().getLeaveUtilization();
+        
+        
+    }
 
     public StaffLeaveFacade getStaffLeaveFacade() {
         return staffLeaveFacade;
@@ -115,7 +158,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             Calendar nc = Calendar.getInstance();
             nc.setTime(nowDate);
 
-            boolean dontAddLeave = false;
+//            boolean dontAddLeave = false;
 //            switch (nc.get(Calendar.DAY_OF_WEEK)) {
 ////                case Calendar.SATURDAY:                    
 ////                    continueFlag = true;
@@ -124,36 +167,35 @@ public class StaffLeaveApplicationFormController implements Serializable {
 //                    dontAddLeave = true;
 //                    break;
 //            }
-
-            DayType dayType = humanResourceBean.isHolidayWithDayType(nowDate);
-
-            if (dayType == null) {
-                return;
-            } else {
-                switch (dayType) {
-                    case MurchantileHoliday:
-                        dontAddLeave = true;
-                        break;
-                    case Poya:
-                        dontAddLeave = true;
-                        break;
-//                    case PublicHoliday:
+//            DayType dayType = humanResourceBean.isHolidayWithDayType(nowDate);
+//
+//            if (dayType == null) {
+//                return;
+//            } else {
+//                switch (dayType) {
+//                    case MurchantileHoliday:
 //                        dontAddLeave = true;
 //                        break;
-                }
-            }
-
-            if (!dontAddLeave) {
-                StaffLeave staffLeave = new StaffLeave();
-                staffLeave.setCreatedAt(new Date());
-                staffLeave.setCreater(sessionController.getLoggedUser());
-                staffLeave.setLeaveType(getCurrentLeaveForm().getLeaveType());
-                staffLeave.setLeaveDate(nowDate);
-                staffLeave.setForm(getCurrentLeaveForm());
-                staffLeave.calLeaveQty();
-                staffLeaveFacade.create(staffLeave);
-            }
-
+//                    case Poya:
+//                        dontAddLeave = true;
+//                        break;
+////                    case PublicHoliday:
+////                        dontAddLeave = true;
+////                        break;
+//                }
+//            }
+//            if (!dontAddLeave) {
+            StaffLeave staffLeave = new StaffLeave();
+            staffLeave.setCreatedAt(new Date());
+            staffLeave.setCreater(sessionController.getLoggedUser());
+            staffLeave.setLeaveType(getCurrentLeaveForm().getLeaveType());
+            staffLeave.setRoster(getCurrentLeaveForm().getStaff().getRoster());
+            staffLeave.setStaff(getCurrentLeaveForm().getStaff());
+            staffLeave.setLeaveDate(nowDate);
+            staffLeave.setForm(getCurrentLeaveForm());
+            staffLeave.calLeaveQty();
+            staffLeaveFacade.create(staffLeave);
+//            }
             nc.add(Calendar.DATE, 1);
             nowDate = nc.getTime();
         }

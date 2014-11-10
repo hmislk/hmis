@@ -32,7 +32,7 @@
 
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <p:panelGrid columns="7">
                             <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}" onclick="onSubmitButton();" ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill UnDischarged Only " action="#{inwardReportController.fillAdmissionBookOnlyInward()}" onclick="onSubmitButton();" ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill Discharged Only " action="#{inwardReportController.fillAdmissionBookOnlyDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
@@ -46,7 +46,7 @@
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="tbl" fileName="Admission_Detail_by_Admitted_Date"  />
                             </p:commandButton>  
-                        </h:panelGrid>
+                        </p:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
@@ -57,11 +57,11 @@
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{inwardReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" />
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{inwardReportController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
@@ -106,7 +106,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Admited By">
+                                <p:column headerText="Admitted By">
                                     <f:facet name="header">
                                         <h:outputLabel value="Admited By"/>
                                     </f:facet>                                    
@@ -115,7 +115,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Admited Date">
+                                <p:column headerText="Admitted Date">
                                     <f:facet name="header">
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
@@ -156,9 +156,9 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Gurdian Phone">
+                                <p:column headerText="Guardian Phone">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Gurdian Phone"/>
+                                        <h:outputLabel value="Guardian Phone"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.guardian.phone}"  >
                                     </h:outputLabel>

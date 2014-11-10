@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                <h:panelGrid columns="2" styleClass="noPrintButton">
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
+                    </p:calendar>
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
+                    </p:calendar>
+                    <h:outputLabel value="Department"/>
+                    <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    </p:autoComplete>
+                    <h:outputLabel  rendered="true" value="Category"/>
+                    <p:autoComplete rendered="true" styleClass="noPrintButton" 
+                                    value="#{pharmacySaleReport.category}"  
+                                    style="text-align: left; margin: 5px; padding: 5px;"  
+                                    completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
+                                    var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"
+                                    forceSelection="true"  >
+                    </p:autoComplete>
+                    <h:outputLabel value="Item"/>
+                    <p:autoComplete value="#{pharmacySaleReport.item}" 
+                                    forceSelection="true"
+                                    style="min-width: 223px" 
+                                    completeMethod="#{ampController.completeAmpByName}" 
+                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                        <p:column headerText="Item">
+                            <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Code">
+                            <h:outputLabel value="#{myItem.code}" ></h:outputLabel>
+                        </p:column>
+                    </p:autoComplete>
+                </h:panelGrid>
+
+                <h:panelGrid columns="3">
+                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleBillItems()}"/>
+                    <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        <pe:exporter subTable="true" type="xlsx" target="sum1" fileName="report_grn_detail_by_supplier"  />
+                    </p:commandButton>
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                </h:panelGrid>
+
+                <h:panelGrid styleClass="printBlock" columns="2">
+                    <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
+                    <h:outputLabel value=" DEPARTMENT SALE REPORT DETAIL"/>                   
+                    <h:outputLabel value="From Date :  "/>
+                    <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    </h:outputLabel>
+                    <h:outputLabel value="To Date"/>
+                    <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    </h:outputLabel>                       
+                </h:panelGrid>
+
+
+                <p:dataTable id="sum1" 
+                             value="#{pharmacySaleReport.billItems}" 
+                             var="b" >
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Code "/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.item.name}">
+                            
+                        </h:outputLabel>
+                    </p:column>
+                    
+                     <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Code "/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.item.code}">
+                           
+                        </h:outputLabel>
+                    </p:column>
+
+                    
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill No"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.deptId}"/>
+                        <h:outputLabel value="#{b.insId}" rendered="#{b.deptId eq null}"/>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Billed Time"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.createdAt}">
+                            <f:convertDateTime pattern="hh mm ss a" />
+                        </h:outputLabel>
+                    </p:column>
+                    
+                     <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Qty "/>
+                        </f:facet>
+                         <h:outputLabel value="#{b.pharmaceuticalBillItem.qty}">                            
+                        </h:outputLabel>
+                    </p:column>
+
+
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Gross"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.grossValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Discount"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.discount}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>                      
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="NetTotal"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.netValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                </p:dataTable>
+
+
+            </p:panel>         
+
+
+        </h:form>
+
+    </ui:define>
+
+
+
+</ui:composition>

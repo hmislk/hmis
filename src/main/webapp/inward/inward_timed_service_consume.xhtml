@@ -62,7 +62,7 @@
                                 <h:outputLabel value="Timed Item"/>
                                 <p:autoComplete converter="timedIt" id="it" forceSelection="false" 
                                                 value="#{inwardTimedItemController.current.item}"
-                                                completeMethod="#{timedItemController.completeInvest}" var="ix" 
+                                                completeMethod="#{timedItemController.completeTimedService}" var="ix" 
                                                 itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                     <p:column>
                                         #{ix.name}

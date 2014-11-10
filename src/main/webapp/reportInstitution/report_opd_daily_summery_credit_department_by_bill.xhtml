@@ -17,7 +17,7 @@
                     <p:outputLabel value="#{creditSummeryController.institution.name} "/> <p:outputLabel value=" Credit Summery - Detail"/><br/>
                     <p:autoComplete styleClass="noPrintButton" id="creditCom" forceSelection="true" value="#{creditSummeryController.institution}" 
                                     completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-
+                     
                     </p:autoComplete>  
                     <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" actionListener="#{creditSummeryController.makeNull}" />
                     <p:defaultCommand target="btnRefresh"/>
@@ -30,8 +30,9 @@
                         <pe:exporter subTable="true" type="xlsx" target="safrin" fileName="credit_dep_by_bill"  />
                     </p:commandButton>
 
+                  
 
-                    <p:panelGrid columns="5" style="min-width: 100%;border: none;">
+                    <h:panelGrid columns="5" style="min-width: 100%;border: none;">
 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{creditSummeryController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
@@ -40,7 +41,7 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{creditSummeryController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
-                    </p:panelGrid>
+                    </h:panelGrid>
                 </f:facet>
 
             </p:panel>            
@@ -50,14 +51,17 @@
                          rowsPerPageTemplate="5,10,15,20">                       
                 <p:columnGroup type="header">
                     <p:row>
-                        <p:column headerText="Bill No"/>                         
+
+                        <p:column headerText="Bill No"/>                      
                         <p:column headerText="Patient Name"/>
                         <p:column headerText="Discount"/>
                         <p:column headerText="Net Total"/>
                         <p:column headerText="Total"/>
+
                     </p:row>
                 </p:columnGroup>
                 <p:subTable value="#{d.bills}" var="b" >
+                    
                     <f:facet name="header" >
                         <p:outputLabel value="#{d.department.name}" />                                  
                     </f:facet>
@@ -67,7 +71,7 @@
                     <p:column>
                         <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
                     </p:column>
-                    <p:column style="text-align: right;">                               
+                    <p:column style="text-align: right;">        
                         <h:outputLabel value="#{b.discount}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>                                        
@@ -118,7 +122,9 @@
                 </p:subTable>
                 <p:columnGroup type="footer">
                     <p:row>
-                        <p:column footerText="Total Collection" style="font-weight: bold;"/>                         
+
+                        <p:column footerText="Total Collection" style="font-weight: bold;" />   
+
                         <p:column footerText="#{creditSummeryController.departmentTotalByBill}" colspan="4" style="text-align: right; font-weight: bold;">
                             <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00"/>
@@ -127,12 +133,12 @@
                     </p:row>
                 </p:columnGroup>
 
-<!--                <f:facet name="footer">
-                    <h:outputLabel value="Total Collection" />
-                    <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                </f:facet>-->
+                <!--                <f:facet name="footer">
+                                    <h:outputLabel value="Total Collection" />
+                                    <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>-->
 
             </p:dataTable>
 

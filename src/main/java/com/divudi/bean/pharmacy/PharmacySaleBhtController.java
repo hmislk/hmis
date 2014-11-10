@@ -58,50 +58,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
-import javax.inject.Inject;
-import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -186,8 +142,8 @@ public class PharmacySaleBhtController implements Serializable {
         getBillBean().updateBatchBill(getBatchBill());
 
     }
-    
-     public void settleSurgeryBhtIssueStore() {
+
+    public void settleSurgeryBhtIssueStore() {
         if (getBatchBill() == null) {
             return;
         }
@@ -573,8 +529,8 @@ public class PharmacySaleBhtController implements Serializable {
         }
         settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
     }
-    
-      public void settleStoreBhtIssue() {
+
+    public void settleStoreBhtIssue() {
         if (errorCheck()) {
             return;
         }
@@ -605,7 +561,6 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
-  
     private void settleBhtIssue(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
@@ -636,6 +591,7 @@ public class PharmacySaleBhtController implements Serializable {
     public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment) {
         double total = 0;
         double netTotal = 0;
+        double marginTotal = 0;
         for (BillItem bi : billItems) {
 
             double rate = Math.abs(bi.getRate());
@@ -655,10 +611,12 @@ public class PharmacySaleBhtController implements Serializable {
 
             total += bi.getGrossValue();
             netTotal += bi.getNetValue();
+            marginTotal += bi.getMarginValue();
         }
 
         bill.setTotal(total);
         bill.setNetTotal(netTotal);
+        bill.setMargin(marginTotal);
         getBillFacade().edit(bill);
 
     }

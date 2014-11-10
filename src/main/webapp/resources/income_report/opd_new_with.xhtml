@@ -29,17 +29,29 @@
                 </h:outputLabel>
                 <h:outputLabel value="OPD Service"/>     
             </f:facet>
-            <p:column  headerText="Category">
+            <p:column  headerText="Category" >
+                <f:facet name="header">
+                    <p:outputLabel value="Category" style="font-weight: bold;"/>
+                </f:facet>
                 <p:outputLabel value="#{sr.categoryName}" rendered="#{sr.catRow}" ></p:outputLabel>
             </p:column>
             <p:column headerText="Item/Service" >
+                <f:facet name="header">
+                    <p:outputLabel value="Item/Service" />
+                </f:facet>
                 <p:outputLabel value="#{sr.itemName}"/> 
             </p:column>
             <p:column headerText="Count" >
+                <f:facet name="header">
+                    <p:outputLabel value="Count" />
+                </f:facet>
                 <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
 
             </p:column>
             <p:column headerText="Hospital Fee" styleClass="numberCol" >
+                <f:facet name="header">
+                    <p:outputLabel value="Hospital Fee" />
+                </f:facet>
                 <p:outputLabel value="#{sr.hosFee}" rendered="#{!sr.catRow and sr.totalRow eq false}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
@@ -56,6 +68,9 @@
 
             </p:column>
             <p:column headerText="Professional Fee"  styleClass="numberCol"  >
+                <f:facet name="header">
+                    <p:outputLabel value="Professional Fee" />
+                </f:facet>
                 <p:outputLabel value="#{sr.proFee}" rendered="#{!sr.catRow and sr.totalRow eq false}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
@@ -63,9 +78,12 @@
                                rendered="#{!sr.catRow and sr.totalRow eq true}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
-               
+
             </p:column>
-            <p:column  headerText="Total Fee"  styleClass="numberCol" >
+            <p:column  headerText="Total Fee"  styleClass="numberCol"  >
+                <f:facet name="header" >
+                    <p:outputLabel value="Total Fee" />
+                </f:facet>
                 <p:outputLabel value="#{sr.hosFee+sr.proFee}" rendered="#{!sr.catRow and sr.totalRow eq false}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
@@ -73,7 +91,7 @@
                                rendered="#{!sr.catRow and sr.totalRow eq true}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>  
-               
+
                 <f:facet name="footer">
                     <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
                         <f:convertNumber pattern="#,##0.00"/>

@@ -47,7 +47,9 @@
                 </f:facet>
                 <br/><br/>
                 
-                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.items3}" var="c" >
+                <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnController.createItemList3()}" ></p:commandButton>
+                
+                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" >
 
                     <f:facet name="header">
 
@@ -64,15 +66,15 @@
 
                     </f:facet>
 
-                    <p:column headerText="Test Name" >
+                    <p:column headerText="Test Name" style="text-align:left">
                         <h:outputLabel value="#{c.investigation.name}"  />
                     </p:column>
-                    <p:column headerText="Count" >
+                    <p:column headerText="Count" style="text-align: center">
                         <h:outputLabel value="#{c.count}" />
                     </p:column>
                     <p:columnGroup type="footer">  
                         <p:row>                              
-                            <p:column footerText="Total" colspan="1"/>
+                            <p:column footerText="Total" colspan="1" style="text-align:left"/>
                             <p:column footerText="#{investigationMonthSummeryOwnController.countTotal2}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal2}">

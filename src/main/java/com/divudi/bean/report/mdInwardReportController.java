@@ -954,6 +954,48 @@ public class mdInwardReportController implements Serializable {
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+    private List<Bill> allPaymentByCreatedDate(Bill bill, boolean disharged) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"
+                + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate"
+                + " and b.createdAt <= :toDate "
+                + " and b.retired=false  ";
+       
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
+
+        sql += " order by b.patientEncounter.bhtNo,b.insId ";
+
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
 
     private List<Bill> depositByCreatedDate(Bill bill) {
         String sql;
@@ -985,7 +1027,7 @@ public class mdInwardReportController implements Serializable {
             temMap.put("ad", admissionType);
         }
 
-        sql += " order by b.patientEncounter.bhtNo,b.insId ";
+        sql += " order by b.patientEncounter.dateOfDischarge,b.createdAt";
 
         temMap.put("billType", BillType.InwardPaymentBill);
         temMap.put("class", bill.getClass());
@@ -1040,6 +1082,49 @@ public class mdInwardReportController implements Serializable {
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+     private double allPaymentByCreatedDateValue(Bill bill, boolean discharge) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(b.netTotal) from Bill b where"
+                + " b.billType = :billType "
+                + " and type(b)=:class"
+                + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                + " and b.createdAt <= :toDate"
+                + " and b.retired=false  ";
+
+      
+
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            temMap.put("cc", creditCompany);
+        }
+
+        if (patientEncounter != null) {
+            sql += " and b.patientEncounter=pten ";
+            temMap.put("pten", patientEncounter);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod =:pm";
+            temMap.put("pm", paymentMethod);
+        }
+
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad";
+            temMap.put("ad", admissionType);
+        }
+
+//        sql += " order by b.patientEncounter.bhtNo,b.insId ";
+        temMap.put("billType", BillType.InwardPaymentBill);
+        temMap.put("class", bill.getClass());
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
 
     private double depositByCreatedDateValue(Bill bill) {
         String sql;
@@ -1325,6 +1410,13 @@ public class mdInwardReportController implements Serializable {
 
     }
 
+    public void sortByPatientDischargeDate(){
+        String sql;
+        Bill bill;
+        sql = "select b from Bill b where "
+                + " and order by b. ";
+    }
+    
     public void createDepositByCreatedDateDischarged() {
 
         bil = depositByCreatedDate(new BilledBill(), true);
@@ -1334,6 +1426,18 @@ public class mdInwardReportController implements Serializable {
         totalValue = depositByCreatedDateValue(new BilledBill(), true);
         cancelledTotal = depositByCreatedDateValue(new CancelledBill(), true);
         refundTotal = depositByCreatedDateValue(new RefundBill(), true);
+
+    }
+    
+     public void createAllPaymentByCreatedDateDischarged() {
+
+        bil = allPaymentByCreatedDate(new BilledBill(), true);
+        cancel = allPaymentByCreatedDate(new CancelledBill(), true);
+        refund = allPaymentByCreatedDate(new RefundBill(), true);
+
+        totalValue = allPaymentByCreatedDateValue(new BilledBill(), true);
+        cancelledTotal = allPaymentByCreatedDateValue(new CancelledBill(), true);
+        refundTotal = allPaymentByCreatedDateValue(new RefundBill(), true);
 
     }
 

@@ -76,14 +76,23 @@
                     </h:outputLabel>
                 </f:facet>
                 <p:column headerText="No">
+                    <f:facet name="header">
+                        <p:outputLabel value="No"/>
+                    </f:facet>
                     <h:outputLabel value="#{i+1}"/>
                 </p:column>
 
                 <p:column headerText="Bill No">
+                      <f:facet name="header">
+                        <p:outputLabel value="Bill No"/>
+                    </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.insId}" />
                 </p:column>
 
                 <p:column headerText="Billed Bill No">
+                      <f:facet name="header">
+                        <p:outputLabel value="Billed Bill No"/>
+                    </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
                 </p:column>
 
@@ -99,6 +108,9 @@
                 </p:column>
 
                 <p:column headerText="Date">
+                      <f:facet name="header">
+                        <p:outputLabel value="Date"/>
+                    </f:facet>
                     <h:outputLabel value="#{d.billItem.createdAt}">
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
@@ -119,6 +131,9 @@
                 </p:column>
 
                 <p:column headerText="Hospital Fee" style="text-align: right;">
+                      <f:facet name="header">
+                        <p:outputLabel value="Hospital Fee"/>
+                    </f:facet>
                     <p:outputLabel value="#{d.hospitalFee}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
@@ -130,6 +145,9 @@
                 </p:column>     
 
                 <p:column headerText="Out Fee" style="text-align: right;">
+                      <f:facet name="header">
+                        <p:outputLabel value="Out Fee"/>
+                    </f:facet>
                     <p:outputLabel value="#{d.outSideFee}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
@@ -141,6 +159,9 @@
                 </p:column>    
 
                 <p:column headerText="Total Fee" style="text-align: right;">
+                      <f:facet name="header">
+                        <p:outputLabel value="Total Fee"/>
+                    </f:facet>
                     <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>

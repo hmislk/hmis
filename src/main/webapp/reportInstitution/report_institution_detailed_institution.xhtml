@@ -17,6 +17,9 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
 
                     <f:facet name="header" >
+                        
+                     <h:outputLabel value="Day-End Detailed Report"/>
+
                         <h:outputLabel value="#{labels.company_name}"/> <br/>
 
                         <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" actionListener="#{commonReport.recreteModal()}" style="float: right;" />  
@@ -80,9 +83,10 @@
                                  paginator="false"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="5,10,15,20">
-
-                        <f:facet name="header">  
-                            <h:outputLabel value="Opd Bills "/>
+                       
+                        <f:facet name="header">
+                              <h:outputLabel value="Day-End Detailed Report"/>
+                            <h:outputLabel value="Opd Bills"/>
                         </f:facet>
 
                         <p:column headerText="Time"  >
@@ -94,7 +98,7 @@
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="Cashier"  >
+                        <p:column headerText="Cashier" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Cashier"/>
                             </f:facet> 

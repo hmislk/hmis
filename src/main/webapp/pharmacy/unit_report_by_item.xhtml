@@ -44,7 +44,9 @@
                                      action="#{reportsTransfer.fillItemCounts}" />
 
 
-                    <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >
+                    <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"
+                                 stickyHeader="true"
+                                 var="i"  >
                         <p:column headerText="Item">
                             #{i.itemBatch.item.name}
                         </p:column>

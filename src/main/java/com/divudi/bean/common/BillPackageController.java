@@ -433,6 +433,10 @@ public class BillPackageController implements Serializable {
         if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
             return true;
         }
+        if (paymentMethod == PaymentMethod.Credit && creditCompany == null) {
+            UtilityController.addErrorMessage("Plase Select Credit Company");
+            return true;
+        }
 
 //        if (paymentScheme.getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
@@ -513,6 +517,7 @@ public class BillPackageController implements Serializable {
 
     public void calTotals() {
         double tot = 0.0;
+        double net = 0.0;
         double dis = 0.0;
 
         for (BillEntry be : getLstBillEntries()) {
@@ -522,60 +527,15 @@ public class BillPackageController implements Serializable {
             bi.setNetValue(0.0);
 
             for (BillFee bf : be.getLstBillFees()) {
-//                if (bf.getBillItem().getItem().isUserChangable() && bf.getBillItem().getItem().getDiscountAllowed() != true) {
-                //System.out.println("Total is " + tot);
-                //    //System.out.println("Bill Fee value is " + bf.getFeeValue());
-                tot += bf.getFeeValue();
-                //System.out.println("After addition is " + tot);
+                tot += bf.getFeeGrossValue();
+                net += bf.getFeeValue();
                 bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
-                bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeValue());
-
-//                } else if (getCreditCompany() != null) {
-//
-//                    if (bf.getBillItem().getItem().getDiscountAllowed() != null && bf.getBillItem().getItem().getDiscountAllowed() == true) {
-//
-//                        bf.setFeeValue(bf.getFee().getFee() / 100 * (100 - getCreditCompany().getLabBillDiscount()));
-//                        dis += (bf.getFee().getFee() / 100 * (getCreditCompany().getLabBillDiscount()));
-//                        bf.getBillItem().setDiscount(bf.getBillItem().getDiscount() + bf.getFee().getFee() / 100 * (getCreditCompany().getLabBillDiscount()));
-//                        tot += bf.getFee().getFee();
-//                        bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFee().getFee());
-//                        bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getBillItem().getGrossValue() - bf.getBillItem().getDiscount());
-//                    } else {
-//
-//                        tot = tot + bf.getFeeValue();
-//                        bf.setFeeValue(bf.getFee().getFee());
-//                        bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFee().getFee());
-//                        bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFee().getFee());
-//                    }
-//                } else {
-//                    //System.out.println("12");
-//                    if (bf.getBillItem().getItem().getDiscountAllowed() != null && bf.getBillItem().getItem().getDiscountAllowed() == true) {
-//                        if (getPaymentScheme() == null) {
-//                            bf.setFeeValue(bf.getFee().getFee());
-//                            dis = 0.0;
-//                            bf.getBillItem().setDiscount(0.0);
-//                        } else {
-//                            bf.setFeeValue(bf.getFee().getFee() / 100 * (100 - getPaymentScheme().getDiscountPercentForLabBill()));
-//                            dis += (bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercentForLabBill()));
-//                            bf.getBillItem().setDiscount(bf.getBillItem().getDiscount() + bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercentForLabBill()));
-//                        }
-//                        tot += bf.getFee().getFee();
-//                        bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFee().getFee());
-//
-//                        bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getBillItem().getGrossValue() - bf.getBillItem().getDiscount());
-//                    } else {
-//                        //System.out.println("13");
-//                        tot = tot + bf.getFeeValue();
-//                        bf.setFeeValue(bf.getFee().getFee());
-//                        bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFee().getFee());
-//                        bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFee().getFee());
-//                    }
-//                }
+                bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeGrossValue());
             }
         }
         setDiscount(dis);
         setTotal(tot);
-        setNetTotal(tot - dis);
+        setNetTotal(net);
 
     }
 

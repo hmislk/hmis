@@ -26,12 +26,14 @@
                         <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                     </h:panelGrid>
 
-
+                    <p:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Fill BHT Issue" 
                                      action="#{reportsTransfer.fillItemCountsBht()}" />
 
                     <p:commandButton ajax="false" value="Fill Surgery Issue" 
                                      action="#{reportsTransfer.fillItemCountsBhtSurgery()}" />
+                    
+                    </p:panelGrid>
 
 
                     <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >

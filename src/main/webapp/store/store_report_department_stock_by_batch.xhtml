@@ -68,15 +68,19 @@
                                     <h:outputLabel value="#{ii+1}" />
                                 </p:column>
 
-
-
-                                <p:column headerText="Item">
+                                <p:column headerText="Item Code">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
-
+                                
+                                <p:column headerText="Item Code">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item code"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
+                                </p:column>                                
 
                                 <p:column headerText="Quantity" style="text-align: right;">
                                     <f:facet name="header">

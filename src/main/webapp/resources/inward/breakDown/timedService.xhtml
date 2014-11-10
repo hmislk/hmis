@@ -21,13 +21,13 @@
             <p:column headerText="Service Name">
                 #{ti.item.name}
             </p:column>
-            <p:column headerText="Start Time">
+            <p:column headerText="Start Time" style="text-align: center;">
                 <h:outputLabel value="#{ti.fromTime}">
                     <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
                 </h:outputLabel>
             </p:column>
 
-            <p:column headerText="Stopped Time">
+            <p:column headerText="Stopped Time" style="text-align: center;">
                 <h:outputLabel value="#{ti.toTime}">
                     <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
                 </h:outputLabel>

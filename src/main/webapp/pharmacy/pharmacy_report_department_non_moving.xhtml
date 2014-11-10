@@ -81,11 +81,6 @@
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate * i.stock}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
-                                    <f:facet name="footer" >
-                                        <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
-                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Retail Price" style="text-align: right;">
@@ -97,12 +92,6 @@
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
-                                    <f:facet name="footer" >
-                                        <h:outputLabel value="#{reportsStock.stockSaleValue}" >
-                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </f:facet>
-
                                 </p:column>
 
                             </p:dataTable>

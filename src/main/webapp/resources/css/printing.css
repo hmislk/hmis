@@ -42,7 +42,7 @@ root {
         padding: 1px;
         font-size: 180%;
     }
-    
+
     .fiveinchbillBreakRuhunu{
         // page-break-before: always!important;
         page-break-after:always!important; 
@@ -109,7 +109,7 @@ root {
         font-size: 130%;
 
     }
-    
+
     .fiveinchbillBreakRuhunu{
         position: relative!important;
         padding: 5px!important;
@@ -436,7 +436,7 @@ root {
 
 .cashier{
     position: inherit;
-    
+
     left: 10%;
     text-decoration: overline;
     font-size: 12px;
@@ -457,7 +457,7 @@ root {
     position: absolute;
     left: 36%;
     top: 17.8%;
-    
+
 }
 
 .consult2{
@@ -477,7 +477,7 @@ root {
 
 
 .itemsPrinting{
-    
+
     font-size: 11px;
     position: absolute;
     left: 12%;
@@ -486,7 +486,7 @@ root {
 }
 
 .itemsGSPrinting{
-    
+
     font-size: 11px;
     position: absolute;
     left: 7%;
@@ -738,6 +738,14 @@ root {
 
 ////ruhunu hospital
 
+.errorMessage{
+    font-size: 20px!important;
+    position: absolute!important;
+    left: 36%!important;
+    top: 6.5%!important;
+    
+}
+
 .receiptnoPrintingRuhunu{
     font-size: 12px!important;
     position: absolute!important;
@@ -820,7 +828,7 @@ root {
 
 .cashierRuhunu{
     position: inherit;
-    
+
     left: 10%;
     text-decoration: overline;
     font-size: 12px;
@@ -841,7 +849,7 @@ root {
     position: absolute;
     left: 36%;
     top: 17.8%;
-    
+
 }
 
 .cashierPrintingRuhunu{
@@ -853,7 +861,7 @@ root {
 }
 
 .itemsPrintingRuhunu{
-    
+
     font-size: 11px;
     position: absolute;
     left: 12%;

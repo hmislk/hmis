@@ -9,6 +9,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.entity.cashTransaction.CashTransaction;
+import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -47,6 +48,8 @@ import javax.persistence.Transient;
 
 public class Bill implements Serializable {
 
+    @ManyToOne
+    MembershipScheme membershipScheme;
     @OneToOne
     private CashTransaction cashTransaction;
     @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
@@ -72,6 +75,8 @@ public class Bill implements Serializable {
 
     @ManyToOne
     private Category category;
+    @Transient
+    boolean transError;
 
     static final long serialVersionUID = 1L;
     @Id
@@ -278,7 +283,17 @@ public class Bill implements Serializable {
     Date paidAt;
     @ManyToOne
     Bill paidBill;
+
+    public MembershipScheme getMembershipScheme() {
+        return membershipScheme;
+    }
+
+    public void setMembershipScheme(MembershipScheme membershipScheme) {
+        this.membershipScheme = membershipScheme;
+    }
     
+    
+
     private boolean paid;
 
     public Bill getPaidBill() {
@@ -354,7 +369,7 @@ public class Bill implements Serializable {
         grantTotal = 0 - bill.getGrantTotal();
         staffFee = 0 - bill.getStaffFee();
         hospitalFee = 0 - bill.getHospitalFee();
-
+        margin = 0 - bill.getMargin();
     }
 
     public void invertValue() {
@@ -413,6 +428,7 @@ public class Bill implements Serializable {
         this.total = (bill.getTotal());
         this.staffFee = bill.getStaffFee();
         this.hospitalFee = bill.getHospitalFee();
+        this.margin = bill.getMargin();
     }
 
     public List<BillComponent> getBillComponents() {
@@ -1511,6 +1527,12 @@ public class Bill implements Serializable {
         this.referralNumber = referralNumber;
     }
 
-    
-    
+    public boolean isTransError() {
+        return transError;
+    }
+
+    public void setTransError(boolean transError) {
+        this.transError = transError;
+    }
+
 }

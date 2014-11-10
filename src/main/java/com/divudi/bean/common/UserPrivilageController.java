@@ -119,6 +119,13 @@ public class UserPrivilageController implements Serializable {
         TreeNode node1a0 = new PrivilageNode("Theatre Menu", node1a, Privileges.Theatre);
         TreeNode node1a2 = new PrivilageNode("Add Surgery", node1a, Privileges.TheatreAddSurgery);
         TreeNode node1a1 = new PrivilageNode("Theatre Billing", node1a, Privileges.TheatreBilling);
+        TreeNode node1a3 = new PrivilageNode("Theatre Transfer Menu Item", node1a, Privileges.TheaterTransfer);
+        TreeNode node1a4 = new PrivilageNode("Theatre Transfer Request", node1a, Privileges.TheaterTransferRequest);
+        TreeNode node1a5 = new PrivilageNode("Theatre Transfer Issue", node1a, Privileges.TheaterTransferIssue);
+        TreeNode node1a6 = new PrivilageNode("Theatre Transfer Recieve", node1a, Privileges.TheaterTransferRecieve);
+        TreeNode node1a7 = new PrivilageNode("Theatre Transfer Report", node1a, Privileges.TheaterTransferReport);
+        TreeNode node1a8 = new PrivilageNode("Theatre Show Reports Menu Item", node1a, Privileges.TheaterReports);
+        TreeNode node1a9 = new PrivilageNode("Theatre Show Summery Menu Item", node1a, Privileges.TheaterSummeries);
 
         TreeNode node2 = new PrivilageNode("Lab", tmproot);
         TreeNode node200 = new PrivilageNode("Lab Menu", node2, Privileges.Lab);
@@ -149,6 +156,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node301 = new PrivilageNode("Pharmacy Administration", node3, Privileges.PharmacyAdministration);
         TreeNode node306 = new PrivilageNode("Pharmacy Stock Adjustment", node3, Privileges.PharmacyStockAdjustment);
         TreeNode node307 = new PrivilageNode("Pharmacy Re Add To Stock", node3, Privileges.PharmacyReAddToStock);
+        TreeNode node314 = new PrivilageNode("Pharmacy Stock Issue", node3, Privileges.PharmacyStockIssue);
 
         ///////////////////////
         TreeNode node302 = new PrivilageNode("GRN", node3);
