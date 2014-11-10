@@ -1410,6 +1410,13 @@ public class mdInwardReportController implements Serializable {
 
     }
 
+    public void sortByPatientDischargeDate(){
+        String sql;
+        Bill bill;
+        sql = "select b from Bill b where "
+                + " and order by b. ";
+    }
+    
     public void createDepositByCreatedDateDischarged() {
 
         bil = depositByCreatedDate(new BilledBill(), true);
