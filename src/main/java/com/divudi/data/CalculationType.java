@@ -17,4 +17,5 @@ public enum CalculationType {
     Devision,
     OpeningBracket,
     ClosingBracket,
+    AgeInMonths,
 }
