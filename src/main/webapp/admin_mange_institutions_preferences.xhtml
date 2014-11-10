@@ -14,7 +14,7 @@
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
                             <p:inputTextarea value="#{sessionController.institutionPreference.pharmacyBillFooter}" />
-                            
+                            <h:outputLabel value="#{sessionController.institutionPreference.id}" ></h:outputLabel>
                             <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
                             

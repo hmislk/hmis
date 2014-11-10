@@ -79,10 +79,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         if(institutionPreference!=null){
             if(institutionPreference.getId()==null || institutionPreference.getId()==0){
                 userPreferenceFacade.create(institutionPreference);
-                JsfUtil.addErrorMessage("Preferences Saved");
+                JsfUtil.addSuccessMessage("Preferences Saved");
             }else{
                 userPreferenceFacade.edit(institutionPreference);
-                JsfUtil.addErrorMessage("Preferences Updated");
+                JsfUtil.addSuccessMessage("Preferences Updated");
             }
             
         }
@@ -385,10 +385,10 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     UserPreference insPre;
 
-                    sql = "select p from UserPreference p where p.webUser=:u ";
-                    m = new HashMap();
-                    m.put("u", null);
-                    insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+                    sql = "select p from UserPreference p where p.webUser is null ";
+                    
+                   
+                    insPre = getUserPreferenceFacade().findFirstBySQL(sql);
                     if (insPre == null) {
                         insPre = new UserPreference();
                         insPre.setWebUser(null);
