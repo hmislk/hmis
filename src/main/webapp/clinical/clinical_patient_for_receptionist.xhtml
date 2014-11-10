@@ -32,14 +32,14 @@
                                                          update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
                                                          action="#{patientController.prepareAdd()}" onclick="onSubmitButton();" >
                                         </p:commandButton>
-                                        
+
                                         <p:commandButton id="btnDeletePt" 
                                                          style="float: right;" 
                                                          value="Delete" process="btnDeletePt" 
                                                          update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
                                                          action="#{patientController.delete()}" onclick="onSubmitButton();" >
                                         </p:commandButton>
-                                        
+
                                         <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" onclick="onSubmitButton();">
                                         </p:commandButton>
 
@@ -186,6 +186,13 @@
                                                 <h:outputLabel value="Code"/>
                                                 <h:outputLabel value="#{patientController.current.code}" ></h:outputLabel>
 
+                                                <h:outputLabel value="From Date"/>
+                                                <p:calendar id="frmDate" value="#{patientController.current.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                                                </p:calendar>
+
+                                                <h:outputLabel value="To Date"/>
+                                                <p:calendar id="toDate" value="#{patientController.current.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                                                </p:calendar>
 
                                                 <h:outputLabel value="Membership"/>
                                                 <h:selectOneMenu value="#{patientController.current.person.membershipScheme}"

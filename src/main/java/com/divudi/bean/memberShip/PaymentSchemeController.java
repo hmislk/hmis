@@ -52,6 +52,7 @@ public class PaymentSchemeController implements Serializable {
     AllowedPaymentMethod paymentSchemeAllowedPaymentMethod;
     List<PaymentScheme> selectedItems;
     private PaymentScheme paymentScheme;
+    PaymentScheme paymentSchemeForAllowPayment;
     private List<PaymentScheme> items = null;
     List<AllowedPaymentMethod> allowedPaymentMethods;
     String selectText = "";
@@ -66,6 +67,16 @@ public class PaymentSchemeController implements Serializable {
     public void setCurrentAllowedPaymentMethod(AllowedPaymentMethod paymentSchemeAllowedPaymentMethod) {
         this.paymentSchemeAllowedPaymentMethod = paymentSchemeAllowedPaymentMethod;
     }
+
+    public PaymentScheme getPaymentSchemeForAllowPayment() {
+        return paymentSchemeForAllowPayment;
+    }
+
+    public void setPaymentSchemeForAllowPayment(PaymentScheme paymentSchemeForAllowPayment) {
+        this.paymentSchemeForAllowPayment = paymentSchemeForAllowPayment;
+    }
+    
+    
 
     public AllowedPaymentMethodFacade getAllowedPaymentMethodFacade() {
         return allowedPaymentMethodFacade;
@@ -189,7 +200,7 @@ public class PaymentSchemeController implements Serializable {
 
     public void saveSelectedAllowedPaymentMethod() {
 
-        getCurrentAllowedPaymentMethod().setPaymentScheme(getCurrent());
+        getCurrentAllowedPaymentMethod().setPaymentScheme(getPaymentSchemeForAllowPayment());
         getCurrentAllowedPaymentMethod().setMembershipScheme(getMembershipScheme());
 
         if (getCurrentAllowedPaymentMethod().getId() != null && getCurrentAllowedPaymentMethod().getId() > 0) {
