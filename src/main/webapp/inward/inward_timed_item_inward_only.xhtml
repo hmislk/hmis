@@ -9,20 +9,22 @@
     <ui:define name="content">
         <h:panelGroup >
             <h:form id="form"  >
-                <p:growl autoUpdate="true" />
-                <p:panel header="Manage Timed Item (Inward Only)" >
+                <p:growl id="msg" autoUpdate="true" />
+                <p:panel header="Manage Timed Item (Theatre Only)" >
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel header="Search Timed Item" >
                                 <h:panelGrid id="gpSelectText" >
                                     <p:selectOneListbox   id="lstSelect"   value="#{timedItemController.current}" style="min-width: 223px; height: 300px;">
-                                        <f:selectItems  value="#{timedItemController.selectedInwardItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                        <f:selectItems  value="#{timedItemController.selectedInwardItems }" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="@this" >
                                         </p:ajax>
                                     </p:selectOneListbox>
+
+
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{timedItemController.prepareInwardTimeServiceAdd()}" styleClass="buttons" >
+                                    <h:commandButton id="btnAdd" value="Add"  action="#{timedItemController.prepareInwardTimeServiceAdd() }" styleClass="buttons" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail " execute="" >
                                         </f:ajax>
                                     </h:commandButton>
@@ -41,12 +43,12 @@
                                 <h:outputLabel value="Edit Details" ></h:outputLabel>
 
                                 <p:commandButton style="float:right;" id="btnSave" value="Save"   action="#{timedItemController.saveSelected()}" styleClass="buttons" 
-                                                 ajax="false" onclick="onSubmitButton();"  >
+                                                 process="gpDetail btnSave" update="lstSelect msg"   >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
                             </f:facet>
                             <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">
+                                <h:panelGrid id="gpDetailText" columns="2" rendered="#{timedItemController.current ne null}">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtName" value="#{timedItemController.current.name}" required="true" ></h:inputText>
                                     <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
@@ -54,18 +56,6 @@
                                     <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtFullName"  class="pdInputText" value="#{timedItemController.current.fullName}"  ></h:inputText>
 
-
-                                    <p:selectBooleanCheckbox   id="chkBilledAs" value="#{timedItemController.billedAs}" itemLabel="Billed as a seperate timedItem"  >
-                                        <p:ajax event="change" process="@this" update="billedAsIx" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:autoComplete converter="timedIt"  disabled="#{!timedItemController.billedAs}" widgetVar="aIx1" id="billedAsIx" forceSelection="true" value="#{timedItemController.current.billedAs}" completeMethod="#{timedItemController.completeInvest}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30"  style="width: 400px;">
-                                    </p:autoComplete>
-
-                                    <p:selectBooleanCheckbox  id="chkReportedAs" value="#{timedItemController.reportedAs}" itemLabel="Reported as a seperate timedItem" >
-                                        <p:ajax event="change" process="@this" update="reportedAsIx" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:autoComplete converter="timedIt" disabled="#{!timedItemController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{timedItemController.current.reportedAs}" completeMethod="#{timedItemController.completeInvest}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
-                                    </p:autoComplete>
 
                                     <h:outputText value="Institution" ></h:outputText>
                                     <h:selectOneListbox id="cmbIns" size="1" value="#{timedItemController.current.institution}" >
@@ -90,12 +80,8 @@
 
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{timedItemController.current.discountAllowed}" itemLabel="Discount Allowed"/>
-
-                                    <h:outputText value="" ></h:outputText>
-                                    <h:outputText value="#{timedItemController.current.departmentType}" ></h:outputText>
                                     
                                 </h:panelGrid>
-
                             </h:panelGrid>
                         </p:panel>
                     </h:panelGrid>

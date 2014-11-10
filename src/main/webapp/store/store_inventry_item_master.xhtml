@@ -23,7 +23,7 @@
                                     <h:outputLabel value="Search "/>
                                     <p:autoComplete  id="lstSelect1"   size="10" value="#{storeInventryAmpController.current}" 
                                                      forceSelection="true"
-                                                     style="min-width: 223px" completeMethod="#{itemController.completeStoreItem}" 
+                                                     style="min-width: 223px" completeMethod="#{itemController.completeStoreInventryItem}" 
                                                      var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                         <p:column headerText="Item">
                                             <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
@@ -84,7 +84,7 @@
                                             <h:outputLabel value="Item Category"/>
                                             <p:autoComplete  value="#{storeInventryAmpController.current.category}" 
                                                              forceSelection="true"
-                                                             completeMethod="#{storeItemCategoryController.completeCategory}" 
+                                                             completeMethod="#{storeItemCategoryController.completeAssetCategory}" 
                                                              var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                             </p:autoComplete>                                           
                                             <p:outputLabel value="" ></p:outputLabel>

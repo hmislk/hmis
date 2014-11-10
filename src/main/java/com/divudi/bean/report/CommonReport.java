@@ -1407,6 +1407,9 @@ public class CommonReport implements Serializable {
     }
 
     public void createLabCashierSummeryReport() {
+        
+        recreteModal();
+        
         if (checkLabCashier()) {            
             return;
         }
@@ -1434,6 +1437,46 @@ public class CommonReport implements Serializable {
         getRefundedBills().setCheque(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         getRefundedBills().setCredit(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getRefundedBills().setSlip(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+        
+        createSum();
+        
+        //Cash IN Billed
+        getCashInBills().setBills(userBillsOwn(new BilledBill(), BillType.CashIn, getWebUser(), getDepartment()));
+        getCashInBills().setCard(calValueCreditCard(new BilledBill(), BillType.CashIn, getWebUser()));
+        getCashInBills().setCash(calValueCash(new BilledBill(), BillType.CashIn, getWebUser()));
+        getCashInBills().setCheque(calValueCheque(new BilledBill(), BillType.CashIn, getWebUser()));
+        getCashInBills().setSlip(calValueSlip(new BilledBill(), BillType.CashIn, getWebUser()));
+
+        //Cash IN Canceled
+        getCashInBillsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashIn, getWebUser(), getDepartment()));
+        getCashInBillsCancel().setCard(calValueCreditCard(new CancelledBill(), BillType.CashIn, getWebUser()));
+        getCashInBillsCancel().setCash(calValueCash(new CancelledBill(), BillType.CashIn, getWebUser()));
+        getCashInBillsCancel().setCheque(calValueCheque(new CancelledBill(), BillType.CashIn, getWebUser()));
+        getCashInBillsCancel().setSlip(calValueSlip(new CancelledBill(), BillType.CashIn, getWebUser()));
+
+        //Cash Out Billled
+        getCashOutBills().setBills(userBillsOwn(new BilledBill(), BillType.CashOut, getWebUser(), getDepartment()));
+        getCashOutBills().setCard(calValueCreditCard(new BilledBill(), BillType.CashOut, getWebUser()));
+        getCashOutBills().setCash(calValueCash(new BilledBill(), BillType.CashOut, getWebUser()));
+        getCashOutBills().setCheque(calValueCheque(new BilledBill(), BillType.CashOut, getWebUser()));
+        getCashOutBills().setSlip(calValueSlip(new BilledBill(), BillType.CashOut, getWebUser()));
+
+        //Cash Out Cancelled
+        getCashOutBillsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashOut, getWebUser(), getDepartment()));
+        getCashOutBillsCancel().setCard(calValueCreditCard(new CancelledBill(), BillType.CashOut, getWebUser()));
+        getCashOutBillsCancel().setCash(calValueCash(new CancelledBill(), BillType.CashOut, getWebUser()));
+        getCashOutBillsCancel().setCheque(calValueCheque(new CancelledBill(), BillType.CashOut, getWebUser()));
+        getCashOutBillsCancel().setSlip(calValueSlip(new CancelledBill(), BillType.CashOut, getWebUser()));
+
+        //Cash Adjustement
+        getCashAdjustmentBills().setBills(userBillsOwn(new BilledBill(), BillType.DrawerAdjustment, getWebUser(), getDepartment()));
+        getCashAdjustmentBills().setCard(calValueCreditCard(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
+        getCashAdjustmentBills().setCash(calValueCash(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
+        getCashAdjustmentBills().setCheque(calValueCheque(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
+        getCashAdjustmentBills().setSlip(calValueSlip(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
+
+        //////////
+        createSumAfterCash();
 
     }
 
