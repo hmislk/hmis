@@ -19,11 +19,11 @@
 
                     <h:outputLabel value="From Date"/>
 
-                    <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}"  pattern="dd MMMM yyyy" >
+                    <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}"  pattern="dd MMMM yyyy hh:mm a" >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy" >
+                    <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy  hh:mm a" >
                     </p:calendar>
 
                     <h:outputLabel value="Institution"/>
@@ -35,7 +35,7 @@
                         itemLabel="#{ins.name}"
                         itemValue="#{ins}"
                         >
-                        
+
                         <p:column>
                             #{ins.name}
                         </p:column>
@@ -74,15 +74,18 @@
 
                 </p:panelGrid>
 
-                <p:panelGrid columns="3"  >
+                <p:panelGrid columns="4"  >
+                    <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnControllerSession.createIxCountByInstitutionAndCollectingCentre()}" ></p:commandButton>
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
-                        <p:dataExporter type="xls" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
+                     <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                         <pe:exporter  type="xlsx" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
                     </p:commandButton> 
-                    <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnControllerSession.createIxCountByInstitutionAndCollectingCentre()}" ></p:commandButton>
-
+                    <p:commandButton ajax="false" value="PDF"  styleClass="noPrintButton" style="float: right;" >
+                        <pe:exporter  type="pdf" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
+                    </p:commandButton>
+                    
                 </p:panelGrid>
 
 
@@ -97,32 +100,41 @@
                              >
 
                     <f:facet name="header">
-                        <h2>
-                        <h:outputLabel value="Investigation Counts By Institution and Collecting Centre"/>
-                        </h2>
-                        <h:outputLabel rendered="#{investigationMonthSummeryOwnControllerSession.institution ne null}" value="Institution - #{investigationMonthSummeryOwnControllerSession.institution.name} "/>
-                        <h:outputLabel rendered="#{investigationMonthSummeryOwnControllerSession.collectingCentre ne null}" value="Collecting Centre - #{investigationMonthSummeryOwnControllerSession.collectingCentre.name} "/>
-                        <p:outputLabel value="#{investigationMonthSummeryOwnControllerSession.fromDate} ">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        <h:outputLabel  value="Investigation Counts By Institution and Collecting Centre"/>
+                        <h:outputLabel rendered="#{investigationMonthSummeryOwnControllerSession.institution ne null}" value="Institution - #{investigationMonthSummeryOwnControllerSession.institution.name} - " style="white-space:pre-line;"/>
+                        <h:outputLabel rendered="#{investigationMonthSummeryOwnControllerSession.collectingCentre ne null}" value="Collecting Centre - #{investigationMonthSummeryOwnControllerSession.collectingCentre.name} - "  style="white-space:pre-line;"/>
+                        <h:outputLabel   value=" - From "/>
+                        <p:outputLabel value="#{investigationMonthSummeryOwnControllerSession.fromDate}">
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
                         </p:outputLabel>
-                        <p:outputLabel value="#{investigationMonthSummeryOwnControllerSessionSession.toDate} ">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        <h:outputLabel value=" - To "/>
+                        <p:outputLabel value="#{investigationMonthSummeryOwnControllerSession.toDate}">
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" />
                         </p:outputLabel>
                     </f:facet>
-                    
-                    <p:column headerText="No" sortBy="id" >
-                        <h:outputLabel value="#{c.id}"  />
-                    </p:column>
-                    <p:column headerText="Institution" sortBy="institution.name" >
+
+                    <p:column headerText="Institution" sortBy="institution.name" filterBy="institution.name" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Institution"  />
+                        </f:facet>
                         <h:outputLabel value="#{c.institution.name}"  />
                     </p:column>
-                    <p:column headerText="Collecting Centre" >
+                    <p:column headerText="Collecting Centre" sortBy="collectingCentre.name" filterBy="collectingCentre.name" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Collecting Centre"  />
+                        </f:facet>
                         <h:outputLabel value="#{c.collectingCentre.name}"  />
                     </p:column>
-                    <p:column headerText="Investigation Name" >
+                    <p:column headerText="Investigation Name" sortBy="item.name" filterBy="item.name" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Investigation"  />
+                        </f:facet>
                         <h:outputLabel value="#{c.item.name}"  />
                     </p:column>
-                    <p:column headerText="Count" >
+                    <p:column headerText="Count" sortBy="count">
+                        <f:facet name="header" >
+                            <h:outputLabel value="Count"  />
+                        </f:facet>
                         <h:outputLabel value="#{c.count}" />
                     </p:column>
                 </p:dataTable>

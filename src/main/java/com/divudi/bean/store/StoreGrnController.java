@@ -280,8 +280,19 @@ public class StoreGrnController implements Serializable {
 
         //Save Parent Stock
         for (BillItem i : getBillItems()) {
+            
+            if(i.getPharmaceuticalBillItem().getRetailRate() < i.getPharmaceuticalBillItem().getPurchaseRate()){
+                JsfUtil.addErrorMessage("Less Sale rate");
+                return;
+            }
 
             if (i.getParentBillItem() != null) {
+                
+                if(i.getParentBillItem().getPharmaceuticalBillItem().getPurchaseRate() < i.getParentBillItem().getPharmaceuticalBillItem().getRetailRate()){
+                    JsfUtil.addErrorMessage("Less Sale rate");
+                    return;
+                }
+                
                 i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
                 i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
                 stockFacade.edit(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
@@ -668,8 +679,53 @@ public class StoreGrnController implements Serializable {
 //        ChangeDiscountLitener();
 //
 //    }
+    
+    
+    public void addTest() {
+        System.out.println("this = " + this);
+    }
+
+    public void addTest1() {
+       ChangeDiscountLitener();
+    }
+    
     public void ChangeDiscountLitener() {
         getGrnBill().setNetTotal(getGrnBill().getNetTotal() + getGrnBill().getDiscount());
+    }
+    
+    public void ChangeDiscountLitenerNew() {
+        System.out.println("ChangeDiscountLitener");
+        //Example - Case 1
+        //Net Total=  -99.50
+        //Cash Paid= 100
+        //Adjusted Total= 100 - 99.50 = 0.50
+        //Net Total = -99.50 -0.50 = -100.00
+        double nt;
+        double adt;
+        double pt;
+        double dt;
+
+        nt = getGrnBill().getNetTotal() + getGrnBill().getDiscount();
+        dt = getGrnBill().getDiscount();
+        System.out.println("nt = " + nt);
+        System.out.println("dt = " + dt);
+        if (getGrnBill().getCashPaid() == null || getGrnBill().getCashPaid().equals(0.0)) {
+            adt = 0.0;
+            pt = nt;
+        } else {
+            pt = getGrnBill().getCashPaid();
+            adt = pt - Math.abs(nt);
+        }
+
+        System.out.println("nt = " + nt);
+        System.out.println("adt = " + adt);
+        System.out.println("pt = " + pt);
+        System.out.println("dt = " + dt);
+
+        getGrnBill().setNetTotal(nt + dt - adt);
+
+        System.out.println("dt = " + getGrnBill().getNetTotal());
+
     }
 
 //    public double getNetTotal() {
