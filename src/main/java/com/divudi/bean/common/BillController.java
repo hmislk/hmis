@@ -1060,24 +1060,25 @@ public class BillController implements Serializable {
         double billNet = 0.0;
         MembershipScheme membershipScheme = null;
 
-        if (toStaff != null && getSearchedPatient() != null
+        if (getSearchedPatient() != null
                 && getSearchedPatient().getPerson() != null) {
 
             Date fromDate = getSearchedPatient().getFromDate();
             Date toDate = getSearchedPatient().getToDate();
 
-            if (fromDate != null && toDate != null) {
-                Calendar fCalendar = Calendar.getInstance();
-                fCalendar.setTime(fromDate);
-                Calendar tCalendar = Calendar.getInstance();
-                tCalendar.setTime(toDate);
-                Calendar nCalendar = Calendar.getInstance();
-
-                if (((fromDate.after(new Date()) && toDate.before(new Date())))
-                        || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
-                    membershipScheme = getSearchedPatient().getPerson().getMembershipScheme();
-                }
-            }
+//            if (fromDate != null && toDate != null) {
+//                Calendar fCalendar = Calendar.getInstance();
+//                fCalendar.setTime(fromDate);
+//                Calendar tCalendar = Calendar.getInstance();
+//                tCalendar.setTime(toDate);
+//                Calendar nCalendar = Calendar.getInstance();
+//
+//                if (((fromDate.after(new Date()) && toDate.before(new Date())))
+//                        || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
+//                    membershipScheme = getSearchedPatient().getPerson().getMembershipScheme();
+//                }
+//            }
+            membershipScheme = getSearchedPatient().getPerson().getMembershipScheme();
         }
 
         for (BillEntry be : getLstBillEntries()) {
@@ -1103,6 +1104,7 @@ public class BillController implements Serializable {
                 if (membershipScheme != null) {
                     priceMatrix = getPriceMatrixController().getOpdMemberDisCount(paymentMethod, membershipScheme, department, category);
                     getBillBean().setBillFees(bf, isForeigner(), paymentMethod, membershipScheme, bi.getItem(), priceMatrix);
+                    System.out.println("priceMetrix = " + priceMatrix);
 
                 }
 
