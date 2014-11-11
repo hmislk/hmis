@@ -461,7 +461,7 @@ public class PharmacyAdjustmentController implements Serializable {
         printPreview = true;
     }
 
-    public void adjustRetailRate() {
+    public void adjustExDate() {
         saveDeptAdjustmentBill();
         saveExDateAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
@@ -472,10 +472,10 @@ public class PharmacyAdjustmentController implements Serializable {
         printPreview = true;
     }
     
-    public void adjustExDate() {
+    public void adjustRetailRate() {
         saveDeptAdjustmentBill();
         saveRsrAdjustmentBillItems();
-        getStock().getItemBatch().setDateOfExpire(exDate);
+        getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 //        clearBill();
