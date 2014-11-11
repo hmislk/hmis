@@ -40,7 +40,14 @@
 
 
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.billItems}" var="pi" >
+                        <p:dataTable rowIndexVar="i" 
+                                     id="tblBills" 
+                                     value="#{searchController.billItems}" 
+                                     var="pi"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                                     >
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>

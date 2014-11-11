@@ -16,7 +16,13 @@
              <p:commandButton ajax="false" 
                              action="#{roomOccupancyController.createPatientRoomAll}"
                              value="Fill All" onclick="onSubmitButton();" />
-            <p:dataTable value="#{roomOccupancyController.patientRooms}" var="pr">
+            <p:dataTable 
+                value="#{roomOccupancyController.patientRooms}" 
+                var="pr"
+                paginator="true"
+                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                rowsPerPageTemplate="5,10,15"
+                >
                 <f:facet name="header">
                     Room Occupancy Detail
                 </f:facet>
