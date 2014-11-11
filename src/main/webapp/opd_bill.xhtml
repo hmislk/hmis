@@ -192,7 +192,7 @@
                                                                 value="#{billController.searchedPatient}" 
                                                                 completeMethod="#{patientController.completePatientByNameOrCode}" 
                                                                 var="apt" itemLabel="#{apt.person.name}" 
-                                                                itemValue="#{apt}" size="30"  style="width: 400px;">
+                                                                itemValue="#{apt}" size="30"  style="width: 400px;" >
 
 
                                                     <p:column headerText="Name">
@@ -217,9 +217,9 @@
                                                         </h:outputLabel>
                                                     </p:column>
 
-                                                    <f:ajax event="itemSelect" execute="@this" 
-                                                            render=":#{p:component('cmbPs')} panSearch :#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" 
-                                                            listener="#{billController.searchPatientListener}" />
+                                                    <f:ajax event="itemSelect" execute=":#{p:component('cmbPs')} @this" 
+                                                            render="panSearch :#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" 
+                                                            listener="#{billController.calTotals()}" />
                                                 </p:autoComplete>   
 
                                                 <h:panelGroup id="panSearch">

@@ -17,6 +17,7 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.store.StoreBillSearch;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
@@ -77,6 +78,7 @@ public class PharmacyBillSearch implements Serializable {
     private Date toDate;
     //  private String comment;
     WebUser user;
+    StoreBillSearch storeBillSearch;
     ////////////////
     List<BillItem> refundingItems;
     List<Bill> bills;
@@ -337,6 +339,8 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     private boolean errorCheckForEdit() {
+        System.out.println("error = " + getBill());
+        
         if (getBill().isCancelled()) {
             UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
@@ -354,9 +358,32 @@ public class PharmacyBillSearch implements Serializable {
 
         return false;
     }
+    
+    private boolean errorCheckForEdit(Bill bill) {
+        System.out.println("error = " + bill);
+        
+        if (bill.isCancelled()) {
+            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            return true;
+        }
+
+        if (bill.isRefunded()) {
+            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            return true;
+        }
+
+        if (bill.getPaidAmount() != 0.0) {
+            UtilityController.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
+            return true;
+        }
+
+        return false;
+    }
 
     public void editBillItem(BillItem billItem) {
-        if (errorCheckForEdit()) {
+        System.out.println("billItem = " + billItem);
+        
+        if (errorCheckForEdit(billItem.getBill())) {
             return;
         }
 
@@ -523,6 +550,16 @@ public class PharmacyBillSearch implements Serializable {
         }
         return bills;
     }
+
+    public StoreBillSearch getStoreBillSearch() {
+        return storeBillSearch;
+    }
+
+    public void setStoreBillSearch(StoreBillSearch storeBillSearch) {
+        this.storeBillSearch = storeBillSearch;
+    }
+    
+    
 
     public List<BillItem> getRefundingItems() {
         return refundingItems;
