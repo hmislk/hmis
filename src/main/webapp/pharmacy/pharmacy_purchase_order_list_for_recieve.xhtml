@@ -37,7 +37,13 @@
 
 
 
-            <p:dataTable value="#{searchController.bills}" var="p">
+            <p:dataTable 
+                value="#{searchController.bills}" 
+                var="p"
+                paginator="true"
+                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                rowsPerPageTemplate="5,10,15"
+                >
                 <p:column headerText="Approve at"  >
                     <h:commandLink action="pharmacy_reprint_po" >
                         <h:outputLabel value="#{p.createdAt}" >
