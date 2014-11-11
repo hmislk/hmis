@@ -16,7 +16,7 @@
     <cc:implementation>
         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
                         value="#{cc.attrs.patient}" converter="patientConverter"
-                        completeMethod="#{patientController.completePatient}" 
+                        completeMethod="#{patientController.completePatientByNameOrCode}" 
                         var="apt" itemLabel="#{apt.person.nameWithTitle}" 
                         itemValue="#{apt}" size="30"  style="width: 400px;">
             <p:ajax event="itemSelect" process="acPt" update="panSearch"/>

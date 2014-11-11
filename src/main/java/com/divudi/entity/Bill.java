@@ -9,6 +9,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.entity.cashTransaction.CashTransaction;
+import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -47,6 +48,8 @@ import javax.persistence.Transient;
 
 public class Bill implements Serializable {
 
+    @ManyToOne
+    MembershipScheme membershipScheme;
     @OneToOne
     private CashTransaction cashTransaction;
     @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
@@ -280,6 +283,16 @@ public class Bill implements Serializable {
     Date paidAt;
     @ManyToOne
     Bill paidBill;
+
+    public MembershipScheme getMembershipScheme() {
+        return membershipScheme;
+    }
+
+    public void setMembershipScheme(MembershipScheme membershipScheme) {
+        this.membershipScheme = membershipScheme;
+    }
+    
+    
 
     private boolean paid;
 

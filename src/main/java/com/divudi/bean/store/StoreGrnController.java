@@ -280,8 +280,19 @@ public class StoreGrnController implements Serializable {
 
         //Save Parent Stock
         for (BillItem i : getBillItems()) {
+            
+            if(i.getPharmaceuticalBillItem().getRetailRate() < i.getPharmaceuticalBillItem().getPurchaseRate()){
+                JsfUtil.addErrorMessage("Less Sale rate");
+                return;
+            }
 
             if (i.getParentBillItem() != null) {
+                
+                if(i.getParentBillItem().getPharmaceuticalBillItem().getPurchaseRate() < i.getParentBillItem().getPharmaceuticalBillItem().getRetailRate()){
+                    JsfUtil.addErrorMessage("Less Sale rate");
+                    return;
+                }
+                
                 i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
                 i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
                 stockFacade.edit(i.getParentBillItem().getPharmaceuticalBillItem().getStock());

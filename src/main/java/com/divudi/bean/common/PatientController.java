@@ -56,10 +56,10 @@ public class PatientController implements Serializable {
     SessionController sessionController;
     @Inject
     PracticeBookingController practiceBookingController;
-    
+
     private Patient current;
     private List<Patient> items = null;
-    
+
     @EJB
     private PersonFacade personFacade;
     private Date dob;
@@ -71,7 +71,6 @@ public class PatientController implements Serializable {
     BillNumberGenerator billNumberBean;
     @EJB
     CommonFunctions commonFunctions;
-    
 
     StreamedContent barcode;
 
@@ -172,8 +171,8 @@ public class PatientController implements Serializable {
 
     public void prepareAdd() {
         current = null;
-        yearMonthDay = null;
-        getCurrent();
+        yearMonthDay = null;        
+        getCurrent();        
         getYearMonthDay();
     }
 
@@ -193,7 +192,6 @@ public class PatientController implements Serializable {
         current = null;
         getCurrent();
     }
-
 
     private void recreateModel() {
         items = null;
@@ -224,9 +222,8 @@ public class PatientController implements Serializable {
         }
         return suggestions;
     }
-    
-    List<Patient> patientList;  
- 
+
+    List<Patient> patientList;
 
     public List<Patient> completePatientByNameOrCode(String query) {
         if (query == null) {
@@ -243,7 +240,7 @@ public class PatientController implements Serializable {
         hm.put("q", "%" + query.toUpperCase() + "%");
         //System.out.println(sql);
         patientList = getFacade().findBySQL(sql, hm, 20);
-        
+
         return patientList;
 
     }
@@ -251,6 +248,19 @@ public class PatientController implements Serializable {
     public void saveAndUpdateQueue() {
         saveSelected();
         getPracticeBookingController().listBillSessions();
+    }
+
+    public String getCountPatientCode() {
+
+        String sql;
+
+        sql = "select count(p) FROM Patient p where p.code is not null";
+        
+        long lng = getEjbFacade().countBySql(sql);
+        lng++;
+        String str = "";
+        str+=lng;
+        return str;
     }
 
     public void saveSelected() {
@@ -282,7 +292,6 @@ public class PatientController implements Serializable {
         getFacade().flush();
     }
 
-
     public PatientFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -306,7 +315,7 @@ public class PatientController implements Serializable {
         if (current == null) {
             Person p = new Person();
             current = new Patient();
-            current.setCode(getBillNumberBean().patientCodeGenerator());
+            current.setCode(getCountPatientCode());
             current.setPerson(p);
         }
         return current;

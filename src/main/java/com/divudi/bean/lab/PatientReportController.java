@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -49,6 +51,9 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.primefaces.event.CellEditEvent;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 
 /**
  *
@@ -199,6 +204,87 @@ public class PatientReportController implements Serializable {
     }
 
     public void calculate() {
+        if (currentPatientReport == null) {
+            UtilityController.addErrorMessage("No Report to calculate");
+            return;
+        }
+        if (currentPatientReport.getPatientReportItemValues() == null) {
+            UtilityController.addErrorMessage("Report Items values is null");
+            return;
+        }
+        if (currentPatientReport.getPatientReportItemValues().isEmpty()) {
+            UtilityController.addErrorMessage("Report Items values is empty");
+            return;
+        }
+        for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
+            if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
+                String sql = "select i from IxCal i where i.calIxItem.id = " + priv.getInvestigationItem().getId();
+                List<IxCal> ixCals = getIxCalFacade().findBySQL(sql);
+                double result = 0;
+                Double lastVal = null;
+                CalculationType ctype = null;
+                //System.out.println("ixcals size is " + ixCals.size());
+
+                String calString = "";
+                for (IxCal c : ixCals) {
+                    if (c.getCalculationType() == CalculationType.Constant) {
+                        calString = calString + " " + c.getConstantValue() + " ";
+                    }
+                    if (c.getCalculationType() == CalculationType.Value) {
+                        calString = calString + " " + findPtReportItemVal(c.getValIxItem()) + " ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Addition) {
+                        calString = calString + " + ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Substraction) {
+                        calString = calString + " - ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Multiplication) {
+                        calString = calString + " * ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Devision) {
+                        calString = calString + " / ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.OpeningBracket) {
+                        calString = calString + " ( ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.ClosingBracket) {
+                        calString = calString + " ) ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.AgeInMonths) {
+                        calString = calString + " " + currentPatientReport.getPatientInvestigation().getPatient().getAgeMonths() + " ";
+                    }
+
+                    ScriptEngineManager mgr = new ScriptEngineManager();
+                    ScriptEngine engine = mgr.getEngineByName("JavaScript");
+                    try {
+                        result =   (double) engine.eval(calString);
+                    } catch (ScriptException ex) {
+                        Logger.getLogger(PatientReportController.class.getName()).log(Level.SEVERE, null, ex);
+                        result=0.0;
+                    }
+                    priv.setDoubleValue(result);
+                }
+            } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
+                priv.setStrValue(findFlagValue(priv));
+            }
+
+//            //System.out.println("priv = " + priv.getStrValue());
+            getPirivFacade().edit(priv);
+//            //System.out.println("priv = " + priv);
+        }
+
+//        getFacade().edit(currentPatientReport);
+    }
+
+    public void calculateOld() {
         //System.out.println("Gong to calculate");
 //        savePatientReport();
         //System.out.println("patient report saved under cal");
@@ -332,9 +418,9 @@ public class PatientReportController implements Serializable {
         for (TestFlag f : fs) {
 
             Long a = v.getPatient().getAgeInDays();
-            //System.err.println("Age is a" + a);
-            //System.err.println("From Age is " + f.getFromAge());
-            //System.err.println("To Age is " + f.getToAge());
+            //System.err.println("AgeInMonths is a" + a);
+            //System.err.println("From AgeInMonths is " + f.getFromAge());
+            //System.err.println("To AgeInMonths is " + f.getToAge());
 
             ////System.out.println("flah low message " + f.getLowMessage());
             if (f.getFromAge() <= a && f.getToAge() >= a) {

@@ -54,29 +54,34 @@
                                 <p:panel id="gpBillPreview">
                                     <f:facet name="header" class="nonPrintBlock" >
                                         <h:panelGrid columns="2" >
-<!--                                            <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" >
-                                                <p:printer target="tblVals" ></p:printer>
-                                            </p:commandButton>-->
+                                            <!--                                            <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" >
+                                                                                            <p:printer target="tblVals" ></p:printer>
+                                                                                        </p:commandButton>-->
                                             <p:commandButton value="Export to Excel" ajax="false" >
                                                 <p:dataExporter  target="tblVals" type="xls" fileName="fast_by_val"></p:dataExporter>
                                             </p:commandButton>
                                         </h:panelGrid>
                                     </f:facet>
 
-                                    <p:dataTable id="tblVals"  value="#{reportsTransfer.movementRecords}" var="i">
+                                    <p:dataTable id="tblVals"  value="#{reportsTransfer.movementRecords}" var="i"
+                                                 paginator="true" paginatorAlwaysVisible="true"
+                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 rowsPerPageTemplate="10,30,50"
+                                                 rows="50"
+                                                 >
 
                                         <f:facet name="header">
                                             <h:outputLabel value="#{reportsTransfer.department.name} - Fast Moving Items by Value"/>
                                         </f:facet>
 
-                                        <p:column headerText="Code" style="width: 70px;" >
+                                        <p:column headerText="Code" style="width: 70px;" sortBy="#{i.item.code}" filterBy="#{i.item.code}">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Code"/>
                                             </f:facet>
                                             <h:outputLabel value="#{i.item.code}" ></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Item"  >
+                                        <p:column headerText="Item"  sortBy="#{i.item.name}" filterBy="#{i.item.name}" >
                                             <f:facet name="header">
                                                 <h:outputLabel value="Item"/>
                                             </f:facet>
@@ -129,9 +134,9 @@
                                 <p:panel id="gpBillPreviewQty">
                                     <f:facet name="header" >
                                         <h:panelGrid columns="2" >
-<!--                                            <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" >
-                                                <p:printer target="tblQtys" ></p:printer>
-                                            </p:commandButton>-->
+                                            <!--                                            <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" >
+                                                                                            <p:printer target="tblQtys" ></p:printer>
+                                                                                        </p:commandButton>-->
                                             <p:commandButton value="Export to Excel" ajax="false" >
                                                 <p:dataExporter  target="tblQtys" type="xls" fileName="fast"></p:dataExporter>
                                             </p:commandButton>
@@ -139,14 +144,19 @@
                                     </f:facet>
 
 
-                                    <p:dataTable id="tblQtys"  value="#{reportsTransfer.movementRecordsQty}" var="i"  >
+                                    <p:dataTable id="tblQtys"  value="#{reportsTransfer.movementRecordsQty}" var="i" 
+                                                 paginator="true" paginatorAlwaysVisible="true"
+                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 rowsPerPageTemplate="10,30,50"
+                                                 rows="50"
+                                                 >
                                         <f:facet name="header">
                                             <h:outputLabel value="#{reportsTransfer.department.name} - Fast Moving Items by Quentity"/>  
                                         </f:facet>
-                                        <p:column headerText="Code" style="width: 70px;" >
+                                        <p:column headerText="Code" style="width: 70px;" sortBy="#{i.item.code}" filterBy="#{i.item.code}" >
                                             <h:outputLabel value="#{i.item.code}" ></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Item"  >
+                                        <p:column headerText="Item"  sortBy="#{i.item.name}" filterBy="#{i.item.name}" >
                                             <h:outputLabel value="#{i.item.name}" ></h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Quentity" style="text-align: right; padding: 5px;">
