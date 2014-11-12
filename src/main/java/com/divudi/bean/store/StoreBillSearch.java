@@ -832,19 +832,18 @@ public class StoreBillSearch implements Serializable {
 
         getBillFacade().edit(can);
     }
-    
+
     public void unitCancell() {
-        
-        
+
         Bill prebill = getStoreBean().reAddToStock(getBill(), getSessionController().getLoggedUser(),
                 getSessionController().getDepartment(), BillNumberSuffix.ISSCAN);
 
         if (prebill != null) {
             getBill().setCancelled(true);
-            getBill().setCancelledBill(prebill);            
+            getBill().setCancelledBill(prebill);
             getBillFacade().edit(getBill());
-            
-            printPreview=true;
+
+            printPreview = true;
         }
     }
 
@@ -1402,7 +1401,7 @@ public class StoreBillSearch implements Serializable {
             UtilityController.addErrorMessage("No Bill to cancel");
         }
     }
-    
+
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
         //System.err.println("Batch " + pharmaceuticalBillItem.getItemBatch());
         double stockQty = getStoreBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
@@ -1485,7 +1484,7 @@ public class StoreBillSearch implements Serializable {
 
     private RefundBill pharmacyCreateRefundCancelBill() {
         RefundBill cb = new RefundBill();
-
+        cb.invertQty();
         cb.copy(getBill());
         cb.invertValue(getBill());
         cb.setRefundedBill(getBill());
@@ -1825,23 +1824,25 @@ public class StoreBillSearch implements Serializable {
         lazyBills = new LazyBill(lst);
 
     }
-    
-    public void updatePhIem(){
-        if(currentBillItem==null)return;
-        
-        if(currentBillItem.getPharmaceuticalBillItem()==null)return;
-        
+
+    public void updatePhIem() {
+        if (currentBillItem == null) {
+            return;
+        }
+
+        if (currentBillItem.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+
         pharmaceuticalBillItemFacade.edit(currentBillItem.getPharmaceuticalBillItem());
         //Update Successfull
-        
-        
+
     }
 
     public void addDetailItemListener(BillItem bi) {
         System.err.println("Add Detasils " + bi.getId());
         System.err.println("Pharmacy " + bi.getPharmaceuticalBillItem().getCode());
-    
-        
+
         currentBillItem = null;
         currentBillItem = bi;
         currentBillItem.setPharmaceuticalBillItem(bi.getPharmaceuticalBillItem());
