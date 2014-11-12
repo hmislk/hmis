@@ -187,7 +187,12 @@
                                             </h:panelGrid>
                                         </p:tab>
                                         <p:tab id="tabBillItems" title="Bill Items" >
-                                            <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{billPackageController.lstBillEntries}" var="bi" >
+                                            <p:dataTable 
+                                                id="tblRequests" 
+                                                rowIndexVar="rowIndex" 
+                                                value="#{billPackageController.lstBillEntries}" 
+                                                var="bi" 
+                                                >
 
                                                 <p:column>
                                                     <f:facet name="header">No</f:facet>

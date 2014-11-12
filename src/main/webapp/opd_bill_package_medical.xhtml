@@ -205,7 +205,10 @@
                                             </p:dataTable>
                                         </p:tab>
                                         <p:tab id="tabBillIx" title="Tests" >
-                                            <p:dataTable rowIndexVar="rowIndex" value="#{billPackageMedicalController.lstBillComponents}" var="bix" >
+                                            <p:dataTable rowIndexVar="rowIndex" 
+                                                         value="#{billPackageMedicalController.lstBillComponents}"
+                                                         var="bix" 
+                                                         >
                                                 <p:column>
                                                     <f:facet name="header">No</f:facet>
                                                         #{rowIndex+1}

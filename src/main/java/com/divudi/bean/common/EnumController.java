@@ -6,6 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.BillType;
+import com.divudi.data.CalculationType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemValueType;
@@ -86,6 +87,10 @@ public class EnumController implements Serializable {
 
     }
 
+    public CalculationType[] getCalculationTypes(){
+        return CalculationType.values();
+    }
+    
     public PaysheetComponentType[] getDiductionComponentTypes() {
         return PaysheetComponentType.subtraction.children();
 

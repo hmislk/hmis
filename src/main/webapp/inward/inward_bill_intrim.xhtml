@@ -103,7 +103,8 @@
                         <p:dataTable id="sum" value="#{bhtSummeryController.chargeItemTotals}" 
                                      style="max-width: 25%;" var="c" 
                                      rowStyleClass="#{c.total !=0?'':'noDisplayRow' }"
-                                     scrollable="true" scrollHeight="250" scrollWidth="300">
+                                     scrollable="true" scrollHeight="250" scrollWidth="300"
+                                     >
 
                             <p:column headerText="Charge Type" >
                                 <h:outputLabel value="#{c.inwardChargeType.label}"/>
