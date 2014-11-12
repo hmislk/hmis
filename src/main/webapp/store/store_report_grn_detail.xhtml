@@ -124,7 +124,7 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.grnNetTotal}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
@@ -134,7 +134,7 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Credit"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.grnNetTotal}"  >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
@@ -214,7 +214,7 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.netTotal}" >
+                            <h:outputLabel rendered="#{b1.paymentMethod=='Cash'}" value="#{b1.grnNetTotal}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b1.paymentMethod!='Cash'}" value="0.00"/>
@@ -223,7 +223,7 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Credit"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.netTotal}" >
+                            <h:outputLabel rendered="#{b1.paymentMethod=='Credit'}" value="#{b1.grnNetTotal}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00"/>
