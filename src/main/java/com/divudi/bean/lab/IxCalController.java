@@ -21,6 +21,7 @@ import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.IxCalFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,15 +130,12 @@ public  class IxCalController implements Serializable {
     }
 
     public void removeLastCal() {
-        //System.out.println("removing last cal");
         if (items != null && items.isEmpty() != true) {
-            //System.out.println("not empty");
             IxCal tcal = lastCal();
-            //System.out.println("last cal is - " + lastCal());
-            items.remove(tcal);
-            //System.out.println("remoed from list");
-            getIivcFacade().remove(tcal);
-            //System.out.println("removed from db");
+            tcal.setRetired(true);
+            tcal.setRetiredAt(new Date());
+            tcal.setRetirer(sessionController.getLoggedUser());
+            getIivcFacade().edit(tcal);
         }
     }
 
@@ -247,11 +245,11 @@ public  class IxCalController implements Serializable {
     public List<IxCal> getItems() {
         String sql;
         if (ix != null && cal != null) {
-            sql = "select i from IxCal i where i.calIxItem.id = " + cal.getId();
+            sql = "select i from IxCal i where i.retired=false and i.calIxItem.id = " + cal.getId();
             items = getFacade().findBySQL(sql);
         }
         if (items == null) {
-            items = new ArrayList<IxCal>();
+            items = new ArrayList<>();
         }
         return items;
     }

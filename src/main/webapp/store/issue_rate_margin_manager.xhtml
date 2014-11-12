@@ -43,7 +43,13 @@
 
                         <p:panel header="Price Matrix" >
 
-                            <p:dataTable value="#{issueRateMarginsController.items}" var="a" >
+                            <p:dataTable 
+                                value="#{issueRateMarginsController.items}" 
+                                var="a" 
+                                paginator="true"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                >
 
                                 <p:column headerText="From Department" >
                                     <au:department value="#{a.fromDepartment}"/>

@@ -47,14 +47,14 @@
                                 </h:panelGrid>
                             </p:panel>
                             
-                            <p:panel header="Search Inactive Service" >
+                            <p:panel header="Search Inactive Service(Can't Edit Properties)" >
                                 <h:panelGrid id="gpSelectTextAct" >
 
                                     <h:inputText autocomplete="off" id="txtSearchAct" value="#{serviceController.selectRetiredText}" >
                                         <f:ajax execute="txtSearchAct" render="lstSelectAct" event="keyup" />
                                     </h:inputText>
 
-                                    <p:selectOneListbox converter="serv"   id="lstSelectAct"   value="#{serviceController.current}" style="min-width: 223px; height: 300px;">
+                                    <p:selectOneListbox converter="serv"   id="lstSelectAct"   value="#{serviceController.currentInactiveService}" style="min-width: 223px; height: 300px;">
                                         <f:selectItems  value="#{serviceController.retiredSelectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                         </f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="lstSelectAct" >
@@ -160,6 +160,8 @@
                                     <p:selectBooleanCheckbox value="#{serviceController.current.patientNotRequired}" itemLabel="Patient Not Required"/>
                                     <h:outputText value="Created Person"/>
                                     <h:outputText value="#{serviceController.current.creater.webUserPerson.nameWithTitle}"/>
+                                    <h:outputText value="Item Id"/>
+                                    <h:outputText value="#{serviceController.current.id}"/>
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>
