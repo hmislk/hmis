@@ -10,7 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 
-
 /**
  *
  * @author buddhika
@@ -21,10 +20,8 @@ public class BilledBill extends Bill implements Serializable {
 //     static final long serialVersionUID = 1L;
 
     public BilledBill() {
-        billClassType=BillClassType.BilledBill;
+        billClassType = BillClassType.BilledBill;
+        qty = 1;
     }
-   
- 
-     
-     
+
 }

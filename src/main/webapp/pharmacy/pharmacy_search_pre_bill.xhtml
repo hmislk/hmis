@@ -22,8 +22,8 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search All" action="#{searchController.createPreTable}"/>
                                 <p:commandButton  ajax="false" value="Not Paid Only" action="#{searchController.createPreTableNotPaid}"/>
                                 <p:commandButton  ajax="false" value="Paid Only" action="#{searchController.createPreTablePaid}"/>
-                                
-                                
+
+
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
@@ -31,20 +31,28 @@
                                 <h:outputLabel value="Total"/>
                                 <h:outputLabel value="Net Total"/>   
                                 <h:outputLabel/>
-                                
+
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                                 <h:outputLabel/>
-                              
+
                             </h:panelGrid>
 
                         </f:facet>
-                        
-                         <p:defaultCommand target="btnSearch"/>
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill"   >
+                        <p:defaultCommand target="btnSearch"/>
+
+                        <p:dataTable 
+                            rowIndexVar="i"
+                            id="tblBills" 
+                            value="#{searchController.bills}" 
+                            var="bill"   
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+                            >
 
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>

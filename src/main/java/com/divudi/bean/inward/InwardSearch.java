@@ -811,6 +811,7 @@ public class InwardSearch implements Serializable {
 
     private RefundBill createRefundCancelBill() {
         RefundBill cb = new RefundBill();
+        cb.invertQty();
         cb.copy(getBill());
         cb.setRefundedBill(getBill());
         cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
