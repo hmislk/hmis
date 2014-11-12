@@ -32,7 +32,14 @@
                             </h:panelGrid>
 
                         </f:facet>
-                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
+                        <p:dataTable 
+                            id="tblBills" 
+                            value="#{searchController.bills}" 
+                            var="bill"  
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+                            >
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill"
                                                  action="pharmacy_reprint_bill_sale">

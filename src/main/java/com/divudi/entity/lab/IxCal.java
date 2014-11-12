@@ -1,7 +1,9 @@
 package com.divudi.entity.lab;
 
 import com.divudi.data.CalculationType;
+import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -9,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -16,6 +19,7 @@ import javax.persistence.ManyToOne;
  */
 @Entity
 public class IxCal implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -25,10 +29,57 @@ public class IxCal implements Serializable {
     @Enumerated(EnumType.STRING)
     private CalculationType calculationType;
     private Double constantValue;
+    Double maleConstantValue;
+    Double femaleConstantValue;
     @ManyToOne
     InvestigationItem valIxItem;
     Integer orderNo;
-    
+    boolean retired;
+    @ManyToOne
+    WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date retiredAt;
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public Double getMaleConstantValue() {
+        return maleConstantValue;
+    }
+
+    public void setMaleConstantValue(Double maleConstantValue) {
+        this.maleConstantValue = maleConstantValue;
+    }
+
+    public Double getFemaleConstantValue() {
+        return femaleConstantValue;
+    }
+
+    public void setFemaleConstantValue(Double femaleConstantValue) {
+        this.femaleConstantValue = femaleConstantValue;
+    }
+
     public InvestigationItem getValIxItem() {
         return valIxItem;
     }
@@ -77,8 +128,6 @@ public class IxCal implements Serializable {
         this.orderNo = orderNo;
     }
 
-    
-    
     @Override
     public int hashCode() {
         int hash = 0;

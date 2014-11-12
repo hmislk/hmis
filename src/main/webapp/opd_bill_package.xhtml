@@ -27,7 +27,7 @@
                                     <p:ajax process="cmbPs"
                                             update="pBillDetails tblBillItem creditCard cheque slip"
                                             event="change" 
-                                            listener="#{billPackageMedicalController.calTotals}"/>
+                                            listener="#{billPackageController.calTotals}"/>
                                 </p:selectOneMenu>
 
                                 <h:panelGroup id="creditCard" style="display: #{billPackageController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
@@ -187,7 +187,12 @@
                                             </h:panelGrid>
                                         </p:tab>
                                         <p:tab id="tabBillItems" title="Bill Items" >
-                                            <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{billPackageController.lstBillEntries}" var="bi" >
+                                            <p:dataTable 
+                                                id="tblRequests" 
+                                                rowIndexVar="rowIndex" 
+                                                value="#{billPackageController.lstBillEntries}" 
+                                                var="bi" 
+                                                >
 
                                                 <p:column>
                                                     <f:facet name="header">No</f:facet>

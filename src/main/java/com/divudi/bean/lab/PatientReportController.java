@@ -16,6 +16,7 @@ import com.divudi.bean.hr.StaffController;
 import com.divudi.data.CalculationType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationReportType;
+import com.divudi.data.Sex;
 import com.divudi.ejb.PatientReportBean;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -38,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -49,6 +52,9 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.primefaces.event.CellEditEvent;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 
 /**
  *
@@ -199,93 +205,102 @@ public class PatientReportController implements Serializable {
     }
 
     public void calculate() {
-        //System.out.println("Gong to calculate");
-//        savePatientReport();
-        //System.out.println("patient report saved under cal");
         if (currentPatientReport == null) {
             UtilityController.addErrorMessage("No Report to calculate");
             return;
         }
-        //System.out.println("currentPatientReport is " + currentPatientReport);
         if (currentPatientReport.getPatientReportItemValues() == null) {
             UtilityController.addErrorMessage("Report Items values is null");
             return;
         }
-        //System.out.println("currentPatientReport.getPatientReportItemValues() " + currentPatientReport.getPatientReportItemValues());
         if (currentPatientReport.getPatientReportItemValues().isEmpty()) {
             UtilityController.addErrorMessage("Report Items values is empty");
             return;
         }
-
-        //System.out.println("Gong to calculate");
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
-            //System.out.println("priv " + priv.toString());
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
-                //System.out.println("priv ix " + priv.getInvestigationItem());
-                String sql = "select i from IxCal i where i.calIxItem.id = " + priv.getInvestigationItem().getId();
-                //System.out.println("sql is " + sql);
+                String sql = "select i from IxCal i where i.retired=false and i.calIxItem.id = " + priv.getInvestigationItem().getId();
                 List<IxCal> ixCals = getIxCalFacade().findBySQL(sql);
                 double result = 0;
-                Double lastVal = null;
-                CalculationType ctype = null;
                 //System.out.println("ixcals size is " + ixCals.size());
+                String calString = "";
                 for (IxCal c : ixCals) {
-                    //System.out.println("c is " + c.getId());
                     if (c.getCalculationType() == CalculationType.Constant) {
-                        //System.out.println("constant result before is " + result);
-                        if (ctype == null && lastVal == null) {
-                            result = c.getConstantValue();
-                            //System.out.println("got constant val " + c.getConstantValue());
-                        } else if (ctype == CalculationType.Addition) {
-                            //System.out.println("result added, before that is " + result);
-                            result = result + c.getConstantValue();
-                            //System.out.println("result added, after that is " + result);
-                        } else if (ctype == CalculationType.Substraction) {
-                            //System.out.println("result sub, before that is " + result);
-                            result = result - c.getConstantValue();
-                            //System.out.println("result sub, after that is " + result);
-                        } else if (ctype == CalculationType.Devision) {
-                            //System.out.println("going to devide");
-                            if (c.getConstantValue() != 0) {
-                                result = result / c.getConstantValue();
-                            }
-                        } else if (ctype == CalculationType.Multiplication) {
-                            result = result * c.getConstantValue();
+                        calString = calString + c.getConstantValue();
+                    }
+                    if (c.getCalculationType() == CalculationType.GenderDependentConstant) {
+                        if (currentPatientReport.getPatientInvestigation().getPatient().getPerson().getSex() == Sex.Male) {
+                            calString = calString + c.getMaleConstantValue();
+                        } else {
+                            calString = calString + c.getFemaleConstantValue();
                         }
-                        //System.out.println("constant after before is " + result);
-                    } else if (c.getCalculationType() == CalculationType.Value) {
-                        //System.out.println("val result before is " + result);
-                        //System.out.println("c val item is " + c.getValIxItem().getName());
-                        double d = findPtReportItemVal(c.getValIxItem());
-                        //System.out.println("d is " + d);
-                        if (ctype == null && lastVal == null) {
-                            result = d;
-                        } else if (ctype == CalculationType.Addition) {
-                            result = result + d;
-                        } else if (ctype == CalculationType.Substraction) {
-                            result = result - d;
-                        } else if (ctype == CalculationType.Devision) {
-                            if (d != 0) {
-                                result = result / d;
-                            }
-                        } else if (ctype == CalculationType.Multiplication) {
-                            result = result * d;
-                        }
-                        ////System.out.println("val result after is " + result);
-                    } else {
-                        ctype = c.getCalculationType();
+                    }
+                    if (c.getCalculationType() == CalculationType.Value) {
+                        calString = calString + " " + findPtReportItemVal(c.getValIxItem()) + " ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Addition) {
+                        calString = calString + " + ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Substraction) {
+                        calString = calString + " - ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Multiplication) {
+                        calString = calString + " * ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Devision) {
+                        calString = calString + " / ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.OpeningBracket) {
+                        calString = calString + " ( ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.ClosingBracket) {
+                        calString = calString + " ) ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Power) {
+                        calString = calString + "Math.pow";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Comma) {
+                        calString = calString + ",";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.Space) {
+                        calString = calString + " ";
+                    }
+
+                    if (c.getCalculationType() == CalculationType.AgeInDays) {
+                        calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeDays();
+                    }
+                    if (c.getCalculationType() == CalculationType.AgeInMonths) {
+                        calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeMonths();
+                    }
+                    if (c.getCalculationType() == CalculationType.AgeInYears) {
+                        calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeYears();
+                    }
+                    ScriptEngineManager mgr = new ScriptEngineManager();
+                    ScriptEngine engine = mgr.getEngineByName("JavaScript");
+                    try {
+                        result = (double) engine.eval(calString);
+                    } catch (ScriptException ex) {
+                        Logger.getLogger(PatientReportController.class.getName()).log(Level.SEVERE, null, ex);
+                        result = 0.0;
                     }
                     priv.setDoubleValue(result);
                 }
             } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
                 priv.setStrValue(findFlagValue(priv));
             }
-
 //            //System.out.println("priv = " + priv.getStrValue());
             getPirivFacade().edit(priv);
 //            //System.out.println("priv = " + priv);
         }
-
 //        getFacade().edit(currentPatientReport);
     }
 
@@ -332,9 +347,9 @@ public class PatientReportController implements Serializable {
         for (TestFlag f : fs) {
 
             Long a = v.getPatient().getAgeInDays();
-            //System.err.println("Age is a" + a);
-            //System.err.println("From Age is " + f.getFromAge());
-            //System.err.println("To Age is " + f.getToAge());
+            //System.err.println("AgeInMonths is a" + a);
+            //System.err.println("From AgeInMonths is " + f.getFromAge());
+            //System.err.println("To AgeInMonths is " + f.getToAge());
 
             ////System.out.println("flah low message " + f.getLowMessage());
             if (f.getFromAge() <= a && f.getToAge() >= a) {
