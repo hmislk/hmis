@@ -10,7 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 
-
 /**
  *
  * @author buddhika
@@ -20,7 +19,8 @@ import javax.persistence.InheritanceType;
 public class RefundBill extends Bill implements Serializable {
 
     public RefundBill() {
-        billClassType=BillClassType.RefundBill;
+        billClassType = BillClassType.RefundBill;
+        qty = 0 - 1;
     }
-   
+
 }
