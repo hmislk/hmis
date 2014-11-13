@@ -10,18 +10,20 @@
 
 
     <ui:define name="content">
-<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:panelGroup rendered="true" >
             <h:form>
                 <p:panel  id="panelPrint" styleClass="noBorder summeryBorder" header="Report by Refering Doctor">
                     <f:facet name="header" >
                         <p:outputLabel value="Report by Refering Doctor"/>
-                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" />
-
+                        <p:commandButton value="Process"
+                                         ajax="false"
+                                         styleClass="noPrintButton"
+                                         action="#{commonReport1.listBillItemsByReferringDoctor}"
+                                         />
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
-
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                             <pe:exporter type="xlsx" target="tbl" fileName="Report by Referring Doctor"
                                          facetBackground="#008000" facetFontSize="15" 
@@ -29,70 +31,80 @@
                                          fontName="Courier New"  />
                         </p:commandButton>
 
-                        <p:panelGrid columns="4" style="min-width:100%;">
+                        <p:panelGrid columns="2" style="min-width:100%;">
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="frmDate" value="#{commonReport1.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
-
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="toDate" value="#{commonReport1.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
+                            <h:outputLabel value="Referring Doctor"/>
+                            <p:autoComplete forceSelection="true" id="cmbDoc" value="#{commonReport1.referringDoctor}"
+                                            completeMethod="#{doctorController.completeDoctor}"
+                                            var="ix"
+                                            itemLabel="#{ix.person.name}" 
+                                            itemValue="#{ix}" 
+                                            style="width: 400px;">
+                            </p:autoComplete>
+
+                            <h:outputText value="Department" ></h:outputText>
+                            <p:autoComplete value="#{commonReport1.department}"
+                                            completeMethod="#{departmentController.completeDept}"
+                                            var="dept"
+                                            required="true"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}"
+                                            converter="dep"
+                                            style="width: 400px;"></p:autoComplete>
+
                         </p:panelGrid>
                     </f:facet>
-                    <p:dataTable id="tbl" value="#{commonReport.billsByReferingDocOwn}" var="d" >
+                    <p:dataTable id="tbl" value="#{commonReport1.referralBillItems}" var="d" >
                         <f:facet name="header">
-                            <h:outputLabel value="Report by Referring Doctor "/>
+                            <h:outputLabel value="Requests by Referring Doctor "/>
                             <h:outputLabel value="From " />
-                            <h:outputLabel  value="#{commonReport.fromDate}">
-                                <f:convertDateTime pattern="dd MM yyyy"/>
+                            <h:outputLabel  value="#{commonReport1.fromDate}">
+                                <f:convertDateTime pattern="dd MM yyyy hh:mm a"/>
                             </h:outputLabel>
-                             <h:outputLabel value=" - " />
-                            <h:outputLabel value="#{commonReport.toDate}">
-                                <f:convertDateTime pattern="dd MM yyyy"/>
+                            <h:outputLabel value=" - " />
+                            <h:outputLabel value="#{commonReport1.toDate}">
+                                <f:convertDateTime pattern="dd MM yyyy  hh:mm a"/>
                             </h:outputLabel>
                         </f:facet>
 
-                        <p:column headerText="Referring Doctor" >
+                        <p:column headerText="Referring Doctor" rendered="#{commonReport1.referringDoctor ne null}" >
                             <f:facet name="header">
                                 <h:outputLabel value="Referring Doctor" />
                             </f:facet>
-                            <h:outputLabel value="#{d.referredBy.person.nameWithTitle}"/>
+                            <h:outputLabel value="#{commonReport1.referringDoctor.person.nameWithTitle}"/>
                         </p:column>
-                        <p:column headerText="Bill Code" >
+
+                        <p:column headerText="Bill No" >
                             <f:facet name="header">
-                                <h:outputLabel value="Bill Code"/>
+                                <h:outputLabel value="Bill No"/>
                             </f:facet>
-                            <h:outputLabel value="#{d.insId}"/>
+                            <h:outputLabel value="#{d.bill.insId}"/>
                         </p:column>
-    
-                        <p:column headerText="Cancel Or Not" >
+
+                        <p:column headerText="Date/Time" >
                             <f:facet name="header">
-                                <h:outputLabel value="Cancel Or Not"/>
-                            </f:facet>                                
-                            <h:outputLabel rendered="#{d.cancelled}" value="Cancelled"/>
-                        </p:column>
-                        <p:column headerText="Refunded Or Not"  >
-                            <f:facet name="header">
-                                <h:outputLabel value="Refunded Or Not"/>
+                                <h:outputLabel value="Date/Time"/>
                             </f:facet>
-                            <h:outputLabel rendered="#{d.refunded}" value="Refunded"/>
-                        </p:column>
-                        <p:column headerText="Discount" style="text-align: right;">
-                            <f:facet name="header">
-                                <h:outputLabel value="Discount"/>
-                            </f:facet>
-                            <h:outputLabel value="#{d.discount}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </p:column>                    
-                        <p:column headerText="Net Total" style="text-align: right;" >
-                            <f:facet name="header">
-                                <h:outputLabel value="Net Total"/>
-                            </f:facet>
-                            <h:outputLabel value="#{d.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            <h:outputLabel value="#{d.bill.createdAt}">
+                                <f:convertDateTime pattern="dd-MMM-yy hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
+
+
+                        <p:column headerText="Request" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Request"/>
+                            </f:facet>
+                            <h:outputLabel value="#{d.item.name}">
+                            </h:outputLabel>
+                        </p:column>
+
+
                     </p:dataTable>
 
 

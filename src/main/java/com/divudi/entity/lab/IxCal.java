@@ -34,17 +34,17 @@ public class IxCal implements Serializable {
     @ManyToOne
     InvestigationItem valIxItem;
     Integer orderNo;
-    boolean retired;
+    Boolean retired;
     @ManyToOne
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
 
-    public boolean isRetired() {
+    public Boolean isRetired() {
         return retired;
     }
 
-    public void setRetired(boolean retired) {
+    public void setRetired(Boolean retired) {
         this.retired = retired;
     }
 

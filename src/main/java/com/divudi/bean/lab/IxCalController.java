@@ -245,7 +245,8 @@ public  class IxCalController implements Serializable {
     public List<IxCal> getItems() {
         String sql;
         if (ix != null && cal != null) {
-            sql = "select i from IxCal i where i.retired=false and i.calIxItem.id = " + cal.getId();
+            sql = "select i from IxCal i where (i.retired=false or i.retired is null) and i.calIxItem.id = " + cal.getId();
+            System.out.println("sql = " + sql);
             items = getFacade().findBySQL(sql);
         }
         if (items == null) {

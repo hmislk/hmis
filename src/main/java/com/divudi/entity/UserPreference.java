@@ -5,6 +5,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.PaperType;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,6 +39,20 @@ public class UserPreference implements Serializable {
     @ManyToOne
     Institution institution;
     boolean printLabelForOPdBill;
+    PaperType opdBillPaperType;
+
+    public PaperType getOpdBillPaperType() {
+        if(opdBillPaperType==null){
+            opdBillPaperType = PaperType.FiveFivePaper;
+        }
+        return opdBillPaperType;
+    }
+
+    public void setOpdBillPaperType(PaperType opdBillPaperType) {
+        this.opdBillPaperType = opdBillPaperType;
+    }
+    
+    
     
     
 
