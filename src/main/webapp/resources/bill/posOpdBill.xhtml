@@ -38,7 +38,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Sale Bill"   />    
+                <h:outputLabel value="OPD Bill"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -69,9 +69,36 @@
 
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
+<!--                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
+                                <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                            </h:outputLabel>-->
+                        </td>
+
+                    </tr>
+                    
+                    <tr>
+                        <td style="width: 15%; text-align: left;" >
+                            <h:outputLabel value="Time" class="billDetails" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%" >
+                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" >
                                 <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" >
+
+                        </td>
+                        <td style="width: 15%" >
+                            <!--<h:outputLabel value="Time" ></h:outputLabel>-->
+                        </td>
+
+                        <td style="width: 30%" >
+                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+<!--                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
+                                <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                            </h:outputLabel>-->
                         </td>
 
                     </tr>
@@ -172,7 +199,7 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="To Unit" ></h:outputLabel>
+                                <h:outputLabel value="Department" ></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
