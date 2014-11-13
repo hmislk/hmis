@@ -36,33 +36,46 @@
                                     <h:panelGroup   id="lblVal">
                                         <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"   value="Value" />
                                     </h:panelGroup>
-                                    <h:panelGroup  id="cmbVal" rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"  >
-                                        <p:selectOneMenu   value="#{ixCalController.addingIxCal.valIxItem }"  required="true" requiredMessage="Please select a Value" >
+                                    <h:panelGroup  id="cmbVal"  >
+                                        <p:selectOneMenu rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"   value="#{ixCalController.addingIxCal.valIxItem }"  required="true" requiredMessage="Please select a Value" >
                                             <f:selectItem itemLabel="Select Value" />
                                             <f:selectItems value="#{ixCalController.vals}" var="v" itemLabel="#{v.name}" itemValue="#{v}" />
                                         </p:selectOneMenu>
                                     </h:panelGroup>
-
                                     <h:panelGroup id="lblCon" >
                                         <h:outputLabel  value="Constant"  rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}"   />
                                     </h:panelGroup>
                                     <h:panelGroup id="txtCon" >
-                                        <p:inputText autocomplete="off"   value="#{ixCalController.addingIxCal.constantValue}"  required="true" requiredMessage="Please select a constant" />
+                                        <p:inputText autocomplete="off"  
+                                                     value="#{ixCalController.addingIxCal.constantValue}"  
+                                                     required="true" 
+                                                     requiredMessage="Please select a constant" 
+                                                     rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}"/>
                                     </h:panelGroup>
 
 
                                     <h:panelGroup id="lblMaleCon" >
-                                        <h:outputLabel  value="Constant for Males"  rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}"   />
+                                        <h:outputLabel  value="Constant for Males"  
+                                                        rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}"   />
                                     </h:panelGroup>
                                     <h:panelGroup id="txtMaleCon" >
-                                        <p:inputText autocomplete="off"   value="#{ixCalController.addingIxCal.maleConstantValue}"  required="true" requiredMessage="Please select a constant for males" />
+                                        <p:inputText autocomplete="off"  
+                                                     rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}" 
+                                                     value="#{ixCalController.addingIxCal.maleConstantValue}"  
+                                                     required="true" requiredMessage="Please select a constant for males" />
                                     </h:panelGroup>
 
                                     <h:panelGroup id="lblFemaleCon" >
-                                        <h:outputLabel  value="Constant for Females"  rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}"   />
+                                        <h:outputLabel  value="Constant for Females"  
+                                                        rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}"    />
                                     </h:panelGroup>
+                                    
                                     <h:panelGroup id="txtFemaleCon" >
-                                        <p:inputText autocomplete="off"   value="#{ixCalController.addingIxCal.femaleConstantValue}"  required="true" requiredMessage="Please select a constant for females"  />
+                                        <p:inputText autocomplete="off"   
+                                                     value="#{ixCalController.addingIxCal.femaleConstantValue}"
+                                                     required="true" 
+                                                     requiredMessage="Please select a constant for females"
+                                                     rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}" />
                                     </h:panelGroup>
 
 
@@ -82,7 +95,7 @@
                                     <p:column >
                                         <h:outputLabel value="#{c.constantValue}" rendered="#{c.calculationType eq 'Constant'}"  />
                                         <h:outputLabel  value="#{c.valIxItem.name}"  rendered="#{c.calculationType eq 'Value'}"  />
-                                        <h:outputLabel value="Males : #{c.maleConstantValue}, Females : #{c.femaleConstantValue}" rendered="#{c.calculationType eq 'Constant'}"  />
+                                        <h:outputLabel value="Males : #{c.maleConstantValue}, Females : #{c.femaleConstantValue}" rendered="#{c.calculationType eq 'GenderDependentConstant'}"  />
                                     </p:column>
 
                                 </p:dataTable>

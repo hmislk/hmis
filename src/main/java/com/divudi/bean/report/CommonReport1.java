@@ -10,13 +10,16 @@ import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -77,6 +80,16 @@ public class CommonReport1 implements Serializable {
     private BillsTotals inwardPaymentCancel;
     //////////////////    
     private List<String1Value1> dataTableData;
+
+    Doctor referringDoctor;
+
+    public Doctor getReferringDoctor() {
+        return referringDoctor;
+    }
+
+    public void setReferringDoctor(Doctor referringDoctor) {
+        this.referringDoctor = referringDoctor;
+    }
 
     /**
      * Creates a new instance of CommonReport
@@ -156,6 +169,9 @@ public class CommonReport1 implements Serializable {
     }
 
     public Department getDepartment() {
+        if(department==null){
+            department= getSessionController().getDepartment();
+        }
         return department;
     }
 
@@ -313,24 +329,46 @@ public class CommonReport1 implements Serializable {
         return inwardPayments;
     }
 
-    public List<Bill> getBillsByReferingDocOwn() {
+    @EJB
+    BillItemFacade billItemFacade;
+    List<BillItem> referralBillItems;
 
+    public List<BillItem> getReferralBillItems() {
+        return referralBillItems;
+    }
+
+    public void setReferralBillItems(List<BillItem> referralBillItems) {
+        this.referralBillItems = referralBillItems;
+    }
+
+    public void listBillItemsByReferringDoctor() {
+        System.out.println("listBillItemsByReferringDoctor");
         Map temMap = new HashMap();
         List<Bill> tmp;
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
-        temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("bTp", BillType.OpdBill);
-
-        String sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.toInstitution=:ins "
-                + "and b.billType =:bTp and b.createdAt between :fromDate and :toDate  order by b.referredBy.person.name ";
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        if (tmp == null) {
-            tmp = new ArrayList<>();
+        temMap.put("dept", department);
+        String sql = "SELECT bi FROM BillItem bi "
+                + " join bi.bill b "
+                + " join bi.item i "
+                + "WHERE "
+                + "b.retired=false "
+                + "and bi.retired=false "
+                + "and b.cancelled=false "
+                + "and bi.refunded=false "
+                + "and i.department=:dept "
+                + "and b.createdAt between :fromDate and :toDate  ";
+        if (referringDoctor != null) {
+            temMap.put("rd", referringDoctor);
+            sql = sql + "and b.referredBy=:rd ";
         }
-
-        return tmp;
-
+        sql = sql + "order by b.referredBy.person.name ";
+        System.out.println("sql = " + sql);
+        System.out.println("temMap = " + temMap);
+        referralBillItems = billItemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        if (referralBillItems == null) {
+            referralBillItems = new ArrayList<>();
+        }
     }
 
     public List<Bill> getBillsByCollectingOwn() {
@@ -408,8 +446,8 @@ public class CommonReport1 implements Serializable {
         if (refundedBillsPh == null) {
             getRefundedBillsPh().setBills(userPharmacyBillsOwn(new RefundBill(), BillType.PharmacySale, getWebUser()));
         }
-        
-         if (refundedBillsPh2 == null) {
+
+        if (refundedBillsPh2 == null) {
             getRefundedBillsPh2().setBills(userPharmacyBillsOther(new RefundBill(), BillType.PharmacySale, getWebUser()));
         }
         // calTot(getRefundedBills());
@@ -436,8 +474,8 @@ public class CommonReport1 implements Serializable {
         if (cancellededBillsPh == null) {
             getCancellededBillsPh().setBills(userPharmacyBillsOwn(new CancelledBill(), BillType.PharmacySale, getWebUser()));
         }
-        
-         if (cancellededBillsPh2 == null) {
+
+        if (cancellededBillsPh2 == null) {
             getCancellededBillsPh2().setBills(userPharmacyBillsOther(new CancelledBill(), BillType.PharmacySale, getWebUser()));
         }
         //   calTot(getCancellededBills());
@@ -477,9 +515,8 @@ public class CommonReport1 implements Serializable {
         temMap.put("btp", billType);
         temMap.put("web", webUser);
         temMap.put("ins", getSessionController().getInstitution());
-        
-//        checkOtherInstiution
 
+//        checkOtherInstiution
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -497,7 +534,7 @@ public class CommonReport1 implements Serializable {
 
         Bill b = getBillFacade().findFirstBySQL(sql, temMap, TemporalType.DATE);
 
-        if (b != null && institution==null) {
+        if (b != null && institution == null) {
             //System.err.println("SYS "+b.getInstitution().getName());
             institution = b.getInstitution();
         }
@@ -555,12 +592,12 @@ public class CommonReport1 implements Serializable {
             getBilledBillsPh().setBills(userPharmacyBillsOwn(new BilledBill(), BillType.PharmacySale, getWebUser()));
             //   calTot(getBilledBills());
         }
-        
-         if (billedBillsPh2 == null) {
+
+        if (billedBillsPh2 == null) {
             getBilledBillsPh2().setBills(userPharmacyBillsOther(new BilledBill(), BillType.PharmacySale, getWebUser()));
             //   calTot(getBilledBills());
         }
-         
+
         return billedBillsPh;
     }
 
@@ -949,7 +986,7 @@ public class CommonReport1 implements Serializable {
         inwardPayments = null;
         inwardPaymentCancel = null;
         dataTableData = null;
-        institution=null;
+        institution = null;
 
     }
 
@@ -1191,12 +1228,12 @@ public class CommonReport1 implements Serializable {
 
         return list;
     }
-    
-     public List<String1Value1> getCreditSlipSum2() {
-        List<BillsTotals> list2 = new ArrayList<>();      
+
+    public List<String1Value1> getCreditSlipSum2() {
+        List<BillsTotals> list2 = new ArrayList<>();
         list2.add(billedBillsPh2);
         list2.add(cancellededBillsPh2);
-        list2.add(refundedBillsPh2);      
+        list2.add(refundedBillsPh2);
 
         List<String1Value1> list = new ArrayList<>();
         String1Value1 tmp1 = new String1Value1();
@@ -1373,12 +1410,12 @@ public class CommonReport1 implements Serializable {
         list.add(tmp4);
         return list;
     }
-    
-      public List<String1Value1> getCashChequeSum2() {
-        List<BillsTotals> list2 = new ArrayList<>();        
+
+    public List<String1Value1> getCashChequeSum2() {
+        List<BillsTotals> list2 = new ArrayList<>();
         list2.add(billedBillsPh2);
         list2.add(cancellededBillsPh2);
-        list2.add(refundedBillsPh2);        
+        list2.add(refundedBillsPh2);
 
         List<String1Value1> list = new ArrayList<>();
 
@@ -1467,8 +1504,8 @@ public class CommonReport1 implements Serializable {
     }
 
     public BillsTotals getBilledBillsPh2() {
-        if(billedBillsPh2==null){
-            billedBillsPh2=new BillsTotals();
+        if (billedBillsPh2 == null) {
+            billedBillsPh2 = new BillsTotals();
         }
         return billedBillsPh2;
     }
@@ -1478,8 +1515,8 @@ public class CommonReport1 implements Serializable {
     }
 
     public BillsTotals getCancellededBillsPh2() {
-         if(cancellededBillsPh2==null){
-            cancellededBillsPh2=new BillsTotals();
+        if (cancellededBillsPh2 == null) {
+            cancellededBillsPh2 = new BillsTotals();
         }
         return cancellededBillsPh2;
     }
@@ -1489,8 +1526,8 @@ public class CommonReport1 implements Serializable {
     }
 
     public BillsTotals getRefundedBillsPh2() {
-        if(refundedBillsPh2==null){
-            refundedBillsPh2=new BillsTotals();
+        if (refundedBillsPh2 == null) {
+            refundedBillsPh2 = new BillsTotals();
         }
         return refundedBillsPh2;
     }
