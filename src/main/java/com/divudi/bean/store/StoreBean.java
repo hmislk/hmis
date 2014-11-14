@@ -268,6 +268,7 @@ public class StoreBean {
 
     private Bill createPreBill(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
         Bill newPre = new PreBill();
+        newPre.invertQty();
         newPre.copy(bill);
         newPre.setBilledBill(bill);
         newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill, bill.getBillType(), billNumberSuffix));
@@ -288,6 +289,7 @@ public class StoreBean {
 
     private Bill createPreBillForIssueCancel(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
         Bill newPre = new PreBill();
+        newPre.invertQty();
         newPre.copy(bill);
         newPre.setBilledBill(bill);
         newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill, bill.getBillType(), billNumberSuffix));
@@ -371,6 +373,7 @@ public class StoreBean {
         }
 
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
+
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
         System.err.println("LIST " + list.size());
 
@@ -764,7 +767,7 @@ public class StoreBean {
             s.setItemBatch(batch);
         }
         s.setStock(s.getStock() - qty);
-                double number = s.getStock();
+        double number = s.getStock();
         number = Math.round(number * 1000);
         number = number / 1000;
         s.setStock(number);
@@ -864,7 +867,7 @@ public class StoreBean {
 
         //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
-                double number = stock.getStock();
+        double number = stock.getStock();
         number = Math.round(number * 1000);
         number = number / 1000;
         stock.setStock(number);
@@ -893,7 +896,7 @@ public class StoreBean {
 
         //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
-                double number = stock.getStock();
+        double number = stock.getStock();
         number = Math.round(number * 1000);
         number = number / 1000;
         stock.setStock(number);

@@ -43,7 +43,14 @@
                 </f:facet>
 
 
-                <p:dataTable id="tbl" value="#{searchController.bills}" var="b">
+                <p:dataTable 
+                    id="tbl" 
+                    value="#{searchController.bills}" 
+                    var="b"
+                    paginator="true"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="5,10,15"
+                    >
                     <p:column headerText="Requested at"  >
                         <h:commandLink action="pharmacy_reprint_order_request" >
                             <h:outputLabel value="#{b.createdAt}" >

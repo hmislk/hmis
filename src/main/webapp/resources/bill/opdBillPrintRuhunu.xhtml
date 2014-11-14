@@ -51,13 +51,12 @@
                                                    and cc.attrs.dup eq true}"/>
                     </div>
 
-                    <div class="billdatePrintingRuhunu" >
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="Date"></h:outputLabel>
+                    <div class="billdatePrintingRuhunu" >                       
+                            
                             <h:outputLabel value="#{cc.attrs.bill.billDate}">
                                 <f:convertDateTime pattern="dd/MM/yy"/>
                             </h:outputLabel>
-                        </h:panelGrid>
+                        
                     </div>
 
                     <div class="paymentPrintingRuhunu" >
@@ -66,13 +65,12 @@
                         </h:panelGroup>
                     </div>
 
-                    <div class="billtimePrintingRuhunu" >
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="Time"></h:outputLabel>
+                    <div class="billtimePrintingRuhunu" >      
+                            
                             <h:outputLabel value="#{cc.attrs.bill.billTime}">
                                 <f:convertDateTime pattern="hh:mm a"/>
                             </h:outputLabel>
-                        </h:panelGrid>
+                        
                     </div>
 
                     <div class="ptnamePrintingRuhunu" >

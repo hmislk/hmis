@@ -164,7 +164,13 @@
 
                             <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
 
-                                <h:dataTable value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"  styleClass="noBorderGrid" >
+                                <h:dataTable 
+                                    value="#{pi.patientReports}" 
+                                    var="dpr" rendered="#{pi.patientReports.size() ne 0}"  
+                                    styleClass="noBorderGrid"
+                                 
+                                    
+                                    >
                                     <h:column >
 
                                         <h:panelGrid columns="6" styleClass="noBorderGrid">

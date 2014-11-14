@@ -283,6 +283,19 @@ public class Bill implements Serializable {
     Date paidAt;
     @ManyToOne
     Bill paidBill;
+    double qty;
+
+    public double getQty() {
+        return qty;
+    }
+
+    public void setQty(double qty) {
+        this.qty = qty;
+    }
+
+    public void invertQty() {
+        this.qty = 0 - qty;
+    }
 
     public MembershipScheme getMembershipScheme() {
         return membershipScheme;
@@ -291,8 +304,6 @@ public class Bill implements Serializable {
     public void setMembershipScheme(MembershipScheme membershipScheme) {
         this.membershipScheme = membershipScheme;
     }
-    
-    
 
     private boolean paid;
 
@@ -370,6 +381,7 @@ public class Bill implements Serializable {
         staffFee = 0 - bill.getStaffFee();
         hospitalFee = 0 - bill.getHospitalFee();
         margin = 0 - bill.getMargin();
+
     }
 
     public void invertValue() {
@@ -389,11 +401,11 @@ public class Bill implements Serializable {
         grantTotal = 0 - getGrantTotal();
         staffFee = 0 - getStaffFee();
         hospitalFee = 0 - getHospitalFee();
-
     }
 
     public void copy(Bill bill) {
         billType = bill.getBillType();
+        membershipScheme = bill.getMembershipScheme();
         collectingCentre = bill.getCollectingCentre();
         catId = bill.getCatId();
         creditCompany = bill.getCreditCompany();
@@ -429,6 +441,7 @@ public class Bill implements Serializable {
         this.staffFee = bill.getStaffFee();
         this.hospitalFee = bill.getHospitalFee();
         this.margin = bill.getMargin();
+
     }
 
     public List<BillComponent> getBillComponents() {
@@ -519,7 +532,6 @@ public class Bill implements Serializable {
     }
 
     public double getNetTotal() {
-
         return netTotal;
     }
 
