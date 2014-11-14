@@ -1644,7 +1644,7 @@ public class BookKeepingSummery implements Serializable {
         chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         /////////////////
-        inwardProfessionalPaymentTotal = getBillBean().calDoctorPaymentInward(fromDate, toDate);
+        inwardProfessionalPaymentTotal = getBillBean().calDoctorPaymentInward(fromDate, toDate, institution);
         creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
@@ -1695,6 +1695,7 @@ public class BookKeepingSummery implements Serializable {
                 + " FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
+                + " and b.bill.institution=:ins"
                 + " and (b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2 )"
                 + " and b.bill.createdAt between :fromDate and :toDate"
@@ -1704,6 +1705,7 @@ public class BookKeepingSummery implements Serializable {
         hm.put("bType", BillType.PaymentBill);
         hm.put("refType1", BillType.InwardBill);
         hm.put("refType2", BillType.InwardProfessional);
+        hm.put("ins", institution);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
         //   System.out.println("hm = " + hm);

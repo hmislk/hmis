@@ -491,10 +491,11 @@ public class BillBeanController implements Serializable {
 //
 //    }
 //    
-    public double calDoctorPaymentInward(Date fromDate, Date toDate) {
+    public double calDoctorPaymentInward(Date fromDate, Date toDate, Institution institution) {
         String sql = "Select sum(b.netValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
+                + " and b.bill.institution=:ins"
                 + " and b.bill.billType=:bType "
                 + " and (b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2) "
@@ -506,6 +507,7 @@ public class BillBeanController implements Serializable {
         hm.put("refType2", BillType.InwardProfessional);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
+        hm.put("ins", institution);
 
         return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
