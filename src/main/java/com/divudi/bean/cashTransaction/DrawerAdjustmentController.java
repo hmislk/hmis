@@ -101,9 +101,9 @@ public class DrawerAdjustmentController implements Serializable {
     }
 
     private boolean errorCheck() {
-        if (getSessionController().getLoggedUser().getDrawer() == null) {
-            return true;
-        }
+//        if (getSessionController().getLoggedUser().getDrawer() == null) {
+//            return true;
+//        }
 
         if (getValue() == null) {
             return true;
@@ -160,12 +160,12 @@ public class DrawerAdjustmentController implements Serializable {
                     break;
             }
 
-            getCashTransactionBean().saveCashAdjustmentTransactionIn(cashTransaction, adjustmentBill, getSessionController().getLoggedUser().getDrawer(), getSessionController().getLoggedUser());
+//            getCashTransactionBean().saveCashAdjustmentTransactionIn(cashTransaction, adjustmentBill, getSessionController().getLoggedUser().getDrawer(), getSessionController().getLoggedUser());
 
             getAdjustmentBill().setCashTransaction(cashTransaction);
             getAdjustmentBill().setNetTotal(0 - difference);
             getBillFacade().edit(getAdjustmentBill());
-            getCashTransactionBean().addToBallance(getSessionController().getLoggedUser().getDrawer(), cashTransaction);
+//            getCashTransactionBean().addToBallance(getSessionController().getLoggedUser().getDrawer(), cashTransaction);
 
         } else {
             //System.err.println("Diduct");
@@ -184,12 +184,12 @@ public class DrawerAdjustmentController implements Serializable {
                     break;
             }
 
-            getCashTransactionBean().saveCashAdjustmentTransactionOut(cashTransaction, adjustmentBill, getSessionController().getLoggedUser().getDrawer(), getSessionController().getLoggedUser());
+//            getCashTransactionBean().saveCashAdjustmentTransactionOut(cashTransaction, adjustmentBill, getSessionController().getLoggedUser().getDrawer(), getSessionController().getLoggedUser());
 
             getAdjustmentBill().setCashTransaction(cashTransaction);
             getAdjustmentBill().setNetTotal(0 - difference);
             getBillFacade().edit(getAdjustmentBill());
-            getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), cashTransaction);
+//            getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), cashTransaction);
         }
 
         WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
@@ -202,28 +202,28 @@ public class DrawerAdjustmentController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        save(getSessionController().getLoggedUser().getDrawer().getRunningBallance(), PaymentMethod.Cash);
+//        save(getSessionController().getLoggedUser().getDrawer().getRunningBallance(), PaymentMethod.Cash);
     }
 
     public void saveAdjustBillCheque() {
         if (errorCheck()) {
             return;
         }
-        save(getSessionController().getLoggedUser().getDrawer().getChequeBallance(), PaymentMethod.Cheque);
+//        save(getSessionController().getLoggedUser().getDrawer().getChequeBallance(), PaymentMethod.Cheque);
     }
 
     public void saveAdjustBillSlip() {
         if (errorCheck()) {
             return;
         }
-        save(getSessionController().getLoggedUser().getDrawer().getSlipBallance(), PaymentMethod.Slip);
+//        save(getSessionController().getLoggedUser().getDrawer().getSlipBallance(), PaymentMethod.Slip);
     }
     
      public void saveAdjustBillCreditCard() {
         if (errorCheck()) {
             return;
         }
-        save(getSessionController().getLoggedUser().getDrawer().getCreditCardBallance(), PaymentMethod.Card);
+//        save(getSessionController().getLoggedUser().getDrawer().getCreditCardBallance(), PaymentMethod.Card);
     }
 
     public SessionController getSessionController() {
