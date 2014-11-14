@@ -30,8 +30,8 @@ public class Drawer implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @OneToMany(mappedBy = "drawer")
-    private List<WebUser> webUsers = new ArrayList<>();
+//    @OneToMany(mappedBy = "drawer")
+//    private List<WebUser> webUsers = new ArrayList<>();
     String name;
     @ManyToOne
     private WebUser creater;
@@ -90,13 +90,13 @@ public class Drawer implements Serializable {
         return "com.divudi.entity.Drawer[ id=" + id + " ]";
     }
 
-    public List<WebUser> getWebUsers() {
-        return webUsers;
-    }
-
-    public void setWebUsers(List<WebUser> webUsers) {
-        this.webUsers = webUsers;
-    }
+//    public List<WebUser> getWebUsers() {
+//        return webUsers;
+//    }
+//
+//    public void setWebUsers(List<WebUser> webUsers) {
+//        this.webUsers = webUsers;
+//    }
 
     public double getRunningBallance() {
         return runningBallance;

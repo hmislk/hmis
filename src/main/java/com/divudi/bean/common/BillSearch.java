@@ -971,7 +971,7 @@ public class BillSearch implements Serializable {
                 cb.setCashTransaction(tmp);
                 getBillFacade().edit(cb);
 
-                getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), tmp);
+//                getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), tmp);
 
                 WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
                 getSessionController().setLoggedUser(wb);
@@ -1015,7 +1015,7 @@ public class BillSearch implements Serializable {
                 cb.setCashTransaction(tmp);
                 getBillFacade().edit(cb);
 
-                getCashTransactionBean().addToBallance(getSessionController().getLoggedUser().getDrawer(), tmp);
+//                getCashTransactionBean().addToBallance(getSessionController().getLoggedUser().getDrawer(), tmp);
 
                 WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
                 getSessionController().setLoggedUser(wb);
