@@ -488,23 +488,25 @@ public class CommonReport implements Serializable {
     }
 
     public List<Bill> getBillsByReferingDocOwn() {
-
         Map temMap = new HashMap();
         List<Bill> tmp;
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", BillType.OpdBill);
+        String sql = "SELECT b FROM Bill b "
+                + "WHERE b.retired=false "
+                + "and b.toInstitution=:ins "
+                + "and b.billType =:bTp "
+                + "and b.createdAt between :fromDate and :toDate  ";
+       
 
-        String sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.toInstitution=:ins "
-                + "and b.billType =:bTp and b.createdAt between :fromDate and :toDate  order by b.referredBy.person.name ";
+        sql = sql + "order by b.referredBy.person.name ";
         tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<>();
         }
-
         return tmp;
-
     }
 
     public List<Bill> getBillsByCollectingOwn() {
@@ -606,30 +608,29 @@ public class CommonReport implements Serializable {
     private List<Bill> userBillsOwn(Bill billClass, BillType billType, WebUser webUser, Department department) {
         String sql = "SELECT b FROM Bill b WHERE type(b)=:bill "
                 + " and b.retired=false"
-                + " and b.billType = :btp"                
+                + " and b.billType = :btp"
                 + " and b.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate";
         Map temMap = new HashMap();
-        
-        if(department != null){
-            sql+= " and b.department=:dep ";
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
             temMap.put("dep", department);
         }
-        
-        if(webUser != null){
-            sql+=" and b.creater=:web ";
+
+        if (webUser != null) {
+            sql += " and b.creater=:web ";
             temMap.put("web", webUser);
         }
-        
+
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("bill", billClass.getClass());
         temMap.put("btp", billType);
-        
+
         temMap.put("ins", getSessionController().getInstitution());
-        
-        sql+=" order by b.insId ";
-        
+
+        sql += " order by b.insId ";
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -1099,26 +1100,26 @@ public class CommonReport implements Serializable {
                 + " and b.institution=:ins"
                 + " and b.createdAt between :fromDate and :toDate";
         Map temMap = new HashMap();
-        
-        if(department != null){
-            sql+= " and b.department=:dep ";
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
             temMap.put("dep", department);
         }
-        
-        if(webUser != null){
-            sql+= " and b.creater=:w";
+
+        if (webUser != null) {
+            sql += " and b.creater=:w";
             temMap.put("w", wUser);
         }
-        
+
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
         temMap.put("btp", billType);
         temMap.put("pm", paymentMethod);
-        
+
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bill", billClass.getClass());
-        
-        sql+=" order by b.insId ";
+
+        sql += " order by b.insId ";
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -1397,23 +1398,23 @@ public class CommonReport implements Serializable {
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip, webUser, department));
 
     }
-    
-    public boolean checkLabCashier(){
-        if(department == null){
+
+    public boolean checkLabCashier() {
+        if (department == null) {
             JsfUtil.addErrorMessage("Please Select a Department");
             return true;
-        }        
-        return false;        
+        }
+        return false;
     }
 
     public void createLabCashierSummeryReport() {
-        
+
         recreteModal();
-        
-        if (checkLabCashier()) {            
+
+        if (checkLabCashier()) {
             return;
         }
-        
+
         //Opd Billed Bills
         getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
         getBilledBills().setCard(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser(), getDepartment()));
@@ -1437,9 +1438,9 @@ public class CommonReport implements Serializable {
         getRefundedBills().setCheque(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         getRefundedBills().setCredit(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getRefundedBills().setSlip(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
-        
+
         createSum();
-        
+
         //Cash IN Billed
         getCashInBills().setBills(userBillsOwn(new BilledBill(), BillType.CashIn, getWebUser(), getDepartment()));
         getCashInBills().setCard(calValueCreditCard(new BilledBill(), BillType.CashIn, getWebUser()));

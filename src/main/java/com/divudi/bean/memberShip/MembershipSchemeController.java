@@ -10,11 +10,13 @@ package com.divudi.bean.memberShip;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.entity.Patient;
 import com.divudi.facade.MembershipSchemeFacade;
 import com.divudi.entity.memberShip.MembershipScheme;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
@@ -30,7 +32,7 @@ import javax.faces.convert.FacesConverter;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -45,9 +47,33 @@ public class MembershipSchemeController implements Serializable {
     private MembershipScheme current;
     private List<MembershipScheme> items = null;
     String selectText = "";
-    
-    
 
+    public MembershipScheme fetchPatientMembershipScheme(Patient patient) {
+         MembershipScheme membershipScheme=null;
+        if (patient != null
+                && patient.getPerson() != null) {
+
+            Date fromDate = patient.getFromDate();
+            Date toDate = patient.getToDate();
+
+            if (fromDate != null && toDate != null) {
+                Calendar fCalendar = Calendar.getInstance();
+                fCalendar.setTime(fromDate);
+                Calendar tCalendar = Calendar.getInstance();
+                tCalendar.setTime(toDate);
+                Calendar nCalendar = Calendar.getInstance();
+
+                if (((fromDate.before(new Date()) && toDate.after(new Date())))
+                        || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
+                    membershipScheme = patient.getPerson().getMembershipScheme();
+                    System.err.println("MEM " + membershipScheme);
+                }
+            }
+
+        }
+        
+        return membershipScheme;
+    }
 
     public List<MembershipScheme> completeMembershipScheme(String qry) {
         List<MembershipScheme> c;

@@ -280,6 +280,7 @@ public class PharmacyBean {
 
     private Bill createPreBill(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
         Bill newPre = new PreBill();
+        newPre.invertQty();
         newPre.copy(bill);
         newPre.setBilledBill(bill);
         newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill, bill.getBillType(), billNumberSuffix));
@@ -300,6 +301,7 @@ public class PharmacyBean {
 
     private Bill createPreBillForIssueCancel(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
         Bill newPre = new PreBill();
+        newPre.invertQty();
         newPre.copy(bill);
         newPre.setBilledBill(bill);
         newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill, bill.getBillType(), billNumberSuffix));

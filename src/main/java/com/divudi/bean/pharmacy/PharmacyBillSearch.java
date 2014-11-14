@@ -160,8 +160,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void unitCancell() {
-        
-        
+
         Bill prebill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(),
                 getSessionController().getDepartment(), BillNumberSuffix.ISSCAN);
 
@@ -169,8 +168,8 @@ public class PharmacyBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(prebill);
             getBillFacade().edit(getBill());
-            
-            printPreview=true;
+
+            printPreview = true;
         }
     }
 
@@ -265,7 +264,7 @@ public class PharmacyBillSearch implements Serializable {
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
     }
-    
+
     @EJB
     BillItemFacade billItemFacade;
     @Inject
@@ -286,9 +285,6 @@ public class PharmacyBillSearch implements Serializable {
     public void setPriceMatrixController(PriceMatrixController priceMatrixController) {
         this.priceMatrixController = priceMatrixController;
     }
-    
-    
-    
 
     public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment) {
         double total = 0;
@@ -340,7 +336,7 @@ public class PharmacyBillSearch implements Serializable {
 
     private boolean errorCheckForEdit() {
         System.out.println("error = " + getBill());
-        
+
         if (getBill().isCancelled()) {
             UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
@@ -358,10 +354,10 @@ public class PharmacyBillSearch implements Serializable {
 
         return false;
     }
-    
+
     private boolean errorCheckForEdit(Bill bill) {
         System.out.println("error = " + bill);
-        
+
         if (bill.isCancelled()) {
             UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
@@ -382,7 +378,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public void editBillItem(BillItem billItem) {
         System.out.println("billItem = " + billItem);
-        
+
         if (errorCheckForEdit(billItem.getBill())) {
             return;
         }
@@ -558,8 +554,6 @@ public class PharmacyBillSearch implements Serializable {
     public void setStoreBillSearch(StoreBillSearch storeBillSearch) {
         this.storeBillSearch = storeBillSearch;
     }
-    
-    
 
     public List<BillItem> getRefundingItems() {
         return refundingItems;
@@ -777,7 +771,7 @@ public class PharmacyBillSearch implements Serializable {
 
     private RefundBill pharmacyCreateRefundCancelBill() {
         RefundBill cb = new RefundBill();
-
+        cb.invertQty();
         cb.copy(getBill());
         cb.invertValue(getBill());
         cb.setRefundedBill(getBill());
@@ -1197,7 +1191,6 @@ public class PharmacyBillSearch implements Serializable {
             if (pharmacyErrorCheck()) {
                 return;
             }
-            
 
             CancelledBill cb = pharmacyCreateCancelBill();
 
@@ -1290,12 +1283,12 @@ public class PharmacyBillSearch implements Serializable {
             getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
 
             UtilityController.addSuccessMessage("Cancelled");
-         //   System.out.println("going to cancel staff payments");
+            //   System.out.println("going to cancel staff payments");
             if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
              //   System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-             //   System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+                //   System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
                 if (getBill().getToStaff() != null) {
-                 //   System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                    //   System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
                     getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                     UtilityController.addSuccessMessage("Staff Credit Updated");
                     cb.setFromStaff(getBill().getToStaff());
@@ -2094,7 +2087,6 @@ public class PharmacyBillSearch implements Serializable {
         //recreateModel();
         return bill;
     }
-      
 
     public void setBill(Bill bb) {
         recreateModel();

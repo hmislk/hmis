@@ -219,7 +219,7 @@ public class PatientReportController implements Serializable {
         }
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
-                String sql = "select i from IxCal i where i.retired=false and i.calIxItem.id = " + priv.getInvestigationItem().getId();
+                String sql = "select i from IxCal i where (i.retired=false or i.retired is null) and i.calIxItem.id = " + priv.getInvestigationItem().getId();
                 List<IxCal> ixCals = getIxCalFacade().findBySQL(sql);
                 double result = 0;
                 //System.out.println("ixcals size is " + ixCals.size());
