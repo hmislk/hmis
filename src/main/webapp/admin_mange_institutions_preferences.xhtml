@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -14,12 +15,17 @@
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
                             <p:inputTextarea value="#{sessionController.institutionPreference.pharmacyBillFooter}" />
-                            
+
                             <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
-                            
+
+                            <h:outputLabel value="OPD Bill Paper" ></h:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.institutionPreference.opdBillPaperType}" >
+                                <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                            </p:selectOneMenu>
+
                             <p:commandButton ajax="false" value="Save" action="#{sessionController.updateUserPreferences()}" ></p:commandButton>
-                                
+
                         </h:panelGrid>
                     </p:panel>
                 </h:form>
