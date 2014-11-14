@@ -1209,7 +1209,7 @@ public class CommonReport implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+        sql = "SELECT sum(b.grnNetTotal) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false and "
                 + " b.billType=:btp and b.department=:d "
                 + " and b.paymentMethod=:pm "
