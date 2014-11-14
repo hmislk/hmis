@@ -10,6 +10,7 @@ import com.divudi.data.CalculationType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
@@ -47,6 +48,11 @@ public class EnumController implements Serializable {
         return DepartmentType.values();
     }
 
+    
+    public PaperType[] getPaperTypes(){
+        return PaperType.values();
+    }
+    
     public LeaveType[] getLeaveType() {
         LeaveType[] ltp = {LeaveType.Annual, LeaveType.AnnualHalf, LeaveType.Casual, LeaveType.CasualHalf,
             LeaveType.Lieu, LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical,
