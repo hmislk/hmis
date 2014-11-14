@@ -125,6 +125,7 @@ public class BillController implements Serializable {
     private double netTotal;
     private double cashPaid;
     private double cashBalance;
+    double cashRemain = cashPaid;
     private BillItem currentBillItem;
     //Bill Items
     private List<BillComponent> lstBillComponents;
@@ -144,6 +145,14 @@ public class BillController implements Serializable {
     private List<BillFee> lstBillFeesPrint;
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
+
+    public double getCashRemain() {
+        return cashRemain;
+    }
+
+    public void setCashRemain(double cashRemain) {
+        this.cashRemain = cashRemain;
+    }
 
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
@@ -514,6 +523,10 @@ public class BillController implements Serializable {
                 }
             }
 
+            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+                myBill.setCashPaid(cashPaid);
+            }
+
             getBillFacade().edit(myBill);
 
             getBillBean().calculateBillItems(myBill, tmp);
@@ -556,6 +569,10 @@ public class BillController implements Serializable {
 
             b.setBillItems(list);
 
+            if(getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()){
+                b.setCashPaid(cashPaid);
+            }
+            
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
             getBills().add(b);
@@ -972,6 +989,7 @@ public class BillController implements Serializable {
         getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
 
         calTotals();
+
         if (getCurrentBillItem().getNetValue() == 0.0) {
             UtilityController.addErrorMessage("Please enter the rate");
             return;
@@ -1118,6 +1136,27 @@ public class BillController implements Serializable {
         setDiscount(billDiscount);
         setTotal(billGross);
         setNetTotal(billNet);
+
+        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            System.out.println("cashPaid = " + cashPaid);
+            System.out.println("billNet = " + billNet);
+            if (cashPaid >= billNet) {
+                System.out.println("fully paid = ");
+                setDiscount(billDiscount);
+                setTotal(billGross);
+                setNetTotal(billNet);
+                setCashBalance(cashPaid - billNet);
+                System.out.println("cashBalance = " + cashBalance);
+            } else {
+                System.out.println("half paid = ");
+                setDiscount(billDiscount);
+                setTotal(billGross);
+                setNetTotal(cashPaid);
+                setCashBalance(billNet - cashPaid);
+                System.out.println("cashBalance = " + cashBalance);
+            }
+            cashRemain = cashPaid;
+        }
 
         //      //System.out.println("bill tot is " + billGross);
     }
