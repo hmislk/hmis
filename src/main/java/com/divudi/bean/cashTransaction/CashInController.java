@@ -145,7 +145,7 @@ public class CashInController implements Serializable {
 //        if (getBill().getFromWebUser() != null) {
 //            getCashTransactionBean().deductFromBallance(getBill().getFromWebUser().getDrawer(), dbl, ct);
 //        }
-        getCashTransactionBean().addToBallance(getSessionController().getLoggedUser().getDrawer(), ct);
+//        getCashTransactionBean().addToBallance(getSessionController().getLoggedUser().getDrawer(), ct);
 
         WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
         getSessionController().setLoggedUser(wb);
