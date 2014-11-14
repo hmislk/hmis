@@ -132,7 +132,7 @@ public class CashOutController implements Serializable {
         getBill().setCashTransaction(ct);
         getBillFacade().edit(getBill());
 
-        getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), ct);
+//        getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), ct);
 
         WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
         getSessionController().setLoggedUser(wb);
