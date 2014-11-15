@@ -137,7 +137,6 @@ public class BillController implements Serializable {
     String opdEncounterComments = "";
     int patientSearchTab = 0;
     String comment;
-    double cashRemain = cashPaid;
     double opdPaymentCredit;
     BilledBill opdBill;
 
@@ -1803,14 +1802,6 @@ public class BillController implements Serializable {
 
     public void setReferralId(String referralId) {
         this.referralId = referralId;
-    }
-
-    public double getCashRemain() {
-        return cashRemain;
-    }
-
-    public void setCashRemain(double cashRemain) {
-        this.cashRemain = cashRemain;
     }
 
     public double getOpdPaymentCredit() {
