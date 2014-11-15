@@ -146,7 +146,7 @@ public enum Privileges {
     TheaterTransferReport,
     TheaterReports,
     TheaterSummeries,
-    TheaterIssueBHT,
+    TheaterIssue,
     TheaterIssuePharmacy,
     TheaterIssueStore,
     TheaterIssueStoreBhtBilling,
