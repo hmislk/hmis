@@ -137,6 +137,9 @@ public class BillController implements Serializable {
     String opdEncounterComments = "";
     int patientSearchTab = 0;
     String comment;
+    double cashRemain = cashPaid;
+    double opdPaymentCredit;
+    BilledBill opdBill;
 
     //Print Last Bill
     Bill billPrint;
@@ -179,6 +182,56 @@ public class BillController implements Serializable {
     private PaymentMethodData paymentMethodData;
     @EJB
     private CashTransactionBean cashTransactionBean;
+    
+    public void saveBillOPDCredit() {
+        
+        BilledBill temp=new BilledBill();
+        
+        if (opdPaymentCredit==0) {
+            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            return;
+        }
+        if (opdPaymentCredit>opdBill.getBalance()) {
+            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            return;
+        }
+        
+        temp.setReferenceBill(opdBill);
+        temp.setTotal(opdPaymentCredit);
+        temp.setPaidAmount(opdPaymentCredit);
+        temp.setNetTotal(netTotal);
+        
+        opdBill.setBalance(opdBill.getBalance()-opdPaymentCredit);
+        getBillFacade().edit(opdBill);
+
+        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(),BillType.CashRecieveBill, BillClassType.BilledBill));
+        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), new BilledBill(), BillType.CashRecieveBill, BillNumberSuffix.NONE));
+        temp.setBillType(BillType.CashRecieveBill);
+
+        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        
+        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
+
+        temp.setComments(comment);
+
+        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+
+        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setPaymentMethod(paymentMethod);
+        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(temp);
+        
+        JsfUtil.addSuccessMessage("Paid");
+        opdBill=temp;
+        printPreview=true;
+        
+    }
 
     public BillNumberGenerator getBillNumberGenerator() {
         return billNumberGenerator;
@@ -1751,6 +1804,32 @@ public class BillController implements Serializable {
     public void setReferralId(String referralId) {
         this.referralId = referralId;
     }
+
+    public double getCashRemain() {
+        return cashRemain;
+    }
+
+    public void setCashRemain(double cashRemain) {
+        this.cashRemain = cashRemain;
+    }
+
+    public double getOpdPaymentCredit() {
+        return opdPaymentCredit;
+    }
+
+    public void setOpdPaymentCredit(double opdPaymentCredit) {
+        this.opdPaymentCredit = opdPaymentCredit;
+    }
+
+    public BilledBill getOpdBill() {
+        return opdBill;
+    }
+
+    public void setOpdBill(BilledBill opdBill) {
+        this.opdBill = opdBill;
+    }
+    
+    
 
     /**
      *
