@@ -13,7 +13,7 @@
 
 
     }
-
+    
     .posbillBreak{
         position: relative!important;  
         margin-top: -2cm!important;       
@@ -25,10 +25,10 @@
         /*        font:*/
         font-size: 11px!important; 
         /*        text-transform: uppercase!important;*/
-
         page-break-after:always!important;
+        
     }
-
+    
     .a4bill{
         page-break-after:always!important; 
         font-family: sans-serif!important; 
@@ -85,6 +85,22 @@
         font-size: 11px!important; 
         page-break-after:always!important;
         
+    }
+    
+    .posbillBreak{
+        position: relative!important;
+        
+        width:400px!important; 
+        
+        font-family: monospace!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 100%;
+        
+        font-size: 11px!important;
+        page-break-after:always!important;
+       
     }
     
     .a4bill{

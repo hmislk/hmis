@@ -123,8 +123,8 @@
 
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
-                            </h:outputLabel>
+<!--                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
+                            </h:outputLabel>-->
                         </td>
 
                     </tr>
@@ -173,7 +173,24 @@
                         </tr>
                     </h:panelGroup>
 
-
+                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Name" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"  >
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 10%" >
+                            </td>
+                            <td style="width: 15%" >
+                            </td>
+                            <td style="width: 30%" >
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
 
                     <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
