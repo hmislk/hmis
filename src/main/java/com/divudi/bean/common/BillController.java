@@ -180,30 +180,30 @@ public class BillController implements Serializable {
     private PaymentMethodData paymentMethodData;
     @EJB
     private CashTransactionBean cashTransactionBean;
-    
+
     public void saveBillOPDCredit() {
-        
-        BilledBill temp=new BilledBill();
-        
-        if (opdPaymentCredit==0) {
+
+        BilledBill temp = new BilledBill();
+
+        if (opdPaymentCredit == 0) {
             UtilityController.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
-        if (opdPaymentCredit>opdBill.getBalance()) {
+        if (opdPaymentCredit > opdBill.getBalance()) {
             UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
-        
+
         temp.setReferenceBill(opdBill);
         temp.setTotal(opdPaymentCredit);
         temp.setPaidAmount(opdPaymentCredit);
         temp.setNetTotal(netTotal);
-        
-        opdBill.setBalance(opdBill.getBalance()-opdPaymentCredit);
+
+        opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
         getBillFacade().edit(opdBill);
 
-        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(),BillType.CashRecieveBill, BillClassType.BilledBill));
-        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), new BilledBill(), BillType.CashRecieveBill, BillNumberSuffix.NONE));
+        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
+        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
         temp.setBillType(BillType.CashRecieveBill);
 
         temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -211,7 +211,7 @@ public class BillController implements Serializable {
 
         temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        
+
         temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
 
         temp.setComments(comment);
@@ -224,11 +224,11 @@ public class BillController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
         getFacade().create(temp);
-        
+
         JsfUtil.addSuccessMessage("Paid");
-        opdBill=temp;
-        printPreview=true;
-        
+        opdBill = temp;
+        printPreview = true;
+
     }
 
     public BillNumberGenerator getBillNumberGenerator() {
@@ -620,10 +620,10 @@ public class BillController implements Serializable {
 
             b.setBillItems(list);
 
-            if(getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()){
+            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(cashPaid);
             }
-            
+
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
             getBills().add(b);
@@ -1818,8 +1818,6 @@ public class BillController implements Serializable {
     public void setOpdBill(BilledBill opdBill) {
         this.opdBill = opdBill;
     }
-    
-    
 
     /**
      *
