@@ -11,22 +11,33 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Program Preferences" >
+                        <p:commandButton ajax="false" value="Save" action="#{sessionController.updateUserPreferences()}" ></p:commandButton>
 
                         <h:panelGrid columns="2" >
-                            <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
-                            <p:inputTextarea value="#{sessionController.institutionPreference.pharmacyBillFooter}" />
 
-                            <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
-                            <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
+                            <h:panelGrid columns="2" headerClass="Printing Preferences" >
+                                <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
+                                <p:inputTextarea value="#{sessionController.institutionPreference.pharmacyBillFooter}" />
 
-                            <h:outputLabel value="OPD Bill Paper" ></h:outputLabel>
-                            <p:selectOneMenu value="#{sessionController.institutionPreference.opdBillPaperType}" >
-                                <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
-                            </p:selectOneMenu>
+                                <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
 
-                            <p:commandButton ajax="false" value="Save" action="#{sessionController.updateUserPreferences()}" ></p:commandButton>
+
+
+                                <h:outputLabel value="OPD Bill Paper" ></h:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.institutionPreference.opdBillPaperType}" >
+                                    <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                                </p:selectOneMenu>
+                            </h:panelGrid>
+
+
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="Partial Payment of OPD Bills allowed" ></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.partialPaymentOfOpdBillsAllowed}" ></h:selectBooleanCheckbox>
+                            </h:panelGrid>
 
                         </h:panelGrid>
+
                     </p:panel>
                 </h:form>
             </ui:define>
