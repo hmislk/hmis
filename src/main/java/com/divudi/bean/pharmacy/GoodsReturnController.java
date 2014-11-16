@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -121,8 +122,8 @@ public class GoodsReturnController implements Serializable {
 //        getReturnBill().setToInstitution(getBill().getFromInstitution());
         getReturnBill().setToDepartment(getBill().getFromDepartment());
         getReturnBill().setFromInstitution(getBill().getToInstitution());
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReturnBill(), BillType.PharmacyGrnReturn, BillNumberSuffix.GRNRET));
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReturnBill(), BillType.PharmacyGrnReturn, BillNumberSuffix.GRNRET));
+        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnReturn, BillClassType.BilledBill, BillNumberSuffix.GRNRET));
+        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnReturn, BillClassType.BilledBill, BillNumberSuffix.GRNRET));
 
         getReturnBill().setInstitution(getSessionController().getInstitution());
         getReturnBill().setDepartment(getSessionController().getDepartment());

@@ -6,18 +6,15 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PharmacyItemData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
@@ -145,11 +142,8 @@ public class PreReturnController implements Serializable {
         getReturnBill().setDepartment(getSessionController().getDepartment());
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getInstitution(), new RefundBill(), BillType.PharmacyPre, BillNumberSuffix.PHRET));
-
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getDepartment(), new RefundBill(), BillType.PharmacyPre, BillNumberSuffix.PHRET));
+        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyPre, BillClassType.RefundBill, BillNumberSuffix.PHRET));
+        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyPre, BillClassType.RefundBill, BillNumberSuffix.PHRET));
 
         //   getReturnBill().setInsId(getBill().getInsId());
         if (getReturnBill().getId() == null) {

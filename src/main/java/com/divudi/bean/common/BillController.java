@@ -721,7 +721,7 @@ public class BillController implements Serializable {
         }
 
         //Department ID (DEPT ID)
-        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill);
+        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
         temp.setDeptId(deptId);
 
         if (temp.getId() == null) {
@@ -736,7 +736,7 @@ public class BillController implements Serializable {
     int recurseCount = 0;
 
     private String generateBillNumberInsId(Bill bill) {
-        String insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
+        String insId = getBillNumberGenerator().institutionBillNumberGenerator(bill.getInstitution(), bill.getToDepartment(), bill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        try {
 //            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        } catch (Exception e) {
@@ -751,7 +751,7 @@ public class BillController implements Serializable {
 
     private boolean checkPatientAgeSex() {
 
-        if (getPatientTabId().toString().equals("tabNewPt")) {
+        if (getPatientTabId().equals("tabNewPt")) {
 
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
                 UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");

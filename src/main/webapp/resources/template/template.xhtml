@@ -214,10 +214,11 @@
                                 </p:submenu>
 
                                 <p:submenu label="Theatre" rendered="#{webUserController.hasPrivilege('Theatre')}" >
-                                    <p:menuitem  ajax="false"  action="/inward/inward_bill_surgery"
+                                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery"
                                                  value="Add Surgeries"
+                                                 actionListener="#{surgeryBillController.makeNull}"
                                                  rendered="#{webUserController.hasPrivilege('TheatreAddSurgery')}" />
-                                    <p:menuitem  ajax="false"  action="/inward/inward_bill_surgery_service"
+                                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_service"
                                                  value="Add Service"
                                                  actionListener="#{billBhtController.makeNull()}"
                                                  rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
@@ -225,7 +226,7 @@
                                                  value="Add Timed Services" 
                                                  actionListener="#{inwardTimedItemController.makeNull}" 
                                                  rendered="#{webUserController.hasPrivilege('TheatreBilling')}"  ></p:menuitem> 
-                                    <p:menuitem  ajax="false"  action="/inward/inward_bill_surgery_professional" 
+                                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_professional" 
                                                  value="Add Professional Fee"
                                                  actionListener="#{inwardProfessionalBillController.makeNull()}"
                                                  rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
@@ -239,7 +240,7 @@
                                     
                                     
                                     <p:submenu label="BHT Issue" rendered="#{webUserController.hasPrivilege('TheaterIssue')}" >
-                                    <p:menuitem  ajax="false"  action="/inward/inward_bill_surgery_issue" 
+                                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue" 
                                                  value="Pharmacy BHT Issue"
                                                  actionListener="#{pharmacySaleBhtController.makeNull()}"
                                                  rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" />
