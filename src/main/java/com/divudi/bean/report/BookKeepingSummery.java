@@ -1719,6 +1719,10 @@ public class BookKeepingSummery implements Serializable {
         double admittionTypeTptal = 0.0;
         double totalProfessinal = 0.0;
 
+        if (objs == null) {
+            return;
+        }
+
         for (Object[] o : objs) {
             thisPro = new ProfessionalPaymentsByAdmissionTypeAndCategory();
             thisPro.setAdmissionType(o[0].toString());
