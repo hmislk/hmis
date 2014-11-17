@@ -128,8 +128,8 @@ public class InwardAdditionalChargeController implements Serializable {
         getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
-        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getCurrent(), BillClassType.BilledBill,BillNumberSuffix.NONE));
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getCurrent(),  BillClassType.BilledBill, BillNumberSuffix.INWSER));
+        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getCurrent().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getCurrent().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWSER));
 
         if (getCurrent().getId() == null) {
             getBilledBillFacade().create(getCurrent());

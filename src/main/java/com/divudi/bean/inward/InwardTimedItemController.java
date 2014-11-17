@@ -13,6 +13,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -165,7 +166,7 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void createTimeServiceList() {
-        
+
         String sql;
         HashMap m = new HashMap();
 
@@ -174,19 +175,19 @@ public class InwardTimedItemController implements Serializable {
                 + " and i.retired=false ";
 
         if (getCurrent().getItem() != null) {
-            
-            sql+=" and i.item=:item";
+
+            sql += " and i.item=:item";
             m.put("item", getCurrent().getItem());
         }
-        
+
         m.put("fd", frmDate);
         m.put("td", toDate);
-        
-        items=getPatientItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
-        total=0.0;
+
+        items = getPatientItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        total = 0.0;
         for (PatientItem pi : items) {
-            total+=pi.getServiceValue();
+            total += pi.getServiceValue();
         }
     }
 
@@ -366,9 +367,8 @@ public class InwardTimedItemController implements Serializable {
             bill.setDepartment(getSessionController().getDepartment());
             bill.setInstitution(getSessionController().getInstitution());
 
-            bill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getLoggedUser().getDepartment(), bill.getBillType(), billNumberSuffix));
-            bill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getLoggedUser().getInstitution(),
-                    bill, bill.getBillType(), billNumberSuffix));
+            bill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), bill.getBillType(), BillClassType.BilledBill, billNumberSuffix));
+            bill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), bill.getBillType(), BillClassType.BilledBill, billNumberSuffix));
 
             getBillFacade().create(bill);
         } else {
@@ -633,7 +633,7 @@ public class InwardTimedItemController implements Serializable {
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate =commonFunctions.getStartOfMonth(new Date());
+            frmDate = commonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }
