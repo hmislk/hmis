@@ -1695,6 +1695,7 @@ public class BookKeepingSummery implements Serializable {
                 + " FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
+                + " and b.bill.institution=:ins "
                 + " and (b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2 )"
                 + " and b.bill.createdAt between :fromDate and :toDate"
@@ -1706,6 +1707,7 @@ public class BookKeepingSummery implements Serializable {
         hm.put("refType2", BillType.InwardProfessional);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
+        hm.put("ins", institution);
         //   System.out.println("hm = " + hm);
         //   System.out.println("sql = " + sql);
         List<Object[]> objs = getBillFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
