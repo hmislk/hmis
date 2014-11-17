@@ -279,11 +279,11 @@
                                                      actionListener="#{searchController.makeListNull}"   
                                                      value="Return - Items Only" rendered="#{webUserController.hasPrivilege('TheaterIssueOpdSearchPreBillForReturnItemOnly')}"></p:menuitem>                                            
                                                                                                                            
-                                        <p:menuitem ajax="false" action="//pharmacy/pharmacy_search_return_bill_pre" actionListener="#{searchController.makeListNull}"  value="Search Opd Issue Return Bill (Item)" rendered="#{webUserController.hasPrivilege('TheaterIssueOpdSearchPreBillReturn')}" ></p:menuitem>
+                                        <p:menuitem ajax="false" action="/pharmacy/pharmacy_search_return_bill_pre" actionListener="#{searchController.makeListNull}"  value="Search Opd Issue Return Bill (Item)" rendered="#{webUserController.hasPrivilege('TheaterIssueOpdSearchPreBillReturn')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid" actionListener="#{searchController.makeListNull}"   value="Add To Stock" rendered="#{webUserController.hasPrivilege('TheaterIssueOpdSearchPreBillAddToStock')}" ></p:menuitem>
                                     </p:submenu>
 
-                                    <p:menuitem ajax="false" action="/inward/inward_search_surgery" value="Search"
+                                    <p:menuitem ajax="false" action="/theater/inward_search_surgery" value="Search"
                                                 actionListener="#{searchController.makeListNull}"
                                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
                                     

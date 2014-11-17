@@ -1644,7 +1644,7 @@ public class BookKeepingSummery implements Serializable {
         chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         /////////////////
-        inwardProfessionalPaymentTotal = getBillBean().calDoctorPaymentInward(fromDate, toDate);
+        inwardProfessionalPaymentTotal = getBillBean().calDoctorPaymentInward(fromDate, toDate, institution);
         creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
