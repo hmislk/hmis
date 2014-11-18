@@ -202,14 +202,14 @@ public class LabBillCollectingController implements Serializable {
             BilledBill myBill = new BilledBill();
             saveBill(d, myBill);
             bills.add(myBill);
-            List<BillItem> list=new ArrayList<>();
+            List<BillItem> list = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
                     //e.setBill(myBill);
-                    myBill.getBillItems().add(saveBillItem(myBill, e));                    
+                    myBill.getBillItems().add(saveBillItem(myBill, e));
                     calculateBillItem(myBill, e);
                 }
-                
+
                 billFacade.edit(myBill);
             }
             //set Bill Item Properties like bill TOtal, Discount
@@ -399,12 +399,12 @@ public class LabBillCollectingController implements Serializable {
 
         saveBillComponent(e, b);
         saveBillFee(e, b);
-        
+
         return e.getBillItem();
     }
 
     private List<BillItem> saveBillItems(Bill b) {
-     List<BillItem> billItems=new ArrayList<>();
+        List<BillItem> billItems = new ArrayList<>();
         for (BillEntry e : getLstBillEntries()) {
             // BillItem temBi = e.getBillItem();
             e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -415,7 +415,7 @@ public class LabBillCollectingController implements Serializable {
 
             saveBillComponent(e, b);
             saveBillFee(e, b);
-            
+
             billItems.add(e.getBillItem());
         }
         return billItems;
@@ -464,8 +464,8 @@ public class LabBillCollectingController implements Serializable {
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, bt, BillClassType.BilledBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, bt, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE));
+        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp.getInstitution(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE));
         if (temp.getId() == null) {
             getFacade().create(temp);
         }

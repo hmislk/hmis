@@ -22,7 +22,6 @@
                                          action="#{surgeryBillController.makeNull}" onclick="onSubmitButton();"/>
                         <p:commandButton value="Save Surgery Detail" ajax="false" 
                                          action="#{surgeryBillController.save()}" 
-                                         styleClass="highLight"
                                          disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
 
 

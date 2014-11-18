@@ -4,6 +4,7 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -146,10 +147,9 @@ public class PharmacyBean {
 
         double netUpdate = updatableQty1 + qty;
 
-        System.err.println("2 Qty " + qty);
-        System.err.println("3 Stock " + fetchedStock.getStock());
-        System.err.println("4 Net Update Qty " + netUpdate);
-
+//        System.err.println("2 Qty " + qty);
+//        System.err.println("3 Stock " + fetchedStock.getStock());
+//        System.err.println("4 Net Update Qty " + netUpdate);
         if (netUpdate > fetchedStock.getStock()) {
             System.err.println("FALSE");
             return false;
@@ -263,7 +263,7 @@ public class PharmacyBean {
         hm.put("frm", fromDepartment);
         hm.put("to", toDepartment);
         IssueRateMargins m = issueRateMarginsFacade.findFirstBySQL(sql, hm);
-        if(m==null){
+        if (m == null) {
             m = new IssueRateMargins();
             m.setCreatedAt(new Date());
             m.setFromDepartment(fromDepartment);
@@ -283,8 +283,8 @@ public class PharmacyBean {
         newPre.invertQty();
         newPre.copy(bill);
         newPre.setBilledBill(bill);
-        newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill, bill.getBillType(), billNumberSuffix));
-        newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill, bill.getBillType(), billNumberSuffix));
+        newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
+        newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
         newPre.setDepartment(department);
         newPre.setInstitution(department.getInstitution());
         newPre.invertValue(bill);
@@ -304,8 +304,8 @@ public class PharmacyBean {
         newPre.invertQty();
         newPre.copy(bill);
         newPre.setBilledBill(bill);
-        newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill, bill.getBillType(), billNumberSuffix));
-        newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill, bill.getBillType(), billNumberSuffix));
+        newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
+        newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
         newPre.setDepartment(department);
         newPre.setInstitution(department.getInstitution());
         newPre.invertValue(bill);
@@ -631,7 +631,7 @@ public class PharmacyBean {
         hm.put("dep", department);
         Stock s = getStockFacade().findFirstBySQL(sql, hm);
 //        //System.err.println("ss" + s);
-        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType()== DepartmentType.Inventry ) {
+        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
             s = new Stock();
             s.setDepartment(department);
             s.setCode(pharmaceuticalBillItem.getCode());

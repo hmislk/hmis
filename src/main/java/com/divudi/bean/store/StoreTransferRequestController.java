@@ -7,6 +7,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -170,8 +171,8 @@ public class StoreTransferRequestController implements Serializable {
 
         saveBill();
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.StoreTransferRequest, BillNumberSuffix.STTRQ));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.StoreTransferRequest, BillNumberSuffix.STTRQ));
+        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreTransferRequest, BillClassType.BilledBill, BillNumberSuffix.STTRQ));
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StoreTransferRequest, BillClassType.BilledBill, BillNumberSuffix.STTRQ));
 
         getBill().setCreater(getSessionController().getLoggedUser());
         getBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -188,22 +189,20 @@ public class StoreTransferRequestController implements Serializable {
             getBillItemFacade().create(b);
 
             getPharmaceuticalBillItemFacade().create(tmpPh);
-            
-            
+
             b.setPharmaceuticalBillItem(tmpPh);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
             getBillItemFacade().edit(b);
-            
 
             getBill().getBillItems().add(b);
         }
-        
+
         getBillFacade().edit(getBill());
 
         UtilityController.addSuccessMessage("Transfer Request Succesfully Created");
 
         printPreview = true;
-        
+
     }
 
     public void remove(BillItem billItem) {
