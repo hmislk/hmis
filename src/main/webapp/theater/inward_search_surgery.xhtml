@@ -56,7 +56,7 @@
                             rowsPerPageTemplate="5,10,15"
                             >
                             <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="inward_bill_surgery" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="View Bill" action="/theater/inward_bill_surgery" onclick="onSubmitButton();" >
                                     <f:setPropertyActionListener value="#{bb}" target="#{surgeryBillController.batchBill}"/>
                                 </p:commandButton>
                             </p:column>

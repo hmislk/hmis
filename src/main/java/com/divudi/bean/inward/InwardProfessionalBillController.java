@@ -15,6 +15,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -85,7 +86,7 @@ public class InwardProfessionalBillController implements Serializable {
     @Inject
     private BillBeanController billBean;
     @EJB
-    BillNumberGenerator billNumberBean;    
+    BillNumberGenerator billNumberBean;
     @EJB
     CommonFunctions commonFunctions;
     //////////////////    
@@ -118,18 +119,18 @@ public class InwardProfessionalBillController implements Serializable {
     public List<Staff> completeItems(String qry) {
         HashMap hm = new HashMap();
         String sql;
-        sql= "select c from Staff c "
+        sql = "select c from Staff c "
                 + " where c.retired=false ";
 
         if (getProEncounterComponent() != null && getProEncounterComponent().getBillFee() != null && getProEncounterComponent().getBillFee().getSpeciality() != null) {
             sql += " and c.speciality=:sp";
             hm.put("sp", getProEncounterComponent().getBillFee().getSpeciality());
-            System.err.println("SSS "+getProEncounterComponent().getBillFee().getSpeciality());
+            System.err.println("SSS " + getProEncounterComponent().getBillFee().getSpeciality());
         }
         sql += " and (upper(c.person.name) like :q "
                 + " or upper(c.code) like :q )"
                 + " order by c.person.name";
-        
+
         hm.put("q", "%" + qry.toUpperCase() + "%");
         List<Staff> s = getStaffFacade().findBySQL(sql, hm, 20);
         System.out.println("s = " + s);
@@ -268,9 +269,8 @@ public class InwardProfessionalBillController implements Serializable {
             bill.setDepartment(getSessionController().getDepartment());
             bill.setInstitution(getSessionController().getInstitution());
 
-            bill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getLoggedUser().getDepartment(), bill.getBillType(), billNumberSuffix));
-            bill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getLoggedUser().getInstitution(),
-                    bill, bill.getBillType(), billNumberSuffix));
+            bill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), bill.getBillType(), BillClassType.BilledBill, billNumberSuffix));
+            bill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), bill.getBillType(), BillClassType.BilledBill, billNumberSuffix));
 
             getEjbFacade().create(bill);
         } else {
@@ -646,8 +646,8 @@ public class InwardProfessionalBillController implements Serializable {
     private void saveBill() {
         if (getCurrent().getId() == null) {
 
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getLoggedUser().getDepartment(), getCurrent().getBillType(), BillNumberSuffix.INWPRO));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getLoggedUser().getInstitution(), getCurrent(), getCurrent().getBillType(), BillNumberSuffix.INWPRO));
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPRO));
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPRO));
 
             /////////
             getCurrent().setPatientEncounter(getCurrent().getPatientEncounter());

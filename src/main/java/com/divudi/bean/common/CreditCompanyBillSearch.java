@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -248,8 +249,8 @@ public class CreditCompanyBillSearch implements Serializable {
         cb.copy(getBill());
         cb.invertValue(getBill());
 
-        cb.setDeptId(getBillNumberBean().departmentCancelledBill(getSessionController().getDepartment(), BillType.CashRecieveBill, BillNumberSuffix.CRDCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb, BillType.CashRecieveBill, BillNumberSuffix.CRDCAN));
+        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
 
         cb.setBilledBill(getBill());
         cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
