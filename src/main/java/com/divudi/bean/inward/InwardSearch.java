@@ -762,6 +762,7 @@ public class InwardSearch implements Serializable {
 //                return;
 //            }
             if (checkBathcReferenceBill()) {
+                UtilityController.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
                 return;
             }
 
