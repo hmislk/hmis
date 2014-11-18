@@ -68,7 +68,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import org.eclipse.persistence.jpa.jpql.tools.ContentAssistProposals;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -553,12 +552,51 @@ public class BillPackageMedicalController implements Serializable {
         }
     }
 
+    public void createBills() {
+        String sql;
+        Map m = new HashMap();
+        sql = "select bill from Bill bill"
+                + " where bill.billType =:billType "
+                + " and bill.createdAt between :fromDate and :toDate "
+                + " and bill.retired=false ";
+
+        if (getServiceItem() != null) {
+            sql += " and bill.billPackege=:item ";
+            m.put("item", getServiceItem());
+        }
+
+        if (institution != null) {
+            sql += " and bill.creditCompany=:ins ";
+            m.put("ins", institution);
+        }
+
+        m.put("billType", BillType.OpdBill);
+        m.put("toDate", toDate);
+        m.put("fromDate", frmDate);
+
+        bills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+
+        if (bills == null) {
+            return;
+        }
+
+        for (Bill bi : bills) {
+            total += bi.getNetTotal();
+        }
+    }
+
     public void createMedicalPackageBillItems() {
         createBillItems(new MedicalPackage());
     }
 
     public void createOtherPackageBillItems() {
         createBillItems(new Packege());
+    }
+
+    public void createOtherPackageBills() {
+        createBills();
     }
 
     public void clearBillItemValues() {
