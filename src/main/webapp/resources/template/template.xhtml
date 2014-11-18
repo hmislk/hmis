@@ -237,7 +237,7 @@
                                                  value="Add Timed Services" 
                                                  actionListener="#{inwardTimedItemController.makeNull}" 
                                                  rendered="#{webUserController.hasPrivilege('TheatreBilling')}"  ></p:menuitem> 
-                                    <p:submenu> 
+                                    <p:submenu label="Professional"> 
                                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_professional" 
                                                      value="Add Professional Fee"
                                                      actionListener="#{inwardProfessionalBillController.makeNull()}"
@@ -268,7 +268,8 @@
                                             <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht" actionListener="#{searchController.makeListNull}" 
                                                         value="Search Issue Return Bill" 
                                                         rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" ></p:menuitem>
-                                            <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht" actionListener="#{searchController.makeListNull}" 
+                                            <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht" 
+                                                        actionListener="#{searchController.makeListNull}" 
                                                         value="Search Issue Return Bill Items" 
                                                         rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" ></p:menuitem>
                                         </p:submenu>
