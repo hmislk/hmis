@@ -5,6 +5,8 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.ItemFeeManager;
+import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -79,6 +81,9 @@ public class InwardReportController1 implements Serializable {
     List<BillItem> billItemGeneralIssuing;
     List<Bill> paidbyPatient;
 
+    List<ItemRateRow> itemRateRows;
+    List<Item> items;
+    
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -120,6 +125,49 @@ public class InwardReportController1 implements Serializable {
 
     public InwardReportController1() {
     }
+    
+    @Inject
+    PriceMatrixController priceMatrixController;
+    
+    public void processForItemsWithInwardMatrix(){
+        items = new ArrayList<>();
+        itemRateRows = new ArrayList<>();
+    }
+    
+    public void calculateItemForInwardMatrix(){
+        for (Item i:items){
+            ItemRateRow irr = new ItemRateRow(i, priceMatrixController.getItemWithInwardMargin(i));
+            itemRateRows.add(irr);
+        }
+        items = new ArrayList<>();
+    }
+
+    public void listItems(){
+        items = new ArrayList<>();
+        itemRateRows = new ArrayList<>();
+    }
+    
+    public List<ItemRateRow> getItemRateRows() {
+        return itemRateRows;
+    }
+
+    public void setItemRateRows(List<ItemRateRow> itemRateRows) {
+        this.itemRateRows = itemRateRows;
+    }
+
+    public List<Item> getItems() {
+        if(items==null){
+            items = new ArrayList<>();
+        }
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
+    }
+
+  
+    
 
     public Double[] fetchRoomValues() {
         HashMap hm = new HashMap();
@@ -2598,4 +2646,35 @@ public class InwardReportController1 implements Serializable {
 
     }
 
+    
+    public class ItemRateRow{
+        Item item;
+        double rate;
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public double getRate() {
+            return rate;
+        }
+
+        public void setRate(double rate) {
+            this.rate = rate;
+        }
+
+        public ItemRateRow() {
+        }
+
+        public ItemRateRow(Item item, double rate) {
+            this.item = item;
+            this.rate = rate;
+        }
+
+        
+    }
 }
