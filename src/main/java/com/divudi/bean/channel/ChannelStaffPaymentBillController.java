@@ -2,6 +2,7 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -12,7 +13,6 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
-import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -137,12 +136,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
         speciality = null;
         serviceSessions = null;
     }
-    
-    
+
     public void makenull() {
         billFees = null;
         billItems = null;
-        printPreview = false;        
+        printPreview = false;
         selectedItems = null;
         items = null;
         dueBillFeeReport = null;
@@ -188,7 +186,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         List<Staff> suggestions;
         String sql;
         if (query == null) {
-            suggestions = new ArrayList<Staff>();
+            suggestions = new ArrayList<>();
         } else {
             if (speciality != null) {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
@@ -392,8 +390,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getDepartment());
 
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getLoggedUser().getDepartment(), BillType.ChannelProPayment, BillNumberSuffix.CHNPROPAY));
-        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), tmp, BillType.ChannelProPayment, BillNumberSuffix.CHNPROPAY));
+        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
+        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
 
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);

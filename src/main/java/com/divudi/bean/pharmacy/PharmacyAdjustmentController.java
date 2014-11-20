@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -219,8 +220,8 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getDeptAdjustmentPreBill(), BillType.PharmacyAdjustment, BillNumberSuffix.NONE));
-        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getDeptAdjustmentPreBill(), BillType.PharmacyAdjustment, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustment);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -376,8 +377,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
 
-    
-     private void saveExDateAdjustmentBillItems() {
+    private void saveExDateAdjustmentBillItems() {
         billItem = null;
         BillItem tbi = getBillItem();
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
@@ -418,7 +418,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
-    
+
     private boolean errorCheck() {
         if (getStock() == null) {
             UtilityController.addErrorMessage("Please Select Stocke");
@@ -471,7 +471,7 @@ public class PharmacyAdjustmentController implements Serializable {
 //        clearBillItem();
         printPreview = true;
     }
-    
+
     public void adjustRetailRate() {
         saveDeptAdjustmentBill();
         saveRsrAdjustmentBillItems();
@@ -498,7 +498,7 @@ public class PharmacyAdjustmentController implements Serializable {
         rsr = null;
         wsr = null;
         stock = null;
-        
+
     }
 
     public SessionController getSessionController() {
@@ -592,8 +592,6 @@ public class PharmacyAdjustmentController implements Serializable {
     public void setExDate(Date exDate) {
         this.exDate = exDate;
     }
-    
-    
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;

@@ -25,9 +25,8 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.IssueRateMargins;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
 import com.divudi.entity.Service;
+import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TimedItem;
 import com.divudi.entity.lab.Investigation;
@@ -58,6 +57,7 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
+import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.facade.StoreItemCategoryFacade;
@@ -654,6 +654,56 @@ public class PharmacyItemExcelManager implements Serializable {
             pharmacyItem.setRetirer(getSessionController().getLoggedUser());
             getItemFacade().edit(pharmacyItem);
         }
+    }
+    
+    public void updateCancelGRN(){
+//        CancelledBill b=new CancelledBill();
+//        b.getNetTotal();
+//        b.getGrnNetTotal();
+//        b.getBillType();
+        
+        List<Bill>bills;
+        bills=new ArrayList<>();
+        
+        String sql;
+        Map m=new HashMap();
+        
+        sql=" select b from CancelledBill b where "
+                + " b.billType=:bt ";
+        
+        m.put("bt", BillType.StoreGrnBill);
+        
+        bills=getBillFacade().findBySQL(sql, m);
+        System.out.println("Bills = " + bills);
+        for (Bill b : bills) {
+            System.out.println("1. b.getGrnNetTotal() = " + b.getGrnNetTotal());
+            System.out.println("1. b.getNetTotal() = " + b.getNetTotal());
+            b.setGrnNetTotal(b.getNetTotal());
+            getBillFacade().edit(b);
+            System.out.println("2. b.getGrnNetTotal() = " + b.getGrnNetTotal());
+            System.out.println("2. b.getNetTotal() = " + b.getNetTotal());
+        }
+        
+    }
+
+    @EJB
+    StaffShiftFacade staffShiftFacade;
+
+    public void updateStaffShiftWithRoster() {
+        String sql = "select StaffShift s"
+                + "  where s.retired=false"
+                + "  and s.staff is not null "
+                + " and s.roster is null";
+        List<StaffShift> list = staffShiftFacade.findBySQL(sql);
+        if (list == null) {
+            return;
+        }
+
+        for (StaffShift stf : list) {
+            stf.setRoster(stf.getStaff().getRoster());
+            staffShiftFacade.edit(stf);
+        }
+
     }
 
     @EJB

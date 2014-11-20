@@ -19,6 +19,7 @@ import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.data.BillClassType;
 import com.divudi.ejb.PharmacyBean;
 
 import com.divudi.entity.Bill;
@@ -435,8 +436,8 @@ public class PharmacySaleBhtController implements Serializable {
 
     private void savePreBillFinally(Patient pt, Department matrixDepartment, BillType billType, BillNumberSuffix billNumberSuffix) {
         getPreBill().setBillType(billType);
-        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getPreBill(), billType, billNumberSuffix));
-        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getPreBill(), billType, billNumberSuffix));
+        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.PreBill, billNumberSuffix));
+        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.PreBill, billNumberSuffix));
 
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());

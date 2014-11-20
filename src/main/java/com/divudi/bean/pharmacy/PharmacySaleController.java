@@ -18,6 +18,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.memberShip.MembershipSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -481,8 +482,8 @@ public class PharmacySaleController implements Serializable {
         clearBillItem();
         billPreview = false;
     }
-    
-    public String pharmacyRetailSale(){
+
+    public String pharmacyRetailSale() {
         return "/pharmacy/pharmacy_bill_retail_sale";
     }
 
@@ -949,6 +950,7 @@ public class PharmacySaleController implements Serializable {
         getPreBill().setCreater(getSessionController().getLoggedUser());
 
         getPreBill().setPatient(pt);
+        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt));
         getPreBill().setToStaff(toStaff);
         getPreBill().setToInstitution(toInstitution);
 
@@ -963,12 +965,9 @@ public class PharmacySaleController implements Serializable {
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
-        //        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getInstitution(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
-        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setInsId(insId);
-
-//        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getDepartment(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
-        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setDeptId(deptId);
 
         if (getPreBill().getId() == null) {
@@ -1452,6 +1451,8 @@ public class PharmacySaleController implements Serializable {
 
     @Inject
     PriceMatrixController priceMatrixController;
+    @Inject
+    MembershipSchemeController membershipSchemeController;
 
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
@@ -1488,12 +1489,7 @@ public class PharmacySaleController implements Serializable {
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
-        MembershipScheme membershipScheme = null;
-
-        if (getSearchedPatient() != null
-                && getSearchedPatient().getPerson() != null) {
-            membershipScheme = getSearchedPatient().getPerson().getMembershipScheme();
-        }
+        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient());
 
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {

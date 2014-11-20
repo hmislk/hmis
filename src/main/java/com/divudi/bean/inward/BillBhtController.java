@@ -394,8 +394,8 @@ public class BillBhtController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
 
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.INWSER));
+        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill));
+        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWSER));
 
         if (temp.getId() == null) {
             getFacade().create(temp);

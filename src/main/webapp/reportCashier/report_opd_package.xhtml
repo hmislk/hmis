@@ -25,7 +25,11 @@
                         
                     </p:panel>
                     <p:panel>
-                        <p:autoComplete widgetVar="aIx1" id="acIx1" value="#{billPackageMedicalController.currentBillItem.item}" completeMethod="#{itemController.completePackage}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 200px;">
+                        <p:autoComplete widgetVar="aIx1" id="acIx1" 
+                                        value="#{billPackageMedicalController.currentBillItem.item}"
+                                        completeMethod="#{itemController.completePackage}" var="ix"
+                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30" 
+                                        style="width: 200px;">
                             <p:column>
                                 #{ix.name}
                             </p:column>

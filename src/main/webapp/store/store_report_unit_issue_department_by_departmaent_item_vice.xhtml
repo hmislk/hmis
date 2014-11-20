@@ -16,7 +16,7 @@
 
                     <p:panel header="Unit Issue Report" styleClass="noBorder summeryBorder" >
 
-                        <h:panelGrid columns="6" >
+                        <h:panelGrid columns="10" >
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
@@ -27,14 +27,17 @@
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{storeReportsTransfer.toDepartment}" converter="dep" >
                             </p:autoComplete>
-
-                            <h:outputLabel value="From" ></h:outputLabel>
+                            
+                        
+                            <h:outputLabel value="From" />
                             <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
+                            
+                            <p:spacer width="30"/>
+                            <h:outputLabel value="To" />
                             <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                         </h:panelGrid>
 
-                        <p:panelGrid columns="3">
+                        <h:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentTransfersIssueByBillItem}" />
 
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -42,7 +45,7 @@
                             </p:commandButton>
 
                            
-                        </p:panelGrid>
+                        </h:panelGrid>
 
 
                         <h:panelGroup id="gpBillPreview">
@@ -103,22 +106,22 @@
                                             </p:column>
                                         </p:subTable>
 
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="Department Total" ></h:outputLabel>
+                                        <f:facet name="footer" >
+                                            <h:outputLabel value="Department Total" />
                                             <h:outputText value="#{i.bill.netTotal}" style="float: right;" >
-                                                <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </f:facet>
-
+                                      
                                     </p:dataTable>
 
                                 </p:column>
 
 
                                 <f:facet name="footer" >
-                                    <h:outputLabel value="All Department Total" ></h:outputLabel>
+                                    <h:outputLabel value="All Department Total" ></h:outputLabel>/
                                     <h:outputLabel value="#{storeReportsTransfer.purchaseValue}" style="float: right;" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber> 
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
 

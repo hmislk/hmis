@@ -6,9 +6,11 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.BillType;
+import com.divudi.data.CalculationType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
@@ -46,6 +48,11 @@ public class EnumController implements Serializable {
         return DepartmentType.values();
     }
 
+    
+    public PaperType[] getPaperTypes(){
+        return PaperType.values();
+    }
+    
     public LeaveType[] getLeaveType() {
         LeaveType[] ltp = {LeaveType.Annual, LeaveType.AnnualHalf, LeaveType.Casual, LeaveType.CasualHalf,
             LeaveType.Lieu, LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical,
@@ -86,6 +93,10 @@ public class EnumController implements Serializable {
 
     }
 
+    public CalculationType[] getCalculationTypes(){
+        return CalculationType.values();
+    }
+    
     public PaysheetComponentType[] getDiductionComponentTypes() {
         return PaysheetComponentType.subtraction.children();
 
