@@ -7,6 +7,7 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -104,8 +105,8 @@ public class CashOutController implements Serializable {
         getBill().setInstitution(getSessionController().getInstitution());
         getBill().setFromWebUser(getSessionController().getLoggedUser());
 
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), getBill().getBillType(), BillNumberSuffix.CSOUT));
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), getBill().getBillType(), BillNumberSuffix.CSOUT));
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.BilledBill, BillNumberSuffix.CSOUT));
+        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.BilledBill, BillNumberSuffix.CSOUT));
 
         getBillFacade().create(getBill());
 
@@ -132,8 +133,7 @@ public class CashOutController implements Serializable {
         getBill().setCashTransaction(ct);
         getBillFacade().edit(getBill());
 
-        getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), ct);
-
+//        getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), ct);
         WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
         getSessionController().setLoggedUser(wb);
 

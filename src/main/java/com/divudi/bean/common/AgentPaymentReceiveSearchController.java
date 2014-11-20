@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -187,8 +188,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             cb.copy(getBill());
             cb.invertValue(getBill());
 
-            cb.setDeptId(getBillNumberBean().departmentCancelledBill(getSessionController().getDepartment(), BillType.AgentPaymentReceiveBill, BillNumberSuffix.AGNCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb, BillType.AgentPaymentReceiveBill, BillNumberSuffix.AGNCAN));
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.AgentPaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.AGNCAN));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.AgentPaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.AGNCAN));
 
         }
 

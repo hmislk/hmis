@@ -7,6 +7,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.StockQty;
@@ -67,7 +68,7 @@ public class StoreTransferIssueController implements Serializable {
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
-    private CommonFunctions commonFunctions;   
+    private CommonFunctions commonFunctions;
     private List<BillItem> billItems;
     UserStockContainer userStockContainer;
 
@@ -272,8 +273,8 @@ public class StoreTransferIssueController implements Serializable {
             getIssuedBill().getBillItems().add(i);
         }
 
-        getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill(), BillType.StoreTransferIssue, BillNumberSuffix.STTI));
-        getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getIssuedBill(), BillType.StoreTransferIssue, BillNumberSuffix.STTI));
+        getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreTransferIssue, BillClassType.BilledBill, BillNumberSuffix.STTI));
+        getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StoreTransferIssue, BillClassType.BilledBill, BillNumberSuffix.STTI));
 
         getIssuedBill().setInstitution(getSessionController().getInstitution());
         getIssuedBill().setDepartment(getSessionController().getDepartment());
@@ -458,8 +459,6 @@ public class StoreTransferIssueController implements Serializable {
     public void setPharmacyController(PharmacyController pharmacyController) {
         this.pharmacyController = pharmacyController;
     }
-
-   
 
     public List<BillItem> getBillItems() {
         if (billItems == null) {

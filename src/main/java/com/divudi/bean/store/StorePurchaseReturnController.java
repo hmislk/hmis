@@ -7,6 +7,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.PharmacyItemData;
@@ -23,7 +24,6 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -139,8 +139,8 @@ public class StorePurchaseReturnController implements Serializable {
         getReturnBill().setToInstitution(getBill().getFromInstitution());
         getReturnBill().setToDepartment(getBill().getFromDepartment());
         getReturnBill().setFromInstitution(getBill().getToInstitution());
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReturnBill(), BillType.StorePurchaseReturn, BillNumberSuffix.PURRET));
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReturnBill(), BillType.StorePurchaseReturn, BillNumberSuffix.PURRET));
+        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StorePurchaseReturn, BillClassType.BilledBill, BillNumberSuffix.PURRET));
+        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StorePurchaseReturn, BillClassType.BilledBill, BillNumberSuffix.PURRET));
 
         getReturnBill().setInstitution(getSessionController().getInstitution());
         getReturnBill().setDepartment(getSessionController().getDepartment());

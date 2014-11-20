@@ -356,7 +356,7 @@ public class BillBeanController implements Serializable {
                 + " FROM Bill bf"
                 + " WHERE bf.institution=:ins "
                 + " and bf.toInstitution!=:ins "
-                  + " and bf.billType=:bt "
+                + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -495,8 +495,8 @@ public class BillBeanController implements Serializable {
         String sql = "Select sum(b.netValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
-                + " and b.bill.institution=:ins"
-                + " and b.bill.billType=:bType "
+                + " and b.bill.billType=:bType"
+                + " and b.bill.institution=:ins "
                 + " and (b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2) "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -1666,7 +1666,7 @@ public class BillBeanController implements Serializable {
         return dbl;
     }
 
-      public Double[] fetchBillFeeValues(Bill b) {
+    public Double[] fetchBillFeeValues(Bill b) {
         String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue) "
                 + " from BillFee bf where "
                 + " bf.retired=false "
@@ -1688,7 +1688,6 @@ public class BillBeanController implements Serializable {
         return dbl;
     }
 
-    
     public void setPaymentMethodData(Bill b, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
 
         if (paymentMethod.equals(PaymentMethod.Cheque)) {

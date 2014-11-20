@@ -408,7 +408,7 @@ public class CashRecieveBillController implements Serializable {
 
     private void saveBill(BillType billType) {
 
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent(), billType, BillNumberSuffix.CRDPAY));
+        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, BillNumberSuffix.CRDPAY));
 
         getCurrent().setBillType(billType);
 
@@ -498,7 +498,7 @@ public class CashRecieveBillController implements Serializable {
     private Bill saveBhtPaymentBill(BillItem b) {
         Bill tmp = new BilledBill();
 
-        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), tmp, tmp.getBillType(), BillNumberSuffix.INWPAY));
+        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), tmp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
 
         tmp.setBillType(BillType.InwardPaymentBill);
         tmp.setPatientEncounter(b.getPatientEncounter());
@@ -511,8 +511,8 @@ public class CashRecieveBillController implements Serializable {
         tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
 
-        getBillNumberBean().departmentBillNumberGenerator(tmp, BillClassType.BilledBill,BillNumberSuffix.NONE);
-        getBillNumberBean().institutionBillNumberGenerator(tmp,BillClassType.BilledBill, BillNumberSuffix.INWPAY);
+//        getBillNumberBean().departmentBillNumberGenerator(tmp, BillClassType.BilledBill, BillNumberSuffix.NONE);
+//        getBillNumberBean().institutionBillNumberGenerator(tmp, BillClassType.BilledBill, BillNumberSuffix.INWPAY);
 
         getBillFacade().create(tmp);
 
