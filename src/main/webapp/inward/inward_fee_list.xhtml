@@ -14,7 +14,7 @@
                 <h:form>
 
                     <p:commandButton value="Process" action="#{inwardReportController1.processForItemsWithInwardMatrix}" ajax="false" ></p:commandButton>
-                    <p:commandButton value="Calculate Inward Prices" ajax="false" action="#" ></p:commandButton>
+                    <p:commandButton value="Calculate Inward Prices"  ajax="false" action="#{inwardReportController1.calculateItemForInwardMatrix}" ></p:commandButton>
 
                     <p:panelGrid columns="2" >
 
@@ -26,7 +26,7 @@
                                      rowsPerPageTemplate="5,10,15"
                                      >
                             <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
-                            
+
                             <p:column >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Category" >
@@ -47,27 +47,27 @@
                         </p:dataTable>
 
 
-                        <p:dataTable value="#{inwardReportController1.listItems()}" var="item" 
-                                     rowKey="#{i.id}"
+                        <p:dataTable value="#{inwardReportController1.itemRateRows}" var="item" 
+                                     rowKey="#{item.item.id}"
                                      rows="10"
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15">
-                            
+
                             <p:column >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Name" >
                                     </p:outputLabel>
                                 </f:facet>
-                                <p:outputLabel value="#{i.name}" >
+                                <p:outputLabel value="#{item.item.name}" >
                                 </p:outputLabel>                        
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Fee" >
+                                    <p:outputLabel value="Margin Rate" >
                                     </p:outputLabel>
                                 </f:facet>
-                                <p:outputLabel value="#{priceMatrixController.getItemWithInwardMargin(i)}" >
+                                <p:outputLabel value="#{item.rate}" >
                                     <f:convertNumber pattern="#,###0.00" ></f:convertNumber>
                                 </p:outputLabel>                        
                             </p:column>
