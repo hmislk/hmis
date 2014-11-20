@@ -134,15 +134,22 @@ public class InwardReportController1 implements Serializable {
         itemRateRows = new ArrayList<>();
     }
 
-    public void calculateItemForInwardMatrix() {
+//    public void calculateItemForInwardMatrix() {
+//        if (items == null) {
+//            return;
+//        }
+//        for (Item i : items) {
+//            ItemRateRow irr = new ItemRateRow(i, priceMatrixController.getItemWithInwardMargin(i));
+//            itemRateRows.add(irr);
+//        }
+////        items = new ArrayList<>();
+//    }
+    public double fetchItemForInwardMatrix(Item item) {
         if (items == null) {
-            return;
+            return 0;
         }
-        for (Item i : items) {
-            ItemRateRow irr = new ItemRateRow(i, priceMatrixController.getItemWithInwardMargin(i));
-            itemRateRows.add(irr);
-        }
-//        items = new ArrayList<>();
+        return priceMatrixController.getItemWithInwardMargin(item);
+
     }
 
     public void listItems() {
