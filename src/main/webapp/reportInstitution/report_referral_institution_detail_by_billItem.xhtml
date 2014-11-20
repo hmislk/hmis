@@ -54,7 +54,7 @@
                     </h:panelGrid>
 
 
-                    <p:dataTable id="billed"  value="#{commonReport.referralBills}" var="b" 
+                    <p:dataTable id="billed"  value="#{commonReport.referralBillItems}" var="b" 
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20" >
@@ -73,28 +73,28 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Institution"/>
                             </f:facet> 
-                            <h:outputLabel value="#{b.billedBill.referredByInstitution.name}"/>
+                            <h:outputLabel value="#{b.bill.referredByInstitution.name}"/>
                         </p:column>
                         
                         <p:column headerText="Referral ID" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Referral Number"/>
                             </f:facet> 
-                            <h:outputLabel value="#{b.billedBill.referralNumber}"/>
+                            <h:outputLabel value="#{b.bill.referralNumber}"/>
                         </p:column>
 
                         <p:column >
                             <f:facet name="header">  
                                 <h:outputLabel value="Billed At"/>
                             </f:facet> 
-                            <h:outputLabel value="#{b.billedBill.createdAt}"/>
+                            <h:outputLabel value="#{b.bill.createdAt}"/>
                         </p:column>
 
                         <p:column >
                             <f:facet name="header">  
                                 <h:outputLabel value="Total"/>
                             </f:facet> 
-                            <h:outputLabel value="#{b.billedBill.total}"/>
+                            <h:outputLabel value="#{b.bill.total}"/>
                         </p:column>
 
                     </p:dataTable>
