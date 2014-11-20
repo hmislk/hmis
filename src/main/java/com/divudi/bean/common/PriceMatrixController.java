@@ -67,28 +67,32 @@ public class PriceMatrixController implements Serializable {
 
     }
 
-    
-    
     public double getItemWithInwardMargin(Item item) {
+        if (item == null) {
+            return 0.0;
+        }
+
         PriceMatrix inwardPriceAdjustment;
+
         Category category;
         if (item instanceof Investigation) {
             category = ((Investigation) item).getInvestigationCategory();
         } else {
             category = item.getCategory();
         }
+        if (category == null) {
+            return item.getTotal();
+        }
         inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category);
-        if (inwardPriceAdjustment == null && category != null) {
+        if (inwardPriceAdjustment == null ) {
             inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category.getParentCategory());
         }
         if (inwardPriceAdjustment == null) {
             return item.getTotal();
         }
-        return item.getTotal()*(inwardPriceAdjustment.getMargin()+100)/100;
+        return item.getTotal() * (inwardPriceAdjustment.getMargin() + 100) / 100;
     }
 
-    
-    
     public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category) {
         String sql = "select a from InwardPriceAdjustment a "
                 + " where a.retired=false"
