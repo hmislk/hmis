@@ -83,7 +83,7 @@ public class InwardReportController1 implements Serializable {
 
     List<ItemRateRow> itemRateRows;
     List<Item> items;
-    
+
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -125,28 +125,38 @@ public class InwardReportController1 implements Serializable {
 
     public InwardReportController1() {
     }
-    
+
     @Inject
     PriceMatrixController priceMatrixController;
-    
-    public void processForItemsWithInwardMatrix(){
+
+    public void processForItemsWithInwardMatrix() {
         items = new ArrayList<>();
         itemRateRows = new ArrayList<>();
-    }
-    
-    public void calculateItemForInwardMatrix(){
-        for (Item i:items){
-            ItemRateRow irr = new ItemRateRow(i, priceMatrixController.getItemWithInwardMargin(i));
-            itemRateRows.add(irr);
-        }
-        items = new ArrayList<>();
     }
 
-    public void listItems(){
+//    public void calculateItemForInwardMatrix() {
+//        if (items == null) {
+//            return;
+//        }
+//        for (Item i : items) {
+//            ItemRateRow irr = new ItemRateRow(i, priceMatrixController.getItemWithInwardMargin(i));
+//            itemRateRows.add(irr);
+//        }
+////        items = new ArrayList<>();
+//    }
+    public double fetchItemForInwardMatrix(Item item) {
+        if (items == null) {
+            return 0;
+        }
+        return priceMatrixController.getItemWithInwardMargin(item);
+
+    }
+
+    public void listItems() {
         items = new ArrayList<>();
         itemRateRows = new ArrayList<>();
     }
-    
+
     public List<ItemRateRow> getItemRateRows() {
         return itemRateRows;
     }
@@ -156,7 +166,7 @@ public class InwardReportController1 implements Serializable {
     }
 
     public List<Item> getItems() {
-        if(items==null){
+        if (items == null) {
             items = new ArrayList<>();
         }
         return items;
@@ -165,9 +175,6 @@ public class InwardReportController1 implements Serializable {
     public void setItems(List<Item> items) {
         this.items = items;
     }
-
-  
-    
 
     public Double[] fetchRoomValues() {
         HashMap hm = new HashMap();
@@ -2646,8 +2653,8 @@ public class InwardReportController1 implements Serializable {
 
     }
 
-    
-    public class ItemRateRow{
+    public class ItemRateRow {
+
         Item item;
         double rate;
 
@@ -2675,6 +2682,5 @@ public class InwardReportController1 implements Serializable {
             this.rate = rate;
         }
 
-        
     }
 }
