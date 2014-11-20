@@ -5,7 +5,6 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -18,12 +17,12 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.RefundBill;
+import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
@@ -145,16 +144,40 @@ public class InwardReportController1 implements Serializable {
 ////        items = new ArrayList<>();
 //    }
     public double fetchItemForInwardMatrix(Item item) {
-        if (items == null) {
+        if (items == null || department == null) {
             return 0;
         }
-        return priceMatrixController.getItemWithInwardMargin(item);
+        PriceMatrix pm = priceMatrixController.fetchInwardMargin(item, item.getTotal(), department);
+
+        if (pm == null) {
+            return 0;
+        }
+
+        return (item.getTotal() * pm.getMargin()) / 100;
 
     }
 
     public void listItems() {
         items = new ArrayList<>();
         itemRateRows = new ArrayList<>();
+    }
+
+    Department department;
+
+    public PriceMatrixController getPriceMatrixController() {
+        return priceMatrixController;
+    }
+
+    public void setPriceMatrixController(PriceMatrixController priceMatrixController) {
+        this.priceMatrixController = priceMatrixController;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public List<ItemRateRow> getItemRateRows() {
