@@ -31,14 +31,14 @@
                                     </h:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <h:commandButton id="btnAdd" value="Add"  action="#{membershipSchemeController.prepareAdd()}" styleClass="buttons" >
+                                    <p:commandButton id="btnAdd" value="Add"  action="#{membershipSchemeController.prepareAdd()}" styleClass="buttons" >
                                         <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect gpDetail detailFocus" execute="@this" >
                                         </f:ajax>
-                                    </h:commandButton>
+                                    </p:commandButton>
                                     
-                                    <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                    <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                 return false;" action="#{membershipSchemeController.delete()}"  value="Delete"  >
-                                    </h:commandButton>
+                                    </p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
                         </h:panelGrid  >
@@ -50,10 +50,10 @@
                                     <h:inputText autocomplete="off" id="txtName" value="#{membershipSchemeController.current.name}"  ></h:inputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <h:commandButton id="btnSave" value="Save"  action="#{membershipSchemeController.saveSelected()}" styleClass="buttons">
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail">
+                                    <p:commandButton id="btnSave" value="Save"  action="#{membershipSchemeController.saveSelected()}" styleClass="buttons">
+                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" event="click">
                                         </f:ajax>
-                                    </h:commandButton>
+                                    </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
                                 </h:panelGrid>
                             </h:panelGrid>
