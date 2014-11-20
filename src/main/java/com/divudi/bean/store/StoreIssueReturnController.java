@@ -12,6 +12,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.data.BillClassType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
@@ -155,11 +156,8 @@ public class StoreIssueReturnController implements Serializable {
         getReturnBill().setDepartment(getSessionController().getDepartment());
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getInstitution(), new RefundBill(), BillType.StoreIssue, BillNumberSuffix.PHISSRET));
-
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(
-                getSessionController().getDepartment(), new RefundBill(), BillType.StoreIssue, BillNumberSuffix.PHISSRET));
+        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StoreIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
+        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
 
         //   getReturnBill().setInsId(getBill().getInsId());
         if (getReturnBill().getId() == null) {
@@ -397,7 +395,7 @@ public class StoreIssueReturnController implements Serializable {
     public void setStoreBean(StoreBean storeBean) {
         this.storeBean = storeBean;
     }
-    
+
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }

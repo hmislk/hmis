@@ -288,6 +288,8 @@ public class ServiceController implements Serializable {
 //        if (getServiceSubCategoryController().getParentCategory() != null) {
 //            getCurrent().setCategory(getServiceSubCategoryController().getParentCategory());
 //        }
+        System.out.println("getCurrent().getId() = " + getCurrent());
+        System.out.println("getCurrent().getId() = " + getCurrent().getId());
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             //System.out.println("1");
             if (billedAs == false) {

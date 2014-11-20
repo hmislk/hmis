@@ -57,7 +57,7 @@ public class UserPreference implements Serializable {
 
     public PaperType getOpdBillPaperType() {
         if(opdBillPaperType==null){
-            opdBillPaperType = PaperType.FiveFivePaper;
+            opdBillPaperType = PaperType.PosPaper;
         }
         return opdBillPaperType;
     }

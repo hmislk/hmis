@@ -90,5 +90,13 @@ public enum BillNumberSuffix {
     ISSCAN,//Department Issue Cancel
     STTRQ,//transper request
     STTI,//transfer issue
-    STTR,//transfer Recive
+    STTR,;//transfer Recive
+
+    public String getSuffix() {
+        if (this == BillNumberSuffix.NONE) {
+            return "";
+        } else {
+            return this.toString();
+        }
+    }
 }

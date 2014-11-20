@@ -19,6 +19,7 @@ import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.data.BillClassType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -56,35 +57,50 @@ import javax.enterprise.context.SessionScoped;
 ;
 import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.event.SelectEvent;import javax.inject.Inject;
+import org.primefaces.event.SelectEvent;
+import javax.inject.Inject;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
@@ -156,7 +172,6 @@ public class StoreSaleBhtController implements Serializable {
         patientEncounter = getBatchBill().getPatientEncounter();
     }
 
-   
     public void makeNull() {
         selectedAlternative = null;
         preBill = null;
@@ -320,7 +335,7 @@ public class StoreSaleBhtController implements Serializable {
         getStoreBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
-        patientEncounter=null;
+        patientEncounter = null;
         billPreview = false;
 
     }
@@ -436,8 +451,8 @@ public class StoreSaleBhtController implements Serializable {
 
     private void savePreBillFinally(Patient pt, Department currentBhtDepartment, BillType billType, BillNumberSuffix billNumberSuffix) {
         getPreBill().setBillType(billType);
-        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getPreBill(), billType, billNumberSuffix));
-        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getPreBill(), billType, billNumberSuffix));
+        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.PreBill, billNumberSuffix));
+        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.PreBill, billNumberSuffix));
 
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -575,8 +590,7 @@ public class StoreSaleBhtController implements Serializable {
     public void setPriceMatrixController(PriceMatrixController priceMatrixController) {
         this.priceMatrixController = priceMatrixController;
     }
-    
-    
+
     public void updateFee(List<BillItem> billItems) {
         double total = 0;
         double netTotal = 0;
@@ -620,7 +634,6 @@ public class StoreSaleBhtController implements Serializable {
         getBillFacade().edit(getPreBill());
 
     }
-    
 
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {

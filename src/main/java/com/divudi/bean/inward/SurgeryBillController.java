@@ -8,6 +8,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.DepartmentBillItems;
@@ -245,8 +246,8 @@ public class SurgeryBillController implements Serializable {
 
     private void saveBatchBill() {
         if (getBatchBill().getId() == null) {
-            getBatchBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getLoggedUser().getDepartment(), BillType.SurgeryBill, BillNumberSuffix.SURG));
-            getBatchBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getLoggedUser().getInstitution(), getBatchBill(), BillType.SurgeryBill, BillNumberSuffix.SURG));
+            getBatchBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.SurgeryBill, BillClassType.BilledBill, BillNumberSuffix.SURG));
+            getBatchBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.SurgeryBill, BillClassType.BilledBill, BillNumberSuffix.SURG));
 
             getBatchBill().setInstitution(getSessionController().getInstitution());
             getBatchBill().setDepartment(getSessionController().getDepartment());
@@ -270,9 +271,8 @@ public class SurgeryBillController implements Serializable {
             bill.setDepartment(getSessionController().getDepartment());
             bill.setInstitution(getSessionController().getInstitution());
 
-            bill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getLoggedUser().getDepartment(), bill.getBillType(), billNumberSuffix));
-            bill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getLoggedUser().getInstitution(),
-                    bill, bill.getBillType(), billNumberSuffix));
+            bill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), bill.getBillType(), BillClassType.BilledBill, billNumberSuffix));
+            bill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), bill.getBillType(), BillClassType.BilledBill, billNumberSuffix));
 
             getBillFacade().create(bill);
         } else {

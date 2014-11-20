@@ -8,6 +8,7 @@ import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.BillItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -54,7 +55,7 @@ public class StorePurchaseController implements Serializable {
     private SessionController sessionController;
     private BilledBill bill;
     @EJB
-    private BillFacade billFacade;   
+    private BillFacade billFacade;
     @EJB
     StoreBean storeBean;
     @EJB
@@ -65,9 +66,7 @@ public class StorePurchaseController implements Serializable {
     private AmpFacade ampFacade;
     @EJB
     StockFacade stockFacade;
-    
-    
-    
+
     @Inject
     StoreCalculation storeCalculation;
     @Inject
@@ -490,8 +489,8 @@ public class StorePurchaseController implements Serializable {
 
     public void saveBill() {
 
-        getBill().setDeptId(billNumberGenerator.institutionBillNumberGenerator(getSessionController().getDepartment(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
-        getBill().setInsId(billNumberGenerator.institutionBillNumberGenerator(getSessionController().getInstitution(), getBill(), BillType.StorePurchase, BillNumberSuffix.PHPUR));
+        getBill().setDeptId(billNumberGenerator.institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StorePurchase, BillClassType.BilledBill, BillNumberSuffix.PHPUR));
+        getBill().setInsId(billNumberGenerator.institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StorePurchase, BillClassType.BilledBill, BillNumberSuffix.PHPUR));
 
         getBill().setInstitution(getSessionController().getInstitution());
         getBill().setDepartment(getSessionController().getDepartment());
@@ -581,8 +580,6 @@ public class StorePurchaseController implements Serializable {
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
     }
-
-   
 
     public SessionController getSessionController() {
         return sessionController;
@@ -726,8 +723,6 @@ public class StorePurchaseController implements Serializable {
         this.billNumberGenerator = billNumberGenerator;
     }
 
-  
-
     public StockFacade getStockFacade() {
         return stockFacade;
     }
@@ -739,7 +734,5 @@ public class StorePurchaseController implements Serializable {
     public CommonFunctions getCommonFunctions() {
         return commonFunctions;
     }
-
-
 
 }
