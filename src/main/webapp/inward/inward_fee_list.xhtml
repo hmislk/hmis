@@ -15,6 +15,17 @@
 
                     <p:commandButton value="Reset" action="#{inwardReportController1.processForItemsWithInwardMatrix}" ajax="false" ></p:commandButton>
                     <p:commandButton value="Calculate Inward Prices" ajax="false" action="#" ></p:commandButton>
+                    <p:autoComplete value="#{inwardReportController1.department}" 
+                                    forceSelection="true"
+                                    completeMethod="#{departmentController.completeDept}" 
+                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
+                        <p:column>
+                            <h:outputLabel value="#{dep.name}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{dep.institution.name}"/>
+                        </p:column>
+                    </p:autoComplete>
 
                     <p:panelGrid columns="2" styleClass="alignTop" >
 
@@ -26,7 +37,7 @@
                                      rowsPerPageTemplate="5,10,15"
                                      >
                             <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
-                            
+
                             <p:column filterBy="#{item.category.name}">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Category" >
@@ -35,7 +46,7 @@
                                 <p:outputLabel value="#{item.category.name}" >
                                 </p:outputLabel>                        
                             </p:column>
-                             <p:column filterBy="#{item.department.name}" >
+                            <p:column filterBy="#{item.department.name}" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Department" >
                                     </p:outputLabel>
@@ -70,7 +81,7 @@
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15">
-                            
+
                             <p:column >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Name" >
