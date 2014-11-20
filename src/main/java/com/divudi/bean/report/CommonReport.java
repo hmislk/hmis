@@ -2163,6 +2163,31 @@ public class CommonReport implements Serializable {
         referralBills = getBillFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    
+    public void fillInstitutionReferralBillItems() {
+        
+        String jpql;
+        Map m = new HashMap();
+
+        jpql = "select bi from BillItem bi "
+                + "where bi.retired=false ";
+
+        if (referenceInstitution != null) {
+            jpql += "and bi.bill.referredByInstitution=:refIns ";
+            m.put("refIns", institution);
+        } else {
+            jpql += " and bi.bill.referredByInstitution is not null ";
+        }
+
+        jpql += "and bi.bill.createdAt between :fd and :td "
+                + " order by bi.id";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        referralBills = getBillFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+
+    }
+    
 
     public void recreteModal() {
         collectingIns = null;
