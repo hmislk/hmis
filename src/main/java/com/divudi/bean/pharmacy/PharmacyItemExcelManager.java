@@ -660,7 +660,7 @@ public class PharmacyItemExcelManager implements Serializable {
     StaffShiftFacade staffShiftFacade;
 
     public void updateStaffShiftWithRoster() {
-        String sql = "select StaffShift s"
+        String sql = "select s from StaffShift s"
                 + "  where s.retired=false"
                 + "  and s.staff is not null "
                 + " and s.roster is null";
