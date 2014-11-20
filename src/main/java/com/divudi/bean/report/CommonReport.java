@@ -2171,14 +2171,14 @@ public class CommonReport implements Serializable {
         Map m = new HashMap();
 
         jpql = "select bi from BillItem bi "
-                + "where bi.retired=false ";
+                + "where bi.retired=false "
+                + " and bi.bill.referredByInstitution is not null ";
 
         if (referenceInstitution != null) {
             jpql += "and bi.bill.referredByInstitution=:refIns ";
             m.put("refIns", institution);
-        } else {
-            jpql += " and bi.bill.referredByInstitution is not null ";
-        }
+        }      
+       
 
         jpql += "and bi.bill.createdAt between :fd and :td "
                 + " order by bi.id";
