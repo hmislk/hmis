@@ -54,6 +54,11 @@
                                              value="Remove Store Item" 
                                              action="#{pharmacyItemExcelManager.removeStoreItem()}" onclick="onSubmitButton();" />
                         </p:panel>
+                        <p:panel header="HR">
+                            <p:commandButton styleClass="linkButton" ajax="false"
+                                             value="Set Roster To Staff Shift" 
+                                             action="#{pharmacyItemExcelManager.updateStaffShiftWithRoster()}" onclick="onSubmitButton();" />
+                        </p:panel>
 
 
                     </h:panelGrid>

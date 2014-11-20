@@ -677,6 +677,7 @@ public class StaffShift implements Serializable {
     }
 
     public void copy(StaffShift staffShift) {
+        this.setRoster(staffShift.getRoster());
         this.setDayOff(staffShift.isDayOff());
         this.setShift(staffShift.getShift());
         this.setEndRecord(staffShift.getEndRecord());
