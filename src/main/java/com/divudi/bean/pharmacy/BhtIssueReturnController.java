@@ -17,6 +17,7 @@ import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
+import com.divudi.entity.Item;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -222,6 +223,7 @@ public class BhtIssueReturnController implements Serializable {
         getBillItemFacade().edit(bi);
     }
 
+    
     public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment) {
         double total = 0;
         double netTotal = 0;

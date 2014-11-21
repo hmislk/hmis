@@ -170,6 +170,11 @@ public class StoreGrnController implements Serializable {
 
     public String errorCheck(Bill b, List<BillItem> billItems) {
         String msg = "";
+        
+        for(BillItem bi : billItems){
+            if(bi.getPharmaceuticalBillItem().getPurchaseRate() > bi.getPharmaceuticalBillItem().getRetailRate())
+           msg = "Check Purchase Rate and Retail Rate"; 
+        }
 
         if (b.getInvoiceNumber() == null || "".equals(b.getInvoiceNumber().trim())) {
             msg = "Please Fill invoice number";
