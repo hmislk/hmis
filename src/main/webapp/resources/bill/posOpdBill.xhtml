@@ -312,14 +312,9 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
                         <tr>
                             <td style="width: 45% ;text-align: left;" colspan="3">
-                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name} (PVT)LTD" ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" ></h:outputLabel>
                             </td>
-                            <!--                            <td>:</td>
-                                                        <td style="width: 30%;" >
-                                                            <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"  >
-                                                            </h:outputLabel>
-                                                        </td>-->
-                            <td style="width: 10%" >
+                           <td style="width: 10%" >
                             </td>
                             <td style="width: 15%" >
                             </td>
@@ -364,18 +359,14 @@
                         </td>
                     </tr>
 
+                    
+                    
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
 
                         <tr>
                             <td colspan="4" style="overflow: visible;">
-<!--                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize;" >
-                                </h:outputLabel>-->
-                                <!--                                -
-                                &nbsp;-->
-                                <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                                <h:outputLabel value="#{bip.item.printName}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
-
-
                             </td>
                         </tr>
                         <tr>
