@@ -678,7 +678,7 @@ public class PharmacyItemExcelManager implements Serializable {
         for (Bill b : bills) {
             System.out.println("1. b.getGrnNetTotal() = " + b.getGrnNetTotal());
             System.out.println("1. b.getNetTotal() = " + b.getNetTotal());
-            b.setGrnNetTotal(b.getNetTotal());
+            b.setGrnNetTotal(0-b.getBilledBill().getGrnNetTotal());
             getBillFacade().edit(b);
             System.out.println("2. b.getGrnNetTotal() = " + b.getGrnNetTotal());
             System.out.println("2. b.getNetTotal() = " + b.getNetTotal());
