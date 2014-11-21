@@ -489,6 +489,10 @@ public class Bill implements Serializable {
         return total;
     }
 
+    public double getTransSaleBillTotalMinusDiscount(){
+        return total - discount ;
+    }
+    
     public void setTotal(double total) {
         this.total = total;
     }
