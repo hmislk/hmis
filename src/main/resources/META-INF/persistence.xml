@@ -3,7 +3,6 @@
   <persistence-unit name="hmisPU" transaction-type="JTA">
     <jta-data-source>dsRu</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
-    <properties>
-        </properties>
+    <properties/>
   </persistence-unit>
 </persistence>
