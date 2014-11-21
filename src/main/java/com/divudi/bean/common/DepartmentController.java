@@ -312,8 +312,9 @@ public class DepartmentController implements Serializable {
                 Department o = (Department) object;
                 return getStringKey(o.getId());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
+                System.out.println("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + DepartmentController.class.getName());
+                return "";
             }
         }
     }

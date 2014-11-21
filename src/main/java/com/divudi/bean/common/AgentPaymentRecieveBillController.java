@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -79,7 +80,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
             return true;
         }
 
-
         if (getCurrent().getPaymentMethod() == null) {
             return true;
         }
@@ -92,7 +92,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
     }
 
     private void saveBill(BillType billType) {
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent(), billType, BillNumberSuffix.AGNPAY));
+        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, BillNumberSuffix.AGNPAY));
         getCurrent().setBillType(billType);
 
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -105,7 +105,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
         getCurrent().setNetTotal(getCurrent().getNetTotal());
-        
+
         current.setComments(comment);
 
         if (getCurrent().getId() == null) {
@@ -135,8 +135,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
-    
 
     public void settleBill() {
         addToBill();
@@ -181,7 +179,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         patientEncounter = null;
         paymentMethodData = null;
         billItems = null;
-        comment=null;
+        comment = null;
 
     }
 

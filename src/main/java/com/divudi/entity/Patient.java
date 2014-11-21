@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
@@ -70,6 +71,28 @@ public class Patient implements Serializable {
     int ageDays;
     @Transient
     int ageYears;
+    @Temporal(TemporalType.TIMESTAMP)
+    Date fromDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    Date toDate;
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+    
+    
 
     public String getCode() {
         return code;

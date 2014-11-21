@@ -20,9 +20,8 @@ import javax.persistence.OneToOne;
 public class CancelledBill extends Bill implements Serializable {
 
     public CancelledBill() {
-        billClassType=BillClassType.CancelledBill;
+        billClassType = BillClassType.CancelledBill;
+        qty = 0 - 1;
     }
-  
-    
-  
+
 }

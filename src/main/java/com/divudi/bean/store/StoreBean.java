@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.store;
 
+import com.divudi.data.BillClassType;
 import com.divudi.ejb.*;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -63,9 +64,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -268,10 +266,11 @@ public class StoreBean {
 
     private Bill createPreBill(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
         Bill newPre = new PreBill();
+        newPre.invertQty();
         newPre.copy(bill);
         newPre.setBilledBill(bill);
-        newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill, bill.getBillType(), billNumberSuffix));
-        newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill, bill.getBillType(), billNumberSuffix));
+        newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
+        newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
         newPre.setDepartment(department);
         newPre.setInstitution(department.getInstitution());
         newPre.invertValue(bill);
@@ -288,10 +287,11 @@ public class StoreBean {
 
     private Bill createPreBillForIssueCancel(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
         Bill newPre = new PreBill();
+        newPre.invertQty();
         newPre.copy(bill);
         newPre.setBilledBill(bill);
-        newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill, bill.getBillType(), billNumberSuffix));
-        newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill, bill.getBillType(), billNumberSuffix));
+        newPre.setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
+        newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
         newPre.setDepartment(department);
         newPre.setInstitution(department.getInstitution());
         newPre.invertValue(bill);
@@ -371,6 +371,7 @@ public class StoreBean {
         }
 
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
+
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
         System.err.println("LIST " + list.size());
 
@@ -764,7 +765,7 @@ public class StoreBean {
             s.setItemBatch(batch);
         }
         s.setStock(s.getStock() - qty);
-                double number = s.getStock();
+        double number = s.getStock();
         number = Math.round(number * 1000);
         number = number / 1000;
         s.setStock(number);
@@ -864,7 +865,7 @@ public class StoreBean {
 
         //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
-                double number = stock.getStock();
+        double number = stock.getStock();
         number = Math.round(number * 1000);
         number = number / 1000;
         stock.setStock(number);
@@ -893,7 +894,7 @@ public class StoreBean {
 
         //System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
-                double number = stock.getStock();
+        double number = stock.getStock();
         number = Math.round(number * 1000);
         number = number / 1000;
         stock.setStock(number);

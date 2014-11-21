@@ -23,7 +23,7 @@
                                     <h:outputLabel value="Search "/>
                                     <p:autoComplete  id="lstSelect1"   size="10" value="#{storeAmpController.current}" 
                                                      forceSelection="true"
-                                                     style="min-width: 223px" completeMethod="#{itemController.completeStoreItem}" 
+                                                     style="min-width: 223px" completeMethod="#{itemController.completeStoreItemOnly}" 
                                                      var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                         <p:column headerText="Item">
                                             <h:outputLabel value="#{myItem.name}" ></h:outputLabel>

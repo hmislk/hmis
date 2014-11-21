@@ -27,6 +27,8 @@
                         <f:selectItems value="#{mdReportController.paymentMethods}"/>
                         <f:ajax event="change"   listener="#{mdReportController.makeBillNull}"/>
                     </p:selectOneMenu>
+                    
+                    <h:panelGrid columns="4">
 
                     <p:commandButton id="btnRefresh" ajax="false" value="Refresh" style="float: right;"/>
                     <p:defaultCommand target="btnRefresh"/>
@@ -37,6 +39,7 @@
                                      facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
                                      fontName="Courier New"  />
                     </p:commandButton>
+                    </h:panelGrid>
 
                 </h:panelGrid>   
 

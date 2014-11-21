@@ -7,6 +7,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -51,8 +52,6 @@ public class IntrimPrintController implements Serializable {
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
-    
-    
 
     public SessionController getSessionController() {
         return sessionController;
@@ -110,10 +109,9 @@ public class IntrimPrintController implements Serializable {
 
         List<BillItem> list = getCurrentBill().getBillItems();
         getCurrentBill().setBillItems(null);
-        
-        
-        getCurrentBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardIntrimBill, BillNumberSuffix.INWINTRIM));
-        getCurrentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(),getCurrentBill(), BillType.InwardIntrimBill, BillNumberSuffix.INWINTRIM));
+
+        getCurrentBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardIntrimBill, BillClassType.BilledBill, BillNumberSuffix.INWINTRIM));
+        getCurrentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardIntrimBill, BillClassType.BilledBill, BillNumberSuffix.INWINTRIM));
         getCurrentBill().setDepartment(getSessionController().getDepartment());
         getCurrentBill().setInstitution(getSessionController().getInstitution());
         getCurrentBill().setCreatedAt(new Date());

@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -247,8 +248,8 @@ public class PettyCashBillSearch implements Serializable {
 
             cb.setBilledBill(getBill());
 
-            cb.setDeptId(getBillNumberBean().departmentCancelledBill(getSessionController().getDepartment(), BillType.PettyCash, BillNumberSuffix.PTYCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb, BillType.PettyCash, BillNumberSuffix.PTYCAN));
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PettyCash, BillClassType.CancelledBill, BillNumberSuffix.PTYCAN));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PettyCash, BillClassType.CancelledBill, BillNumberSuffix.PTYCAN));
 
         }
 

@@ -356,7 +356,7 @@ public class BillBeanController implements Serializable {
                 + " FROM Bill bf"
                 + " WHERE bf.institution=:ins "
                 + " and bf.toInstitution!=:ins "
-                  + " and bf.billType=:bt "
+                + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -491,11 +491,12 @@ public class BillBeanController implements Serializable {
 //
 //    }
 //    
-    public double calDoctorPaymentInward(Date fromDate, Date toDate) {
+    public double calDoctorPaymentInward(Date fromDate, Date toDate, Institution institution) {
         String sql = "Select sum(b.netValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
-                + " and b.bill.billType=:bType "
+                + " and b.bill.billType=:bType"
+                + " and b.bill.institution=:ins "
                 + " and (b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2) "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -506,6 +507,7 @@ public class BillBeanController implements Serializable {
         hm.put("refType2", BillType.InwardProfessional);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
+        hm.put("ins", institution);
 
         return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
@@ -1124,13 +1126,11 @@ public class BillBeanController implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select bf.toDepartment,sum(bf.netTotal) "
+        sql = "select sum(bf.netTotal) "
                 + " FROM Bill bf "
                 + " where bf.department=:ins "
                 + " and  bf.billType= :bTp  "
-                + " and  bf.createdAt between :fromDate and :toDate "
-                + " group by bf.toDepartment"
-                + " order by bf.toDepartment.name  ";
+                + " and  bf.createdAt between :fromDate and :toDate ";
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("ins", department);
@@ -1666,7 +1666,7 @@ public class BillBeanController implements Serializable {
         return dbl;
     }
 
-      public Double[] fetchBillFeeValues(Bill b) {
+    public Double[] fetchBillFeeValues(Bill b) {
         String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue) "
                 + " from BillFee bf where "
                 + " bf.retired=false "
@@ -1688,7 +1688,6 @@ public class BillBeanController implements Serializable {
         return dbl;
     }
 
-    
     public void setPaymentMethodData(Bill b, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
 
         if (paymentMethod.equals(PaymentMethod.Cheque)) {

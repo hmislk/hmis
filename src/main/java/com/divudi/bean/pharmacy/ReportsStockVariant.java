@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -187,8 +188,8 @@ public class ReportsStockVariant implements Serializable {
         getRecordedBill().setTotal(systemStockValue);
         getRecordedBill().setCategory(getCategory());
         getRecordedBill().setCreater(getSessionController().getLoggedUser());
-        getRecordedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, getRecordedBill(), BillType.PharmacyMajorAdjustment, BillNumberSuffix.MJADJ));
-        getRecordedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(department, getRecordedBill(), BillType.PharmacyMajorAdjustment, BillNumberSuffix.MJADJ));
+        getRecordedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, BillType.PharmacyMajorAdjustment, BillClassType.BilledBill, BillNumberSuffix.MJADJ));
+        getRecordedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), BillType.PharmacyMajorAdjustment, BillClassType.BilledBill, BillNumberSuffix.MJADJ));
 
         if (getRecordedBill().getId() == null) {
             getBillFacade().create(getRecordedBill());
@@ -218,8 +219,8 @@ public class ReportsStockVariant implements Serializable {
         getRecordedBillAfter().setTotal(systemStockValue);
         getRecordedBillAfter().setNetTotal(systemStockValueAfter);
         getRecordedBillAfter().setCreater(getSessionController().getLoggedUser());
-        getRecordedBillAfter().setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, getRecordedBillAfter(), BillType.PharmacyMajorAdjustment, BillNumberSuffix.MJADJ));
-        getRecordedBillAfter().setInsId(getBillNumberBean().institutionBillNumberGenerator(department, getRecordedBillAfter(), BillType.PharmacyMajorAdjustment, BillNumberSuffix.MJADJ));
+        getRecordedBillAfter().setDeptId(getBillNumberBean().institutionBillNumberGenerator(department, BillType.PharmacyMajorAdjustment, BillClassType.BilledBill, BillNumberSuffix.MJADJ));
+        getRecordedBillAfter().setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), BillType.PharmacyMajorAdjustment, BillClassType.BilledBill, BillNumberSuffix.MJADJ));
         getRecordedBillAfter().setBackwardReferenceBill(getRecordedBill());
 
         if (getRecordedBillAfter().getId() == null) {

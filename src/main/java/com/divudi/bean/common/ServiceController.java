@@ -67,10 +67,13 @@ public class ServiceController implements Serializable {
     @EJB
     private CategoryFacade categoryFacade;
     List<Service> selectedItems;
+    List<Service> selectedRetiredItems;
     private Service current;
+    Service currentInactiveService;    
     private List<Service> items = null;
     private List<Service> filterItem;
     String selectText = "";
+    String selectRetiredText = "";
     String bulkText = "";
     boolean billedAs;
     boolean reportedAs;
@@ -94,6 +97,31 @@ public class ServiceController implements Serializable {
             getFacade().edit(s);
         }
     }
+
+    public List<Service> getSelectedRetiredItems() {
+        return selectedRetiredItems;
+    }
+
+    public void setSelectedRetiredItems(List<Service> selectedRetiredItems) {
+        this.selectedRetiredItems = selectedRetiredItems;
+    }
+
+    public String getSelectRetiredText() {
+        return selectRetiredText;
+    }
+
+    public void setSelectRetiredText(String selectRetiredText) {
+        this.selectRetiredText = selectRetiredText;
+    }
+
+    public Service getCurrentInactiveService() {
+        return currentInactiveService;
+    }
+
+    public void setCurrentInactiveService(Service currentInactiveService) {
+        this.currentInactiveService = currentInactiveService;
+    }
+          
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
@@ -129,14 +157,14 @@ public class ServiceController implements Serializable {
         }
         return selectedItems;
     }
-    
+
     public List<Service> getRetiredSelectedItems() {
-        if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=true order by c.name");
+        if (selectRetiredText.trim().equals("")) {
+            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=true and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true and upper(c.name) like '%" + getSelectRetiredText().toUpperCase() + "%' order by c.name");
         }
-        return selectedItems;
+        return selectedRetiredItems;
     }
 
     public boolean isBilledAs() {
@@ -260,6 +288,8 @@ public class ServiceController implements Serializable {
 //        if (getServiceSubCategoryController().getParentCategory() != null) {
 //            getCurrent().setCategory(getServiceSubCategoryController().getParentCategory());
 //        }
+        System.out.println("getCurrent().getId() = " + getCurrent());
+        System.out.println("getCurrent().getId() = " + getCurrent().getId());
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             //System.out.println("1");
             if (billedAs == false) {
@@ -272,7 +302,7 @@ public class ServiceController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Saved Old Successfully");
         } else {
             //System.out.println("4");
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
@@ -341,46 +371,48 @@ public class ServiceController implements Serializable {
     }
 
     public void delete() {
-//
-//        for (ItemFee it : getFees(current)) {
-//            it.setRetired(true);
-//            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-//            it.setRetirer(getSessionController().getLoggedUser());
-//            getItemFeeFacade().edit(it);
-//        }
+
+        for (ItemFee it : getFees(current)) {
+            it.setRetired(true);
+            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            it.setRetirer(getSessionController().getLoggedUser());
+            getItemFeeFacade().edit(it);
+        }
 
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfull");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        getSelectedItems();
 
     }
     
     public void activateService() {
-//              
-//        for (ItemFee it : getFees(current)) {
-//            it.setRetired(false);
-//            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-//            it.setRetirer(getSessionController().getLoggedUser());
-//            getItemFeeFacade().edit(it);
-//        }
 
-        if (current != null) {
-            current.setRetired(false);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            UtilityController.addSuccessMessage("Activated Successfully");
+        for (ItemFee it : getFees(currentInactiveService)) {
+            it.setRetired(true);
+            it.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            it.setRetirer(getSessionController().getLoggedUser());
+            getItemFeeFacade().edit(it);
+        }
+
+        if (currentInactiveService != null) {
+            currentInactiveService.setRetired(false);
+            currentInactiveService.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            currentInactiveService.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(currentInactiveService);
+            UtilityController.addSuccessMessage("Deleted Successfull");
         } else {
-            UtilityController.addSuccessMessage("Nothing To Activate");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        getSelectedRetiredItems();
 
     }
 
@@ -489,13 +521,7 @@ public class ServiceController implements Serializable {
     }
 
     private List<ItemFee> getFees(Item i) {
-        
-        //HashMap m = new HashMap();
-        
         String sql = "Select f From ItemFee f where f.retired=false and f.item.id=" + i.getId();
-        
-        //m.put("itm", i);
-        
 
         return getItemFeeFacade().findBySQL(sql);
     }
