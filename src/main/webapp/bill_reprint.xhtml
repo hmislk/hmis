@@ -139,7 +139,7 @@
 
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'} or false">
 
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
