@@ -197,7 +197,7 @@ public class BillController implements Serializable {
         temp.setReferenceBill(opdBill);
         temp.setTotal(opdPaymentCredit);
         temp.setPaidAmount(opdPaymentCredit);
-        temp.setNetTotal(netTotal);
+        temp.setNetTotal(opdPaymentCredit);
 
         opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
         getBillFacade().edit(opdBill);
@@ -597,7 +597,14 @@ public class BillController implements Serializable {
         lstBillItemsPrint = lstBillItems;
         System.out.println("Out Print");
     }
-
+    
+    public void clear(){
+        opdBill=new BilledBill();
+        printPreview=false;
+        opdPaymentCredit=0.0;
+        
+    }
+    
     public void settleBill() {
         if (errorCheck()) {
             return;
@@ -623,7 +630,7 @@ public class BillController implements Serializable {
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(cashPaid);
             }
-
+            calTotals();
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
             getBills().add(b);
