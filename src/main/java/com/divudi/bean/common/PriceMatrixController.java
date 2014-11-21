@@ -71,9 +71,7 @@ public class PriceMatrixController implements Serializable {
         if (item == null) {
             return 0.0;
         }
-
         PriceMatrix inwardPriceAdjustment;
-
         Category category;
         if (item instanceof Investigation) {
             category = ((Investigation) item).getInvestigationCategory();
