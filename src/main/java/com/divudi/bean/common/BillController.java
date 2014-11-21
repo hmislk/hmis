@@ -625,10 +625,12 @@ public class BillController implements Serializable {
 
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(cashPaid);
-                if (cashPaid > b.getTotal()) {
+                if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
                     b.setBalance(0.0);
+                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
                 } else {
-                    b.setBalance(b.getTotal() - b.getCashPaid());
+                    b.setBalance(b.getTransSaleBillTotalMinusDiscount() - b.getCashPaid());
+                    b.setNetTotal(b.getCashPaid());
                 }
 
             }
@@ -714,10 +716,13 @@ public class BillController implements Serializable {
             
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(reminingCashPaid);
-                if (reminingCashPaid > b.getTotal()) {
+                
+                if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
                     b.setBalance(0.0);
+                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
                 } else {
                     b.setBalance(b.getTotal() - b.getCashPaid());
+                    b.setNetTotal(reminingCashPaid);
                 }
             }
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
