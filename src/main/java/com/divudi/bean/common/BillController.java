@@ -630,7 +630,7 @@ public class BillController implements Serializable {
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(cashPaid);
             }
-            calTotals();
+
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
             getBills().add(b);
