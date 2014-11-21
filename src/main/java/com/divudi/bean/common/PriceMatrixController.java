@@ -66,11 +66,9 @@ public class PriceMatrixController implements Serializable {
         return inwardPriceAdjustment;
 
     }
+    
+     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department) {
 
-    public double getItemWithInwardMargin(Item item) {
-        if (item == null) {
-            return 0.0;
-        }
         PriceMatrix inwardPriceAdjustment;
         Category category;
         if (item instanceof Investigation) {
@@ -78,7 +76,37 @@ public class PriceMatrixController implements Serializable {
         } else {
             category = item.getCategory();
         }
+
+        inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
+
+        if (inwardPriceAdjustment == null && category != null) {
+            inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
+        }
+
+        if (inwardPriceAdjustment == null) {
+            return null;
+        }
+
+        return inwardPriceAdjustment;
+
+    }
+
+    public double getItemWithInwardMargin(Item item) {
+        if (item == null) {
+            System.err.println("1 ");
+            return 0.0;
+        }
+
+        PriceMatrix inwardPriceAdjustment;
+
+        Category category;
+        if (item instanceof Investigation) {           
+            category = ((Investigation) item).getInvestigationCategory();
+        } else {
+            category = item.getCategory();
+        }
         if (category == null) {
+             System.err.println("2 ");
             return item.getTotal();
         }
         inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category);
@@ -86,8 +114,10 @@ public class PriceMatrixController implements Serializable {
             inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category.getParentCategory());
         }
         if (inwardPriceAdjustment == null) {
+             System.err.println("3 ");
             return item.getTotal();
         }
+         System.err.println("4 ");
         return item.getTotal() * (inwardPriceAdjustment.getMargin() + 100) / 100;
     }
 

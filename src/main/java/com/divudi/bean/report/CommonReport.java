@@ -13,6 +13,7 @@ import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
@@ -65,6 +66,7 @@ public class CommonReport implements Serializable {
     ////////////////////
     List<BillFee> billFees;
     List<Bill> referralBills;
+    List<BillItem> referralBillItems;
 
     ////////////////
     private Institution collectingIns;
@@ -810,6 +812,16 @@ public class CommonReport implements Serializable {
         //  calTot(getRefundedBills());
         return refundedBillsPh;
     }
+
+    public List<BillItem> getReferralBillItems() {
+        return referralBillItems;
+    }
+
+    public void setReferralBillItems(List<BillItem> referralBillItems) {
+        this.referralBillItems = referralBillItems;
+    }
+    
+    
 
     public BillsTotals getInstitutionCancelledBillsOwn() {
         if (cancellededBills == null) {
@@ -2163,6 +2175,31 @@ public class CommonReport implements Serializable {
         referralBills = getBillFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    
+    public void fillInstitutionReferralBillItems() {
+        
+        String jpql;
+        Map m = new HashMap();
+
+        jpql = "select bi from BillItem bi "
+                + "where bi.retired=false "
+                + " and bi.bill.referredByInstitution is not null ";
+
+        if (referenceInstitution != null) {
+            jpql += "and bi.bill.referredByInstitution=:refIns ";
+            m.put("refIns", institution);
+        }      
+       
+
+        jpql += "and bi.bill.createdAt between :fd and :td "
+                + " order by bi.id";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        referralBillItems = getBillItemFac().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+
+    }
+    
 
     public void recreteModal() {
         collectingIns = null;

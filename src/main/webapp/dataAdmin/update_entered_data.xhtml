@@ -49,10 +49,19 @@
                        
                             
                         </p:panel>
-                        <p:panel header="Store"  rendered="false">
+                        <p:panel header="Store"  >
                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Remove Store Item" 
-                                             action="#{pharmacyItemExcelManager.removeStoreItem()}" onclick="onSubmitButton();" />
+                                             action="#{pharmacyItemExcelManager.removeStoreItem()}" onclick="onSubmitButton();" rendered="false" />
+                            
+                            <p:commandButton styleClass="linkButton" ajax="false"
+                                             value="Update Cancel Grn Net Totals" 
+                                             action="#{pharmacyItemExcelManager.updateCancelGRN()}" onclick="onSubmitButton();" />
+                        </p:panel>
+                        <p:panel header="HR">
+                            <p:commandButton styleClass="linkButton" ajax="false"
+                                             value="Set Roster To Staff Shift" 
+                                             action="#{pharmacyItemExcelManager.updateStaffShiftWithRoster()}" onclick="onSubmitButton();" />
                         </p:panel>
 
 
