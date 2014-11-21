@@ -7,7 +7,7 @@
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>hmis</name>
+    <name>Prabhodha</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -38,6 +38,13 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.6</version>
         </dependency>
+        <dependency>
+            <groupId>unknown.binary</groupId>
+            <artifactId>org.eclipse.persistence.antlr</artifactId>
+            <version>SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
