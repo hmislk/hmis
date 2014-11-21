@@ -416,7 +416,6 @@
                 <table style="width: 100%;">
 
 
-
                     <h:panelGroup rendered="#{cc.attrs.bill.balance gt 4.0 }" >
 
                         <tr>
@@ -435,7 +434,7 @@
                                 <h:outputLabel value="Paid" />
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                <h:outputLabel value="#{cc.attrs.bill.cashPaid}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>

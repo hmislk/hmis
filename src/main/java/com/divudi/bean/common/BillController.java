@@ -620,12 +620,20 @@ public class BillController implements Serializable {
 
             b.setBillItems(list);
 
+            getBillFacade().edit(b);
+            getBillBean().calculateBillItems(b, getLstBillEntries());
+
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(cashPaid);
+                if (cashPaid > b.getTotal()) {
+                    b.setBalance(0.0);
+                } else {
+                    b.setBalance(b.getTotal() - b.getCashPaid());
+                }
+
             }
 
             getBillFacade().edit(b);
-            getBillBean().calculateBillItems(b, getLstBillEntries());
             getBills().add(b);
 
         } else {
@@ -698,9 +706,22 @@ public class BillController implements Serializable {
         getBillFacade().create(tmp);
 
         double dbl = 0;
+        double reminingCashPaid = cashPaid;
         for (Bill b : bills) {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
+            
+            
+            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+                b.setCashPaid(reminingCashPaid);
+                if (reminingCashPaid > b.getTotal()) {
+                    b.setBalance(0.0);
+                } else {
+                    b.setBalance(b.getTotal() - b.getCashPaid());
+                }
+            }
+            reminingCashPaid = reminingCashPaid - b.getNetTotal();
+            
             getBillFacade().edit(b);
 
             tmp.getForwardReferenceBills().add(b);
@@ -712,6 +733,9 @@ public class BillController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
     }
+    
+    
+    
     @Inject
     private BillSearch billSearch;
 
@@ -938,6 +962,15 @@ public class BillController implements Serializable {
         if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque)) {
             UtilityController.addErrorMessage("Check Payment method");
             return true;
+        }
+
+        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+
+            if (cashPaid == 0.0) {
+                UtilityController.addErrorMessage("Please enter the paid amount");
+                return true;
+            }
+
         }
 
 //        if (getPaymentSchemeController().checkPaid(paymentScheme.getPaymentMethod(), getCashPaid(), getNetTotal())) {
