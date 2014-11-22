@@ -181,6 +181,12 @@ public class BillController implements Serializable {
     @EJB
     private CashTransactionBean cashTransactionBean;
 
+    public void clear() {
+        opdBill = new BilledBill();
+        printPreview = false;
+        opdPaymentCredit = 0.0;
+    }
+
     public void saveBillOPDCredit() {
 
         BilledBill temp = new BilledBill();
@@ -197,7 +203,7 @@ public class BillController implements Serializable {
         temp.setReferenceBill(opdBill);
         temp.setTotal(opdPaymentCredit);
         temp.setPaidAmount(opdPaymentCredit);
-        temp.setNetTotal(netTotal);
+        temp.setNetTotal(opdPaymentCredit);
 
         opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
         getBillFacade().edit(opdBill);
@@ -712,11 +718,10 @@ public class BillController implements Serializable {
         for (Bill b : bills) {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
-            
-            
+
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(reminingCashPaid);
-                
+
                 if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
                     b.setBalance(0.0);
                     b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
@@ -726,7 +731,7 @@ public class BillController implements Serializable {
                 }
             }
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
-            
+
             getBillFacade().edit(b);
 
             tmp.getForwardReferenceBills().add(b);
@@ -738,9 +743,7 @@ public class BillController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
     }
-    
-    
-    
+
     @Inject
     private BillSearch billSearch;
 
