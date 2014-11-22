@@ -857,19 +857,18 @@ public class BillSearch implements Serializable {
             UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
-        
+
 //        if (getBill().getBillType() == BillType.LabBill && patientInvestigation.getCollected()== true) {
 //            UtilityController.addErrorMessage("You can't cancell mark as collected");
 //            return true;
 //        }
-        
-        if(!getWebUserController().hasPrivilege("LabBillCancelSpecial")){
-        
-        System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
-        if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
-            UtilityController.addErrorMessage("Sample Already collected can't cancel");
-            return true;
-        }
+        if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
+
+            System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+            if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
+                UtilityController.addErrorMessage("Sample Already collected can't cancel");
+                return true;
+            }
         }
 
         if (getBill().getBillType() != BillType.LabBill && getPaymentMethod() == null) {
