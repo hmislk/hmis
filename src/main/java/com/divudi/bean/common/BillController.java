@@ -181,12 +181,12 @@ public class BillController implements Serializable {
     @EJB
     private CashTransactionBean cashTransactionBean;
 
-    public void clear(){
-        printPreview = false;
+    public void clear() {
         opdBill = new BilledBill();
-        opdPaymentCredit = 0;
+        printPreview = false;
+        opdPaymentCredit = 0.0;
     }
-    
+
     public void saveBillOPDCredit() {
 
         BilledBill temp = new BilledBill();
@@ -603,14 +603,7 @@ public class BillController implements Serializable {
         lstBillItemsPrint = lstBillItems;
         System.out.println("Out Print");
     }
-    
-    public void clear(){
-        opdBill=new BilledBill();
-        printPreview=false;
-        opdPaymentCredit=0.0;
-        
-    }
-    
+
     public void settleBill() {
         if (errorCheck()) {
             return;
@@ -725,11 +718,10 @@ public class BillController implements Serializable {
         for (Bill b : bills) {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
-            
-            
+
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(reminingCashPaid);
-                
+
                 if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
                     b.setBalance(0.0);
                     b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
@@ -739,7 +731,7 @@ public class BillController implements Serializable {
                 }
             }
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
-            
+
             getBillFacade().edit(b);
 
             tmp.getForwardReferenceBills().add(b);
@@ -751,9 +743,7 @@ public class BillController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
     }
-    
-    
-    
+
     @Inject
     private BillSearch billSearch;
 
