@@ -531,7 +531,8 @@
                                                 </h:outputLabel>
                                                 <h:outputLabel value="Tendered" ></h:outputLabel>
                                                 <p:inputText autocomplete="off"  id="paid" value="#{billController.strTenderedValue}" >
-                                                    <p:ajax process="netTotal paid" update="balance" event="change"/>
+                                                    <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
+                                                    <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{billController.calTotals()}"/>
                                                 </p:inputText>
                                                 <h:outputLabel  value="Balance " ></h:outputLabel>
                                                 <h:outputLabel id="balance" value="#{billController.cashBalance}" >

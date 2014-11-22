@@ -82,7 +82,7 @@
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15">
 
-                            <p:column >
+                            <p:column filterBy="">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Name" >
                                     </p:outputLabel>
@@ -96,6 +96,15 @@
                                     </p:outputLabel>
                                 </f:facet>
                                 <p:outputLabel value="#{inwardReportController1.fetchItemForInwardMatrix(item)}" >
+                                    <f:convertNumber pattern="#,###0.00" ></f:convertNumber>
+                                </p:outputLabel>                        
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Normal Fee+Fee" >
+                                    </p:outputLabel>
+                                </f:facet>
+                                <p:outputLabel value="#{item.total+inwardReportController1.fetchItemForInwardMatrix(item)}" >
                                     <f:convertNumber pattern="#,###0.00" ></f:convertNumber>
                                 </p:outputLabel>                        
                             </p:column>

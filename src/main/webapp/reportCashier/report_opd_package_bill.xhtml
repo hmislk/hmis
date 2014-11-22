@@ -53,9 +53,9 @@
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
                         <pe:exporter type="xlsx" target="tbl" fileName="Package_Bill_Detail_Report" />
                     </p:commandButton>
-
+            </h:panelGrid>
             </p:panel>
-            </h:panelGrid>   
+               
 
             <p:panel id="gpBillPreview">
                 <p:dataTable id="tbl" value="#{billPackageMedicalController.bills}" rowIndexVar="i" var="bill">
@@ -123,7 +123,7 @@
 
                 </p:dataTable>
             </p:panel>
-            </p:panel>
+            <!--</p:panel>-->
 
         </h:form>
     </ui:define>
