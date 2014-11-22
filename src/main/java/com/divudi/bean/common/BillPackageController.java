@@ -26,6 +26,7 @@ import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
@@ -305,11 +306,13 @@ public class BillPackageController implements Serializable {
 
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
-            be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
-
-            if (be.getBillItem().getBillSession() != null) {
-                getBillSessionFacade().create(be.getBillItem().getBillSession());
-
+            BillItem temBi = be.getBillItem();
+            System.out.println("temBi = " + temBi);
+            BillSession temBs = getServiceSessionBean().createBillSession(temBi);
+            System.out.println("temBs = " + temBs);
+            temBi.setBillSession(temBs);
+            if (temBs != null) {
+                getBillSessionFacade().create(temBs);
             }
         }
     }
