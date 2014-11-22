@@ -15,6 +15,8 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.ServiceSession;
 import com.divudi.facade.BillSessionFacade;
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -64,7 +66,7 @@ public class ServiceSessionBean {
                 billSessions = getBillSessionsByItem(i, d);
                 return billSessions;
             default:
-                return null;
+                return new ArrayList<>();
 
         }
     }
@@ -111,6 +113,8 @@ public class ServiceSessionBean {
         bs.setSessionDate(sessDate);
 //        bs.setSessionDate(CommonFunctions.removeTime(bi.getSessionDate()));
         // //System.out.println("bill item session switch - pre");
+
+        
         int count = getBillSessions(i, bi.getSessionDate()).size() + 1;
         System.err.println("COUNT " + count);
         bs.setSerialNo(count);

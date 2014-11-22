@@ -181,6 +181,12 @@ public class BillController implements Serializable {
     @EJB
     private CashTransactionBean cashTransactionBean;
 
+    public void clear(){
+        printPreview = false;
+        opdBill = new BilledBill();
+        opdPaymentCredit = 0;
+    }
+    
     public void saveBillOPDCredit() {
 
         BilledBill temp = new BilledBill();
