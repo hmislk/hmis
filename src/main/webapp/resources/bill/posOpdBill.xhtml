@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />
+        <cc:attribute name="bill" class="com.divudi.entitity.Bill"  />
         <cc:attribute name="duplicate" />
         <cc:attribute name="cancelled" />
     </cc:interface>
@@ -18,7 +18,7 @@
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="posbillBreak">
-            
+
             <h:graphicImage library="image" name="prabdhodha-logo.jpg" style="width: 7cm; margin: auto; " ></h:graphicImage>
 
             <div class="institutionName" style="text-align: center!important;
@@ -41,7 +41,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="OPD Bill"   />    
+                <h:outputLabel value="INVOICE"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -179,7 +179,7 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Name" ></h:outputLabel>
+                                <h:outputLabel value="Phone" ></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
@@ -195,6 +195,81 @@
                         </tr>
                     </h:panelGroup>
 
+                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Age" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patient.age}"  >
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 10%" >
+                            </td>
+                            <td style="width: 15%" >
+                            </td>
+                            <td style="width: 30%" >
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.referredBy ne null}" >
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Ref. Doctor" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.referredBy.person.name}"  >
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 10%" >
+                            </td>
+                            <td style="width: 15%" >
+                            </td>
+                            <td style="width: 30%" >
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.referredByInstitution ne null}" >
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Col. Center" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.referredByInstitution.name}"  >
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 10%" >
+                            </td>
+                            <td style="width: 15%" >
+                            </td>
+                            <td style="width: 30%" >
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Staff Name" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"  >
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 10%" >
+                            </td>
+                            <td style="width: 15%" >
+                            </td>
+                            <td style="width: 30%" >
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
                         <tr>
@@ -237,15 +312,10 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
                         <tr>
-                            <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Company" ></h:outputLabel>
+                            <td style="width: 45% ;text-align: left;" colspan="3">
+                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" ></h:outputLabel>
                             </td>
-                            <td>:</td>
-                            <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"  >
-                                </h:outputLabel>
-                            </td>
-                            <td style="width: 10%" >
+                           <td style="width: 10%" >
                             </td>
                             <td style="width: 15%" >
                             </td>
@@ -290,11 +360,13 @@
                         </td>
                     </tr>
 
+                    
+                    
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
 
                         <tr>
                             <td colspan="4" style="overflow: visible;">
-                                <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                                <h:outputLabel value="#{bip.item.printName}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -344,68 +416,107 @@
 
                 <table style="width: 100%;">
 
-                    <tr>
-                        <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Total" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
-                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>                          
-                        </td>                        
-                    </tr>
 
-                    <tr>
+                    <h:panelGroup rendered="#{cc.attrs.bill.balance gt 4.0 }" >
 
-                        <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
-                        </td>
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Value" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
 
-                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
-                                <f:convertNumber pattern="#,##0.0" />
-                            </h:outputLabel>
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Paid" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.cashPaid}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Balance" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.balance}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.balance lt 5.0 }" >
+
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Total" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>                        
+
+                        <tr>
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
+                                <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>                          
+                            </td>                        
+                        </tr>
+
+                        <tr>
+
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
+                            </td>
+
+                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
+                                    <f:convertNumber pattern="#,##0.0" />
+                                </h:outputLabel>
 
 
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
 
-                    <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel   value="Number of Items Count" />
-                        </td>
-                        <td  class="totalsBlock">
-                            <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
 
+                    </h:panelGroup>
 
                 </table>
 
             </div>
 
+            <div>
+                <h:outputLabel value="" ></h:outputLabel>  
+                <h:outputLabel value="" ></h:outputLabel>
+                <h:outputLabel value="Signature :" ></h:outputLabel>  
+                <h:outputLabel value="" ></h:outputLabel>  
+                <h:outputLabel value="" ></h:outputLabel>  
+            </div>
 
             <div class="footer">
                 <br/>

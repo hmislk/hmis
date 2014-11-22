@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -94,7 +95,6 @@ public class PettyCashBillController implements Serializable {
 //            UtilityController.addErrorMessage("Can't settle without Person");
 //            return true;
 //        }
-
         if (getCurrent().getPaymentMethod() != null && getCurrent().getPaymentMethod() == PaymentMethod.Cheque) {
             if (getCurrent().getBank() == null || getCurrent().getChequeRefNo() == null || getCurrent().getChequeDate() == null) {
                 UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
@@ -160,7 +160,7 @@ public class PettyCashBillController implements Serializable {
 
     private void saveBill() {
 
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent(), BillType.PettyCash, BillNumberSuffix.PTYPAY));
+        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PettyCash, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
 
         getCurrent().setBillType(BillType.PettyCash);
 
@@ -194,25 +194,28 @@ public class PettyCashBillController implements Serializable {
 
         switch (getTabId()) {
             case "tabStaff":
-                if(current.getStaff()==null){
+                if (current.getStaff() == null) {
                     JsfUtil.addErrorMessage("Staff?");
                     return;
-                }   break;
+                }
+                break;
             case "tabSearchPerson":
-                if(current.getPerson()==null){
+                if (current.getPerson() == null) {
                     JsfUtil.addErrorMessage("Person?");
                     return;
-                }   break;
+                }
+                break;
             case "tabNew":
-                if(getNewPerson().getName().trim().equals("")){
+                if (getNewPerson().getName().trim().equals("")) {
                     JsfUtil.addErrorMessage("Person?");
                     return;
-            }   break;
-                default:
-                    JsfUtil.addErrorMessage(getTabId());
-                    return;
+                }
+                break;
+            default:
+                JsfUtil.addErrorMessage(getTabId());
+                return;
         }
-        
+
         if (getTabId().equals("tabNew")) {
             getPersonFacade().create(getNewPerson());
             getCurrent().setPerson(getNewPerson());

@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:commandButton value="Reset" action="#{inwardReportController1.processForItemsWithInwardMatrix}" ajax="false" ></p:commandButton>
+                    <p:commandButton value="Calculate Inward Prices" ajax="false" action="#" ></p:commandButton>
+                    <p:autoComplete value="#{inwardReportController1.department}" 
+                                    forceSelection="true"
+                                    completeMethod="#{departmentController.completeDept}" 
+                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
+                        <p:column>
+                            <h:outputLabel value="#{dep.name}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{dep.institution.name}"/>
+                        </p:column>
+                    </p:autoComplete>
+
+                    <p:panelGrid columns="2" styleClass="alignTop" >
+
+                        <p:dataTable selection="#{inwardReportController1.items}" var="item" value="#{itemController.items}"
+                                     rowKey="#{item.id}"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                                     >
+                            <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
+
+                            <p:column filterBy="#{item.category.name}">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Category" >
+                                    </p:outputLabel>
+                                </f:facet>
+                                <p:outputLabel value="#{item.category.name}" >
+                                </p:outputLabel>                        
+                            </p:column>
+                            <p:column filterBy="#{item.department.name}" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Department" >
+                                    </p:outputLabel>
+                                </f:facet>
+                                <p:outputLabel value="#{item.department.name}" >
+                                </p:outputLabel>                        
+                            </p:column>
+                            <p:column filterBy="#{item.name}" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Item" >
+                                    </p:outputLabel>
+                                </f:facet>
+                                <p:outputLabel value="#{item.name}" >
+                                </p:outputLabel>                        
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Normal Fee" >
+                                    </p:outputLabel>
+                                </f:facet>
+                                <p:outputLabel value="#{item.total}" >
+                                    <f:convertNumber pattern="#,###0.00" ></f:convertNumber>
+                                </p:outputLabel>                        
+                            </p:column>
+
+                        </p:dataTable>
+
+
+                        <p:dataTable value="#{inwardReportController1.items}" var="item" 
+                                     rowKey="#{i.id}"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15">
+
+                            <p:column filterBy="">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Name" >
+                                    </p:outputLabel>
+                                </f:facet>
+                                <p:outputLabel value="#{item.name}" >
+                                </p:outputLabel>                        
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Fee" >
+                                    </p:outputLabel>
+                                </f:facet>
+                                <p:outputLabel value="#{inwardReportController1.fetchItemForInwardMatrix(item)}" >
+                                    <f:convertNumber pattern="#,###0.00" ></f:convertNumber>
+                                </p:outputLabel>                        
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Normal Fee+Fee" >
+                                    </p:outputLabel>
+                                </f:facet>
+                                <p:outputLabel value="#{item.total+inwardReportController1.fetchItemForInwardMatrix(item)}" >
+                                    <f:convertNumber pattern="#,###0.00" ></f:convertNumber>
+                                </p:outputLabel>                        
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panelGrid>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

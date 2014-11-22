@@ -6,9 +6,11 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.Privileges;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.entity.LazyBill;
 import com.divudi.ejb.BillNumberGenerator;
@@ -22,12 +24,12 @@ import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -112,6 +114,7 @@ public class BillSearch implements Serializable {
     private PharmacyPreSettleController pharmacyPreSettleController;
     private SearchKeyword searchKeyword;
     Institution creditCompany;
+    PatientInvestigation patientInvestigation;
 
     public BillSearch() {
     }
@@ -220,6 +223,14 @@ public class BillSearch implements Serializable {
 
     public WebUser getUser() {
         return user;
+    }
+
+    public PatientInvestigation getPatientInvestigation() {
+        return patientInvestigation;
+    }
+
+    public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
     }
 
     public void onEdit(RowEditEvent event) {
@@ -563,8 +574,8 @@ public class BillSearch implements Serializable {
         rb.setComments(comment);
         rb.setPaymentMethod(paymentMethod);
 
-        rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), new RefundBill(), BillType.OpdBill, BillNumberSuffix.RF));
-        rb.setDeptId(getBillNumberBean().departmentRefundBill(getSessionController().getDepartment(), getBill().getToDepartment(), BillNumberSuffix.RF));
+        rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
+        rb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
 
         rb.setTotal(0 - refundTotal);
         rb.setDiscount(0 - refundDiscount);
@@ -631,8 +642,8 @@ public class BillSearch implements Serializable {
         rb.setCreditCompany(getBill().getCreditCompany());
         rb.setDepartment(getSessionController().getLoggedUser().getDepartment());
 
-        rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), rb, getBill().getBillType(), BillNumberSuffix.GRNRET));
-        rb.setDeptId(getBillNumberBean().departmentReturnBill(getSessionController().getDepartment(), getBill().getBillType(), BillNumberSuffix.GRNRET));
+        rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.GRNRET));
+        rb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.GRNRET));
 
         rb.setToDepartment(getBill().getToDepartment());
         rb.setToInstitution(getBill().getToInstitution());
@@ -777,11 +788,11 @@ public class BillSearch implements Serializable {
             cb.invertValue(getBill());
 
             if (getBill().getBillType() == BillType.PaymentBill) {
-                cb.setDeptId(getBillNumberBean().departmentCancelledBill(getSessionController().getDepartment(), getBill().getBillType(), BillNumberSuffix.PROCAN));
-                cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb, getBill().getBillType(), BillNumberSuffix.PROCAN));
+                cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
+                cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
             } else {
-                cb.setDeptId(getBillNumberBean().departmentCancelledBill(getSessionController().getDepartment(), getBill().getToDepartment(), BillNumberSuffix.CAN));
-                cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), cb, getBill().getBillType(), BillNumberSuffix.CAN));
+                cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getToDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
+                cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
             }
 
         }
@@ -808,8 +819,8 @@ public class BillSearch implements Serializable {
 
             cb.setBilledBill(getBill());
 
-            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb, cb.getBillType(), billNumberSuffix));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb, cb.getBillType(), billNumberSuffix));
+            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, billNumberSuffix));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, billNumberSuffix));
 
         }
 
@@ -846,17 +857,26 @@ public class BillSearch implements Serializable {
             UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
-
+        
+//        if (getBill().getBillType() == BillType.LabBill && patientInvestigation.getCollected()== true) {
+//            UtilityController.addErrorMessage("You can't cancell mark as collected");
+//            return true;
+//        }
+        
+        if(!getWebUserController().hasPrivilege("LabBillCancelSpecial")){
+        
         System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
         if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
             UtilityController.addErrorMessage("Sample Already collected can't cancel");
             return true;
+        }
         }
 
         if (getBill().getBillType() != BillType.LabBill && getPaymentMethod() == null) {
             UtilityController.addErrorMessage("Please select a payment scheme.");
             return true;
         }
+
         if (getComment() == null || getComment().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
             return true;
@@ -972,7 +992,6 @@ public class BillSearch implements Serializable {
                 getBillFacade().edit(cb);
 
 //                getCashTransactionBean().deductFromBallance(getSessionController().getLoggedUser().getDrawer(), tmp);
-
                 WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
                 getSessionController().setLoggedUser(wb);
                 printPreview = true;
@@ -1016,7 +1035,6 @@ public class BillSearch implements Serializable {
                 getBillFacade().edit(cb);
 
 //                getCashTransactionBean().addToBallance(getSessionController().getLoggedUser().getDrawer(), tmp);
-
                 WebUser wb = getWebUserFacade().find(getSessionController().getLoggedUser().getId());
                 getSessionController().setLoggedUser(wb);
 
@@ -1398,7 +1416,7 @@ public class BillSearch implements Serializable {
         if (billFeeTotal != bill.getTotal() || billFeeDiscount != bill.getDiscount()
                 || billFeeNetTotal != bill.getNetTotal()) {
             bill.setTransError(true);
-         
+
         }
     }
 

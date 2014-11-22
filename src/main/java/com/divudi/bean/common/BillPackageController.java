@@ -199,8 +199,8 @@ public class BillPackageController implements Serializable {
     }
 
     public void putToBills() {
-        bills = new ArrayList<Bill>();
-        Set<Department> billDepts = new HashSet<Department>();
+        bills = new ArrayList<>();
+        Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
             billDepts.add(e.getBillItem().getItem().getDepartment());
 
@@ -379,8 +379,8 @@ public class BillPackageController implements Serializable {
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
 
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp, temp.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.PACK));
+        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill));
+        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
 
         if (temp.getId() == null) {
             getFacade().create(temp);

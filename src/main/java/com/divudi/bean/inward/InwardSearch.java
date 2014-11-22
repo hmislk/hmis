@@ -10,6 +10,7 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.PaymentMethod;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.Sex;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
@@ -760,9 +761,10 @@ public class InwardSearch implements Serializable {
 //            if (check()) {
 //                return;
 //            }
-            if (checkBathcReferenceBill()) {
-                return;
-            }
+//            if (checkBathcReferenceBill()) {
+//                UtilityController.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
+//                return;
+//            }
 
             CancelledBill cb = createCancelBill();
             //Copy & paste
@@ -803,8 +805,8 @@ public class InwardSearch implements Serializable {
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setDeptId(getBillNumberBean().departmentCancelledBill(getSessionController().getLoggedUser().getDepartment(), getBill().getBillType(), BillNumberSuffix.INWCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getLoggedUser().getInstitution(), cb, getBill().getBillType(), BillNumberSuffix.INWCAN));
+        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
 
         return cb;
     }
@@ -825,8 +827,8 @@ public class InwardSearch implements Serializable {
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getLoggedUser().getDepartment(), cb, getBill().getBillType(), BillNumberSuffix.INWREFCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getLoggedUser().getInstitution(), cb, getBill().getBillType(), BillNumberSuffix.INWREFCAN));
+        cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(),  getBill().getBillType(),BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(),  getBill().getBillType(),BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
 
         cb.invertValue(getBill());
         return cb;

@@ -7,6 +7,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -169,6 +170,11 @@ public class StoreGrnController implements Serializable {
 
     public String errorCheck(Bill b, List<BillItem> billItems) {
         String msg = "";
+        
+        for(BillItem bi : billItems){
+            if(bi.getPharmaceuticalBillItem().getPurchaseRate() > bi.getPharmaceuticalBillItem().getRetailRate())
+           msg = "Check Purchase Rate and Retail Rate"; 
+        }
 
         if (b.getInvoiceNumber() == null || "".equals(b.getInvoiceNumber().trim())) {
             msg = "Please Fill invoice number";
@@ -280,19 +286,19 @@ public class StoreGrnController implements Serializable {
 
         //Save Parent Stock
         for (BillItem i : getBillItems()) {
-            
-            if(i.getPharmaceuticalBillItem().getRetailRate() < i.getPharmaceuticalBillItem().getPurchaseRate()){
+
+            if (i.getPharmaceuticalBillItem().getRetailRate() < i.getPharmaceuticalBillItem().getPurchaseRate()) {
                 JsfUtil.addErrorMessage("Less Sale rate");
                 return;
             }
 
             if (i.getParentBillItem() != null) {
-                
-                if(i.getParentBillItem().getPharmaceuticalBillItem().getPurchaseRate() < i.getParentBillItem().getPharmaceuticalBillItem().getRetailRate()){
+
+                if (i.getParentBillItem().getPharmaceuticalBillItem().getPurchaseRate() < i.getParentBillItem().getPharmaceuticalBillItem().getRetailRate()) {
                     JsfUtil.addErrorMessage("Less Sale rate");
                     return;
                 }
-                
+
                 i.getParentBillItem().getPharmaceuticalBillItem().getStock().getChildStocks().add(i.getPharmaceuticalBillItem().getStock());
                 i.getPharmaceuticalBillItem().getStock().setParentStock(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
                 stockFacade.edit(i.getParentBillItem().getPharmaceuticalBillItem().getStock());
@@ -306,8 +312,8 @@ public class StoreGrnController implements Serializable {
             getGrnBill().getBillExpenses().add(i);
         }
 
-        getGrnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getGrnBill(), BillType.StoreGrnBill, BillNumberSuffix.GRN));
-        getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getGrnBill(), BillType.StoreGrnBill, BillNumberSuffix.GRN));
+        getGrnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
+        getGrnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.StoreGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN));
 
         getGrnBill().setToInstitution(getApproveBill().getFromInstitution());
         getGrnBill().setToDepartment(getApproveBill().getFromDepartment());
@@ -679,20 +685,18 @@ public class StoreGrnController implements Serializable {
 //        ChangeDiscountLitener();
 //
 //    }
-    
-    
     public void addTest() {
         System.out.println("this = " + this);
     }
 
     public void addTest1() {
-       ChangeDiscountLitener();
+        ChangeDiscountLitener();
     }
-    
+
     public void ChangeDiscountLitener() {
         getGrnBill().setNetTotal(getGrnBill().getNetTotal() + getGrnBill().getDiscount());
     }
-    
+
     public void ChangeDiscountLitenerNew() {
         System.out.println("ChangeDiscountLitener");
         //Example - Case 1
