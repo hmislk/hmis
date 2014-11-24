@@ -64,35 +64,37 @@
 
                         <p:column headerText="Id" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Id"/>
+                                <h:outputLabel value="Id" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.insId}"/>
                         </p:column>
+                        
+                        
 
                         <p:column headerText="Institurion" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Institution"/>
+                                <h:outputLabel value="Institution" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.referredByInstitution.name}"/>
                         </p:column>
                         
                         <p:column headerText="Referral ID" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Referral Number"/>
+                                <h:outputLabel value="Referral Number" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.referralNumber}"/>
                         </p:column>
 
                         <p:column >
                             <f:facet name="header">  
-                                <h:outputLabel value="Billed At"/>
+                                <h:outputLabel value="Billed At" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}"/>
                         </p:column>
 
                         <p:column >
                             <f:facet name="header">  
-                                <h:outputLabel value="Total"/>
+                                <h:outputLabel value="Total" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.total}"/>
                         </p:column>
