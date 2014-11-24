@@ -103,7 +103,7 @@ public class HumanResourceBean {
 //        //   System.err.println("Fetch Staff 1 : " + ss);
 //        return ss;
 //    }
-    public FingerPrintRecord findInTimeRecord(StaffShift staffShift) {
+     public FingerPrintRecord findInTimeRecord(StaffShift staffShift) {
         if (staffShift == null) {
             return null;
         }
