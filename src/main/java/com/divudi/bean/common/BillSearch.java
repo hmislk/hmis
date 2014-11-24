@@ -10,6 +10,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.Privileges;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.entity.LazyBill;
 import com.divudi.ejb.BillNumberGenerator;
@@ -28,6 +29,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -112,6 +114,7 @@ public class BillSearch implements Serializable {
     private PharmacyPreSettleController pharmacyPreSettleController;
     private SearchKeyword searchKeyword;
     Institution creditCompany;
+    PatientInvestigation patientInvestigation;
 
     public BillSearch() {
     }
@@ -220,6 +223,14 @@ public class BillSearch implements Serializable {
 
     public WebUser getUser() {
         return user;
+    }
+
+    public PatientInvestigation getPatientInvestigation() {
+        return patientInvestigation;
+    }
+
+    public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
     }
 
     public void onEdit(RowEditEvent event) {
@@ -847,16 +858,24 @@ public class BillSearch implements Serializable {
             return true;
         }
 
-        System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
-        if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
-            UtilityController.addErrorMessage("Sample Already collected can't cancel");
-            return true;
+//        if (getBill().getBillType() == BillType.LabBill && patientInvestigation.getCollected()== true) {
+//            UtilityController.addErrorMessage("You can't cancell mark as collected");
+//            return true;
+//        }
+        if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
+
+            System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+            if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
+                UtilityController.addErrorMessage("Sample Already collected can't cancel");
+                return true;
+            }
         }
 
         if (getBill().getBillType() != BillType.LabBill && getPaymentMethod() == null) {
             UtilityController.addErrorMessage("Please select a payment scheme.");
             return true;
         }
+
         if (getComment() == null || getComment().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
             return true;

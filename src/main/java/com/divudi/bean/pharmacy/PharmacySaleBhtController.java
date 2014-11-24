@@ -77,6 +77,8 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     @Inject
+    UserStockController userStockController;
+    @Inject
     PaymentSchemeController PaymentSchemeController;
 
     @Inject
@@ -195,7 +197,7 @@ public class PharmacySaleBhtController implements Serializable {
         tmp.setQty(0.0);
         tmp.getPharmaceuticalBillItem().setQtyInUnit(0.0f);
 
-        getPharmacyBean().updateUserStock(tmp.getTransUserStock(), 0);
+        userStockController.updateUserStock(tmp.getTransUserStock(), 0);
     }
 
     //Check when edititng Qty
@@ -221,7 +223,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         //Check Is There Any Other User using same Stock
-        if (!getPharmacyBean().isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
+        if (!userStockController.isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
 
             setZeroToQty(tmp);
             onEditCalculation(tmp);
@@ -231,7 +233,7 @@ public class PharmacySaleBhtController implements Serializable {
             return true;
         }
 
-        getPharmacyBean().updateUserStock(tmp.getTransUserStock(), tmp.getQty());
+        userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty());
 
         onEditCalculation(tmp);
 
@@ -317,7 +319,7 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void resetAll() {
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
         billPreview = false;
@@ -505,7 +507,7 @@ public class PharmacySaleBhtController implements Serializable {
             getPreBill().getBillItems().add(tbi);
         }
 
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         calculateAllRates();
 
@@ -685,7 +687,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         //Checking User Stock Entity
-        if (!getPharmacyBean().isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
@@ -704,8 +706,8 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().getBillItems().add(billItem);
 
         //User Stock Container Save if New Bill
-        UserStockContainer usc = getPharmacyBean().saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
-        UserStock us = getPharmacyBean().saveUserStock(billItem, getSessionController().getLoggedUser(), usc);
+        UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), usc);
         billItem.setTransUserStock(us);
 
         calculateAllRates();
@@ -749,7 +751,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        getPharmacyBean().removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
+        userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
 
         getPreBill().getBillItems().remove(b.getSearialNo());
 

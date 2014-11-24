@@ -2070,6 +2070,11 @@ public class BillBeanController implements Serializable {
         return e.getBillItem();
     }
 
+    @Inject
+    BillController billController;
+    @Inject
+    SessionController sessionController;
+
     public void calculateBillItems(Bill bill, List<BillEntry> billEntrys) {
         double staff = 0.0;
         double ins = 0.0;
@@ -2098,9 +2103,43 @@ public class BillBeanController implements Serializable {
         bill.setStaffFee(staff);
         bill.setPerformInstitutionFee(ins);
 
-        bill.setTotal(tot);
-        bill.setNetTotal(net);
-        bill.setDiscount(dis);
+//        bill.setTotal(tot);
+//        bill.setNetTotal(net);
+//        bill.setDiscount(dis);
+        if (sessionController.getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            System.out.println("cashRemain" + billController.getCashRemain());
+            if (billController.getCashRemain() != 0) {
+                if (tot > billController.getCashRemain()) {
+                    System.out.println("1.1.cashRemain" + billController.getCashRemain());
+                    bill.setBalance(tot - billController.getCashRemain());
+                    bill.setTotal(tot);
+                    bill.setNetTotal(tot - billController.getCashRemain());
+                    bill.setDiscount(dis);
+                    bill.setCashPaid(billController.getCashRemain());
+                    billController.setCashRemain(0.0);
+                    System.out.println("1.2.cashRemain" + billController.getCashRemain());
+                } else {
+                    System.out.println("2.1.cashRemain" + billController.getCashRemain());
+                    bill.setBalance(0.0);
+                    bill.setTotal(tot);
+                    bill.setNetTotal(net);
+                    bill.setDiscount(dis);
+                    bill.setCashPaid(tot);
+                    billController.setCashRemain(billController.getCashRemain() - tot);
+                    System.out.println("2.2.cashRemain" + billController.getCashRemain());
+                }
+
+            } else {
+                System.out.println("3.cashRemain" + billController.getCashRemain());
+                bill.setBalance(tot);
+                bill.setTotal(tot);
+                bill.setNetTotal(0.0);
+                bill.setCashPaid(0.0);
+                bill.setDiscount(dis);
+            }
+            System.out.println(".................");
+
+        }
 
         getBillFacade().edit(bill);
     }

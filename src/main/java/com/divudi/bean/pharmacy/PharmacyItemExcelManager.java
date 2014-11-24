@@ -655,42 +655,42 @@ public class PharmacyItemExcelManager implements Serializable {
             getItemFacade().edit(pharmacyItem);
         }
     }
-    
-    public void updateCancelGRN(){
+
+    public void updateCancelGRN() {
 //        CancelledBill b=new CancelledBill();
 //        b.getNetTotal();
 //        b.getGrnNetTotal();
 //        b.getBillType();
-        
-        List<Bill>bills;
-        bills=new ArrayList<>();
-        
+
+        List<Bill> bills;
+        bills = new ArrayList<>();
+
         String sql;
-        Map m=new HashMap();
-        
-        sql=" select b from CancelledBill b where "
+        Map m = new HashMap();
+
+        sql = " select b from CancelledBill b where "
                 + " b.billType=:bt ";
-        
+
         m.put("bt", BillType.StoreGrnBill);
-        
-        bills=getBillFacade().findBySQL(sql, m);
+
+        bills = getBillFacade().findBySQL(sql, m);
         System.out.println("Bills = " + bills);
         for (Bill b : bills) {
             System.out.println("1. b.getGrnNetTotal() = " + b.getGrnNetTotal());
             System.out.println("1. b.getNetTotal() = " + b.getNetTotal());
-            b.setGrnNetTotal(b.getNetTotal());
+            b.setGrnNetTotal(0-b.getBilledBill().getGrnNetTotal());
             getBillFacade().edit(b);
             System.out.println("2. b.getGrnNetTotal() = " + b.getGrnNetTotal());
             System.out.println("2. b.getNetTotal() = " + b.getNetTotal());
         }
-        
+
     }
 
     @EJB
     StaffShiftFacade staffShiftFacade;
 
     public void updateStaffShiftWithRoster() {
-        String sql = "select StaffShift s"
+        String sql = "select s from StaffShift s"
                 + "  where s.retired=false"
                 + "  and s.staff is not null "
                 + " and s.roster is null";
@@ -702,6 +702,25 @@ public class PharmacyItemExcelManager implements Serializable {
         for (StaffShift stf : list) {
             stf.setRoster(stf.getStaff().getRoster());
             staffShiftFacade.edit(stf);
+        }
+
+    }
+
+    public void updateAgencyBill() {
+        String sql = "select s from Bill s"
+                + "  where s.retired=false "
+                + "  and s.billType=:btp "
+                + "  and s.deptId is null ";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.AgentPaymentReceiveBill);
+        List<Bill> list = billFacade.findBySQL(sql, hm);
+        if (list == null) {
+            return;
+        }
+
+        for (Bill stf : list) {
+            stf.setDeptId("gen");
+            billFacade.edit(stf);
         }
 
     }
