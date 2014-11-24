@@ -41,12 +41,23 @@ public class UserPreference implements Serializable {
     @ManyToOne
     Institution institution;
     boolean printLabelForOPdBill;
+    boolean partialPaymentOfOpdBillsAllowed;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
 
+    public boolean isPartialPaymentOfOpdBillsAllowed() {
+        return partialPaymentOfOpdBillsAllowed;
+    }
+
+    public void setPartialPaymentOfOpdBillsAllowed(boolean partialPaymentOfOpdBillsAllowed) {
+        this.partialPaymentOfOpdBillsAllowed = partialPaymentOfOpdBillsAllowed;
+    }
+    
+    
+
     public PaperType getOpdBillPaperType() {
         if(opdBillPaperType==null){
-            opdBillPaperType = PaperType.FiveFivePaper;
+            opdBillPaperType = PaperType.PosPaper;
         }
         return opdBillPaperType;
     }
