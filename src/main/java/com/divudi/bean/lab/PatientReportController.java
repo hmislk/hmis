@@ -261,7 +261,7 @@ public class PatientReportController implements Serializable {
                     if (c.getCalculationType() == CalculationType.AgeInMonths) {
                         calString = calString + " " + currentPatientReport.getPatientInvestigation().getPatient().getAgeMonths() + " ";
                     }
-
+                    System.out.println("calString = " + calString);
                     ScriptEngineManager mgr = new ScriptEngineManager();
                     ScriptEngine engine = mgr.getEngineByName("JavaScript");
                     try {

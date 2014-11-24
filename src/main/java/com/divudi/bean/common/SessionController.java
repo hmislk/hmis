@@ -80,10 +80,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (institutionPreference != null) {
             if (institutionPreference.getId() == null || institutionPreference.getId() == 0) {
                 userPreferenceFacade.create(institutionPreference);
-                JsfUtil.addErrorMessage("Preferences Saved");
+                JsfUtil.addSuccessMessage("Preferences Saved");
             } else {
                 userPreferenceFacade.edit(institutionPreference);
-                JsfUtil.addErrorMessage("Preferences Updated");
+                JsfUtil.addSuccessMessage("Preferences Updated");
             }
 
         }
