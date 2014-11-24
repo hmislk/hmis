@@ -11,7 +11,7 @@
 
 
     <ui:define name="content">
-<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:panelGroup rendered="true" >
             <h:form>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
@@ -44,20 +44,40 @@
                         <h:outputLabel value="Referring Institution"/>
                         <p:autoComplete forceSelection="true" 
                                         id="cmdIns" 
-                                        value="#{billController.referredByInstitution}" 
+                                        value="#{commonReport.institution}" 
                                         completeMethod="#{institutionController.completeIns}" 
                                         var="refi" 
                                         itemLabel="#{refi.name}" 
                                         itemValue="#{refi}" 
                                         converter="institutionConverter">
                         </p:autoComplete>
+                        <h:outputLabel value="Item Name"/>
+                        <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
+                                        value="#{billController.currentBillItem.item}" 
+                                        completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                        size="30"  style="width: 400px;" >
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.fullName}
+                            </p:column>
+                            <p:column>
+                                #{ix.department.name}
+                            </p:column>
+                            <p:column>
+                                #{ix.total}
+                            </p:column>
+                            <p:ajax event="itemSelect"  listener="#{billController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
+                        </p:autoComplete>
                     </h:panelGrid>
 
 
                     <p:dataTable id="billed"  value="#{commonReport.referralBillItems}" var="b" 
-                         paginator="false"
-                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15,20" >
+                                 paginator="false"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15,20" >
                         <f:facet name="header">  
                             <h:outputLabel value="Opd Bills "/> 
                         </f:facet>
@@ -75,7 +95,14 @@
                             </f:facet> 
                             <h:outputLabel value="#{b.bill.referredByInstitution.name}"/>
                         </p:column>
-                        
+
+                        <p:column headerText="Item Name" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Item Name"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.item.name}"/>
+                        </p:column>
+
                         <p:column headerText="Referral ID" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Referral Number"/>
