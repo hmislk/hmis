@@ -1389,6 +1389,9 @@ public class BillSearch implements Serializable {
         return bill;
     }
 
+    @Inject
+    BillController billController;
+
     public void setBill(Bill bill) {
         recreateModel();
         System.err.println("Bill " + bill);
@@ -1396,27 +1399,8 @@ public class BillSearch implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         createBillItems();
 
-        Double[] billItemValues = billBean.fetchBillItemValues(bill);
-        double billItemTotal = billItemValues[0];
-        double billItemDiscount = billItemValues[1];
-        double billItemNetTotal = billItemValues[2];
-
-        if (billItemTotal != bill.getTotal() || billItemDiscount != bill.getDiscount()
-                || billItemNetTotal != bill.getNetTotal()) {
-            bill.setTransError(true);
-            return;
-        }
-
-        Double[] billFeeValues = billBean.fetchBillFeeValues(bill);
-        double billFeeTotal = billFeeValues[0];
-        double billFeeDiscount = billFeeValues[1];
-        double billFeeNetTotal = billFeeValues[2];
-
-        if (billFeeTotal != bill.getTotal() || billFeeDiscount != bill.getDiscount()
-                || billFeeNetTotal != bill.getNetTotal()) {
-            bill.setTransError(true);
-
-        }
+        boolean flag = billController.checkBillValues(bill);
+        bill.setTransError(flag);
     }
 
     public List<BillEntry> getBillEntrys() {
