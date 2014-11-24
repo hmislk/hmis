@@ -44,7 +44,7 @@
                         <h:outputLabel value="Referring Institution"/>
                         <p:autoComplete forceSelection="true" 
                                         id="cmdIns" 
-                                        value="#{commonReport.institution}" 
+                                        value="#{commonReport.referenceInstitution}" 
                                         completeMethod="#{institutionController.completeIns}" 
                                         var="refi" 
                                         itemLabel="#{refi.name}" 
@@ -53,10 +53,10 @@
                         </p:autoComplete>
                         <h:outputLabel value="Item Name"/>
                         <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
-                                        value="#{billController.currentBillItem.item}" 
+                                        value="#{commonReport.referenceItem}" 
                                         completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                        size="30"  style="width: 400px;" >
+                                        size="30"  style="width: 400px;"  >
                             <p:column>
                                 #{ix.name}
                             </p:column>
@@ -69,7 +69,7 @@
                             <p:column>
                                 #{ix.total}
                             </p:column>
-                            <p:ajax event="itemSelect"  listener="#{billController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
+                            
                         </p:autoComplete>
                     </h:panelGrid>
 
@@ -81,45 +81,45 @@
                         <f:facet name="header">  
                             <h:outputLabel value="Opd Bills "/> 
                         </f:facet>
-
+                        
                         <p:column headerText="Id" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Id"/>
+                                <h:outputLabel value="Id" style="float: left"/>
                             </f:facet> 
-                            <h:outputLabel value="#{b.insId}"/>
+                            <h:outputLabel value="#{b.bill.insId}"/>
                         </p:column>
-
+                        
                         <p:column headerText="Institurion" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Institution"/>
+                                <h:outputLabel value="Institution" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.bill.referredByInstitution.name}"/>
                         </p:column>
 
                         <p:column headerText="Item Name" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Item Name"/>
+                                <h:outputLabel value="Item Name" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.item.name}"/>
                         </p:column>
 
                         <p:column headerText="Referral ID" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Referral Number"/>
+                                <h:outputLabel value="Referral Number" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.bill.referralNumber}"/>
                         </p:column>
 
                         <p:column >
                             <f:facet name="header">  
-                                <h:outputLabel value="Billed At"/>
+                                <h:outputLabel value="Billed At" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.bill.createdAt}"/>
                         </p:column>
 
                         <p:column >
                             <f:facet name="header">  
-                                <h:outputLabel value="Total"/>
+                                <h:outputLabel value="Total" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.bill.total}"/>
                         </p:column>
