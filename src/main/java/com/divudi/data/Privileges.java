@@ -10,6 +10,7 @@ package com.divudi.data;
  */
 public enum Privileges {
     //Main Menu Privileges
+    TheaterIssueBHT,
     Opd,
     Inward,
     Lab,
@@ -68,6 +69,7 @@ public enum Privileges {
     ShowInwardFee,
     
     LabBilling,
+    LabBillCancelSpecial,
     LabCasheirBillSearch,
     LabCashier,
     LabBillSearchCashier,
@@ -146,6 +148,19 @@ public enum Privileges {
     TheaterTransferReport,
     TheaterReports,
     TheaterSummeries,
+    TheaterIssue,
+    TheaterIssuePharmacy,
+    TheaterIssueStore,
+    TheaterIssueStoreBhtBilling,
+    TheaterIssueStoreBhtSearchBill,
+    TheaterIssueStoreBhtSearchBillItem,
+    TheaterIssueOpd,
+    TheaterIssueOpdForCasheir,
+    TheaterIssueOpdSearchPreBill,
+    TheaterIssueOpdSearchPreBillForReturnItemOnly,
+    TheaterIssueOpdSearchPreBillReturn,
+    TheaterIssueOpdSearchPreBillAddToStock,
+    
     
     ClinicalPatientSummery,
     ClinicalPatientDetails,

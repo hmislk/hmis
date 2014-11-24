@@ -66,6 +66,60 @@ public class PriceMatrixController implements Serializable {
         return inwardPriceAdjustment;
 
     }
+    
+     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department) {
+
+        PriceMatrix inwardPriceAdjustment;
+        Category category;
+        if (item instanceof Investigation) {
+            category = ((Investigation) item).getInvestigationCategory();
+        } else {
+            category = item.getCategory();
+        }
+
+        inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
+
+        if (inwardPriceAdjustment == null && category != null) {
+            inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
+        }
+
+        if (inwardPriceAdjustment == null) {
+            return null;
+        }
+
+        return inwardPriceAdjustment;
+
+    }
+
+    public double getItemWithInwardMargin(Item item) {
+        if (item == null) {
+            System.err.println("1 ");
+            return 0.0;
+        }
+
+        PriceMatrix inwardPriceAdjustment;
+
+        Category category;
+        if (item instanceof Investigation) {           
+            category = ((Investigation) item).getInvestigationCategory();
+        } else {
+            category = item.getCategory();
+        }
+        if (category == null) {
+             System.err.println("2 ");
+            return item.getTotal();
+        }
+        inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category);
+        if (inwardPriceAdjustment == null ) {
+            inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category.getParentCategory());
+        }
+        if (inwardPriceAdjustment == null) {
+             System.err.println("3 ");
+            return item.getTotal();
+        }
+         System.err.println("4 ");
+        return item.getTotal() * (inwardPriceAdjustment.getMargin() + 100) / 100;
+    }
 
     public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category) {
         String sql = "select a from InwardPriceAdjustment a "

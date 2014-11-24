@@ -126,6 +126,18 @@ public class UserPrivilageController implements Serializable {
         TreeNode node1a7 = new PrivilageNode("Theatre Transfer Report", node1a, Privileges.TheaterTransferReport);
         TreeNode node1a8 = new PrivilageNode("Theatre Show Reports Menu Item", node1a, Privileges.TheaterReports);
         TreeNode node1a9 = new PrivilageNode("Theatre Show Summery Menu Item", node1a, Privileges.TheaterSummeries);
+        TreeNode node1a10 = new PrivilageNode("Theatre BHT Issue", node1a, Privileges.TheaterIssue);
+        TreeNode node1a101 = new PrivilageNode("Pharmacy BHT Issue", node1a10, Privileges.TheaterIssuePharmacy);
+        TreeNode node1a102 = new PrivilageNode("General BHT Issue", node1a10, Privileges.TheaterIssueStore);
+        TreeNode node1a1021 = new PrivilageNode("Inward BHT Billing", node1a102, Privileges.TheaterIssueStoreBhtBilling);
+        TreeNode node1a1022 = new PrivilageNode("Search BHT Issue Bill", node1a102, Privileges.TheaterIssueStoreBhtSearchBill);
+        TreeNode node1a1023 = new PrivilageNode("Search BHT Issue Bill Items ", node1a102, Privileges.TheaterIssueStoreBhtSearchBillItem);
+        TreeNode node1a11 = new PrivilageNode("Opd Issue", node1a, Privileges.TheaterIssueOpd);
+        TreeNode node1a12 = new PrivilageNode("Opd Issue For Cashier", node1a11, Privileges.TheaterIssueOpdForCasheir);
+        TreeNode node1a13 = new PrivilageNode("Opd Issue Search Pre Bill", node1a11, Privileges.TheaterIssueOpdSearchPreBill);
+        TreeNode node1a14 = new PrivilageNode("Opd Issue Return Item Only", node1a11, Privileges.TheaterIssueOpdSearchPreBillForReturnItemOnly);
+        TreeNode node1a15 = new PrivilageNode("Opd Issue Search Pre Bill Return", node1a11, Privileges.TheaterIssueOpdSearchPreBillReturn);
+        TreeNode node1a16 = new PrivilageNode("Opd Issue Pre Bill Add To Stock", node1a11, Privileges.TheaterIssueOpdSearchPreBillAddToStock);
 
         TreeNode node2 = new PrivilageNode("Lab", tmproot);
         TreeNode node200 = new PrivilageNode("Lab Menu", node2, Privileges.Lab);
@@ -150,6 +162,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node215 = new PrivilageNode("Lab Report Formats Editing", node2, Privileges.LabReportFormatEditing);
         TreeNode node216 = new PrivilageNode("Lab Summeries", node2, Privileges.LabSummeriesLevel1);
         TreeNode node221 = new PrivilageNode("Lab Investigation Fees", node2, Privileges.LabInvestigationFee);
+        TreeNode node222 = new PrivilageNode("Lab Bill Cancell Special(after collecting sample can cancell)", node2, Privileges.LabBillCancelSpecial);
 
         TreeNode node3 = new PrivilageNode("Pharmacy", tmproot);
         TreeNode node300 = new PrivilageNode("Pharmacy Menu", node3, Privileges.Pharmacy);

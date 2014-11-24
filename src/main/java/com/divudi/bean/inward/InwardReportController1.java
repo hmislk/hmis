@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -16,12 +17,12 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.RefundBill;
+import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
@@ -79,6 +80,9 @@ public class InwardReportController1 implements Serializable {
     List<BillItem> billItemGeneralIssuing;
     List<Bill> paidbyPatient;
 
+    List<ItemRateRow> itemRateRows;
+    List<Item> items;
+
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -119,6 +123,80 @@ public class InwardReportController1 implements Serializable {
     double inwardOutSideNetValue;
 
     public InwardReportController1() {
+    }
+
+    @Inject
+    PriceMatrixController priceMatrixController;
+
+    public void processForItemsWithInwardMatrix() {
+        items = new ArrayList<>();
+        itemRateRows = new ArrayList<>();
+    }
+
+//    public void calculateItemForInwardMatrix() {
+//        if (items == null) {
+//            return;
+//        }
+//        for (Item i : items) {
+//            ItemRateRow irr = new ItemRateRow(i, priceMatrixController.getItemWithInwardMargin(i));
+//            itemRateRows.add(irr);
+//        }
+////        items = new ArrayList<>();
+//    }
+    public double fetchItemForInwardMatrix(Item item) {
+        if (items == null || department == null) {
+            return 0;
+        }
+        PriceMatrix pm = priceMatrixController.fetchInwardMargin(item, item.getTotal(), department);
+
+        if (pm == null) {
+            return 0;
+        }
+
+        return (item.getTotal() * pm.getMargin()) / 100;
+
+    }
+
+    public void listItems() {
+        items = new ArrayList<>();
+        itemRateRows = new ArrayList<>();
+    }
+
+    Department department;
+
+    public PriceMatrixController getPriceMatrixController() {
+        return priceMatrixController;
+    }
+
+    public void setPriceMatrixController(PriceMatrixController priceMatrixController) {
+        this.priceMatrixController = priceMatrixController;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public List<ItemRateRow> getItemRateRows() {
+        return itemRateRows;
+    }
+
+    public void setItemRateRows(List<ItemRateRow> itemRateRows) {
+        this.itemRateRows = itemRateRows;
+    }
+
+    public List<Item> getItems() {
+        if (items == null) {
+            items = new ArrayList<>();
+        }
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
     public Double[] fetchRoomValues() {
@@ -2598,4 +2676,34 @@ public class InwardReportController1 implements Serializable {
 
     }
 
+    public class ItemRateRow {
+
+        Item item;
+        double rate;
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public double getRate() {
+            return rate;
+        }
+
+        public void setRate(double rate) {
+            this.rate = rate;
+        }
+
+        public ItemRateRow() {
+        }
+
+        public ItemRateRow(Item item, double rate) {
+            this.item = item;
+            this.rate = rate;
+        }
+
+    }
 }

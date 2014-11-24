@@ -10,6 +10,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -264,7 +265,7 @@ public class PharmacyDealorBill implements Serializable {
 
     private void saveBill(BillType billType) {
 
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent(), billType, BillNumberSuffix.CRDPAY));
+        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, BillNumberSuffix.CRDPAY));
 
         getCurrent().setBillType(billType);
 
@@ -318,7 +319,7 @@ public class PharmacyDealorBill implements Serializable {
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
-    
+
     public void settleBillAll() {
         if (errorCheck()) {
             return;

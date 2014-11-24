@@ -9,10 +9,10 @@
                 xmlns:in="http://java.sun.com/jsf/composite/inward">
 
 
-
     <ui:define name="content">       
 
         <h:panelGroup rendered="true" styleClass="opdPanel" >
+
             <h:form id="form">
                 <p:panel>
                     <f:facet name="header">
@@ -22,7 +22,6 @@
                                          action="#{surgeryBillController.makeNull}" onclick="onSubmitButton();"/>
                         <p:commandButton value="Save Surgery Detail" ajax="false" 
                                          action="#{surgeryBillController.save()}" 
-                                         styleClass="highLight"
                                          disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
 
 

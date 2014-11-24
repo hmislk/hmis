@@ -168,6 +168,122 @@ public class SearchController implements Serializable {
 
     }
 
+    public void reportSettledBills() {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where "
+                + " b.billType = :billType "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                //                + " and b.balance=0 "
+                + "order by b.createdAt desc ";
+
+//    
+        temMap.put("billType", BillType.CashRecieveBill);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    List<billsWithbill> withbills;
+
+    public List<billsWithbill> getWithbills() {
+        return withbills;
+    }
+
+    public void setWithbills(List<billsWithbill> withbills) {
+        this.withbills = withbills;
+    }
+
+    public void createCreditBillsWithBill() {
+        bills = fetchBills(BillType.CashRecieveBill);
+        System.out.println("bills = " + bills);
+        withbills = new ArrayList<>();
+
+        for (Bill b : bills) {
+            billsWithbill bWithbill = new billsWithbill();
+            bWithbill.setB(b);
+            bWithbill.setCaBills(fetchCreditBills(BillType.CashRecieveBill, b));
+            System.out.println("bWithbill.getCaBills() = " + bWithbill.getCaBills());
+            withbills.add(bWithbill);
+        }
+        System.out.println("withbills = " + withbills);
+
+    }
+
+    public List<Bill> fetchBills(BillType bt) {
+
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select DISTINCT(b.referenceBill) from Bill b where "
+                + " b.billType =:billType "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        temMap.put("billType", bt);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public List<Bill> fetchCreditBills(BillType bt, Bill b) {
+
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where "
+                + " b.billType = :billType "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.referenceBill=:bid ";
+
+        temMap.put("billType", bt);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("bid", b);
+        temMap.put("ins", getSessionController().getInstitution());
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public class billsWithbill {
+
+        Bill b;
+        List<Bill> caBills;
+
+        public Bill getB() {
+            return b;
+        }
+
+        public void setB(Bill b) {
+            this.b = b;
+        }
+
+        public List<Bill> getCaBills() {
+            if (caBills == null) {
+                caBills = new ArrayList<>();
+            }
+            return caBills;
+        }
+
+        public void setCaBills(List<Bill> caBills) {
+            this.caBills = caBills;
+        }
+
+    }
+
     public void createReturnSaleBills() {
 
         Map m = new HashMap();
@@ -205,6 +321,55 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createTableByKeywordToPayBills() {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from BilledBill b where "
+                + " b.billType = :billType "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.balance>0 ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(b.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  (upper(b.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  (upper(b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(b.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billType", BillType.OpdBill);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
     public void createReturnBhtBills() {
         createReturnBhtBills(BillType.PharmacyBhtPre);
     }
@@ -220,8 +385,6 @@ public class SearchController implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
     }
-    
-    
 
     private void createReturnBhtBills(BillType billType) {
 
@@ -663,7 +826,7 @@ public class SearchController implements Serializable {
         netTotalValue = 0.0;
         for (Bill b : list) {
 //            System.out.println("b = ");
-            
+
             Bill refBill = getActiveRefBill(b);
             if (refBill == null) {
                 System.out.println("b = " + refBill);
@@ -673,24 +836,24 @@ public class SearchController implements Serializable {
         }
 
     }
-    
-    public void createIssuePharmacyReport(){
+
+    public void createIssuePharmacyReport() {
         fetchPharmacyBills(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
     }
-    
-    public void createIssueStoreReport(){
+
+    public void createIssueStoreReport() {
         fetchPharmacyBills(BillType.StoreTransferIssue, BillType.StoreTransferReceive);
     }
-    
-    public void createPoNotPharmacyApproveReport(){
+
+    public void createPoNotPharmacyApproveReport() {
         fetchPharmacyBills(BillType.PharmacyOrder, BillType.PharmacyAdjustment);
     }
-    
-    public void createPoNotStoreApproveReport(){
+
+    public void createPoNotStoreApproveReport() {
         fetchPharmacyBills(BillType.StoreOrder, BillType.StoreOrderApprove);
     }
-    
-    public void fetchPharmacyBills(BillType billType,BillType billType2) {
+
+    public void fetchPharmacyBills(BillType billType, BillType billType2) {
         String sql;
         HashMap tmp = new HashMap();
         tmp.put("toDate", getToDate());
@@ -725,8 +888,8 @@ public class SearchController implements Serializable {
         netTotalValue = 0.0;
         for (Bill b : list) {
 //            System.out.println("b = ");
-            
-            Bill refBill = getActiveRefBillnotApprove(b,billType2);
+
+            Bill refBill = getActiveRefBillnotApprove(b, billType2);
             if (refBill == null) {
                 System.out.println("b = " + refBill);
                 netTotalValue += b.getNetTotal();
@@ -735,7 +898,7 @@ public class SearchController implements Serializable {
         }
 
     }
-    
+
     public void createIssueTableStore() {
         String sql;
         HashMap tmp = new HashMap();
@@ -794,8 +957,8 @@ public class SearchController implements Serializable {
         hm.put("btp", BillType.PharmacyTransferReceive);
         return getBillFacade().findFirstBySQL(sql, hm);
     }
-    
-    private Bill getActiveRefBillnotApprove(Bill b,BillType billType) {
+
+    private Bill getActiveRefBillnotApprove(Bill b, BillType billType) {
         String sql = "Select b From BilledBill b "
                 + " where b.retired=false "
                 + " and b.cancelled=false"
@@ -1204,11 +1367,6 @@ public class SearchController implements Serializable {
 
     }
 
-    
-    
-    
-    
-    
     public void createErronousStoreIssueBillItemTable() {
         //  searchBillItems = null;
         String sql;
@@ -1257,10 +1415,6 @@ public class SearchController implements Serializable {
 
     }
 
-    
-    
-    
-    
     public void createPharmacyAdjustmentBillItemTable() {
         //  searchBillItems = null;
         String sql;
@@ -2016,20 +2170,19 @@ public class SearchController implements Serializable {
         }
 
     }
-    
+
     double totalPaying;
-    
+
     public void fillDocPayingBillFee() {
 
         String sql;
         Map m = new HashMap();
-        
+
         sql = "select b from BillItem b where b.retired=false "
                 + " and b.bill.billType=:btp "
                 + " and b.referenceBill.billType=:refType "
-//                + " and b.paidForBillFee.bill.cancelled=false "
+                //                + " and b.paidForBillFee.bill.cancelled=false "
                 + " and b.createdAt between :fromDate and :toDate ";
-
 
         if (speciality != null) {
             sql += " and b.paidForBillFee.staff.speciality=:s ";
@@ -2059,18 +2212,17 @@ public class SearchController implements Serializable {
         }
 
     }
-    
+
     public void fillDocPayingBill() {
 
         String sql;
         Map m = new HashMap();
-        
+
         sql = "select distinct(b.bill) from BillItem b where b.retired=false "
                 + " and b.bill.billType=:btp "
                 + " and b.referenceBill.billType=:refType "
-//                + " and b.paidForBillFee.bill.cancelled=false "
+                //                + " and b.paidForBillFee.bill.cancelled=false "
                 + " and b.createdAt between :fromDate and :toDate ";
-
 
         if (speciality != null) {
             sql += " and b.paidForBillFee.staff.speciality=:s ";
@@ -2090,7 +2242,7 @@ public class SearchController implements Serializable {
         m.put("refType", BillType.OpdBill);
 
 //        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        bills=getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         totalPaying = 0.0;
         if (bills == null) {
@@ -2256,7 +2408,7 @@ public class SearchController implements Serializable {
             sql += " and  (upper(b.paidForBillFee.bill.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getInsId() != null && !getSearchKeyword().getInsId().trim().equals("")) {
             sql += " and  (upper(b.bill.insId) like :insId )";
             temMap.put("insId", "%" + getSearchKeyword().getInsId().trim().toUpperCase() + "%");

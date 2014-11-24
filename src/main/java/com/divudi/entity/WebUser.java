@@ -32,16 +32,16 @@ public class WebUser implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    Drawer drawer;
-
-    public Drawer getDrawer() {
-        return drawer;
-    }
-
-    public void setDrawer(Drawer drawer) {
-        this.drawer = drawer;
-    }
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    Drawer drawer;
+//
+//    public Drawer getDrawer() {
+//        return drawer;
+//    }
+//
+//    public void setDrawer(Drawer drawer) {
+//        this.drawer = drawer;
+//    }
     @ManyToOne
     WebTheme userWebTheme;
     String webUserPassword;

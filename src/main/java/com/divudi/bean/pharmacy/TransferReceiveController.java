@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -190,8 +191,8 @@ public class TransferReceiveController implements Serializable {
             getReceivedBill().getBillItems().add(i);
         }
 
-        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getReceivedBill(), BillType.PharmacyTransferReceive, BillNumberSuffix.PHTI));
-        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getReceivedBill(), BillType.PharmacyTransferReceive, BillNumberSuffix.PHTI));
+        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(),  BillType.PharmacyTransferReceive,BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(),  BillType.PharmacyTransferReceive,BillClassType.BilledBill, BillNumberSuffix.PHTI));
 
         getReceivedBill().setInstitution(getSessionController().getInstitution());
         getReceivedBill().setDepartment(getSessionController().getDepartment());

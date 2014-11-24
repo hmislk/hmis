@@ -16,8 +16,15 @@
 
                     <h:form>
 
-                        <p:dataTable id="dtF" value="#{billSearch.opdBillsToApproveCancellation}" var="smpIx" 
-                                      selection="#{billSearch.billsApproving}" rowKey="#{smpIx.insId}"  >
+                        <p:dataTable id="dtF" 
+                                     value="#{billSearch.opdBillsToApproveCancellation}" 
+                                     var="smpIx" 
+                                      selection="#{billSearch.billsApproving}" 
+                                      rowKey="#{smpIx.insId}"  
+                                      paginator="true"
+                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                      rowsPerPageTemplate="5,10,15"
+                                      >
                             <f:facet name="header" >
                                 <p:commandButton ajax="false " value="Approve Cancel" action="#{billSearch.approveCancellation()}" />
                             </f:facet>

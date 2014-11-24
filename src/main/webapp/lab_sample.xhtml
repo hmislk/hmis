@@ -41,7 +41,15 @@
                             <p:defaultCommand target="btnRefresh"/>
                             
                         </p:panelGrid>
-                        <p:dataTable  id="sample" value="#{patientInvestigationController.lstToSamle}" var="smpIx" >
+                        <p:dataTable  
+                            id="sample" 
+                            value="#{patientInvestigationController.lstToSamle}" 
+                            var="smpIx" 
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+                            
+                            >
                             <p:column headerText="Bill Id">
                                 <p:outputLabel value="#{smpIx.billItem.bill.insId}"/>
                             </p:column>

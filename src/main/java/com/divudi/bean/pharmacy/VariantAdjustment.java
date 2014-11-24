@@ -5,24 +5,21 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.LazyBill;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockVarientBillItemFacade;
 import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -150,8 +147,8 @@ public class VariantAdjustment implements Serializable {
 
     public void Adjust() {
         getAdjustedBill().setBackwardReferenceBill(getReportedBill());
-        getAdjustedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getReportedBill().getDepartment(), getAdjustedBill(), BillType.PharmacyMajorAdjustment, BillNumberSuffix.ADJ));
-        getAdjustedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getReportedBill().getInstitution(), getAdjustedBill(), BillType.PharmacyMajorAdjustment, BillNumberSuffix.ADJ));
+        getAdjustedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getReportedBill().getDepartment(), BillType.PharmacyMajorAdjustment, BillClassType.BilledBill, BillNumberSuffix.ADJ));
+        getAdjustedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getReportedBill().getInstitution(), BillType.PharmacyMajorAdjustment, BillClassType.BilledBill, BillNumberSuffix.ADJ));
 
         getAdjustedBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getAdjustedBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
@@ -159,7 +156,7 @@ public class VariantAdjustment implements Serializable {
         getAdjustedBill().setCreater(getSessionController().getLoggedUser());
         getAdjustedBill().setCreatedAt(Calendar.getInstance().getTime());
         getBillFacade().create(getAdjustedBill());
-        
+
         for (StockVarientBillItem bi : stockVarientBillItems) {
             bi.setCreatedAt(Calendar.getInstance().getTime());
             bi.setCreater(getSessionController().getLoggedUser());
@@ -174,12 +171,9 @@ public class VariantAdjustment implements Serializable {
 
     }
 
-   
-
     @Inject
     private PharmacyController pharmacyController;
 
-   
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -202,7 +196,7 @@ public class VariantAdjustment implements Serializable {
     }
 
     public void createBillComponent() {
-        stockVarientBillItems=null;
+        stockVarientBillItems = null;
         String sql = "Select p from StockVarientBillItem p where p.bill=:bil order by p.item.name ";
         HashMap hm = new HashMap();
         hm.put("bil", getReportedBill());
@@ -212,7 +206,7 @@ public class VariantAdjustment implements Serializable {
         for (StockVarientBillItem i : tmp) {
             StockVarientBillItem bi = new StockVarientBillItem();
             bi.clone(i);
-          //  bi.setId(getStockVarientBillItems().size() + 1L);
+            //  bi.setId(getStockVarientBillItems().size() + 1L);
             getStockVarientBillItems().add(i);
         }
 
@@ -227,7 +221,7 @@ public class VariantAdjustment implements Serializable {
         this.reportedBill = reportedBill;
         adjustedBill = null;
         printPreview = false;
-        stockVarientBillItems=null;
+        stockVarientBillItems = null;
         createAdjustmentBill();
     }
 

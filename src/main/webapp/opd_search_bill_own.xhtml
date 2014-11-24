@@ -43,7 +43,13 @@
 
                         </f:facet>
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill"  style="min-width: 100%;"  >
+                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" 
+                                     var="bill"  
+                                     style="min-width: 100%;"  
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                                     >
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
