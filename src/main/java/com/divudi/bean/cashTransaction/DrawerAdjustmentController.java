@@ -6,6 +6,7 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -84,8 +85,8 @@ public class DrawerAdjustmentController implements Serializable {
     private void saveAdjustmentBill() {
         getAdjustmentBill().setCreatedAt(Calendar.getInstance().getTime());
         getAdjustmentBill().setCreater(getSessionController().getLoggedUser());
-        getAdjustmentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getAdjustmentBill(), getAdjustmentBill().getBillType(), BillNumberSuffix.DRADJ));
-        getAdjustmentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getAdjustmentBill(), getAdjustmentBill().getBillType(), BillNumberSuffix.DRADJ));
+        getAdjustmentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getAdjustmentBill().getBillType(), BillClassType.BilledBill, BillNumberSuffix.DRADJ));
+        getAdjustmentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getAdjustmentBill().getBillType(), BillClassType.BilledBill, BillNumberSuffix.DRADJ));
         getAdjustmentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getAdjustmentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getAdjustmentBill().setToDepartment(null);
@@ -161,7 +162,6 @@ public class DrawerAdjustmentController implements Serializable {
             }
 
 //            getCashTransactionBean().saveCashAdjustmentTransactionIn(cashTransaction, adjustmentBill, getSessionController().getLoggedUser().getDrawer(), getSessionController().getLoggedUser());
-
             getAdjustmentBill().setCashTransaction(cashTransaction);
             getAdjustmentBill().setNetTotal(0 - difference);
             getBillFacade().edit(getAdjustmentBill());
@@ -185,7 +185,6 @@ public class DrawerAdjustmentController implements Serializable {
             }
 
 //            getCashTransactionBean().saveCashAdjustmentTransactionOut(cashTransaction, adjustmentBill, getSessionController().getLoggedUser().getDrawer(), getSessionController().getLoggedUser());
-
             getAdjustmentBill().setCashTransaction(cashTransaction);
             getAdjustmentBill().setNetTotal(0 - difference);
             getBillFacade().edit(getAdjustmentBill());
@@ -218,8 +217,8 @@ public class DrawerAdjustmentController implements Serializable {
         }
 //        save(getSessionController().getLoggedUser().getDrawer().getSlipBallance(), PaymentMethod.Slip);
     }
-    
-     public void saveAdjustBillCreditCard() {
+
+    public void saveAdjustBillCreditCard() {
         if (errorCheck()) {
             return;
         }

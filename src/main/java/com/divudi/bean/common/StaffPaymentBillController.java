@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -44,7 +45,7 @@ import org.primefaces.model.LazyDataModel;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -240,7 +241,7 @@ public class StaffPaymentBillController implements Serializable {
             HashMap h = new HashMap();
             sql = "select b from BillFee b where "
                     + " b.retired=false"
-                    + " and b.bill.billType=:btp "                    
+                    + " and b.bill.billType=:btp "
                     + " and b.bill.cancelled=false "
                     + " and b.bill.refunded=false "
                     + " and (b.feeValue - b.paidValue) > 0 "
@@ -356,8 +357,8 @@ public class StaffPaymentBillController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
 
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getLoggedUser().getDepartment(), BillType.PaymentBill, BillNumberSuffix.PROPAY));
-        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), tmp, BillType.PaymentBill, BillNumberSuffix.PROPAY));
+        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.PROPAY));
+        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.PROPAY));
 
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);

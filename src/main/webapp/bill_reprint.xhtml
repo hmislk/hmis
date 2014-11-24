@@ -139,7 +139,7 @@
 
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'} or false">
 
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
@@ -154,9 +154,7 @@
                                                              return false;"/>
                         </div>
                         <h:panelGroup id="gpPosBill">
-                            <ui:repeat value="#{billController.bills}" var="b">
-                                <bi:posOpdBill bill="#{b}" duplicate="true"/>                        
-                            </ui:repeat>
+                                <bi:posOpdBill bill="#{billSearch.bill}" duplicate="true"/>                        
                         </h:panelGroup>
 
 

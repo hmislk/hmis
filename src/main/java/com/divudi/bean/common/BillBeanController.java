@@ -356,7 +356,7 @@ public class BillBeanController implements Serializable {
                 + " FROM Bill bf"
                 + " WHERE bf.institution=:ins "
                 + " and bf.toInstitution!=:ins "
-                  + " and bf.billType=:bt "
+                + " and bf.billType=:bt "
                 + " and bf.createdAt between :fromDate and :toDate "
                 + " and (bf.paymentMethod = :pm1 "
                 + " or bf.paymentMethod = :pm2 "
@@ -491,11 +491,12 @@ public class BillBeanController implements Serializable {
 //
 //    }
 //    
-    public double calDoctorPaymentInward(Date fromDate, Date toDate) {
+    public double calDoctorPaymentInward(Date fromDate, Date toDate, Institution institution) {
         String sql = "Select sum(b.netValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
-                + " and b.bill.billType=:bType "
+                + " and b.bill.billType=:bType"
+                + " and b.bill.institution=:ins "
                 + " and (b.paidForBillFee.bill.billType=:refType1 "
                 + " or b.paidForBillFee.bill.billType=:refType2) "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -506,6 +507,7 @@ public class BillBeanController implements Serializable {
         hm.put("refType2", BillType.InwardProfessional);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
+        hm.put("ins", institution);
 
         return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
@@ -1664,7 +1666,7 @@ public class BillBeanController implements Serializable {
         return dbl;
     }
 
-      public Double[] fetchBillFeeValues(Bill b) {
+    public Double[] fetchBillFeeValues(Bill b) {
         String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue) "
                 + " from BillFee bf where "
                 + " bf.retired=false "
@@ -1686,7 +1688,6 @@ public class BillBeanController implements Serializable {
         return dbl;
     }
 
-    
     public void setPaymentMethodData(Bill b, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
 
         if (paymentMethod.equals(PaymentMethod.Cheque)) {
@@ -2069,6 +2070,11 @@ public class BillBeanController implements Serializable {
         return e.getBillItem();
     }
 
+    @Inject
+    BillController billController;
+    @Inject
+    SessionController sessionController;
+
     public void calculateBillItems(Bill bill, List<BillEntry> billEntrys) {
         double staff = 0.0;
         double ins = 0.0;
@@ -2097,9 +2103,43 @@ public class BillBeanController implements Serializable {
         bill.setStaffFee(staff);
         bill.setPerformInstitutionFee(ins);
 
-        bill.setTotal(tot);
-        bill.setNetTotal(net);
-        bill.setDiscount(dis);
+//        bill.setTotal(tot);
+//        bill.setNetTotal(net);
+//        bill.setDiscount(dis);
+        if (sessionController.getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            System.out.println("cashRemain" + billController.getCashRemain());
+            if (billController.getCashRemain() != 0) {
+                if (tot > billController.getCashRemain()) {
+                    System.out.println("1.1.cashRemain" + billController.getCashRemain());
+                    bill.setBalance(tot - billController.getCashRemain());
+                    bill.setTotal(tot);
+                    bill.setNetTotal(tot - billController.getCashRemain());
+                    bill.setDiscount(dis);
+                    bill.setCashPaid(billController.getCashRemain());
+                    billController.setCashRemain(0.0);
+                    System.out.println("1.2.cashRemain" + billController.getCashRemain());
+                } else {
+                    System.out.println("2.1.cashRemain" + billController.getCashRemain());
+                    bill.setBalance(0.0);
+                    bill.setTotal(tot);
+                    bill.setNetTotal(net);
+                    bill.setDiscount(dis);
+                    bill.setCashPaid(tot);
+                    billController.setCashRemain(billController.getCashRemain() - tot);
+                    System.out.println("2.2.cashRemain" + billController.getCashRemain());
+                }
+
+            } else {
+                System.out.println("3.cashRemain" + billController.getCashRemain());
+                bill.setBalance(tot);
+                bill.setTotal(tot);
+                bill.setNetTotal(0.0);
+                bill.setCashPaid(0.0);
+                bill.setDiscount(dis);
+            }
+            System.out.println(".................");
+
+        }
 
         getBillFacade().edit(bill);
     }

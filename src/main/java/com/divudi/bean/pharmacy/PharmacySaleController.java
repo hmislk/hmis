@@ -268,6 +268,9 @@ public class PharmacySaleController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    @Inject
+    UserStockController userStockController;
+
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
         if (tmp == null) {
@@ -281,7 +284,7 @@ public class PharmacySaleController implements Serializable {
         tmp.setQty(0.0);
         tmp.getPharmaceuticalBillItem().setQtyInUnit(0.0f);
 
-        getPharmacyBean().updateUserStock(tmp.getTransUserStock(), 0);
+        userStockController.updateUserStock(tmp.getTransUserStock(), 0);
     }
 
     //Check when edititng Qty
@@ -305,7 +308,7 @@ public class PharmacySaleController implements Serializable {
         }
 
         //Check Is There Any Other User using same Stock
-        if (!getPharmacyBean().isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
+        if (!userStockController.isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
 
             setZeroToQty(tmp);
             onEditCalculation(tmp);
@@ -314,7 +317,7 @@ public class PharmacySaleController implements Serializable {
             return true;
         }
 
-        getPharmacyBean().updateUserStock(tmp.getTransUserStock(), tmp.getQty());
+        userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty());
 
         onEditCalculation(tmp);
 
@@ -477,7 +480,7 @@ public class PharmacySaleController implements Serializable {
 
     public void resetAll() {
         System.err.println("RESET ");
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
         billPreview = false;
@@ -741,7 +744,7 @@ public class PharmacySaleController implements Serializable {
             return;
         }
         //Checking User Stock Entity
-        if (!getPharmacyBean().isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
@@ -775,7 +778,7 @@ public class PharmacySaleController implements Serializable {
     }
 
     private void saveUserStockContainer() {
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         getUserStockContainer().setCreater(getSessionController().getLoggedUser());
         getUserStockContainer().setCreatedAt(new Date());
@@ -965,12 +968,9 @@ public class PharmacySaleController implements Serializable {
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
-        //        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getInstitution(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
-        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setInsId(insId);
-
-//        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorByPayment(getSessionController().getDepartment(), getPreBill(), BillType.PharmacyPre, BillNumberSuffix.SALE));
-        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setDeptId(deptId);
 
         if (getPreBill().getId() == null) {
@@ -1059,7 +1059,7 @@ public class PharmacySaleController implements Serializable {
             getPreBill().getBillItems().add(tbi);
         }
 
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         calculateAllRates();
 
@@ -1289,7 +1289,7 @@ public class PharmacySaleController implements Serializable {
         }
 
         //Checking User Stock Entity
-        if (!getPharmacyBean().isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage = "Sorry Already Other User Try to Billing This Stock You Cant Add";
             return;
         }
@@ -1299,8 +1299,8 @@ public class PharmacySaleController implements Serializable {
         getPreBill().getBillItems().add(billItem);
 
         //User Stock Container Save if New Bill
-        getPharmacyBean().saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
-        UserStock us = getPharmacyBean().saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
+        userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
         billItem.setTransUserStock(us);
 
         calculateAllRates();
@@ -1343,7 +1343,7 @@ public class PharmacySaleController implements Serializable {
     private StockHistoryFacade stockHistoryFacade;
 
     public void removeBillItem(BillItem b) {
-        getPharmacyBean().removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
+        userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
         getPreBill().getBillItems().remove(b.getSearialNo());
 
         calTotal();
