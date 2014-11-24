@@ -15,7 +15,9 @@ import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.Times;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.hr.FingerPrintRecord;
+import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.PhDate;
 import com.divudi.entity.hr.Roster;
@@ -103,7 +105,7 @@ public class HumanResourceBean {
 //        //   System.err.println("Fetch Staff 1 : " + ss);
 //        return ss;
 //    }
-     public FingerPrintRecord findInTimeRecord(StaffShift staffShift) {
+    public FingerPrintRecord findInTimeRecord(StaffShift staffShift) {
         if (staffShift == null) {
             return null;
         }
@@ -129,6 +131,40 @@ public class HumanResourceBean {
         m.put("f", min.getTime());
         m.put("t", max.getTime());
         m.put("s", staffShift.getStaff());
+        m.put("ftp", FingerPrintRecordType.Varified);
+        String sql = "Select ss from FingerPrintRecord ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                //                + " and ss.loggedRecord is not null"
+                + " and ss.fingerPrintRecordType=:ftp "
+                + " and ss.recordTimeStamp between :f and :t";
+        FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
+        return ss;
+    }
+
+    public FingerPrintRecord findInTimeRecord(AdditionalForm additionalForm) {
+        if (additionalForm == null) {
+            return null;
+        }
+
+        if (additionalForm.getFromTime() == null) {
+            return null;
+        }
+
+        Date startTime = additionalForm.getFromTime();
+        Calendar min = Calendar.getInstance();
+        min.setTime(startTime);
+        min.add(Calendar.HOUR, -2);
+
+        Calendar max = Calendar.getInstance();
+        max.setTime(startTime);
+        max.add(Calendar.HOUR, 1);
+
+        Map m = new HashMap();
+        m.put("f", min.getTime());
+        m.put("t", max.getTime());
+        m.put("s", additionalForm.getStaff());
         m.put("ftp", FingerPrintRecordType.Varified);
         String sql = "Select ss from FingerPrintRecord ss "
                 + " where ss.retired=false "
@@ -167,6 +203,40 @@ public class HumanResourceBean {
         m.put("f", min.getTime());
         m.put("t", max.getTime());
         m.put("s", staffShift.getStaff());
+        m.put("ftp", FingerPrintRecordType.Varified);
+        String sql = "Select ss from FingerPrintRecord ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s"
+                //                + " and ss.loggedRecord is not null"
+                + " and ss.fingerPrintRecordType=:ftp "
+                + " and ss.recordTimeStamp between :f and :t";
+        FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
+        return ss;
+    }
+
+    public FingerPrintRecord findOutTimeRecord(AdditionalForm additionalForm) {
+        if (additionalForm == null) {
+            return null;
+        }
+
+        if (additionalForm.getToTime() == null) {
+            return null;
+        }
+
+        Date endTime = additionalForm.getToTime();
+        Calendar min = Calendar.getInstance();
+        min.setTime(endTime);
+        min.add(Calendar.HOUR, -1);
+
+        Calendar max = Calendar.getInstance();
+        max.setTime(endTime);
+        max.add(Calendar.HOUR, 2);
+
+        Map m = new HashMap();
+        m.put("f", min.getTime());
+        m.put("t", max.getTime());
+        m.put("s", additionalForm.getStaff());
         m.put("ftp", FingerPrintRecordType.Varified);
         String sql = "Select ss from FingerPrintRecord ss "
                 + " where ss.retired=false "
