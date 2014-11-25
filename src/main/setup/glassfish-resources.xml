@@ -10,5 +10,5 @@
         <property name="URL" value="jdbc:mysql://localhost:3306/ruhunu?zeroDateTimeBehavior=convertToNull"/>
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
     </jdbc-connection-pool>
-    <jdbc-resource enabled="true" jndi-name="rds1" object-type="user" pool-name="mysql_ruhunu_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="live02" object-type="user" pool-name="mysql_ruhunu_rootPool"/>
 </resources>
