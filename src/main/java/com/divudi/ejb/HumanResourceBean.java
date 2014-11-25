@@ -274,6 +274,29 @@ public class HumanResourceBean {
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
+    
+//     public List<StaffShift> fetchStaffShift(Date date, Staff staff) {
+//        Map m = new HashMap();
+//        m.put("date", date);
+//        m.put("s", staff);
+//        String sql = "Select ss from StaffShift ss "
+//                + " where ss.retired=false "
+//                + " and ss.staff=:s "
+//                + " and ss.shiftDate=:date";
+//
+//        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+//    }
+//    
+//     public List<Staff> fetchStaff(Roster roster) {
+//        Map m = new HashMap();     
+//        m.put("s", roster);
+//        String sql = "Select ss from Staff ss "
+//                + " where ss.retired=false "
+//                + " and ss.roster=:s "              
+//                + " order by ss.staff.codeInterger ";
+//
+//        return getStaffFacade().findBySQL(sql, m, TemporalType.DATE);
+//    }
 
     private StaffShift findOutTime(FingerPrintRecord r) {
         Date recordedDate = r.getRecordTimeStamp();
