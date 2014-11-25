@@ -48,7 +48,7 @@ public class Form implements Serializable {
 
    
     private String comments;
-    String code;
+    String code="";
 
     public String getCode() {
         return code;

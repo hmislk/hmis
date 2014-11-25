@@ -12,6 +12,8 @@
                 <h:panelGrid columns="2">
                     <p:panel header="Staff Transfer Form">
                         <h:panelGrid columns="2">
+                            <h:outputLabel value="Form Number"/>
+                            <p:inputText value="#{staffTransferFormController.currentTransferForm.code}"/>
                             <h:outputLabel value="Staff : "/>
                             <p:autoComplete id="staff"
                                             value="#{staffTransferFormController.currentTransferForm.staff}"

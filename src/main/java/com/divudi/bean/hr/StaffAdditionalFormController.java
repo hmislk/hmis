@@ -74,7 +74,7 @@ public class StaffAdditionalFormController implements Serializable {
                 + " a.createdAt between :fd and :td ";
 
         if (department != null) {
-            sql += " and a.requestDepartment=:dept ";
+            sql += " and a.department=:dept ";
             m.put("dept", department);
         }
 
@@ -103,7 +103,7 @@ public class StaffAdditionalFormController implements Serializable {
                 + " a.approvedAt between :fd and :td ";
 
         if (department != null) {
-            sql += " and a.requestDepartment=:dept ";
+            sql += " and a.department=:dept ";
             m.put("dept", department);
         }
 
@@ -180,6 +180,11 @@ public class StaffAdditionalFormController implements Serializable {
             return true;
         }
 
+        if (currentAdditionalForm.getCode().isEmpty()) {
+            JsfUtil.addErrorMessage("Please Enter Form Number");
+            return true;
+        }
+
         if (currentAdditionalForm.getFromTime() == null) {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
@@ -200,8 +205,8 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Comment");
             return true;
         }
-        
-        if(currentAdditionalForm.getTimes()==null){
+
+        if (currentAdditionalForm.getTimes() == null) {
             JsfUtil.addErrorMessage("Please Select Time Type");
             return true;
         }
