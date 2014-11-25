@@ -43,7 +43,7 @@ public class StaffAdditionalFormController implements Serializable {
     List<StaffShift> staffShifts;
     @EJB
     StaffShiftFacade staffShiftFacade;
-    
+
     @EJB
     CommonFunctions commonFunctions;
     List<AdditionalForm> additionalForms;
@@ -52,9 +52,9 @@ public class StaffAdditionalFormController implements Serializable {
     Staff approvedStaff;
     Date fromDate;
     Date toDate;
-    
-    public void deleteAdditionalForm(){
-        if (getCurrentAdditionalForm()!=null) {
+
+    public void deleteAdditionalForm() {
+        if (getCurrentAdditionalForm() != null) {
             currentAdditionalForm.setRetired(true);
             currentAdditionalForm.setRetirer(getSessionController().getLoggedUser());
             currentAdditionalForm.setRetiredAt(new Date());
@@ -65,8 +65,8 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to Delete.");
         }
     }
-    
-     public void createAmmendmentTable() {
+
+    public void createAmmendmentTable() {
         String sql;
         Map m = new HashMap();
 
@@ -94,8 +94,8 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-     
-     public void createAmmendmentTableApprovedDate() {
+
+    public void createAmmendmentTableApprovedDate() {
         String sql;
         Map m = new HashMap();
 
@@ -123,10 +123,10 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-     
-     public void viewAdditionalForm(AdditionalForm additionalForm){
-         currentAdditionalForm=additionalForm;
-     }
+
+    public void viewAdditionalForm(AdditionalForm additionalForm) {
+        currentAdditionalForm = additionalForm;
+    }
 
     public void fetchStaffShift() {
         HashMap hm = new HashMap();
@@ -202,7 +202,6 @@ public class StaffAdditionalFormController implements Serializable {
         }
 
         //NEED To Check StaffSHift  if not selected is there any shift time on that day
-        
         return false;
     }
 
@@ -212,7 +211,11 @@ public class StaffAdditionalFormController implements Serializable {
         }
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
-        getAdditionalFormFacade().create(currentAdditionalForm);
+        if (currentAdditionalForm.getId() == null) {
+            getAdditionalFormFacade().create(currentAdditionalForm);
+        } else {
+            getAdditionalFormFacade().edit(currentAdditionalForm);
+        }
 
         if (currentAdditionalForm.getStaffShift() != null) {
             currentAdditionalForm.getStaffShift().setHrForm(currentAdditionalForm);
@@ -304,8 +307,8 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     public Date getFromDate() {
-        if (fromDate==null) {
-            fromDate=commonFunctions.getStartOfMonth(new Date());
+        if (fromDate == null) {
+            fromDate = commonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -315,8 +318,8 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     public Date getToDate() {
-        if (toDate==null) {
-            toDate=commonFunctions.getEndOfMonth(new Date());
+        if (toDate == null) {
+            toDate = commonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

@@ -70,6 +70,11 @@ public class StaffAmendmentFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Staff");
             return true;
         }
+        
+        if(currAmendmentForm.getToStaffShift()==null&&currAmendmentForm.getToShift()==null){
+            JsfUtil.addErrorMessage("Please Enter ToStaffShift or ToShift");
+            return true;
+        }
 
         if (currAmendmentForm.getFromDate() == null) {
             JsfUtil.addErrorMessage("Please Select From Time");
@@ -105,7 +110,7 @@ public class StaffAmendmentFormController implements Serializable {
             currAmendmentForm.setCreatedAt(new Date());
             currAmendmentForm.setCreater(getSessionController().getLoggedUser());
             getAmendmentFormFacade().create(currAmendmentForm);
-        }else{
+        } else {
             getAmendmentFormFacade().edit(currAmendmentForm);
         }
 
@@ -121,16 +126,18 @@ public class StaffAmendmentFormController implements Serializable {
             toStaffShift.setStaff(fStaff);
             staffShiftFacade.edit(toStaffShift);
         } else {
-            toStaffShift = new StaffShift();
-            toStaffShift.setStaff(fStaff);
-            toStaffShift.setShift(getCurrAmendmentForm().getToShift());
-            toStaffShift.setShiftDate(getCurrAmendmentForm().getToDate());
-            staffShiftFacade.create(toStaffShift);
+            if (getCurrAmendmentForm().getToShift() != null) {
+                toStaffShift = new StaffShift();
+                toStaffShift.setStaff(fStaff);
+                toStaffShift.setShift(getCurrAmendmentForm().getToShift());
+                toStaffShift.setShiftDate(getCurrAmendmentForm().getToDate());
+                staffShiftFacade.create(toStaffShift);
 
-            fromStaffShift.setRetired(true);
-            fromStaffShift.setRetirer(sessionController.getLoggedUser());
-            fromStaffShift.setRetiredAt(new Date());
-            staffShiftFacade.edit(fromStaffShift);
+                fromStaffShift.setRetired(true);
+                fromStaffShift.setRetirer(sessionController.getLoggedUser());
+                fromStaffShift.setRetiredAt(new Date());
+                staffShiftFacade.edit(fromStaffShift);
+            }
         }
         ///////////////////////Finish Amendment
 
