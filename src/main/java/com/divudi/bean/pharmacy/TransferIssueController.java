@@ -53,6 +53,8 @@ public class TransferIssueController implements Serializable {
     private Date toDate;
     ///////
     @Inject
+    UserStockController userStockController;
+    @Inject
     private SessionController sessionController;
     ////
     @EJB
@@ -91,7 +93,7 @@ public class TransferIssueController implements Serializable {
             return;
         }
 
-        getPharmacyBean().removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
+        userStockController.removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
 
         getBillItems().remove(billItem.getSearialNo());
         int serialNo = 0;
@@ -101,7 +103,7 @@ public class TransferIssueController implements Serializable {
     }
 
     public void makeNull() {
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         requestedBill = null;
         issuedBill = null;
         printPreview = false;
@@ -123,7 +125,7 @@ public class TransferIssueController implements Serializable {
     }
 
     public void setRequestedBill(Bill requestedBill) {
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         makeNull();
         this.requestedBill = requestedBill;
         issuedBill = null;
@@ -133,7 +135,7 @@ public class TransferIssueController implements Serializable {
     public void generateBillComponent() {
 
         //User Stock Container Save if New Bill
-        UserStockContainer usc = getPharmacyBean().saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getRequestedBill())) {
 
@@ -144,7 +146,7 @@ public class TransferIssueController implements Serializable {
 
             System.err.println("Issueable Qty " + issuableQty);
 
-            List<StockQty> stockQtys = getPharmacyBean().getStockByQty(i.getBillItem().getItem(), issuableQty, getSessionController().getDepartment());
+            List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getBillItem().getItem(), issuableQty, getSessionController().getDepartment());
 
             for (StockQty sq : stockQtys) {
                 if (sq.getQty() == 0) {
@@ -152,7 +154,7 @@ public class TransferIssueController implements Serializable {
                 }
 
                 //Checking User Stock Entity
-                if (!getPharmacyBean().isStockAvailable(sq.getStock(), sq.getQty(), getSessionController().getLoggedUser())) {
+                if (!userStockController.isStockAvailable(sq.getStock(), sq.getQty(), getSessionController().getLoggedUser())) {
                     UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
                     continue;
                 }
@@ -181,7 +183,7 @@ public class TransferIssueController implements Serializable {
                 bItem.setPharmaceuticalBillItem(phItem);
 
                 //USER STOCK
-                UserStock us = getPharmacyBean().saveUserStock(bItem, getSessionController().getLoggedUser(), usc);
+                UserStock us = userStockController.saveUserStock(bItem, getSessionController().getLoggedUser(), usc);
                 bItem.setTransUserStock(us);
 
                 getBillItems().add(bItem);
@@ -243,7 +245,7 @@ public class TransferIssueController implements Serializable {
             getBillItemFacade().edit(i);
 
             //Checking User Stock Entity
-            if (!getPharmacyBean().isStockAvailable(tmpPh.getStock(), tmpPh.getQtyInUnit(), getSessionController().getLoggedUser())) {
+            if (!userStockController.isStockAvailable(tmpPh.getStock(), tmpPh.getQtyInUnit(), getSessionController().getLoggedUser())) {
                 i.setTmpQty(0);
                 getBillItemFacade().edit(i);
                 getIssuedBill().getBillItems().add(i);
@@ -251,7 +253,7 @@ public class TransferIssueController implements Serializable {
             }
 
             //Remove Department Stock
-            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(),
+            boolean returnFlag = pharmacyBean.deductFromStock(i.getPharmaceuticalBillItem().getStock(),
                     Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()),
                     i.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
@@ -259,7 +261,7 @@ public class TransferIssueController implements Serializable {
             if (returnFlag) {
 
                 //Addinng Staff
-                Stock staffStock = getPharmacyBean().addToStock(i.getPharmaceuticalBillItem(),
+                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
@@ -298,7 +300,7 @@ public class TransferIssueController implements Serializable {
 
         Bill b = getBillFacade().find(getIssuedBill().getId());
 
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         issuedBill = null;
         issuedBill = b;
@@ -324,7 +326,7 @@ public class TransferIssueController implements Serializable {
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
-        double availableStock = getPharmacyBean().getStockQty(tmp.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
+        double availableStock = pharmacyBean.getStockQty(tmp.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
 
         if (availableStock < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(0.0);
@@ -332,12 +334,12 @@ public class TransferIssueController implements Serializable {
         }
 
         //Check Is There Any Other User using same Stock
-        if (!getPharmacyBean().isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
+        if (!userStockController.isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
             tmp.setTmpQty(0.0);
             UtilityController.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
         }
 
-        getPharmacyBean().updateUserStock(tmp.getTransUserStock(), tmp.getQty());
+        userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty());
 
     }
 
@@ -383,14 +385,7 @@ public class TransferIssueController implements Serializable {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
-    public PharmacyBean getPharmacyBean() {
-        return pharmacyBean;
-    }
-
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
-    }
-
+  
     public SessionController getSessionController() {
         return sessionController;
     }

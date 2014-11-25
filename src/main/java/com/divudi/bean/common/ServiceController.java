@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
@@ -453,6 +454,45 @@ public class ServiceController implements Serializable {
 
         return temp;
     }
+    
+    List<Service> deletedServices;
+    List<Service> deletingServices;
+
+    public List<Service> getDeletedServices() {
+        return deletedServices;
+    }
+
+    public void setDeletedServices(List<Service> deletedServices) {
+        this.deletedServices = deletedServices;
+    }
+
+    public List<Service> getDeletingServices() {
+        return deletingServices;
+    }
+
+    public void setDeletingServices(List<Service> deletingServices) {
+        this.deletingServices = deletingServices;
+    }
+
+    
+    public void listDeletedServices() {
+        String sql = "select c from Service c where c.retired=true order by c.category.name,c.department.name";
+        deletedServices = getFacade().findBySQL(sql);
+        if (deletedServices == null) {
+            deletedServices = new ArrayList<>();
+        }
+    }
+
+    public void undeleteSelectedServices(){
+        for(Service s:deletingServices){
+            s.setRetired(false);
+            s.setRetiredAt(null);
+            s.setRetirer(null);
+            getFacade().edit(s);
+            System.out.println("undeleted = " + s);
+        }
+    }
+    
 
     public List<Service> getItems() {
         String sql = "select c from Service c where c.retired=false order by c.category.name,c.department.name";
