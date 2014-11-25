@@ -214,12 +214,12 @@ public class ServiceSummery implements Serializable {
                 + " and type(bi.bill)=:dtype";
         
         if (item != null) {
-            sql += " and bi.item=:itm ";
+            sql += " and bi.billItem.item=:itm ";
             temMap.put("itm", item);
         }
         
         if (department != null) {
-            sql += " and bi.bill.department=:dep ";
+            sql += " and bi.billItem.item.department=:dep ";
             temMap.put("dep", department);
         }
 
@@ -437,9 +437,9 @@ public class ServiceSummery implements Serializable {
             sql += " and bi.item=:itm ";
             temMap.put("itm", item);
         }
-
+        
         if (department != null) {
-            sql += " and bi.bill.department=:dep ";
+            sql += " and bi.item.department=:dep ";
             temMap.put("dep", department);
         }
 
