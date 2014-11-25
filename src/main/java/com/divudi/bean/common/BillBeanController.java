@@ -317,7 +317,35 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public double calFeeValue(Date fromDate, Date toDate, FeeType feetype,Institution institution, Institution creditCompany, List<PaymentMethod> paymentMethods) {
+        String sql = "SELECT sum(bf.feeValue)"
+                + " FROM BillFee bf "
+                + " WHERE bf.bill.billType=:bTp"
+                + " and bf.fee.feeType=:ftp1 "
+                + " and bf.bill.institution=:ins"
+                + " and bf.bill.toInstitution=:ins"
+                + " and bf.bill.createdAt between :fromDate and :toDate "
+                + " and bf.bill.paymentMethod in :pms";
 
+        HashMap temMap = new HashMap();
+        if (creditCompany != null) {
+            sql += " and bf.bill.creditCompany=:cd ";
+            temMap.put("cd", creditCompany);
+
+        }
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", institution);
+        temMap.put("bTp", BillType.OpdBill);
+        temMap.put("ftp1", feetype);
+        //temMap.put("ftp2", FeeType.Staff);
+        temMap.put("pms", paymentMethods);
+        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
     public double calFeeValue(Date fromDate, Date toDate, Institution institution, Institution creditCompany) {
         HashMap temMap = new HashMap();
         String sql = "SELECT sum(bf.feeValue)"

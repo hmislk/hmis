@@ -81,6 +81,7 @@ public class BookKeepingSummery implements Serializable {
     List<String1Value2> inwardProfessionalPayments;
     //Value
     double opdHospitalTotal;
+    double opdStaffTotal;
     double outSideFeeTotal;
     double pharmacyTotal;
     double inwardPaymentTotal;
@@ -297,6 +298,16 @@ public class BookKeepingSummery implements Serializable {
         return creditCompanyCollections;
     }
 
+    public double getOpdStaffTotal() {
+        return opdStaffTotal;
+    }
+
+    public void setOpdStaffTotal(double opdStaffTotal) {
+        this.opdStaffTotal = opdStaffTotal;
+    }
+
+    
+    
     public void setCreditCompanyCollections(List<BillItem> creditCompanyCollections) {
         this.creditCompanyCollections = creditCompanyCollections;
     }
@@ -1850,7 +1861,8 @@ public class BookKeepingSummery implements Serializable {
         createDoctorPaymentOpd();
         createDoctorPaymentInward();
         ///////////////////
-        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(),FeeType.OwnInstitution, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+        opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(),FeeType.Staff, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
