@@ -223,62 +223,85 @@
                                                  value="Add Surgeries"
                                                  actionListener="#{surgeryBillController.makeNull}"
                                                  rendered="#{webUserController.hasPrivilege('TheatreAddSurgery')}" />
-                                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_service"
-                                                 value="Add Service"
-                                                 actionListener="#{billBhtController.makeNull()}"
-                                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
+                                    <p:submenu label="Service" rendered="#{webUserController.hasPrivilege('TheatreBilling')}">
+                                        <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_service"
+                                                     value="Add Service"
+                                                     actionListener="#{billBhtController.makeNull()}"
+                                                     rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
+                                        <p:menuitem  ajax="false"  action="/inward/inward_search_service" value="Search Bill"
+                                                     actionListener="#{searchController.makeListNull}" 
+                                                     rendered="#{webUserController.hasPrivilege('TheatreBilling')}" ></p:menuitem>  
+
+                                    </p:submenu>
                                     <p:menuitem  ajax="false"  action="#{timedItemController.inwardTimedServiceConsumeTheatre()}" 
                                                  value="Add Timed Services" 
                                                  actionListener="#{inwardTimedItemController.makeNull}" 
                                                  rendered="#{webUserController.hasPrivilege('TheatreBilling')}"  ></p:menuitem> 
-                                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_professional" 
-                                                 value="Add Professional Fee"
-                                                 actionListener="#{inwardProfessionalBillController.makeNull()}"
-                                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
-                                    
+                                    <p:submenu label="Professional"> 
+                                        <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_professional" 
+                                                     value="Add Professional Fee"
+                                                     actionListener="#{inwardProfessionalBillController.makeNull()}"
+                                                     rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
+                                        <p:menuitem  ajax="false"  action="/inward/inward_search_professional" 
+                                                     value="Search Bill"
+                                                     actionListener="#{searchController.makeListNull}"  
+                                                     rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
+                                    </p:submenu>
                                     <p:submenu label="Transfer" rendered="#{webUserController.hasPrivilege('TheaterTransfer')}" >
                                         <p:menuitem  ajax="false" action="/theater/theater_transfer_request"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRequest')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request_list"  value="Issue" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferIssue')}" ></p:menuitem>                                           
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list"  value="Recieve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferRecieve')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_report_transfer"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('TheaterTransferReport')}" ></p:menuitem>
                                     </p:submenu>
-                                    
-                                    
+
+
                                     <p:submenu label="BHT Issue" rendered="#{webUserController.hasPrivilege('TheaterIssue')}" >
-                                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue" 
-                                                 value="Pharmacy BHT Issue"
-                                                 actionListener="#{pharmacySaleBhtController.makeNull()}"
-                                                 rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" />
-                                    
-                                    <p:submenu label="General BHT Issue" rendered="#{webUserController.hasPrivilege('TheaterIssueStore')}">
-                                        <p:menuitem ajax="false" action="/store/store_retail_sale_bht"  value="Inward Billing"
-                                                    rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtBilling')}" 
-                                                    actionListener="#{pharmacySaleBhtController.resetAll()}"/>
-                                        <p:menuitem  ajax="false" action="/store/store_search_sale_bill_bht"
-                                                     actionListener="#{searchController.makeListNull}"  value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBill')}"/>
-                                        <p:menuitem  ajax="false" action="/store/store_search_sale_bill_item_bht" actionListener="#{searchController.makeListNull}"   
-                                                     value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBillItem')}"/>                                       
+                                        <p:submenu label="Pharmacy Issue" rendered="#{webUserController.hasPrivilege('TheaterIssue')}">
+                                            <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue" 
+                                                         value="Pharmacy BHT Issue"
+                                                         actionListener="#{pharmacySaleBhtController.makeNull()}"
+                                                         rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" />
+                                            <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_bht" actionListener="#{searchController.makeListNull}" 
+                                                         value="Search Issue Bills" rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" ></p:menuitem>                                        
+                                            <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_item_bht" actionListener="#{searchController.makeListNull}"   
+                                                         value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" ></p:menuitem>                                        
+                                            <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht" actionListener="#{searchController.makeListNull}" 
+                                                        value="Search Issue Return Bill" 
+                                                        rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" ></p:menuitem>
+                                            <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht" 
+                                                        actionListener="#{searchController.makeListNull}" 
+                                                        value="Search Issue Return Bill Items" 
+                                                        rendered="#{webUserController.hasPrivilege('TheaterIssuePharmacy')}" ></p:menuitem>
+                                        </p:submenu>
+                                        <p:submenu label="General BHT Issue" rendered="#{webUserController.hasPrivilege('TheaterIssueStore')}">
+                                            <p:menuitem ajax="false" action="/store/store_retail_sale_bht"  value="Inward Billing"
+                                                        rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtBilling')}" 
+                                                        actionListener="#{pharmacySaleBhtController.resetAll()}"/>
+                                            <p:menuitem  ajax="false" action="/store/store_search_sale_bill_bht"
+                                                         actionListener="#{searchController.makeListNull}"  value="Search Issue Bill" rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBill')}"/>
+                                            <p:menuitem  ajax="false" action="/store/store_search_sale_bill_item_bht" actionListener="#{searchController.makeListNull}"   
+                                                         value="Search Issue Bill Items" rendered="#{webUserController.hasPrivilege('TheaterIssueStoreBhtSearchBillItem')}"/>                                       
+                                        </p:submenu>
+
+
                                     </p:submenu>
-                                    
-                                                                        
-                                    </p:submenu>
-                                    
+
                                     <p:submenu label="Opd Issue" rendered="#{webUserController.hasPrivilege('TheaterIssueOpd')}"> 
-                                                                                                                       
+
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier"  
                                                      value="Opd Issue For Cashier" rendered="#{webUserController.hasPrivilege('TheaterIssueOpdForCasheir')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
-                                        
+
 
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_sale_pre_bill"  
                                                      value="Search Opd Issue Pre Bill"
                                                      actionListener="#{searchController.makeListNull}"
                                                      rendered="#{webUserController.hasPrivilege('TheaterIssueOpdSearchPreBill')}"   ></p:menuitem>
-                                            
+
                                         <p:menuitem  ajax="false" 
                                                      action="/pharmacy/pharmacy_search_pre_bill_for_return_item_only" 
                                                      actionListener="#{searchController.makeListNull}"   
                                                      value="Return - Items Only" rendered="#{webUserController.hasPrivilege('TheaterIssueOpdSearchPreBillForReturnItemOnly')}"></p:menuitem>                                            
-                                                                                                                           
+
                                         <p:menuitem ajax="false" action="/pharmacy/pharmacy_search_return_bill_pre" actionListener="#{searchController.makeListNull}"  value="Search Opd Issue Return Bill (Item)" rendered="#{webUserController.hasPrivilege('TheaterIssueOpdSearchPreBillReturn')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid" actionListener="#{searchController.makeListNull}"   value="Add To Stock" rendered="#{webUserController.hasPrivilege('TheaterIssueOpdSearchPreBillAddToStock')}" ></p:menuitem>
                                     </p:submenu>
@@ -286,7 +309,7 @@
                                     <p:menuitem ajax="false" action="/theater/inward_search_surgery" value="Search"
                                                 actionListener="#{searchController.makeListNull}"
                                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
-                                    
+
                                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index"  value="Reports" rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
                                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index"  value="Summeries" rendered="#{webUserController.hasPrivilege('TheaterSummeries')}" ></p:menuitem>
                                 </p:submenu>

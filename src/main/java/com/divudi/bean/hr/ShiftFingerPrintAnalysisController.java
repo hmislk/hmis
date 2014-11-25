@@ -137,10 +137,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         Calendar nc = Calendar.getInstance();
         nc.setTime(getFromDate());
         Date nowDate = nc.getTime();
+        System.out.println("Line1 = " + new Date());
 
         nc.setTime(getToDate());
         nc.add(Calendar.DATE, 1);
         Date tmpToDate = nc.getTime();
+        System.out.println("Line2 = " + new Date());
 
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
@@ -162,9 +164,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShiftWithShift(nowDate, roster);
+            
 
             if (staffShifts.isEmpty()) {
 //                    System.err.println("CONTINUE");
+                Calendar c = Calendar.getInstance();
+                c.setTime(nowDate);
+                c.add(Calendar.DATE, 1);
+                nowDate = c.getTime();
                 continue;
             }
 
@@ -174,6 +181,27 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 List<FingerPrintRecord> list = new ArrayList<>();
                 FingerPrintRecord fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
                 FingerPrintRecord fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
+
+                if (ss.getHrForm() != null && ss.getHrForm() instanceof AdditionalForm) {
+                    AdditionalForm additionalForm = (AdditionalForm) ss.getHrForm();
+
+                    if (fingerPrintRecordIn == null) {
+                        fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(additionalForm);
+                        if (fingerPrintRecordIn != null) {
+                            fingerPrintRecordIn.setComments("");
+                            fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
+                        }
+                    }
+
+                    if (fingerPrintRecordOut == null) {
+                        fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(additionalForm);
+                        if (fingerPrintRecordOut != null) {
+                            fingerPrintRecordOut.setComments("");
+                            fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
+                        }
+                    }
+
+                }
 
                 if (fingerPrintRecordIn != null) {
                     fingerPrintRecordIn.setTimes(Times.inTime);
@@ -196,12 +224,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                        fingerPrintRecordFacade.create(fpr);
                     list.add(fpr);
                     ss.setStartRecord(fpr);
-//                        staffShiftFacade.edit(ss);
 
+//                        staffShiftFacade.edit(ss);
                     if (ss.getPreviousStaffShift() != null) {
 //                            System.err.println("PREV");
                         ss.getStartRecord().setComments("(NEW PREV)");
                         ss.getStartRecord().setRecordTimeStamp(ss.getShiftStartTime());
+
                     }
 
                 }
@@ -246,9 +275,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
                 ss.getFingerPrintRecordList().addAll(list);
                 netT.getStaffShift().add(ss);
+
             }
 
-            System.err.println("BOOL " + netT.getFlag());
             shiftTables.add(netT);
 
             Calendar c = Calendar.getInstance();
@@ -372,8 +401,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 //Fetch Basic
                 StaffPaysheetComponent basic = humanResourceBean.getBasic(ss.getStaff());
-                
-                
+
                 ss.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
 
                 //UPDATE Staff Shift Time Only if working days

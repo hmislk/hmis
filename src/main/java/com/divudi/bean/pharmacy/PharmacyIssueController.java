@@ -19,7 +19,6 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
-import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.IssueRateMargins;
 import com.divudi.entity.Item;
@@ -179,11 +178,15 @@ public class PharmacyIssueController implements Serializable {
         tmp.setQty(0.0);
         tmp.getPharmaceuticalBillItem().setQtyInUnit(0.0f);
 
-        getPharmacyBean().updateUserStock(tmp.getTransUserStock(), 0);
+        userStockController.updateUserStock(tmp.getTransUserStock(), 0);
     }
 
     //Check when edititng Qty
     //
+    
+    @Inject 
+    UserStockController userStockController;
+    
     public boolean onEdit(BillItem tmp) {
         //Cheking Minus Value && Null
         if (tmp.getQty() <= 0 || tmp.getQty() == null) {
@@ -205,7 +208,7 @@ public class PharmacyIssueController implements Serializable {
         }
 
         //Check Is There Any Other User using same Stock
-        if (!getPharmacyBean().isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
+        if (!userStockController.isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
 
             setZeroToQty(tmp);
             onEditCalculation(tmp);
@@ -214,7 +217,7 @@ public class PharmacyIssueController implements Serializable {
             return true;
         }
 
-        getPharmacyBean().updateUserStock(tmp.getTransUserStock(), tmp.getQty());
+        userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty());
 
         onEditCalculation(tmp);
 
@@ -316,7 +319,7 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void resetAll() {
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
         billPreview = false;
@@ -460,7 +463,7 @@ public class PharmacyIssueController implements Serializable {
             getPreBill().getBillItems().add(tbi);
         }
 
-        getPharmacyBean().retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         calculateAllRates();
 
@@ -602,7 +605,7 @@ public class PharmacyIssueController implements Serializable {
             return;
         }
         //Checking User Stock Entity
-        if (!getPharmacyBean().isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage = "Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
             UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
@@ -622,8 +625,8 @@ public class PharmacyIssueController implements Serializable {
         getPreBill().getBillItems().add(billItem);
 
         //User Stock Container Save if New Bill
-        getPharmacyBean().saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
-        UserStock us = getPharmacyBean().saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
+        userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
         billItem.setTransUserStock(us);
 
         calculateAllRates();
@@ -668,7 +671,7 @@ public class PharmacyIssueController implements Serializable {
     private StockHistoryFacade stockHistoryFacade;
 
     public void removeBillItem(BillItem b) {
-        getPharmacyBean().removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
+        userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
         getPreBill().getBillItems().remove(b.getSearialNo());
 
         calTotal();

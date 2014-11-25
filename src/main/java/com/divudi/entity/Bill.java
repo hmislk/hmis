@@ -381,6 +381,7 @@ public class Bill implements Serializable {
         staffFee = 0 - bill.getStaffFee();
         hospitalFee = 0 - bill.getHospitalFee();
         margin = 0 - bill.getMargin();
+        grnNetTotal = 0 - bill.getGrnNetTotal();
 
     }
 
@@ -401,6 +402,7 @@ public class Bill implements Serializable {
         grantTotal = 0 - getGrantTotal();
         staffFee = 0 - getStaffFee();
         hospitalFee = 0 - getHospitalFee();
+        grnNetTotal = 0 - getGrnNetTotal();
     }
 
     public void copy(Bill bill) {
@@ -430,6 +432,7 @@ public class Bill implements Serializable {
         referenceInstitution = bill.getReferenceInstitution();
         bookingId = bill.getBookingId();
         appointmentAt = bill.getAppointmentAt();
+        referredByInstitution = bill.getReferredByInstitution();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -485,6 +488,10 @@ public class Bill implements Serializable {
 
     public double getTotal() {
         return total;
+    }
+
+    public double getTransSaleBillTotalMinusDiscount() {
+        return total - discount;
     }
 
     public void setTotal(double total) {

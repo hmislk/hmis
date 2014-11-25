@@ -306,16 +306,13 @@ public class BillPackageController implements Serializable {
 
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
-            
-            BillItem bi = be.getBillItem();
-            BillSession bs = getServiceSessionBean().createBillSession(bi);
-            bi.setBillSession(bs);
-            
-//            be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
-
-            if (be.getBillItem().getBillSession() != null) {
-                getBillSessionFacade().create(be.getBillItem().getBillSession());
-
+            BillItem temBi = be.getBillItem();
+            System.out.println("temBi = " + temBi);
+            BillSession temBs = getServiceSessionBean().createBillSession(temBi);
+            System.out.println("temBs = " + temBs);
+            temBi.setBillSession(temBs);
+            if (temBs != null) {
+                getBillSessionFacade().create(temBs);
             }
         }
     }

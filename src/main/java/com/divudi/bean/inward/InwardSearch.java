@@ -761,9 +761,10 @@ public class InwardSearch implements Serializable {
 //            if (check()) {
 //                return;
 //            }
-            if (checkBathcReferenceBill()) {
-                return;
-            }
+//            if (checkBathcReferenceBill()) {
+//                UtilityController.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
+//                return;
+//            }
 
             CancelledBill cb = createCancelBill();
             //Copy & paste

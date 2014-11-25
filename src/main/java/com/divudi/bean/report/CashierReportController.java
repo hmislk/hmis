@@ -24,6 +24,7 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -764,10 +765,21 @@ public class CashierReportController implements Serializable {
     public List<WebUser> getCashiers() {
         String sql;
         Map temMap = new HashMap();
-        sql = "select us from WebUser us where us.id in (select b.creater.id from Bill b "
-                + " where b.createdAt between :fromDate and :toDate)";
+        BillType[] btpArr = enumController.getCashFlowBillTypes();
+        List<BillType> btpList = Arrays.asList(btpArr);
+        sql = "select us from "
+                + " Bill b "
+                + " join b.creater us "
+                + " where b.retired=false "
+                + " and b.institution=:ins "
+                + " and b.billType in :btp "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " group by us "
+                + " having sum(b.netTotal)!=0 ";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
+        temMap.put("btp", btpList);
+        temMap.put("ins", sessionController.getInstitution());
         cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();

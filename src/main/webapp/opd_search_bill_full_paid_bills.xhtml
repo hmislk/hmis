@@ -37,17 +37,17 @@
                             </p:columnGroup>
                             <p:subTable value="#{wb.caBills}" var="bill" rendered="#{wb.caBills.size()>0}">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Bill No - #{wb.b.insId}"></p:outputLabel>
+                                    <p:outputLabel value="Bill No - #{wb.b.deptId}"></p:outputLabel>
                                     <p:outputLabel value="Balance - #{wb.b.balance}" rendered="#{wb.b.balance>0}" style="color: red; float: right;" />
                                     <p:outputLabel value="Balance - #{wb.b.balance}" rendered="#{wb.b.balance eq 0}" style="color: green; float: right;" />
                                     <p:outputLabel value="Bill Total - #{wb.b.total}" style="float: right; padding-right: 50%;"></p:outputLabel>
-                                    <p:outputLabel value="Paid - #{wb.b.netTotal} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" style="float: right;"></p:outputLabel>
+                                    <p:outputLabel value="Frist Paid - #{wb.b.cashPaid} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" style="float: right;"></p:outputLabel>
                                 </f:facet>
                                 <p:column headerText="Bill No" >                                
-                                    <h:outputLabel   value="#{bill.insId}"/>
+                                    <h:outputLabel   value="#{bill.deptId}"/>
                                 </p:column>                            
                                 <p:column headerText="Billed for"  >                                
-                                    <h:outputLabel value="#{bill.referenceBill.insId}" />
+                                    <h:outputLabel value="#{bill.referenceBill.deptId}" />
                                 </p:column>
                                 <p:column headerText="Billed at"  >
                                     <h:outputLabel value="#{bill.createdAt}" >
