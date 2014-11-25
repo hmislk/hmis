@@ -200,6 +200,11 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Comment");
             return true;
         }
+        
+        if(currentAdditionalForm.getTimes()==null){
+            JsfUtil.addErrorMessage("Please Select Time Type");
+            return true;
+        }
 
         //NEED To Check StaffSHift  if not selected is there any shift time on that day
         return false;
