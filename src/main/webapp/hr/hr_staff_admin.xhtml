@@ -60,8 +60,25 @@
                                                 <f:selectItem itemLabel="Select Title" />
                                                 <f:selectItems value="#{billController.title}"/>
                                             </p:selectOneMenu>
+
                                             <h:outputText  value="Name" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.person.name}"  />
+
+                                            <h:outputText  value="Full Name" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.fullName}"  />
+
+                                            <h:outputText  value="Name with Initials" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.nameWithInitials}"  />
+
+                                            <h:outputText  value="NIC No" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.nic}"  />
+
+                                            <h:outputText  value="Gender" ></h:outputText>
+                                            <p:selectOneMenu id="txtNewSex"  value="#{staffController.current.person.sex}" >
+                                                <f:selectItem itemLabel="Select Gender"/>
+                                                <f:selectItems value="#{enumController.gender}"/>
+                                            </p:selectOneMenu>
+
                                             <h:outputText  value="Finger Print Id" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.acNo}"  />
                                             <h:outputText  value="Code" ></h:outputText>
@@ -175,8 +192,8 @@
                                                          value="#{staffController.current.leaveHour}"  />
                                         </h:panelGrid>
                                     </p:tab>
-                                    
-                                     <p:tab title="Leave Entitle">
+
+                                    <p:tab title="Leave Entitle">
                                         <h:panelGrid columns="2">                                           
                                             <h:outputText  value="Annual" ></h:outputText>
                                             <p:inputText autocomplete="off"  

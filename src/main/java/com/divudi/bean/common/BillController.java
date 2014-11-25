@@ -181,10 +181,14 @@ public class BillController implements Serializable {
     @EJB
     private CashTransactionBean cashTransactionBean;
 
+    @Inject
+    SearchController searchController;
+    
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
         opdPaymentCredit = 0.0;
+        searchController.createTableByKeywordToPayBills();
     }
 
     public void saveBillOPDCredit() {
@@ -1245,14 +1249,14 @@ public class BillController implements Serializable {
                 setDiscount(billDiscount);
                 setTotal(billGross);
                 setNetTotal(billNet);
-                setCashBalance(cashPaid - billNet);
+                setCashBalance(cashPaid - billNet - billDiscount);
                 System.out.println("cashBalance = " + cashBalance);
             } else {
                 System.out.println("half paid = ");
                 setDiscount(billDiscount);
                 setTotal(billGross);
                 setNetTotal(cashPaid);
-                setCashBalance(billNet - cashPaid);
+                setCashBalance(billNet - cashPaid - billDiscount);
                 System.out.println("cashBalance = " + cashBalance);
             }
             cashRemain = cashPaid;
