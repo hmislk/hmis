@@ -432,6 +432,7 @@ public class Bill implements Serializable {
         referenceInstitution = bill.getReferenceInstitution();
         bookingId = bill.getBookingId();
         appointmentAt = bill.getAppointmentAt();
+        referredByInstitution = bill.getReferredByInstitution();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -489,10 +490,10 @@ public class Bill implements Serializable {
         return total;
     }
 
-    public double getTransSaleBillTotalMinusDiscount(){
-        return total - discount ;
+    public double getTransSaleBillTotalMinusDiscount() {
+        return total - discount;
     }
-    
+
     public void setTotal(double total) {
         this.total = total;
     }
