@@ -6,11 +6,13 @@
 package com.divudi.entity;
 
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -29,6 +31,77 @@ public class PersonRelationship implements Serializable {
     Person bperson;
     @ManyToOne
     Relationship relationship;
+    int orderNo;
+    //Created Properties
+    @ManyToOne
+    WebUser creater;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date createdAt;
+    //Retairing properties
+    boolean retired;
+    @ManyToOne
+    WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date retiredAt;
+    String retireComments;
+
+    public int getOrderNo() {
+        return orderNo;
+    }
+
+    public void setOrderNo(int orderNo) {
+        this.orderNo = orderNo;
+    }
+
+    public WebUser getCreater() {
+        return creater;
+    }
+
+    public void setCreater(WebUser creater) {
+        this.creater = creater;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+    
+    
 
     public Person getAperson() {
         return aperson;
