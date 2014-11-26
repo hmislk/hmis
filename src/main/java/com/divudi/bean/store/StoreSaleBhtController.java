@@ -20,6 +20,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillClassType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -557,7 +558,7 @@ public class StoreSaleBhtController implements Serializable {
         savePreBillItemsFinally(tmpBillItems);
 
         // Calculation Margin and Create Billfee 
-        updateFee(getPreBill().getBillItems());
+        updateFee(getPreBill().getBillItems(),getPatientEncounter().getPaymentMethod());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -591,7 +592,7 @@ public class StoreSaleBhtController implements Serializable {
         this.priceMatrixController = priceMatrixController;
     }
 
-    public void updateFee(List<BillItem> billItems) {
+    public void updateFee(List<BillItem> billItems, PaymentMethod paymentMethod) {
         double total = 0;
         double netTotal = 0;
         for (BillItem bi : billItems) {
@@ -614,7 +615,7 @@ public class StoreSaleBhtController implements Serializable {
 
             /////////////
             double rate = Math.abs(bi.getRate());
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, bi.getBill().getFromDepartment());
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, bi.getBill().getFromDepartment(), paymentMethod);
 
             if (priceMatrix != null) {
                 double margin = (Math.abs(bi.getNetValue()) * priceMatrix.getMargin()) / 100;

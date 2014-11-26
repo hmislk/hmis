@@ -409,6 +409,7 @@ public class CashRecieveBillController implements Serializable {
     private void saveBill(BillType billType) {
 
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, BillNumberSuffix.CRDPAY));
+        getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.BilledBill, BillNumberSuffix.CRDPAY));
 
         getCurrent().setBillType(billType);
 
