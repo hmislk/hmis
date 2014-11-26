@@ -104,6 +104,9 @@
                                         </h:outputLabel>
                                         <p:inputMask mask="999-9999999" disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.phone}" >
                                         </p:inputMask>
+                                        <h:outputLabel value="Patient ​Address" ></h:outputLabel>
+                                        <h:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.address}" ></h:inputText>
+                                        
                                         <p:commandButton value="Update" action="#{inwardSearch.updatePatiantDetails()}" ajax="false"></p:commandButton>
                                     </p:panelGrid>
                                 </p:panel>
