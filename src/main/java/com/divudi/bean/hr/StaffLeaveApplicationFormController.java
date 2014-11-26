@@ -17,6 +17,7 @@ import com.divudi.entity.hr.StaffLeave;
 import com.divudi.facade.LeaveFormFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.itextpdf.text.log.SysoCounter;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -96,8 +97,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public void calLeaveCount() {
         leaveUtilize = getLeaveType().getLeaveUtilization();
-        
-        
+
     }
 
     public StaffLeaveFacade getStaffLeaveFacade() {
@@ -112,6 +112,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
     }
 
     public boolean errorCheck() {
+        if (currentLeaveForm.getCode().isEmpty()) {
+            JsfUtil.addErrorMessage("Please Enter Form Number");
+            return true;
+        }
+
         if (currentLeaveForm.getStaff() == null) {
             JsfUtil.addErrorMessage("Please Enter Staff");
             return true;
@@ -152,52 +157,26 @@ public class StaffLeaveApplicationFormController implements Serializable {
     HumanResourceBean humanResourceBean;
 
     private void saveStaffLeaves() {
-        Date nowDate = fromDate;
+        Calendar nowDate = Calendar.getInstance();
+        nowDate.setTime(getCurrentLeaveForm().getFromDate());
+        Calendar toDateCal = Calendar.getInstance();
+        toDateCal.setTime(getCurrentLeaveForm().getToDate());
+        while (toDateCal.getTime().after(nowDate.getTime())
+                ||toDateCal.get(Calendar.DATE)==nowDate.get(Calendar.DATE)) {
 
-        while (toDate.after(nowDate)) {
-            Calendar nc = Calendar.getInstance();
-            nc.setTime(nowDate);
-
-//            boolean dontAddLeave = false;
-//            switch (nc.get(Calendar.DAY_OF_WEEK)) {
-////                case Calendar.SATURDAY:                    
-////                    continueFlag = true;
-////                    break;
-//                case Calendar.SUNDAY:
-//                    dontAddLeave = true;
-//                    break;
-//            }
-//            DayType dayType = humanResourceBean.isHolidayWithDayType(nowDate);
-//
-//            if (dayType == null) {
-//                return;
-//            } else {
-//                switch (dayType) {
-//                    case MurchantileHoliday:
-//                        dontAddLeave = true;
-//                        break;
-//                    case Poya:
-//                        dontAddLeave = true;
-//                        break;
-////                    case PublicHoliday:
-////                        dontAddLeave = true;
-////                        break;
-//                }
-//            }
-//            if (!dontAddLeave) {
             StaffLeave staffLeave = new StaffLeave();
             staffLeave.setCreatedAt(new Date());
             staffLeave.setCreater(sessionController.getLoggedUser());
             staffLeave.setLeaveType(getCurrentLeaveForm().getLeaveType());
             staffLeave.setRoster(getCurrentLeaveForm().getStaff().getRoster());
             staffLeave.setStaff(getCurrentLeaveForm().getStaff());
-            staffLeave.setLeaveDate(nowDate);
+            staffLeave.setLeaveDate(nowDate.getTime());
             staffLeave.setForm(getCurrentLeaveForm());
             staffLeave.calLeaveQty();
             staffLeaveFacade.create(staffLeave);
-//            }
-            nc.add(Calendar.DATE, 1);
-            nowDate = nc.getTime();
+
+          
+            nowDate.add(Calendar.DATE, 1);            
         }
 
     }
