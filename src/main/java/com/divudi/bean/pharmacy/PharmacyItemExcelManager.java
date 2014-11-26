@@ -678,7 +678,7 @@ public class PharmacyItemExcelManager implements Serializable {
         for (Bill b : bills) {
             System.out.println("1. b.getGrnNetTotal() = " + b.getGrnNetTotal());
             System.out.println("1. b.getNetTotal() = " + b.getNetTotal());
-            b.setGrnNetTotal(0-b.getBilledBill().getGrnNetTotal());
+            b.setGrnNetTotal(0 - b.getBilledBill().getGrnNetTotal());
             getBillFacade().edit(b);
             System.out.println("2. b.getGrnNetTotal() = " + b.getGrnNetTotal());
             System.out.println("2. b.getNetTotal() = " + b.getNetTotal());
@@ -706,13 +706,15 @@ public class PharmacyItemExcelManager implements Serializable {
 
     }
 
-    public void updateAgencyBill() {
+    public void updateBillDeptID() {
+        BillType[] btps = {BillType.AgentPaymentReceiveBill, BillType.CashRecieveBill, BillType.GrnPaymentPre, BillType.PettyCash};
+        List<BillType> btpList = Arrays.asList(btps);
         String sql = "select s from Bill s"
                 + "  where s.retired=false "
-                + "  and s.billType=:btp "
+                + "  and s.billType in :btp "
                 + "  and s.deptId is null ";
         HashMap hm = new HashMap();
-        hm.put("btp", BillType.AgentPaymentReceiveBill);
+        hm.put("btp", btpList);
         List<Bill> list = billFacade.findBySQL(sql, hm);
         if (list == null) {
             return;

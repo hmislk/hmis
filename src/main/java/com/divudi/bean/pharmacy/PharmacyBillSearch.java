@@ -287,7 +287,7 @@ public class PharmacyBillSearch implements Serializable {
         this.priceMatrixController = priceMatrixController;
     }
 
-    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment) {
+    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment,PaymentMethod paymentMethod) {
         double total = 0;
         double netTotal = 0;
         for (BillItem bi : billItems) {
@@ -295,7 +295,7 @@ public class PharmacyBillSearch implements Serializable {
             double rate = Math.abs(bi.getRate());
             double margin = 0;
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment,paymentMethod);
 
             if (priceMatrix != null) {
                 margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -319,7 +319,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public void updateFeeMargin() {
 
-        updateMargin(getBill().getBillItems(), getBill(), getBill().getFromDepartment());
+        updateMargin(getBill().getBillItems(), getBill(), getBill().getFromDepartment(),getBill().getPatientEncounter().getPaymentMethod());
 
     }
 
