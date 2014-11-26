@@ -161,6 +161,7 @@ public class PettyCashBillController implements Serializable {
     private void saveBill() {
 
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PettyCash, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
+        getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PettyCash, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
 
         getCurrent().setBillType(BillType.PettyCash);
 

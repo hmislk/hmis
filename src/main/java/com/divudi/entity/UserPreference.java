@@ -42,9 +42,20 @@ public class UserPreference implements Serializable {
     Institution institution;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
+    boolean paymentMethodAllowedInInwardMatrix;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
 
+    public boolean isPaymentMethodAllowedInInwardMatrix() {
+        return paymentMethodAllowedInInwardMatrix;
+    }
+
+    public void setPaymentMethodAllowedInInwardMatrix(boolean paymentMethodAllowedInInwardMatrix) {
+        this.paymentMethodAllowedInInwardMatrix = paymentMethodAllowedInInwardMatrix;
+    }
+
+    
+    
     public boolean isPartialPaymentOfOpdBillsAllowed() {
         return partialPaymentOfOpdBillsAllowed;
     }

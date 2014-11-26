@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillClassType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
@@ -208,11 +209,11 @@ public class StoreIssueReturnController implements Serializable {
 
     }
 
-    public void updateMargin(BillItem bi, Department matrixDepartment) {
+    public void updateMargin(BillItem bi, Department matrixDepartment,PaymentMethod paymentMethod) {
         double rate = Math.abs(bi.getRate());
         double margin = 0;
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment);
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment,paymentMethod);
 
         if (priceMatrix != null) {
             margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -226,12 +227,12 @@ public class StoreIssueReturnController implements Serializable {
         getBillItemFacade().edit(bi);
     }
 
-    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment) {
+    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment,PaymentMethod paymentMethod) {
         double total = 0;
         double netTotal = 0;
         for (BillItem bi : billItems) {
 
-            updateMargin(bi, matrixDepartment);
+            updateMargin(bi, matrixDepartment,paymentMethod);
             total += bi.getGrossValue();
             netTotal += bi.getNetValue();
         }
@@ -251,7 +252,7 @@ public class StoreIssueReturnController implements Serializable {
         saveReturnBill();
         saveComponent();
 
-        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment());
+        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(),getBill().getPatientEncounter().getPaymentMethod());
 
         getBillFacade().edit(getReturnBill());
 

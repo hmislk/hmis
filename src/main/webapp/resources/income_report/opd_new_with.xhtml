@@ -78,6 +78,11 @@
                                rendered="#{!sr.catRow and sr.totalRow eq true}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
+                <f:facet name="footer" >
+                    <h:outputLabel value="#{bookKeepingSummery.opdStaffTotal}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </f:facet>
 
             </p:column>
             <p:column  headerText="Total Fee"  styleClass="numberCol"  >
@@ -93,7 +98,7 @@
                 </p:outputLabel>  
 
                 <f:facet name="footer">
-                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
+                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal + bookKeepingSummery.opdStaffTotal}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>

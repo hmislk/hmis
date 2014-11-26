@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.divudi.entity;
 
+import com.divudi.entity.hr.Roster;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -21,30 +21,42 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class Form implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     //Created Properties
     @ManyToOne
-     private WebUser creater;
+    private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     private Date createdAt;
+    private Date createdAt;
     //Retairing properties
-     private boolean retired;
+    private boolean retired;
     @ManyToOne
-     private WebUser retirer;
+    private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     private Date retiredAt;
-     private String retireComments;
-     //Edited Properties
+    private Date retiredAt;
+    private String retireComments;
+    //Edited Properties
     @ManyToOne
     private WebUser editor;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
      //
-     private String comments;
+
+   
+    private String comments;
+    String code="";
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 
     public Long getId() {
         return id;
@@ -53,7 +65,7 @@ public class Form implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -150,5 +162,5 @@ public class Form implements Serializable {
     public void setEditedAt(Date editedAt) {
         this.editedAt = editedAt;
     }
-    
+
 }

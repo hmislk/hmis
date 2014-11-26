@@ -14,6 +14,8 @@
                         <p:panel>
                             <p:panel header="Employee Details">
                                 <p:panelGrid columns="2">
+                                    <h:outputLabel value="Form Number"/>
+                                    <p:inputText value="#{staffAmendmentFormController.currAmendmentForm.code}"/>
                                     <h:outputLabel value="From Staff"/>
                                     <p:autoComplete id="fromStaff"
                                                     value="#{staffAmendmentFormController.currAmendmentForm.fromStaff}"
@@ -46,7 +48,7 @@
                                     <h:outputLabel value="To Date "/>
                                     <p:calendar id="toDate" value="#{staffAmendmentFormController.currAmendmentForm.toDate}"
                                                 pattern="yyyy MM dd HH:mm:ss">
-                                        
+
                                     </p:calendar>                                   
                                     <p:commandButton ajax="false" value="Process Staff Shift" 
                                                      action="#{staffAmendmentFormController.fetchToStaffShift()}" />
@@ -126,7 +128,8 @@
                                          scrollable="true"
                                          scrollHeight="400">
                                 <p:column headerText="View" >
-                                    <p:commandButton ajax="false" value="View" action="#{staffAmendmentFormController.viewAmendmentForm(add)}" disabled="#{add.retired}"></p:commandButton>
+                                    <p:commandButton ajax="false" value="View" 
+                                                     action="#{staffAmendmentFormController.viewAmendmentForm(add)}" disabled="#{add.retired}"></p:commandButton>
                                 </p:column>
                                 <p:column headerText="Staff">
                                     <p:outputLabel value="#{add.fromStaff.person.nameWithTitle}" ></p:outputLabel>

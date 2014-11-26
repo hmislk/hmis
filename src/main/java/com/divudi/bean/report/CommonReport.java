@@ -18,6 +18,7 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
@@ -78,6 +79,7 @@ public class CommonReport implements Serializable {
     private BillType billType;
     private Institution creditCompany;
     private Institution referenceInstitution;
+    private Item referenceItem;
     /////////////////////
     private BillsTotals billedBills;
     private BillsTotals cancellededBills;
@@ -2163,7 +2165,7 @@ public class CommonReport implements Serializable {
 
         if (referenceInstitution != null) {
             jpql += "and b.referredByInstitution=:refIns ";
-            m.put("refIns", institution);
+            m.put("refIns", referenceInstitution);
         } else {
             jpql += " and b.referredByInstitution is not null ";
         }
@@ -2186,10 +2188,15 @@ public class CommonReport implements Serializable {
                 + "where bi.retired=false "
                 + " and bi.bill.referredByInstitution is not null ";
 
-        if (referenceInstitution != null) {
+        if (referenceInstitution != null ) {
             jpql += "and bi.bill.referredByInstitution=:refIns ";
-            m.put("refIns", institution);
-        }      
+            m.put("refIns", referenceInstitution);
+        } 
+
+        if(referenceItem != null){
+            jpql += "and bi.item=:billItem ";
+            m.put("billItem", referenceItem);
+        }
        
 
         jpql += "and bi.bill.createdAt between :fd and :td "
@@ -3204,4 +3211,13 @@ public class CommonReport implements Serializable {
         this.referralBills = referralBills;
     }
 
+    public Item getReferenceItem() {
+        return referenceItem;
+    }
+
+    public void setReferenceItem(Item referenceItem) {
+        this.referenceItem = referenceItem;
+    }
+
+    
 }

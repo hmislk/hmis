@@ -164,7 +164,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShiftWithShift(nowDate, roster);
-            System.out.println("Line3 in side of while = " + new Date());
 
             if (staffShifts.isEmpty()) {
 //                    System.err.println("CONTINUE");
@@ -176,14 +175,32 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             for (StaffShift ss : staffShifts) {
-                System.out.println("Line4 inside for loop = " + new Date());
                 StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
 
                 List<FingerPrintRecord> list = new ArrayList<>();
                 FingerPrintRecord fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
-                System.out.println("Line5 find time record = " + new Date());
                 FingerPrintRecord fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
-                System.out.println("Line6 find time record = " + new Date());
+
+                if (ss.getHrForm() != null && ss.getHrForm() instanceof AdditionalForm) {
+                    AdditionalForm additionalForm = (AdditionalForm) ss.getHrForm();
+
+                    if (fingerPrintRecordIn == null) {
+                        fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(additionalForm);
+                        if (fingerPrintRecordIn != null) {
+                            fingerPrintRecordIn.setComments("");
+                            fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
+                        }
+                    }
+
+                    if (fingerPrintRecordOut == null) {
+                        fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(additionalForm);
+                        if (fingerPrintRecordOut != null) {
+                            fingerPrintRecordOut.setComments("");
+                            fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
+                        }
+                    }
+
+                }
 
                 if (fingerPrintRecordIn != null) {
                     fingerPrintRecordIn.setTimes(Times.inTime);
@@ -203,19 +220,16 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 FingerPrintRecord fpr = null;
                 if (ss.getStartRecord() == null) {
                     fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.inTime);
-                    System.out.println("Line7 createfingerprint = " + new Date());
 //                        fingerPrintRecordFacade.create(fpr);
                     list.add(fpr);
                     ss.setStartRecord(fpr);
-                    System.out.println("Line8 = " + new Date());
-//                        staffShiftFacade.edit(ss);
 
+//                        staffShiftFacade.edit(ss);
                     if (ss.getPreviousStaffShift() != null) {
 //                            System.err.println("PREV");
                         ss.getStartRecord().setComments("(NEW PREV)");
-                        System.out.println("Line10 = " + new Date());
                         ss.getStartRecord().setRecordTimeStamp(ss.getShiftStartTime());
-                        System.out.println("Line11 = " + new Date());
+
                     }
 
                 }
@@ -224,7 +238,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.outTime);
 //                        fingerPrintRecordFacade.create(fpr);
                     list.add(fpr);
-                    System.out.println("Line12 = " + new Date());
                     ss.setEndRecord(fpr);
 //                        staffShiftFacade.edit(ss);
 
@@ -232,7 +245,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                            System.err.println("NEXT");
                         ss.getEndRecord().setComments("(NEW NEXT)");
                         ss.getEndRecord().setRecordTimeStamp(ss.getShiftEndTime());
-                        System.out.println("Line13 = " + new Date());
                     }
                 }
 
@@ -244,42 +256,33 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                             case inTime:
                                 ss.getStartRecord().setAllowedExtraDuty(true);
                                 ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
-                                System.out.println("Line14 sw intime = " + new Date());
                                 break;
                             case outTime:
                                 ss.getEndRecord().setAllowedExtraDuty(true);
                                 ss.getEndRecord().setRecordTimeStamp(additionalForm.getToTime());
-                                System.out.println("Line15 sw ontime = " + new Date());
                                 break;
                             case All:
                                 ss.getStartRecord().setAllowedExtraDuty(true);
                                 ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
                                 ss.getEndRecord().setAllowedExtraDuty(true);
                                 ss.getEndRecord().setRecordTimeStamp(additionalForm.getToTime());
-                                System.out.println("Line16 sw all = " + new Date());
                                 break;
                         }
                     }
                 }
 
                 ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
-                System.out.println("Line17 = " + new Date());
                 ss.getFingerPrintRecordList().addAll(list);
-                System.out.println("Line18 = " + new Date());
                 netT.getStaffShift().add(ss);
-                System.out.println("Line19 = " + new Date());
+
             }
 
-            System.err.println("BOOL " + netT.getFlag());
-            System.out.println("Line20 = " + new Date());
             shiftTables.add(netT);
 
             Calendar c = Calendar.getInstance();
             c.setTime(nowDate);
             c.add(Calendar.DATE, 1);
-            System.out.println("Line21 = " + new Date());
             nowDate = c.getTime();
-            System.out.println("Line22 = " + new Date());
 
         }
 
@@ -398,7 +401,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //Fetch Basic
                 StaffPaysheetComponent basic = humanResourceBean.getBasic(ss.getStaff());
 
-                ss.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
+                if (basic != null) {
+                    ss.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
+                }
 
                 //UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();

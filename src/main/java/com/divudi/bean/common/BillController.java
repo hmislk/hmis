@@ -181,10 +181,14 @@ public class BillController implements Serializable {
     @EJB
     private CashTransactionBean cashTransactionBean;
 
+    @Inject
+    SearchController searchController;
+    
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
         opdPaymentCredit = 0.0;
+        searchController.createTableByKeywordToPayBills();
     }
 
     public void saveBillOPDCredit() {
@@ -638,7 +642,6 @@ public class BillController implements Serializable {
                     b.setBalance(b.getTransSaleBillTotalMinusDiscount() - b.getCashPaid());
                     b.setNetTotal(b.getCashPaid());
                 }
-
             }
 
             getBillFacade().edit(b);
@@ -665,27 +668,36 @@ public class BillController implements Serializable {
         printPreview = true;
     }
 
+    public boolean checkBillValues(Bill b) {
+        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            return false;
+        }
+
+        Double[] billItemValues = billBean.fetchBillItemValues(b);
+        double billItemTotal = billItemValues[0];
+        double billItemDiscount = billItemValues[1];
+        double billItemNetTotal = billItemValues[2];
+
+        if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()) {
+            return true;
+        }
+
+        Double[] billFeeValues = billBean.fetchBillFeeValues(b);
+        double billFeeTotal = billFeeValues[0];
+        double billFeeDiscount = billFeeValues[1];
+        double billFeeNetTotal = billFeeValues[2];
+
+        if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
+            return true;
+        }
+
+        return false;
+    }
+
     public void checkBillValues() {
         for (Bill b : getBills()) {
-            Double[] billItemValues = billBean.fetchBillItemValues(b);
-            double billItemTotal = billItemValues[0];
-            double billItemDiscount = billItemValues[1];
-            double billItemNetTotal = billItemValues[2];
-
-            if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()) {
-                b.setTransError(true);
-                return;
-            }
-
-            Double[] billFeeValues = billBean.fetchBillFeeValues(b);
-            double billFeeTotal = billFeeValues[0];
-            double billFeeDiscount = billFeeValues[1];
-            double billFeeNetTotal = billFeeValues[2];
-
-            if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
-                b.setTransError(true);
-                return;
-            }
+            boolean flag = checkBillValues(b);
+            b.setTransError(flag);
         }
     }
 
@@ -1237,14 +1249,14 @@ public class BillController implements Serializable {
                 setDiscount(billDiscount);
                 setTotal(billGross);
                 setNetTotal(billNet);
-                setCashBalance(cashPaid - billNet);
+                setCashBalance(cashPaid - billNet - billDiscount);
                 System.out.println("cashBalance = " + cashBalance);
             } else {
                 System.out.println("half paid = ");
                 setDiscount(billDiscount);
                 setTotal(billGross);
                 setNetTotal(cashPaid);
-                setCashBalance(billNet - cashPaid);
+                setCashBalance(billNet - cashPaid - billDiscount);
                 System.out.println("cashBalance = " + cashBalance);
             }
             cashRemain = cashPaid;
