@@ -104,9 +104,10 @@
                                 </h:outputLabel>
                                 <h:panelGroup rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id and bip.billSession ne null }"  >
                                     <br/>
+                                    <br/>
                                     <h:panelGroup rendered="#{bip.item.sessionNumberType ne null}">
-                                        <h:outputLabel value="Session No . " ></h:outputLabel>
-                                        <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
+                                        <h:outputLabel value="Session No . " style="margin: 4px; font-size: 12px!important; font-weight: bold;"></h:outputLabel>
+                                        <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 12px!important; font-weight: bold;" >
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </h:panelGroup>

@@ -19,9 +19,9 @@
 
                 <p:panel header="Manage Staff" >
 
-                    <h:panelGrid id ="gpVeda" columns="2" >
+                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
 
-                        <h:panelGrid id="gpSelect" columns="1"  >
+                        <h:panelGrid id="gpSelect" columns="1" styleClass="alignTop" >
                             <p:panel >
 
                                 <h:panelGrid id="gpSelectText" >
@@ -51,7 +51,7 @@
                         </h:panelGrid  >
 
                         <p:panel>
-                            <h:panelGrid id="gpDetail" columns="1">
+                            <h:panelGrid id="gpDetail" columns="1" styleClass="alignTop">
                                 <p:tabView>
                                     <p:tab title="General">
                                         <h:panelGrid  columns="2">
@@ -97,7 +97,18 @@
                                                 <f:selectItem itemLabel="Please select a speciality"/>
                                                 <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                             </h:selectOneListbox>
+                                            
                                         </h:panelGrid> 
+                                        
+                                        <table >
+                                            <tr>
+                                                <p:selectManyMenu >
+                                                    <f:selectItem itemLabel="Select a relationship" ></f:selectItem>
+                                                    <f:selectItems value="#{relationshipController.items}" var="r" itemLabel="#{r.atobName}" itemValue="#{r}" ></f:selectItems>
+                                                </p:selectManyMenu>
+                                            </tr>
+                                        </table>
+                                        
                                     </p:tab>
                                     <p:tab title="Welfare" >
                                         <h:panelGrid columns="2" >
