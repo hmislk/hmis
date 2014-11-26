@@ -5,7 +5,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.entity.hr.Roster;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -17,78 +16,41 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author Sniper 619
+ * @author buddhika
  */
 @Entity
-public class Form implements Serializable {
-
+public class PersonRelationship implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
+    
+    @ManyToOne
+    Person aperson;
+    @ManyToOne
+    Person bperson;
+    @ManyToOne
+    Relationship relationship;
+    int orderNo;
     //Created Properties
     @ManyToOne
-    private WebUser creater;
+    WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date createdAt;
+    Date createdAt;
     //Retairing properties
-    private boolean retired;
+    boolean retired;
     @ManyToOne
-    private WebUser retirer;
+    WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date retiredAt;
-    private String retireComments;
-    //Edited Properties
-    @ManyToOne
-    private WebUser editor;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date editedAt;
-     //
+    Date retiredAt;
+    String retireComments;
 
-   
-    private String comments;
-    String code="";
-
-    public String getCode() {
-        return code;
+    public int getOrderNo() {
+        return orderNo;
     }
 
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Form)) {
-            return false;
-        }
-        Form other = (Form) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "com.divudi.entity.Form[ id=" + id + " ]";
+    public void setOrderNo(int orderNo) {
+        this.orderNo = orderNo;
     }
 
     public WebUser getCreater() {
@@ -138,29 +100,67 @@ public class Form implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
+    
+    
 
-    public String getComments() {
-        return comments;
+    public Person getAperson() {
+        return aperson;
     }
 
-    public void setComments(String comments) {
-        this.comments = comments;
+    public void setAperson(Person aperson) {
+        this.aperson = aperson;
     }
 
-    public WebUser getEditor() {
-        return editor;
+    public Person getBperson() {
+        return bperson;
     }
 
-    public void setEditor(WebUser editor) {
-        this.editor = editor;
+    public void setBperson(Person bperson) {
+        this.bperson = bperson;
     }
 
-    public Date getEditedAt() {
-        return editedAt;
+    public Relationship getRelationship() {
+        return relationship;
     }
 
-    public void setEditedAt(Date editedAt) {
-        this.editedAt = editedAt;
+    public void setRelationship(Relationship relationship) {
+        this.relationship = relationship;
+    }
+    
+    
+    
+
+    public Long getId() {
+        return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof PersonRelationship)) {
+            return false;
+        }
+        PersonRelationship other = (PersonRelationship) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "com.divudi.entity.PersonRelationship[ id=" + id + " ]";
+    }
+    
 }

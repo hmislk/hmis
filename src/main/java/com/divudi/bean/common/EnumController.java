@@ -48,11 +48,10 @@ public class EnumController implements Serializable {
         return DepartmentType.values();
     }
 
-    
-    public PaperType[] getPaperTypes(){
+    public PaperType[] getPaperTypes() {
         return PaperType.values();
     }
-    
+
     public LeaveType[] getLeaveType() {
         LeaveType[] ltp = {LeaveType.Annual, LeaveType.AnnualHalf, LeaveType.Casual, LeaveType.CasualHalf,
             LeaveType.Lieu, LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical,
@@ -93,10 +92,10 @@ public class EnumController implements Serializable {
 
     }
 
-    public CalculationType[] getCalculationTypes(){
+    public CalculationType[] getCalculationTypes() {
         return CalculationType.values();
     }
-    
+
     public PaysheetComponentType[] getDiductionComponentTypes() {
         return PaysheetComponentType.subtraction.children();
 
@@ -112,6 +111,11 @@ public class EnumController implements Serializable {
 
     public Sex[] getSex() {
         return Sex.values();
+    }
+
+    public Sex[] getGender() {
+        Sex[] sexes = {Sex.Male, Sex.Female};
+        return sexes;
     }
 
     public PaymentMethod[] getPaymentMethodForAdmission() {
