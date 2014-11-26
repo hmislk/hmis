@@ -18,7 +18,7 @@
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="posbillBreak">
-            
+
             <h:graphicImage library="image" name="prabdhodha-logo.jpg" style="width: 7cm; margin: auto; " ></h:graphicImage>
 
             <div class="institutionName" style="text-align: center!important;
@@ -41,7 +41,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="OPD Bill"   />    
+                <h:outputLabel value="Package Bill"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -179,7 +179,7 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Name" ></h:outputLabel>
+                                <h:outputLabel value="Tel. No" ></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
@@ -280,7 +280,7 @@
                         </td>
 
                         <td  style="width:30%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
+                            <h:outputLabel value=""  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
                     </tr>
 
@@ -289,6 +289,34 @@
                             <h:outputLabel value="-----------------------------------------------"   />                           
                         </td>
                     </tr>
+
+<!--                    <tr>
+                        <td colspan="4" style="overflow: visible;">
+                            <h:outputLabel value="#{cc.attrs.bill.billPackege.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+
+                        </td>
+                        <td>
+                            <h:outputLabel    value=" "    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
+                                <f:convertNumber integerOnly="true" />
+                            </h:outputLabel>
+                        </td>
+                        <td  styleClass="itemsBlockRight"  style="text-align: right; padding-right: 30px;" >
+                            <h:outputLabel    value=" "     >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                        <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
+                            <h:outputLabel    value="1"    >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>-->
 
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
 
@@ -313,7 +341,7 @@
                                 </h:outputLabel>
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
-                                <h:outputLabel    value="#{bip.grossValue}"    >
+                                <h:outputLabel    value=""    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -390,7 +418,7 @@
                         </td>
                     </tr>
 
-                    <tr>
+<!--                    <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel   value="Number of Items Count" />
                         </td>
@@ -399,7 +427,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
-                    </tr>
+                    </tr>-->
 
 
                 </table>

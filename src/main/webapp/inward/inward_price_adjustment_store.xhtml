@@ -43,6 +43,12 @@
                                     </p:column> 
 
                                 </p:autoComplete>
+                                
+                                <h:outputLabel value="BHT Type"/>
+                                <p:selectOneMenu   id="cmbPs" value="#{inwardPriceAdjustmntController.paymentMethod}"  >
+                                    <f:selectItem itemLabel="Select" />                           
+                                    <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                                    
+                                </p:selectOneMenu>
 
 
                                 <h:outputLabel value="From" ></h:outputLabel>
@@ -90,6 +96,11 @@
                                 </p:column>
                                 <p:column>
                                     <p:outputLabel value="#{a.department.name}"/>
+                                </p:column>
+                                
+                                <p:column headerText="Payment Method">
+                                    
+                                    <p:outputLabel value="#{a.paymentMethod}"/>
                                 </p:column>
 
                                 <p:column headerText="Category Name" filterBy="#{a.category.name}" filterMatchMode="contains" exportable="false">
