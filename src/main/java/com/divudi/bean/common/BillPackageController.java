@@ -211,14 +211,17 @@ public class BillPackageController implements Serializable {
             saveBill(d, myBill);
 
             List<BillEntry> tmp = new ArrayList<>();
+            List<BillItem> list = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
 
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
                     getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                    // getBillBean().calculateBillItem(myBill, e);                
+                    // getBillBean().calculateBillItem(myBill, e);   
+                    list.add(e.getBillItem());
                     tmp.add(e);
                 }
             }
+            myBill.setBillItems(list);
             //System.out.println("555");
             getBillBean().calculateBillItems(myBill, tmp);
             bills.add(myBill);
@@ -256,19 +259,6 @@ public class BillPackageController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    Bill pacBill=new BilledBill();
-
-    public Bill getPacBill() {
-        if (pacBill==null) {
-            pacBill=new BilledBill();
-        }
-        return pacBill;
-    }
-
-    public void setPacBill(Bill pacBill) {
-        this.pacBill = pacBill;
-    }
-    
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
         tmp.setBillType(BillType.OpdBathcBill);
@@ -283,7 +273,7 @@ public class BillPackageController implements Serializable {
         for (Bill b : bills) {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
-            dblTot+=b.getTotal();
+            dblTot += b.getTotal();
             getBillFacade().edit(b);
 
             tmp.getForwardReferenceBills().add(b);
@@ -292,7 +282,7 @@ public class BillPackageController implements Serializable {
         tmp.setNetTotal(dbl);
         tmp.setTotal(dblTot);
         getBillFacade().edit(tmp);
-        
+
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
     }
