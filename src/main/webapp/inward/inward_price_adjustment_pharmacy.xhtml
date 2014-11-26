@@ -115,6 +115,12 @@
                                 <p:column>
                                     <p:outputLabel value="#{a.category.name}"/>
                                 </p:column>
+                                
+                                <p:column headerText="Payment Method">
+                                    
+                                    <p:outputLabel value="#{a.paymentMethod}"/>
+                                </p:column>
+                                
                                 <p:column headerText="From Price">
                                     <h:inputText autocomplete="off" value="#{a.fromPrice}" >
                                         <f:convertNumber pattern="#,##0.00"/>
