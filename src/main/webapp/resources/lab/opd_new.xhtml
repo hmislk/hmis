@@ -46,6 +46,11 @@
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
                 <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                <f:facet name="footer">
+                    <h:outputLabel value="#{bookKeepingSummery.opdStaffTotal}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </f:facet>
             </p:column>
             
             <p:column headerText="Rate"  styleClass="numberCol" rendered="#{cc.attrs.reagent eq true}">
@@ -61,6 +66,11 @@
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
                 <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                <f:facet name="footer">
+                    <h:outputLabel value="#{bookKeepingSummery.opdRegentTotal}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </f:facet>
             </p:column>
             
             <p:column  headerText="Total Fee"  styleClass="numberCol" rendered="#{cc.attrs.professional eq true}">
@@ -70,7 +80,7 @@
                 </p:outputLabel>
                 <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
                 <f:facet name="footer">
-                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
+                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal - bookKeepingSummery.opdRegentTotal - bookKeepingSummery.opdStaffTotal}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>

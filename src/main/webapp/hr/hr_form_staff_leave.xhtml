@@ -12,6 +12,8 @@
                 <h:panelGrid columns="2" >
                     <p:panel header="Leave Form Details">
                         <h:panelGrid columns="2">
+                            <h:outputLabel value="Form Number"/>
+                            <p:inputText value="#{staffLeaveApplicationFormController.currentLeaveForm.code}"/>
                             <h:outputLabel value="Staff : "/>
                             <p:autoComplete id="staff"
                                             value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"
@@ -26,11 +28,11 @@
                             </p:selectOneMenu>                                                    
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.fromDate}"
-                                        pattern="dd MMMM yyyy">     
+                                        pattern="dd MM yy">     
                             </p:calendar>   
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.toDate}"
-                                        pattern="dd MMMM yyyy">
+                                        pattern="dd MM yy">
                             </p:calendar>   
                             <p:commandButton ajax="false" value="Leave Count" action="#{staffLeaveApplicationFormController.calLeaveCount()}"/>
                             <h:panelGrid columns="2">

@@ -122,7 +122,9 @@
                             </f:facet>                       
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
+                                    <p:ajax process="@this" event="keyup" update="retail retailIn retailIn1 retailIn2" listener="#{storeGrnController.purchaseRateUpdateListner(bi)}" />
                                 </p:inputText>
+                                
                             </f:facet>
                         </p:cellEditor>                       
                     </p:column>                  
@@ -131,14 +133,14 @@
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:panelGroup id="retail">
-                                    <p:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                    <p:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}" id="retailIn"  > 
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
-                                    <p:outputLabel value=" X (#{bi.item.dblValue})" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/> 
+                                    <p:outputLabel id="retailIn1" value=" X (#{bi.item.dblValue})" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/> 
                                 </h:panelGroup>
                             </f:facet>  
                             <f:facet name="input">
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                <p:inputText id="retailIn2" autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
                             </f:facet>

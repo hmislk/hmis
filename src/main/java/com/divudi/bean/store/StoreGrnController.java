@@ -341,6 +341,11 @@ public class StoreGrnController implements Serializable {
         printPreview = true;
 
     }
+    
+    public void purchaseRateUpdateListner(BillItem bi){
+        bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
+        System.out.println("Updated Purchase Rate Update Listner");
+    }
 
     @EJB
     StockFacade stockFacade;
