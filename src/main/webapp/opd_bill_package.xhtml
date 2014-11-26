@@ -9,7 +9,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill">
+                >
 
 
 
@@ -324,7 +324,7 @@
                                                 <ui:repeat value="#{billPackageController.bills}" var="bill" >
 
                                                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
-                                                        <bi:posOpdBill bill="#{bill}" duplicate="false"/>   
+                                                        <bi:opdPackegePosBill  bill="#{bill}" />   
                                                     </h:panelGroup>
 
                                                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
@@ -440,21 +440,11 @@
                                                     </h:panelGroup>
 
                                                 </ui:repeat>
-                                                
-                                                
-                                                
-                                            </div>
-                                        </h:panelGroup>
 
-                                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
-                                            <div >
-                                                <div>
-                                                    <ui:repeat value="#{billPackageController.bills}" var="billPos" >
-                                                        <bi:opdPackegePosBill  bill="#{billPos}" />
-                                                    </ui:repeat>
-                                                </div>
                                             </div>
-                                        </h:panelGroup>
+
+                                        </div>
+
 
                                     </p:panel>
                                 </div>
