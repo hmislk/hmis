@@ -256,6 +256,19 @@ public class BillPackageController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    Bill pacBill=new BilledBill();
+
+    public Bill getPacBill() {
+        if (pacBill==null) {
+            pacBill=new BilledBill();
+        }
+        return pacBill;
+    }
+
+    public void setPacBill(Bill pacBill) {
+        this.pacBill = pacBill;
+    }
+    
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
         tmp.setBillType(BillType.OpdBathcBill);
@@ -266,17 +279,20 @@ public class BillPackageController implements Serializable {
         getBillFacade().create(tmp);
 
         double dbl = 0;
+        double dblTot = 0;
         for (Bill b : bills) {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
+            dblTot+=b.getTotal();
             getBillFacade().edit(b);
 
             tmp.getForwardReferenceBills().add(b);
         }
 
         tmp.setNetTotal(dbl);
+        tmp.setTotal(dblTot);
         getBillFacade().edit(tmp);
-
+        
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
     }
@@ -328,6 +344,7 @@ public class BillPackageController implements Serializable {
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
             getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
             getBillBean().calculateBillItems(b, getLstBillEntries());
+            b.setBillItems(getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser()));
             getBills().add(b);
 
         } else {
