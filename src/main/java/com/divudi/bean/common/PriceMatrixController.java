@@ -24,13 +24,14 @@ import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.entity.memberShip.OpdMemberShipDiscount;
 import com.divudi.entity.memberShip.PaymentSchemeDiscount;
 import com.divudi.facade.PriceMatrixFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -43,7 +44,7 @@ public class PriceMatrixController implements Serializable {
     @EJB
     PriceMatrixFacade priceMatrixFacade;
 
-    public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department) {
+    public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department, PaymentMethod paymentMethod) {
 
         PriceMatrix inwardPriceAdjustment;
         Category category;
@@ -53,10 +54,18 @@ public class PriceMatrixController implements Serializable {
             category = billItem.getItem().getCategory();
         }
 
-        inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
+        if (sessionController.getInstitutionPreference().isPaymentMethodAllowedInInwardMatrix()) {
+            inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
+        } else {
+            inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
+        }
 
         if (inwardPriceAdjustment == null && category != null) {
-            inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
+            if (sessionController.getInstitutionPreference().isPaymentMethodAllowedInInwardMatrix()) {
+                inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), paymentMethod);
+            } else {
+                inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
+            }
         }
 
         if (inwardPriceAdjustment == null) {
@@ -66,8 +75,8 @@ public class PriceMatrixController implements Serializable {
         return inwardPriceAdjustment;
 
     }
-    
-     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department) {
+
+    public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department) {
 
         PriceMatrix inwardPriceAdjustment;
         Category category;
@@ -100,26 +109,29 @@ public class PriceMatrixController implements Serializable {
         PriceMatrix inwardPriceAdjustment;
 
         Category category;
-        if (item instanceof Investigation) {           
+        if (item instanceof Investigation) {
             category = ((Investigation) item).getInvestigationCategory();
         } else {
             category = item.getCategory();
         }
         if (category == null) {
-             System.err.println("2 ");
+            System.err.println("2 ");
             return item.getTotal();
         }
         inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category);
-        if (inwardPriceAdjustment == null ) {
+        if (inwardPriceAdjustment == null) {
             inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category.getParentCategory());
         }
         if (inwardPriceAdjustment == null) {
-             System.err.println("3 ");
+            System.err.println("3 ");
             return item.getTotal();
         }
-         System.err.println("4 ");
+        System.err.println("4 ");
         return item.getTotal() * (inwardPriceAdjustment.getMargin() + 100) / 100;
     }
+
+    @Inject
+    SessionController sessionController;
 
     public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category) {
         String sql = "select a from InwardPriceAdjustment a "
@@ -128,6 +140,25 @@ public class PriceMatrixController implements Serializable {
                 + " and  a.department=:dep"
                 + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)";
         HashMap hm = new HashMap();
+        hm.put("dep", department);
+        hm.put("frPrice", dbl);
+        hm.put("tPrice", dbl);
+        hm.put("cat", category);
+
+        return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+    }
+
+    public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, PaymentMethod paymentMethod) {
+        String sql = "select a from InwardPriceAdjustment a "
+                + " where a.retired=false"
+                + " and a.category=:cat "
+                + " and  a.department=:dep"
+                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
+                + " and a.paymentMethod=:pm";
+
+        HashMap hm = new HashMap();
+
+        hm.put("pm", paymentMethod);
         hm.put("dep", department);
         hm.put("frPrice", dbl);
         hm.put("tPrice", dbl);

@@ -11,6 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -36,6 +37,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 /**
  *
@@ -51,6 +54,8 @@ public class InwardPriceAdjustmntController implements Serializable {
     SessionController sessionController;
     @EJB
     private PriceMatrixFacade ejbFacade;
+    @Enumerated(EnumType.STRING)
+    PaymentMethod paymentMethod;
     private PriceMatrix current;
     private List<PriceMatrix> items = null;
     BillType billType;
@@ -98,6 +103,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setFromPrice(fromPrice);
         a.setToPrice(toPrice);
         a.setInstitution(department.getInstitution());
+        a.setPaymentMethod(paymentMethod);
         a.setMargin(margin);
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
@@ -160,6 +166,16 @@ public class InwardPriceAdjustmntController implements Serializable {
     public void setCategory(Category category) {
         this.category = category;
     }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    
+    
 
     public Institution getInstitution() {
         return institution;
