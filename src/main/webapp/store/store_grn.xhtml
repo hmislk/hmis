@@ -123,6 +123,7 @@
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
                                     <p:ajax process="@this" event="keyup" update="retail retailIn retailIn1 retailIn2" listener="#{storeGrnController.purchaseRateUpdateListner(bi)}" />
+                                    <p:ajax process="@this" event="blur" update="retail retailIn retailIn1 retailIn2" listener="#{storeGrnController.purchaseRateUpdateListner(bi)}" />
                                 </p:inputText>
                                 
                             </f:facet>

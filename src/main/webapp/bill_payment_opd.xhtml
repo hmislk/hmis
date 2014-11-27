@@ -50,13 +50,13 @@
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
 
-                                        <h:outputLabel value="Previous Settlements :" ></h:outputLabel>
+                                        <h:outputLabel value=" Total Previous Settlements :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.bill.total - billSearch.bill.balance}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
 
                                         <h:outputLabel value="Due Amount :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.balance}" >
+                                        <h:outputLabel value="#{billSearch.bill.balance}" style="color: red;" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:panelGrid>
