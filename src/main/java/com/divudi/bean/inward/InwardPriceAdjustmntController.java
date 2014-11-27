@@ -86,31 +86,31 @@ public class InwardPriceAdjustmntController implements Serializable {
     
     
     
-    public void copyPriceMetrixAsCredit(){
-        
-        String sql;
-        HashMap hm = new HashMap();
-        sql = " select pm from InwardPriceAdjustment pm "
-                + " where pm.retired = false"
-                + " and pm.paymentMethod =:pay";
-        hm.put("pay", PaymentMethod.Cash);
-        inwardPriceAdjustments = ejbFacade.findBySQL(sql, hm);
-        
-        for(InwardPriceAdjustment pm : inwardPriceAdjustments){
-            InwardPriceAdjustment prima = new InwardPriceAdjustment();
-            prima.setDepartment(pm.getDepartment());
-            prima.setDiscountPercent(pm.getDiscountPercent());
-            prima.setFromPrice(pm.getFromPrice());
-            prima.setMargin(pm.getMargin());
-            prima.setPaymentMethod(PaymentMethod.Credit);
-            prima.setToPrice(pm.getToPrice());
-            prima.setCategory(pm.getCategory());
-            prima.setInstitution(pm.getInstitution());
-            prima.setCreatedAt(pm.getCreatedAt());
-            prima.setCreater(pm.getCreater());
-            ejbFacade.create(prima);
-        }
-    }
+//    public void copyPriceMetrixAsCredit(){
+//        
+//        String sql;
+//        HashMap hm = new HashMap();
+//        sql = " select pm from InwardPriceAdjustment pm "
+//                + " where pm.retired = false"
+//                + " and pm.paymentMethod =:pay";
+//        hm.put("pay", PaymentMethod.Cash);
+//        inwardPriceAdjustments = ejbFacade.findBySQL(sql, hm);
+//        
+//        for(InwardPriceAdjustment pm : inwardPriceAdjustments){
+//            InwardPriceAdjustment prima = new InwardPriceAdjustment();
+//            prima.setDepartment(pm.getDepartment());
+//            prima.setDiscountPercent(pm.getDiscountPercent());
+//            prima.setFromPrice(pm.getFromPrice());
+//            prima.setMargin(pm.getMargin());
+//            prima.setPaymentMethod(PaymentMethod.Credit);
+//            prima.setToPrice(pm.getToPrice());
+//            prima.setCategory(pm.getCategory());
+//            prima.setInstitution(pm.getInstitution());
+//            prima.setCreatedAt(pm.getCreatedAt());
+//            prima.setCreater(pm.getCreater());
+//            ejbFacade.create(prima);
+//        }
+//    }
 
     public void saveSelected() {
 
