@@ -152,7 +152,9 @@ public class StorePurchaseController implements Serializable {
     }
 
     public void remove(BillItem b) {
-        getBillItems().remove(b.getSearialNo());
+        getBillItems().remove(b);
+        calTotal();
+        currentBillItem = null;
     }
 
     public StorePurchaseController() {
@@ -437,7 +439,7 @@ public class StorePurchaseController implements Serializable {
         getCurrentBillItem().setParentBillItem(getParentBillItem());
 
         getCurrentBillItem().setSearialNo(getBillItems().size() + 1);
-        getCurrentBillItem().setId(getCurrentBillItem().getSearialNoInteger().longValue());
+        //getCurrentBillItem().setId(getCurrentBillItem().getSearialNoInteger().longValue());
 
 //        billItem.setSearialNo(getBillItems().size() + 1);        
         getBillItems().add(getCurrentBillItem());
@@ -450,9 +452,10 @@ public class StorePurchaseController implements Serializable {
             getBillFacade().create(getBill());
         }
 
-        addBillItem();
+        addBillItem();        
         currentBillItem = null;
         calTotal();
+        
     }
 
     public void purchaseRateListener(PharmaceuticalBillItem pharmaceuticalBillItem) {
