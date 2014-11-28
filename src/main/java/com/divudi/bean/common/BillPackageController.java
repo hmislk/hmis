@@ -211,14 +211,17 @@ public class BillPackageController implements Serializable {
             saveBill(d, myBill);
 
             List<BillEntry> tmp = new ArrayList<>();
+            List<BillItem> list = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
 
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
                     getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                    // getBillBean().calculateBillItem(myBill, e);                
+                    // getBillBean().calculateBillItem(myBill, e);   
+                    list.add(e.getBillItem());
                     tmp.add(e);
                 }
             }
+            myBill.setBillItems(list);
             //System.out.println("555");
             getBillBean().calculateBillItems(myBill, tmp);
             bills.add(myBill);
@@ -266,15 +269,18 @@ public class BillPackageController implements Serializable {
         getBillFacade().create(tmp);
 
         double dbl = 0;
+        double dblTot = 0;
         for (Bill b : bills) {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
+            dblTot += b.getTotal();
             getBillFacade().edit(b);
 
             tmp.getForwardReferenceBills().add(b);
         }
 
         tmp.setNetTotal(dbl);
+        tmp.setTotal(dblTot);
         getBillFacade().edit(tmp);
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
@@ -328,6 +334,7 @@ public class BillPackageController implements Serializable {
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
             getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
             getBillBean().calculateBillItems(b, getLstBillEntries());
+            b.setBillItems(getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser()));
             getBills().add(b);
 
         } else {

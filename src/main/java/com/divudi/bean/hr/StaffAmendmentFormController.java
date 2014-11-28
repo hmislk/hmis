@@ -176,12 +176,12 @@ public class StaffAmendmentFormController implements Serializable {
 
         if (fromStaff != null) {
             sql += " and a.fromStaff=:fst ";
-            m.put("st", fromStaff);
+            m.put("fst", fromStaff);
         }
 
         if (toStaff != null) {
             sql += " and a.toStaff=:tst ";
-            m.put("st", toStaff);
+            m.put("tst", toStaff);
         }
 
         if (approvedStaff != null) {

@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Staff Transfer Form">
+                <h:panelGrid columns="2">
+                    <p:panel header="Staff Transfer Form">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Form Number"/>
+                            <p:inputText value="#{staffTransferFormController.currentTransferForm.code}"/>
+                            <h:outputLabel value="Staff : "/>
+                            <p:autoComplete id="staff"
+                                            value="#{staffTransferFormController.currentTransferForm.staff}"
+                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
+                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                            converter="stfcon"   >
+                                <f:ajax execute="@this" render="rs" event="itemSelect"/>
+                            </p:autoComplete>    
+                            <h:outputLabel value="Current Roster"/>
+                            <h:panelGroup id="rs">
+                                <h:outputLabel value="#{staffTransferFormController.currentTransferForm.staff.roster.name}" 
+                                               rendered="#{staffTransferFormController.currentTransferForm.staff.roster ne null}"/>
+                            </h:panelGroup>
+                            <h:outputLabel value="Changing Roster: "/>
+                            <p:selectOneMenu  value="#{staffTransferFormController.currentTransferForm.toRoster}">
+                                <f:selectItem itemLabel="Select Roster"/>
+                                <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>                             
+                            </p:selectOneMenu>                           
+                            <h:outputLabel value="Comment"/>
+                            <p:inputTextarea value="#{staffTransferFormController.currentTransferForm.comments}" />
+                            <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                                             action="#{staffTransferFormController.saveTransferForm()}"/>
+                            <p:commandButton ajax="false" value="Clear" action="#{staffTransferFormController.clear}"/>                           
+
+                        </h:panelGrid>
+                    </p:panel>
+                    <p:panel header="Search Forms">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar value="#{staffTransferFormController.fromDate}"
+                                        pattern="yyyy MM dd HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="forDateS" value="#{staffTransferFormController.toDate}"
+                                        pattern="yyyy MM dd HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel value="Staff : "/>
+                            <p:autoComplete 
+                                value="#{staffTransferFormController.staff}"
+                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
+                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                converter="stfcon"   >   
+                            </p:autoComplete>
+
+                            <p:commandButton ajax="false" value="Search Created Date" action="#{staffTransferFormController.createTransferTable()}" />                            
+                        </h:panelGrid>
+                        <p:dataTable value="#{staffTransferFormController.transferForms}" var="add" 
+                                     rowStyleClass="#{add.retired eq true ? 'redText':''}"
+                                     scrollable="true"
+                                     scrollHeight="300" >                           
+                            <p:column headerText="Staff">
+                                <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column> 
+                            <p:column headerText="From Roster">
+                                <p:outputLabel value="#{add.fromRoster.name}" ></p:outputLabel>
+                            </p:column> 
+                            <p:column headerText="To Roster">
+                                <p:outputLabel value="#{add.toRoster.name}" ></p:outputLabel>
+                            </p:column> 
+                            <p:column headerText="Staff">
+                                <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column> 
+                            <p:column headerText="Comments">
+                                <p:outputLabel value="#{add.comments}" ></p:outputLabel>
+                            </p:column>  
+                            <p:column headerText="Creater">
+                                <p:outputLabel value="#{add.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
+                                <br></br>
+                                <p:outputLabel value="Deleted By  #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"></p:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+                </h:panelGrid>
+            </p:panel>
+        </h:form>
+    </ui:define> 
+
+</ui:composition>

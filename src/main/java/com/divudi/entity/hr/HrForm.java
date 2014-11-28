@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.Times;
@@ -25,19 +24,24 @@ import javax.persistence.TemporalType;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public class HrForm extends Form implements Serializable{
+public class HrForm extends Form implements Serializable {
+
     @ManyToOne
-    private Staff staff;
+    Staff staff;
     @ManyToOne
-    private Staff approvedStaff;
+    Staff approvedStaff;
     @ManyToOne
-    Department department;    
+    Department department;
     @Temporal(TemporalType.TIMESTAMP)
-    private Date approvedAt;   
+    Date approvedAt;
     @OneToOne(fetch = FetchType.LAZY)
     StaffShift staffShift;
     @Enumerated(EnumType.STRING)
     Times times;
+    @ManyToOne
+    Roster fromRoster;
+    @ManyToOne
+    Roster toRoster;
 
     public Times getTimes() {
         return times;
@@ -47,8 +51,6 @@ public class HrForm extends Form implements Serializable{
         this.times = times;
     }
 
-    
-    
     public StaffShift getStaffShift() {
         return staffShift;
     }
@@ -56,8 +58,6 @@ public class HrForm extends Form implements Serializable{
     public void setStaffShift(StaffShift staffShift) {
         this.staffShift = staffShift;
     }
-    
-    
 
     public Department getDepartment() {
         return department;
@@ -66,15 +66,37 @@ public class HrForm extends Form implements Serializable{
     public void setDepartment(Department department) {
         this.department = department;
     }
-    
-    
 
     public Staff getStaff() {
         return staff;
     }
 
     public void setStaff(Staff staff) {
+         if (staff == null) {
+            return;
+        }
+
         this.staff = staff;
+        setFromRoster(staff.getRoster());
+        
+    }
+
+   
+
+    public Roster getFromRoster() {
+        return fromRoster;
+    }
+
+    public void setFromRoster(Roster fromRoster) {
+        this.fromRoster = fromRoster;
+    }
+
+    public Roster getToRoster() {
+        return toRoster;
+    }
+
+    public void setToRoster(Roster toRoster) {
+        this.toRoster = toRoster;
     }
 
     public Staff getApprovedStaff() {
@@ -92,7 +114,5 @@ public class HrForm extends Form implements Serializable{
     public void setApprovedAt(Date approvedAt) {
         this.approvedAt = approvedAt;
     }
-    
-    
-    
+
 }

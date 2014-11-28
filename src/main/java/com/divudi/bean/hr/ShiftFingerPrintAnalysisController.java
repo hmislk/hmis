@@ -164,7 +164,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShiftWithShift(nowDate, roster);
-            
 
             if (staffShifts.isEmpty()) {
 //                    System.err.println("CONTINUE");
@@ -402,7 +401,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //Fetch Basic
                 StaffPaysheetComponent basic = humanResourceBean.getBasic(ss.getStaff());
 
-                ss.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
+                if (basic != null) {
+                    ss.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
+                }
 
                 //UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();

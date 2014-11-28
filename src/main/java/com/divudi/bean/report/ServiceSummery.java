@@ -71,25 +71,24 @@ public class ServiceSummery implements Serializable {
     double outSideFeeDiscountTotal;
     double outSideFeeMarginTotal;
     double reagentFeeTotal;
-    
+
     double proFeeTotalC;
     double hosFeeTotalC;
     double reagentFeeTotalC;
     double outSideFeeTotoalC;
-    
+
     double proFeeTotalR;
     double hosFeeTotalR;
     double reagentFeeTotalR;
     double outSideFeeTotoalR;
-    
+
     double proFeeTotalGT;
     double hosFeeTotalGT;
     double reagentFeeTotalGT;
     double outSideFeeTotoalGT;
-    
+
     List<String1Value5> string1Value5;
-    
-    
+
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -157,8 +156,8 @@ public class ServiceSummery implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    public double calServiceTot(BillType billType,Item item, FeeType feeType,Department department,PaymentMethod paymentMethod, boolean discharged) {
+
+    public double calServiceTot(BillType billType, Item item, FeeType feeType, Department department, PaymentMethod paymentMethod, boolean discharged) {
         String sql;
         Map temMap = new HashMap();
 
@@ -166,12 +165,12 @@ public class ServiceSummery implements Serializable {
                 + " where  bi.bill.institution=:ins"
                 + " and  bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp ";
-        
+
         if (item != null) {
             sql += " and bi.item=:itm ";
             temMap.put("itm", item);
         }
-        
+
         if (department != null) {
             sql += " and bi.bill.department=:dep ";
             temMap.put("dep", department);
@@ -188,22 +187,20 @@ public class ServiceSummery implements Serializable {
             sql += " and bi.bill.createdAt between :fromDate and :toDate ";
         }
 
-        
-
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        
+
         System.out.println("sql = " + sql);
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    public double calServiceTotNew(BillType billType,Item item, FeeType feeType,Department department,PaymentMethod paymentMethod, boolean discharged, Bill bill) {
+
+    public double calServiceTotNew(BillType billType, Item item, FeeType feeType, Department department, PaymentMethod paymentMethod, boolean discharged, Bill bill) {
         String sql;
         Map temMap = new HashMap();
 
@@ -212,14 +209,14 @@ public class ServiceSummery implements Serializable {
                 + " and  bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp "
                 + " and type(bi.bill)=:dtype";
-        
+
         if (item != null) {
-            sql += " and bi.item=:itm ";
+            sql += " and bi.billItem.item=:itm ";
             temMap.put("itm", item);
         }
-        
+
         if (department != null) {
-            sql += " and bi.bill.department=:dep ";
+            sql += " and bi.billItem.item.department=:dep ";
             temMap.put("dep", department);
         }
 
@@ -233,8 +230,6 @@ public class ServiceSummery implements Serializable {
         } else {
             sql += " and bi.bill.createdAt between :fromDate and :toDate ";
         }
-
-        
 
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
@@ -243,14 +238,14 @@ public class ServiceSummery implements Serializable {
         temMap.put("ftp", feeType);
         temMap.put("dtype", bill.getClass());
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        
+
         System.out.println("sql = " + sql);
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    public List<BillFee> createBillFees(BillType billType,Item item, FeeType feeType,Department department,PaymentMethod paymentMethod, boolean discharged) {
+
+    public List<BillFee> createBillFees(BillType billType, Item item, FeeType feeType, Department department, PaymentMethod paymentMethod, boolean discharged) {
         String sql;
         Map temMap = new HashMap();
 
@@ -258,12 +253,12 @@ public class ServiceSummery implements Serializable {
                 + " where  bi.bill.institution=:ins"
                 + " and  bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp ";
-        
+
         if (item != null) {
             sql += " and bi.item=:itm ";
             temMap.put("itm", item);
         }
-        
+
         if (department != null) {
             sql += " and bi.bill.department=:dep ";
             temMap.put("dep", department);
@@ -280,15 +275,13 @@ public class ServiceSummery implements Serializable {
             sql += " and bi.bill.createdAt between :fromDate and :toDate ";
         }
 
-        
-
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        
+
         System.out.println("sql = " + sql);
 
         return getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -439,7 +432,7 @@ public class ServiceSummery implements Serializable {
         }
 
         if (department != null) {
-            sql += " and bi.bill.department=:dep ";
+            sql += " and bi.item.department=:dep ";
             temMap.put("dep", department);
         }
 
@@ -465,7 +458,7 @@ public class ServiceSummery implements Serializable {
         return tmp;
 
     }
-    
+
     public void createServiceSummery() {
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.OpdBill, service, false)) {
@@ -485,20 +478,19 @@ public class ServiceSummery implements Serializable {
 
     Department department;
     PaymentMethod paymentMethod;
-    
+
     @EJB
     CommonFunctions commonFunctions;
 
     public void createServiceSummeryLab() {
-        
-         long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
+
+        long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
             UtilityController.addErrorMessage("Date Range is too Long");
             return;
         }
-        
-        
+
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.OpdBill, service, department, paymentMethod, false)) {
             BillItemWithFee bi = new BillItemWithFee();
@@ -518,7 +510,7 @@ public class ServiceSummery implements Serializable {
         proFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
         hosFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
-        reagentFeeTotal=calServiceTot(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
+        reagentFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
 //        List<BillFee> billfees =new ArrayList<>();
 //        billfees=createBillFees(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
 //        for (BillFee bf : billfees) {
@@ -542,85 +534,83 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
-        
+
     }
 
     public void createServiceSummeryLabNew() {
-        
-         long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
+
+        long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
             UtilityController.addErrorMessage("Date Range is too Long");
             return;
         }
-        
-        
+
         serviceSummeryBill = new ArrayList<>();
         serviceSummeryCancelBill = new ArrayList<>();
         serviceSummeryRefundBill = new ArrayList<>();
-        
+
         createBilList(new BilledBill(), serviceSummeryBill);
         createBilList(new CancelledBill(), serviceSummeryCancelBill);
         createBilList(new RefundBill(), serviceSummeryRefundBill);
-        
+
         proFeeTotal = calServiceTotNew(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false, new BilledBill());
         hosFeeTotal = calServiceTotNew(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false, new BilledBill());
         outSideFeeTotoal = calServiceTotNew(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false, new BilledBill());
-        reagentFeeTotal=calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new BilledBill());
-        
+        reagentFeeTotal = calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new BilledBill());
+
         proFeeTotalC = calServiceTotNew(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false, new CancelledBill());
         hosFeeTotalC = calServiceTotNew(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false, new CancelledBill());
         outSideFeeTotoalC = calServiceTotNew(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false, new CancelledBill());
-        reagentFeeTotalC=calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new CancelledBill());
-        
+        reagentFeeTotalC = calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new CancelledBill());
+
         proFeeTotalR = calServiceTotNew(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false, new RefundBill());
         hosFeeTotalR = calServiceTotNew(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false, new RefundBill());
         outSideFeeTotoalR = calServiceTotNew(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false, new RefundBill());
-        reagentFeeTotalR=calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new RefundBill());
+        reagentFeeTotalR = calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, new RefundBill());
 
-        
-        
         string1Value5 = new ArrayList<>();
-        
+
         createSummaryTable(new BilledBill());
         createSummaryTable(new CancelledBill());
         createSummaryTable(new RefundBill());
-        
+        proFeeTotalGT = 0.0;
+        hosFeeTotalGT = 0.0;
+        outSideFeeTotoalGT = 0.0;
+        reagentFeeTotalGT = 0.0;
         for (String1Value5 svItem : string1Value5) {
-            proFeeTotalGT+=svItem.getValue1();
-            hosFeeTotalGT+=svItem.getValue2();
-            outSideFeeTotoalGT+=svItem.getValue3();
-            reagentFeeTotalGT+=svItem.getValue4();
+            proFeeTotalGT += svItem.getValue1();
+            hosFeeTotalGT += svItem.getValue2();
+            outSideFeeTotoalGT += svItem.getValue3();
+            reagentFeeTotalGT += svItem.getValue4();
         }
-        
-    
+
     }
-    
-    public void createSummaryTable(Bill bill){
-        
-        double pro=0.0;
-        double hos=0.0;
-        double out=0.0;
-        double reg=0.0;
-        
+
+    public void createSummaryTable(Bill bill) {
+
+        double pro = 0.0;
+        double hos = 0.0;
+        double out = 0.0;
+        double reg = 0.0;
+
         pro = calServiceTotNew(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false, bill);
         hos = calServiceTotNew(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false, bill);
         out = calServiceTotNew(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false, bill);
         reg = calServiceTotNew(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false, bill);
-        
+
         String1Value5 str = new String1Value5();
-        
+
         str.setString(bill.getBillClassType().name());
         str.setValue1(pro);
         str.setValue2(hos);
         str.setValue3(out);
         str.setValue4(reg);
-        
+
         string1Value5.add(str);
     }
-        
 
-    public void createBilList(Bill bill, List<BillItemWithFee> billItemWithFees){
+    public void createBilList(Bill bill, List<BillItemWithFee> billItemWithFees) {
         for (BillItem i : getBillItemNew(BillType.OpdBill, service, department, paymentMethod, false, bill)) {
             BillItemWithFee bi = new BillItemWithFee();
             bi.setBillItem(i);
@@ -631,6 +621,7 @@ public class ServiceSummery implements Serializable {
             billItemWithFees.add(bi);
         }
     }
+
     public void createServiceSummeryInwardAdded() {
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.InwardBill, service, false)) {
@@ -665,7 +656,7 @@ public class ServiceSummery implements Serializable {
     }
 
     List<BillItemWithFee> serviceSummery;
-    
+
     List<BillItemWithFee> serviceSummeryBill;
     List<BillItemWithFee> serviceSummeryCancelBill;
     List<BillItemWithFee> serviceSummeryRefundBill;
@@ -765,7 +756,7 @@ public class ServiceSummery implements Serializable {
     }
 
     List<BillItemWithFee> billItemWithFees;
-   
+
     public List<BillItemWithFee> getBillItemWithFees() {
         return billItemWithFees;
     }
@@ -1183,8 +1174,8 @@ public class ServiceSummery implements Serializable {
     }
 
     public Date getFromDate() {
-        if (fromDate==null) {
-            fromDate=commonFunctions.getStartOfDay(new Date());
+        if (fromDate == null) {
+            fromDate = commonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1194,8 +1185,8 @@ public class ServiceSummery implements Serializable {
     }
 
     public Date getToDate() {
-        if (toDate==null) {
-            toDate=commonFunctions.getEndOfDay(new Date());
+        if (toDate == null) {
+            toDate = commonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1467,5 +1458,5 @@ public class ServiceSummery implements Serializable {
     public void setOutSideFeeTotoalGT(double outSideFeeTotoalGT) {
         this.outSideFeeTotoalGT = outSideFeeTotoalGT;
     }
-    
+
 }

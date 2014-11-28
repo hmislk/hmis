@@ -14,6 +14,7 @@ import com.divudi.entity.clinical.ClinicalFindingValue;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -48,8 +49,10 @@ public class Person implements Serializable {
     String email;
     String website;
     String mobile;
-    String tName;
-    String sName;
+    @Column(name = "TNAME")
+    String fullName;
+    @Column(name = "SNAME")
+    String nameWithInitials;
     String phone;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -325,20 +328,20 @@ public class Person implements Serializable {
         this.dob = dob;
     }
 
-    public String gettName() {
-        return tName;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void settName(String tName) {
-        this.tName = tName;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
-    public String getsName() {
-        return sName;
+    public String getNameWithInitials() {
+        return nameWithInitials;
     }
 
-    public void setsName(String sName) {
-        this.sName = sName;
+    public void setNameWithInitials(String nameWithInitials) {
+        this.nameWithInitials = nameWithInitials;
     }
 
     public String getPhone() {
