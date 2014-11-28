@@ -288,85 +288,7 @@
             </div>
 
 
-            <div >
-
-                <table width="100%" style="width: 100%;" >
-                    <tr>
-                        <td style="width: 25%; ">
-                            <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-                        <td  style="width:15%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value=" "  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-
-                        <td  style="width:25%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value=" "  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-
-                        <td  style="width:30%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td colspan="4" class="billline">
-                            <h:outputLabel value="-----------------------------------------------"   />                           
-                        </td>
-                    </tr>
-
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
-
-                        <tr>
-                            <td colspan="4" style="overflow: visible;">
-<!--                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize;" >
-                                </h:outputLabel>-->
-                                <!--                                -
-                                &nbsp;-->
-                                <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
-                                </h:outputLabel>
-
-
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-
-                            </td>
-                            <td>
-                                <h:outputLabel    value=" "    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel>
-                            </td>
-                            <td  styleClass="itemsBlockRight"  style="text-align: right; padding-right: 30px;" >
-                                <h:outputLabel    value=" "     >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                            <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
-                                <h:outputLabel    value="#{bip.grossValue}"    >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-
-
-
-                    </ui:repeat>
-
-
-
-
-                </table>
-
-
-            </div>
-
-
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
-            </div>
+            
 
 
 
@@ -376,7 +298,7 @@
 
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Total" />
+                            <h:outputLabel value="Pay In " />
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
                             <h:outputLabel value="#{cc.attrs.bill.total}" >

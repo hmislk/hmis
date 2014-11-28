@@ -4,7 +4,8 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -266,88 +267,31 @@
 
             <div >
 
-                <table width="100%" style="width: 100%;" >
+                <table width="100%" style="width: 100%; margin-left: 50px;" >
                     <tr>
-                        <td style="width: 25%; ">
+                       
+                        <td colspan="3" style="width: 25%; ">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
-                        <td  style="width:15%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value=" "  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
 
-                        <td  style="width:25%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value=" "  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-
-                        <td  style="width:30%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value=""  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
                     </tr>
 
                     <tr>
-                        <td colspan="4" class="billline">
+                       
+                        <td colspan="3" >
                             <h:outputLabel value="-----------------------------------------------"   />                           
                         </td>
                     </tr>
 
-<!--                    <tr>
-                        <td colspan="4" style="overflow: visible;">
-                            <h:outputLabel value="#{cc.attrs.bill.billPackege.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-
-                        </td>
-                        <td>
-                            <h:outputLabel    value=" "    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
-                                <f:convertNumber integerOnly="true" />
-                            </h:outputLabel>
-                        </td>
-                        <td  styleClass="itemsBlockRight"  style="text-align: right; padding-right: 30px;" >
-                            <h:outputLabel    value=" "     >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                        <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
-                            <h:outputLabel    value="1"    >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-
-                    </tr>-->
-
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
 
                         <tr>
-                            <td colspan="4" style="overflow: visible;">
+                            
+                            <td colspan="3" style="overflow: visible;">
                                 <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
                         </tr>
-                        <tr>
-                            <td>
-
-                            </td>
-                            <td>
-                                <h:outputLabel    value=" "    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel>
-                            </td>
-                            <td  styleClass="itemsBlockRight"  style="text-align: right; padding-right: 30px;" >
-                                <h:outputLabel    value=" "     >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                            <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
-                                <h:outputLabel    value=""    >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
 
 
 
@@ -418,16 +362,16 @@
                         </td>
                     </tr>
 
-<!--                    <tr>
-                        <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel   value="Number of Items Count" />
-                        </td>
-                        <td  class="totalsBlock">
-                            <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>-->
+                    <!--                    <tr>
+                                            <td  class="totalsBlock" style="text-align: left;">
+                                                <h:outputLabel   value="Number of Items Count" />
+                                            </td>
+                                            <td  class="totalsBlock">
+                                                <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>-->
 
 
                 </table>
