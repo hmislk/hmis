@@ -11,6 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -36,6 +37,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 /**
  *
@@ -48,11 +51,14 @@ public class InwardPriceAdjustmntController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
-    SessionController sessionController;
+    SessionController sessionController;    
     @EJB
     private PriceMatrixFacade ejbFacade;
+    @Enumerated(EnumType.STRING)
+    PaymentMethod paymentMethod;
     private PriceMatrix current;
     private List<PriceMatrix> items = null;
+    List<InwardPriceAdjustment> inwardPriceAdjustments;
     BillType billType;
     PaymentScheme paymentScheme;
     Category category;
@@ -69,6 +75,42 @@ public class InwardPriceAdjustmntController implements Serializable {
         margin = 0;
         items = null;
     }
+
+    public List<InwardPriceAdjustment> getInwardPriceAdjustments() {
+        return inwardPriceAdjustments;
+    }
+
+    public void setInwardPriceAdjustments(List<InwardPriceAdjustment> inwardPriceAdjustments) {
+        this.inwardPriceAdjustments = inwardPriceAdjustments;
+    }
+    
+    
+    
+//    public void copyPriceMetrixAsCredit(){
+//        
+//        String sql;
+//        HashMap hm = new HashMap();
+//        sql = " select pm from InwardPriceAdjustment pm "
+//                + " where pm.retired = false"
+//                + " and pm.paymentMethod =:pay";
+//        hm.put("pay", PaymentMethod.Cash);
+//        inwardPriceAdjustments = ejbFacade.findBySQL(sql, hm);
+//        
+//        for(InwardPriceAdjustment pm : inwardPriceAdjustments){
+//            InwardPriceAdjustment prima = new InwardPriceAdjustment();
+//            prima.setDepartment(pm.getDepartment());
+//            prima.setDiscountPercent(pm.getDiscountPercent());
+//            prima.setFromPrice(pm.getFromPrice());
+//            prima.setMargin(pm.getMargin());
+//            prima.setPaymentMethod(PaymentMethod.Credit);
+//            prima.setToPrice(pm.getToPrice());
+//            prima.setCategory(pm.getCategory());
+//            prima.setInstitution(pm.getInstitution());
+//            prima.setCreatedAt(pm.getCreatedAt());
+//            prima.setCreater(pm.getCreater());
+//            ejbFacade.create(prima);
+//        }
+//    }
 
     public void saveSelected() {
 
@@ -98,6 +140,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setFromPrice(fromPrice);
         a.setToPrice(toPrice);
         a.setInstitution(department.getInstitution());
+        a.setPaymentMethod(paymentMethod);
         a.setMargin(margin);
         a.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         a.setCreater(getSessionController().getLoggedUser());
@@ -160,6 +203,16 @@ public class InwardPriceAdjustmntController implements Serializable {
     public void setCategory(Category category) {
         this.category = category;
     }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    
+    
 
     public Institution getInstitution() {
         return institution;

@@ -44,7 +44,7 @@
                                 <p:panel header="Bill Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.deptId}" ></h:outputLabel>
                                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
                                         <h:panelGroup>
                                             <h:outputLabel value="#{billSearch.bill.paymentMethod}" />
@@ -139,7 +139,7 @@
 
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'} or false">
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
 
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >

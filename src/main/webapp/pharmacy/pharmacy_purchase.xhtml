@@ -171,6 +171,10 @@
                     <p:column headerText="Profit Margin" style="width:24%">                    
                         <h:outputText id="profMargin" value=" #{(ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate ) / 100}" />  
                     </p:column>
+                    
+                    <p:column style="width:10%">
+                        <p:commandButton value="Remove" ajax="false" action="#{pharmacyPurchaseController.removeItem(ph)}"/>
+                    </p:column>
 
                 </p:dataTable>  
 

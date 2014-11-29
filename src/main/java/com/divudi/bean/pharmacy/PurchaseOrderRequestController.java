@@ -120,7 +120,7 @@ public class PurchaseOrderRequestController implements Serializable {
     public void removeItem(BillItem bi) {
         //System.err.println("5 " + bi.getItem().getName());
         //System.err.println("6 " + bi.getSearialNo());
-        getBillItems().remove(bi.getSearialNo());
+        getBillItems().remove(bi);
 
         calTotal();
 
