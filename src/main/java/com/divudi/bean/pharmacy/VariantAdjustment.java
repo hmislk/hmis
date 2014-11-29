@@ -206,7 +206,7 @@ public class VariantAdjustment implements Serializable {
         for (StockVarientBillItem i : tmp) {
             StockVarientBillItem bi = new StockVarientBillItem();
             bi.clone(i);
-            //  bi.setId(getStockVarientBillItems().size() + 1L);
+            
             getStockVarientBillItems().add(i);
         }
 

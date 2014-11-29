@@ -66,6 +66,11 @@
             <div >
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" >
 
+                    
+                    <p:column>
+                        <f:facet name="header">Item</f:facet>
+                            #{bip.id}
+                    </p:column>
                     <p:column>
                         <f:facet name="header">Item</f:facet>
                             #{bip.item.name}
