@@ -9,6 +9,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.entity.Category;
+import com.divudi.entity.Nationality;
+import com.divudi.entity.Religion;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.inward.TimedItemCategory;
@@ -19,9 +21,11 @@ import com.divudi.entity.pharmacy.PharmaceuticalCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.facade.CategoryFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -343,7 +347,7 @@ public class CategoryController implements Serializable {
     public void setCurrent(Category current) {
         this.current = current;
     }
-    
+
     public List<Category> completeConsumableAndAssetCategory(String qry) {
         List<Category> cc;
         String sql;
@@ -356,7 +360,7 @@ public class CategoryController implements Serializable {
                 + " order by c.name";
 
         temMap.put("parm", ConsumableCategory.class);
-        temMap.put("assetcat",AssetCategory.class);
+        temMap.put("assetcat", AssetCategory.class);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
         cc = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -393,6 +397,75 @@ public class CategoryController implements Serializable {
         return items;
     }
 
+    List<Category> nationalities;
+    List<Category> religions;
+
+    public List<Category> getNationalities() {
+        if (nationalities == null) {
+            String jpql;
+            jpql = "Select n from Nationality n where n.retired=false order by n.name";
+            nationalities = getFacade().findBySQL(jpql);
+        }
+        return nationalities;
+    }
+
+    public List<Category> getReligions() {
+        if (religions == null) {
+            String jpql;
+            jpql = "Select n from Religion n where n.retired=false order by n.name";
+            religions = getFacade().findBySQL(jpql);
+        }
+        return religions;
+    }
+
+    public void addReligion(){
+        if(selectText==null || selectText.trim().equals("")){
+            JsfUtil.addErrorMessage("Enter a name");
+            return ;
+        }
+        Religion r = new Religion();
+        r.setName(selectText);
+        r.setCreatedAt(new Date());
+        r.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(r);
+        religions=null;
+        selectText="";
+        getReligions();
+    }
+    
+    public void addNationality(){
+        if(selectText==null || selectText.trim().equals("")){
+            JsfUtil.addErrorMessage("Enter a name");
+            return ;
+        }
+        Nationality r = new Nationality();
+        r.setName(selectText);
+        r.setCreatedAt(new Date());
+        r.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(r);
+        nationalities=null;
+        selectText="";
+        getNationalities();
+    }
+    
+    public void updateCategory(Category cat){
+        if(cat==null){
+            System.out.println("cat = " + cat);
+            return ;
+        }
+        getFacade().edit(cat);
+        if(cat instanceof Religion){
+            religions=null;
+            getReligions();
+        }else if(cat instanceof Nationality){
+            nationalities =null;
+            getNationalities();
+        }else{
+            items=null;
+            getItems();
+        }
+    }
+    
     /**
      *
      */

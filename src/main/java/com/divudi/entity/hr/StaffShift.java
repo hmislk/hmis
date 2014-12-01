@@ -137,6 +137,21 @@ public class StaffShift implements Serializable {
     boolean lieuAllowed;
     boolean lieuPaymentAllowed;
 
+    public void processLieuQtyUtilized(LeaveType leaveType) {
+        if (leaveType == null) {
+            return;
+        }
+
+        if (leaveType == LeaveType.Lieu && getLieuQtyUtilized() == 0) {
+            setLieuQtyUtilized(1);
+        }
+
+        if (leaveType == LeaveType.LieuHalf && getLieuQtyUtilized() != 1) {
+            setLieuQtyUtilized(getLieuQtyUtilized() + 0.5);
+        }
+
+    }
+
     public double getLieuQtyUtilized() {
         return lieuQtyUtilized;
     }
@@ -144,8 +159,6 @@ public class StaffShift implements Serializable {
     public void setLieuQtyUtilized(double lieuQtyUtilized) {
         this.lieuQtyUtilized = lieuQtyUtilized;
     }
-    
-    
 
     public double getLieuQty() {
         return lieuQty;
@@ -188,8 +201,8 @@ public class StaffShift implements Serializable {
         if (getShift() != null) {
             DayType dayType = getShift().getDayType();
             if (dayType == DayType.DayOff) {
-                lieuAllowed=true;
-                lieuPaymentAllowed=true;
+                lieuAllowed = true;
+                lieuPaymentAllowed = true;
                 lieuQty = 1;
             }
         }

@@ -15,12 +15,12 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.hr.LeaveForm;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffLeaveEntitle;
+import com.divudi.entity.hr.StaffShift;
 import com.divudi.facade.LeaveFormFacade;
 import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
+import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -28,7 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.TemporalType;
@@ -97,6 +99,44 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     @EJB
     StaffLeaveEntitleFacade staffLeaveEntitleFacade;
+    @EJB
+    StaffShiftFacade staffShiftFacade;
+    List<StaffShift> staffShifts;
+
+    public void fetchStaffShift() {
+        String sql = "Select s from StaffShift s"
+                + " where s.retired=false"
+                + " and s.lieuAllowed=true"
+                + " and (s.lieuQty>s.lieuQtyUtilized)"
+                + " and s.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("stf", getCurrentLeaveForm().getStaff());
+        staffShifts = staffShiftFacade.findBySQL(sql, hm);
+    }
+
+    public FinalVariables getFinalVariables() {
+        return finalVariables;
+    }
+
+    public void setFinalVariables(FinalVariables finalVariables) {
+        this.finalVariables = finalVariables;
+    }
+
+    public StaffLeaveEntitleFacade getStaffLeaveEntitleFacade() {
+        return staffLeaveEntitleFacade;
+    }
+
+    public void setStaffLeaveEntitleFacade(StaffLeaveEntitleFacade staffLeaveEntitleFacade) {
+        this.staffLeaveEntitleFacade = staffLeaveEntitleFacade;
+    }
+
+    public List<StaffShift> getStaffShifts() {
+        return staffShifts;
+    }
+
+    public void setStaffShifts(List<StaffShift> staffShifts) {
+        this.staffShifts = staffShifts;
+    }
 
     public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType) {
         String sql = "select  ss "
@@ -190,8 +230,42 @@ public class StaffLeaveApplicationFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Comment");
             return true;
         }
+        
+        if(checkingForLieLeave()){return true;}
 
         return false;
+    }
+
+    public boolean checkingForLieLeave() {
+        
+        LeaveType ltp = currentLeaveForm.getLeaveType();
+        StaffShift stf = currentLeaveForm.getStaffShift();
+
+        if ((ltp == LeaveType.Lieu
+                || ltp == LeaveType.LieuHalf)) {
+            if (stf == null) {
+                JsfUtil.addErrorMessage("Please Select Shift That Lie Entitled");
+                return true;
+            }
+            Long datRang = commonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
+
+            if (datRang != 1) {
+                JsfUtil.addErrorMessage("Date range should be 1");
+                return true;
+            }
+
+            if (ltp == LeaveType.Lieu && stf.getLieuQtyUtilized() != 0) {
+                JsfUtil.addErrorMessage("You cant get Liue leave from this Shift");
+                return true;
+            }
+
+            if (ltp == LeaveType.LieuHalf && stf.getLieuQtyUtilized() == 1) {
+                JsfUtil.addErrorMessage("You cant get Liue leave from this Shift");
+                return true;
+            }
+        }
+
+        return  false;
     }
 
     @Inject
@@ -220,6 +294,12 @@ public class StaffLeaveApplicationFormController implements Serializable {
             staffLeaveFacade.create(staffLeave);
 
             nowDate.add(Calendar.DATE, 1);
+        }
+
+        StaffShift staffShift = getCurrentLeaveForm().getStaffShift();
+
+        if (staffShift != null) {
+            staffShift.processLieuQtyUtilized(getCurrentLeaveForm().getLeaveType());
         }
 
     }
