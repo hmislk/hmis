@@ -54,7 +54,7 @@
                                 </p:commandButton>
                             </p:column>
                             <p:column headerText="Bill No" >                                
-                                <h:outputLabel   value="#{bill.insId}"/>
+                                <h:outputLabel   value="#{bill.deptId}"/>
                             </p:column>                            
                             <p:column headerText="Billed For"  >                                
                                 <h:outputLabel value="#{bill.toInstitution.name} - #{bill.toDepartment.name}" />
@@ -121,7 +121,7 @@
                             </p:column>
                             <p:column headerText="Paid Value" >
 
-                                <h:outputLabel value="#{bill.cashPaid}" >
+                                <h:outputLabel value="#{bill.total - bill.balance}" >
                                     <f:convertNumber pattern="#,#00.00"/>
                                 </h:outputLabel>
 

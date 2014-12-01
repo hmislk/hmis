@@ -23,6 +23,7 @@
 
             <div class="fiveinchbillBreakRuhunu">
                 <h:panelGroup id="gpBillPreview" >
+                    
 
                     <div class="errorMessage" >
                         <h:outputLabel rendered="#{cc.attrs.bill.transError}"
@@ -36,6 +37,7 @@
                     <div class="receiptnoPrintingRuhunu"
                          style="font-size: 14px!important; position: absolute!important; left: 36%!important; top: 6.5%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq false}"/>
+                        
 
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null 
@@ -65,6 +67,13 @@
                         </h:panelGroup>
                     </div>
 
+                    <div class="referenceInstitutionPrintingRuhunu" >
+                        <h:panelGroup>
+                            <h:outputLabel value="#{cc.attrs.bill.referredByInstitution.name}"/>                              
+                        </h:panelGroup>
+                    </div>
+                    
+                    
                     <div class="billtimePrintingRuhunu" >      
                             
                             <h:outputLabel value="#{cc.attrs.bill.billTime}">
@@ -104,9 +113,10 @@
                                 </h:outputLabel>
                                 <h:panelGroup rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id and bip.billSession ne null }"  >
                                     <br/>
+                                    <br/>
                                     <h:panelGroup rendered="#{bip.item.sessionNumberType ne null}">
-                                        <h:outputLabel value="Session No . " ></h:outputLabel>
-                                        <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 11px!important;" >
+                                        <h:outputLabel value="Session No . " style="margin: 4px; font-size: 12px!important; font-weight: bold;"></h:outputLabel>
+                                        <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 12px!important; font-weight: bold;" >
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </h:panelGroup>

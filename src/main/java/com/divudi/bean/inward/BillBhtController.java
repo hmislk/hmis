@@ -283,14 +283,14 @@ public class BillBhtController implements Serializable {
         this.priceMatrixController = priceMatrixController;
     }
 
-    public List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser, Department matrixDepartment) {
+    public List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser, Department matrixDepartment,PaymentMethod paymentMethod) {
         List<BillItem> list = new ArrayList<>();
         for (BillEntry e : billEntries) {
 
             BillItem billItem = saveBillItems(bill, e.getBillItem(), e, e.getLstBillFees(), webUser, matrixDepartment);
 
             for (BillFee bf : billItem.getBillFees()) {
-                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeGrossValue(), matrixDepartment);
+                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeGrossValue(), matrixDepartment,paymentMethod);
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix);
                 getBillFeeFacade().edit(bf);
             }
@@ -303,7 +303,7 @@ public class BillBhtController implements Serializable {
         return list;
     }
 
-    private void settleBill(Department matrixDepartment) {
+    private void settleBill(Department matrixDepartment,PaymentMethod paymentMethod) {
         // System.err.println("1");
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
@@ -311,7 +311,7 @@ public class BillBhtController implements Serializable {
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);
             System.err.println("1");
 
-            saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment);
+            saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment,paymentMethod);
             //System.err.println("4");
             getBillBean().calculateBillItems(b, getLstBillEntries());
             //System.err.println("5");
@@ -335,7 +335,7 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment());
+        settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(),getPatientEncounter().getPaymentMethod());
     }
 
     public void settleBillSurgery() {
@@ -351,7 +351,7 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        settleBill(getBatchBill().getFromDepartment());
+        settleBill(getBatchBill().getFromDepartment(),getPatientEncounter().getPaymentMethod());
 
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
@@ -529,7 +529,7 @@ public class BillBhtController implements Serializable {
             addingEntry.setBillItem(bItem);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
             System.err.println("Add To Bill");
-            addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment()));
+            addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(),getPatientEncounter().getPaymentMethod()));
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
             lstBillEntries.add(addingEntry);
 
@@ -546,7 +546,7 @@ public class BillBhtController implements Serializable {
         //UtilityController.addSuccessMessage("Item Added");
     }
 
-    public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment) {
+    public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment,PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
         List<ItemFee> itemFee = getBillBean().getItemFee(billItem);
@@ -554,7 +554,7 @@ public class BillBhtController implements Serializable {
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i);
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment,paymentMethod);
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix);
 
@@ -583,7 +583,7 @@ public class BillBhtController implements Serializable {
             addingEntry.setBillItem(bItem);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
             System.err.println("Add To Bill");
-            addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getBatchBill().getFromDepartment()));
+            addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getBatchBill().getFromDepartment(),getPatientEncounter().getPaymentMethod()));
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
             lstBillEntries.add(addingEntry);
 
@@ -650,7 +650,7 @@ public class BillBhtController implements Serializable {
         lstBillItems = null;
         getLstBillItems();
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(),getPatientEncounter().getPaymentMethod());
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
 
@@ -673,7 +673,7 @@ public class BillBhtController implements Serializable {
         lstBillItems = null;
         getLstBillItems();
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(),getPatientEncounter().getPaymentMethod());
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getBatchBill().getFromDepartment(), priceMatrix);
 

@@ -19,7 +19,6 @@ import java.util.Calendar;
 import java.util.List;
 import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 

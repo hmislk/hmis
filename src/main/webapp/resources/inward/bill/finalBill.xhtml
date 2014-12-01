@@ -82,8 +82,8 @@
                             <td>
                                 <h:outputLabel value=":" />
                             </td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}" />
+                            <td style="max-width: 300px; overflow-wrap: break-word; ">
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}"/>
                             </td>
                             <td>
                                 <h:outputLabel value="" />
@@ -173,7 +173,7 @@
                                                                                   and fe.bill.cancelled eq false 
                                                                                   and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
                                                             <tr>
-                                                               
+
                                                                 <td style="text-align: left;font-size: 8px!important;">
                                                                     <h:panelGroup>                       
                                                                         #{fe.staff.person.nameWithTitle} 
@@ -386,12 +386,13 @@
 
 
                     <p:spacer height="50px"></p:spacer>
-
-                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" style="margin-left: 60%; text-decoration: overline;">
+                    <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.code}" style="margin-left: 30%; text-decoration: overline;">
+                    </h:outputLabel>
+                    <h:outputLabel value="Cashier :" style="margin-left: 25%; text-decoration: overline;">
+                    </h:outputLabel>
+                    <h:outputLabel value="Patient/Gurdian" style="margin-left: 10%; text-decoration: overline;">
                     </h:outputLabel>
 
-                    <h:outputLabel value="     Patient/Gurdian     " style="margin-left: 60%; text-decoration: overline;">
-                    </h:outputLabel>
 
                 </div>
 

@@ -246,6 +246,18 @@ public class PharmacyPurchaseController implements Serializable {
         printPreview = true;
         //   recreate();
     }
+    
+    
+    public void removeItem(BillItem bi) {
+        //System.err.println("5 " + bi.getItem().getName());
+        //System.err.println("6 " + bi.getSearialNo());
+        getBillItems().remove(bi.getSearialNo());
+
+        calTotal();
+
+        currentBillItem = null;
+
+    }
 //
 //    public void recreate() {
 //       

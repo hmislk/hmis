@@ -11,24 +11,55 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Manage Items / Services" >
-                        <h:panelGrid columns="1" >
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="/lab_investigation" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="/lab_investigation_fee" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Service Categories" action="/opd_service_category" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Service Subcategories" action="/opd_service_subcategory" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Service" action="/opd_service" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Inward Service" action="/inward/inward_service" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Theatre Service" action="/inward/theatre_service" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bill Expenses" action="/common/bill_expenses" onclick="onSubmitButton();"/>
-                            
-                            
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" onclick="onSubmitButton();"/>
-                            
-                            
-                        </h:panelGrid>
-                    </p:panel>
+                    <h:panelGrid columns="3" styleClass="alignTop" >
+                        
+                        <p:panel header="Manage Items / Services" >
+                            <h:panelGrid columns="1" >
+
+
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="/lab_investigation" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="/lab_investigation_fee" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Service Categories" action="/opd_service_category" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Service Subcategories" action="/opd_service_subcategory" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Service" action="/opd_service" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Inward Service" action="/inward/inward_service" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Theatre Service" action="/inward/theatre_service" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bill Expenses" action="/common/bill_expenses" onclick="onSubmitButton();"/>
+
+
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Relationships" action="relationships" ></p:commandButton>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Religions" action="/common/religion" ></p:commandButton>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Nationalities" action="/common/nationality" ></p:commandButton>
+
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" onclick="onSubmitButton();"/>
+
+
+                            </h:panelGrid>
+                        </p:panel>
+
+
+
+                        <p:panel header="Manage Metadata" >
+                            <h:panelGrid columns="1" >
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Relationships" action="relationships" ></p:commandButton>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Religions" action="/common/religion" ></p:commandButton>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Nationalities" action="/common/nationality" ></p:commandButton>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Forms" action="/common/form_format_category" ></p:commandButton>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Form Format" action="/common/form_format" ></p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+
+
+                        <p:panel header="Bulk Transactions">
+                            <h:panelGrid columns="1" >
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" onclick="onSubmitButton();"/>
+                            </h:panelGrid>
+                        </p:panel>
+                    
+                    </h:panelGrid>
+
                 </h:form>
             </ui:define>
 

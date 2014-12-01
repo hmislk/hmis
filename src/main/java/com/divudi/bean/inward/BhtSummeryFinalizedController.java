@@ -858,23 +858,23 @@ public class BhtSummeryFinalizedController implements Serializable {
         patientItemFacade.create(patientItem);
     }
 
-    public void errorCorrection3() {
-        List<BillItem> lst = inwardBean.fetchBillItems(BillType.PharmacyBhtPre, new RefundBill());
-        Set<BillItem> billItemSets = new HashSet<>();
-        for (BillItem b : lst) {
-            if (billItemSets.contains(b.getReferanceBillItem())) {
-                System.err.println("Already Exist : " + b.getReferanceBillItem());
-                b.setRetired(true);
-                billItemFacade.edit(b);
-
-            }
-
-            bhtIssueReturnController.updateMargin(b, b.getBill().getFromDepartment());
-            if (Math.abs(b.getGrossValue()) == Math.abs(b.getReferanceBillItem().getGrossValue())) {
-                billItemSets.add(b.getReferanceBillItem());
-            }
-        }
-    }
+//    public void errorCorrection3() {
+//        List<BillItem> lst = inwardBean.fetchBillItems(BillType.PharmacyBhtPre, new RefundBill());
+//        Set<BillItem> billItemSets = new HashSet<>();
+//        for (BillItem b : lst) {
+//            if (billItemSets.contains(b.getReferanceBillItem())) {
+//                System.err.println("Already Exist : " + b.getReferanceBillItem());
+//                b.setRetired(true);
+//                billItemFacade.edit(b);
+//
+//            }
+//
+//            bhtIssueReturnController.updateMargin(b, b.getBill().getFromDepartment());
+//            if (Math.abs(b.getGrossValue()) == Math.abs(b.getReferanceBillItem().getGrossValue())) {
+//                billItemSets.add(b.getReferanceBillItem());
+//            }
+//        }
+//    }
 
     public void processBillItems() {
         billItems = new ArrayList<>();

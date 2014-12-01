@@ -817,6 +817,14 @@ root {
 
 }
 
+.referenceInstitutionPrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left: 72%;
+    top: 15.8%;
+
+}
+
 .bhtNoPrintingRuhunu{
     position: absolute;
     left: 24%;
