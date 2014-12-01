@@ -135,7 +135,7 @@ public class HrReportController implements Serializable {
         sql = "select s from Staff s "
               + " where s.retired=false "
               + " order by s.codeInterger";
-        staffs = staffFacade.findBySQL(sql);
+        staffs = getStaffFacade().findBySQL(sql);
     }
 
     public String createStaffShiftQuary(HashMap hm) {
