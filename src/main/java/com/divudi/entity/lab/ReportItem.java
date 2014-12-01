@@ -404,6 +404,10 @@ public class ReportItem implements Serializable {
     public String getCssColor() {
         return cssColor;
     }
+    
+    public String getInnerCss() {
+        return cssColor + "; " + cssWidth + ";" ;
+    }
 
     public void setCssColor(String cssColor) {
         this.cssColor = cssColor;
