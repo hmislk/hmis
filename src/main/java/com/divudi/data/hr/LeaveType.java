@@ -19,10 +19,10 @@ public enum LeaveType {
     Maternity2nd, // 42 working Days
     Maternity1stHalf, //For Saturday
     Maternity2ndHalf, //For Saturday    
-    Lieu,
-    LieuHalf,
-    No_Pay,
-    No_Pay_Half,
+    Lieu(true),
+    LieuHalf(true),
+    No_Pay(true),
+    No_Pay_Half(true),
     @Deprecated
     Sick, //    
     @Deprecated
@@ -31,24 +31,22 @@ public enum LeaveType {
     Absent,;
 //    Other,;
 
-    public double getLeaveUtilization() {
-        switch (this) {
-            case Annual:
-            case AnnualHalf:
-                return 14;
-            case Casual:
-            case CasualHalf:
-                return 7;
-            case Medical:
-                return 14;
-            case Maternity1st:
-            case Maternity1stHalf:
-                return 84;
-            case Maternity2nd:
-            case Maternity2ndHalf:
-                return 42;
-            default:
-                return 0;
-        }
+  private  boolean exceptionalLeave = false;
+
+    public boolean isExceptionalLeave() {
+        return exceptionalLeave;
     }
+
+    
+//    public double getLeaveEntitle() {
+//        return leaveEntitle;
+//    }
+    private LeaveType(boolean exB) {
+        exceptionalLeave = exB;
+    }
+
+    private LeaveType() {
+
+    }
+
 }

@@ -24,7 +24,7 @@
                             <h:outputLabel value="Leave Type"/>
                             <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.leaveType}">
                                 <f:selectItem itemLabel="Select Day Type"/>
-                                <f:selectItems value="#{enumController.leaveType}"/>
+                                <f:selectItems value="#{enumController.leaveType}"/>                                
                             </p:selectOneMenu>                                                    
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.fromDate}"
@@ -35,12 +35,15 @@
                                         pattern="dd MM yy">
                             </p:calendar>   
                             <p:commandButton ajax="false" value="Leave Count" action="#{staffLeaveApplicationFormController.calLeaveCount()}"/>
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="Leave"/>
+                            <h:panelGrid columns="3">
+                                <h:outputLabel value="Leave Entitle || "/>
+                                <h:outputLabel value="Leave Utilized || "/>
                                 <h:outputLabel value="Ballance"/>
+                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle}"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaved}"/>
-                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaveUtilize - staffLeaveApplicationFormController.leaved}"/>
+                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle - staffLeaveApplicationFormController.leaved}"/>
                             </h:panelGrid>
+                            
                             <h:outputLabel value="Requested Date"/>
                             <p:calendar id="requestedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.requestedDate}"
                                         pattern="dd MMMM yyyy">

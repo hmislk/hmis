@@ -6,7 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.hr.DayType;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
@@ -14,14 +14,14 @@ import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.LeaveForm;
 import com.divudi.entity.hr.StaffLeave;
+import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.facade.LeaveFormFacade;
+import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.util.JsfUtil;
-import com.itextpdf.text.log.SysoCounter;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,17 +58,17 @@ public class StaffLeaveApplicationFormController implements Serializable {
     Date toDate;
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
-    double leaveUtilize;
+    double leaveEntitle;
     double leaved;
     @EJB
     FinalVariables finalVariables;
 
-    public double getLeaveUtilize() {
-        return leaveUtilize;
+    public double getLeaveEntitle() {
+        return leaveEntitle;
     }
 
-    public void setLeaveUtilize(double leaveUtilize) {
-        this.leaveUtilize = leaveUtilize;
+    public void setLeaveEntitle(double leaveEntitle) {
+        this.leaveEntitle = leaveEntitle;
     }
 
     public double getLeaved() {
@@ -95,8 +95,49 @@ public class StaffLeaveApplicationFormController implements Serializable {
         this.humanResourceBean = humanResourceBean;
     }
 
+    @EJB
+    StaffLeaveEntitleFacade staffLeaveEntitleFacade;
+
+    public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType) {
+        String sql = "select  ss "
+                + " from StaffLeaveEntitle ss"
+                + " where ss.retired=false"
+                + " and ss.staff=:stf"
+                + " and ss.leaveType=:ltp ";
+        HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType);
+
+        return staffLeaveEntitleFacade.findFirstBySQL(sql, hm);
+    }
+
     public void calLeaveCount() {
-        leaveUtilize = getLeaveType().getLeaveUtilization();
+        if (getCurrentLeaveForm().getStaff() == null) {
+            UtilityController.addErrorMessage("Please Select Staff");
+            return;
+        }
+
+        LeaveType leaveTypeLocal = getCurrentLeaveForm().getLeaveType();
+
+        if (leaveTypeLocal == null) {
+            UtilityController.addErrorMessage("Please Select Leave Type");
+            return;
+        }
+
+        StaffLeaveEntitle staffLeaveEntitle = fetchLeaveEntitle(getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType());
+
+        if (!leaveTypeLocal.isExceptionalLeave() && staffLeaveEntitle == null) {
+            UtilityController.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
+            return;
+        }
+
+        if (staffLeaveEntitle != null) {
+            leaveEntitle = staffLeaveEntitle.getCount();
+        }
+
+        leaved = humanResourceBean.calStaffLeave(getCurrentLeaveForm().getStaff(), leaveTypeLocal,
+                getCommonFunctions().getFirstDayOfYear(new Date()),
+                getCommonFunctions().getLastDayOfYear(new Date()));
 
     }
 
@@ -126,14 +167,17 @@ public class StaffLeaveApplicationFormController implements Serializable {
             return true;
         }
 
+        if (!getCurrentLeaveForm().getLeaveType().isExceptionalLeave()
+                && (leaveEntitle - leaved) <= 0) {
+            JsfUtil.addErrorMessage("Staff Leave Entitle is Overflow");
+            return true;
+        }
+
         if (currentLeaveForm.getRequestedDate() == null) {
             JsfUtil.addErrorMessage("Please Select Date");
             return true;
         }
-//        if ((getCurrentLeaveForm().getStaffLeave().getLeaveType() == LeaveType.Lieu) && (currentLeaveForm.getForDate() == null)) {
-//            JsfUtil.addErrorMessage("Please Select \"Leave For Date\" ");
-//            return true;
-//        }
+
         if (currentLeaveForm.getApprovedStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Approved Person");
             return true;
@@ -162,7 +206,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         Calendar toDateCal = Calendar.getInstance();
         toDateCal.setTime(getCurrentLeaveForm().getToDate());
         while (toDateCal.getTime().after(nowDate.getTime())
-                ||toDateCal.get(Calendar.DATE)==nowDate.get(Calendar.DATE)) {
+                || toDateCal.get(Calendar.DATE) == nowDate.get(Calendar.DATE)) {
 
             StaffLeave staffLeave = new StaffLeave();
             staffLeave.setCreatedAt(new Date());
@@ -175,8 +219,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             staffLeave.calLeaveQty();
             staffLeaveFacade.create(staffLeave);
 
-          
-            nowDate.add(Calendar.DATE, 1);            
+            nowDate.add(Calendar.DATE, 1);
         }
 
     }
@@ -268,6 +311,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public void clear() {
         currentLeaveForm = null;
+        leaveEntitle = 0;
+        leaved = 0;
 
     }
 

@@ -185,7 +185,8 @@
                                             <p:outputLabel value="Bank Branch"/>                                           
                                             <p:selectOneMenu id='br' value="#{staffController.current.bankAccount.bankBranch}">
                                                 <f:selectItem itemLabel="Select Bank"/>
-                                                <f:selectItems value="#{institutionController.current.branch}" var='i' itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                <f:selectItems value="#{institutionController.current.branch}" var='i'
+                                                               itemValue="#{i}" itemLabel="#{i.name}"/>
                                             </p:selectOneMenu>
 
                                             <h:outputText  value="Account No" ></h:outputText>
@@ -195,21 +196,10 @@
 
                                     <p:tab title="Working and Leave Hour">
                                         <h:panelGrid columns="2">                                           
-                                            <h:outputText  value="Minimum Working Hour Per Shift" ></h:outputText>
+                                            <h:outputText  value="Working Hour Per Shift" ></h:outputText>
                                             <p:inputText autocomplete="off"  
                                                          value="#{staffController.current.workingHourPerShift}"  />
-                                            <h:outputText  value="Minimum Leave Hour Per Day" ></h:outputText>
-                                            <p:inputText autocomplete="off"  
-                                                         value="#{staffController.current.leaveHour}"  />
-                                        </h:panelGrid>
-                                    </p:tab>
-
-                                    <p:tab title="Leave Entitle">
-                                        <h:panelGrid columns="2">                                           
-                                            <h:outputText  value="Annual" ></h:outputText>
-                                            <p:inputText autocomplete="off"  
-                                                         value="#{staffController.current.workingHourPerShift}"  />
-                                            <h:outputText  value="Minimum Leave Hour Per Day" ></h:outputText>
+                                            <h:outputText  value="Leave Hour Per Day" ></h:outputText>
                                             <p:inputText autocomplete="off"  
                                                          value="#{staffController.current.leaveHour}"  />
                                         </h:panelGrid>
@@ -218,7 +208,7 @@
                                 </p:tabView>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{staffController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
+                                        <f:ajax render="btnAdd  btnDelete btnSave  lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                         </f:ajax>
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
