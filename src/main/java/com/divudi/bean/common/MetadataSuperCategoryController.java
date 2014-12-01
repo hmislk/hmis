@@ -13,6 +13,7 @@ import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.entity.MetadataSuperCategory;
+import com.divudi.facade.MetadataSuperCategoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,7 +42,7 @@ public class MetadataSuperCategoryController implements Serializable {
     @Inject
     SessionController sessionController;
     @EJB
-    private CategoryFacade ejbFacade;
+    private MetadataSuperCategoryFacade ejbFacade;
     List<MetadataSuperCategory> selectedItems;
     private MetadataSuperCategory current;
     private List<MetadataSuperCategory> items = null;
@@ -105,12 +106,8 @@ public class MetadataSuperCategoryController implements Serializable {
         this.selectText = selectText;
     }
 
-    public CategoryFacade getEjbFacade() {
+    public MetadataSuperCategoryFacade getEjbFacade() {
         return ejbFacade;
-    }
-
-    public void setEjbFacade(CategoryFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
     }
 
     public SessionController getSessionController() {
@@ -132,7 +129,7 @@ public class MetadataSuperCategoryController implements Serializable {
         this.current = current;
     }
 
-    private CategoryFacade getFacade() {
+    private MetadataSuperCategoryFacade getFacade() {
         return ejbFacade;
     }
 
