@@ -1,10 +1,14 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.entity;
 
-import com.divudi.data.Privileges;
+package com.divudi.entity.hr;
+
+import com.divudi.data.hr.LeaveType;
+import com.divudi.entity.Staff;
+import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -18,21 +22,19 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author www.divudi.com
+ * @author safrin
  */
 @Entity
-public class WebUserPrivilege implements Serializable {
-    static final long serialVersionUID = 1L;
+public class StaffLeaveEntitle implements Serializable {
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
-    String name;
-    String description;
+    private Long id;
     @ManyToOne
-    WebUser webUser;
+    Staff staff;
     @Enumerated(EnumType.STRING)
-    Privileges privilege;
-    //Created Properties
+    LeaveType leaveType;
+     //Created Properties
     @ManyToOne
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -44,48 +46,17 @@ public class WebUserPrivilege implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
-    String sname;
-    String tname;
+    double count;
 
-    public Long getId() {
-        return id;
+    public double getCount() {
+        return count;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setCount(double count) {
+        this.count = count;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public WebUser getWebUser() {
-        return webUser;
-    }
-
-    public void setWebUser(WebUser webUser) {
-        this.webUser = webUser;
-    }
-
-    public Privileges getPrivilege() {
-        return privilege;
-    }
-
-    public void setPrivilege(Privileges privilege) {
-        this.privilege = privilege;
-    }
+    
+    
 
     public WebUser getCreater() {
         return creater;
@@ -134,21 +105,33 @@ public class WebUserPrivilege implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
+    
+    
 
-    public String getSname() {
-        return sname;
+    public Staff getStaff() {
+        return staff;
     }
 
-    public void setSname(String sname) {
-        this.sname = sname;
+    public void setStaff(Staff staff) {
+        this.staff = staff;
     }
 
-    public String getTname() {
-        return tname;
+    public LeaveType getLeaveType() {
+        return leaveType;
     }
 
-    public void setTname(String tname) {
-        this.tname = tname;
+    public void setLeaveType(LeaveType leaveType) {
+        this.leaveType = leaveType;
+    }
+    
+    
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     @Override
@@ -160,11 +143,11 @@ public class WebUserPrivilege implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-
-        if (!(object instanceof WebUserPrivilege)) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof StaffLeaveEntitle)) {
             return false;
         }
-        WebUserPrivilege other = (WebUserPrivilege) object;
+        StaffLeaveEntitle other = (StaffLeaveEntitle) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -173,6 +156,7 @@ public class WebUserPrivilege implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.data.WebUserPrivilege[ id=" + id + " ]";
+        return "com.divudi.entity.hr.StaffLeaveEntitle[ id=" + id + " ]";
     }
+    
 }

@@ -6,13 +6,11 @@
  * and
  * a Set of Related Tools
  */
-package com.divudi.bean.lab;
+package com.divudi.bean.common;
 
-import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
 import java.util.TimeZone;
-import com.divudi.facade.ReportFormatFacade;
-import com.divudi.entity.lab.ReportFormat;
+import com.divudi.facade.FormFormatFacade;
+import com.divudi.entity.FormFormat;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,28 +27,28 @@ import javax.enterprise.context.SessionScoped;
  */
 @Named
 @SessionScoped
-public class ReportFormatController implements Serializable {
+public class FormFormatController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @EJB
-    private ReportFormatFacade ejbFacade;
-    List<ReportFormat> selectedItems;
-    private ReportFormat current;
-    private List<ReportFormat> items = null;
+    private FormFormatFacade ejbFacade;
+    List<FormFormat> selectedItems;
+    private FormFormat current;
+    private List<FormFormat> items = null;
     String selectText = "";
 
-    public List<ReportFormat> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from ReportFormat c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+    public List<FormFormat> getSelectedItems() {
+        selectedItems = getFacade().findBySQL("select c from FormFormat c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public void prepareAdd() {
-        current = new ReportFormat();
+        current = new FormFormat();
     }
 
-    public void setSelectedItems(List<ReportFormat> selectedItems) {
+    public void setSelectedItems(List<FormFormat> selectedItems) {
         this.selectedItems = selectedItems;
     }
 
@@ -81,11 +79,11 @@ public class ReportFormatController implements Serializable {
         this.selectText = selectText;
     }
 
-    public ReportFormatFacade getEjbFacade() {
+    public FormFormatFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(ReportFormatFacade ejbFacade) {
+    public void setEjbFacade(FormFormatFacade ejbFacade) {
         this.ejbFacade = ejbFacade;
     }
 
@@ -97,17 +95,17 @@ public class ReportFormatController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public ReportFormatController() {
+    public FormFormatController() {
     }
 
-    public ReportFormat getCurrent() {
+    public FormFormat getCurrent() {
         if (current == null) {
-            current = new ReportFormat();
+            current = new FormFormat();
         }
         return current;
     }
 
-    public void setCurrent(ReportFormat current) {
+    public void setCurrent(FormFormat current) {
         this.current = current;
     }
 
@@ -128,16 +126,16 @@ public class ReportFormatController implements Serializable {
         getCurrent();
     }
 
-    private ReportFormatFacade getFacade() {
+    private FormFormatFacade getFacade() {
         return ejbFacade;
     }
 
-    public List<ReportFormat> getItems() {
+    public List<FormFormat> getItems() {
         // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM ReportFormat i where i.retired=false order by i.name";
+        String sql = "SELECT i FROM FormFormat i where i.retired=false order by i.name";
         items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<ReportFormat>();
+            items = new ArrayList<>();
         }
         return items;
     }

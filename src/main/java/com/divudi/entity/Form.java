@@ -5,7 +5,6 @@
  */
 package com.divudi.entity;
 
-import com.divudi.entity.hr.Roster;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -46,9 +45,8 @@ public class Form implements Serializable {
     private Date editedAt;
      //
 
-   
     private String comments;
-    String code="";
+    String code = "";
 
     public String getCode() {
         return code;

@@ -26,4 +26,26 @@ public enum ReportItemType {
     ReferringDoctor,
     Speciman,
     CollectingCenter,
+    NameInFull,
+    Surname,
+    NamwWithInitials,
+    Birthday,
+    NicNo,
+    Nationality,
+    Religion,
+    BloodGroup,
+    Area,
+    Phone,
+    Mobile,
+    Fax,
+    CivilStatus,
+    Category,
+    ;
+    
+    public String getLabel(){
+        switch (this){
+            case AutherizedSignature: return "AutherizedSignature";
+        }
+        return null;
+    }
 }
