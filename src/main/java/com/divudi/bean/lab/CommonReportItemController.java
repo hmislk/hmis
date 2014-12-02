@@ -10,6 +10,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import java.util.TimeZone;
 import com.divudi.data.ReportItemType;
@@ -75,7 +76,7 @@ public class CommonReportItemController implements Serializable {
         current = new CommonReportItem();
         current.setName("New Combo");
         current.setCategory(category);
-        current.setIxItemValueType(InvestigationItemValueType.Category);
+        current.setIxItemType(InvestigationItemType.ItemsCatetgory);
         getEjbFacade().create(current);
     }
 
