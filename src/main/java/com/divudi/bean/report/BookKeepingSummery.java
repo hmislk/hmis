@@ -288,8 +288,6 @@ public class BookKeepingSummery implements Serializable {
     public void setOpdRegentTotal(double opdRegentTotal) {
         this.opdRegentTotal = opdRegentTotal;
     }
-    
-    
 
     public List<String1Value2> getCollections2Hos() {
         if (collections2Hos == null) {
@@ -317,8 +315,6 @@ public class BookKeepingSummery implements Serializable {
         this.opdStaffTotal = opdStaffTotal;
     }
 
-    
-    
     public void setCreditCompanyCollections(List<BillItem> creditCompanyCollections) {
         this.creditCompanyCollections = creditCompanyCollections;
     }
@@ -522,23 +518,21 @@ public class BookKeepingSummery implements Serializable {
     }
 
     List<bookKeepingSummeryRow> bookKeepingSummeryRows;
-    
+
     public void createOPdLabListWithProDayEndTable() {
 
         Map temMap = new HashMap();
         bookKeepingSummeryRows = new ArrayList<>();
-
+        PaymentMethod[] pmArray = {PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
+        List<PaymentMethod> pmList = Arrays.asList(pmArray);
         List t = new ArrayList();
 
         String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
-                + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
-                + " where bi.item.department.institution=:ins "
+                + " from BillFee bf join bf.billItem bi join bi.item i left join i.category c  "
+                + " where i.department.institution=:ins "
                 + " and  bi.bill.billType= :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
-                + " and (bi.bill.paymentMethod = :pm1 "
-                + " or  bi.bill.paymentMethod = :pm2 "
-                + " or  bi.bill.paymentMethod = :pm3 "
-                + " or  bi.bill.paymentMethod = :pm4)"
+                + " and bi.bill.paymentMethod in :pm "
                 + " group by c.name, i.name,  bf.fee.feeType,  bi.bill.billClassType "
                 + " order by c.name, i.name, bf.fee.feeType";
 
@@ -546,13 +540,15 @@ public class BookKeepingSummery implements Serializable {
         temMap.put("fromDate", fromDate);
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", BillType.OpdBill);
-        temMap.put("pm1", PaymentMethod.Cash);
-        temMap.put("pm2", PaymentMethod.Card);
-        temMap.put("pm3", PaymentMethod.Cheque);
-        temMap.put("pm4", PaymentMethod.Slip);
+        temMap.put("pm", pmList);
 
+        System.out.println("jpql = " + jpql);
+        System.out.println("temMap = " + temMap);
+        
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
 
+        System.out.println("lobjs.size() = " + lobjs.size());
+        
         bookKeepingSummeryRow pre = null;
         int n = 0;
 
@@ -780,13 +776,11 @@ public class BookKeepingSummery implements Serializable {
 //            opdHospitalTotal += bksr.getTotal();
 //        }
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
-        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(),FeeType.OwnInstitution, sessionController.getInstitution(), Arrays.asList(paymentMethods));
-        opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(),FeeType.Staff, sessionController.getInstitution(), Arrays.asList(paymentMethods));
-        opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(),FeeType.Chemical, sessionController.getInstitution(),Arrays.asList(paymentMethods));
+        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.OwnInstitution, sessionController.getInstitution(), Arrays.asList(paymentMethods));
+        opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, sessionController.getInstitution(), Arrays.asList(paymentMethods));
+        opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
     }
-    
-    
 
     public void createOPdListWithProDayEndTable(List<PaymentMethod> paymentMethods) {
         Map temMap = new HashMap();
@@ -1878,8 +1872,8 @@ public class BookKeepingSummery implements Serializable {
         createDoctorPaymentOpd();
         createDoctorPaymentInward();
         ///////////////////
-        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(),FeeType.OwnInstitution, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
-        opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(),FeeType.Staff, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.OwnInstitution, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+        opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);

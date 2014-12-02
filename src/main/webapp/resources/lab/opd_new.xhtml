@@ -25,8 +25,9 @@
             <p:column headerText="Count" >
                 <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
                 
-
+                
             </p:column>
+           
             <p:column headerText="Hospital Fee" styleClass="numberCol" rendered="#{cc.attrs.hospital eq true}">
                 <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
                 <p:outputLabel value="#{sr.hosFee}" rendered="#{!sr.catRow}" >
