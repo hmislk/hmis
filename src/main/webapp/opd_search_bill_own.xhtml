@@ -58,9 +58,12 @@
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>
-                            <p:column headerText="Bill No" >                                
+                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
                                 <h:outputLabel   value="#{bill.insId}"/>
-                            </p:column>                            
+                            </p:column>    
+                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
+                                <h:outputLabel   value="#{bill.deptId}"/>
+                            </p:column> 
                             <p:column headerText="Billed For"  >                                
                                 <h:outputLabel value="#{bill.toInstitution.name} - #{bill.toDepartment.name}" />
                             </p:column>

@@ -179,7 +179,8 @@
                 
                 </h:panelGrid>
 
-                <p:dataTable styleClass="noBorder" var="ph" value="#{storePurchaseController.billItems}" id="itemList">  
+                <p:dataTable styleClass="noBorder" var="ph" value="#{storePurchaseController.billItems}" id="itemList" 
+                             rowKey="#{ph.searialNo}">  
                     <f:facet name="header">  
                     </f:facet>  
 
@@ -262,8 +263,8 @@
 
 
                     <p:column>
-                        <p:commandButton ajax="false" value="Remove" action="#{storePurchaseController.remove(ph)}"/>
-
+                        <p:commandButton process="itemList cmdRemove"  update="itemList" id="cmdRemove" value="Remove" action="#{storePurchaseController.remove(ph)}">
+                        </p:commandButton>
                     </p:column>
                 </p:dataTable> 
                 

@@ -250,20 +250,26 @@ public class BillItem implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-
+        System.out.println("object = " + object);
         if (!(object instanceof BillItem)) {
+            System.out.println("not a bill item = ");
             return false;
         }
         BillItem other = (BillItem) object;
-        
-        if(this.id == null && other.id==null){
+        System.out.println("other = " + other);
+        System.out.println("this id = " + this.id);
+        System.out.println("other id = " + other.id);
+        if((this.id == null || this.id == 0) && (other.id==null || other.id == 0) ){            
           if(this.searialNo==other.searialNo){
+              System.out.println("this = other");
               return true;
           }   else{
+              System.out.println("this not eq other");
               return false;
           }
+          
         }
-        
+        System.out.println("not Null");
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }

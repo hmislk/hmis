@@ -12,10 +12,12 @@ import com.divudi.data.hr.StaffLeaveBallance;
 import com.divudi.data.hr.StaffShiftAggrgation;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
+import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.facade.FingerPrintRecordFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
@@ -41,7 +43,10 @@ public class HrReportController implements Serializable {
     Date toDate;
     @EJB
     CommonFunctions commonFunctions;
+    @EJB
+    StaffFacade staffFacade;
     List<StaffShift> staffShifts;
+    List<Staff> staffs;
     List<FingerPrintRecord> fingerPrintRecords;
     @EJB
     StaffShiftFacade staffShiftFacade;
@@ -57,6 +62,24 @@ public class HrReportController implements Serializable {
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
+    }
+
+    public List<Staff> getStaffs() {
+        return staffs;
+    }
+
+    public void setStaffs(List<Staff> staffs) {
+        this.staffs = staffs;
+    }
+    
+    
 
     public void createFingerPrintRecordVarified() {
         String sql = "";
@@ -105,6 +128,14 @@ public class HrReportController implements Serializable {
             hm.put("sh", getReportKeyWord().getShift());
         }
 
+    }
+    
+    public void createStaffList () {
+        String sql;
+        sql = "select s from Staff s "
+              + " where s.retired=false "
+              + " order by s.codeInterger";
+        staffs = getStaffFacade().findBySQL(sql);
     }
 
     public String createStaffShiftQuary(HashMap hm) {
