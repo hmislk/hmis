@@ -28,7 +28,7 @@ public enum ReportItemType {
     CollectingCenter,
     NameInFull,
     Surname,
-    NamwWithInitials,
+    NameWithInitials,
     Birthday,
     NicNo,
     Nationality,

@@ -43,7 +43,16 @@
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaved}"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle - staffLeaveApplicationFormController.leaved}"/>
                             </h:panelGrid>
-                            
+
+                            <p:commandButton ajax="false" value="Process Lie Shift" 
+                                             action="#{staffLeaveApplicationFormController.fetchStaffShift()}" />
+                            <p:selectOneMenu id="s1" value="#{staffLeaveApplicationFormController.currentLeaveForm.staffShift}"   >
+                                <f:selectItem itemLabel="Select Staff Shift"/>
+                                <f:selectItems value="#{staffLeaveApplicationFormController.staffShifts}"
+                                               var="itm" itemLabel="#{itm.shiftDate}|#{itm.shift.name}" 
+                                               itemValue="#{itm}" />
+                            </p:selectOneMenu>
+
                             <h:outputLabel value="Requested Date"/>
                             <p:calendar id="requestedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.requestedDate}"
                                         pattern="dd MMMM yyyy">
