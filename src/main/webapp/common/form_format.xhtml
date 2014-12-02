@@ -65,14 +65,14 @@
                                     <f:selectItem itemLabel="No Content"/>
                                     <f:selectItems value="#{enumController.reportItemTypes}" ></f:selectItems>
                                 </h:selectOneListbox>
-                                
-                                 <h:outputText value="Category"/>
-                                 <p:autoComplete value="#{commonReportItemController.current.category}" 
-                                                 completeMethod="#{categoryController.completeCategory}"
-                                                 var="cat"
-                                                 itemLabel="#{cat.name}"
-                                                 itemValue="#{cat}"
-                                                 converter="categoryConverter"></p:autoComplete>
+
+                                <h:outputText value="Category"/>
+                                <p:autoComplete value="#{commonReportItemController.current.category}" 
+                                                completeMethod="#{categoryController.completeCategory}"
+                                                var="cat"
+                                                itemLabel="#{cat.name}"
+                                                itemValue="#{cat}"
+                                                converter="categoryConverter"></p:autoComplete>
 
                                 <h:outputText value="Align"/>
                                 <h:selectOneListbox  id="cmbTxtAlign" value="#{commonReportItemController.current.cssTextAlign}" size="1" >
@@ -199,6 +199,7 @@
                                 <h:outputText value="Suffix"/>
                                 <p:inputText autocomplete="off" id="txtSuffix" value="#{commonReportItemController.current.formatSuffix}"/>
 
+                               
                             </h:panelGrid>
                         </p:panel>
                     </h:panelGroup>
@@ -211,9 +212,10 @@
                                     <h:inputText id="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  style="color: #{myIi.cssColor}"  ></h:inputText>
                                     <p:watermark for="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
                                     <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'ItemsCatetgory'}" >
-                                        <p:selectOneMenu style="width: 200px; background-color: red;border: 1px solid yellow;" >
+                                        <h:selectOneMenu style="#{myIi.innerCssStyle}" >
+                                            <f:selectItem itemLabel="#{myIi.name}"></f:selectItem>
                                             <f:selectItems value="#{categoryController.getSubCategories(myIi.category) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
-                                        </p:selectOneMenu>
+                                        </h:selectOneMenu>
                                     </h:panelGroup>
                                 </div>
                             </ui:repeat>

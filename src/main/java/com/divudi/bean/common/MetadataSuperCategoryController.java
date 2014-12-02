@@ -11,12 +11,15 @@ package com.divudi.bean.common;
 import java.util.TimeZone;
 import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
+import com.divudi.entity.MetadataCategory;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.entity.MetadataSuperCategory;
 import com.divudi.facade.MetadataSuperCategoryFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +51,56 @@ public class MetadataSuperCategoryController implements Serializable {
     private List<MetadataSuperCategory> items = null;
     String selectText = "";
     Category category;
+    String catName;
+    
+    @EJB
+    CategoryFacade categoryFacade;
 
+    public String getCatName() {
+        return catName;
+    }
+
+    public void setCatName(String catName) {
+        this.catName = catName;
+    }
+    
+    
+    
+    public void addCatName(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Select Category");
+            return;
+        }
+        if(catName.trim().equals("")){
+            JsfUtil.addErrorMessage("Enter Value");
+            return;
+        }
+        MetadataCategory c = new MetadataCategory();
+        c.setParentCategory(current);
+        c.setCreatedAt(new Date());
+        c.setCreater(getSessionController().getLoggedUser());
+        c.setName(catName);
+        catName = "";
+        categoryFacade.create(c);
+    }
+
+    public void editMetadataCategory(Category mdc){
+        if(mdc==null){
+            System.out.println("mdc = " + mdc);
+            return;
+        }
+        categoryFacade.edit(mdc);
+        getMetadatingaCategories();
+    }
+    
+    public List<Category> getMetadatingaCategories(){
+        String jpql;
+        jpql = "select m from MetadataCategory m where m.parentCategory=:pc order by m.name";
+        Map m = new HashMap();
+        m.put("pc", current);
+        return categoryFacade.findBySQL(jpql, m);
+    }
+    
     public Category getCategory() {
         return category;
     }
@@ -98,8 +150,8 @@ public class MetadataSuperCategoryController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
-//        recreateModel();
-//        getItems();
+        recreateModel();
+        getItems();
     }
 
     public void setSelectText(String selectText) {
@@ -134,18 +186,10 @@ public class MetadataSuperCategoryController implements Serializable {
     }
 
     public List<MetadataSuperCategory> getItems() {
-        if (items != null) {
-            return items;
-        }
-        String temSql;
-        if (category != null) {
-            temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false and i.category=:cat order by i.name";
-            Map m = new HashMap();
-            m.put("cat", category);
-            //System.out.println("common report cat sql is " + temSql + " and " + m.toString());
-            items = getFacade().findBySQL(temSql, m);
-        } else {
-            items = new ArrayList<>();
+        if (items == null) {
+            String temSql;
+            temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false order by i.name";
+            items = getFacade().findBySQL(temSql);
         }
         return items;
     }
