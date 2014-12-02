@@ -27,6 +27,7 @@
                             <p:panel header="Add New ..." >
                                 <h:commandButton value="Label" action="#{commonReportItemController.addNewLabel()}"/>
                                 <h:commandButton value="Value" action="#{commonReportItemController.addNewValue()}"/>
+                                <h:commandButton value="Combo" action="#{commonReportItemController.addNewCombo()}"/>
                             </p:panel>
                         </p:panel>
                         <p:panel header="Report Items List" id="pIx">
@@ -63,6 +64,14 @@
                                     <f:selectItem itemLabel="No Content"/>
                                     <f:selectItems value="#{enumController.reportItemTypes}" ></f:selectItems>
                                 </h:selectOneListbox>
+                                
+                                 <h:outputText value="Category"/>
+                                 <p:autoComplete value="#{commonReportItemController.current.category}" 
+                                                 completeMethod="#{categoryController.completeCategory}"
+                                                 var="cat"
+                                                 itemLabel="#{cat.name}"
+                                                 itemValue="#{cat}"
+                                                 converter="categoryConverter"></p:autoComplete>
 
                                 <h:outputText value="Align"/>
                                 <h:selectOneListbox  id="cmbTxtAlign" value="#{commonReportItemController.current.cssTextAlign}" size="1" >
@@ -73,8 +82,8 @@
                                     <f:selectItem itemLabel="Inherit" itemValue="Inherit"/>
                                 </h:selectOneListbox>
 
-                                
-                                
+
+
 
                                 <h:outputText value="Left" />
                                 <p:inputText autocomplete="off" id="txtLeft" value="#{commonReportItemController.current.cssLeft}"/>
@@ -200,6 +209,11 @@
                                     <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></h:outputText>
                                     <h:inputText id="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  style="color: #{myIi.cssColor}"  ></h:inputText>
                                     <p:watermark for="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+                                    <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Category'}" >
+                                        <p:selectOneMenu >
+                                            <f:selectItems value="#{categoryController.getSubCategories(myIi.category) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
                                 </div>
                             </ui:repeat>
                         </div>

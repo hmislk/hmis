@@ -18,5 +18,7 @@ public enum InvestigationItemValueType {
     Line,
     Rectangle,
     Circle,
+    Item,
+    Category,
     
 }

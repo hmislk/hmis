@@ -68,6 +68,16 @@ public class CategoryController implements Serializable {
         return c;
     }
 
+    public List<Category> getSubCategories(Category cat) {
+        List<Category> suggestions;
+        String sql;
+        HashMap tmpMap = new HashMap();
+        sql = "select c from Category c where c.retired=false and c.superCategory=:cat order by c.name";
+        tmpMap.put("cat", cat);
+        suggestions = getFacade().findBySQL(sql, tmpMap);
+        return suggestions;
+    }
+
     public List<Category> completeServiceCategory(String query) {
         List<Category> suggestions;
         String sql;
@@ -418,54 +428,54 @@ public class CategoryController implements Serializable {
         return religions;
     }
 
-    public void addReligion(){
-        if(selectText==null || selectText.trim().equals("")){
+    public void addReligion() {
+        if (selectText == null || selectText.trim().equals("")) {
             JsfUtil.addErrorMessage("Enter a name");
-            return ;
+            return;
         }
         Religion r = new Religion();
         r.setName(selectText);
         r.setCreatedAt(new Date());
         r.setCreater(getSessionController().getLoggedUser());
         getFacade().create(r);
-        religions=null;
-        selectText="";
+        religions = null;
+        selectText = "";
         getReligions();
     }
-    
-    public void addNationality(){
-        if(selectText==null || selectText.trim().equals("")){
+
+    public void addNationality() {
+        if (selectText == null || selectText.trim().equals("")) {
             JsfUtil.addErrorMessage("Enter a name");
-            return ;
+            return;
         }
         Nationality r = new Nationality();
         r.setName(selectText);
         r.setCreatedAt(new Date());
         r.setCreater(getSessionController().getLoggedUser());
         getFacade().create(r);
-        nationalities=null;
-        selectText="";
+        nationalities = null;
+        selectText = "";
         getNationalities();
     }
-    
-    public void updateCategory(Category cat){
-        if(cat==null){
+
+    public void updateCategory(Category cat) {
+        if (cat == null) {
             System.out.println("cat = " + cat);
-            return ;
+            return;
         }
         getFacade().edit(cat);
-        if(cat instanceof Religion){
-            religions=null;
+        if (cat instanceof Religion) {
+            religions = null;
             getReligions();
-        }else if(cat instanceof Nationality){
-            nationalities =null;
+        } else if (cat instanceof Nationality) {
+            nationalities = null;
             getNationalities();
-        }else{
-            items=null;
+        } else {
+            items = null;
             getItems();
         }
     }
-    
+
     /**
      *
      */
