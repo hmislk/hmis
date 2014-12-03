@@ -8,11 +8,13 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.FormItemValue;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.SalaryPaymentFrequency;
 import com.divudi.data.hr.SalaryPaymentMethod;
+import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import java.util.TimeZone;
@@ -27,7 +29,14 @@ import com.divudi.entity.hr.StaffEmployment;
 import com.divudi.entity.hr.StaffGrade;
 import com.divudi.entity.hr.StaffStaffCategory;
 import com.divudi.entity.hr.StaffWorkingDepartment;
+import com.divudi.entity.lab.CommonReportItem;
+import com.divudi.entity.lab.PatientReportItemValue;
+import com.divudi.entity.lab.ReportItem;
+import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.FormFacade;
+import com.divudi.facade.FormItemValueFacade;
+import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import java.io.ByteArrayInputStream;
@@ -38,6 +47,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -83,6 +93,59 @@ public class StaffController implements Serializable {
     List<Staff> staffWithCode;
     private List<Staff> items = null;
     String selectText = "";
+
+    @EJB
+    private CommonReportItemFacade criFacade;
+    @EJB
+    FormItemValueFacade fivFacade;
+    Category formCategory;
+    private List<CommonReportItem> formItems = null;
+
+    public FormItemValue formItemValue(ReportItem ri, Person p) {
+        if (ri == null || p == null) {
+            System.out.println("ri = " + ri);
+            System.out.println("p = " + p);
+            return null;
+        }
+        String jpql;
+        jpql = "select v from FormItemValue v where v.person=:p and v.reportItem=:ri";
+        Map m = new HashMap();
+        m.put("p", p);
+        m.put("ri", ri);
+        FormItemValue v = fivFacade.findFirstBySQL(jpql, m);
+        if(v==null){
+            v = new FormItemValue();
+            v.setPerson(p);
+            v.setReportItem(ri);
+            fivFacade.create(v);
+        }
+        
+        return v;
+    }
+
+    public Category getFormCategory() {
+        return formCategory;
+    }
+
+    public void setFormCategory(Category formCategory) {
+        this.formCategory = formCategory;
+    }
+
+    public List<CommonReportItem> getFormItems() {
+        if (formItems != null) {
+            return formItems;
+        }
+        String temSql;
+        if (formCategory != null) {
+            temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
+            Map m = new HashMap();
+            m.put("cat", formCategory);
+            formItems = criFacade.findBySQL(temSql, m);
+        } else {
+            formItems = new ArrayList<>();
+        }
+        return formItems;
+    }
 
     public List<Staff> getStaffWithCode() {
         return staffWithCode;
@@ -464,6 +527,7 @@ public class StaffController implements Serializable {
 
     private void recreateModel() {
         items = null;
+        formItems=null;
     }
 
     public void saveSelected() {
@@ -499,10 +563,20 @@ public class StaffController implements Serializable {
 
         updateStaffEmployment();
 
+                
         recreateModel();
         getItems();
     }
 
+    public void updateFormItem(FormItemValue fi){
+        if(fi==null){
+            System.out.println("fi = " + fi);
+            return;
+        }
+        fivFacade.edit(fi);
+        System.out.println("fi updates " + fi);
+    }
+    
     public void updateCodeToIntege() {
         for (Staff staff : ejbFacade.findAll()) {
             staff.chageCodeToInteger();
@@ -620,6 +694,10 @@ public class StaffController implements Serializable {
     public void setCurrent(Staff current) {
         this.current = current;
         getSignature();
+    }
+    
+    public void changeStaff(){
+        formItems=null;
     }
 
     private StaffFacade getFacade() {

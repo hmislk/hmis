@@ -67,8 +67,8 @@
                                 </h:selectOneListbox>
 
                                 <h:outputText value="Category"/>
-                                <p:autoComplete value="#{commonReportItemController.current.category}" 
-                                                completeMethod="#{categoryController.completeCategory}"
+                                <p:autoComplete value="#{commonReportItemController.current.referringCategory}" 
+                                                completeMethod="#{metadataSuperCategoryController.completeItems}"
                                                 var="cat"
                                                 itemLabel="#{cat.name}"
                                                 itemValue="#{cat}"
@@ -212,9 +212,9 @@
                                     <h:inputText id="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  style="color: #{myIi.cssColor}"  ></h:inputText>
                                     <p:watermark for="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
                                     <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'ItemsCatetgory'}" >
-                                        <h:selectOneMenu style="#{myIi.innerCssStyle}" >
+                                        <h:selectOneMenu id="cmbRefCat" style="#{myIi.innerCssStyle}" >
                                             <f:selectItem itemLabel="#{myIi.name}"></f:selectItem>
-                                            <f:selectItems value="#{categoryController.getSubCategories(myIi.category) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
+                                            <f:selectItems value="#{categoryController.getSubCategories(myIi.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
                                         </h:selectOneMenu>
                                     </h:panelGroup>
                                 </div>

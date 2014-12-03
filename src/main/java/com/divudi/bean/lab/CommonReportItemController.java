@@ -71,7 +71,7 @@ public class CommonReportItemController implements Serializable {
         current.setCategory(category);
         getEjbFacade().create(current);
     }
-    
+
     public void addNewCombo() {
         current = new CommonReportItem();
         current.setName("New Combo");
