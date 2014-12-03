@@ -43,6 +43,7 @@ public class UserPreference implements Serializable {
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
     boolean paymentMethodAllowedInInwardMatrix;
+    boolean pharmacyBillPrabodha;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
 
@@ -63,6 +64,16 @@ public class UserPreference implements Serializable {
     public void setPartialPaymentOfOpdBillsAllowed(boolean partialPaymentOfOpdBillsAllowed) {
         this.partialPaymentOfOpdBillsAllowed = partialPaymentOfOpdBillsAllowed;
     }
+
+    public boolean isPharmacyBillPrabodha() {
+        return pharmacyBillPrabodha;
+    }
+
+    public void setPharmacyBillPrabodha(boolean pharmacyBillPrabodha) {
+        this.pharmacyBillPrabodha = pharmacyBillPrabodha;
+    }
+    
+    
     
     
 
