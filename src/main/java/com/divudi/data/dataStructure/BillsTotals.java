@@ -19,6 +19,8 @@ public class BillsTotals {
     private double credit;
     private double card;
     private double cheque;
+    private double expense;
+    private double grnNetTotalWithExpenses;
     private double slip;
     private boolean bold;
     //private BillType billType;
@@ -97,6 +99,8 @@ public class BillsTotals {
     public void setSlip(double slip) {
         this.slip = slip;
     }
+    
+    
 
     public String getName() {
         return name;
@@ -116,6 +120,22 @@ public class BillsTotals {
 
     public void setBold(boolean bold) {
         this.bold = bold;
+    }
+
+    public double getExpense() {
+        return expense;
+    }
+
+    public void setExpense(double expense) {
+        this.expense = expense;
+    }
+
+    public double getGrnNetTotalWithExpenses() {
+        return grnNetTotalWithExpenses;
+    }
+
+    public void setGrnNetTotalWithExpenses(double grnNetTotalWithExpenses) {
+        this.grnNetTotalWithExpenses = grnNetTotalWithExpenses;
     }
 
    
