@@ -137,12 +137,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         Calendar nc = Calendar.getInstance();
         nc.setTime(getFromDate());
         Date nowDate = nc.getTime();
-        System.out.println("Line1 = " + new Date());
+//        System.out.println("Line1 = " + new Date());
 
         nc.setTime(getToDate());
         nc.add(Calendar.DATE, 1);
         Date tmpToDate = nc.getTime();
-        System.out.println("Line2 = " + new Date());
+//        System.out.println("Line2 = " + new Date());
 
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
@@ -407,27 +407,18 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 //UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();
-
                 //Update Extra Time
                 ss.calExtraTimeWithStartOrEndRecord();
-
                 //UPDATE Leave
                 ss.calLeaveTime();
-
-                //Update Staff Shift OT time if DayOff or Sleeping Day
-                if (ss.getShift().getDayType() == DayType.DayOff
-                        || ss.getShift().getDayType() == DayType.SleepingDay) {
-//                        || ss instanceof StaffShiftReplace) {
-                    ss.calExtraTimeComplete();
-
-                }
+                //Update Staff Shift OT time if DayOff or Sleeping Day                
+                ss.calExtraTimeComplete();
 
                 ss.calMultiplyingFactor(ss.getShift().getDayType());
                 DayType dt = humanResourceBean.isHolidayWithDayType(ss.getShiftDate());
                 ss.calMultiplyingFactor(dt);
-
                 //Update Lieu Leave
-                ss.calLieu(dt);
+                ss.calLieu();
 
                 getStaffShiftFacade().edit(ss);
             }

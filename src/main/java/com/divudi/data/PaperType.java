@@ -12,5 +12,6 @@ package com.divudi.data;
 public enum PaperType {
     PosPaper,
     FiveFivePaper,
+    FiveFivePrintedPaper,
     A4Paper,
 }

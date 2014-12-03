@@ -387,10 +387,10 @@ public class PharmacyAdjustmentController implements Serializable {
 //        ph.setRetailRate(itemBatch.getRetailsaleRate());
         ph.setDoe(itemBatch.getDateOfExpire());
         //tbi.setItem(getStock().getItemBatch().getItem());
-        itemBatch.setDateOfExpire(exDate);
+        //itemBatch.setDateOfExpire(exDate);
         //tbi.setRate(rsr);
         //pharmaceutical Bill Item
-        //ph.setStock(stock);
+        ph.setStock(stock);
         //Rates
         //Values
         tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
@@ -414,6 +414,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         ph.setBillItem(tbi);
         getPharmaceuticalBillItemFacade().edit(ph);
+        getItemBatchFacade().edit(itemBatch);
 //        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
@@ -464,7 +465,7 @@ public class PharmacyAdjustmentController implements Serializable {
     public void adjustExDate() {
         saveDeptAdjustmentBill();
         saveExDateAdjustmentBillItems();
-        getStock().getItemBatch().setRetailsaleRate(rsr);
+        getStock().getItemBatch().setDateOfExpire(exDate);
         getItemBatchFacade().edit(getStock().getItemBatch());
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 //        clearBill();
@@ -498,6 +499,7 @@ public class PharmacyAdjustmentController implements Serializable {
         rsr = null;
         wsr = null;
         stock = null;
+        exDate = null;
 
     }
 

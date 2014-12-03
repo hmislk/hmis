@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -45,6 +44,17 @@ public class HrmVariables implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    private String name;
+    private double epfRate;
+    private double etfRate;
+    private double payeeRate;
+    private double epfCompanyRate;
+    private double etfCompanyRate;
+    private double payeeCompanyRate;
+    private double payeeLimit;
+    @OneToMany(mappedBy = "hrmVariables", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PayeeTaxRange> taxRanges = new ArrayList<>();
+    
 
     public Long getId() {
         return id;
@@ -54,22 +64,6 @@ public class HrmVariables implements Serializable {
         this.id = id;
     }
 
-    private String name;
-    private double epfRate;
-    private double etfRate;
-    private double payeeRate;
-    private double epfCompanyRate;
-    private double etfCompanyRate;
-    private double payeeCompanyRate;
-    private double payeeLimit;
-  
-
-    @OneToMany(mappedBy = "hrmVariables", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<PayeeTaxRange> taxRanges = new ArrayList<>();
-
-   
-
-   
     @Override
     public int hashCode() {
         int hash = 0;
