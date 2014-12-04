@@ -17,6 +17,7 @@ import com.divudi.data.hr.SalaryPaymentMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
+import com.divudi.entity.Doctor;
 import java.util.TimeZone;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
@@ -113,13 +114,13 @@ public class StaffController implements Serializable {
         m.put("p", p);
         m.put("ri", ri);
         FormItemValue v = fivFacade.findFirstBySQL(jpql, m);
-        if(v==null){
+        if (v == null) {
             v = new FormItemValue();
             v.setPerson(p);
             v.setReportItem(ri);
             fivFacade.create(v);
         }
-        
+
         return v;
     }
 
@@ -165,13 +166,26 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findBySQL(sql);
     }
 
-    public void createStaffListWithOutSpecilityAll() {
+    public void createStaffList() {
 
         String sql = "select s from Staff s where "
                 + " s.retired=false "
                 + " order by s.person.name ";
 
         staffWithCode = getEjbFacade().findBySQL(sql);
+    }
+
+    public void createStaffOnly() {
+
+        String sql = "select s from Staff s where "
+                + " s.retired=false "
+                + " and (type(s)!=:class1"
+                + " and type(s)!=:class2)"
+                + " order by s.code ";
+        HashMap hm = new HashMap();
+        hm.put("class1", Doctor.class);
+        hm.put("class2", Consultant.class);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
 
     public void createStaffWithCode() {
@@ -527,7 +541,7 @@ public class StaffController implements Serializable {
 
     private void recreateModel() {
         items = null;
-        formItems=null;
+        formItems = null;
     }
 
     public void saveSelected() {
@@ -563,20 +577,19 @@ public class StaffController implements Serializable {
 
         updateStaffEmployment();
 
-                
         recreateModel();
         getItems();
     }
 
-    public void updateFormItem(FormItemValue fi){
-        if(fi==null){
+    public void updateFormItem(FormItemValue fi) {
+        if (fi == null) {
             System.out.println("fi = " + fi);
             return;
         }
         fivFacade.edit(fi);
         System.out.println("fi updates " + fi);
     }
-    
+
     public void updateCodeToIntege() {
         for (Staff staff : ejbFacade.findAll()) {
             staff.chageCodeToInteger();
@@ -695,9 +708,9 @@ public class StaffController implements Serializable {
         this.current = current;
         getSignature();
     }
-    
-    public void changeStaff(){
-        formItems=null;
+
+    public void changeStaff() {
+        formItems = null;
     }
 
     private StaffFacade getFacade() {
