@@ -510,6 +510,12 @@
                                 <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                             </h:panelGroup>
                         </div>
+                        
+                        <div >
+                            <h:panelGroup   id="gpBillPreviewPrabodha"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                            </h:panelGroup>
+                        </div>
 
 
 

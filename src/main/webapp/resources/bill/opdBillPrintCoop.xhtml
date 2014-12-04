@@ -167,6 +167,12 @@
                         <h:column >
                             <h:outputLabel value="#{bip.item.printName}"  />
                         </h:column>
+                        <f:facet name="footer" class="totallabel">
+                            <br/>
+                            <h:outputLabel value="Total" styleClass="totallabel">
+
+                            </h:outputLabel>
+                        </f:facet>
                     </h:dataTable>
 
                     <div class="amountLabel">
@@ -178,6 +184,14 @@
                                 <h:outputLabel value="#{bip1.netValue}" style="font-size: 12px!important;"  >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
+                                
+                                <f:facet name="footer" class="totalCoop">
+                                <br/>
+                                
+                                    <h:outputLabel value="#{cc.attrs.bill.total}" styleClass="totalCoop">
+                                    
+                                    </h:outputLabel>
+                                </f:facet>
                             </h:column>
                         </h:dataTable>
                     </div>
@@ -194,7 +208,7 @@
                                     <br/>
                                 </td>
                             </tr>
-                            <tr>
+<!--                            <tr>
                                 <td style="text-align: left; min-width: 3cm;">
                                     <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;"/>
                                 </td>
@@ -203,7 +217,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-                            </tr>
+                            </tr>-->
                             <tr>
                                 <td style="text-align: left;">
                                     <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>

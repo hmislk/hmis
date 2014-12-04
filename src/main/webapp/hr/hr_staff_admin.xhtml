@@ -31,7 +31,7 @@
 
                                     <p:selectOneListbox converter="stfcon"   id="lstSelect"   value="#{staffController.current}" style="min-width: 223px; height: 300px;">
                                         <f:selectItems  value="#{staffController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}" ></f:selectItems>
-                                        <p:ajax event="change" process="lstSelect" update="gpDetail"/>                                        
+                                        <p:ajax event="change" process="lstSelect" update="gpDetail" listener="#{staffController.changeStaff()}"/>                                        
                                     </p:selectOneListbox>
 
 
@@ -97,19 +97,50 @@
                                                 <f:selectItem itemLabel="Please select a speciality"/>
                                                 <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                             </h:selectOneListbox>
-                                            
+
                                         </h:panelGrid> 
-                                        
-                                        
-                                        
+
+
+
                                     </p:tab>
                                     <p:tab title="Details" >
-                                        
+                                        <p:selectOneMenu id="mnuCat" value="#{staffController.formCategory}" >
+                                            <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                                            <f:ajax event="change" execute="mnuCat" render="@all" />
+                                        </p:selectOneMenu>
+
+                                        <h:panelGroup id="gpStaffForm"  >
+
+                                            <div style="width:21cm;height: 29.7cm; border: 1px solid black; position: relative; font-size: 150%;">
+                                                <ui:repeat value="#{staffController.formItems}" var="myIi" >
+                                                    <div style="#{myIi.cssStyle}; position:absolute ;">
+                                                        
+                                                        <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></h:outputText>
+
+                                                        <h:inputText id="txtValue" rendered="#{myIi.ixItemType ne 'Label' and myIi.ixItemValueType eq 'Varchar' and myIi.retired eq false }"  value="#{staffController.formItemValue(myIi, staffController.current.person).strValue}" style="color: #{myIi.cssColor}"  ></h:inputText>
+                                                        <p:watermark for="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+
+                                                        <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'ItemsCatetgory'}" >
+                                                            <h:selectOneMenu value="#{staffController.formItemValue(myIi, staffController.current.person).category}" id="cmbRefCat" style="#{myIi.innerCssStyle}" >
+                                                                <f:selectItem itemLabel="#{myIi.name}"></f:selectItem>
+                                                                <f:selectItems value="#{categoryController.getSubCategories(myIi.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
+                                                            </h:selectOneMenu>
+                                                        </h:panelGroup>
+                                                        
+                                                        
+                                                        
+
+
+                                                    </div>
+                                                </ui:repeat>
+                                            </div>
+
+                                        </h:panelGroup>
                                     </p:tab>
                                     <p:tab title="Relatives" >
-                                        
+
                                     </p:tab>
-                                    
+
                                     <p:tab title="Welfare" >
                                         <h:panelGrid columns="2" >
                                             <h:outputLabel value="Eligible Welfare Value" ></h:outputLabel>
