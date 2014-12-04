@@ -19,10 +19,10 @@
                                 <p:commandButton  ajax="false" value="Fill All" 
                                                   action="#{staffController.createStaffList}"
                                                   onclick="onSubmitButton();"/>
-                                  <p:commandButton  ajax="false" value="Fill Staff Only" 
+                                <p:commandButton  ajax="false" value="Fill Staff Only" 
                                                   action="#{staffController.createStaffOnly}"
                                                   onclick="onSubmitButton();"/>
-                                
+
                                 <p:commandButton  ajax="false" value="Fill All(Staff who has no speciality)"
                                                   action="#{staffController.createStaffListWithOutSpecility}" 
                                                   onclick="onSubmitButton();"/>
@@ -30,15 +30,17 @@
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="tbl1" fileName="Staff_Without_Specility"  />
                             </p:commandButton>
-
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                                <p:printer target="tbl1" />
+                            </p:commandButton>
                         </p:panel>
                         <p:panel >
                             <p:dataTable value="#{staffController.staffWithCode}"  var="s" id="tbl1" rowIndexVar="i">
                                 <p:column headerText="No">
                                     <p:outputLabel value="#{i+1}" />
                                 </p:column>
-                                 <p:column headerText="Code">
-                                     <p:outputLabel value="#{s.codeInterger}" />
+                                <p:column headerText="Code">
+                                    <p:outputLabel value="#{s.codeInterger}" />
                                 </p:column>
                                 <p:column headerText="Name">
                                     <p:outputLabel value="#{s.person.nameWithTitle}" />
