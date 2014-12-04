@@ -17,11 +17,11 @@
                 <p:focus id="detailFocus" context="gpDetail" />
 
 
-
+ 
                 <p:panel header="Manage Category Tube" >
-                    <h:panelGrid id ="gpVeda" columns="2" >
+                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
 
-                        <h:panelGrid id="gpSelect" columns="1"  >
+                        <h:panelGrid id="gpSelect" columns="1" styleClass="alignTop"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
                                     <h:selectOneListbox  id="lstSelect"   size="10" value="#{metadataSuperCategoryController.current}" style="min-width: 223px">
@@ -31,6 +31,7 @@
                                     </h:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
+                                    <p:defaultCommand target="btnAdd" ></p:defaultCommand>
                                     <h:commandButton id="btnAdd" value="Add"  action="#{metadataSuperCategoryController.prepareAdd()}" styleClass="buttons" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
                                         </f:ajax>
@@ -58,6 +59,7 @@
                                             <tr>
                                                 <td>
                                                     <h:inputText id="txtNewMetaCatName" value="#{metadataSuperCategoryController.catName}" ></h:inputText>
+                                                    <p:watermark for="txtNewMetaCatName" value="Enter the new value here" ></p:watermark>
                                                 </td>
                                                 <td>
 
@@ -71,8 +73,15 @@
 
                                                 </td>
                                             </tr>
+                                        </table>
+                                        <table >
                                             <tr>
-                                                <td colspan="2" >
+                                                <th>
+                                                    Already Added Values
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <td >
 
                                                     <table >
                                                         <ui:repeat id="repeatSubCats" value="#{metadataSuperCategoryController.metadatingaCategories}" var="mdc" >

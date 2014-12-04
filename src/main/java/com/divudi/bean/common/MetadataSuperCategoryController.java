@@ -52,7 +52,7 @@ public class MetadataSuperCategoryController implements Serializable {
     String selectText = "";
     Category category;
     String catName;
-    
+
     @EJB
     CategoryFacade categoryFacade;
 
@@ -63,15 +63,13 @@ public class MetadataSuperCategoryController implements Serializable {
     public void setCatName(String catName) {
         this.catName = catName;
     }
-    
-    
-    
-    public void addCatName(){
-        if(current==null){
+
+    public void addCatName() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Select Category");
             return;
         }
-        if(catName.trim().equals("")){
+        if (catName.trim().equals("")) {
             JsfUtil.addErrorMessage("Enter Value");
             return;
         }
@@ -84,23 +82,23 @@ public class MetadataSuperCategoryController implements Serializable {
         categoryFacade.create(c);
     }
 
-    public void editMetadataCategory(Category mdc){
-        if(mdc==null){
+    public void editMetadataCategory(Category mdc) {
+        if (mdc == null) {
             System.out.println("mdc = " + mdc);
             return;
         }
         categoryFacade.edit(mdc);
         getMetadatingaCategories();
     }
-    
-    public List<Category> getMetadatingaCategories(){
+
+    public List<Category> getMetadatingaCategories() {
         String jpql;
         jpql = "select m from MetadataCategory m where m.parentCategory=:pc order by m.name";
         Map m = new HashMap();
         m.put("pc", current);
         return categoryFacade.findBySQL(jpql, m);
     }
-    
+
     public Category getCategory() {
         return category;
     }
@@ -192,6 +190,19 @@ public class MetadataSuperCategoryController implements Serializable {
             items = getFacade().findBySQL(temSql);
         }
         return items;
+    }
+
+    public List<MetadataSuperCategory> completeItems(String qry) {
+        if (qry == null) {
+            qry = "";
+        }
+        List<MetadataSuperCategory> temLst;
+        String temSql;
+        HashMap m = new HashMap();
+        m.put("n", "%" + qry.toUpperCase() + "%" );
+        temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false and upper(i.name) like :n order by i.name";
+        temLst = getFacade().findBySQL(temSql,m);
+        return temLst;
     }
 
     public List<MetadataSuperCategory> getCategoryItems(Category cat) {

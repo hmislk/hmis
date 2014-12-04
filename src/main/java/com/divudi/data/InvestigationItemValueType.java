@@ -13,6 +13,7 @@ public enum InvestigationItemValueType {
     Memo,
     Double,
     Integer,
+    Long,
     List,
     Image,
     Line,
@@ -20,5 +21,8 @@ public enum InvestigationItemValueType {
     Circle,
     Item,
     Category,
+    Person,
+    Institution,
+    
     
 }
