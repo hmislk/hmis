@@ -1607,12 +1607,11 @@ public class PharmacyItemExcelManager implements Serializable {
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
                 System.out.println("strAmp = " + strAmp);
-                
+
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
                 System.out.println("strCode = " + strCode);
-                
-                
+
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("v", vmp);
@@ -1647,8 +1646,9 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
                 //System.out.println("amp = " + amp.getName());
                 //Ampp
-                ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
-
+                if (issueUnitsPerPack > 1) {
+                    ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+                }
                 //Code
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
@@ -1659,7 +1659,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
                 //System.out.println("strBarCode = " + strBarcode);
-                amp.setCode(strBarcode);
+                amp.setBarcode(strBarcode);
                 getAmpFacade().edit(amp);
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);
