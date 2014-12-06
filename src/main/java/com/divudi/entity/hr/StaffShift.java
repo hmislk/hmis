@@ -132,9 +132,33 @@ public class StaffShift implements Serializable {
     @ManyToOne
     Roster roster;
     double lieuQty;
+    double lieuQtyUtilized;
     boolean lieuPaid;
-    boolean lieuOrPaymentAllowed;
-    boolean lieuAndPaymentAllowed;
+    boolean lieuAllowed;
+    boolean lieuPaymentAllowed;
+
+    public void processLieuQtyUtilized(LeaveType leaveType) {
+        if (leaveType == null) {
+            return;
+        }
+
+        if (leaveType == LeaveType.Lieu && getLieuQtyUtilized() == 0) {
+            setLieuQtyUtilized(1);
+        }
+
+        if (leaveType == LeaveType.LieuHalf && getLieuQtyUtilized() != 1) {
+            setLieuQtyUtilized(getLieuQtyUtilized() + 0.5);
+        }
+
+    }
+
+    public double getLieuQtyUtilized() {
+        return lieuQtyUtilized;
+    }
+
+    public void setLieuQtyUtilized(double lieuQtyUtilized) {
+        this.lieuQtyUtilized = lieuQtyUtilized;
+    }
 
     public double getLieuQty() {
         return lieuQty;
@@ -152,27 +176,35 @@ public class StaffShift implements Serializable {
         this.lieuPaid = lieuPaid;
     }
 
-    public boolean isLieuOrPaymentAllowed() {
-        return lieuOrPaymentAllowed;
+    public boolean isLieuAllowed() {
+        return lieuAllowed;
     }
 
-    public void setLieuOrPaymentAllowed(boolean lieuOrPaymentAllowed) {
-        this.lieuOrPaymentAllowed = lieuOrPaymentAllowed;
+    public void setLieuAllowed(boolean lieuAllowed) {
+        this.lieuAllowed = lieuAllowed;
     }
 
-    public void calLieu(DayType dayType) {
-        if (dayType == null) {
-            return;
+    public boolean isLieuPaymentAllowed() {
+        return lieuPaymentAllowed;
+    }
+
+    public void setLieuPaymentAllowed(boolean lieuPaymentAllowed) {
+        this.lieuPaymentAllowed = lieuPaymentAllowed;
+    }
+
+    public void calLieu() {
+
+        if (lieuAllowed) {
+            lieuQty = 1;
         }
 
-        switch (dayType) {
-            case DayOff:
-                lieuAndPaymentAllowed = true;
-                break;
-            case MurchantileHoliday:
-            case Poya:
-                lieuOrPaymentAllowed = true;
-                break;
+        if (getShift() != null) {
+            DayType dayType = getShift().getDayType();
+            if (dayType == DayType.DayOff) {
+                lieuAllowed = true;
+                lieuPaymentAllowed = true;
+                lieuQty = 1;
+            }
         }
     }
 
@@ -433,33 +465,41 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeComplete() {
+        if (getShift() != null) {
+            DayType dayType = getShift().getDayType();
 
-        Calendar fromCalendar = Calendar.getInstance();
-        Calendar toCalendar = Calendar.getInstance();
-        Long inSecond = 0l;
+            if (dayType == DayType.DayOff
+                    || dayType == DayType.SleepingDay) {
 
-        //Logged 
-        if (getStartRecord().getLoggedRecord() != null
-                && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null
-                && getStartRecord().getLoggedRecord().isAllowedExtraDuty()
-                && getEndRecord().getLoggedRecord() != null
-                && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null
-                && getEndRecord().getLoggedRecord().isAllowedExtraDuty()) {
-            fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
-            toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
-            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-            extraTimeCompleteRecordLogged = inSecond;
-        }
+                Calendar fromCalendar = Calendar.getInstance();
+                Calendar toCalendar = Calendar.getInstance();
+                Long inSecond = 0l;
 
-        //Varified 
-        if (getStartRecord().getRecordTimeStamp() != null
-                && getStartRecord().isAllowedExtraDuty()
-                && getEndRecord().getRecordTimeStamp() != null
-                && getEndRecord().isAllowedExtraDuty()) {
-            fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
-            toCalendar.setTime(getEndRecord().getRecordTimeStamp());
-            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-            extraTimeCompleteRecordVarified = inSecond;
+                //Logged 
+                if (getStartRecord().getLoggedRecord() != null
+                        && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null
+                        && getStartRecord().getLoggedRecord().isAllowedExtraDuty()
+                        && getEndRecord().getLoggedRecord() != null
+                        && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null
+                        && getEndRecord().getLoggedRecord().isAllowedExtraDuty()) {
+                    fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
+                    toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
+                    inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+                    extraTimeCompleteRecordLogged = inSecond;
+                }
+
+                //Varified 
+                if (getStartRecord().getRecordTimeStamp() != null
+                        && getStartRecord().isAllowedExtraDuty()
+                        && getEndRecord().getRecordTimeStamp() != null
+                        && getEndRecord().isAllowedExtraDuty()) {
+                    fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
+                    toCalendar.setTime(getEndRecord().getRecordTimeStamp());
+                    inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+                    extraTimeCompleteRecordVarified = inSecond;
+                }
+
+            }
         }
 
     }

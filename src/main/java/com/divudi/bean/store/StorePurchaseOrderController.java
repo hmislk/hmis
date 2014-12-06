@@ -150,7 +150,7 @@ public class StorePurchaseOrderController implements Serializable {
     }
 
     @Inject
-    private PharmacyController pharmacyController;
+    private StoreController1 storeController1;
 
     public void onEdit(BillItem tmp) {
         tmp.setNetValue(tmp.getPharmaceuticalBillItem().getQty() * tmp.getPharmaceuticalBillItem().getPurchaseRate());
@@ -158,7 +158,7 @@ public class StorePurchaseOrderController implements Serializable {
     }
 
     public void onFocus(BillItem ph) {
-        getPharmacyController().setPharmacyItem(ph.getItem());
+        storeController1.setPharmacyItem(ph.getItem());
     }
 
     public BillFacade getBillFacade() {
@@ -345,14 +345,7 @@ public class StorePurchaseOrderController implements Serializable {
         this.billsToApprove = billsToApprove;
     }
 
-    public PharmacyController getPharmacyController() {
-        return pharmacyController;
-    }
-
-    public void setPharmacyController(PharmacyController pharmacyController) {
-        this.pharmacyController = pharmacyController;
-    }
-
+  
     public boolean getPrintPreview() {
         return printPreview;
     }
