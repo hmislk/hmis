@@ -1606,10 +1606,11 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
-                
+                System.out.println("strAmp = " + strAmp);
                 
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
+                System.out.println("strCode = " + strCode);
                 
                 
                 //System.out.println("strAmp = " + strAmp);
@@ -1619,6 +1620,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (!strCat.equals("")) {
                     amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
+                        System.out.println("amp = " + amp);
                         amp = new Amp();
                         amp.setName(strAmp);
                         amp.setCode(strCode);
@@ -1631,8 +1633,10 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setRetired(false);
                         amp.setCode(strCode);
                         getAmpFacade().edit(amp);
+                        System.out.println("amp = " + amp);
                     }
                 } else {
+                    System.out.println("amp is null");
                     amp = null;
                     //System.out.println("amp is null");
                 }
