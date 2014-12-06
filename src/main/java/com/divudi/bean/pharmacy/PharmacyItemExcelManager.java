@@ -1624,6 +1624,7 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp = new Amp();
                         amp.setName(strAmp);
                         amp.setCode(strCode);
+                        amp.setDepartmentType(DepartmentType.Pharmacy);
                         amp.setMeasurementUnit(strengthUnit);
                         amp.setDblValue((double) strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
@@ -1631,6 +1632,7 @@ public class PharmacyItemExcelManager implements Serializable {
                         getAmpFacade().create(amp);
                     } else {
                         amp.setRetired(false);
+                        amp.setDepartmentType(DepartmentType.Pharmacy);
                         amp.setCode(strCode);
                         getAmpFacade().edit(amp);
                         System.out.println("amp = " + amp);
