@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
 import com.divudi.data.DepartmentType;
@@ -50,6 +51,10 @@ public class EnumController implements Serializable {
         return DepartmentType.values();
     }
 
+    public ApplicationInstitution[] getApplicationInstitutions(){
+        return ApplicationInstitution.values();
+    }
+    
     public PaperType[] getPaperTypes() {
         return PaperType.values();
     }

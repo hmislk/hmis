@@ -28,7 +28,7 @@ public enum ReportItemType {
     CollectingCenter,
     NameInFull,
     Surname,
-    NamwWithInitials,
+    NameWithInitials,
     Birthday,
     NicNo,
     Nationality,
@@ -40,6 +40,10 @@ public enum ReportItemType {
     Fax,
     CivilStatus,
     Category,
+    Item,
+    Person,
+    Institution,
+    DateTime,
     ;
     
     public String getLabel(){

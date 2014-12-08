@@ -518,6 +518,21 @@ public class ReportItem implements Serializable {
         return cssStyle;
     }
 
+    public String getInnerCssStyle() {
+        cssStyle = "width:" + cssWidth + "!important; height:"
+                + cssHeight + "; background-color:" + cssColor + ";"
+                + "font-style:" + cssFontStyle + ";font-size:"
+                + cssFontSize + "%;line-height:" + cssLineHeight
+                + "%; vertical-align: " + cssVerticalAlign + ";"
+                + "text-align: " + cssTextAlign + ";z-index: " + cssZorder + ";"
+                + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
+                + "font-weight: " + cssFontWeight + ";";
+
+        //TODO (Later) to add cssHeight, font styles, etc, Now 12
+        return cssStyle;
+    }
+
+    
     public void setCssStyle(String cssStyle) {
         this.cssStyle = cssStyle;
     }
