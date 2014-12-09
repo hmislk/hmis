@@ -119,6 +119,13 @@
                             </f:facet> 
                             <h:outputLabel value="#{b.referenceBill.deptId}"/>
                         </p:column>
+                        
+                        <p:column headerText="Expenses" style="text-align: right;">
+                            <f:facet name="header">  
+                                <h:outputLabel value="Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.expenseTotal}" />
+                        </p:column>
 
                         <p:column headerText="Cash" style=" text-align: right"  >
                             <f:facet name="header">  
@@ -139,6 +146,16 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
+                        
+                        <p:column headerText="With Expenses" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="With Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.netTotal}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>                            
+                        </p:column>
+                        
                         <p:column headerText="Remark" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Remark"/>
@@ -149,6 +166,14 @@
                         <p:columnGroup type="footer">  
                             <p:row >  
                                 <p:column colspan="5" style="text-align:left" footerText="Totals:"/>
+                                
+                                <p:column style="text-align: right;" footerText="#{commonReport.grnBilled.expense}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{commonReport.grnBilled.expense}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
                                 <p:column style="text-align: right;" footerText="#{commonReport.grnBilled.cash}">
                                     <f:facet name="footer">
@@ -164,7 +189,16 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
-                                </p:column>  
+                                </p:column>
+                                
+                                <p:column style="text-align: right;" footerText="#{commonReport.grnBilled.grnNetTotalWithExpenses}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{commonReport.grnBilled.grnNetTotalWithExpenses}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
                             </p:row>  
                         </p:columnGroup>  
 
@@ -209,6 +243,13 @@
                             <h:outputLabel value="#{b1.comments}"/>
 
                         </p:column>
+                        
+                        <p:column headerText="Expenses" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.expenseTotal}"/>
+                        </p:column>
 
                         <p:column headerText="Cash"  style=" text-align: right"  >
                             <f:facet name="header">  
@@ -229,6 +270,15 @@
                             <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00"/>
 
                         </p:column>
+                        
+                        <p:column headerText="With Expenses" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="With Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.netTotal}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>                            
+                        </p:column>
 
                         <p:column exportable="false">
                             <p:selectBooleanCheckbox style="border: black 2px solid;"/>
@@ -240,6 +290,15 @@
                                 <p:column colspan="4" style="text-align:left" footerText="Totals:">
 
                                 </p:column>
+                                
+                                <p:column style="text-align: right;" footerText="#{commonReport.grnCancelled.expense}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{commonReport.grnCancelled.expense}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                
                                 <p:column style="text-align: right;" footerText="#{commonReport.grnCancelled.cash}">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{commonReport.grnCancelled.cash}">
@@ -254,7 +313,15 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
-                                </p:column>                   
+                                </p:column>
+                                
+                                <p:column style="text-align: right;" footerText="#{commonReport.grnCancelled.grnNetTotalWithExpenses}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{commonReport.grnCancelled.grnNetTotalWithExpenses}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
                             </p:row>  
 
@@ -318,6 +385,13 @@
                             <h:outputLabel value="#{b.fromInstitution.name}"/>
 
                         </p:column>
+                        
+<!--                        <p:column headerText="Expenses" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.referenceBill.expenseTotal}"/>
+                        </p:column>-->
 
                         <p:column headerText="Cash" style=" text-align: right"  >
                             <f:facet name="header">  
@@ -409,6 +483,13 @@
                             <h:outputLabel value="#{b1.comments}"/>
 
                         </p:column>
+                        
+<!--                        <p:column headerText="Expenses" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b.referenceBill.expenseTotal}"/>
+                        </p:column>-->
 
                         <p:column headerText="Cash"  style=" text-align: right"  >
                             <f:facet name="header">  

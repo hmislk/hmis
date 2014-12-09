@@ -72,7 +72,7 @@ public class CategoryController implements Serializable {
         List<Category> suggestions;
         String sql;
         HashMap tmpMap = new HashMap();
-        sql = "select c from Category c where c.retired=false and c.superCategory=:cat order by c.name";
+        sql = "select c from Category c where c.retired=false and c.parentCategory=:cat order by c.name";
         tmpMap.put("cat", cat);
         suggestions = getFacade().findBySQL(sql, tmpMap);
         return suggestions;

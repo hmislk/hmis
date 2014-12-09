@@ -40,6 +40,10 @@ public enum ReportItemType {
     Fax,
     CivilStatus,
     Category,
+    Item,
+    Person,
+    Institution,
+    DateTime,
     ;
     
     public String getLabel(){

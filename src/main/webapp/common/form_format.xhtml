@@ -57,6 +57,7 @@
                                 <h:selectOneListbox id="cmbItemType" value="#{commonReportItemController.current.ixItemType}" size="1" >
                                     <f:selectItem itemLabel="Label" itemValue="Label"/>
                                     <f:selectItem itemLabel="Value" itemValue="Value"/>
+                                    <f:selectItem itemLabel="Combo" itemValue="ItemsCatetgory"/>
                                 </h:selectOneListbox>
 
                                 <h:outputText value="Content"/>
@@ -64,14 +65,14 @@
                                     <f:selectItem itemLabel="No Content"/>
                                     <f:selectItems value="#{enumController.reportItemTypes}" ></f:selectItems>
                                 </h:selectOneListbox>
-                                
-                                 <h:outputText value="Category"/>
-                                 <p:autoComplete value="#{commonReportItemController.current.category}" 
-                                                 completeMethod="#{categoryController.completeCategory}"
-                                                 var="cat"
-                                                 itemLabel="#{cat.name}"
-                                                 itemValue="#{cat}"
-                                                 converter="categoryConverter"></p:autoComplete>
+
+                                <h:outputText value="Category"/>
+                                <p:autoComplete value="#{commonReportItemController.current.referringCategory}" 
+                                                completeMethod="#{metadataSuperCategoryController.completeItems}"
+                                                var="cat"
+                                                itemLabel="#{cat.name}"
+                                                itemValue="#{cat}"
+                                                converter="categoryConverter"></p:autoComplete>
 
                                 <h:outputText value="Align"/>
                                 <h:selectOneListbox  id="cmbTxtAlign" value="#{commonReportItemController.current.cssTextAlign}" size="1" >
@@ -198,6 +199,7 @@
                                 <h:outputText value="Suffix"/>
                                 <p:inputText autocomplete="off" id="txtSuffix" value="#{commonReportItemController.current.formatSuffix}"/>
 
+                               
                             </h:panelGrid>
                         </p:panel>
                     </h:panelGroup>
@@ -209,10 +211,11 @@
                                     <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></h:outputText>
                                     <h:inputText id="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  style="color: #{myIi.cssColor}"  ></h:inputText>
                                     <p:watermark for="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
-                                    <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Category'}" >
-                                        <p:selectOneMenu >
-                                            <f:selectItems value="#{categoryController.getSubCategories(myIi.category) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
-                                        </p:selectOneMenu>
+                                    <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'ItemsCatetgory'}" >
+                                        <h:selectOneMenu id="cmbRefCat" style="#{myIi.innerCssStyle}" >
+                                            <f:selectItem itemLabel="#{myIi.name}"></f:selectItem>
+                                            <f:selectItems value="#{categoryController.getSubCategories(myIi.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
+                                        </h:selectOneMenu>
                                     </h:panelGroup>
                                 </div>
                             </ui:repeat>
