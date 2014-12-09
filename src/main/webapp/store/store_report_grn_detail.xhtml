@@ -323,7 +323,7 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.grnNetTotal}" >
+                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
@@ -333,7 +333,7 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Credit"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.grnNetTotal}"  >
+                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>

@@ -401,7 +401,7 @@ public class InwardReportController implements Serializable {
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
-                + " and b.paymentFinalized=true "
+//                + " and b.paymentFinalized=true "
                 + " and b.dateOfDischarge between :fd and :td ";
 
         if (admissionType != null) {
