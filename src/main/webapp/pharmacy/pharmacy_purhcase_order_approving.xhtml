@@ -51,6 +51,14 @@
                             #{bi.item.name} 
                         </p:column>  
 
+                        <p:column headerText="Free Qty" style="width:25px!important;">                         
+                            <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%">
+                                <f:convertNumber pattern="#00.00"/>
+                                <f:ajax event="blur" render="total :#{p:component('tot')}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
+                                <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{purchaseOrderController.onFocus(bi)}" />
+                            </p:inputText>
+                        </p:column> 
+
                         <p:column headerText="Qty" style="width:25px!important;">                         
                             <p:inputText autocomplete="off" id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">
                                 <f:convertNumber pattern="#00.00"/>
