@@ -22,31 +22,30 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class WebUserPrivilege implements Serializable {
-
-     static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-     Long id;
-     String name;
-     String description;
+    Long id;
+    String name;
+    String description;
     @ManyToOne
     WebUser webUser;
     @Enumerated(EnumType.STRING)
     Privileges privilege;
     //Created Properties
     @ManyToOne
-     WebUser creater;
+    WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     Date createdAt;
+    Date createdAt;
     //Retairing properties
-     boolean retired;
+    boolean retired;
     @ManyToOne
-     WebUser retirer;
+    WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     Date retiredAt;
-     String retireComments;
-     String sname;
-     String tname;
+    Date retiredAt;
+    String retireComments;
+    String sname;
+    String tname;
 
     public Long getId() {
         return id;
@@ -152,8 +151,6 @@ public class WebUserPrivilege implements Serializable {
         this.tname = tname;
     }
 
-    
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -163,7 +160,7 @@ public class WebUserPrivilege implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof WebUserPrivilege)) {
             return false;
         }

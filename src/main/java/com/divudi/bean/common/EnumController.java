@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
 import com.divudi.data.DepartmentType;
@@ -12,6 +13,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.ReportItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -23,6 +25,7 @@ import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.entity.PaymentScheme;
+import com.divudi.entity.Person;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -48,8 +51,17 @@ public class EnumController implements Serializable {
         return DepartmentType.values();
     }
 
+    public ApplicationInstitution[] getApplicationInstitutions(){
+        return ApplicationInstitution.values();
+    }
+    
     public PaperType[] getPaperTypes() {
         return PaperType.values();
+    }
+    
+    public ReportItemType[] getReportItemTypes() {
+        Person p;
+        return ReportItemType.values();
     }
 
     public LeaveType[] getLeaveType() {

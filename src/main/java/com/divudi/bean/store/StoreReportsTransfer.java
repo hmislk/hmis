@@ -441,11 +441,10 @@ public class StoreReportsTransfer implements Serializable {
                     } else {
                         System.out.println("new item");
 
-                        ibr.setItem(ts.getItem());
-
                         item = ts.getItem();
 
                         ibr = new ItemBillRow();
+                        ibr.setItem(ts.getItem());
 
                         cbr.getItemBillRows().add(ibr);
                     }
@@ -497,7 +496,6 @@ public class StoreReportsTransfer implements Serializable {
             dbr.getBill().setGrantTotal(dbr.getBill().getGrantTotal() + ts.getQty());
 
 //            purchaseValue += ts.getNetValue();
-
         }
 
         purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);

@@ -354,7 +354,8 @@ public class GrnController implements Serializable {
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
-
+                ph.setFreeQty(i.getFreeQty());
+                
                 bi.setPharmaceuticalBillItem(ph);
 
                 getBillItems().add(bi);
