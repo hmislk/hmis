@@ -55,8 +55,8 @@
                         <h:outputLabel value="Select Item"/>
                         <h:outputLabel value="Qty"/>
                         <h:outputLabel value="Free"/>
-                        <h:outputLabel value="Purchase Rate"></h:outputLabel>
-                        <h:outputLabel value="Sale Price"></h:outputLabel>
+                        <h:outputLabel value="Sale Rate"></h:outputLabel>
+                        <h:outputLabel id="lblPr" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate *.85 }"></h:outputLabel>
                         <h:outputLabel value="DOE(dd mm yy)"/>
                         <h:outputLabel value="Bathch No"/>
 
@@ -87,13 +87,18 @@
 
                         </p:autoComplete>
                         <p:inputText autocomplete="off" id="txtQty" styleClass="numericTxt" value="#{pharmacyPurchaseController.currentBillItem.tmpQty}" style="width:100%" />  
-                        <p:inputText autocomplete="off" id="txtFreeQty"  styleClass="numericTxt" 
+                        <p:outputLabel id="txtFreeQty"  styleClass="numericTxt" 
                                      value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" style="width:100%" /> 
+
+
+                        <p:inputText autocomplete="off" id="tmpRetail"  styleClass="numericTxt" 
+                                     value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}" >
+                            <f:ajax event="keyup" execute="@this" render="lblPr" ></f:ajax>
+                        </p:inputText>  
+
                         <p:inputText autocomplete="off" id="txtPrate"  styleClass="numericTxt" 
                                      value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
                         </p:inputText>
-                        <p:inputText autocomplete="off" id="tmpRetail"  styleClass="numericTxt" 
-                                     value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  />  
 
                         <p:calendar navigator="true"
                                     id="calDoe" pattern="dd MM yy" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}"   >
@@ -171,7 +176,7 @@
                     <p:column headerText="Profit Margin" style="width:24%">                    
                         <h:outputText id="profMargin" value=" #{(ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate ) / 100}" />  
                     </p:column>
-                    
+
                     <p:column style="width:10%">
                         <p:commandButton value="Remove" ajax="false" action="#{pharmacyPurchaseController.removeItem(ph)}"/>
                     </p:column>
