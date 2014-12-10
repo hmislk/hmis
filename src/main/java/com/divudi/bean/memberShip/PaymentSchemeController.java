@@ -200,7 +200,7 @@ public class PaymentSchemeController implements Serializable {
 
     public void saveSelectedAllowedPaymentMethod() {
 
-        getCurrentAllowedPaymentMethod().setPaymentScheme(getPaymentSchemeForAllowPayment());
+        getCurrentAllowedPaymentMethod().setPaymentScheme(getCurrent());
         getCurrentAllowedPaymentMethod().setMembershipScheme(getMembershipScheme());
 
         if (getCurrentAllowedPaymentMethod().getId() != null && getCurrentAllowedPaymentMethod().getId() > 0) {
