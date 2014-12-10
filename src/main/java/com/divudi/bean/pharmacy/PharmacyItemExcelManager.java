@@ -651,6 +651,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             pharmacyItem.setRetired(true);
             pharmacyItem.setRetireComments("Bulk Remove");
+            pharmacyItem.setRetiredAt(new Date());
             pharmacyItem.setRetirer(getSessionController().getLoggedUser());
             getItemFacade().edit(pharmacyItem);
         }
