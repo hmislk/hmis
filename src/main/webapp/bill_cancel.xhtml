@@ -81,7 +81,7 @@
                                 </p:commandButton>
                             </div>
 
-                            <bi:opdBillPrintRuhunu bill="#{billSearch.bill}" cancell="true"/>
+                            <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" cancell="true"/>
 
 
                         </h:panelGroup>
@@ -92,7 +92,7 @@
                                     <p:printer target="gpBillPreviewCoop" ></p:printer>
                                 </p:commandButton>
                             </div>
-                            <bi:opdBillPrintCoop bill="#{billSearch.bill}" cancell="true"/>
+                            <bi:opdBillPrintCoop bill="#{billSearch.bill.cancelledBill}" cancell="true"/>
                         </h:panelGroup>
                     </h:panelGroup>
 
