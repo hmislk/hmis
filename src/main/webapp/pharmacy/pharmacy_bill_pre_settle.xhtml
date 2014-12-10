@@ -91,7 +91,7 @@
                                             <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
                                         </p:inputText>
                                         <h:outputLabel  value="Balance " ></h:outputLabel>
-                                        <h:outputLabel id="balance" value="#{pharmacyPreSettleController.balance}" >
+                                        <h:outputLabel id="balance" value="#{pharmacyPreSettleController.cashPaid-pharmacyPreSettleController.preBill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:panelGrid>
