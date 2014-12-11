@@ -25,6 +25,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import javax.inject.Named;
@@ -474,6 +475,72 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.OpdBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
 
+    }
+    
+    List<Bill>bills;
+    @EJB
+    BillFacade billFacade;
+    
+    double totalBill;
+
+    public double getTotalBill() {
+        return totalBill;
+    }
+
+    public void setTotalBill(double totalBill) {
+        this.totalBill = totalBill;
+    }
+    
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+    
+    
+    public void opdPharmacyStaffWelfarebills(){
+        String sql;
+        Map m=new HashMap();
+        
+        sql=" select b from Bill b where "
+                + " b.retired=false "
+                + " and b.toStaff is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and (b.billType=:bt1 or b.billType=:bt2) "
+                + " order by b.id ";
+        
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt1", BillType.PharmacySale);
+        m.put("bt2", BillType.OpdBill);
+        
+        bills=billFacade.findBySQL(sql, m);
+        System.out.println("bills = " + bills);
+        
+        calTotal();
+        
+    }
+    
+    public void calTotal(){
+        String sql;
+        Map m=new HashMap();
+        
+        sql=" select sum(b.netTotal) from Bill b where "
+                + " b.retired=false "
+                + " and b.toStaff is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and (b.billType=:bt1 or b.billType=:bt2) "
+                + " order by b.id ";
+        
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt1", BillType.PharmacySale);
+        m.put("bt2", BillType.OpdBill);
+        
+        totalBill=billFacade.findDoubleByJpql(sql, m);
+        System.out.println("totalBill = " + totalBill);
     }
 
     Department department;
