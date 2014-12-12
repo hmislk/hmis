@@ -933,38 +933,37 @@ public class HumanResourceBean {
     }
 
     public List<StaffLeave> getStaffLeave(Staff staff, LeaveType leaveType, Date frmDate, Date toDate) {
-
+        List<LeaveType> list = leaveType.getLeaveTypes();
         String sql = "Select s From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st "
-                + " and s.leaveType=:ltp"
+                + " and s.leaveType in :ltp"
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
-        hm.put("ltp", leaveType);
+        hm.put("ltp", list);
         hm.put("frm", frmDate);
         hm.put("to", toDate);
 
         return getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
-      public double calStaffLeave(Staff staff, LeaveType leaveType, Date frmDate, Date toDate) {
-
+    public double calStaffLeave(Staff staff, LeaveType leaveType, Date frmDate, Date toDate) {
+        List<LeaveType> list = leaveType.getLeaveTypes();
         String sql = "Select sum(s.qty) From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st "
-                + " and s.leaveType=:ltp"
+                + " and s.leaveType in :ltp"
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
-        hm.put("ltp", leaveType);
+        hm.put("ltp", list);
         hm.put("frm", frmDate);
         hm.put("to", toDate);
 
         return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
-    
     public StaffLeave fetchFirstStaffLeave(Staff staff, Date date) {
 
         String sql = "Select s From StaffLeave s"

@@ -105,8 +105,9 @@
                                     </p:tab>
                                     <p:tab title="Details" >
                                         <p:selectOneMenu id="mnuCat" value="#{staffController.formCategory}" >
+                                            <f:selectItem itemLabel="Select Form" ></f:selectItem>
                                             <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
-                                            <f:ajax event="change" execute="mnuCat" render="@all" />
+                                            <f:ajax event="change" execute="mnuCat" render="gpStaffForm" />
                                         </p:selectOneMenu>
 
                                         <h:panelGroup id="gpStaffForm"  >
