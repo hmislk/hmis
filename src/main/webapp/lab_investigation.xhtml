@@ -76,12 +76,12 @@
                                     </h:selectOneListbox>
 
                                     <h:outputText value="Invesitgation Category" ></h:outputText>
-                                    <h:selectOneListbox converter="ixcon" id="cmbCat"  size="1" value="#{investigationController.current.investigationCategory}" >
+                                    <h:selectOneListbox id="cmbCat"  size="1" value="#{investigationController.current.investigationCategory}" >
                                         <f:selectItem itemLabel="Please select a category"/>
                                         <f:selectItems value="#{investigationCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </h:selectOneListbox>
                                     <h:outputText value="Invesitgation Tube" ></h:outputText>
-                                    <h:selectOneListbox converter="ixcon" id="cmbTube" size="1" value="#{investigationController.current.investigationTube }" >
+                                    <h:selectOneListbox id="cmbTube" size="1" value="#{investigationController.current.investigationTube }" >
                                         <f:selectItem itemLabel="Please select a Tube"/>
                                         <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </h:selectOneListbox>

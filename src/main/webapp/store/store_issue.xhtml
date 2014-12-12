@@ -67,7 +67,7 @@
                                             <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
                                                             value="#{storeIssueController.stock}" 
                                                             converter="stockCon" 
-                                                            completeMethod="#{storeIssueController.completeAvailableStocks}" 
+                                                            completeMethod="#{storeController.completeAllStocks}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             style="width: 50px!important;">
                                                 <p:column headerText="Item" style="overflow: hidden;">
