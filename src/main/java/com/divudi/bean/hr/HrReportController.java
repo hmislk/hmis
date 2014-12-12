@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
+import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.hr.StaffLeaveBallance;
 import com.divudi.data.hr.StaffShiftAggrgation;
@@ -24,6 +25,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -78,8 +80,6 @@ public class HrReportController implements Serializable {
     public void setStaffs(List<Staff> staffs) {
         this.staffs = staffs;
     }
-    
-    
 
     public void createFingerPrintRecordVarified() {
         String sql = "";
@@ -129,12 +129,12 @@ public class HrReportController implements Serializable {
         }
 
     }
-    
-    public void createStaffList () {
+
+    public void createStaffList() {
         String sql;
         sql = "select s from Staff s "
-              + " where s.retired=false "
-              + " order by s.codeInterger";
+                + " where s.retired=false "
+                + " order by s.codeInterger";
         staffs = getStaffFacade().findBySQL(sql);
     }
 
@@ -243,8 +243,11 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getLeaveType() != null) {
-            sql += " and ss.leaveType=:ltp ";
-            hm.put("ltp", getReportKeyWord().getLeaveType());
+            List<LeaveType> list = getReportKeyWord().getLeaveType().getLeaveTypes();
+
+            sql += " and ss.leaveType in :ltp ";
+            hm.put("ltp", list);
+
         }
 
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
@@ -296,8 +299,9 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getLeaveType() != null) {
-            sql += " and ss.leaveType=:ltp ";
-            hm.put("ltp", getReportKeyWord().getLeaveType());
+            List<LeaveType> list = getReportKeyWord().getLeaveType().getLeaveTypes();
+            sql += " and ss.leaveType in :ltp ";
+            hm.put("ltp", list);
         }
 
         sql += " group by ss.staff,ss.leaveType"
