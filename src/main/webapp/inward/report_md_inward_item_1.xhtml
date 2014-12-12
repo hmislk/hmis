@@ -108,6 +108,9 @@
                     <p:column headerText="Name" >
                         <h:outputLabel value="#{i.billItem.item.name}"/>
                     </p:column>
+                    <p:column headerText="Comment" >
+                        <h:outputLabel value="#{i.billItem.descreption}"/>
+                    </p:column>
                     <p:column style="text-align: right;" headerText="Hospital Fee">
                         <h:outputLabel value="#{i.fee.fee}">
                             <f:convertNumber pattern="#,##0.00" />

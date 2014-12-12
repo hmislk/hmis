@@ -412,9 +412,6 @@
 
                     <p:panel  rendered="#{pharmacySaleController.billPreview}" >
 
-
-
-
                         <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
@@ -425,11 +422,29 @@
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  ajax="false" action="#{pharmacySaleController.resetAll()}" ></p:commandButton>
 
                         </div>
-                        <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
-                                <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+
+                        <h:panelGroup   id="gpBillPreview"  > 
+
+                            <h:panelGroup   id="gpBillPreviewSingle"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
+
+                                <div >
+                                    <h:panelGroup      rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
+                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                    </h:panelGroup>
+                                </div>
+
                             </h:panelGroup>
-                        </div>
+
+                            <h:panelGroup   id="gpBillPreviewDouble"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
+
+                                <div >
+                                    <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                        <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+                        </h:panelGroup>
 
 
 

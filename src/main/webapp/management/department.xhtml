@@ -39,8 +39,6 @@
                                     <p:inputText value="#{departmentController.selectText}" id="txtSearch" style="standardText" >
                                         <f:ajax event="keyup" execute="@this" render="lstSelect" listener="#{departmentController.fillSearchItems()}" ></f:ajax>
                                     </p:inputText>
-                                    
-                                    <p:commandButton ajax="false" value="Fill" action="#{departmentController.fillSearchItems}"/>
 
                                     <p:selectOneListbox  id="lstSelect"
                                                          value="#{departmentController.current}" 

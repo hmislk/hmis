@@ -125,7 +125,10 @@
                             </p:commandButton>
                         </div>
                         <bi:opdBillPrintRuhunu bill="#{billSearch.bill}" dup="true"/>
-
+<!--  <br/>
+                        <h:panelGroup >
+                            <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        
+                        </h:panelGroup>-->
 
                     </h:panelGroup>
 
@@ -136,7 +139,7 @@
                             </p:commandButton>
                         </div>
                         <bi:opdBillPrintCoop bill="#{billSearch.bill}" dup="false"/>
-
+                      
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
@@ -151,10 +154,10 @@
 
                             <p:commandButton ajax="false" value="Batch Cancel"  action="#{billController.cancellAll}" style="float: right;"
                                              onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
+                                                         return false;"/>
                         </div>
                         <h:panelGroup id="gpPosBill">
-                                <bi:posOpdBill bill="#{billSearch.bill}" duplicate="true"/>                        
+                            <bi:posOpdBill bill="#{billSearch.bill}" duplicate="true"/>                        
                         </h:panelGroup>
 
 
