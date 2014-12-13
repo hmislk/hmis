@@ -50,7 +50,15 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel>
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Details" ></h:outputLabel>
+                                <p:commandButton style="text-align: center;" id="btnSave" ajax="false" value="Save"  action="#{staffController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
+                                    <f:ajax render="btnAdd  btnDelete btnSave  lstSelect gpDetail selectFocus"  execute="gpDetail" >
+                                    </f:ajax>
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSave"/>
+                            </f:facet>
                             <h:panelGrid id="gpDetail" columns="1" styleClass="alignTop">
                                 <p:tabView>
                                     <p:tab title="General">
@@ -115,10 +123,15 @@
                                             <div style="width:21cm;height: 29.7cm; border: 1px solid black; position: relative; font-size: 150%;">
                                                 <ui:repeat value="#{staffController.formItems}" var="myIi" >
                                                     <div style="#{myIi.cssStyle}; position:absolute ;">
-                                                        
+
                                                         <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></h:outputText>
 
-                                                        <h:inputText id="txtValue" rendered="#{myIi.ixItemType ne 'Label' and myIi.ixItemValueType eq 'Varchar' and myIi.retired eq false }"  value="#{staffController.formItemValue(myIi, staffController.current.person).strValue}" style="color: #{myIi.cssColor}"  ></h:inputText>
+                                                        <h:inputText id="txtValue" 
+                                                                     rendered="#{myIi.ixItemType ne 'Label' and myIi.ixItemValueType eq 'Varchar' and myIi.retired eq false }"  
+                                                                     value="#{staffController.formItemValue(myIi, staffController.current.person).strValue}" 
+                                                                     style="color: #{myIi.cssColor}"  >
+                                                            <f:ajax event="blur" execute="txtValue" listener="#{staffController.updateFormItem(fi)}"   ></f:ajax>
+                                                        </h:inputText>
                                                         <p:watermark for="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
 
                                                         <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'ItemsCatetgory'}" >
@@ -127,9 +140,9 @@
                                                                 <f:selectItems value="#{categoryController.getSubCategories(myIi.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
                                                             </h:selectOneMenu>
                                                         </h:panelGroup>
-                                                        
-                                                        
-                                                        
+
+
+
 
 
                                                     </div>
@@ -238,13 +251,7 @@
                                     </p:tab>
 
                                 </p:tabView>
-                                <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{staffController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
-                                        <f:ajax render="btnAdd  btnDelete btnSave  lstSelect gpDetail selectFocus"  execute="gpDetail" >
-                                        </f:ajax>
-                                    </p:commandButton>
-                                    <p:defaultCommand target="btnSave"/>
-                                </h:panelGrid>
+                                
                             </h:panelGrid>
                         </p:panel>
                     </h:panelGrid>

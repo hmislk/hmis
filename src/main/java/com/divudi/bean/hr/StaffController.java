@@ -132,11 +132,8 @@ public class StaffController implements Serializable {
         this.formCategory = formCategory;
     }
 
-    public List<CommonReportItem> getFormItems() {
+    public void listFormItems() {
         System.out.println("getting form items");
-//        if (formItems != null) {
-//            return formItems;
-//        }
         String temSql;
         System.out.println("formCategory = " + formCategory);
         if (formCategory != null) {
@@ -147,9 +144,17 @@ public class StaffController implements Serializable {
         } else {
             formItems = new ArrayList<>();
         }
+    }
+
+    public List<CommonReportItem> getFormItems() {
         return formItems;
     }
 
+    public void setFormItems(List<CommonReportItem> formItems) {
+        this.formItems=formItems;
+    }
+
+    
     public List<Staff> getStaffWithCode() {
         return staffWithCode;
     }
