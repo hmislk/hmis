@@ -41,8 +41,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.TemporalType;
 
-
-
 /**
  *
  * @author Buddhika
@@ -104,7 +102,7 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
     }
-    
+
     public void fillDepartmentInventryStocks() {
         if (department == null) {
             UtilityController.addErrorMessage("Please select a department");
@@ -116,7 +114,7 @@ public class ReportsStock implements Serializable {
                 + " where s.department=:d"
                 + " and s.itemBatch.item.departmentType=:depty "
                 + " order by s.itemBatch.item.name";
-        
+
         m.put("depty", DepartmentType.Inventry);
         m.put("d", department);
         stocks = getStockFacade().findBySQL(sql, m);
@@ -207,7 +205,7 @@ public class ReportsStock implements Serializable {
             double calculatedStk = 0;
             boolean flg = false;
             if (sh != null) {
-             //   System.out.println("Previuos Stock " + sh.getStockQty());
+                //   System.out.println("Previuos Stock " + sh.getStockQty());
                 calculatedStk = (sh.getStockQty() + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit());
                 flg = true;
             } else if (phi != null) {
@@ -215,15 +213,13 @@ public class ReportsStock implements Serializable {
                 flg = true;
             }
 
-         //   System.out.println("calculated History Qty " + calculatedStk);
-
+            //   System.out.println("calculated History Qty " + calculatedStk);
             if (flg == true && b.getStockHistory().getStockQty() != calculatedStk) {
                 stockSet.add(b.getStock());
-             //   System.out.println("TRUE");
+                //   System.out.println("TRUE");
             }
 
-         //   System.out.println("#########");
-
+            //   System.out.println("#########");
         }
 
         stocks = new ArrayList<>();
@@ -327,12 +323,12 @@ public class ReportsStock implements Serializable {
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {
-                 //   System.out.println("Itm " + ph.getBillItem().getItem().getName());
-                 //   System.out.println("Prv History Qty " + preHistoryQty);
-                 //   System.out.println("Prv Qty " + previousPh.getQtyInUnit());
-                 //   System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
-                 //   System.out.println("History " + curHistory);
-                 //   System.out.println("######");
+                    //   System.out.println("Itm " + ph.getBillItem().getItem().getName());
+                    //   System.out.println("Prv History Qty " + preHistoryQty);
+                    //   System.out.println("Prv Qty " + previousPh.getQtyInUnit());
+                    //   System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
+                    //   System.out.println("History " + curHistory);
+                    //   System.out.println("######");
                 }
 
                 previousPh = ph;
@@ -370,6 +366,14 @@ public class ReportsStock implements Serializable {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
+    }
+
+    public void addComment(Stock st) {
+        if (st != null) {
+            getStockFacade().edit(st);
+            UtilityController.addSuccessMessage("Edit Successful");
+        }else
+        return;
     }
 
     public void fillDepartmentNonmovingStocks() {
@@ -472,11 +476,11 @@ public class ReportsStock implements Serializable {
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-            totalQty+=ts.getStock();
-            totalPurchaseRate+=ts.getItemBatch().getPurcahseRate();
-            totalRetailSaleRate+=ts.getItemBatch().getRetailsaleRate();
-            totalPurchaseValue+=ts.getItemBatch().getPurcahseRate() * ts.getStock();
-            totalRetailSaleValue+=ts.getItemBatch().getRetailsaleRate() * ts.getStock();
+            totalQty += ts.getStock();
+            totalPurchaseRate += ts.getItemBatch().getPurcahseRate();
+            totalRetailSaleRate += ts.getItemBatch().getRetailsaleRate();
+            totalPurchaseValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
+            totalRetailSaleValue += ts.getItemBatch().getRetailsaleRate() * ts.getStock();
         }
 
     }

@@ -105,6 +105,8 @@
                                             <h:inputText autocomplete="off"  value="#{ampController.current.code}"  ></h:inputText>
                                             <h:outputText  value="Bar Code" ></h:outputText>
                                             <h:inputText autocomplete="off"  value="#{ampController.current.barcode}"  ></h:inputText>
+                                            <h:outputLabel value="Profit Margin"></h:outputLabel>
+                                            <h:inputText autocomplete="off" value="#{ampController.current.profitMargin}"></h:inputText>
                                             <h:outputText  value="Manufacturer" ></h:outputText>
                                             <p:autoComplete  completeMethod="#{manufacturerController.completeManu}"
                                                              var="pta" itemLabel="#{pta.name}" itemValue="#{pta}"
