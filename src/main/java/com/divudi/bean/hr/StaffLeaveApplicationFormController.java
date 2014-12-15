@@ -139,14 +139,16 @@ public class StaffLeaveApplicationFormController implements Serializable {
     }
 
     public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType) {
+        List<LeaveType> list = leaveType.getLeaveTypes();
+
         String sql = "select  ss "
                 + " from StaffLeaveEntitle ss"
                 + " where ss.retired=false"
                 + " and ss.staff=:stf"
-                + " and ss.leaveType=:ltp ";
+                + " and ss.leaveType in :ltp ";
         HashMap hm = new HashMap();
         hm.put("stf", staff);
-        hm.put("ltp", leaveType);
+        hm.put("ltp", list);
 
         return staffLeaveEntitleFacade.findFirstBySQL(sql, hm);
     }
@@ -230,14 +232,16 @@ public class StaffLeaveApplicationFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Comment");
             return true;
         }
-        
-        if(checkingForLieLeave()){return true;}
+
+        if (checkingForLieLeave()) {
+            return true;
+        }
 
         return false;
     }
 
     public boolean checkingForLieLeave() {
-        
+
         LeaveType ltp = currentLeaveForm.getLeaveType();
         StaffShift stf = currentLeaveForm.getStaffShift();
 
@@ -265,7 +269,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             }
         }
 
-        return  false;
+        return false;
     }
 
     @Inject

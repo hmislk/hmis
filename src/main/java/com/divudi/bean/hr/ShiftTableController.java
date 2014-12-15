@@ -60,6 +60,7 @@ public class ShiftTableController implements Serializable {
         dateRange = 0l;
         roster = null;
         shiftTables = null;
+        
     }
 
     private boolean errorCheck() {

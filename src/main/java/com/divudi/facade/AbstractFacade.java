@@ -26,9 +26,11 @@ import javax.persistence.criteria.Predicate;
 public abstract class AbstractFacade<T> {
 
     private Class<T> entityClass;
+  
 
     public void flush() {
         getEntityManager().flush();
+       
     }
 
     public List<T> findRange(int[] range) {
