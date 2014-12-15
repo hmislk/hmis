@@ -7,7 +7,14 @@
                 xmlns:f="http://java.sun.com/jsf/core">
 
     <ui:define name="content">
-        <h:form id="form">  
+        <h:form id="form">
+            <h:panelGroup id="panelError" >
+                <h:panelGroup  
+                    rendered="#{shiftFingerPrintAnalysisController.errorMessage ne ""}"
+                    style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
+                    <p:outputLabel value="#{shiftFingerPrintAnalysisController.errorMessage}" ></p:outputLabel>
+                </h:panelGroup>
+            </h:panelGroup>
             <h:panelGrid columns="2">
                 <h:outputLabel value="From Date"/>
                 <p:calendar id="frmDate" 

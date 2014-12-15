@@ -43,7 +43,7 @@
                             </p:commandButton>
                             <p:commandButton value="Excel" ajax="false">
                                 <pe:exporter type="xlsx" target="tbl" fileName="Total Stock"
-                                              />
+                                             />
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -133,9 +133,16 @@
                                             <f:convertNumber parent="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
-                                    
-                                </p:column>
 
+                                </p:column>
+                                <p:column headerText="Comments" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comments"/>                                     
+                                    </f:facet>
+                                    <p:inputText value="#{i.code}" maxlength="254">
+                                        <f:ajax event="blur" execute="@this" listener="#{reportsStock.addComment(i)}"></f:ajax>
+                                    </p:inputText>
+                                </p:column>
 
                                 <p:columnGroup type="footer">
                                     <p:row>
@@ -151,8 +158,8 @@
                                 </p:columnGroup>
 
                             </p:dataTable>
-                            
-                          
+
+
                         </h:panelGroup>
                     </p:panel>
                 </h:form>

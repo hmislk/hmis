@@ -111,6 +111,8 @@ public class Staff implements Serializable {
     Date dateLeft;
     @Transient
     double basic;
+    @Transient
+    double transWorkedDays;
     @OneToOne(cascade = CascadeType.ALL)
     BankAccount bankAccount;
     String epfNo;
@@ -141,7 +143,7 @@ public class Staff implements Serializable {
             codeInterger = Integer.parseInt(code);
             
         } catch (Exception e) {
-
+            System.err.println(e.getMessage());
         }
 
     }

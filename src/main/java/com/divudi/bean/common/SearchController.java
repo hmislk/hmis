@@ -652,8 +652,9 @@ public class SearchController implements Serializable {
         sql = "Select b from Bill b where "
                 + " b.createdAt between :fd and :td "
                 + " and b.billType=:bt "
-                + " and b.institution=:ins"
-                + " and type(b)=:class ";
+                + " and b.institution=:ins "
+                + " and type(b)=:class "
+                + " and b.billedBill is null ";
 
         if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
             sql += " and  (upper(b.invoiceNumber) like :requestNo )";
