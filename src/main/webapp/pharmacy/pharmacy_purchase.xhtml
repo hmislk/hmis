@@ -91,9 +91,12 @@
                                      value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" style="width:100%" /> 
                         <p:inputText autocomplete="off" id="txtPrate"  styleClass="numericTxt" 
                                      value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
+                            <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
                         </p:inputText>
                         <p:inputText autocomplete="off" id="tmpRetail"  styleClass="numericTxt" 
-                                     value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  />  
+                                     value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  >
+                            
+                        </p:inputText>  
 
                         <p:calendar navigator="true"
                                     id="calDoe" pattern="dd MM yy" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}"   >
