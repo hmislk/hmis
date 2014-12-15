@@ -190,6 +190,23 @@ public class BhtEditController implements Serializable {
         }
         return suggestions;
     }
+    
+    public List<Admission> completePatientAll(String query) {
+        List<Admission> suggestions;
+        String sql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c from Admission c where "
+                    + " c.retired=false "
+//                    + " and c.discharged=false "
+                    + " and (upper(c.bhtNo) like '%" + query.toUpperCase() + "%' or upper(c.patient.person.name) like '%" + query.toUpperCase() + "%') "
+                    + " order by c.bhtNo ";
+            //System.out.println(sql);
+            suggestions = getFacade().findBySQL(sql);
+        }
+        return suggestions;
+    }
 
     public void prepareAdd() {
         current = new Admission();
@@ -235,6 +252,10 @@ public class BhtEditController implements Serializable {
         getPersonFacade().edit(getCurrent().getGuardian());
         updateFirstPatientRoomAdmissionTime();
         getEjbFacade().edit(current);
+        if (current.getFinalBill()!=null) {
+            getBillFacade().edit(current.getFinalBill());
+            UtilityController.addSuccessMessage("Final Bill Updated");
+        }
         UtilityController.addSuccessMessage("Detail Updated");
         makeNull();
     }
