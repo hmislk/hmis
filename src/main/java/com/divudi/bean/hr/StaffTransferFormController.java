@@ -134,17 +134,9 @@ public class StaffTransferFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Staff");
             return true;
         }
-        
-        
-        
+
         if (currentTransferForm.getCode().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter Form Number");
-            return true;
-        }
-
-
-        if (currentTransferForm.getApprovedStaff() == null) {
-            JsfUtil.addErrorMessage("Please Select Approved Person");
             return true;
         }
 
