@@ -115,14 +115,70 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="QOH" style="text-align: right;">
+                                        <p:column headerText="Value of QOH" style="text-align: right;">
                                             <f:facet name="header">
-                                                <h:outputLabel value="QOH"/>
+                                                <h:outputLabel value="Value of QOH"/>
                                             </f:facet>
                                             <h:outputLabel value="#{i.stockQty}"  >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
                                         </p:column>
+
+                                        <p:column headerText="QOH" style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="QOH"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{i.stockOnHand}"  >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column colspan="3" footerText="Total">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="Total" />
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{reportsTransfer.stockPurchaseValue}">
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="#{reportsTransfer.stockPurchaseValue}" >
+                                                            <f:convertNumber parent="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{reportsTransfer.stockSaleValue}">
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="#{reportsTransfer.stockSaleValue}" >
+                                                            <f:convertNumber parent="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{reportsTransfer.valueOfQOH}">
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="#{reportsTransfer.valueOfQOH}" >
+                                                            <f:convertNumber parent="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{reportsTransfer.qoh}">
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="#{reportsTransfer.qoh}" >
+                                                            <f:convertNumber parent="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column colspan="9" >
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="Printed At " ></h:outputLabel>
+                                                        <h:outputLabel value="#{sessionController.currentDate}" >
+                                                            <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
 
                                     </p:dataTable>
                                 </p:panel>
@@ -176,11 +232,65 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="QOH" style="text-align: right;">
+                                        <p:column headerText="Value of QOH" style="text-align: right;">
                                             <h:outputLabel value="#{i.stockQty}"  >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
                                         </p:column>
+
+                                        <p:column headerText="QOH" style="text-align: right;">
+                                            <h:outputLabel value="#{i.stockOnHand}"  >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column colspan="3" footerText="Total">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="Total" />
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{reportsTransfer.stockPurchaseValue}">
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="#{reportsTransfer.stockPurchaseValue}" >
+                                                            <f:convertNumber parent="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{reportsTransfer.stockSaleValue}">
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="#{reportsTransfer.stockSaleValue}" >
+                                                            <f:convertNumber parent="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{reportsTransfer.valueOfQOH}">
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="#{reportsTransfer.valueOfQOH}" >
+                                                            <f:convertNumber parent="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" footerText="#{reportsTransfer.qoh}">
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="#{reportsTransfer.qoh}" >
+                                                            <f:convertNumber parent="#,##0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column colspan="9" >
+                                                    <f:facet name="footer" >
+                                                        <h:outputLabel value="Printed At " ></h:outputLabel>
+                                                        <h:outputLabel value="#{sessionController.currentDate}" >
+                                                            <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
 
                                     </p:dataTable>
                                 </p:panel>

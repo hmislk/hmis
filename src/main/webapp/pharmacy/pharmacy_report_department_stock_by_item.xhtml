@@ -35,9 +35,12 @@
 
                             <p:dataTable id="tbl" rowIndexVar="ii" 
                                          value="#{reportsStock.pharmacyStockRows}" var="i"  
-                                         
+
                                          rendered="#{reportsStock.pharmacyStockRows.size() ne 0 }"
-                                         >
+                                         rows="50"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20, 50, 100">
                                 <f:facet name="header">
                                     <h:outputLabel value="Department Stock by Item - #{reportsStock.department.name}"/>                                     
                                 </f:facet> 
@@ -71,7 +74,7 @@
                                     </h:outputLabel>                                 
                                 </p:column>
 
-                                
+
                                 <p:column headerText="Purchase Value" style="text-align: right;" sortBy="#{i.purchaseValue}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>                                     
@@ -81,7 +84,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                               
+
                                 <p:column headerText="Retail Sale Value" style="text-align: right;" sortBy="#{i.saleValue}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Sale Value"/>                                     
@@ -92,7 +95,7 @@
                                 </p:column>
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="3" footerText="Total">
+                                        <p:column colspan="4" footerText="Total">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="Total" />
                                             </f:facet>
@@ -104,7 +107,7 @@
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column></p:column>
+
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
