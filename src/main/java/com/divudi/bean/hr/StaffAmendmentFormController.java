@@ -116,19 +116,20 @@ public class StaffAmendmentFormController implements Serializable {
 
         //Change Shifts
         StaffShift fromStaffShift = getCurrAmendmentForm().getFromStaffShift();
-        Staff tStaff = getCurrAmendmentForm().getToStaff();
-        fromStaffShift.setStaff(tStaff);
+        Staff toStaff = getCurrAmendmentForm().getToStaff();
+        fromStaffShift.setStaff(toStaff);
         staffShiftFacade.edit(fromStaffShift);
 
         StaffShift toStaffShift = getCurrAmendmentForm().getToStaffShift();
-        Staff fStaff = getCurrAmendmentForm().getFromStaff();
+        Staff fromStaff = getCurrAmendmentForm().getFromStaff();
         if (toStaffShift != null) {
-            toStaffShift.setStaff(fStaff);
+            toStaffShift.setStaff(fromStaff);
             staffShiftFacade.edit(toStaffShift);
         } else {
+            //Create New Staff Shift
             if (getCurrAmendmentForm().getToShift() != null) {
                 toStaffShift = new StaffShift();
-                toStaffShift.setStaff(fStaff);
+                toStaffShift.setStaff(fromStaff);
                 toStaffShift.setShift(getCurrAmendmentForm().getToShift());
                 toStaffShift.setShiftDate(getCurrAmendmentForm().getToDate());
                 staffShiftFacade.create(toStaffShift);
@@ -144,14 +145,14 @@ public class StaffAmendmentFormController implements Serializable {
         StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
         staffShiftHistory.setCreatedAt(new Date());
         staffShiftHistory.setCreater(sessionController.getLoggedUser());
-        staffShiftHistory.setStaff(fStaff);
+        staffShiftHistory.setStaff(fromStaff);
         staffShiftHistory.setStaffShift(fromStaffShift);
         staffShiftHistoryFacade.create(staffShiftHistory);
 
         staffShiftHistory = new StaffShiftHistory();
         staffShiftHistory.setCreatedAt(new Date());
         staffShiftHistory.setCreater(sessionController.getLoggedUser());
-        staffShiftHistory.setStaff(tStaff);
+        staffShiftHistory.setStaff(toStaff);
         staffShiftHistory.setStaffShift(toStaffShift);
         staffShiftHistoryFacade.create(staffShiftHistory);
 
@@ -227,6 +228,8 @@ public class StaffAmendmentFormController implements Serializable {
 
     public void viewAmendmentForm(AmendmentForm amendmentForm) {
         currAmendmentForm = amendmentForm;
+        fetchToStaffShift();
+        fetchFromStaffShift();
     }
 
     public void deleteAmmendmentForm() {
@@ -246,6 +249,7 @@ public class StaffAmendmentFormController implements Serializable {
         String sql = "select c from "
                 + " StaffShift c"
                 + " where c.retired=false "
+                + " and c.shift is not null "
                 + " and c.shiftDate=:dt "
                 + " and c.staff=:stf ";
 
@@ -261,6 +265,7 @@ public class StaffAmendmentFormController implements Serializable {
                 + " StaffShift c"
                 + " where c.retired=false "
                 + " and c.shiftDate=:dt "
+                + " and c.shift is not null "
                 + " and c.staff=:stf ";
 
         hm.put("dt", getCurrAmendmentForm().getToDate());
