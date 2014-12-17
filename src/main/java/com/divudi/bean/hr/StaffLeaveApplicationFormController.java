@@ -11,6 +11,7 @@ import com.divudi.data.hr.LeaveType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
+import com.divudi.entity.Form;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.LeaveForm;
 import com.divudi.entity.hr.StaffLeave;
@@ -375,9 +376,24 @@ public class StaffLeaveApplicationFormController implements Serializable {
         leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    public void deleteStaffLeave(Form form){
+        String sql="Select l from StaffLeave l where l.form=:frm ";
+        HashMap nm=new HashMap();
+        nm.put("frm", form);
+        List<StaffLeave> list=staffLeaveFacade.findBySQL(sql, nm);
+        for(StaffLeave stf:list){
+            stf.setRetired(true);
+            stf.setRetiredAt(new Date());
+            stf.setRetirer(sessionController.getLoggedUser());
+            staffLeaveFacade.edit(stf);
+        }
+    }
 
     public void deleteLeaveForm() {
         if (currentLeaveForm != null) {
+            deleteStaffLeave(currentLeaveForm);
+            
             currentLeaveForm.setRetired(true);
             currentLeaveForm.setRetirer(getSessionController().getLoggedUser());
             currentLeaveForm.setRetiredAt(new Date());

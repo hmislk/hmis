@@ -210,7 +210,7 @@ public class StaffSalaryController implements Serializable {
         System.err.println("1 " + current);
 
         if (current != null) {
-            current.setTmpOtNormalSpecial(getHumanResourceBean().calculateOt(getOverTimeFromDate(), getOverTimeToDate(), getCurrent().getStaff()));
+//            current.setTmpOtNormalSpecial(getHumanResourceBean().calculateOt(getOverTimeFromDate(), getOverTimeToDate(), getCurrent().getStaff()));
             current.setTransStaffShiftsSalary(getHumanResourceBean().getStaffShiftFromRecordSlaryCalculated(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff()));
             current.setTransStaffShiftsOverTime(getHumanResourceBean().getStaffShiftFromRecordOtCalculated(getOverTimeFromDate(), getOverTimeToDate(), getCurrent().getStaff()));
             current.setTransStaffShiftsExtraDuty(getHumanResourceBean().getStaffShiftFromRecordExtraDutyCalculated(getExtraDutyFromDate(), getExtraDutyToDate(), getCurrent().getStaff()));
@@ -221,10 +221,10 @@ public class StaffSalaryController implements Serializable {
     public void setCurrent(StaffSalary current) {
         this.current = current;
 
-        OtNormalSpecial otNormalSpecial = getHumanResourceBean().calculateOt(getOverTimeFromDate(), getOverTimeToDate(), getCurrent().getStaff());
-
-        current.setTmpOtNormalSpecial(otNormalSpecial);
-        current.setTmpExtraDutyCount(getHumanResourceBean().calExtraDuty(getExtraDutyFromDate(), getExtraDutyToDate(), getCurrent().getStaff()));
+//        OtNormalSpecial otNormalSpecial = getHumanResourceBean().calculateOt(getOverTimeFromDate(), getOverTimeToDate(), getCurrent().getStaff());
+//
+//        current.setTmpOtNormalSpecial(otNormalSpecial);
+//        current.setTmpExtraDutyCount(getHumanResourceBean().calExtraDuty(getExtraDutyFromDate(), getExtraDutyToDate(), getCurrent().getStaff()));
     }
 
     public StaffSalaryFacade getStaffSalaryFacade() {
