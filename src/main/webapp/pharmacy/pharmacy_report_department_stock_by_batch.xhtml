@@ -35,7 +35,12 @@
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
 
-                            <p:dataTable id="tbl" rowIndexVar="ii" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                            <p:dataTable id="tbl" rowIndexVar="ii" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i" 
+                                         rows="50"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20, 50, 100" 
+                                         >
                                 <f:facet name="header">
                                     <h:outputLabel value="#{reportsStock.department.name} Stock"/>                                     
                                 </f:facet> 
@@ -50,7 +55,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Code">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
@@ -120,9 +125,18 @@
                                     </h:outputLabel>
                                 </p:column>
 
+                                <p:column headerText="Category" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.category.name}"  >
+
+                                    </h:outputLabel>                                 
+                                </p:column>
+
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="6" footerText="Total">
+                                        <p:column colspan="7" footerText="Total">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="Total" />
                                             </f:facet>

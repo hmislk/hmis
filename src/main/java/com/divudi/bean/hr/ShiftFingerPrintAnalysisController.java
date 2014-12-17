@@ -459,7 +459,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 ////            UtilityController.addErrorMessage("Staff Shift Not Updated");
 //            return;
 //        }
-
         for (ShiftTable st : shiftTables) {
             if (errorCheckForSave(st)) {
                 continue;
@@ -483,6 +482,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 } else {
                     getFingerPrintRecordFacade().create(endRecord);
                 }
+
+                //Ress Old Calculated Data
+                ss.reset();
 
                 //Fetch Basic
                 StaffPaysheetComponent basic = humanResourceBean.getBasic(ss.getStaff());

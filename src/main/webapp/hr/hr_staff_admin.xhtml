@@ -115,7 +115,7 @@
                                             <div style="width:21cm;height: 29.7cm; border: 1px solid black; position: relative; font-size: 150%;">
                                                 <ui:repeat value="#{staffController.formItems}" var="myIi" >
                                                     <div style="#{myIi.cssStyle}; position:absolute ;">
-                                                        
+
                                                         <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></h:outputText>
 
                                                         <h:inputText id="txtValue" rendered="#{myIi.ixItemType ne 'Label' and myIi.ixItemValueType eq 'Varchar' and myIi.retired eq false }"  value="#{staffController.formItemValue(myIi, staffController.current.person).strValue}" style="color: #{myIi.cssColor}"  ></h:inputText>
@@ -127,9 +127,9 @@
                                                                 <f:selectItems value="#{categoryController.getSubCategories(myIi.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
                                                             </h:selectOneMenu>
                                                         </h:panelGroup>
-                                                        
-                                                        
-                                                        
+
+
+
 
 
                                                     </div>
@@ -223,17 +223,6 @@
 
                                             <h:outputText  value="Account No" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.bankAccount.accountNo}"  />
-                                        </h:panelGrid>
-                                    </p:tab>
-
-                                    <p:tab title="Working and Leave Hour">
-                                        <h:panelGrid columns="2">                                           
-                                            <h:outputText  value="Working Hour Per Shift" ></h:outputText>
-                                            <p:inputText autocomplete="off"  
-                                                         value="#{staffController.current.workingHourPerShift}"  />
-                                            <h:outputText  value="Leave Hour Per Day" ></h:outputText>
-                                            <p:inputText autocomplete="off"  
-                                                         value="#{staffController.current.leaveHour}"  />
                                         </h:panelGrid>
                                     </p:tab>
 

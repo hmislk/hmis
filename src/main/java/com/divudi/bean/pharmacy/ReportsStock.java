@@ -196,6 +196,7 @@ public class ReportsStock implements Serializable {
         for (PharmacyStockRow r : lsts) {
             stockPurchaseValue += r.getPurchaseValue();
             stockSaleValue += r.getSaleValue();
+            
         }
         pharmacyStockRows = lsts;
     }
@@ -562,7 +563,7 @@ public class ReportsStock implements Serializable {
         Map m;
         String sql;
         records = new ArrayList<>();
-
+        
         m = new HashMap();
         m.put("cat", category);
         m.put("dep", department);
@@ -574,11 +575,49 @@ public class ReportsStock implements Serializable {
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-            totalQty += ts.getStock();
+            totalQty = totalQty + ts.getStock();
             totalPurchaseRate += ts.getItemBatch().getPurcahseRate();
             totalRetailSaleRate += ts.getItemBatch().getRetailsaleRate();
             totalPurchaseValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
             totalRetailSaleValue += ts.getItemBatch().getRetailsaleRate() * ts.getStock();
+        }
+
+    }
+    
+    List<StockReportRecord> stockRecords;
+
+    public List<StockReportRecord> getStockRecords() {
+        return stockRecords;
+    }
+
+    public void setStockRecords(List<StockReportRecord> stockRecords) {
+        this.stockRecords = stockRecords;
+    }
+    
+    
+    
+    public void fillCategoryStocksByCatagory() {
+        
+        Map m;
+        String sql;
+        records = new ArrayList<>();
+        
+        m = new HashMap();
+        m.put("dep", department);
+        sql = "select sum(s.stock * s.itemBatch.purcahseRate), s.itemBatch.item.category from Stock s where s.department=:dep group by s.itemBatch.item.category";
+        List<Object[]> objs = getStockFacade().findAggregates(sql, m);
+
+        totalPurchaseValue = 0.0;
+        stockRecords = new ArrayList<>();
+        
+        for (Object[] obj : objs) {
+            Double sv = (Double) obj[0];
+            Category c = (Category) obj[1];
+            StockReportRecord r = new StockReportRecord();
+            r.setCategory(c);
+            r.setStockOnHand(sv);
+            stockRecords.add(r);
+            totalPurchaseValue += sv;
         }
 
     }

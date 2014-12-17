@@ -62,6 +62,8 @@ public class Shift implements Serializable {
     @Transient
     private int durationMin;
     double shiftDuration;
+    double leaveHourFull;
+    double leaveHourHalf;
 
     //Created Properties
     @ManyToOne
@@ -79,6 +81,26 @@ public class Shift implements Serializable {
     Shift previousShift;
     @ManyToOne
     Shift nextShift;
+
+    public double getLeaveHourFull() {
+        return leaveHourFull;
+    }
+
+    public void setLeaveHourFull(double leaveHourFull) {
+        this.leaveHourFull = leaveHourFull;
+    }
+
+    public double getLeaveHourHalf() {
+        return leaveHourHalf;
+    }
+
+    public void setLeaveHourHalf(double leaveHourHalf) {
+        this.leaveHourHalf = leaveHourHalf;
+    }
+
+   
+    
+    
 
     public double getShiftDuration() {
         return shiftDuration;
