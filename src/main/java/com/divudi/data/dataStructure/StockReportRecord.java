@@ -5,6 +5,7 @@
  */
 package com.divudi.data.dataStructure;
 
+import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 
@@ -20,7 +21,19 @@ public class StockReportRecord {
     Double retailsaleValue;
     Double wholeSaleValue;
     Double stockQty;
+    Double stockOnHand;
     Institution institution;
+    Category category;
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+    
+    
 
     public StockReportRecord(Item item, Double qty, Double purchaseValue, Double retailsaleValue, Double wholeSaleValue) {
         this.item = item;
@@ -93,6 +106,14 @@ public class StockReportRecord {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Double getStockOnHand() {
+        return stockOnHand;
+    }
+
+    public void setStockOnHand(Double stockOnHand) {
+        this.stockOnHand = stockOnHand;
     }
     
     

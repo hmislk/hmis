@@ -48,7 +48,11 @@
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
-                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  
+                                         rows="50"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20, 50, 100" >
                                 <f:facet name="header">
                                     <h:outputLabel value="#{reportsStock.department.name} Stock"/>                                     
                                 </f:facet>
@@ -100,7 +104,7 @@
 
                                 <p:column headerText="Purchase Value" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Purchase Rate"/>                                     
+                                        <h:outputLabel value="Purchase Value"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate * i.stock}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -144,9 +148,32 @@
                                     </p:inputText>
                                 </p:column>
 
+
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="11">
+                                        <p:column colspan="5" footerText="Total">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Total" />
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;" footerText="#{reportsStock.stockPurchaseValue}">
+                                            <f:facet name="footer" >
+                                                <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
+                                                    <f:convertNumber parent="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column></p:column>
+                                        <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
+                                            <f:facet name="footer" >
+                                                <h:outputLabel value="#{reportsStock.stockSaleValue}" >
+                                                    <f:convertNumber parent="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="9" >
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="Printed At " ></h:outputLabel>
                                                 <h:outputLabel value="#{sessionController.currentDate}" >

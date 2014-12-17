@@ -79,6 +79,11 @@ public class ReportsTransfer implements Serializable {
     @Inject
     BillBeanController billBeanController;
 
+    double stockPurchaseValue;
+    double stockSaleValue;
+    double valueOfQOH;
+    double qoh;
+   
     /**
      * EJBs
      */
@@ -199,7 +204,20 @@ public class ReportsTransfer implements Serializable {
             r.setPurchaseValue((Double) obj[2]);
             r.setRetailsaleValue((Double) obj[3]);
             r.setStockQty(getPharmacyBean().getStockByPurchaseValue(r.getItem(), department));
+            r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
             movementRecords.add(r);
+        }
+        
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        valueOfQOH = 0.0;
+        qoh = 0.0;
+        
+        for (StockReportRecord strr : movementRecords){
+            stockPurchaseValue = stockPurchaseValue + (strr.getPurchaseValue());
+            stockSaleValue = stockSaleValue + (strr.getRetailsaleValue());
+            valueOfQOH = valueOfQOH + (strr.getStockQty());
+            qoh = qoh + (strr.getStockOnHand());
         }
     }
 
@@ -247,10 +265,23 @@ public class ReportsTransfer implements Serializable {
             StockReportRecord r = new StockReportRecord();
             r.setItem((Item) obj[0]);
             r.setQty((Double) obj[1]);
-            r.setPurchaseValue((Double) obj[3]);
-            r.setRetailsaleValue((Double) obj[2]);
+            r.setPurchaseValue((Double) obj[2]);
+            r.setRetailsaleValue((Double) obj[3]);
             r.setStockQty(getPharmacyBean().getStockByPurchaseValue(r.getItem(), department));
+            r.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(r.getItem(), department));
             movementRecordsQty.add(r);
+        }
+        
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        valueOfQOH = 0.0;
+        qoh = 0.0;
+        
+        for (StockReportRecord strr : movementRecords){
+            stockPurchaseValue = stockPurchaseValue + (strr.getPurchaseValue());
+            stockSaleValue = stockSaleValue + (strr.getRetailsaleValue());
+            valueOfQOH = valueOfQOH + (strr.getStockQty());
+            qoh = qoh + (strr.getStockOnHand());
         }
     }
 
@@ -1171,13 +1202,25 @@ public class ReportsTransfer implements Serializable {
     }
 
     public double getStockPurchaseValue() {
-        return purchaseValue;
+        return stockPurchaseValue;
     }
 
     public void setStockPurchaseValue(double stockPurchaseValue) {
-        this.purchaseValue = stockPurchaseValue;
+        this.stockPurchaseValue = stockPurchaseValue;
     }
 
+    
+
+    public double getStockSaleValue() {
+        return stockSaleValue;
+    }
+
+    public void setStockSaleValue(double stockSaleValue) {
+        this.stockSaleValue = stockSaleValue;
+    }
+
+    
+    
     public Department getToDepartment() {
         return toDepartment;
     }
@@ -1422,6 +1465,22 @@ public class ReportsTransfer implements Serializable {
 
     public void setRetailValue(double retailValue) {
         this.retailValue = retailValue;
+    }
+
+    public double getValueOfQOH() {
+        return valueOfQOH;
+    }
+
+    public void setValueOfQOH(double valueOfQOH) {
+        this.valueOfQOH = valueOfQOH;
+    }
+
+    public double getQoh() {
+        return qoh;
+    }
+
+    public void setQoh(double qoh) {
+        this.qoh = qoh;
     }
 
 }
