@@ -18,18 +18,23 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StockFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
@@ -112,6 +117,40 @@ public class TransferRequestController implements Serializable {
 
     }
 
+    @EJB
+    StockFacade stockFacade;
+    
+    public void addAllItem() {
+
+        if(getBill().getToDepartment() ==null){
+            JsfUtil.addErrorMessage("Dept ?");
+            return;
+        }
+        String jpql = "select s from Stock s where s.department=:dept";
+        Map m = new HashMap();
+        m.put("dept", getBill().getToDepartment());
+        List<Stock> allAvailableStocks = stockFacade.findBySQL(jpql, m);
+        for(Stock s : allAvailableStocks){
+            currentBillItem =null;
+            getCurrentBillItem().setItem(s.getItemBatch().getItem());
+            getCurrentBillItem().setTmpQty(s.getStock());
+            addItem();
+        }
+        if (errorCheck()) {
+            currentBillItem = null;
+            return;
+        }
+
+        getCurrentBillItem().setSearialNo(getBillItems().size());
+
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+
+        getBillItems().add(getCurrentBillItem());
+
+        currentBillItem = null;
+    }
+    
     public void addItem() {
 
         if (errorCheck()) {

@@ -59,6 +59,11 @@
                                         </h:outputLabel>
                                     </p:column>
                                     
+                                      <p:column headerText="Retired At">
+                                        <h:outputLabel value="#{i.itemBatch.item.retirer}">                                            
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
                                     <f:ajax event="itemSelect" execute="@this" render="det"/>
                                 </p:autoComplete>
                                 <h:outputLabel value="New Quentity" ></h:outputLabel>

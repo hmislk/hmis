@@ -31,7 +31,7 @@
 
                                     <p:selectOneListbox converter="stfcon"   id="lstSelect"   value="#{staffController.current}" style="min-width: 223px; height: 300px;">
                                         <f:selectItems  value="#{staffController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}" ></f:selectItems>
-                                        <p:ajax event="change" process="lstSelect" update="gpDetail"/>                                        
+                                        <p:ajax event="change" process="lstSelect" update="gpDetail" listener="#{staffController.changeStaff()}"/>                                        
                                     </p:selectOneListbox>
 
 
@@ -97,19 +97,51 @@
                                                 <f:selectItem itemLabel="Please select a speciality"/>
                                                 <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                             </h:selectOneListbox>
-                                            
+
                                         </h:panelGrid> 
-                                        
-                                        <table >
-                                            <tr>
-                                                <p:selectManyMenu >
-                                                    <f:selectItem itemLabel="Select a relationship" ></f:selectItem>
-                                                    <f:selectItems value="#{relationshipController.items}" var="r" itemLabel="#{r.atobName}" itemValue="#{r}" ></f:selectItems>
-                                                </p:selectManyMenu>
-                                            </tr>
-                                        </table>
-                                        
+
+
+
                                     </p:tab>
+                                    <p:tab title="Details" >
+                                        <p:selectOneMenu id="mnuCat" value="#{staffController.formCategory}" >
+                                            <f:selectItem itemLabel="Select Form" ></f:selectItem>
+                                            <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                                            <f:ajax event="change" execute="mnuCat" render="gpStaffForm" />
+                                        </p:selectOneMenu>
+
+                                        <h:panelGroup id="gpStaffForm"  >
+
+                                            <div style="width:21cm;height: 29.7cm; border: 1px solid black; position: relative; font-size: 150%;">
+                                                <ui:repeat value="#{staffController.formItems}" var="myIi" >
+                                                    <div style="#{myIi.cssStyle}; position:absolute ;">
+
+                                                        <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></h:outputText>
+
+                                                        <h:inputText id="txtValue" rendered="#{myIi.ixItemType ne 'Label' and myIi.ixItemValueType eq 'Varchar' and myIi.retired eq false }"  value="#{staffController.formItemValue(myIi, staffController.current.person).strValue}" style="color: #{myIi.cssColor}"  ></h:inputText>
+                                                        <p:watermark for="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+
+                                                        <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'ItemsCatetgory'}" >
+                                                            <h:selectOneMenu value="#{staffController.formItemValue(myIi, staffController.current.person).category}" id="cmbRefCat" style="#{myIi.innerCssStyle}" >
+                                                                <f:selectItem itemLabel="#{myIi.name}"></f:selectItem>
+                                                                <f:selectItems value="#{categoryController.getSubCategories(myIi.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
+                                                            </h:selectOneMenu>
+                                                        </h:panelGroup>
+
+
+
+
+
+                                                    </div>
+                                                </ui:repeat>
+                                            </div>
+
+                                        </h:panelGroup>
+                                    </p:tab>
+                                    <p:tab title="Relatives" >
+
+                                    </p:tab>
+
                                     <p:tab title="Welfare" >
                                         <h:panelGrid columns="2" >
                                             <h:outputLabel value="Eligible Welfare Value" ></h:outputLabel>
@@ -185,7 +217,8 @@
                                             <p:outputLabel value="Bank Branch"/>                                           
                                             <p:selectOneMenu id='br' value="#{staffController.current.bankAccount.bankBranch}">
                                                 <f:selectItem itemLabel="Select Bank"/>
-                                                <f:selectItems value="#{institutionController.current.branch}" var='i' itemValue="#{i}" itemLabel="#{i.name}"/>
+                                                <f:selectItems value="#{institutionController.current.branch}" var='i'
+                                                               itemValue="#{i}" itemLabel="#{i.name}"/>
                                             </p:selectOneMenu>
 
                                             <h:outputText  value="Account No" ></h:outputText>
@@ -193,32 +226,10 @@
                                         </h:panelGrid>
                                     </p:tab>
 
-                                    <p:tab title="Working and Leave Hour">
-                                        <h:panelGrid columns="2">                                           
-                                            <h:outputText  value="Minimum Working Hour Per Shift" ></h:outputText>
-                                            <p:inputText autocomplete="off"  
-                                                         value="#{staffController.current.workingHourPerShift}"  />
-                                            <h:outputText  value="Minimum Leave Hour Per Day" ></h:outputText>
-                                            <p:inputText autocomplete="off"  
-                                                         value="#{staffController.current.leaveHour}"  />
-                                        </h:panelGrid>
-                                    </p:tab>
-
-                                    <p:tab title="Leave Entitle">
-                                        <h:panelGrid columns="2">                                           
-                                            <h:outputText  value="Annual" ></h:outputText>
-                                            <p:inputText autocomplete="off"  
-                                                         value="#{staffController.current.workingHourPerShift}"  />
-                                            <h:outputText  value="Minimum Leave Hour Per Day" ></h:outputText>
-                                            <p:inputText autocomplete="off"  
-                                                         value="#{staffController.current.leaveHour}"  />
-                                        </h:panelGrid>
-                                    </p:tab>
-
                                 </p:tabView>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{staffController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
+                                        <f:ajax render="btnAdd  btnDelete btnSave  lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                         </f:ajax>
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>

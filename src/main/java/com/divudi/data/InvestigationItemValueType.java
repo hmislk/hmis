@@ -13,10 +13,16 @@ public enum InvestigationItemValueType {
     Memo,
     Double,
     Integer,
+    Long,
     List,
     Image,
     Line,
     Rectangle,
     Circle,
+    Item,
+    Category,
+    Person,
+    Institution,
+    
     
 }

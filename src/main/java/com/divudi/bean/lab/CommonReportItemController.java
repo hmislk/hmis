@@ -10,10 +10,10 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.InvestigationItemType;
 import java.util.TimeZone;
 import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
-import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.entity.lab.CommonReportItem;
 import java.io.Serializable;
@@ -22,10 +22,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -67,6 +65,14 @@ public class CommonReportItemController implements Serializable {
         current = new CommonReportItem();
         current.setName("New Label");
         current.setCategory(category);
+        getEjbFacade().create(current);
+    }
+
+    public void addNewCombo() {
+        current = new CommonReportItem();
+        current.setName("New Combo");
+        current.setCategory(category);
+        current.setIxItemType(InvestigationItemType.ItemsCatetgory);
         getEjbFacade().create(current);
     }
 

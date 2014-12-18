@@ -341,6 +341,11 @@ public class StoreGrnController implements Serializable {
         printPreview = true;
 
     }
+    
+    public void purchaseRateUpdateListner(BillItem bi){
+        bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
+        System.out.println("Updated Purchase Rate Update Listner");
+    }
 
     @EJB
     StockFacade stockFacade;
@@ -542,7 +547,7 @@ public class StoreGrnController implements Serializable {
         System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
 
         billItem.setSearialNo(getBillItems().size());
-        billItem.setId(billItem.getSearialNoInteger().longValue());
+       // billItem.setId(billItem.getSearialNoInteger().longValue());
 
 //        billItem.setSearialNo(getBillItems().size() + 1);        
         getBillItems().add(billItem);
@@ -1105,7 +1110,7 @@ public class StoreGrnController implements Serializable {
             p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             p.setSearialNo(serialNo++);
-            p.setId(serialNo.longValue());
+            //p.setId(serialNo.longValue());
             if (p.getParentBillItem() == null) {
                 double netValue = p.getQty() * p.getRate();
                 p.setNetValue(0 - netValue);

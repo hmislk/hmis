@@ -344,7 +344,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  (upper(b.insId) like :billNo )";
+            sql += " and  ((upper(b.deptId) like :billNo )or(upper(b.insId) like :billNo ))";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
@@ -652,8 +652,9 @@ public class SearchController implements Serializable {
         sql = "Select b from Bill b where "
                 + " b.createdAt between :fd and :td "
                 + " and b.billType=:bt "
-                + " and b.institution=:ins"
-                + " and type(b)=:class ";
+                + " and b.institution=:ins "
+                + " and type(b)=:class "
+                + " and b.billedBill is null ";
 
         if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
             sql += " and  (upper(b.invoiceNumber) like :requestNo )";
@@ -3094,7 +3095,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  (upper(b.insId) like :billNo )";
+            sql += " and  ((upper(b.insId) like :billNo )or(upper(b.deptId) like :billNo ))";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 

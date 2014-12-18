@@ -71,6 +71,9 @@ public class PharmacyPurchaseController implements Serializable {
     private boolean printPreview;
     ///////////
     //  private List<PharmacyItemData> pharmacyItemDatas;
+    
+    double saleRate;
+    AmpController ampController;
 
     public void makeNull() {
         //  currentPharmacyItemData = null;
@@ -183,6 +186,18 @@ public class PharmacyPurchaseController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    public void calSaleRte() {
+        saleRate = 0.0;
+        if(getCurrentBillItem().getItem() == null){
+            UtilityController.addErrorMessage("Bill Item is Null");
+        }
+        double temp = getCurrentBillItem().getItem().getProfitMargin() + 100;
+        saleRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
+        
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(saleRate);
+        
+    }
+
     public void settle() {
 
         if (getBill().getFromInstitution() == null) {
@@ -245,6 +260,17 @@ public class PharmacyPurchaseController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Billed");
         printPreview = true;
         //   recreate();
+    }
+
+    public void removeItem(BillItem bi) {
+        //System.err.println("5 " + bi.getItem().getName());
+        //System.err.println("6 " + bi.getSearialNo());
+        getBillItems().remove(bi.getSearialNo());
+
+        calTotal();
+
+        currentBillItem = null;
+
     }
 //
 //    public void recreate() {
@@ -460,6 +486,22 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public AmpController getAmpController() {
+        return ampController;
+    }
+
+    public void setAmpController(AmpController ampController) {
+        this.ampController = ampController;
+    }
+
+    public double getSaleRate() {
+        return saleRate;
+    }
+
+    public void setSaleRate(double saleRate) {
+        this.saleRate = saleRate;
     }
 
 }

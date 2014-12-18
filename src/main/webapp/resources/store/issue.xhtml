@@ -38,7 +38,7 @@
             <div class="headingBill">
                 <h:outputLabel value="Issue Bill" rendered="#{cc.attrs.bill.toDepartment ne null}"  />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.billedBill.cancelled eq true or cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
             <div class="billline">

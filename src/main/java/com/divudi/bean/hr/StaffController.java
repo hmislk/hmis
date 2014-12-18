@@ -8,13 +8,16 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.FormItemValue;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.SalaryPaymentFrequency;
 import com.divudi.data.hr.SalaryPaymentMethod;
+import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
+import com.divudi.entity.Doctor;
 import java.util.TimeZone;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
@@ -27,7 +30,14 @@ import com.divudi.entity.hr.StaffEmployment;
 import com.divudi.entity.hr.StaffGrade;
 import com.divudi.entity.hr.StaffStaffCategory;
 import com.divudi.entity.hr.StaffWorkingDepartment;
+import com.divudi.entity.lab.CommonReportItem;
+import com.divudi.entity.lab.PatientReportItemValue;
+import com.divudi.entity.lab.ReportItem;
+import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.FormFacade;
+import com.divudi.facade.FormItemValueFacade;
+import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import java.io.ByteArrayInputStream;
@@ -38,6 +48,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -84,6 +95,61 @@ public class StaffController implements Serializable {
     private List<Staff> items = null;
     String selectText = "";
 
+    @EJB
+    private CommonReportItemFacade criFacade;
+    @EJB
+    FormItemValueFacade fivFacade;
+    Category formCategory;
+    private List<CommonReportItem> formItems = null;
+
+    public FormItemValue formItemValue(ReportItem ri, Person p) {
+        if (ri == null || p == null) {
+            System.out.println("ri = " + ri);
+            System.out.println("p = " + p);
+            return null;
+        }
+        String jpql;
+        jpql = "select v from FormItemValue v where v.person=:p and v.reportItem=:ri";
+        Map m = new HashMap();
+        m.put("p", p);
+        m.put("ri", ri);
+        FormItemValue v = fivFacade.findFirstBySQL(jpql, m);
+        if (v == null) {
+            v = new FormItemValue();
+            v.setPerson(p);
+            v.setReportItem(ri);
+            fivFacade.create(v);
+        }
+
+        return v;
+    }
+
+    public Category getFormCategory() {
+        return formCategory;
+    }
+
+    public void setFormCategory(Category formCategory) {
+        this.formCategory = formCategory;
+    }
+
+    public List<CommonReportItem> getFormItems() {
+        System.out.println("getting form items");
+//        if (formItems != null) {
+//            return formItems;
+//        }
+        String temSql;
+        System.out.println("formCategory = " + formCategory);
+        if (formCategory != null) {
+            temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
+            Map m = new HashMap();
+            m.put("cat", formCategory);
+            formItems = criFacade.findBySQL(temSql, m);
+        } else {
+            formItems = new ArrayList<>();
+        }
+        return formItems;
+    }
+
     public List<Staff> getStaffWithCode() {
         return staffWithCode;
     }
@@ -102,13 +168,26 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findBySQL(sql);
     }
 
-    public void createStaffListWithOutSpecilityAll() {
+    public void createStaffList() {
 
         String sql = "select s from Staff s where "
                 + " s.retired=false "
                 + " order by s.person.name ";
 
         staffWithCode = getEjbFacade().findBySQL(sql);
+    }
+
+    public void createStaffOnly() {
+
+        String sql = "select s from Staff s where "
+                + " s.retired=false "
+                + " and (type(s)!=:class1"
+                + " and type(s)!=:class2)"
+                + " order by s.code ";
+        HashMap hm = new HashMap();
+        hm.put("class1", Doctor.class);
+        hm.put("class2", Consultant.class);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
 
     public void createStaffWithCode() {
@@ -464,6 +543,7 @@ public class StaffController implements Serializable {
 
     private void recreateModel() {
         items = null;
+        formItems = null;
     }
 
     public void saveSelected() {
@@ -501,6 +581,15 @@ public class StaffController implements Serializable {
 
         recreateModel();
         getItems();
+    }
+
+    public void updateFormItem(FormItemValue fi) {
+        if (fi == null) {
+            System.out.println("fi = " + fi);
+            return;
+        }
+        fivFacade.edit(fi);
+        System.out.println("fi updates " + fi);
     }
 
     public void updateCodeToIntege() {
@@ -620,6 +709,10 @@ public class StaffController implements Serializable {
     public void setCurrent(Staff current) {
         this.current = current;
         getSignature();
+    }
+
+    public void changeStaff() {
+        formItems = null;
     }
 
     private StaffFacade getFacade() {

@@ -21,19 +21,17 @@
 
                                 <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
                                 <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
-
-
-
                                 <h:outputLabel value="OPD Bill Paper" ></h:outputLabel>
                                 <p:selectOneMenu value="#{sessionController.institutionPreference.opdBillPaperType}" >
                                     <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
                                 </p:selectOneMenu>
-                            </h:panelGrid>
-
-
-                            <h:panelGrid columns="2" >
                                 <h:outputLabel value="Partial Payment of OPD Bills allowed" ></h:outputLabel>
-                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.partialPaymentOfOpdBillsAllowed}" ></h:selectBooleanCheckbox>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.partialPaymentOfOpdBillsAllowed}" />
+                                <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.paymentMethodAllowedInInwardMatrix}" />
+                                <h:outputLabel value="Bill Proboda" ></h:outputLabel>
+                                <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.pharmacyBillPrabodha}" />
+                                
                             </h:panelGrid>
 
                         </h:panelGrid>

@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:p="http://primefaces.org/ui">
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -15,12 +16,7 @@
                             <h:outputLabel value="Form Number"/>
                             <p:inputText value="#{staffAdditionalFormController.currentAdditionalForm.code}"/>
                             <h:outputLabel value="Staff : "/>
-                            <p:autoComplete id="staff"
-                                            value="#{staffAdditionalFormController.currentAdditionalForm.staff}"
-                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon"   >   
-                            </p:autoComplete>  
+                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.staff}"/>                           
                             <h:outputLabel value="Shift Date "/>
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         pattern="yyyy MM dd HH:mm:ss">
@@ -41,14 +37,8 @@
                                         pattern="yyyy MM dd HH:mm:ss" >
                             </p:calendar> 
 
-                            <h:outputLabel value="Approved Person"/>
-                            <p:autoComplete id="staffApp"  forceSelection="true"
-                                            value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"
-                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon"   >   
-                            </p:autoComplete>
-
+                            <h:outputLabel value="Approved Staff"/>
+                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"/>
                             <h:outputLabel value="Time Type"/>
                             <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}"   >
                                 <f:selectItem itemLabel="Select Time Type"/>
@@ -81,19 +71,9 @@
                                         pattern="yyyy MM dd HH:mm:ss" >
                             </p:calendar>
                             <h:outputLabel value="Staff : "/>
-                            <p:autoComplete 
-                                value="#{staffAdditionalFormController.staff}"
-                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                converter="stfcon"   >   
-                            </p:autoComplete>
+                            <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                            
                             <h:outputLabel value="Approved Person"/>
-                            <p:autoComplete 
-                                value="#{staffAdditionalFormController.approvedStaff}"
-                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                converter="stfcon"   >   
-                            </p:autoComplete>
+                            <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/>                           
                             <p:commandButton ajax="false" value="Search Created Date" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
                             <p:commandButton ajax="false" value="Search Approved Date " action="#{staffAdditionalFormController.createAmmendmentTableApprovedDate()}" />
                         </h:panelGrid>

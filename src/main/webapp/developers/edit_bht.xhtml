@@ -1,0 +1,187 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:in="http://java.sun.com/jsf/composite/patient"
+                xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
+
+
+    <ui:define name="content">
+        <h:panelGroup >
+            <h:form  >
+                <p:panel header="Edit BHT Detail(Only For Authorized Persons)" >
+                    <p:panel header="BHT">
+                        <p:autoComplete converter="dis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                        value="#{bhtEditController.current}"
+                                        completeMethod="#{bhtEditController.completePatientAll}" 
+                                        var="myItem" itemValue="#{myItem}" 
+                                        itemLabel="#{myItem.bhtNo}" 
+                                        size="30"  style="width: 400px;">
+                            <p:ajax event="itemSelect" process="acPt" update="panSearch2 pFBill"/>
+                            <p:column>
+                                <h:outputLabel value="#{myItem.bhtNo}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{myItem.patient.person.name}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="Finalized"  rendered="#{myItem.paymentFinalized}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
+                            </p:column>
+                        </p:autoComplete>   
+                        <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('Developers')}">
+
+                        </p:commandButton>
+
+                        <p:commandButton  value="Clear" action="#{bhtEditController.makeNull}" ajax="false" onclick="onSubmitButton();">
+                        </p:commandButton>
+
+
+                        <h:panelGrid id="panSearch2" columns="2" style="min-width: 100%;" >
+                            <p:panel header="Admission">
+
+                                <p:outputLabel  value="Date of Admission"  />
+                                <p:calendar  value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
+                                    <f:ajax event="dateSelect" execute="@this" />
+                                </p:calendar>
+                                <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}"
+                                                         itemLabel="Mark as Foreigner"/>
+
+                                <p:selectBooleanCheckbox value="#{bhtEditController.current.claimable}" 
+                                                         itemLabel="Claimable"/>
+                            </p:panel>
+                            <p:panel header="Hospital">
+                                <h:panelGrid columns="2">
+                                    <h:outputLabel value="Speciality"/>
+                                    <p:autoComplete forceSelection="true"
+                                                    value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
+                                                    completeMethod="#{specialityController.completeSpeciality}" 
+                                                    var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                    converter="specilityCon"   >
+                                        <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
+                                    </p:autoComplete>
+                                    <h:outputLabel  value="Select OPD Doctor" ></h:outputLabel>
+                                    <p:autoComplete  style="width: 400px;" forceSelection="true" id="scStaff"
+                                                     value="#{bhtEditController.current.opdDoctor}" 
+                                                     completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
+                                                     var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                     converter="stfcon"   >
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Select Refering Doctor"/>                            
+                                    <p:autoComplete forceSelection="true" value="#{bhtEditController.current.referringDoctor}"
+                                                    completeMethod="#{inwardStaffPaymentBillController.completeStaff}" var="ix" 
+                                                    itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  
+                                                    style="width: 400px;" converter="stfcon" >
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Admission Type "/>
+                                    <h:outputLabel value="#{bhtEditController.current.admissionType.name}"/>                               
+                                    <h:outputLabel value="Select  Admission Paymentmethod"/>
+                                    <p:selectOneMenu   id="cmbPs" value="#{bhtEditController.current.paymentMethod}"  >
+                                        <f:selectItem itemLabel="Select Payment Method" />                           
+                                        <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                        <p:ajax process="@this" update="crd" event="change" />
+                                    </p:selectOneMenu>
+                                </h:panelGrid>
+                                <h:panelGroup id="crd" style="display: #{bhtEditController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
+                                    
+                                    <credit:inputCredit  patientEncounter="#{bhtEditController.current}"/>
+                                </h:panelGroup>
+
+                            </p:panel>
+
+                            <p:panel header="Patient Detail">
+                                <in:inputPatientDetail patient="#{bhtEditController.current.patient}"/>
+                            </p:panel>
+                            <p:panel header="Gardian Detal">
+                                <h:panelGrid columns="2">
+                                    <p:outputLabel   value="Name:" />
+                                    <p:inputText autocomplete="off"  value="#{bhtEditController.current.guardian.name}" />
+                                    <p:outputLabel value="NIC"/>
+                                    <p:inputText autocomplete="off" value="#{bhtEditController.current.guardian.nic}"/>
+                                    <p:outputLabel value="Mobile No" />
+                                    <p:inputMask mask="999-9999999"   value="#{bhtEditController.current.guardian.mobile}"  />
+                                    <p:outputLabel value="Home Phone No" />
+                                    <p:inputMask mask="999-9999999"   value="#{bhtEditController.current.guardian.phone}"  />
+                                    <p:outputLabel   value="Adress" />
+                                    <p:inputText autocomplete="off" value="#{bhtEditController.current.guardian.address}" />
+                                </h:panelGrid>
+                            </p:panel>
+                            <p:panel header="Room Detail">
+                                <p:dataTable value="#{bhtEditController.patientRoom}" var="rm">
+                                    <p:column headerText="Room Name">
+                                        #{rm.roomFacilityCharge.name}
+                                    </p:column>      
+                                    <p:column headerText="Admitted At">
+                                        #{rm.admittedAt}
+                                    </p:column>     
+                                    <p:column headerText="Admitted By">
+                                        #{rm.addmittedBy.webUserPerson.name}
+                                    </p:column> 
+                                    <p:column headerText="Discharged At">
+                                        #{rm.dischargedAt}
+                                    </p:column>     
+                                    <p:column headerText="Discharge By">
+                                        #{rm.dischargedBy}
+                                    </p:column> 
+                                </p:dataTable>
+                            </p:panel>
+                            <p:panel header="Discharge Detail">
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Discharge" />
+                                    <p:selectBooleanCheckbox value="#{bhtEditController.current.discharged}" />
+                                    <p:outputLabel value="Payment Finalized" />
+                                    <p:selectBooleanCheckbox value="#{bhtEditController.current.paymentFinalized}" />
+                                    <p:outputLabel value="Canceled" />
+                                    <p:selectBooleanCheckbox value="#{bhtEditController.current.retired}" />
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panel header="Admission/Discharge Dates">
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel  value="Date of Admission"  />
+                                    <p:calendar  value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
+                                        <f:ajax event="dateSelect" execute="@this" />
+                                    </p:calendar>
+                                    <p:outputLabel  value="Date of Discharge"  />
+                                    <p:calendar  value="#{bhtEditController.current.dateOfDischarge}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
+                                        <f:ajax event="dateSelect" execute="@this" />
+                                    </p:calendar>
+                                    <p:outputLabel  value="Date of Admission (Printing)"  />
+                                    <p:calendar  value="#{bhtEditController.current.printingAdmissionTime}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
+                                        <f:ajax event="dateSelect" execute="@this" />
+                                    </p:calendar>
+                                    <p:outputLabel  value="Date of Discharge (Printing)"  />
+                                    <p:calendar  value="#{bhtEditController.current.printingDischargeTime}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
+                                        <f:ajax event="dateSelect" execute="@this" />
+                                    </p:calendar>
+                                </p:panelGrid>
+                            </p:panel>
+                        </h:panelGrid>
+
+                    </p:panel>
+                    <p:panel id="pFBill" header="Final Bill" >
+                        <p:panel header="Final Bill Edit" rendered="#{bhtEditController.current.finalBill ne null}">
+                            <p:panelGrid columns="2">
+                                <p:outputLabel value="Net Total" />
+                                <p:outputLabel value="#{bhtEditController.current.finalBill.netTotal}" />
+                                <p:outputLabel value="Paid Amount" />
+                                <p:inputText value="#{bhtEditController.current.finalBill.paidAmount}" />
+                            </p:panelGrid>
+                        </p:panel>
+                    </p:panel>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

@@ -14,10 +14,10 @@
 
                 <h:form>
 
-                    <h:panelGrid columns="4"  >
+                    <h:panelGrid columns="4" styleClass="alignTop"  >
 
 
-                        <h:panelGrid columns="1" >
+                        <h:panelGrid columns="1">
                             <f:facet name="header">
                                 <p:outputLabel value="Lab Investigation" />
                             </f:facet>
@@ -29,11 +29,20 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Report Summery by day" action="report_lab_by_date_summery.xhtml"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Fee Type" action="report_investigation_summery_by_feetype"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Regent Fee" action="report_investigation_summery_by_regent_fee"/>
+                        </h:panelGrid>
+                        
+                        <h:panelGrid columns="1">
+                            <f:facet name="header">
+                                <p:outputLabel value="Lab Investigation Summeries with Credit" />
+                            </f:facet>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit"/>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summery Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method"/>
                              
 
                         </h:panelGrid>
                         
-                        <h:panelGrid columns="1" >
+                        <h:panelGrid columns="1">
                             <f:facet name="header">
                                 <p:outputLabel value="Lab Summery" />
                             </f:facet>

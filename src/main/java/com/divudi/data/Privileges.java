@@ -245,6 +245,9 @@ public enum Privileges {
     MemberShipOpdMemberShipDisByCategory,
     MemberShipOpdMemberShipDisOpdMemberShipReport,
     
+    HrAdmin,
+    
+    
     Developers,
 
 }

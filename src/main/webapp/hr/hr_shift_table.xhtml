@@ -64,7 +64,6 @@
                     <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine," >
                         <p:column headerText="Staff Name" rendered="#{data.flag eq true}">                      
                             <h:outputLabel value="#{sts.staff.person.name}" />
-
                         </p:column>
                         <p:column headerText="Staff Code" rendered="#{data.flag eq true}">                        
                             <h:outputLabel value="#{sts.staff.code}"/>
@@ -100,10 +99,14 @@
                                             itemLabel="#{mys.name}" 
                                             itemValue="#{mys}">                                  
                             </p:autoComplete>
-
+                            <br/>
+                            <h:outputLabel value="L"/>
+                            <p:selectBooleanCheckbox value="#{sts.lieuAllowed}" label="L"/>
+                            <h:outputLabel value="P"/>
+                            <p:selectBooleanCheckbox value="#{sts.lieuPaymentAllowed}" label="P"/>
                         </p:column>                   
-
-
+                        
+                        
                     </p:dataTable>  
                 </p:dataGrid>
 

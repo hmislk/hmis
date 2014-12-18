@@ -132,9 +132,64 @@ public class StaffShift implements Serializable {
     @ManyToOne
     Roster roster;
     double lieuQty;
+    double lieuQtyUtilized;
     boolean lieuPaid;
-    boolean lieuOrPaymentAllowed;
-    boolean lieuAndPaymentAllowed;
+    boolean lieuAllowed;
+    boolean lieuPaymentAllowed;
+
+    public void reset() {
+        multiplyingFactorOverTime = 0;
+        multiplyingFactorSalary = 0;
+        basicPerSecond = 0;
+        earlyInLogged = 0;
+        earlyOutLogged = 0;
+        earlyInVarified = 0;
+        earlyOutVarified = 0;
+        workedWithinTimeFrameLogged = 0;
+        workedOutSideTimeFrameLogged = 0;
+        workedTimeLogged = 0;
+        workedWithinTimeFrameVarified = 0;
+        workedOutSideTimeFrameVarified = 0;
+        workedTimeVarified = 0;
+        lateInVarified = 0;
+        lateOutVarified = 0;
+        lateInLogged = 0;
+        lateOutLogged = 0;
+        leavedTime = 0;
+        leavedTimeNoPay = 0;
+        leavedTimeOther = 0;
+        extraTimeFromStartRecordLogged = 0;
+        extraTimeFromEndRecordLogged = 0;
+        extraTimeCompleteRecordLogged = 0;
+        extraTimeFromStartRecordVarified = 0;
+        extraTimeFromEndRecordVarified = 0;
+        extraTimeCompleteRecordVarified = 0;
+        lieuQty = 0;
+        lieuPaymentAllowed = false;
+    }
+
+    public void processLieuQtyUtilized(LeaveType leaveType) {
+        if (leaveType == null) {
+            return;
+        }
+
+        if (leaveType == LeaveType.Lieu && getLieuQtyUtilized() == 0) {
+            setLieuQtyUtilized(1);
+        }
+
+        if (leaveType == LeaveType.LieuHalf && getLieuQtyUtilized() != 1) {
+            setLieuQtyUtilized(getLieuQtyUtilized() + 0.5);
+        }
+
+    }
+
+    public double getLieuQtyUtilized() {
+        return lieuQtyUtilized;
+    }
+
+    public void setLieuQtyUtilized(double lieuQtyUtilized) {
+        this.lieuQtyUtilized = lieuQtyUtilized;
+    }
 
     public double getLieuQty() {
         return lieuQty;
@@ -152,27 +207,35 @@ public class StaffShift implements Serializable {
         this.lieuPaid = lieuPaid;
     }
 
-    public boolean isLieuOrPaymentAllowed() {
-        return lieuOrPaymentAllowed;
+    public boolean isLieuAllowed() {
+        return lieuAllowed;
     }
 
-    public void setLieuOrPaymentAllowed(boolean lieuOrPaymentAllowed) {
-        this.lieuOrPaymentAllowed = lieuOrPaymentAllowed;
+    public void setLieuAllowed(boolean lieuAllowed) {
+        this.lieuAllowed = lieuAllowed;
     }
 
-    public void calLieu(DayType dayType) {
-        if (dayType == null) {
-            return;
+    public boolean isLieuPaymentAllowed() {
+        return lieuPaymentAllowed;
+    }
+
+    public void setLieuPaymentAllowed(boolean lieuPaymentAllowed) {
+        this.lieuPaymentAllowed = lieuPaymentAllowed;
+    }
+
+    public void calLieu() {
+
+        if (lieuAllowed) {
+            lieuQty = 1;
         }
 
-        switch (dayType) {
-            case DayOff:
-                lieuAndPaymentAllowed = true;
-                break;
-            case MurchantileHoliday:
-            case Poya:
-                lieuOrPaymentAllowed = true;
-                break;
+        if (getShift() != null) {
+            DayType dayType = getShift().getDayType();
+            if (dayType == DayType.DayOff) {
+                lieuAllowed = true;
+                lieuPaymentAllowed = true;
+                lieuQty = 1;
+            }
         }
     }
 
@@ -197,31 +260,35 @@ public class StaffShift implements Serializable {
             return;
         }
 
+        if (shift == null) {
+            return;
+        }
+
         switch (getLeaveType()) {
             case Annual:
             case Casual:
             case Lieu:
-                setLeavedTime(getStaff().getLeaveHour() * 60 * 60);
+                setLeavedTime(shift.getLeaveHourFull() * 60 * 60);
                 break;
             case Maternity1st:
             case Maternity2nd:
             case Medical:
-                setLeavedTimeOther(getStaff().getLeaveHour() * 60 * 60);
+                setLeavedTimeOther(shift.getLeaveHourFull() * 60 * 60);
                 break;
             case No_Pay:
-                setLeavedTimeNoPay(getStaff().getLeaveHour() * 60 * 60);
+                setLeavedTimeNoPay(shift.getLeaveHourFull() * 60 * 60);
                 break;
             case AnnualHalf:
             case CasualHalf:
             case LieuHalf:
-                setLeavedTime((getStaff().getLeaveHour() * 60 * 60) / 0.5);
+                setLeavedTime((shift.getLeaveHourHalf() * 60 * 60));
                 break;
             case Maternity1stHalf:
             case Maternity2ndHalf:
-                setLeavedTimeOther((getStaff().getLeaveHour() * 60 * 60) / 0.5);
+                setLeavedTimeOther((shift.getLeaveHourHalf() * 60 * 60));
                 break;
             case No_Pay_Half:
-                setLeavedTimeNoPay((getStaff().getLeaveHour() * 60 * 60) / 0.5);
+                setLeavedTimeNoPay((shift.getLeaveHourHalf() * 60 * 60));
                 break;
         }
     }
@@ -433,33 +500,41 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeComplete() {
+        if (getShift() != null) {
+            DayType dayType = getShift().getDayType();
 
-        Calendar fromCalendar = Calendar.getInstance();
-        Calendar toCalendar = Calendar.getInstance();
-        Long inSecond = 0l;
+            if (dayType == DayType.DayOff
+                    || dayType == DayType.SleepingDay) {
 
-        //Logged 
-        if (getStartRecord().getLoggedRecord() != null
-                && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null
-                && getStartRecord().getLoggedRecord().isAllowedExtraDuty()
-                && getEndRecord().getLoggedRecord() != null
-                && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null
-                && getEndRecord().getLoggedRecord().isAllowedExtraDuty()) {
-            fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
-            toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
-            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-            extraTimeCompleteRecordLogged = inSecond;
-        }
+                Calendar fromCalendar = Calendar.getInstance();
+                Calendar toCalendar = Calendar.getInstance();
+                Long inSecond = 0l;
 
-        //Varified 
-        if (getStartRecord().getRecordTimeStamp() != null
-                && getStartRecord().isAllowedExtraDuty()
-                && getEndRecord().getRecordTimeStamp() != null
-                && getEndRecord().isAllowedExtraDuty()) {
-            fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
-            toCalendar.setTime(getEndRecord().getRecordTimeStamp());
-            inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
-            extraTimeCompleteRecordVarified = inSecond;
+                //Logged 
+                if (getStartRecord().getLoggedRecord() != null
+                        && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null
+                        && getStartRecord().getLoggedRecord().isAllowedExtraDuty()
+                        && getEndRecord().getLoggedRecord() != null
+                        && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null
+                        && getEndRecord().getLoggedRecord().isAllowedExtraDuty()) {
+                    fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
+                    toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
+                    inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+                    extraTimeCompleteRecordLogged = inSecond;
+                }
+
+                //Varified 
+                if (getStartRecord().getRecordTimeStamp() != null
+                        && getStartRecord().isAllowedExtraDuty()
+                        && getEndRecord().getRecordTimeStamp() != null
+                        && getEndRecord().isAllowedExtraDuty()) {
+                    fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
+                    toCalendar.setTime(getEndRecord().getRecordTimeStamp());
+                    inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
+                    extraTimeCompleteRecordVarified = inSecond;
+                }
+
+            }
         }
 
     }

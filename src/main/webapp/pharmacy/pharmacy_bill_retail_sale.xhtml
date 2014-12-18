@@ -505,13 +505,22 @@
                             <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
                         </div>
-                        <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
-                                <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
-                            </h:panelGroup>
-                        </div>
 
+                        <h:panelGroup   id="gpBillPreview"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
 
+                            <div >
+                                <h:panelGroup   id="gpBillPreviewSingle"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
+                                    <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                </h:panelGroup>
+                            </div>
+
+                            <div >
+                                <h:panelGroup   id="gpBillPreviewPrabodha"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                    <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                                </h:panelGroup>
+                            </div>
+
+                        </h:panelGroup>
 
                     </p:panel>
 

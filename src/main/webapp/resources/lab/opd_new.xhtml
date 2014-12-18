@@ -11,6 +11,8 @@
         <cc:attribute name="professional"/>
         <cc:attribute name="reagent"/>
         <cc:attribute name="hospital"/>
+        <cc:attribute name="reagentWithCredit"/>
+        <cc:attribute name="reagentByPayMethod"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -24,7 +26,7 @@
             </p:column>
             <p:column headerText="Count" >
                 <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
-                
+
 
             </p:column>
             <p:column headerText="Hospital Fee" styleClass="numberCol" rendered="#{cc.attrs.hospital eq true}">
@@ -38,7 +40,7 @@
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>
-            
+
             </p:column>
             <p:column headerText="Professional Fee"  styleClass="numberCol" rendered="#{cc.attrs.professional eq true}">
                 <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
@@ -52,14 +54,27 @@
                     </h:outputLabel>
                 </f:facet>
             </p:column>
-            
+
             <p:column headerText="Rate"  styleClass="numberCol" rendered="#{cc.attrs.reagent eq true}">
                 <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
                 <p:outputLabel value="#{sr.reagentFee / sr.catCount}" rendered="#{!sr.catRow}" >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </p:outputLabel>
             </p:column>
-            
+
+            <p:column headerText="Rate"  styleClass="numberCol" rendered="#{cc.attrs.reagentByPayMethod eq true}">
+                <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                <p:outputLabel value="#{sr.reagentFee / sr.catCount}" rendered="#{!sr.catRow}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+            </p:column>
+            <p:column headerText="Rate"  styleClass="numberCol" rendered="#{cc.attrs.reagentWithCredit eq true}">
+                <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                <p:outputLabel value="#{sr.reagentFee / sr.catCount}" rendered="#{!sr.catRow}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+            </p:column>
+
             <p:column headerText="Reagent Fee"  styleClass="numberCol" rendered="#{cc.attrs.reagent eq true}">
                 <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
                 <p:outputLabel value="#{sr.reagentFee}" rendered="#{!sr.catRow}" >
@@ -72,7 +87,31 @@
                     </h:outputLabel>
                 </f:facet>
             </p:column>
-            
+            <p:column headerText="Reagent Fee"  styleClass="numberCol" rendered="#{cc.attrs.reagentByPayMethod eq true}">
+                <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                <p:outputLabel value="#{sr.reagentFee}" rendered="#{!sr.catRow}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                <f:facet name="footer">
+                    <h:outputLabel value="#{bookKeepingSummery.opdRegentTotalByPayMethod}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </f:facet>
+            </p:column>
+            <p:column headerText="Reagent Fee with Creit"  styleClass="numberCol" rendered="#{cc.attrs.reagentWithCredit eq true}">
+                <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" ></p:outputLabel>
+                <p:outputLabel value="#{sr.reagentFee}" rendered="#{!sr.catRow}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </p:outputLabel>
+                <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
+                <f:facet name="footer">
+                    <h:outputLabel value="#{bookKeepingSummery.opdRegentTotalWithCredit}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </f:facet>
+            </p:column>
+
             <p:column  headerText="Total Fee"  styleClass="numberCol" rendered="#{cc.attrs.professional eq true}">
                 <p:outputLabel value="&lt;b&gt;" rendered="#{sr.totalRow}" escape="false" />
                 <p:outputLabel value="#{sr.hosFee+sr.proFee+sr.reagentFee}" rendered="#{!sr.catRow}" >
@@ -80,7 +119,7 @@
                 </p:outputLabel>
                 <p:outputLabel value="&lt;b&#47;&gt;" rendered="#{sr.totalRow}"  escape="false"  ></p:outputLabel>
                 <f:facet name="footer">
-                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal}">
+                    <h:outputLabel value="#{bookKeepingSummery.opdHospitalTotal - bookKeepingSummery.opdRegentTotal - bookKeepingSummery.opdStaffTotal}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                 </f:facet>

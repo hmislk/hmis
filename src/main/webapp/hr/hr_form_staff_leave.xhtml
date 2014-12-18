@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -15,16 +16,11 @@
                             <h:outputLabel value="Form Number"/>
                             <p:inputText value="#{staffLeaveApplicationFormController.currentLeaveForm.code}"/>
                             <h:outputLabel value="Staff : "/>
-                            <p:autoComplete id="staff"
-                                            value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"
-                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon"   >   
-                            </p:autoComplete>
+                             <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"/>
                             <h:outputLabel value="Leave Type"/>
                             <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.leaveType}">
                                 <f:selectItem itemLabel="Select Day Type"/>
-                                <f:selectItems value="#{enumController.leaveType}"/>
+                                <f:selectItems value="#{enumController.leaveType}"/>                                
                             </p:selectOneMenu>                                                    
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.fromDate}"
@@ -35,23 +31,30 @@
                                         pattern="dd MM yy">
                             </p:calendar>   
                             <p:commandButton ajax="false" value="Leave Count" action="#{staffLeaveApplicationFormController.calLeaveCount()}"/>
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="Leave"/>
+                            <h:panelGrid columns="3">
+                                <h:outputLabel value="Leave Entitle || "/>
+                                <h:outputLabel value="Leave Utilized || "/>
                                 <h:outputLabel value="Ballance"/>
+                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle}"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaved}"/>
-                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaveUtilize - staffLeaveApplicationFormController.leaved}"/>
+                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle - staffLeaveApplicationFormController.leaved}"/>
                             </h:panelGrid>
+
+                            <p:commandButton ajax="false" value="Process Lie Shift" 
+                                             action="#{staffLeaveApplicationFormController.fetchStaffShift()}" />
+                            <p:selectOneMenu id="s1" value="#{staffLeaveApplicationFormController.currentLeaveForm.staffShift}"   >
+                                <f:selectItem itemLabel="Select Staff Shift"/>
+                                <f:selectItems value="#{staffLeaveApplicationFormController.staffShifts}"
+                                               var="itm" itemLabel="#{itm.shiftDate}|#{itm.shift.name}" 
+                                               itemValue="#{itm}" />
+                            </p:selectOneMenu>
+
                             <h:outputLabel value="Requested Date"/>
                             <p:calendar id="requestedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.requestedDate}"
                                         pattern="dd MMMM yyyy">
                             </p:calendar>
                             <h:outputLabel value="Leave Approved Person"/>
-                            <p:autoComplete id="staffApp"  forceSelection="true"
-                                            value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"
-                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon"   >   
-                            </p:autoComplete>
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"/>                            
                             <h:outputLabel value="Leave Approved Date"/>
                             <p:calendar id="approvedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedAt}"
                                         pattern="dd MMMM yyyy" >
@@ -82,22 +85,14 @@
                                             pattern="dd MMMM yyyy">
                                 </p:calendar> 
                                 <h:outputLabel value="Staff : "/>
-                                <p:autoComplete value="#{staffLeaveApplicationFormController.staff}"
-                                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                converter="stfcon"   >   
-                                </p:autoComplete>
+                                <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
                                 <h:outputLabel value="Leave Type"/>
                                 <p:selectOneMenu  value="#{staffLeaveApplicationFormController.leaveType}">
                                     <f:selectItem itemLabel="Select Day Type"/>
                                     <f:selectItems value="#{enumController.leaveType}"/>
                                 </p:selectOneMenu> 
                                 <h:outputLabel value="Leave Approved Person"/>
-                                <p:autoComplete value="#{staffLeaveApplicationFormController.approvedStaff}"
-                                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                converter="stfcon"   >   
-                                </p:autoComplete>
+                                <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>                             
                                 <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
                                 <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
                             </p:panelGrid>
@@ -132,7 +127,7 @@
                                 <p:column headerText="Creater">
                                     <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                     <br></br>
-                                    <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"></p:outputLabel>
+                                    <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>

@@ -85,7 +85,7 @@ public class ConsultantController implements Serializable {
             UtilityController.addSuccessMessage("NothingToDelete");
         }
         recreateModel();
-      //  getItems();
+        //  getItems();
         current = null;
         getCurrent();
     }
@@ -115,7 +115,7 @@ public class ConsultantController implements Serializable {
             UtilityController.addErrorMessage("Please Enter a Name");
             return;
         }
-        if (current.getSpeciality()==null) {
+        if (current.getSpeciality() == null) {
             UtilityController.addErrorMessage("Please Select Speciality.");
             return;
         }
@@ -134,7 +134,7 @@ public class ConsultantController implements Serializable {
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
         recreateModel();
-       // getItems();
+        // getItems();
     }
 
     public void setSelectText(String selectText) {
