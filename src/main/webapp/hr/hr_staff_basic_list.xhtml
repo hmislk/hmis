@@ -7,8 +7,7 @@
                 xmlns:f="http://java.sun.com/jsf/core">
 
     <ui:define name="content">
-        <h:form>
-            #{staffBasicController.items2.size()}
+        <h:form>          
             <p:dataTable id="lst" value="#{staffBasicController.items2}" 
                          filteredValue="#{staffBasicController.filteredStaffPaysheet}"
                          var="i"   rowKey="#{i.id}"  >

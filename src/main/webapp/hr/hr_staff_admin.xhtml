@@ -30,7 +30,7 @@
                                     </p:inputText>
 
                                     <p:selectOneListbox converter="stfcon"   id="lstSelect"   value="#{staffController.current}" style="min-width: 223px; height: 300px;">
-                                        <f:selectItems  value="#{staffController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}" ></f:selectItems>
+                                        <f:selectItems  value="#{staffController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}(#{myItem.code})" ></f:selectItems>
                                         <p:ajax event="change" process="lstSelect" update="gpDetail" listener="#{staffController.changeStaff()}"/>                                        
                                     </p:selectOneListbox>
 
