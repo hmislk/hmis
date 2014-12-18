@@ -136,6 +136,18 @@ public class StaffShift implements Serializable {
     boolean lieuPaid;
     boolean lieuAllowed;
     boolean lieuPaymentAllowed;
+    @Transient
+    boolean transChecked;
+
+    public boolean isTransChecked() {
+        return transChecked;
+    }
+
+    public void setTransChecked(boolean transChecked) {
+        this.transChecked = transChecked;
+    }
+    
+    
 
     public void reset() {
         multiplyingFactorOverTime = 0;

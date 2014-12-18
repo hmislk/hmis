@@ -2,7 +2,7 @@
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition template="/resources/template/template.xhtml"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
-                    
+
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core">
@@ -16,9 +16,15 @@
                 <h:panelGrid columns="2" >
                     <h:outputLabel value="Staff Name"/>
                     <p:autoComplete  forceSelection="true" value="#{staffPaySheetComponentController.current.staff}"
-                                     completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                     completeMethod="#{staffPaymentBillController.completeStaffCode}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                      converter="stfcon"   >   
                         <f:ajax event="itemSelect" execute="@this" render="lst" listener="#{staffPaySheetComponentController.makeItemNull}" />
+                        <p:column headerText="Name">
+                            #{mys.person.name}
+                        </p:column>
+                        <p:column headerText="Code">
+                            #{mys.code}
+                        </p:column>
                     </p:autoComplete>
                     <h:outputLabel value="Component Name"/>
                     <p:selectOneMenu value="#{staffPaySheetComponentController.current.paysheetComponent}">                        
@@ -55,7 +61,7 @@
                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column headerText="To" filterBy="#{i.toDate}"  filterMatchMode="contains">
                         <h:outputLabel value="#{i.toDate}">
                             <f:convertDateTime pattern="dd MMMM yyyy"/>
