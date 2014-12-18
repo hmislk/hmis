@@ -22,8 +22,7 @@
                                              action="#{pharmacyItemExcelManager.resetSessionBillNumberType()}" onclick="onSubmitButton();" />
                             <p:commandButton styleClass="linkButton" ajax="false" value="Reset Channel Session Number" 
                                              action="#{sheduleController.resetSessionNumbers()}" onclick="onSubmitButton();" />
-                            <p:commandButton ajax="false" value="Update Staff Code to Integer"
-                                             action="#{staffController.updateCodeToIntege}"/>
+                          
                             
                         </p:panel>
                         <p:panel header="Pharmacy" rendered="false">                                 
@@ -69,6 +68,8 @@
                                              value="Set Dept ID To Bills" 
                                              action="#{pharmacyItemExcelManager.updateBillDeptID()}" onclick="onSubmitButton();" />
   
+                            <p:commandButton ajax="false" value="Update Staff Code to Integer"
+                                             action="#{staffController.updateCodeToIntege}"/>
                     </h:panelGrid>
 
                 </h:form>

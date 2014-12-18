@@ -238,6 +238,8 @@ public class PurchaseOrderController implements Serializable {
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.setBillItem(bi);
+            System.out.println("i.getFreeQty() = " + i.getFreeQty());
+            ph.setFreeQty(i.getFreeQty());
             ph.setQtyInUnit(i.getQtyInUnit());
             ph.setPurchaseRateInUnit(i.getPurchaseRateInUnit());
             ph.setRetailRateInUnit(i.getRetailRateInUnit());

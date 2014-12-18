@@ -505,19 +505,29 @@
                             <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
                         </div>
-                        <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
-                                <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
-                            </h:panelGroup>
-                        </div>
-                        
-                        <div >
-                            <h:panelGroup   id="gpBillPreviewPrabodha"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
-                                <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
-                            </h:panelGroup>
-                        </div>
 
+                        <h:panelGroup   id="gpBillPreview"  > 
 
+                            <h:panelGroup   id="gpBillPreviewSingle">
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewDouble"> 
+
+                                <div >
+                                    <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                        <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+                        </h:panelGroup>
 
                     </p:panel>
 

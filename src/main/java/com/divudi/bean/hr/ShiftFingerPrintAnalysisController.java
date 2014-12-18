@@ -57,6 +57,39 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     FingerPrintRecordFacade fingerPrintRecordFacade;
     @EJB
     StaffLeaveFacade staffLeaveFacade;
+    String errorMessage = "";
+
+    public StaffLeaveFacade getStaffLeaveFacade() {
+        return staffLeaveFacade;
+    }
+
+    public void setStaffLeaveFacade(StaffLeaveFacade staffLeaveFacade) {
+        this.staffLeaveFacade = staffLeaveFacade;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public DayType getDayType() {
+        return dayType;
+    }
+
+    public void setDayType(DayType dayType) {
+        this.dayType = dayType;
+    }
+
+    public FormFacade getFormFacade() {
+        return formFacade;
+    }
+
+    public void setFormFacade(FormFacade formFacade) {
+        this.formFacade = formFacade;
+    }
 
     public void restTimeStamp(FingerPrintRecord fingerPrintRecord) {
         if (fingerPrintRecord == null) {
@@ -73,6 +106,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     public void makeTableNull() {
         shiftTables = null;
+        errorMessage = "";
     }
 
     public void listenStart(StaffShift staffShift) {
@@ -325,41 +359,87 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         return fpr;
     }
 
-    private boolean errorCheckForSave() {
-        for (ShiftTable st : shiftTables) {
-            for (StaffShift ss : st.getStaffShift()) {
+//    private boolean errorCheckForSave() {
+//        for (ShiftTable st : shiftTables) {
+//            errorMessage = "<br/>" + st.getDate();
+//            for (StaffShift ss : st.getStaffShift()) {
+//
+//                if (ss.getShift().getDayType() == DayType.DayOff
+//                        || ss.getShift().getDayType() == DayType.SleepingDay
+//                        || ss.getLeaveType() != null) {
+//                    continue;
+//                }
+//
+//                if (ss.getPreviousStaffShift() == null) {
+//                    if (ss.getStartRecord() == null) {
+//                        errorMessage += "  Some Starting Records Has"
+//                                + " No Starting Record";
+////                        System.err.println("SS " + ss.getId());
+//                        UtilityController.addErrorMessage(errorMessage);
+//                        return true;
+//                    }
+//                    if (ss.getStartRecord().getRecordTimeStamp() == null) {
+//                        errorMessage += " Some Starting Records Has No Time ";
+//                        UtilityController.addErrorMessage(errorMessage);
+//                        return true;
+//                    }
+//                }
+//
+//                if (ss.getNextStaffShift() == null) {
+//                    if (ss.getEndRecord() == null) {
+//                        errorMessage += " Some End Records Has No Starting Record";
+//                        UtilityController.addErrorMessage(errorMessage);
+//                        return true;
+//                    }
+//                    if (ss.getEndRecord().getRecordTimeStamp() == null) {
+//                        errorMessage += " Some End Records Has No Time ";
+//                        UtilityController.addErrorMessage(errorMessage);
+//                        return true;
+//                    }
+//                }
+//
+//            }
+//        }
+//
+//        return false;
+//    }
+    private boolean errorCheckForSave(ShiftTable st) {
+        for (StaffShift ss : st.getStaffShift()) {
 
-                if (ss.getShift().getDayType() == DayType.DayOff
-                        || ss.getShift().getDayType() == DayType.SleepingDay
-                        || ss.getLeaveType() != null) {
-                    continue;
-                }
-
-                if (ss.getPreviousStaffShift() == null) {
-                    if (ss.getStartRecord() == null) {
-                        System.err.println("SS " + ss.getId());
-                        UtilityController.addErrorMessage(" Some Starting Records Has"
-                                + " No Starting Record");
-                        return true;
-                    }
-                    if (ss.getStartRecord().getRecordTimeStamp() == null) {
-                        UtilityController.addErrorMessage(" Some Starting Records Has No Time ");
-                        return true;
-                    }
-                }
-
-                if (ss.getNextStaffShift() == null) {
-                    if (ss.getEndRecord() == null) {
-                        UtilityController.addErrorMessage(" Some End Records Has No Starting Record");
-                        return true;
-                    }
-                    if (ss.getEndRecord().getRecordTimeStamp() == null) {
-                        UtilityController.addErrorMessage(" Some End Records Has No Time ");
-                        return true;
-                    }
-                }
-
+            if (ss.getShift().getDayType() == DayType.DayOff
+                    || ss.getShift().getDayType() == DayType.SleepingDay
+                    || ss.getLeaveType() != null) {
+                continue;
             }
+
+            if (ss.getPreviousStaffShift() == null) {
+                if (ss.getStartRecord() == null) {
+                    errorMessage += st.getDate() + " Some Starting Records Has"
+                            + " No Starting Record <br/>";
+//                        System.err.println("SS " + ss.getId());
+                    UtilityController.addErrorMessage(errorMessage);
+                    return true;
+                }
+                if (ss.getStartRecord().getRecordTimeStamp() == null) {
+                    errorMessage += st.getDate() + " Some Starting Records Has No Time <br/> ";
+                    UtilityController.addErrorMessage(errorMessage);
+                    return true;
+                }
+            }
+
+            if (ss.getNextStaffShift() == null) {
+                if (ss.getEndRecord() == null) {
+                    errorMessage += st.getDate() + " Some End Records Has No Starting Record <br/>";
+                    UtilityController.addErrorMessage(errorMessage);
+                    return true;
+                }
+                if (ss.getEndRecord().getRecordTimeStamp() == null) {
+                    errorMessage += st.getDate() + " Some End Records Has No Time <br/>";
+                    UtilityController.addErrorMessage(errorMessage);
+                    return true;
+                }
+            }
+
         }
 
         return false;
@@ -368,17 +448,22 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     public void save() {
 //        System.err.println("1");
         if (shiftTables == null) {
-            UtilityController.addErrorMessage("Empty List");
+            final String empty_List = "Empty List";
+            UtilityController.addErrorMessage(empty_List);
+            errorMessage = empty_List;
             return;
         }
 
 //        System.err.println("2");
-        if (errorCheckForSave()) {
-//            UtilityController.addErrorMessage("Staff Shift Not Updated");
-            return;
-        }
-
+//        if (errorCheckForSave()) {
+////            UtilityController.addErrorMessage("Staff Shift Not Updated");
+//            return;
+//        }
         for (ShiftTable st : shiftTables) {
+            if (errorCheckForSave(st)) {
+                continue;
+            }
+
             for (StaffShift ss : st.getStaffShift()) {
                 //UPDATE START RECORD
                 FingerPrintRecord startRecord = ss.getStartRecord();
@@ -397,6 +482,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 } else {
                     getFingerPrintRecordFacade().create(endRecord);
                 }
+
+                //Ress Old Calculated Data
+                ss.reset();
 
                 //Fetch Basic
                 StaffPaysheetComponent basic = humanResourceBean.getBasic(ss.getStaff());

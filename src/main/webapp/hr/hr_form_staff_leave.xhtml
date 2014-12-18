@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -15,12 +16,7 @@
                             <h:outputLabel value="Form Number"/>
                             <p:inputText value="#{staffLeaveApplicationFormController.currentLeaveForm.code}"/>
                             <h:outputLabel value="Staff : "/>
-                            <p:autoComplete id="staff"
-                                            value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"
-                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon"   >   
-                            </p:autoComplete>
+                             <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"/>
                             <h:outputLabel value="Leave Type"/>
                             <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.leaveType}">
                                 <f:selectItem itemLabel="Select Day Type"/>
@@ -58,12 +54,7 @@
                                         pattern="dd MMMM yyyy">
                             </p:calendar>
                             <h:outputLabel value="Leave Approved Person"/>
-                            <p:autoComplete id="staffApp"  forceSelection="true"
-                                            value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"
-                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon"   >   
-                            </p:autoComplete>
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"/>                            
                             <h:outputLabel value="Leave Approved Date"/>
                             <p:calendar id="approvedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedAt}"
                                         pattern="dd MMMM yyyy" >
@@ -94,22 +85,14 @@
                                             pattern="dd MMMM yyyy">
                                 </p:calendar> 
                                 <h:outputLabel value="Staff : "/>
-                                <p:autoComplete value="#{staffLeaveApplicationFormController.staff}"
-                                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                converter="stfcon"   >   
-                                </p:autoComplete>
+                                <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
                                 <h:outputLabel value="Leave Type"/>
                                 <p:selectOneMenu  value="#{staffLeaveApplicationFormController.leaveType}">
                                     <f:selectItem itemLabel="Select Day Type"/>
                                     <f:selectItems value="#{enumController.leaveType}"/>
                                 </p:selectOneMenu> 
                                 <h:outputLabel value="Leave Approved Person"/>
-                                <p:autoComplete value="#{staffLeaveApplicationFormController.approvedStaff}"
-                                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                converter="stfcon"   >   
-                                </p:autoComplete>
+                                <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>                             
                                 <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
                                 <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
                             </p:panelGrid>

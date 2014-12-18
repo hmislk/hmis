@@ -111,14 +111,16 @@ public class Staff implements Serializable {
     Date dateLeft;
     @Transient
     double basic;
+    @Transient
+    double transWorkedDays;
     @OneToOne(cascade = CascadeType.ALL)
     BankAccount bankAccount;
     String epfNo;
 
     String acNo;
 
-    double workingHourPerShift;
-    double leaveHour;
+//    double workingHourPerShift;
+//    double leaveHour;
 
     double annualWelfareQualified;
     double annualWelfareUtilized;
@@ -141,7 +143,7 @@ public class Staff implements Serializable {
             codeInterger = Integer.parseInt(code);
             
         } catch (Exception e) {
-
+            System.err.println(e.getMessage());
         }
 
     }
@@ -154,13 +156,13 @@ public class Staff implements Serializable {
 //        
 //        return tmp2;
 //    }
-    public double getLeaveHour() {
-        return leaveHour;
-    }
-
-    public void setLeaveHour(double leaveHour) {
-        this.leaveHour = leaveHour;
-    }
+//    public double getLeaveHour() {
+//        return leaveHour;
+//    }
+//
+//    public void setLeaveHour(double leaveHour) {
+//        this.leaveHour = leaveHour;
+//    }
 
     public byte[] getBaImage() {
         return baImage;
@@ -539,13 +541,13 @@ public class Staff implements Serializable {
         this.acNo = acNo;
     }
 
-    public double getWorkingHourPerShift() {
-        return workingHourPerShift;
-    }
-
-    public void setWorkingHourPerShift(double workingHourPerShift) {
-        this.workingHourPerShift = workingHourPerShift;
-    }
+//    public double getWorkingHourPerShift() {
+//        return workingHourPerShift;
+//    }
+//
+//    public void setWorkingHourPerShift(double workingHourPerShift) {
+//        this.workingHourPerShift = workingHourPerShift;
+//    }
 
     public double getCharge() {
         return charge;

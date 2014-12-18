@@ -30,9 +30,43 @@ public class AmendmentForm extends HrForm {
     @ManyToOne
     private StaffShift fromStaffShift;
     @ManyToOne
+    StaffShift fromStaffShiftSecond;
+    @ManyToOne
     private StaffShift toStaffShift;
     @ManyToOne
+    private StaffShift toStaffShiftSecond;
+    @ManyToOne
     Shift toShift;
+    @ManyToOne
+    Shift toShiftSecond;
+
+    public Shift getToShiftSecond() {
+        return toShiftSecond;
+    }
+
+    public void setToShiftSecond(Shift toShiftSecond) {
+        this.toShiftSecond = toShiftSecond;
+    }
+    
+    
+
+    public StaffShift getFromStaffShiftSecond() {
+        return fromStaffShiftSecond;
+    }
+
+    public void setFromStaffShiftSecond(StaffShift fromStaffShiftSecond) {
+        this.fromStaffShiftSecond = fromStaffShiftSecond;
+    }
+
+    public StaffShift getToStaffShiftSecond() {
+        return toStaffShiftSecond;
+    }
+
+    public void setToStaffShiftSecond(StaffShift toStaffShiftSecond) {
+        this.toStaffShiftSecond = toStaffShiftSecond;
+    }
+    
+    
 
     public Shift getToShift() {
         return toShift;
@@ -41,8 +75,6 @@ public class AmendmentForm extends HrForm {
     public void setToShift(Shift toShift) {
         this.toShift = toShift;
     }
-    
-    
 
     public Staff getFromStaff() {
         return fromStaff;

@@ -651,6 +651,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             pharmacyItem.setRetired(true);
             pharmacyItem.setRetireComments("Bulk Remove");
+            pharmacyItem.setRetiredAt(new Date());
             pharmacyItem.setRetirer(getSessionController().getLoggedUser());
             getItemFacade().edit(pharmacyItem);
         }
@@ -1606,12 +1607,12 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
-                
-                
+                System.out.println("strAmp = " + strAmp);
+
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
-                
-                
+                System.out.println("strCode = " + strCode);
+
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("v", vmp);
@@ -1619,9 +1620,11 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (!strCat.equals("")) {
                     amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
+                        System.out.println("amp = " + amp);
                         amp = new Amp();
                         amp.setName(strAmp);
                         amp.setCode(strCode);
+                        amp.setDepartmentType(DepartmentType.Pharmacy);
                         amp.setMeasurementUnit(strengthUnit);
                         amp.setDblValue((double) strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
@@ -1629,10 +1632,13 @@ public class PharmacyItemExcelManager implements Serializable {
                         getAmpFacade().create(amp);
                     } else {
                         amp.setRetired(false);
+                        amp.setDepartmentType(DepartmentType.Pharmacy);
                         amp.setCode(strCode);
                         getAmpFacade().edit(amp);
+                        System.out.println("amp = " + amp);
                     }
                 } else {
+                    System.out.println("amp is null");
                     amp = null;
                     //System.out.println("amp is null");
                 }
@@ -1641,8 +1647,9 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
                 //System.out.println("amp = " + amp.getName());
                 //Ampp
-                ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
-
+                if (issueUnitsPerPack > 1) {
+                    ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+                }
                 //Code
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
@@ -1653,7 +1660,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
                 //System.out.println("strBarCode = " + strBarcode);
-                amp.setCode(strBarcode);
+                amp.setBarcode(strBarcode);
                 getAmpFacade().edit(amp);
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);

@@ -93,12 +93,17 @@ public  class StoreController implements Serializable {
     public List<Stock> completeAllStocks(String qry) {
         List<Stock> items;
         String sql;
+        double d = 0.0;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
-        double d = 0.0;
+        m.put("dtp1", DepartmentType.Store); 
+        m.put("stk", d);
+        
         m.put("n", "%" + qry.toUpperCase() + "%");
-        sql = "select i from Stock i where i.department=:d and "
-                + " (upper(i.itemBatch.item.name) like :n  or "
+        sql = "select i from Stock i where i.department=:d "
+                + " and i.itemBatch.item.departmentType=:dtp1"
+                + " and i.stock > :stk "
+                + " and (upper(i.itemBatch.item.name) like :n  or "
                 + " upper(i.itemBatch.item.code) like :n  or  "
                 + " upper(i.itemBatch.item.barcode) like :n ) ";
         items = getStockFacade().findBySQL(sql, m, 20);

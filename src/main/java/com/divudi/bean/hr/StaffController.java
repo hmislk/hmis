@@ -133,10 +133,12 @@ public class StaffController implements Serializable {
     }
 
     public List<CommonReportItem> getFormItems() {
-        if (formItems != null) {
-            return formItems;
-        }
+        System.out.println("getting form items");
+//        if (formItems != null) {
+//            return formItems;
+//        }
         String temSql;
+        System.out.println("formCategory = " + formCategory);
         if (formCategory != null) {
             temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
