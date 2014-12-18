@@ -25,11 +25,18 @@
                                     </p:calendar>   
                                     <p:commandButton ajax="false" value="Process Staff Shift" 
                                                      action="#{staffAmendmentFormController.fetchFromStaffShift()}" />
-                                    <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShift}"   >
-                                        <f:selectItem itemLabel="Select Staff Shift"/>
-                                        <f:selectItems value="#{staffAmendmentFormController.fromStaffShifts}"
-                                                       var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
-                                    </p:selectOneMenu>
+                                    <h:panelGroup>
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShift}"   >
+                                            <f:selectItem itemLabel="Select Staff Shift 1"/>
+                                            <f:selectItems value="#{staffAmendmentFormController.fromStaffShifts}"
+                                                           var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShiftSecond}"   >
+                                            <f:selectItem itemLabel="Select Staff Shift 2"/>
+                                            <f:selectItems value="#{staffAmendmentFormController.fromStaffShifts}"
+                                                           var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
                                 </p:panelGrid>
                             </p:panel>
                             <p:panel header="Action Employee Details">
@@ -40,21 +47,21 @@
                                     <p:calendar id="toDate" value="#{staffAmendmentFormController.currAmendmentForm.toDate}"
                                                 pattern="yyyy MM dd HH:mm:ss">
 
-                                    </p:calendar>                                   
-                                    <p:commandButton ajax="false" value="Process Staff Shift" 
-                                                     action="#{staffAmendmentFormController.fetchToStaffShift()}" />
-                                    <p:selectOneMenu id="s1" value="#{staffAmendmentFormController.currAmendmentForm.toStaffShift}"   >
-                                        <f:selectItem itemLabel="Select Staff Shift"/>
-                                        <f:selectItems value="#{staffAmendmentFormController.toStaffShifts}"
-                                                       var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
-                                    </p:selectOneMenu>
+                                    </p:calendar>                                                                                              
                                     <p:commandButton ajax="false" value="Process Shift" 
                                                      action="#{staffAmendmentFormController.fetchToShift()}" />
-                                    <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShift}"   >
-                                        <f:selectItem itemLabel="Select Shift"/>
-                                        <f:selectItems value="#{staffAmendmentFormController.toShifts}"
-                                                       var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />
-                                    </p:selectOneMenu>
+                                    <h:panelGroup>
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShift}"   >
+                                            <f:selectItem itemLabel="Select Shift 1"/>
+                                            <f:selectItems value="#{staffAmendmentFormController.toShifts}"
+                                                           var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShiftSecond}"   >
+                                            <f:selectItem itemLabel="Select Shift 2"/>
+                                            <f:selectItems value="#{staffAmendmentFormController.toShifts}"
+                                                           var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
                                 </p:panelGrid> 
                             </p:panel>
                             <p:panel>
@@ -86,7 +93,7 @@
                                             pattern="yyyy MM dd HH:mm:ss" >
                                 </p:calendar>
                                 <h:outputLabel value="Staff : "/>
-                               <au:completeStaff value="#{staffAmendmentFormController.fromStaff}"/>                                                                 
+                                <au:completeStaff value="#{staffAmendmentFormController.fromStaff}"/>                                                                 
                                 <h:outputLabel value="Action Staff : "/>
                                 <au:completeStaff value="#{staffAmendmentFormController.toStaff}"/>                                                                    
                                 <h:outputLabel value="Approved Person"/>

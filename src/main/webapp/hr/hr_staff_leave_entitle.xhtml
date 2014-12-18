@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:p="http://primefaces.org/ui">
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -13,12 +14,7 @@
                     <p:panel header="Staff Leave Entitle">
                         <h:panelGrid columns="2">                            
                             <h:outputLabel value="Staff : "/>
-                            <p:autoComplete id="staff"
-                                            value="#{staffLeaveEntitleController.current.staff}"
-                                            completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                            itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon"   >   
-                            </p:autoComplete>  
+                            <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
                             <h:outputLabel value="Leave Type"/>
                             <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
                                 <f:selectItem itemLabel="Select Leave Type"/>
@@ -37,12 +33,7 @@
                     <p:panel header="Search Forms">
                         <h:panelGrid columns="3">                           
                             <h:outputLabel value="Staff : "/>
-                            <p:autoComplete 
-                                value="#{staffLeaveEntitleController.staff}"
-                                completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                converter="stfcon"   >   
-                            </p:autoComplete>                         
+                            <hr:completeStaff value="#{staffLeaveEntitleController.staff}"/>                                      
                             <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createItems()}" />                            
                         </h:panelGrid>
                         <p:dataTable value="#{staffLeaveEntitleController.items}" var="add" 
