@@ -16,10 +16,13 @@
                             <p:panel header="Stock Reports" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton value="Department Stock By Batch" action="pharmacy_report_department_stock_by_batch" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Department Stock By Expiary" action="pharmacy_report_department_stock_by_batch_expiary" ajax="false" ></p:commandButton>                                                               
+                                    <p:commandButton value="Department Stock By Expiary" action="pharmacy_report_department_stock_by_batch_expiary" ajax="false" ></p:commandButton>
+                                    <p:commandButton value="Department Stock By Item" action="pharmacy_report_department_stock_by_item" ajax="false" ></p:commandButton>
+                                    <p:commandButton value="Department Stock By Product" action="pharmacy_report_department_stock_by_product" ajax="false" ></p:commandButton>
                                     <p:commandButton value="Staff Stock By Batch" action="pharmacy_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="Suppliers' Stock" action="pharmacy_report_supplier_stock_by_batch" ajax="false" ></p:commandButton>       
-                                    <p:commandButton value="Category Stock" action="pharmacy_report_category_stock_by_batch" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton value="Category Stock" action="pharmacy_report_category_stock_by_batch" ajax="false" ></p:commandButton>
+                                    <p:commandButton value="Category Stock By Category" action="pharmacy_report_category_stock_by_category" ajax="false" ></p:commandButton>
                                     <p:commandButton value="All Suppliers' Stock" action="pharmacy_report_all_supplier_stock" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="Department Stock By Batch minus" action="pharmacy_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>                            
                                     <p:commandButton value="Stock History" action="#{stockHistoryController.viewPharmacyStockHistory}" ajax="false" ></p:commandButton>                            

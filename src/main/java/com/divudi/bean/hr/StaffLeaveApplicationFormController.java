@@ -11,6 +11,7 @@ import com.divudi.data.hr.LeaveType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
+import com.divudi.entity.Form;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.LeaveForm;
 import com.divudi.entity.hr.StaffLeave;
@@ -139,14 +140,16 @@ public class StaffLeaveApplicationFormController implements Serializable {
     }
 
     public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType) {
+        List<LeaveType> list = leaveType.getLeaveTypes();
+
         String sql = "select  ss "
                 + " from StaffLeaveEntitle ss"
                 + " where ss.retired=false"
                 + " and ss.staff=:stf"
-                + " and ss.leaveType=:ltp ";
+                + " and ss.leaveType in :ltp ";
         HashMap hm = new HashMap();
         hm.put("stf", staff);
-        hm.put("ltp", leaveType);
+        hm.put("ltp", list);
 
         return staffLeaveEntitleFacade.findFirstBySQL(sql, hm);
     }
@@ -230,14 +233,16 @@ public class StaffLeaveApplicationFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Comment");
             return true;
         }
-        
-        if(checkingForLieLeave()){return true;}
+
+        if (checkingForLieLeave()) {
+            return true;
+        }
 
         return false;
     }
 
     public boolean checkingForLieLeave() {
-        
+
         LeaveType ltp = currentLeaveForm.getLeaveType();
         StaffShift stf = currentLeaveForm.getStaffShift();
 
@@ -265,7 +270,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             }
         }
 
-        return  false;
+        return false;
     }
 
     @Inject
@@ -371,9 +376,24 @@ public class StaffLeaveApplicationFormController implements Serializable {
         leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    public void deleteStaffLeave(Form form){
+        String sql="Select l from StaffLeave l where l.form=:frm ";
+        HashMap nm=new HashMap();
+        nm.put("frm", form);
+        List<StaffLeave> list=staffLeaveFacade.findBySQL(sql, nm);
+        for(StaffLeave stf:list){
+            stf.setRetired(true);
+            stf.setRetiredAt(new Date());
+            stf.setRetirer(sessionController.getLoggedUser());
+            staffLeaveFacade.edit(stf);
+        }
+    }
 
     public void deleteLeaveForm() {
         if (currentLeaveForm != null) {
+            deleteStaffLeave(currentLeaveForm);
+            
             currentLeaveForm.setRetired(true);
             currentLeaveForm.setRetirer(getSessionController().getLoggedUser());
             currentLeaveForm.setRetiredAt(new Date());

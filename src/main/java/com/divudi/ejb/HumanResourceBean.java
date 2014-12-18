@@ -933,38 +933,37 @@ public class HumanResourceBean {
     }
 
     public List<StaffLeave> getStaffLeave(Staff staff, LeaveType leaveType, Date frmDate, Date toDate) {
-
+        List<LeaveType> list = leaveType.getLeaveTypes();
         String sql = "Select s From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st "
-                + " and s.leaveType=:ltp"
+                + " and s.leaveType in :ltp"
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
-        hm.put("ltp", leaveType);
+        hm.put("ltp", list);
         hm.put("frm", frmDate);
         hm.put("to", toDate);
 
         return getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
-      public double calStaffLeave(Staff staff, LeaveType leaveType, Date frmDate, Date toDate) {
-
+    public double calStaffLeave(Staff staff, LeaveType leaveType, Date frmDate, Date toDate) {
+        List<LeaveType> list = leaveType.getLeaveTypes();
         String sql = "Select sum(s.qty) From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st "
-                + " and s.leaveType=:ltp"
+                + " and s.leaveType in :ltp"
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
-        hm.put("ltp", leaveType);
+        hm.put("ltp", list);
         hm.put("frm", frmDate);
         hm.put("to", toDate);
 
         return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
-    
     public StaffLeave fetchFirstStaffLeave(Staff staff, Date date) {
 
         String sql = "Select s From StaffLeave s"
@@ -1530,89 +1529,89 @@ public class HumanResourceBean {
 
     }
 
-    public OtNormalSpecial calOt(Date date, Staff staff) {
-        OtNormalSpecial otNormalSpecial = new OtNormalSpecial();
-
-        DateRange dateRange = getCommonFunctions().getDateRangeForOT(date);
-
-        otNormalSpecial.setDateRange(dateRange);
-
-        //System.err.println("From : " + dateRange.getFromDate());
-        //System.err.println("To : " + dateRange.getToDate());
-        List<StaffShift> staffShifts = getOrCreateRecordsForOt(dateRange.getFromDate(), dateRange.getToDate(), staff);
-
-        double otMaxMinute = getFinalVariables().getOtTime() * 4 * 60;
-        double workedMinute = 0.0;
-
-        if (staffShifts == null) {
-            return otNormalSpecial;
-        }
-
-        for (StaffShift ser : staffShifts) {
-            Calendar start = Calendar.getInstance();
-            start.setTime(ser.getStartRecord().getRecordTimeStamp());
-            Calendar endTime = Calendar.getInstance();
-            endTime.setTime(ser.getEndRecord().getRecordTimeStamp());
-
-            int netTime = endTime.get(Calendar.MINUTE) - start.get(Calendar.MINUTE);
-            workedMinute += netTime;
-
-//            ser.setConsideredForOt(Boolean.TRUE);
-            System.err.println("SETTING OT TRUE");
-            getStaffShiftFacade().edit(ser);
-
-        }
-
-        if (workedMinute > (staff.getWorkingHourPerShift() * 4 * 60)) {
-            otNormalSpecial.setSpecialMin(otMaxMinute - (staff.getWorkingHourPerShift() * 4 * 60));
-        }
-
-        if (workedMinute > otMaxMinute) {
-            otNormalSpecial.setNormalMin(workedMinute - otMaxMinute);
-        }
-
-        return otNormalSpecial;
-
-    }
-
-    public OtNormalSpecial calculateOt(Date fromDate, Date toDate, Staff staff) {
-        OtNormalSpecial otNormalSpecial = new OtNormalSpecial();
-
-        otNormalSpecial.getDateRange().setFromDate(fromDate);
-        otNormalSpecial.getDateRange().setToDate(toDate);
-
-        //System.err.println("From : " + dateRange.getFromDate());
-        //System.err.println("To : " + dateRange.getToDate());
-        List<StaffShift> staffShifts = getOrCreateRecordsForOt(fromDate, toDate, staff);
-
-        double otMaxMinute = getFinalVariables().getOtTime() * 4 * 60;
-        double workedMinute = 0.0;
-
-        for (StaffShift ser : staffShifts) {
-            Calendar start = Calendar.getInstance();
-            start.setTime(ser.getStartRecord().getRecordTimeStamp());
-            Calendar endTime = Calendar.getInstance();
-            endTime.setTime(ser.getEndRecord().getRecordTimeStamp());
-
-            int netTime = endTime.get(Calendar.MINUTE) - start.get(Calendar.MINUTE);
-            workedMinute += netTime;
-
-//            ser.setConsideredForOt(Boolean.TRUE);
-            System.err.println("SETTING OT TRUE");
-            getStaffShiftFacade().edit(ser);
-        }
-
-        if (workedMinute > (staff.getWorkingHourPerShift() * 4 * 60)) {
-            otNormalSpecial.setSpecialMin(otMaxMinute - (staff.getWorkingHourPerShift() * 4 * 60));
-        }
-
-        if (workedMinute > otMaxMinute) {
-            otNormalSpecial.setNormalMin(workedMinute - otMaxMinute);
-        }
-
-        return otNormalSpecial;
-
-    }
+//    public OtNormalSpecial calOt(Date date, Staff staff) {
+//        OtNormalSpecial otNormalSpecial = new OtNormalSpecial();
+//
+//        DateRange dateRange = getCommonFunctions().getDateRangeForOT(date);
+//
+//        otNormalSpecial.setDateRange(dateRange);
+//
+//        //System.err.println("From : " + dateRange.getFromDate());
+//        //System.err.println("To : " + dateRange.getToDate());
+//        List<StaffShift> staffShifts = getOrCreateRecordsForOt(dateRange.getFromDate(), dateRange.getToDate(), staff);
+//
+//        double otMaxMinute = getFinalVariables().getOtTime() * 4 * 60;
+//        double workedMinute = 0.0;
+//
+//        if (staffShifts == null) {
+//            return otNormalSpecial;
+//        }
+//
+//        for (StaffShift ser : staffShifts) {
+//            Calendar start = Calendar.getInstance();
+//            start.setTime(ser.getStartRecord().getRecordTimeStamp());
+//            Calendar endTime = Calendar.getInstance();
+//            endTime.setTime(ser.getEndRecord().getRecordTimeStamp());
+//
+//            int netTime = endTime.get(Calendar.MINUTE) - start.get(Calendar.MINUTE);
+//            workedMinute += netTime;
+//
+////            ser.setConsideredForOt(Boolean.TRUE);
+//            System.err.println("SETTING OT TRUE");
+//            getStaffShiftFacade().edit(ser);
+//
+//        }
+//
+//        if (workedMinute > (staff.getWorkingHourPerShift() * 4 * 60)) {
+//            otNormalSpecial.setSpecialMin(otMaxMinute - (staff.getWorkingHourPerShift() * 4 * 60));
+//        }
+//
+//        if (workedMinute > otMaxMinute) {
+//            otNormalSpecial.setNormalMin(workedMinute - otMaxMinute);
+//        }
+//
+//        return otNormalSpecial;
+//
+//    }
+//
+//    public OtNormalSpecial calculateOt(Date fromDate, Date toDate, Staff staff) {
+//        OtNormalSpecial otNormalSpecial = new OtNormalSpecial();
+//
+//        otNormalSpecial.getDateRange().setFromDate(fromDate);
+//        otNormalSpecial.getDateRange().setToDate(toDate);
+//
+//        //System.err.println("From : " + dateRange.getFromDate());
+//        //System.err.println("To : " + dateRange.getToDate());
+//        List<StaffShift> staffShifts = getOrCreateRecordsForOt(fromDate, toDate, staff);
+//
+//        double otMaxMinute = getFinalVariables().getOtTime() * 4 * 60;
+//        double workedMinute = 0.0;
+//
+//        for (StaffShift ser : staffShifts) {
+//            Calendar start = Calendar.getInstance();
+//            start.setTime(ser.getStartRecord().getRecordTimeStamp());
+//            Calendar endTime = Calendar.getInstance();
+//            endTime.setTime(ser.getEndRecord().getRecordTimeStamp());
+//
+//            int netTime = endTime.get(Calendar.MINUTE) - start.get(Calendar.MINUTE);
+//            workedMinute += netTime;
+//
+////            ser.setConsideredForOt(Boolean.TRUE);
+//            System.err.println("SETTING OT TRUE");
+//            getStaffShiftFacade().edit(ser);
+//        }
+//
+//        if (workedMinute > (staff.getWorkingHourPerShift() * 4 * 60)) {
+//            otNormalSpecial.setSpecialMin(otMaxMinute - (staff.getWorkingHourPerShift() * 4 * 60));
+//        }
+//
+//        if (workedMinute > otMaxMinute) {
+//            otNormalSpecial.setNormalMin(workedMinute - otMaxMinute);
+//        }
+//
+//        return otNormalSpecial;
+//
+//    }
 
     public double calculateWorkTimeAndLeave(Date fromDate, Date toDate, Staff staff) {
         String sql = "Select sum(ss.workedWithinTimeFrameVarified+ss.leavedTime) "
