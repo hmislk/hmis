@@ -30,9 +30,9 @@ public class AmendmentForm extends HrForm {
     @ManyToOne
     private StaffShift fromStaffShift;
     @ManyToOne
-    private StaffShift toStaffShift;
+    private StaffShift toStaffShift;    
     @ManyToOne
-    Shift toShift;
+    Shift toShift;    
 
     public Shift getToShift() {
         return toShift;
