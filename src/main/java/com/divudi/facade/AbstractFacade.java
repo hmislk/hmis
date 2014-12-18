@@ -33,6 +33,33 @@ public abstract class AbstractFacade<T> {
        
     }
 
+    public List<Object> findObjects(String temSQL, Map<String, Object> parameters) {
+        return findObjects(temSQL, parameters, TemporalType.DATE);
+    }
+
+    public List<Object> findObjects(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<Object> qry = getEntityManager().createQuery(temSQL, Object.class);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal =  m.getValue();
+            String pPara = (String) m.getKey();
+            if(pVal instanceof Date){
+                Date pDate = (Date) pVal;
+                qry.setParameter(pPara, pDate, TemporalType.DATE);
+            }else{
+                qry.setParameter(pPara, pVal);
+            }
+        }
+        try {
+            return qry.getResultList();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    
     public List<T> findRange(int[] range) {
         javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
         cq.select(cq.from(entityClass));

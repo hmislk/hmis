@@ -36,7 +36,11 @@
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
-                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  
+                                         rows="50"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20, 50, 100">
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock in #{reportsStock.department.name} "/>   <br/>                                 
                                     <h:outputLabel value="for #{reportsStock.category.name}"/>                                    
@@ -88,11 +92,6 @@
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
-                                    <f:facet name="footer" >
-                                        <h:outputLabel value="#{reportsStock.totalPurchaseRate}" >
-                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Purchase Value" style="text-align: right;">
@@ -116,11 +115,6 @@
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
-                                    <f:facet name="footer" >
-                                        <h:outputLabel value="#{reportsStock.totalRetailSaleRate}" >
-                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Retail Sale Value" style="text-align: right;">
@@ -148,6 +142,15 @@
                                                                         </p:column>
                                                                     </p:row>
                                                                 </p:columnGroup>-->
+
+                                <p:column headerText="Category" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category"/>    
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.category.name}"  >
+
+                                    </h:outputLabel>
+                                </p:column>
                             </p:dataTable>
                         </h:panelGroup>
                         <p:panel>

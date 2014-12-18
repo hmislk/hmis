@@ -396,6 +396,15 @@ public class PharmacyBean {
         return getItemBatchFacade().findDoubleByJpql(sql, m);
     }
 
+    public double getStockWithoutPurchaseValue(Item item, Department dept) {
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        m.put("d", dept);
+        sql = "Select sum(s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
+        return getItemBatchFacade().findDoubleByJpql(sql, m);
+    }
+    
     public double getStockByPurchaseValue(Item item, Institution ins) {
         Map m = new HashMap<>();
         String sql;

@@ -137,6 +137,37 @@ public class StaffShift implements Serializable {
     boolean lieuAllowed;
     boolean lieuPaymentAllowed;
 
+    public void reset() {
+        multiplyingFactorOverTime = 0;
+        multiplyingFactorSalary = 0;
+        basicPerSecond = 0;
+        earlyInLogged = 0;
+        earlyOutLogged = 0;
+        earlyInVarified = 0;
+        earlyOutVarified = 0;
+        workedWithinTimeFrameLogged = 0;
+        workedOutSideTimeFrameLogged = 0;
+        workedTimeLogged = 0;
+        workedWithinTimeFrameVarified = 0;
+        workedOutSideTimeFrameVarified = 0;
+        workedTimeVarified = 0;
+        lateInVarified = 0;
+        lateOutVarified = 0;
+        lateInLogged = 0;
+        lateOutLogged = 0;
+        leavedTime = 0;
+        leavedTimeNoPay = 0;
+        leavedTimeOther = 0;
+        extraTimeFromStartRecordLogged = 0;
+        extraTimeFromEndRecordLogged = 0;
+        extraTimeCompleteRecordLogged = 0;
+        extraTimeFromStartRecordVarified = 0;
+        extraTimeFromEndRecordVarified = 0;
+        extraTimeCompleteRecordVarified = 0;
+        lieuQty = 0;
+        lieuPaymentAllowed = false;
+    }
+
     public void processLieuQtyUtilized(LeaveType leaveType) {
         if (leaveType == null) {
             return;
@@ -229,31 +260,35 @@ public class StaffShift implements Serializable {
             return;
         }
 
+        if (shift == null) {
+            return;
+        }
+
         switch (getLeaveType()) {
             case Annual:
             case Casual:
             case Lieu:
-                setLeavedTime(getStaff().getLeaveHour() * 60 * 60);
+                setLeavedTime(shift.getLeaveHourFull() * 60 * 60);
                 break;
             case Maternity1st:
             case Maternity2nd:
             case Medical:
-                setLeavedTimeOther(getStaff().getLeaveHour() * 60 * 60);
+                setLeavedTimeOther(shift.getLeaveHourFull() * 60 * 60);
                 break;
             case No_Pay:
-                setLeavedTimeNoPay(getStaff().getLeaveHour() * 60 * 60);
+                setLeavedTimeNoPay(shift.getLeaveHourFull() * 60 * 60);
                 break;
             case AnnualHalf:
             case CasualHalf:
             case LieuHalf:
-                setLeavedTime((getStaff().getLeaveHour() * 60 * 60) / 0.5);
+                setLeavedTime((shift.getLeaveHourHalf() * 60 * 60));
                 break;
             case Maternity1stHalf:
             case Maternity2ndHalf:
-                setLeavedTimeOther((getStaff().getLeaveHour() * 60 * 60) / 0.5);
+                setLeavedTimeOther((shift.getLeaveHourHalf() * 60 * 60));
                 break;
             case No_Pay_Half:
-                setLeavedTimeNoPay((getStaff().getLeaveHour() * 60 * 60) / 0.5);
+                setLeavedTimeNoPay((shift.getLeaveHourHalf() * 60 * 60));
                 break;
         }
     }
