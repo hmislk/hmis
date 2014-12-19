@@ -4,7 +4,8 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
 
     <ui:define name="content">
@@ -43,10 +44,7 @@
                     <h:outputLabel value="Comments"/>
                     <p:inputText autocomplete="off"  value="#{staffLoanController.current.comment}"/>
                     <h:outputLabel value="Staff Name"/>
-                    <p:autoComplete forceSelection="true" value="#{staffLoanController.current.staff}"
-                                    completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                    converter="stfcon"   >                                    
-                    </p:autoComplete>
+                    <hr:completeStaff value="#{staffLoanController.current.staff}"/>
                     <h:outputLabel value="Monthly Installment"/>
                     <p:inputText autocomplete="off"  value="#{staffLoanController.current.staffPaySheetComponentValue}"/>
                     <p:commandButton value="Add"  action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>

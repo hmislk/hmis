@@ -70,9 +70,14 @@ public class StaffAmendmentFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Staff");
             return true;
         }
-        
-        if(currAmendmentForm.getToStaffShift()==null&&currAmendmentForm.getToShift()==null){
-            JsfUtil.addErrorMessage("Please Enter ToStaffShift or ToShift");
+
+        if (currAmendmentForm.getFromStaffShift() == null) {
+            JsfUtil.addErrorMessage("Please Select FromStaffShift");
+            return true;
+        }
+
+        if (currAmendmentForm.getToShift() == null) {
+            JsfUtil.addErrorMessage("Please Select  ToShift");
             return true;
         }
 
@@ -102,6 +107,35 @@ public class StaffAmendmentFormController implements Serializable {
         return false;
     }
 
+    public StaffShift fetchStaffShift(Date date, Shift shift, Staff staff) {
+        HashMap hm = new HashMap();
+        String sql = "select c from "
+                + " StaffShift c"
+                + " where c.retired=false "
+                + " and c.shift=:sh"
+                + " and c.shiftDate=:dt "
+                + " and c.staff=:stf ";
+
+        hm.put("dt", date);
+        hm.put("stf", staff);
+        hm.put("sh", shift);
+
+        return staffShiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    private StaffShift createToStaffShift(Shift shift) {
+        StaffShift toStaffShift = new StaffShift();
+        toStaffShift.setStaff(toStaff);
+        toStaffShift.setShift(shift);
+        toStaffShift.setShiftDate(getCurrAmendmentForm().getToDate());
+        toStaffShift.setCreatedAt(new Date());
+        toStaffShift.setCreater(sessionController.getLoggedUser());
+        staffShiftFacade.create(toStaffShift);
+
+        return toStaffShift;
+
+    }
+
     public void saveAmendmentForm() {
         if (errorCheck()) {
             return;
@@ -115,50 +149,82 @@ public class StaffAmendmentFormController implements Serializable {
         }
 
         //Change Shifts
-        StaffShift fromStaffShift = getCurrAmendmentForm().getFromStaffShift();
-        Staff tStaff = getCurrAmendmentForm().getToStaff();
-        fromStaffShift.setStaff(tStaff);
-        staffShiftFacade.edit(fromStaffShift);
+        StaffShift fromStaffShift1st = getCurrAmendmentForm().getFromStaffShift();
+        StaffShift fromStaffShift2nd = getCurrAmendmentForm().getFromStaffShiftSecond();
+        StaffShift toStaffShift1st = fetchStaffShift(getCurrAmendmentForm().getToDate(), getCurrAmendmentForm().getToShift(), getCurrAmendmentForm().getToStaff());
+        StaffShift toStaffShift2nd = fetchStaffShift(getCurrAmendmentForm().getToDate(), getCurrAmendmentForm().getToShiftSecond(), getCurrAmendmentForm().getToStaff());
 
-        StaffShift toStaffShift = getCurrAmendmentForm().getToStaffShift();
-        Staff fStaff = getCurrAmendmentForm().getFromStaff();
-        if (toStaffShift != null) {
-            toStaffShift.setStaff(fStaff);
-            staffShiftFacade.edit(toStaffShift);
-        } else {
-            if (getCurrAmendmentForm().getToShift() != null) {
-                toStaffShift = new StaffShift();
-                toStaffShift.setStaff(fStaff);
-                toStaffShift.setShift(getCurrAmendmentForm().getToShift());
-                toStaffShift.setShiftDate(getCurrAmendmentForm().getToDate());
-                staffShiftFacade.create(toStaffShift);
-
-                fromStaffShift.setRetired(true);
-                fromStaffShift.setRetirer(sessionController.getLoggedUser());
-                fromStaffShift.setRetiredAt(new Date());
-                staffShiftFacade.edit(fromStaffShift);
+        //Create New Staff Shift if ToSatffShift is null
+        if (getCurrAmendmentForm().getToShift() != null && toStaffShift1st == null) {
+            toStaffShift1st = createToStaffShift(getCurrAmendmentForm().getToShift());
+            if (fromStaffShift1st != null) {
+                fromStaffShift1st.setTransChecked(true);
             }
         }
+
+        //Create New Staff Shift if toShiftSecond not null and ToSatffShiftSecond Shift is null
+        if (getCurrAmendmentForm().getToShiftSecond() != null && toStaffShift2nd == null) {
+            toStaffShift2nd = createToStaffShift(getCurrAmendmentForm().getToShiftSecond());
+            if (fromStaffShift2nd != null) {
+                fromStaffShift2nd.setTransChecked(true);
+            }
+        }
+
+        if (fromStaffShift1st != null && toStaffShift1st != null) {
+            fromStaffShift1st.setShift(toStaffShift1st.getShift());
+            toStaffShift1st.setShift(fromStaffShift1st.getShift());
+            staffShiftFacade.edit(toStaffShift1st);
+            staffShiftFacade.edit(fromStaffShift1st);
+        }
+
+        if (fromStaffShift2nd != null && toStaffShift2nd == null) {
+            fromStaffShift2nd.setShift(null);
+            staffShiftFacade.edit(fromStaffShift2nd);
+        } else if (fromStaffShift2nd == null && toStaffShift2nd != null) {
+            toStaffShift2nd.setShift(null);
+            staffShiftFacade.edit(toStaffShift2nd);
+        } else if (fromStaffShift2nd != null && toStaffShift2nd != null) {
+            fromStaffShift2nd.setShift(toStaffShift2nd.getShift());
+            toStaffShift2nd.setShift(fromStaffShift2nd.getShift());
+            staffShiftFacade.edit(toStaffShift2nd);
+            staffShiftFacade.edit(fromStaffShift2nd);
+        }
+
+        if (fromStaffShift1st != null && fromStaffShift1st.isTransChecked()) {
+            fromStaffShift1st.setShift(null);
+            staffShiftFacade.edit(fromStaffShift1st);
+
+        }
+
+        if (fromStaffShift2nd != null && fromStaffShift2nd.isTransChecked()) {
+            fromStaffShift2nd.setShift(null);
+            staffShiftFacade.edit(fromStaffShift2nd);
+
+        }
+
         ///////////////////////Finish Amendment
-
-        StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
-        staffShiftHistory.setCreatedAt(new Date());
-        staffShiftHistory.setCreater(sessionController.getLoggedUser());
-        staffShiftHistory.setStaff(fStaff);
-        staffShiftHistory.setStaffShift(fromStaffShift);
-        staffShiftHistoryFacade.create(staffShiftHistory);
-
-        staffShiftHistory = new StaffShiftHistory();
-        staffShiftHistory.setCreatedAt(new Date());
-        staffShiftHistory.setCreater(sessionController.getLoggedUser());
-        staffShiftHistory.setStaff(tStaff);
-        staffShiftHistory.setStaffShift(toStaffShift);
-        staffShiftHistoryFacade.create(staffShiftHistory);
+        getCurrAmendmentForm().setToStaffShift(toStaffShift1st);
+        getCurrAmendmentForm().setToStaffShiftSecond(toStaffShift2nd);
+        amendmentFormFacade.edit(currAmendmentForm);
 
         JsfUtil.addSuccessMessage("Sucessfully Saved");
         clear();
     }
 
+//    
+//           StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
+//        staffShiftHistory.setCreatedAt(new Date());
+//        staffShiftHistory.setCreater(sessionController.getLoggedUser());
+//        staffShiftHistory.setStaff(fromStaff);
+//        staffShiftHistory.setStaffShift(fromStaffShift1st);
+//        staffShiftHistoryFacade.create(staffShiftHistory);
+//
+//        staffShiftHistory = new StaffShiftHistory();
+//        staffShiftHistory.setCreatedAt(new Date());
+//        staffShiftHistory.setCreater(sessionController.getLoggedUser());
+//        staffShiftHistory.setStaff(toStaff);
+//        staffShiftHistory.setStaffShift(toStaffShift1st);
+//        staffShiftHistoryFacade.create(staffShiftHistory);
     @EJB
     StaffShiftHistoryFacade staffShiftHistoryFacade;
 
@@ -227,6 +293,8 @@ public class StaffAmendmentFormController implements Serializable {
 
     public void viewAmendmentForm(AmendmentForm amendmentForm) {
         currAmendmentForm = amendmentForm;
+        fetchToStaffShift();
+        fetchFromStaffShift();
     }
 
     public void deleteAmmendmentForm() {
@@ -246,6 +314,7 @@ public class StaffAmendmentFormController implements Serializable {
         String sql = "select c from "
                 + " StaffShift c"
                 + " where c.retired=false "
+                + " and c.shift is not null "
                 + " and c.shiftDate=:dt "
                 + " and c.staff=:stf ";
 
@@ -261,6 +330,7 @@ public class StaffAmendmentFormController implements Serializable {
                 + " StaffShift c"
                 + " where c.retired=false "
                 + " and c.shiftDate=:dt "
+                + " and c.shift is not null "
                 + " and c.staff=:stf ";
 
         hm.put("dt", getCurrAmendmentForm().getToDate());

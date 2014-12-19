@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition template="/resources/template/template.xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"
-                    
+                xmlns:ui="http://java.sun.com/jsf/facelets"                    
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                >
 
 
     <ui:define name="content">
@@ -17,10 +17,17 @@
                 <h:panelGrid columns="3">
                     <p:panel header="Staff"  id="staff">
                         <h:outputLabel value="Select Staff"/>
-                        <p:autoComplete  forceSelection="true" value="#{staffChangeController.staff}"
-                                         completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+
+                        <p:autoComplete  forceSelection="true" 
+                                         completeMethod="#{staffPaymentBillController.completeStaffCode}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                          converter="stfcon"   >   
                             <f:ajax event="itemSelect" execute="@this" render="lst det" listener="#{staffChangeController.findBasic}" />
+                            <p:column headerText="Name">
+                                #{mys.person.name}
+                            </p:column>
+                            <p:column headerText="Code">
+                                #{mys.code}
+                            </p:column>
                         </p:autoComplete>   
                     </p:panel>
                     <p:panel header="Detail" id="det">
@@ -104,7 +111,7 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
-                           <h:outputLabel  value="#{j2.toDate}">
+                            <h:outputLabel  value="#{j2.toDate}">
                                 <f:convertDateTime pattern="dd MMMM yy"/>
                             </h:outputLabel>  
                         </p:column>
@@ -126,7 +133,7 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
-                     <h:outputLabel  value="#{j3.toDate}">
+                            <h:outputLabel  value="#{j3.toDate}">
                                 <f:convertDateTime pattern="dd MMMM yy"/>
                             </h:outputLabel>  
                         </p:column>
@@ -181,7 +188,7 @@
                             <h:outputLabel value="#{j5.creater.webUserPerson.name}"/>
                         </p:column>
                     </p:dataTable>
-                    
+
                     <p:dataTable  value="#{staffChangeController.staff.staffEmployment.staffBasics}" var="j6">
                         <f:facet name="header">
                             <h:outputLabel value="Basic"/>
@@ -192,7 +199,7 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
-                          <h:outputLabel  value="#{j6.toDate}">
+                            <h:outputLabel  value="#{j6.toDate}">
                                 <f:convertDateTime pattern="dd MMMM yy"/>
                             </h:outputLabel>  
                         </p:column>

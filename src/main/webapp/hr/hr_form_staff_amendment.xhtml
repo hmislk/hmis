@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -17,64 +18,56 @@
                                     <h:outputLabel value="Form Number"/>
                                     <p:inputText value="#{staffAmendmentFormController.currAmendmentForm.code}"/>
                                     <h:outputLabel value="From Staff"/>
-                                    <p:autoComplete id="fromStaff"
-                                                    value="#{staffAmendmentFormController.currAmendmentForm.fromStaff}"
-                                                    completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                                    itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                    converter="stfcon"   >   
-                                    </p:autoComplete>                               
+                                    <au:completeStaff value="#{staffAmendmentFormController.currAmendmentForm.fromStaff}"/>                                 
                                     <h:outputLabel value="From Date "/>
                                     <p:calendar id="formDate" value="#{staffAmendmentFormController.currAmendmentForm.fromDate}"
                                                 pattern="yyyy MM dd HH:mm:ss">
                                     </p:calendar>   
                                     <p:commandButton ajax="false" value="Process Staff Shift" 
                                                      action="#{staffAmendmentFormController.fetchFromStaffShift()}" />
-                                    <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShift}"   >
-                                        <f:selectItem itemLabel="Select Staff Shift"/>
-                                        <f:selectItems value="#{staffAmendmentFormController.fromStaffShifts}"
-                                                       var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
-                                    </p:selectOneMenu>
+                                    <h:panelGroup>
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShift}"   >
+                                            <f:selectItem itemLabel="Select Staff Shift 1"/>
+                                            <f:selectItems value="#{staffAmendmentFormController.fromStaffShifts}"
+                                                           var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShiftSecond}"   >
+                                            <f:selectItem itemLabel="Select Staff Shift 2"/>
+                                            <f:selectItems value="#{staffAmendmentFormController.fromStaffShifts}"
+                                                           var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
                                 </p:panelGrid>
                             </p:panel>
                             <p:panel header="Action Employee Details">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="To Staff "/>
-                                    <p:autoComplete id="toStaff"
-                                                    value="#{staffAmendmentFormController.currAmendmentForm.toStaff}"
-                                                    completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                                    itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                    converter="stfcon"   >   
-                                    </p:autoComplete>                             
+                                    <au:completeStaff value="#{staffAmendmentFormController.currAmendmentForm.toStaff}"/>                                                        
                                     <h:outputLabel value="To Date "/>
                                     <p:calendar id="toDate" value="#{staffAmendmentFormController.currAmendmentForm.toDate}"
                                                 pattern="yyyy MM dd HH:mm:ss">
 
-                                    </p:calendar>                                   
-                                    <p:commandButton ajax="false" value="Process Staff Shift" 
-                                                     action="#{staffAmendmentFormController.fetchToStaffShift()}" />
-                                    <p:selectOneMenu id="s1" value="#{staffAmendmentFormController.currAmendmentForm.toStaffShift}"   >
-                                        <f:selectItem itemLabel="Select Staff Shift"/>
-                                        <f:selectItems value="#{staffAmendmentFormController.toStaffShifts}"
-                                                       var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
-                                    </p:selectOneMenu>
+                                    </p:calendar>                                                                                              
                                     <p:commandButton ajax="false" value="Process Shift" 
                                                      action="#{staffAmendmentFormController.fetchToShift()}" />
-                                    <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShift}"   >
-                                        <f:selectItem itemLabel="Select Shift"/>
-                                        <f:selectItems value="#{staffAmendmentFormController.toShifts}"
-                                                       var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />
-                                    </p:selectOneMenu>
+                                    <h:panelGroup>
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShift}"   >
+                                            <f:selectItem itemLabel="Select Shift 1"/>
+                                            <f:selectItems value="#{staffAmendmentFormController.toShifts}"
+                                                           var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShiftSecond}"   >
+                                            <f:selectItem itemLabel="Select Shift 2"/>
+                                            <f:selectItems value="#{staffAmendmentFormController.toShifts}"
+                                                           var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
                                 </p:panelGrid> 
                             </p:panel>
                             <p:panel>
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Approved Person"/>
-                                    <p:autoComplete id="staffApp"  forceSelection="true"
-                                                    value="#{staffAmendmentFormController.currAmendmentForm.approvedStaff}"
-                                                    completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                                    itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                    converter="stfcon"   >   
-                                    </p:autoComplete>
+                                    <au:completeStaff value="#{staffAmendmentFormController.currAmendmentForm.approvedStaff}"/>                                   
                                     <h:outputLabel value="Approved Date"/>
                                     <p:calendar id="approvedDate" value="#{staffAmendmentFormController.currAmendmentForm.approvedAt}"
                                                 pattern="dd MMMM yyyy" >
@@ -100,26 +93,11 @@
                                             pattern="yyyy MM dd HH:mm:ss" >
                                 </p:calendar>
                                 <h:outputLabel value="Staff : "/>
-                                <p:autoComplete 
-                                    value="#{staffAmendmentFormController.fromStaff}"
-                                    completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                    itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                    converter="stfcon"   >   
-                                </p:autoComplete>
+                                <au:completeStaff value="#{staffAmendmentFormController.fromStaff}"/>                                                                 
                                 <h:outputLabel value="Action Staff : "/>
-                                <p:autoComplete 
-                                    value="#{staffAmendmentFormController.toStaff}"
-                                    completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                    itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                    converter="stfcon"   >   
-                                </p:autoComplete>
+                                <au:completeStaff value="#{staffAmendmentFormController.toStaff}"/>                                                                    
                                 <h:outputLabel value="Approved Person"/>
-                                <p:autoComplete 
-                                    value="#{staffAmendmentFormController.approvedStaff}"
-                                    completeMethod="#{staffController.completeStaffCode}" var="mys" 
-                                    itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                    converter="stfcon"   >   
-                                </p:autoComplete>
+                                <au:completeStaff value="#{staffAmendmentFormController.approvedStaff}"/>                                                                   
                                 <p:commandButton ajax="false" value="Search Created Date" action="#{staffAmendmentFormController.createAmmendmentTable()}" />
                                 <p:commandButton ajax="false" value="Search Approved Date" action="#{staffAmendmentFormController.createAmmendmentTableApprovedDate()}" />
                             </h:panelGrid>

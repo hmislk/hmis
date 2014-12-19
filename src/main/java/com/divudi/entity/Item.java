@@ -142,6 +142,7 @@ public class Item implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date effectiveTo;
     private boolean scanFee;
+    double profitMargin;
 
     //Matara Phrmacy Sale Autocomplete
     @ManyToOne
@@ -694,6 +695,15 @@ public class Item implements Serializable {
     public void setDepartmentType(DepartmentType departmentType) {
         this.departmentType = departmentType;
     }
+
+    public double getProfitMargin() {
+        return profitMargin;
+    }
+
+    public void setProfitMargin(double profitMargin) {
+        this.profitMargin = profitMargin;
+    }
+
 
     public double getTransBillItemCount() {
         return transBillItemCount;
