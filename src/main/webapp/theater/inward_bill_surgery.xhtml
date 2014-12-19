@@ -142,12 +142,17 @@
                             <p:column >
                                 <h:outputLabel value="#{ti.billFee.creater.webUserPerson.name}"/>     
                                 <br/>
-                                <h:panelGroup rendered="#{ti.billFee.retired}" >
-                                    <h:outputLabel style="color: red;" value="Deleted By " />
-                                    <h:outputLabel style="color: red;"  value="#{ti.billFee.retirer.webUserPerson.name}" >                                       
-                                    </h:outputLabel>
-                                </h:panelGroup>
-                            </p:column>     
+                                <p:outputLabel value="Deleted by #{ti.billFee.patientItem.retirer.webUserPerson.name}" style="color: red;" 
+                                               rendered="#{ti.billFee.patientItem.retired eq true}"></p:outputLabel>
+                                
+                            </p:column>
+
+                            <p:column>
+                                <p:commandButton ajax="false" value="Remove " action="#{surgeryBillController.removeTimeService(ti.billFee.patientItem)}" disabled="#{ti.billFee.patientItem.retired eq true}" onclick="onSubmitButton();" >                                    
+                                </p:commandButton>
+                                
+                                
+                            </p:column>
 
                         </p:dataTable>
                     </p:panel>
