@@ -425,7 +425,7 @@
 
                         <h:panelGroup   id="gpBillPreview"  > 
 
-                            <h:panelGroup   id="gpBillPreviewSingle">
+                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
@@ -435,7 +435,7 @@
 
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewDouble"> 
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
 
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
@@ -444,6 +444,17 @@
                                 </div>
 
                             </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+                            
                         </h:panelGroup>
 
 
