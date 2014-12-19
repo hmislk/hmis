@@ -320,7 +320,8 @@ public class InwardTimedItemController implements Serializable {
         }
 
     }
-
+    
+    
     public void removePatientItem(PatientItem patientItem) {
         if (patientItem != null) {
             patientItem.setRetirer(getSessionController().getLoggedUser());

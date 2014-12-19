@@ -114,6 +114,15 @@ public class SurgeryBillController implements Serializable {
         updateBill(bf.getBill());
         getBillBean().updateBatchBill(getBatchBill());
     }
+    
+    public void removeTimeService(PatientItem patientItem) {
+        if (patientItem != null) {
+            patientItem.setRetirer(getSessionController().getLoggedUser());
+            patientItem.setRetiredAt(new Date());
+            patientItem.setRetired(true);
+            getPatientItemFacade().edit(patientItem);
+        }
+    }
 
     public void removeProEncFromList(EncounterComponent encounterComponent) {
         removeEncounterComponentFromList(encounterComponent, getProEncounterComponents());
