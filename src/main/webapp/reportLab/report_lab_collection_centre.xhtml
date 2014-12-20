@@ -60,14 +60,28 @@
 
                     </f:facet>
 
-                    <p:column headerText="Bill Code"  >
+                    <p:column exportable="false">
+                        <p:commandButton value="Edit" action="lab_bill_edit" ajax="false">
+                            <f:setPropertyActionListener value="#{d}" target="#{labBillEditController.bill}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+                    </p:column>
+                    <p:column headerText="Bill Code">
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill Code"/>                        
+                        </f:facet>
+                            <h:outputLabel value="#{d.insId}"/>
+                    </p:column>
+<!--                    <p:column headerText="Bill Code"  exportable="false">
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill Code"/>                        
+                        </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="#{d.insId}"/>
                             <p:commandLink ajax="false" value="(Edit)" action="lab_bill_edit"  styleClass="nonPrintBlock" style="text-decoration: underline;">
                                 <f:setPropertyActionListener value="#{d}" target="#{labBillEditController.bill}" ></f:setPropertyActionListener>
                             </p:commandLink>
                         </h:panelGrid>
-                    </p:column>
+                    </p:column>-->
                     <p:column headerText="Patient Name"  >
                         <f:facet name="header">
                             <h:outputLabel value="Patient Name"/>                        

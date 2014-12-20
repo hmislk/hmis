@@ -79,7 +79,7 @@ public class ShiftTableController implements Serializable {
 //                }
 
                 ss.calShiftStartEndTime();
-
+                ss.calLieu();
                 if (ss.getId() == null) {
                     getStaffShiftFacade().create(ss);
                 }

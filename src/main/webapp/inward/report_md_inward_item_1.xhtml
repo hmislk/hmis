@@ -112,6 +112,12 @@
                             </f:facet>
                             <h:outputLabel value="#{j+1}"/>
                         </p:column>
+                        <p:column headerText="BHT No" >
+                            <f:facet name="header">
+                                <p:outputLabel value="BHT No" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.billItem.bill.patientEncounter.bhtNo}"/>
+                        </p:column>
                         <p:column headerText="Institution" >
                             <f:facet name="header">
                                 <p:outputLabel value="Institution" />
