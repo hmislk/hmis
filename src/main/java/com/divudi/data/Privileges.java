@@ -87,6 +87,7 @@ public enum Privileges {
     LabDataentry,
     LabAutherizing,
     LabDeAutherizing,
+    LabRevertSample,
     LabPrinting,
     LabReprinting,
     LabSummeriesLevel1,
@@ -97,7 +98,6 @@ public enum Privileges {
     LabReceive,
     LabEditPatient,
     LabInvestigationFee,
-    LabRevertSample,
     
     PaymentBilling,
     PaymentBillSearch,
