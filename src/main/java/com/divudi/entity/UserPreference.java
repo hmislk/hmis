@@ -46,6 +46,7 @@ public class UserPreference implements Serializable {
     boolean pharmacyBillPrabodha;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
+    PaperType pharmacyBillPaperType;
 
     public boolean isPaymentMethodAllowedInInwardMatrix() {
         return paymentMethodAllowedInInwardMatrix;
@@ -73,10 +74,6 @@ public class UserPreference implements Serializable {
         this.pharmacyBillPrabodha = pharmacyBillPrabodha;
     }
     
-    
-    
-    
-
     public PaperType getOpdBillPaperType() {
         if(opdBillPaperType==null){
             opdBillPaperType = PaperType.FiveFivePaper;
@@ -86,6 +83,14 @@ public class UserPreference implements Serializable {
 
     public void setOpdBillPaperType(PaperType opdBillPaperType) {
         this.opdBillPaperType = opdBillPaperType;
+    }
+
+    public PaperType getPharmacyBillPaperType() {
+        return pharmacyBillPaperType;
+    }
+
+    public void setPharmacyBillPaperType(PaperType pharmacyBillPaperType) {
+        this.pharmacyBillPaperType = pharmacyBillPaperType;
     }
     
     

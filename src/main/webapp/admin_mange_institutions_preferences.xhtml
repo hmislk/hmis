@@ -25,6 +25,12 @@
                                 <p:selectOneMenu value="#{sessionController.institutionPreference.opdBillPaperType}" >
                                     <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
                                 </p:selectOneMenu>
+                                
+                                <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.institutionPreference.pharmacyBillPaperType}" >
+                                    <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                
                                 <h:outputLabel value="Partial Payment of OPD Bills allowed" ></h:outputLabel>
                                 <h:selectBooleanCheckbox value="#{sessionController.institutionPreference.partialPaymentOfOpdBillsAllowed}" />
                                 <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>

@@ -50,7 +50,15 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel>
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Details" ></h:outputLabel>
+                                <p:commandButton style="text-align: center;" id="btnSave" ajax="false" value="Save"  action="#{staffController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
+                                    <f:ajax render="btnAdd  btnDelete btnSave  lstSelect gpDetail selectFocus"  execute="gpDetail" >
+                                    </f:ajax>
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSave"/>
+                            </f:facet>
                             <h:panelGrid id="gpDetail" columns="1" styleClass="alignTop">
                                 <p:tabView>
                                     <p:tab title="General">
@@ -106,7 +114,7 @@
                                     <p:tab title="Details" >
                                         <p:selectOneMenu id="mnuCat" value="#{staffController.formCategory}" >
                                             <f:selectItem itemLabel="Select Form" ></f:selectItem>
-                                            <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                                            <f:selectItems value="#{staffController.listFormItems()}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
                                             <f:ajax event="change" execute="mnuCat" render="gpStaffForm" />
                                         </p:selectOneMenu>
 
@@ -115,16 +123,26 @@
                                             <div style="width:21cm;height: 29.7cm; border: 1px solid black; position: relative; font-size: 150%;">
                                                 <ui:repeat value="#{staffController.formItems}" var="myIi" >
                                                     <div style="#{myIi.cssStyle}; position:absolute ;">
-
                                                         <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></h:outputText>
+                                                    </div>
+                                                </ui:repeat>
 
-                                                        <h:inputText id="txtValue" rendered="#{myIi.ixItemType ne 'Label' and myIi.ixItemValueType eq 'Varchar' and myIi.retired eq false }"  value="#{staffController.formItemValue(myIi, staffController.current.person).strValue}" style="color: #{myIi.cssColor}"  ></h:inputText>
-                                                        <p:watermark for="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+                                                <ui:repeat value="#{staffController.fivs}" var="myFiv" >
+                                                    <div style="#{myFiv.reportItem.cssStyle}; position:absolute ;">
+                                                        <h:inputText id="txtValue" 
+                                                                     rendered="#{myFiv.reportItem.ixItemType eq 'Value' and myFiv.reportItem.ixItemValueType eq 'Varchar' and myFiv.reportItem.retired eq false}"  
+                                                                     value="#{myFiv.strValue}" 
+                                                                     style="color: #{myFiv.reportItem.cssColor}"  >
+                                                            <f:ajax event="blur" execute="txtValue" listener="#{staffController.updateFormItem(myFiv)}"   ></f:ajax>
+                                                        </h:inputText>
+                                                        <p:watermark for="txtValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+                                                        
+                                                        
 
-                                                        <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'ItemsCatetgory'}" >
-                                                            <h:selectOneMenu value="#{staffController.formItemValue(myIi, staffController.current.person).category}" id="cmbRefCat" style="#{myIi.innerCssStyle}" >
-                                                                <f:selectItem itemLabel="#{myIi.name}"></f:selectItem>
-                                                                <f:selectItems value="#{categoryController.getSubCategories(myIi.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
+                                                        <h:panelGroup rendered="#{myFiv.reportItem.retired ne true and myFiv.reportItem.ixItemType eq 'ItemsCatetgory'}" >
+                                                            <h:selectOneMenu value="#{myFiv.strValue}" id="cmbRefCat" style="#{myFiv.reportItem.innerCssStyle}" >
+                                                                <f:selectItem itemLabel="#{myFiv.reportItem.name}"></f:selectItem>
+                                                                <f:selectItems value="#{categoryController.getSubCategories(myFiv.reportItem.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
                                                             </h:selectOneMenu>
                                                         </h:panelGroup>
 
@@ -134,6 +152,9 @@
 
                                                     </div>
                                                 </ui:repeat>
+
+
+
                                             </div>
 
                                         </h:panelGroup>
@@ -227,13 +248,7 @@
                                     </p:tab>
 
                                 </p:tabView>
-                                <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{staffController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
-                                        <f:ajax render="btnAdd  btnDelete btnSave  lstSelect gpDetail selectFocus"  execute="gpDetail" >
-                                        </f:ajax>
-                                    </p:commandButton>
-                                    <p:defaultCommand target="btnSave"/>
-                                </h:panelGrid>
+
                             </h:panelGrid>
                         </p:panel>
                     </h:panelGrid>

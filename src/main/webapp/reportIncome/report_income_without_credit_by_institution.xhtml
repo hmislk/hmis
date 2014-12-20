@@ -103,6 +103,13 @@
                                 </f:facet>
                                 <h:outputLabel value="#{b.patient.person.name}"    ></h:outputLabel>
                             </p:column>
+                            
+                            <p:column headerText="Scheme" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Scheme"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.paymentScheme.name}"    ></h:outputLabel>
+                            </p:column>
 
                             <p:column headerText="Hospital Fee" style="text-align: right;" >
                                 <f:facet name="header">

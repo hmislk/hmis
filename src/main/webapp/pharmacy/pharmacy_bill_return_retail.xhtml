@@ -18,9 +18,9 @@
 
                         <h:panelGrid columns="15"  >                           
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                           
+
                             <p:selectOneMenu  id="cmbPs"
-                                                value="#{saleReturnController.returnBill.paymentMethod}">     
+                                              value="#{saleReturnController.returnBill.paymentMethod}">     
                                 <f:selectItems value="#{enumController.paymentMethods}"  />
                                 <p:ajax process="cmbPs" update="creditCard cheque slip" 
                                         event="change" />
@@ -100,10 +100,44 @@
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
-                <p:panel   id="gpBillPreview"   >
-                    <ph:returnBill bill="#{saleReturnController.returnBill}"/>
+                <!--                <p:panel   id="gpBillPreview"   >
+                                    <ph:returnBill bill="#{saleReturnController.returnBill}"/>
+                
+                                </p:panel>-->
 
-                </p:panel>
+                <h:panelGroup   id="gpBillPreview"  > 
+
+                    <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
+
+                        <div >
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                <ph:saleBill bill="#{saleReturnController.returnBill}"></ph:saleBill>
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+
+                        <div >
+                            <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                <ph:saleBill_prabodha bill="#{saleReturnController.returnBill}"></ph:saleBill_prabodha>
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+
+                        <div >
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                <ph:saleBill_five_five bill="#{saleReturnController.returnBill}"></ph:saleBill_five_five>
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>
+
+                </h:panelGroup>
             </p:panel>
 
         </h:form>

@@ -191,8 +191,8 @@ public class SheduleController implements Serializable {
                 + " where s.retired=false "
                 + " and s.staff=:stf ";
         hm.put("stf", currentStaff);
-        hm.put("class", ServiceSessionLeave.class);
-        items = getFacade().findBySQL(sql);
+        //hm.put("class", ServiceSessionLeave.class);
+        items = getFacade().findBySQL(sql, hm);
 //        }
 
         return items;
