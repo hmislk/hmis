@@ -95,6 +95,7 @@ public class StaffController implements Serializable {
     List<Staff> staffWithCode;
     private List<Staff> items = null;
     String selectText = "";
+    List<FormItemValue> fivs = new ArrayList<>();
 
     @EJB
     private CommonReportItemFacade criFacade;
@@ -121,7 +122,7 @@ public class StaffController implements Serializable {
             v.setReportItem(ri);
             fivFacade.create(v);
         }
-        
+
         return v;
     }
 
@@ -146,37 +147,30 @@ public class StaffController implements Serializable {
         } else {
             formItems = new ArrayList<>();
         }
-        
-        
-        for(CommonReportItem crf : formItems){
-            if(crf.getIxItemType() == InvestigationItemType.ItemsCatetgory || crf.getIxItemType() == InvestigationItemType.Value ){
+
+        for (CommonReportItem crf : formItems) {
+            if (crf.getIxItemType() == InvestigationItemType.ItemsCatetgory || crf.getIxItemType() == InvestigationItemType.Value) {
                 FormItemValue fiv = formItemValue(crf, getCurrent().getPerson());
                 fivs.add(fiv);
             }
         }
     }
 
-    List<FormItemValue> fivs = new ArrayList<>();
-
     public List<FormItemValue> getFivs() {
         return fivs;
     }
-
     public void setFivs(List<FormItemValue> fivs) {
         this.fivs = fivs;
     }
-    
-    
-    
+
     public List<CommonReportItem> getFormItems() {
         return formItems;
     }
 
     public void setFormItems(List<CommonReportItem> formItems) {
-        this.formItems=formItems;
+        this.formItems = formItems;
     }
 
-    
     public List<Staff> getStaffWithCode() {
         return staffWithCode;
     }
