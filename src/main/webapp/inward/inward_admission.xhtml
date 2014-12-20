@@ -116,66 +116,91 @@
 
 
                         <p:panel header="Hospital Use">
-                            <h:panelGrid columns="2">
+                            <p:tabView>
+                                <p:tab title="Special Details">
+                                    <h:panelGrid columns="2">
 
-                                <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
-                                                         itemLabel="Mark as Foreigner"/>
+                                        <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
+                                                                 itemLabel="Mark as Foreigner"/>
 
-                                <p:selectBooleanCheckbox value="#{admissionController.current.claimable}" 
-                                                         itemLabel="Claimable"/>
+                                        <p:selectBooleanCheckbox value="#{admissionController.current.claimable}" 
+                                                                 itemLabel="Claimable"/>
 
-                                <p:outputLabel value="Admitted Time"/>
-                                <p:calendar value="#{admissionController.current.dateOfAdmission}" 
-                                            id="admissionTimeStamp"
-                                            pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
-                                </p:calendar>     
+                                        <p:outputLabel value="Admitted Time"/>
+                                        <p:calendar value="#{admissionController.current.dateOfAdmission}" 
+                                                    id="admissionTimeStamp"
+                                                    pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
+                                        </p:calendar>     
 
-                                <p:watermark value="Referring Doctor Speciality" for="acRefDocSpe" ></p:watermark>
-                                <p:watermark value="Referring Doctor" for="acRefDoc" ></p:watermark>
+                                        <p:watermark value="Referring Doctor Speciality" for="acRefDocSpe" ></p:watermark>
+                                        <p:watermark value="Referring Doctor" for="acRefDoc" ></p:watermark>
 
-                                <h:outputLabel value="Referring Doctor Speciality"/>
-                                <p:autoComplete forceSelection="true" id="acRefDocSpe"
-                                                value="#{inwardStaffPaymentBillController.referringDoctorSpeciality}" 
-                                                completeMethod="#{specialityController.completeSpeciality}" 
-                                                var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon" style="width: 200px!important;"  >
-                                    <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
-                                    <f:ajax event="blur" execute="@this" render="acRefDoc"/>
-                                </p:autoComplete>
-                                <p:outputLabel value=""/>
-                                <p:autoComplete id="acRefDoc" 
-                                                forceSelection="true" 
-                                                value="#{admissionController.current.referringDoctor}"
-                                                completeMethod="#{inwardStaffPaymentBillController.completeReferringDoctor}" 
-                                                var="ix" 
-                                                itemLabel="#{ix.person.name}" 
-                                                itemValue="#{ix}" size="30"  
-                                                converter="stfcon" >
-                                </p:autoComplete>
+                                        <h:outputLabel value="Referring Doctor Speciality"/>
+                                        <p:autoComplete forceSelection="true" id="acRefDocSpe"
+                                                        value="#{inwardStaffPaymentBillController.referringDoctorSpeciality}" 
+                                                        completeMethod="#{specialityController.completeSpeciality}" 
+                                                        var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        converter="specilityCon" style="width: 200px!important;"  >
+                                            <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
+                                            <f:ajax event="blur" execute="@this" render="acRefDoc"/>
+                                        </p:autoComplete>
+                                        <p:outputLabel value=""/>
+                                        <p:autoComplete id="acRefDoc" 
+                                                        forceSelection="true" 
+                                                        value="#{admissionController.current.referringDoctor}"
+                                                        completeMethod="#{inwardStaffPaymentBillController.completeReferringDoctor}" 
+                                                        var="ix" 
+                                                        itemLabel="#{ix.person.name}" 
+                                                        itemValue="#{ix}" size="30"  
+                                                        converter="stfcon" >
+                                        </p:autoComplete>
 
-                                <p:watermark value="OPD Doctor Speciality" for="acSpeciality" ></p:watermark>
-                                <p:watermark value="OPD Doctor" for="scStaff" ></p:watermark>
+                                        <p:watermark value="OPD Doctor Speciality" for="acSpeciality" ></p:watermark>
+                                        <p:watermark value="OPD Doctor" for="scStaff" ></p:watermark>
 
-                                <h:outputLabel  value="OPD Doctor Speciality" ></h:outputLabel>
-                                <p:autoComplete forceSelection="true" 
-                                                value="#{inwardStaffPaymentBillController.speciality}" 
-                                                id="acSpeciality"
-                                                completeMethod="#{specialityController.completeSpeciality}" 
-                                                var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon"   >
+                                        <h:outputLabel  value="OPD Doctor Speciality" ></h:outputLabel>
+                                        <p:autoComplete forceSelection="true" 
+                                                        value="#{inwardStaffPaymentBillController.speciality}" 
+                                                        id="acSpeciality"
+                                                        completeMethod="#{specialityController.completeSpeciality}" 
+                                                        var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        converter="specilityCon"   >
 
-                                    <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
-                                    <f:ajax event="blur" execute="@this" render="scStaff"/>
-                                </p:autoComplete>
-                                <p:outputLabel value=""/>
-                                <p:autoComplete  style="width: 400px;" forceSelection="true" id="scStaff"
-                                                 value="#{admissionController.current.opdDoctor}" 
-                                                 completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
-                                                 var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                 converter="stfcon"   >
-                                </p:autoComplete>
+                                            <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
+                                            <f:ajax event="blur" execute="@this" render="scStaff"/>
+                                        </p:autoComplete>
+                                        <p:outputLabel value=""/>
+                                        <p:autoComplete  style="width: 400px;" forceSelection="true" id="scStaff"
+                                                         value="#{admissionController.current.opdDoctor}" 
+                                                         completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
+                                                         var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                         converter="stfcon"   >
+                                        </p:autoComplete>
 
-                            </h:panelGrid>
+                                    </h:panelGrid>
+                                </p:tab>
+                                <p:tab title="Referrals">
+                                    <p:panelGrid columns="2">
+                                        <p:outputLabel value="Refferal Institution"></p:outputLabel>
+                                        <p:autoComplete forceSelection="true" id="cmdIns" 
+                                                        value="#{admissionController.current.referredByInstitution}" 
+                                                        completeMethod="#{institutionController.completeIns}" var="refi" 
+                                                        itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter">
+                                            <p:column headerText="Name">
+                                                #{refi.name}
+                                            </p:column>
+                                            <p:column headerText="Code">
+                                                #{refi.institutionCode}
+                                            </p:column>
+                                            <p:column headerText="Institution Type">
+                                                #{refi.institutionType}
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:outputLabel value="Referral Number"></p:outputLabel>
+                                        <p:inputText value="#{admissionController.current.referralId}" style="width: 400px"></p:inputText>
+                                    </p:panelGrid>
+                                </p:tab>
+                            </p:tabView>
                         </p:panel>
 
                         <p:panel header="Payment Detail">

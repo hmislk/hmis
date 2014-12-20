@@ -128,6 +128,9 @@ public class BillPackageController implements Serializable {
     private BillSearch billSearch;
     private YearMonthDay yearMonthDay;
     PaymentMethodData paymentMethodData;
+    
+    Institution referredByInstitution;
+    String referralId;
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -931,6 +934,22 @@ public class BillPackageController implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
+    }
+
+    public Institution getReferredByInstitution() {
+        return referredByInstitution;
+    }
+
+    public void setReferredByInstitution(Institution referredByInstitution) {
+        this.referredByInstitution = referredByInstitution;
+    }
+
+    public String getReferralId() {
+        return referralId;
+    }
+
+    public void setReferralId(String referralId) {
+        this.referralId = referralId;
     }
 
     /**

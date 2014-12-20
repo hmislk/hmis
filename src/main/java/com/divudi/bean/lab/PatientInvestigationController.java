@@ -425,6 +425,9 @@ public class PatientInvestigationController implements Serializable {
             UtilityController.addErrorMessage("Nothing to sample");
             return;
         }
+        
+        
+        
         getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
         if (current.getSampleOutside()) {
             getCurrent().setSampledAt(sampledOutsideDate);
@@ -438,6 +441,26 @@ public class PatientInvestigationController implements Serializable {
             getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
             getEjbFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Marked as Sampled");
+        } else {
+            UtilityController.addErrorMessage("Empty");
+        }
+        setSampledOutsideDate(Calendar.getInstance().getTime());
+
+        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
+    }
+    
+    public void revertMarkedSample() {
+        if (current == null) {
+            UtilityController.addErrorMessage("Nothing to Revert");
+            return;
+        }
+        getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
+        
+        if (getCurrent().getId() != null || getCurrent().getId() != 0) {
+            getCurrent().setCollected(Boolean.FALSE);
+            getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
+            getEjbFacade().edit(getCurrent());
+            UtilityController.addSuccessMessage("Revert Sample Successfully");
         } else {
             UtilityController.addErrorMessage("Empty");
         }
@@ -549,6 +572,8 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void markAsReceived() {
+        
+        
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setReceived(Boolean.TRUE);
             getCurrent().setReceivedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
