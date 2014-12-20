@@ -1531,6 +1531,17 @@ public class BillBeanController implements Serializable {
         return getEncounterComponentFacade().findBySQL(sql, hm);
 
     }
+    
+    public List<EncounterComponent> getEncounterComponentsWithRetired(Bill bi) {
+        String sql = "Select enc from EncounterComponent enc "
+                + " where enc.billItem.bill=:bill"
+                + " and enc.retired=false ";
+        HashMap hm = new HashMap();
+        hm.put("bill", bi);
+
+        return getEncounterComponentFacade().findBySQL(sql, hm);
+
+    }
 
     public BillItem fetchFirstBillItem(Bill b) {
         String sql = "Select b From BillItem b where "
