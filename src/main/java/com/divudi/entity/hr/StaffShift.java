@@ -241,7 +241,12 @@ public class StaffShift implements Serializable {
             lieuQty = 1;
         }
 
-        if (getShift() != null) {
+        if (getShift() != null 
+                && getStartRecord()!=null 
+                && getEndRecord()!=null
+                && getStartRecord().getRecordTimeStamp()!=null
+                && getEndRecord().getRecordTimeStamp()!=null) {
+            
             DayType dayType = getShift().getDayType();
             if (dayType == DayType.DayOff) {
                 lieuAllowed = true;

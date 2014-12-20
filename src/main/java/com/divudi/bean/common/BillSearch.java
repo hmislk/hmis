@@ -81,7 +81,7 @@ public class BillSearch implements Serializable {
     List<Bill> bills;
     private List<Bill> filteredBill;
     List<BillEntry> billEntrys;
-    List<BillItem> billItems;
+    List<BillItem> billItems;//////////
     List<BillComponent> billComponents;
     List<BillFee> billFees;
     private List<BillItem> tempbillItems;
@@ -524,11 +524,14 @@ public class BillSearch implements Serializable {
             if (!calculateRefundTotal()) {
                 return "";
             }
-
-            for (BillItem trbi : refundingItems) {
-                if (patientInvestigationController.sampledForBillItem(trbi)) {
-                    UtilityController.addErrorMessage("One or more bill Item has been already undersone process at the Lab. Can not return.");
-                    return "";
+            
+            
+            if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
+                for (BillItem trbi : refundingItems) {
+                    if (patientInvestigationController.sampledForBillItem(trbi)) {
+                        UtilityController.addErrorMessage("One or more bill Item has been already undersone process at the Lab. Can not return.");
+                        return "";
+                    }
                 }
             }
 

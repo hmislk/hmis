@@ -236,7 +236,7 @@ public class mdInwardReportController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        
+
         if (bills == null) {
             bills = new ArrayList<>();
 
@@ -954,7 +954,7 @@ public class mdInwardReportController implements Serializable {
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
+
     private List<Bill> allPaymentByCreatedDate(Bill bill, boolean disharged) {
         String sql;
         Map temMap = new HashMap();
@@ -965,7 +965,6 @@ public class mdInwardReportController implements Serializable {
                 + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate"
                 + " and b.createdAt <= :toDate "
                 + " and b.retired=false  ";
-       
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
@@ -1082,8 +1081,8 @@ public class mdInwardReportController implements Serializable {
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
-     private double allPaymentByCreatedDateValue(Bill bill, boolean discharge) {
+
+    private double allPaymentByCreatedDateValue(Bill bill, boolean discharge) {
         String sql;
         Map temMap = new HashMap();
 
@@ -1093,8 +1092,6 @@ public class mdInwardReportController implements Serializable {
                 + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
                 + " and b.createdAt <= :toDate"
                 + " and b.retired=false  ";
-
-      
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
@@ -1124,7 +1121,6 @@ public class mdInwardReportController implements Serializable {
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
-
 
     private double depositByCreatedDateValue(Bill bill) {
         String sql;
@@ -1309,8 +1305,7 @@ public class mdInwardReportController implements Serializable {
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
-   
+
     private double calPaymentBillsNotDicharged() {
         String sql = "";
         Map temMap = new HashMap();
@@ -1410,13 +1405,13 @@ public class mdInwardReportController implements Serializable {
 
     }
 
-    public void sortByPatientDischargeDate(){
+    public void sortByPatientDischargeDate() {
         String sql;
         Bill bill;
         sql = "select b from Bill b where "
                 + " and order by b. ";
     }
-    
+
     public void createDepositByCreatedDateDischarged() {
 
         bil = depositByCreatedDate(new BilledBill(), true);
@@ -1428,8 +1423,8 @@ public class mdInwardReportController implements Serializable {
         refundTotal = depositByCreatedDateValue(new RefundBill(), true);
 
     }
-    
-     public void createAllPaymentByCreatedDateDischarged() {
+
+    public void createAllPaymentByCreatedDateDischarged() {
 
         bil = allPaymentByCreatedDate(new BilledBill(), true);
         cancel = allPaymentByCreatedDate(new CancelledBill(), true);
@@ -1494,7 +1489,6 @@ public class mdInwardReportController implements Serializable {
         completePaymentsTotal = calPaymentBillsNotDicharged();
 
     }
-
 
     public void dipositsOfNotDischargedByBht() {
         String sql = "";
@@ -1877,7 +1871,169 @@ public class mdInwardReportController implements Serializable {
         }
 
     }
+
+    public void createItemWithFeeWithBillByAddedDate() {
+        createBillWithBillFee(false, true, false);
+    }
+
+    public void createItemWithFeeWithBillByDischargeDate() {
+        createBillWithBillFee(true, false, false);
+    }
+
+    public void createItemWithFeeWithBillByBillDate() {
+        createBillWithBillFee(false, false, true);
+    }
+
+    //619
+    public List<Bill> billsOutSide(boolean dis, boolean add, boolean bill) {
+
+        String sql;
+        Map m = new HashMap();
+        billItem = new ArrayList<>();
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("bTp", BillType.InwardBill);
+
+        System.out.println("in");
+
+        sql = "select DISTINCT(bi.bill) FROM BillFee bi"
+                + " where bi.bill.billType= :bTp ";
+
+        if (bill) {
+            sql += " and bi.bill.createdAt between :fromDate and :toDate ";
+        }
+        if (dis) {
+            sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        }
+
+        if (add) {
+            sql += " and bi.billItem.billTime between :fromDate and :toDate ";
+        }
+
+        if (institution != null) {
+            sql += " and  bi.billItem.item.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (dept != null) {
+            sql += " and  bi.billItem.item.department=:dept ";
+            m.put("dept", dept);
+        }
+        if (category != null) {
+            sql += " and  bi.billItem.item.category=:cat ";
+            m.put("cat", category);
+        }
+        if (item != null) {
+            sql += " and  bi.billItem.item=:item ";
+            m.put("item", item);
+        }
+        if (getPaymentMethod() != null) {
+            sql += " and bi.bill.paymentMethod=:p ";
+            m.put("p", getPaymentMethod());
+        }
+
+        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
     
+    public double calBillHosTotals(Bill b) {
+        String sql;
+
+        sql = "select sum(bi.fee.fee) FROM BillFee bi "
+                + " where bi.bill.id=" + b.getId();
+
+        return getBillFeeFacade().findAggregateDbl(sql);
+
+    }
+    
+    public double calHosTotals(boolean dis, boolean add, boolean bill) {
+
+        String sql;
+        Map m = new HashMap();
+        billItem = new ArrayList<>();
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("bTp", BillType.InwardBill);
+
+        System.out.println("in");
+
+        sql = "select sum(bi.fee.fee) FROM BillFee bi"
+                + " where bi.bill.billType= :bTp ";
+        
+        if (bill) {
+            sql += " and bi.bill.createdAt between :fromDate and :toDate ";
+        }
+        if (dis) {
+            sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        }
+
+        if (add) {
+            sql += " and bi.billItem.billTime between :fromDate and :toDate ";
+        }
+
+        if (institution != null) {
+            sql += " and  bi.billItem.item.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (dept != null) {
+            sql += " and  bi.billItem.item.department=:dept ";
+            m.put("dept", dept);
+        }
+        if (category != null) {
+            sql += " and  bi.billItem.item.category=:cat ";
+            m.put("cat", category);
+        }
+        if (item != null) {
+            sql += " and  bi.billItem.item=:item ";
+            m.put("item", item);
+        }
+        if (getPaymentMethod() != null) {
+            sql += " and bi.bill.paymentMethod=:p ";
+            m.put("p", getPaymentMethod());
+        }
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<BillFee> bilfees(Bill b) {
+        String sql;
+
+        sql = "select bi FROM BillFee bi "
+                + " where bi.bill.id=" + b.getId();
+
+        return getBillFeeFacade().findBySQL(sql);
+
+    }
+
+    List<BillWithBillFees> billWithBillFeeses = new ArrayList<>();
+
+    public void createBillWithBillFee(boolean dis, boolean add, boolean bill) {
+
+        List<Bill> bills = billsOutSide(dis, add, bill);
+
+        for (Bill b : bills) {
+            BillWithBillFees bf = new BillWithBillFees();
+
+            bf.setBill(b);
+            bf.setBillFees(bilfees(b));
+            bf.setHosTotal(calBillHosTotals(b));
+            billWithBillFeeses.add(bf);
+        }
+        
+        total=calHosTotals(dis, add, bill);
+    }
+
+    public List<BillWithBillFees> getBillWithBillFeeses() {
+        return billWithBillFeeses;
+    }
+
+    public void setBillWithBillFeeses(List<BillWithBillFees> billWithBillFeeses) {
+        this.billWithBillFeeses = billWithBillFeeses;
+    }
+    
+    
+
+    //
     public void createItemWithFeeByAddedDate2() {
         makeListNull();
         String sql;
@@ -2526,6 +2682,40 @@ public class mdInwardReportController implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
     }
+
+    //619
+    public class BillWithBillFees {
+
+        Bill bill;
+        List<BillFee> billFees;
+        double hosTotal;
+
+        public Bill getBill() {
+            return bill;
+        }
+
+        public void setBill(Bill bill) {
+            this.bill = bill;
+        }
+
+        public List<BillFee> getBillFees() {
+            return billFees;
+        }
+
+        public void setBillFees(List<BillFee> billFees) {
+            this.billFees = billFees;
+        }
+
+        public double getHosTotal() {
+            return hosTotal;
+        }
+
+        public void setHosTotal(double hosTotal) {
+            this.hosTotal = hosTotal;
+        }
+
+    }
+    //
 
     public class PatientEncounterValue {
 

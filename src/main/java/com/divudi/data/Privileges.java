@@ -70,6 +70,7 @@ public enum Privileges {
     
     LabBilling,
     LabBillCancelSpecial,
+    LabBillRefundSpecial,
     LabCasheirBillSearch,
     LabCashier,
     LabBillSearchCashier,
@@ -96,6 +97,7 @@ public enum Privileges {
     LabReceive,
     LabEditPatient,
     LabInvestigationFee,
+    LabRevertSample,
     
     PaymentBilling,
     PaymentBillSearch,
