@@ -56,7 +56,7 @@
                                         <p:outputLabel value="#{b.referenceBill.insId}" rendered="#{b.patientEncounter eq null}"/>
                                         <p:outputLabel value="#{b.patientEncounter.bhtNo}" rendered="#{b.patientEncounter ne null}"/>
                                     </p:column>                                    
-                                    <p:column headerText="Patient Name">
+                                    <p:column headerText="Patient Name" >
                                         <p:outputLabel value="#{b.referenceBill.patient.person.name}" rendered="#{b.patientEncounter eq null}"/>
                                         <p:outputLabel value="#{b.patientEncounter.patient.person.name}" rendered="#{b.patientEncounter ne null}"/>
                                     </p:column>                                    
