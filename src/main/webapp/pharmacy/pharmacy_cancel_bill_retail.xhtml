@@ -67,7 +67,42 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
 
-                        <pharmacy:saleBill id="gpBillPreview" bill="#{pharmacyBillSearch.bill.cancelledBill}" />
+<!--                        <pharmacy:saleBill id="gpBillPreview" bill="#{pharmacyBillSearch.bill.cancelledBill}" />-->
+                        
+                        
+                        <h:panelGroup   id="gpBillPreview"  > 
+
+                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <pharmacy:saleBill bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+
+                                <div >
+                                    <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                        <pharmacy:saleBill_prabodha bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <pharmacy:saleBill_five_five bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_five_five>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+                            
+                        </h:panelGroup>
 
                     </h:panelGroup>
 

@@ -30,14 +30,48 @@
 
 
 
-                    <h:panelGroup id="gpBillPreview" >
+<!--                    <h:panelGroup id="gpBillPreview" >
                         <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                         <div >
                             <h:panelGroup   id="gpBillPreviewPrabodha"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
                                 <ph:saleBill_prabodha bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_prabodha>
                             </h:panelGroup>
                         </div>
-                    </h:panelGroup>
+                    </h:panelGroup>-->
+
+                    <h:panelGroup   id="gpBillPreview"  > 
+
+                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <ph:saleBill bill="#{pharmacyBillSearch.bill}"></ph:saleBill>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+
+                                <div >
+                                    <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                        <ph:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></ph:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+                            
+                        </h:panelGroup>
 
 
                 </h:form>
