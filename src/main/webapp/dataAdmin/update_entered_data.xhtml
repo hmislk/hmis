@@ -22,8 +22,10 @@
                                              action="#{pharmacyItemExcelManager.resetSessionBillNumberType()}" onclick="onSubmitButton();" />
                             <p:commandButton styleClass="linkButton" ajax="false" value="Reset Channel Session Number" 
                                              action="#{sheduleController.resetSessionNumbers()}" onclick="onSubmitButton();" />
-                          
-                            
+                            <p:commandButton styleClass="linkButton" ajax="false"
+                                             value="Set Dept ID To Bills" 
+                                             action="#{pharmacyItemExcelManager.updateBillDeptID()}" onclick="onSubmitButton();" />
+
                         </p:panel>
                         <p:panel header="Pharmacy" rendered="false">                                 
                             <p:commandButton styleClass="linkButton" ajax="false" value="1) Reset Qty Value" action="#{pharmacyItemExcelManager.resetQtyValue()}" onclick="onSubmitButton();" />
@@ -31,7 +33,7 @@
                             <p:commandButton styleClass="linkButton" ajax="false"  value="3) Reset Transfer History Value" action="#{pharmacyItemExcelManager.resetTransferHistoryValue()}" onclick="onSubmitButton();" />
                             <p:commandButton styleClass="linkButton" ajax="false" value="4) Reset GRN Value" action="#{pharmacyItemExcelManager.resetGrnValue()}" onclick="onSubmitButton();" />
                             <p:commandButton styleClass="linkButton" ajax="false" value="5) Reset GRN Reference" action="#{pharmacyItemExcelManager.resetGrnReference()}" onclick="onSubmitButton();" />
-                          <p:commandButton styleClass="linkButton" ajax="false" value="6) Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}" onclick="onSubmitButton();" />
+                            <p:commandButton styleClass="linkButton" ajax="false" value="6) Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}" onclick="onSubmitButton();" />
                         </p:panel>
                         <p:panel header="Inward" >
                             <p:commandButton styleClass="linkButton" ajax="false" 
@@ -46,14 +48,14 @@
                             <p:commandButton styleClass="linkButton" ajax="false" 
                                              value="Set Margin,Discount,NetTotal To Bill " 
                                              action="#{pharmacyItemExcelManager.resetMarginAndDiscountAndNetTotal()}" onclick="onSubmitButton();" />
-                       
-                            
+
+
                         </p:panel>
                         <p:panel header="Store"  >
                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Remove Store Item" 
                                              action="#{pharmacyItemExcelManager.removeStoreItem()}" onclick="onSubmitButton();" rendered="false" />
-                            
+
                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Update Cancel Grn Net Totals" 
                                              action="#{pharmacyItemExcelManager.updateCancelGRN()}" onclick="onSubmitButton();" />
@@ -61,15 +63,17 @@
                         <p:panel header="HR">
                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Set Roster To Staff Shift" 
-                                             action="#{pharmacyItemExcelManager.updateStaffShiftWithRoster()}" onclick="onSubmitButton();" />
+                                             action="#{pharmacyItemExcelManager.updateStaffShiftWithRoster()}" 
+                                             onclick="onSubmitButton();" />
+
+                            <p:commandButton styleClass="linkButton"  ajax="false" value="Update Staff Code to Integer"
+                                             action="#{staffController.updateCodeToIntege}"/>
+                                <p:commandButton styleClass="linkButton"  ajax="false" value="Set Day of Week in Staff Shift"
+                                             action="#{staffController.updateDayOfWeekStaffShift}"/>
                         </p:panel>
 
-                          <p:commandButton styleClass="linkButton" ajax="false"
-                                             value="Set Dept ID To Bills" 
-                                             action="#{pharmacyItemExcelManager.updateBillDeptID()}" onclick="onSubmitButton();" />
-  
-                            <p:commandButton ajax="false" value="Update Staff Code to Integer"
-                                             action="#{staffController.updateCodeToIntege}"/>
+
+
                     </h:panelGrid>
 
                 </h:form>
