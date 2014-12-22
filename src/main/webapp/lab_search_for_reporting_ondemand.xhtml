@@ -106,14 +106,19 @@
                                 <h:outputLabel value="#{pi.billItem.item.name}" >
                                 </h:outputLabel>
                                 
-                                <p:commandLink rendered="#{webUserController.hasPrivilege('LabRevertSample')}" style="float: right" process="btnRevert" update="tblBills"  
+                                <p:commandLink style="float: right" process="btnRevert" update="tblBills"  
                                                    id="btnRevert" 
-                                                   action="#{patientInvestigationController.revertMarkedSample()}" >
+                                                   action="#{patientInvestigationController.revertMarkedSample()}" 
+                                                   rendered="#{webUserController.hasPrivilege('LabBillRefundSpecial')}">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="Cancel.png" ></p:graphicImage>
                                     </p:commandLink>
                                 
+                                
+                                <p:tooltip for="btnRevert" value="Revert Report" ></p:tooltip>
                             </p:column>
+                            
+                            
 
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
                                 <h:panelGrid columns="4" style="border: none;" styleClass="noBorderGrid"
@@ -176,8 +181,6 @@
                                     value="#{pi.patientReports}" 
                                     var="dpr" rendered="#{pi.patientReports.size() ne 0}"  
                                     styleClass="noBorderGrid"
-                                 
-                                    
                                     >
                                     <h:column >
 
