@@ -458,6 +458,8 @@ public class PatientInvestigationController implements Serializable {
         
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setCollected(Boolean.FALSE);
+            getCurrent().setReceived(Boolean.FALSE);
+            getCurrent().setDataEntered(Boolean.FALSE);
             getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
             getEjbFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Revert Sample Successfully");
