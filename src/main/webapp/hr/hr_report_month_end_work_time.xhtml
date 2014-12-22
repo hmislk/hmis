@@ -36,7 +36,7 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndReport()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -44,34 +44,38 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.monthEndRecords}" var="ss">
+                            <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss">
                                 <p:column headerText="Staff">
                                     #{ss.staff.person.name}
                                 </p:column>
-                                <p:column headerText="Worked Days">
-                                    #{ss.workedDays}
+                                <p:column headerText="Sun">
+                                    #{ss.sunDay}
                                 </p:column>
-                                <p:column headerText="Annual Leave">
-                                    #{ss.leave_annual}
+                                <p:column headerText="Mon">
+                                    #{ss.monDay}
                                 </p:column>
-                                <p:column headerText="Casual Leave">
-                                    #{ss.leave_casual}
+                                <p:column headerText="Tue">
+                                    #{ss.tuesDay}
                                 </p:column>
-                                <p:column headerText="Medical Leave">
-                                    #{ss.leave_medical}
+                                <p:column headerText="Wed">
+                                    #{ss.wednesDay}
                                 </p:column>
-                                <p:column headerText="No Pay Leave">
-                                    #{ss.leave_nopay}
+                                <p:column headerText="Thur">
+                                    #{ss.thursDay}
                                 </p:column>
-                                <p:column headerText="Extra Duty Days">
-                                    #{ss.extraDutyDays}
+                                <p:column headerText="Fri">
+                                    #{ss.friDay}
                                 </p:column>
-                                <p:column headerText="Late Days">
-                                    #{ss.latedays}
+                                <p:column headerText="Sat">
+                                    #{ss.saturDay}
                                 </p:column>
-                                <p:column headerText="Off Days">
-                                    #{ss.dayoff}
+                                  <p:column headerText="Total">
+                                    #{ss.total}
                                 </p:column>
+                                  <p:column headerText="Over Time">
+                                    #{ss.overTime}
+                                </p:column>
+                               
 
                             </p:dataTable>
                         </p:panel>

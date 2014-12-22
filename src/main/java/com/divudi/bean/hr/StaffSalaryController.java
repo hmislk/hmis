@@ -299,7 +299,7 @@ public class StaffSalaryController implements Serializable {
             Long dateCount = commonFunctions.getDayCount(getOverTimeFromDate(), getOverTimeToDate());
             Long numOfWeeks = dateCount / 7;
 
-            double normalWorkTime = numOfWeeks * finalVariables.getMaximumWorkingHourPerWeek();
+            double normalWorkTime = numOfWeeks * getCurrent().getStaff().getWorkingTimeForOverTimePerWeek()* 60 * 60;
             double overTime = workedWithinTimeFrameVarified - normalWorkTime;
             System.err.println("Date Count " + dateCount);
             System.err.println("num of Week " + numOfWeeks);
