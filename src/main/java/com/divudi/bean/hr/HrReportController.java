@@ -111,6 +111,48 @@ public class HrReportController implements Serializable {
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
+    
+     public void createFingerPrintRecordNoShiftSetted() {        
+        HashMap hm = new HashMap();
+        String sql = "";
+        sql = "select ss from FingerPrintRecord ss "
+                + " where ss.retired=false "
+                + " and ss.staffShift is null "
+                + " and ss.recordTimeStamp between :frm  and :to "
+                + " and ss.fingerPrintRecordType=:ftp";
+        hm.put("ftp", FingerPrintRecordType.Logged);
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+
+//        sql += " order by ss.staff,ss.recordTimeStamp";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+    }
 
     public void createFingerPrintQuary(String sql, HashMap hm) {
         sql = "select ss from FingerPrintRecord ss"
