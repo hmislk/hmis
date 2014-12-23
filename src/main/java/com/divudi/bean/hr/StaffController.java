@@ -147,7 +147,7 @@ public class StaffController implements Serializable {
             formItems = new ArrayList<>();
         }
         
-        
+        fivs = new ArrayList<>();
         for(CommonReportItem crf : formItems){
             if(crf.getIxItemType() == InvestigationItemType.ItemsCatetgory || crf.getIxItemType() == InvestigationItemType.Value ){
                 FormItemValue fiv = formItemValue(crf, getCurrent().getPerson());
@@ -740,6 +740,7 @@ public class StaffController implements Serializable {
 
     public void changeStaff() {
         formItems = null;
+        listFormItems();
     }
 
     private StaffFacade getFacade() {
