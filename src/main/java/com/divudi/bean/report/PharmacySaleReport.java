@@ -499,6 +499,39 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    private double calBillFee(Date date, FeeType fTy, PaymentMethod pm) {
+
+        String sql;
+
+        sql = "select sum(f.feeValue) "
+                + " from BillFee f "
+                + " where f.bill.retired=false "
+                + " and f.bill.billType = :billType "
+                + " and f.bill.paymentMethod = :pm "
+                + " and f.bill.createdAt between :fd and :td "
+                + " and f.bill.toInstitution=:ins "
+                + " and f.fee.feeType=:ft";
+
+        Date fd = getCommonFunctions().getStartOfDay(date);
+        Date td = getCommonFunctions().getEndOfDay(date);
+
+        System.err.println("From " + fd);
+        System.err.println("To " + td);
+
+        Map m = new HashMap();
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("pm", pm);
+        m.put("billType", BillType.OpdBill);
+        m.put("ins", institution);
+        m.put("ft", fTy);
+        //    m.put("ins", getSessionController().getInstitution());
+        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return saleValue;
+
+    }
+    
     private double calBillFee(Date date, FeeType fTy) {
 
         String sql;
@@ -1936,6 +1969,68 @@ public class PharmacySaleReport implements Serializable {
         return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
+    public void createLabReportByDateWithCashAndCredit() {
+        billedSummery = new PharmacySummery();
+
+        billedSummery.setBills(new ArrayList<String1Value3>());
+
+        Date nowDate = getFromDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowDate);
+
+        double hospitalFeeTot = 0.0;
+        double profeTotal = 0.0;
+        double regentTot = 0.0;
+        double hospitalFee;
+        double proTot;
+        double regentFee;
+
+        while (nowDate.before(getToDate())) {
+
+            DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
+            String formattedDate = df.format(nowDate);
+
+            String1Value3 newRow = new String1Value3();
+            newRow.setString(formattedDate);
+
+            double hospitalFeeCash = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Cash);
+            double hospitalFeeCredit = calBillFee(nowDate, FeeType.OwnInstitution, PaymentMethod.Credit);
+            
+            hospitalFee = hospitalFeeCash + hospitalFeeCredit;
+
+            double proTotCash = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Cash);
+            double proTotCredit = calBillFee(nowDate, FeeType.Staff, PaymentMethod.Credit);
+            
+            proTot = proTotCash + proTotCredit;
+
+            double regentFeeCash = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Cash);
+            double regentFeeCredit = calBillFee(nowDate, FeeType.Chemical, PaymentMethod.Credit);
+            
+            regentFee = regentFeeCash + regentFeeCredit;
+
+            newRow.setValue1(hospitalFee);
+            newRow.setValue2(regentFee);
+            newRow.setValue3(proTot);
+
+            hospitalFeeTot += hospitalFee;
+            profeTotal += proTot;
+            regentTot += regentFee;
+
+            billedSummery.getBills().add(newRow);
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+
+        billedSummery.setBilledTotal(hospitalFeeTot);
+        billedSummery.setCancelledTotal(profeTotal);
+        billedSummery.setRefundedTotal(regentTot);
+
+    }
+    
     public void createLabReportByDate() {
         billedSummery = new PharmacySummery();
 
@@ -3150,6 +3245,7 @@ public class PharmacySaleReport implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
+            
             fromDate = getCommonFunctions().getStartOfMonth(new Date());
         }
         return fromDate;
