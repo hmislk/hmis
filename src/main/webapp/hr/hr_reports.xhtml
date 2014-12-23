@@ -79,11 +79,16 @@
                                              action="hr_report_head_count" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
-                             <p:commandButton value="(2) Month End Employee Report -By date" 
+                            <p:commandButton value="(2) Month End Employee Report -By date" 
                                              action="hr_report_month_end_employee_date" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
-                               <p:commandButton value="(2) Month End Employee Working Time Report-By Minute " 
+                            <p:commandButton value="(3) Month End Employee Working Time + 
+                                              Over Time Report-By Minute " 
+                                             action="hr_report_month_end_work_time" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" /> 
+                               <p:commandButton value="(4) Month End Employee (No Pay) Report-By Minute " 
                                              action="hr_report_month_end_work_time" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 

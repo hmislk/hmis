@@ -23,7 +23,16 @@ public class WeekDayWork {
     private double saturDay;
     double total;
     double overTime;
+    double noPay;
 
+    public double getNoPay() {
+        return noPay;
+    }
+
+    public void setNoPay(double noPay) {
+        this.noPay = noPay;
+    }
+        
     public double getTotal() {
         return total;
     }

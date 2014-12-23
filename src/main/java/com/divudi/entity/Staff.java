@@ -125,7 +125,18 @@ public class Staff implements Serializable {
     double annualWelfareQualified;
     double annualWelfareUtilized;
     double workingTimeForOverTimePerWeek;
+    double workingTimeForNoPayPerWeek;
     Integer codeInterger;
+
+    public double getWorkingTimeForNoPayPerWeek() {
+        return workingTimeForNoPayPerWeek;
+    }
+
+    public void setWorkingTimeForNoPayPerWeek(double workingTimeForNoPayPerWeek) {
+        this.workingTimeForNoPayPerWeek = workingTimeForNoPayPerWeek;
+    }
+    
+    
 
     public double getTransWorkedDays() {
         return transWorkedDays;

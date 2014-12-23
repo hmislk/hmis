@@ -246,6 +246,14 @@
                                             <p:inputText autocomplete="off"  value="#{staffController.current.bankAccount.accountNo}"  />
                                         </h:panelGrid>
                                     </p:tab>
+                                       <p:tab title="Working Time">
+                                        <h:panelGrid columns="2">
+                                            <p:outputLabel value="Working Time Per Week in Hour (For Over Time)"/>                                                                                     
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.workingTimeForOverTimePerWeek}"  />
+                                            <p:outputLabel value="Working Time Per Week in Hour (For No Pay)"/>                                                                                     
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.workingTimeForNoPayPerWeek}"  />
+                                        </h:panelGrid>
+                                    </p:tab>
 
                                 </p:tabView>
 

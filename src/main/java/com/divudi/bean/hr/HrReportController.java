@@ -687,9 +687,16 @@ public class HrReportController implements Serializable {
             List<Object[]> list = fetchWorkedTime(stf);
 
             for (Object[] obj : list) {
-                int dayOfWeek = (int) obj[0];
-                double value = (double) obj[1];
+                Integer dayOfWeek = (Integer) obj[0];
+                Double value = (Double) obj[1];
 
+                if (value == null) {
+                    value = 0.0;
+                }
+
+                if (dayOfWeek == null) {
+                    dayOfWeek = -1;
+                }
                 switch (dayOfWeek) {
                     case Calendar.SUNDAY:
                         weekDayWork.setSunDay(value);
@@ -725,6 +732,65 @@ public class HrReportController implements Serializable {
             }
 
             weekDayWorks.add(weekDayWork);
+        }
+    }
+
+    public void createMonthEndWorkTimeReportNoPay() {
+        Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
+        Long numOfWeeks = dateCount / 7;
+        List<Staff> staffList = fetchStaff();
+        weekDayWorks = new ArrayList<>();
+        for (Staff stf : staffList) {
+            WeekDayWork weekDayWork = new WeekDayWork();
+            weekDayWork.setStaff(stf);
+            List<Object[]> list = fetchWorkedTime(stf);
+
+            for (Object[] obj : list) {
+                Integer dayOfWeek = (Integer) obj[0];
+                Double value = (Double) obj[1];
+
+                if (value == null) {
+                    value = 0.0;
+                }
+
+                if (dayOfWeek == null) {
+                    dayOfWeek = -1;
+                }
+                switch (dayOfWeek) {
+                    case Calendar.SUNDAY:
+                        weekDayWork.setSunDay(value);
+                        break;
+                    case Calendar.MONDAY:
+                        weekDayWork.setMonDay(value);
+                        break;
+                    case Calendar.TUESDAY:
+                        weekDayWork.setTuesDay(value);
+                        break;
+                    case Calendar.WEDNESDAY:
+                        weekDayWork.setWednesDay(value);
+                        break;
+                    case Calendar.THURSDAY:
+                        weekDayWork.setThursDay(value);
+                        break;
+                    case Calendar.FRIDAY:
+                        weekDayWork.setFriDay(value);
+                        break;
+                    case Calendar.SATURDAY:
+                        weekDayWork.setSaturDay(value);
+                        break;
+                }
+
+                weekDayWork.setTotal(weekDayWork.getTotal() + value);
+            }
+
+            double normalWorkTime = numOfWeeks * stf.getWorkingTimeForNoPayPerWeek() * 60 * 60;
+            double noPays = weekDayWork.getTotal() - normalWorkTime;
+
+            if (noPays < 0) {
+                weekDayWork.setNoPay(noPays);
+                weekDayWorks.add(weekDayWork);
+            }
+        
         }
     }
 
