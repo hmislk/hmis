@@ -254,10 +254,10 @@ public class StaffLeaveApplicationFormController implements Serializable {
             }
             Long datRang = commonFunctions.getDayCount(getCurrentLeaveForm().getFromDate(), getCurrentLeaveForm().getToDate());
 
-            if (datRang != 1) {
-                JsfUtil.addErrorMessage("Date range should be 1");
-                return true;
-            }
+//            if (datRang != 1) {
+//                JsfUtil.addErrorMessage("Date range should be 1");
+//                return true;
+//            }
 
             if (ltp == LeaveType.Lieu && stf.getLieuQtyUtilized() != 0) {
                 JsfUtil.addErrorMessage("You cant get Liue leave from this Shift");

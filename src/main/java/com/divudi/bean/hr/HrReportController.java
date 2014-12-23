@@ -6,6 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.data.MonthEndRecord;
+import com.divudi.data.dataStructure.WeekDayWork;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
@@ -28,6 +29,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +58,23 @@ public class HrReportController implements Serializable {
     StaffShiftFacade staffShiftFacade;
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
+    List<WeekDayWork> weekDayWorks;
+
+    public List<WeekDayWork> getWeekDayWorks() {
+        return weekDayWorks;
+    }
+
+    public void setWeekDayWorks(List<WeekDayWork> weekDayWorks) {
+        this.weekDayWorks = weekDayWorks;
+    }
+
+    public HumanResourceBean getHumanResourceBean() {
+        return humanResourceBean;
+    }
+
+    public void setHumanResourceBean(HumanResourceBean humanResourceBean) {
+        this.humanResourceBean = humanResourceBean;
+    }
 
     public void createFingerPrintRecordLogged() {
         String sql = "";
@@ -91,6 +110,48 @@ public class HrReportController implements Serializable {
         hm.put("ftp", FingerPrintRecordType.Varified);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
+     public void createFingerPrintRecordNoShiftSetted() {        
+        HashMap hm = new HashMap();
+        String sql = "";
+        sql = "select ss from FingerPrintRecord ss "
+                + " where ss.retired=false "
+                + " and ss.staffShift is null "
+                + " and ss.recordTimeStamp between :frm  and :to "
+                + " and ss.fingerPrintRecordType=:ftp";
+        hm.put("ftp", FingerPrintRecordType.Logged);
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+
+//        sql += " order by ss.staff,ss.recordTimeStamp";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void createFingerPrintQuary(String sql, HashMap hm) {
@@ -444,6 +505,51 @@ public class HrReportController implements Serializable {
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
 
+    private List<Object[]> fetchWorkedTime(Staff staff) {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select ss.dayOfWeek,sum(ss.workedWithinTimeFrameVarified+ss.leavedTime)"
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.staff=:stf "
+                + " and (ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ) "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("stf", staff);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " group by ss.dayOfWeek"
+                + " order by ss.dayOfWeek ";
+        return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
+    }
+
     private long fetchExtraDutyDays(Staff staff) {
         String sql = "";
 
@@ -533,8 +639,8 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
-     private long fetchDayOff(Staff staff) {
+
+    private long fetchDayOff(Staff staff) {
         String sql = "";
 
         HashMap hm = new HashMap();
@@ -609,6 +715,124 @@ public class HrReportController implements Serializable {
             monthEnd.setDayoff(fetchDayOff(stf));
 
             monthEndRecords.add(monthEnd);
+        }
+    }
+
+    public void createMonthEndWorkTimeReport() {
+        Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
+        Long numOfWeeks = dateCount / 7;
+        List<Staff> staffList = fetchStaff();
+        weekDayWorks = new ArrayList<>();
+        for (Staff stf : staffList) {
+            WeekDayWork weekDayWork = new WeekDayWork();
+            weekDayWork.setStaff(stf);
+            List<Object[]> list = fetchWorkedTime(stf);
+
+            for (Object[] obj : list) {
+                Integer dayOfWeek = (Integer) obj[0];
+                Double value = (Double) obj[1];
+
+                if (value == null) {
+                    value = 0.0;
+                }
+
+                if (dayOfWeek == null) {
+                    dayOfWeek = -1;
+                }
+                switch (dayOfWeek) {
+                    case Calendar.SUNDAY:
+                        weekDayWork.setSunDay(value);
+                        break;
+                    case Calendar.MONDAY:
+                        weekDayWork.setMonDay(value);
+                        break;
+                    case Calendar.TUESDAY:
+                        weekDayWork.setTuesDay(value);
+                        break;
+                    case Calendar.WEDNESDAY:
+                        weekDayWork.setWednesDay(value);
+                        break;
+                    case Calendar.THURSDAY:
+                        weekDayWork.setThursDay(value);
+                        break;
+                    case Calendar.FRIDAY:
+                        weekDayWork.setFriDay(value);
+                        break;
+                    case Calendar.SATURDAY:
+                        weekDayWork.setSaturDay(value);
+                        break;
+                }
+
+                weekDayWork.setTotal(weekDayWork.getTotal() + value);
+            }
+
+            double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
+            double overTime = weekDayWork.getTotal() - normalWorkTime;
+
+            if (overTime > 0) {
+                weekDayWork.setOverTime(overTime);
+            }
+
+            weekDayWorks.add(weekDayWork);
+        }
+    }
+
+    public void createMonthEndWorkTimeReportNoPay() {
+        Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
+        Long numOfWeeks = dateCount / 7;
+        List<Staff> staffList = fetchStaff();
+        weekDayWorks = new ArrayList<>();
+        for (Staff stf : staffList) {
+            WeekDayWork weekDayWork = new WeekDayWork();
+            weekDayWork.setStaff(stf);
+            List<Object[]> list = fetchWorkedTime(stf);
+
+            for (Object[] obj : list) {
+                Integer dayOfWeek = (Integer) obj[0];
+                Double value = (Double) obj[1];
+
+                if (value == null) {
+                    value = 0.0;
+                }
+
+                if (dayOfWeek == null) {
+                    dayOfWeek = -1;
+                }
+                switch (dayOfWeek) {
+                    case Calendar.SUNDAY:
+                        weekDayWork.setSunDay(value);
+                        break;
+                    case Calendar.MONDAY:
+                        weekDayWork.setMonDay(value);
+                        break;
+                    case Calendar.TUESDAY:
+                        weekDayWork.setTuesDay(value);
+                        break;
+                    case Calendar.WEDNESDAY:
+                        weekDayWork.setWednesDay(value);
+                        break;
+                    case Calendar.THURSDAY:
+                        weekDayWork.setThursDay(value);
+                        break;
+                    case Calendar.FRIDAY:
+                        weekDayWork.setFriDay(value);
+                        break;
+                    case Calendar.SATURDAY:
+                        weekDayWork.setSaturDay(value);
+                        break;
+                }
+
+                weekDayWork.setTotal(weekDayWork.getTotal() + value);
+            }
+
+            double normalWorkTime = numOfWeeks * stf.getWorkingTimeForNoPayPerWeek() * 60 * 60;
+            double noPays = weekDayWork.getTotal() - normalWorkTime;
+
+            if (noPays < 0) {
+                weekDayWork.setNoPay(noPays);
+                weekDayWorks.add(weekDayWork);
+            }
+        
         }
     }
 

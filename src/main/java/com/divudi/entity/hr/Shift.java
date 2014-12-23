@@ -81,6 +81,17 @@ public class Shift implements Serializable {
     Shift previousShift;
     @ManyToOne
     Shift nextShift;
+    boolean halfShift;
+
+    public boolean isHalfShift() {
+        return halfShift;
+    }
+
+    public void setHalfShift(boolean halfShift) {
+        this.halfShift = halfShift;
+    }
+    
+    
 
     public double getLeaveHourFull() {
         return leaveHourFull;

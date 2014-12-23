@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+
+                <p:panel header="Item Report">                    
+                    <h:outputLabel value="From"/>
+                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                        <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:calendar>
+
+                    <h:outputLabel value="To"/>
+                    <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                        <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:calendar>
+                    <h:panelGrid columns="2" >
+                        <p:autoComplete id="ins" value="#{mdInwardReportController.institution}"
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{ix.name}
+                            </p:column>
+                        </p:autoComplete>
+                        <p:autoComplete id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}" converter="dep" >
+                        </p:autoComplete>
+                        <p:autoComplete value="#{mdInwardReportController.category}" id="ct" 
+                                        forceSelection="true"
+                                        completeMethod="#{categoryController.completeCategoryService}"
+                                        converter="categoryConverter"
+                                        var="cat" itemLabel="#{cat.name}" 
+                                        itemValue="#{cat}" >
+                            <p:column headerText="Category">
+                                <h:outputLabel value="#{cat.name}"/>
+                            </p:column>
+                            <p:column headerText="Parent Category">
+                                <h:outputLabel value="#{cat.parentCategory.name}"/>
+                            </p:column> 
+                            <p:column headerText="TYPE">
+                                <h:outputLabel value="Parent Category" 
+                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
+                                <h:outputLabel value="Child Category" 
+                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
+
+                            </p:column> 
+
+                        </p:autoComplete>
+                        <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
+                                         value="#{mdInwardReportController.item}"
+                                         completeMethod="#{itemController.completeInwardItemsCategory}"
+                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
+                                         size="30"  style="width: 400px;">
+                            <p:column>
+                                <h:outputLabel value="#{ix.name}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputLabel value="#{ix.department.name}"/>
+                            </p:column>  
+                            <p:column>
+                                <h:outputLabel value="#{ix.total}" 
+                                               rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>  
+                            <p:ajax event="itemSelect" process="acIx ct" update="@all" />
+                            <p:ajax event="focus" process="ct"/>
+                        </p:autoComplete>
+                        <p:watermark for="ct" value="Category"/>
+                        <p:watermark for="acIx" value="Item"/>
+                        <p:watermark for="dept" value="Department"/>
+                        <p:watermark for="ins" value="Institution"/>
+                    </h:panelGrid>
+                    <p:panelGrid columns="3">
+                        <p:commandButton ajax="false" value="Process by Bill Created Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByBillDate}" style="float: right;" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Process by Discharge Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Process by Added Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
+
+                    </p:panelGrid>                    
+
+                </p:panel>   
+
+                <p:panel id="reportPrint">
+                    <p:dataTable id="tbl" value="#{mdInwardReportController.billWithBillFeeses}" var="bwf">
+                        <p:columnGroup type="header">
+                            <p:row>
+                                <p:column headerText="BHT No">                                    
+                                </p:column>
+                                <p:column headerText="Institution">                                    
+                                </p:column>
+                                <p:column headerText="Department">                                    
+                                </p:column>
+                                <p:column headerText="Parent Categoy">                                    
+                                </p:column>
+                                 <p:column headerText="Categoy">                                    
+                                </p:column>
+                                <p:column headerText="Name">                                    
+                                </p:column>
+                                <p:column headerText="Comment">                                    
+                                </p:column>
+                                <p:column headerText="Hospital Fee">                                    
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{bwf.billFees}" var="i" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Bill - #{bwf.bill.insId}"/>
+                                <h:outputLabel value="Bill Total - #{bwf.hosTotal}" style="float: right;"/>
+                            </f:facet>
+                            <p:column headerText="BHT No" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="BHT No" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.billItem.bill.patientEncounter.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Institution" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Institution" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.billItem.item.institution.name}"/>
+                            </p:column>
+                            <p:column headerText="Department" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Department" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.billItem.item.department.name}"/>
+                            </p:column>    
+                            <p:column headerText="Parent Categoy" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Parent Categoy" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.billItem.item.category.parentCategory.name}"/>
+                            </p:column>   
+                            <p:column headerText="Categoy" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Categoy" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.billItem.item.category.name}"/>
+                            </p:column>   
+                            <p:column headerText="Name" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Name" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.billItem.item.name}"/>
+                            </p:column>
+                            <p:column headerText="Comment" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Comment" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.billItem.descreption}"/>
+                            </p:column>
+                            <p:column headerText="Hospital Fee">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Hospital Fee" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.fee.fee}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+
+                        </p:subTable>
+                        <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column footerText="Total" colspan="7" />
+                                     <p:column style="text-align: right;" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{mdInwardReportController.total}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+
+                    </p:dataTable>
+                </p:panel>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

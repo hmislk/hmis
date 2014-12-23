@@ -138,6 +138,17 @@ public class StaffShift implements Serializable {
     boolean lieuPaymentAllowed;
     @Transient
     boolean transChecked;
+    int dayOfWeek;
+
+    public int getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    public void setDayOfWeek(int dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
+    }
+    
+    
 
     public boolean isTransChecked() {
         return transChecked;
@@ -146,8 +157,6 @@ public class StaffShift implements Serializable {
     public void setTransChecked(boolean transChecked) {
         this.transChecked = transChecked;
     }
-    
-    
 
     public void reset() {
         multiplyingFactorOverTime = 0;
@@ -236,17 +245,24 @@ public class StaffShift implements Serializable {
     }
 
     public void calLieu() {
-
-        if (lieuAllowed) {
-            lieuQty = 1;
+        if (getShift() == null) {
+            return;
         }
 
-        if (getShift() != null) {
+        if (lieuAllowed) {
+            lieuQty = getShift().isHalfShift() ? 0.5 : 1;
+        }
+
+        if (getStartRecord() != null
+                && getEndRecord() != null
+                && getStartRecord().getRecordTimeStamp() != null
+                && getEndRecord().getRecordTimeStamp() != null) {
+
             DayType dayType = getShift().getDayType();
             if (dayType == DayType.DayOff) {
                 lieuAllowed = true;
                 lieuPaymentAllowed = true;
-                lieuQty = 1;
+                lieuQty = getShift().isHalfShift() ? 0.5 : 1;
             }
         }
     }
@@ -835,6 +851,14 @@ public class StaffShift implements Serializable {
     public void setShiftDate(Date shiftDate) {
         this.shiftDate = shiftDate;
         calShiftStartEndTime();
+        calDayOfWeek();
+    }
+    
+    public void calDayOfWeek(){
+        Calendar cal=Calendar.getInstance();
+        cal.setTime(shiftDate);
+        dayOfWeek=cal.get(Calendar.DAY_OF_WEEK);
+        
     }
 
     public void calShiftStartEndTime() {

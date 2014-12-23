@@ -129,6 +129,10 @@ public class PatientEncounter implements Serializable {
     double transPaidByPatient;
     @ManyToOne
     Bill finalBill;
+    
+    @ManyToOne
+    Institution referredByInstitution;
+    String referralId;
 
     public double getTransPaidByCompany() {
         return transPaidByCompany;
@@ -765,6 +769,22 @@ public class PatientEncounter implements Serializable {
 
     public void setFinalBill(Bill finalBill) {
         this.finalBill = finalBill;
+    }
+
+    public Institution getReferredByInstitution() {
+        return referredByInstitution;
+    }
+
+    public void setReferredByInstitution(Institution referredByInstitution) {
+        this.referredByInstitution = referredByInstitution;
+    }
+
+    public String getReferralId() {
+        return referralId;
+    }
+
+    public void setReferralId(String referralId) {
+        this.referralId = referralId;
     }
 
 }
