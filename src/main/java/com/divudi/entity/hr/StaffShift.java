@@ -87,36 +87,39 @@ public class StaffShift implements Serializable {
     private double multiplyingFactorSalary;
     //Multyiplying factor for Ot is Actual one.there is no substration
     double multiplyingFactorOverTime;
-    double basicPerSecond;
-    double earlyInLogged;
-    double earlyOutLogged;
+    //Varified Data
     double earlyInVarified;
     double earlyOutVarified;
-    double workedWithinTimeFrameLogged;
-    double workedOutSideTimeFrameLogged;
-    double workedTimeLogged;
     double workedWithinTimeFrameVarified;
     double workedOutSideTimeFrameVarified;
     double workedTimeVarified;
     double lateInVarified;
     double lateOutVarified;
-    double lateInLogged;
-    double lateOutLogged;
-    double leavedTime;
-    private double leavedTimeNoPay;
-    double leavedTimeOther;
-    @Column(name = "overTimeFromStartRecordLogged")
-    double extraTimeFromStartRecordLogged;
-    @Column(name = "overTimeFromEndRecordLogged")
-    double extraTimeFromEndRecordLogged;
-    @Column(name = "overTimeCompleteRecordLogged")
-    double extraTimeCompleteRecordLogged;
     @Column(name = "overTimeFromStartRecordVarified")
     double extraTimeFromStartRecordVarified;
     @Column(name = "overTimeFromEndRecordVarified")
     double extraTimeFromEndRecordVarified;
     @Column(name = "overTimeCompleteRecordVarified")
     double extraTimeCompleteRecordVarified;
+    //Logged Data
+    double basicPerSecond;
+    double earlyInLogged;
+    double earlyOutLogged;
+    double workedWithinTimeFrameLogged;
+    double workedOutSideTimeFrameLogged;
+    double workedTimeLogged;
+    double lateInLogged;
+    double lateOutLogged;
+    @Column(name = "overTimeFromStartRecordLogged")
+    double extraTimeFromStartRecordLogged;
+    @Column(name = "overTimeFromEndRecordLogged")
+    double extraTimeFromEndRecordLogged;
+    @Column(name = "overTimeCompleteRecordLogged")
+    double extraTimeCompleteRecordLogged;
+    //Leaved Time
+    double leavedTime;
+    private double leavedTimeNoPay;
+    double leavedTimeOther;
 
     private boolean dayOff;
     private boolean sleepingDay;
@@ -136,6 +139,25 @@ public class StaffShift implements Serializable {
     boolean lieuPaid;
     boolean lieuAllowed;
     boolean lieuPaymentAllowed;
+    @Transient
+    boolean transChecked;
+    int dayOfWeek;
+
+    public int getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    public void setDayOfWeek(int dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
+    }
+
+    public boolean isTransChecked() {
+        return transChecked;
+    }
+
+    public void setTransChecked(boolean transChecked) {
+        this.transChecked = transChecked;
+    }
 
     public void reset() {
         multiplyingFactorOverTime = 0;
@@ -224,17 +246,24 @@ public class StaffShift implements Serializable {
     }
 
     public void calLieu() {
-
-        if (lieuAllowed) {
-            lieuQty = 1;
+        if (getShift() == null) {
+            return;
         }
 
-        if (getShift() != null) {
+        if (lieuAllowed) {
+            lieuQty = getShift().isHalfShift() ? 0.5 : 1;
+        }
+
+        if (getStartRecord() != null
+                && getEndRecord() != null
+                && getStartRecord().getRecordTimeStamp() != null
+                && getEndRecord().getRecordTimeStamp() != null) {
+
             DayType dayType = getShift().getDayType();
             if (dayType == DayType.DayOff) {
                 lieuAllowed = true;
                 lieuPaymentAllowed = true;
-                lieuQty = 1;
+                lieuQty = getShift().isHalfShift() ? 0.5 : 1;
             }
         }
     }
@@ -823,6 +852,14 @@ public class StaffShift implements Serializable {
     public void setShiftDate(Date shiftDate) {
         this.shiftDate = shiftDate;
         calShiftStartEndTime();
+        calDayOfWeek();
+    }
+
+    public void calDayOfWeek() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(shiftDate);
+        dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+
     }
 
     public void calShiftStartEndTime() {

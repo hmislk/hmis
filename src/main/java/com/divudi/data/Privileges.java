@@ -70,6 +70,7 @@ public enum Privileges {
     
     LabBilling,
     LabBillCancelSpecial,
+    LabBillRefundSpecial,
     LabCasheirBillSearch,
     LabCashier,
     LabBillSearchCashier,
@@ -86,6 +87,7 @@ public enum Privileges {
     LabDataentry,
     LabAutherizing,
     LabDeAutherizing,
+    LabRevertSample,
     LabPrinting,
     LabReprinting,
     LabSummeriesLevel1,

@@ -506,21 +506,40 @@
 
                         </div>
 
-                        <h:panelGroup   id="gpBillPreview"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
+                        <h:panelGroup   id="gpBillPreview" > 
 
-                            <div >
-                                <h:panelGroup   id="gpBillPreviewSingle"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}" > 
-                                    <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
-                                </h:panelGroup>
-                            </div>
+                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
 
-                            <div >
-                                <h:panelGroup   id="gpBillPreviewPrabodha"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
-                                    <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
-                                </h:panelGroup>
-                            </div>
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                    </h:panelGroup>
+                                </div>
 
-                        </h:panelGroup>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+
+                                <div >
+                                    <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                        <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>                            
+
+                        </h:panelGroup>                     
+
 
                     </p:panel>
 

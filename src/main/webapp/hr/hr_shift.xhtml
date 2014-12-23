@@ -78,13 +78,16 @@
                                             itemValue="#{mys}">                                  
                             </p:autoComplete>
                             <h:outputLabel value="Leave Hour Full"/>
-                            <h:outputLabel value="#{shiftController.current.leaveHourFull}"/>
+                            <h:inputText value="#{shiftController.current.leaveHourFull}"/>
                             <h:outputLabel value="Leave Hour Half"/>
-                            <h:outputLabel value="#{shiftController.current.leaveHourHalf}"/>
+                            <h:inputText value="#{shiftController.current.leaveHourHalf}"/>
                             <h:outputLabel value="Duration Hour"/>
                             <h:outputLabel value="#{shiftController.current.durationHour}"/>
+                            <p:outputLabel value="Half Shift"/>
+                            <p:selectBooleanCheckbox value="#{shiftController.current.halfShift}" />
                             <p:outputLabel value="Hide Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.hideShift}" />
+                            
                             <p:commandButton ajax="false" value="Save"  
                                              action="#{shiftController.saveSelected}"  
                                              onclick="onSubmitButton();"/>

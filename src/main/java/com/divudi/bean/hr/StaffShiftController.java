@@ -14,6 +14,7 @@ import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftReplace;
 import com.divudi.facade.StaffShiftFacade;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,29 @@ public class StaffShiftController implements Serializable {
         lst = ejbFacade.findBySQL(sql, hm);
         //   System.out.println("lst = " + lst);
         return lst;
+    }
+
+    public void updateDayOfWeekStaffShift() {
+        List<StaffShift> lst;
+        HashMap hm = new HashMap();
+        String sql = "select c from StaffShift c "
+                + " where c.retired=false "
+                + " and c.dayOfWeek is null "
+                + " and c.shiftDate is not null ";
+        lst = ejbFacade.findBySQL(sql);
+
+        if (lst == null) {
+            return;
+        }
+
+        for (StaffShift ss : lst) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(ss.getShiftDate());
+            ss.setDayOfWeek(cal.get(Calendar.DAY_OF_WEEK));
+            staffShiftFacade.edit(ss);
+        }
+        //   System.out.println("lst = " + lst);
+
     }
 
     Date date;
