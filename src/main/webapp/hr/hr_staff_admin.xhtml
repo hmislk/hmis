@@ -59,7 +59,7 @@
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
                             </f:facet>
-                            <h:panelGrid id="gpDetail" columns="1" styleClass="alignTop">
+                            <h:panelGrid id="gpDetail" columns="1" styleClass="alignTop" >
                                 <p:tabView>
                                     <p:tab title="General">
                                         <h:panelGrid  columns="2">
@@ -111,11 +111,12 @@
 
 
                                     </p:tab>
-                                    <p:tab title="Details" >
+                                    <p:tab title="Details" rendered="#{staffController.current.id ne null}" >
+
                                         <p:selectOneMenu id="mnuCat" value="#{staffController.formCategory}" >
                                             <f:selectItem itemLabel="Select Form" ></f:selectItem>
-                                            <f:selectItems value="#{staffController.listFormItems()}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
-                                            <f:ajax event="change" execute="mnuCat" render="gpStaffForm" />
+                                            <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                                            <f:ajax event="change" execute="mnuCat" render="gpStaffForm" listener="#{staffController.listFormItems()}" />
                                         </p:selectOneMenu>
 
                                         <h:panelGroup id="gpStaffForm"  >
@@ -136,13 +137,19 @@
                                                             <f:ajax event="blur" execute="txtValue" listener="#{staffController.updateFormItem(myFiv)}"   ></f:ajax>
                                                         </h:inputText>
                                                         <p:watermark for="txtValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
-                                                        
-                                                        
+
+                                                        <h:inputText id="txtdValue" 
+                                                                     rendered="#{myFiv.reportItem.ixItemType eq 'Value' and myFiv.reportItem.ixItemValueType eq 'Double' and myFiv.reportItem.retired eq false}"  
+                                                                     value="#{myFiv.doubleValue}" 
+                                                                     style="color: #{myFiv.reportItem.cssColor}"  >
+                                                            <f:ajax event="blur" execute="txtdValue" listener="#{staffController.updateFormItem(myFiv)}"   ></f:ajax>
+                                                        </h:inputText>
+                                                        <p:watermark for="txtdValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
 
                                                         <h:panelGroup rendered="#{myFiv.reportItem.retired ne true and myFiv.reportItem.ixItemType eq 'ItemsCatetgory'}" >
                                                             <h:selectOneMenu value="#{myFiv.strValue}" id="cmbRefCat" style="#{myFiv.reportItem.innerCssStyle}" >
                                                                 <f:selectItem itemLabel="#{myFiv.reportItem.name}"></f:selectItem>
-                                                                <f:selectItems value="#{categoryController.getSubCategories(myFiv.reportItem.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
+                                                                <f:selectItems value="#{categoryController.getSubCategories(myFiv.reportItem.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc.name}" ></f:selectItems>
                                                             </h:selectOneMenu>
                                                         </h:panelGroup>
 
