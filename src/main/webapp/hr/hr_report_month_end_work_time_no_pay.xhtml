@@ -36,7 +36,7 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportNoPay()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -73,7 +73,7 @@
                                     #{ss.total}
                                 </p:column>
                                   <p:column headerText="Over Time">
-                                    #{ss.overTime}
+                                    #{ss.noPay}
                                 </p:column>
                                
 
