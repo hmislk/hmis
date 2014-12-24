@@ -1328,22 +1328,20 @@ public class PharmacyItemExcelManager implements Serializable {
                     continue;
                 }
                 //System.out.println("vmp = " + vmp.getName());
-                
+
                 //Code
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
                 //System.out.println("strCode = " + strCode);
-                
-                
-                
+
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
                 //System.out.println("strBarCode = " + strBarcode);
-               
+
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);
-                
+
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
@@ -1419,6 +1417,122 @@ public class PharmacyItemExcelManager implements Serializable {
                 amp.setManufacturer(importer);
                 //
                 String temStr;
+
+                cell = sheet.getCell(stockQtyCol, i);
+                temStr = cell.getContents();
+                try {
+                    stockQty = Double.valueOf(temStr);
+                } catch (Exception e) {
+                    stockQty = 0;
+                }
+
+                cell = sheet.getCell(pruchaseRateCol, i);
+                temStr = cell.getContents();
+                try {
+                    pp = Double.valueOf(temStr);
+                } catch (Exception e) {
+                    pp = 0;
+                }
+
+                cell = sheet.getCell(saleRateCol, i);
+                temStr = cell.getContents();
+                try {
+                    sp = Double.valueOf(temStr);
+                } catch (Exception e) {
+                    sp = 0;
+                }
+
+                cell = sheet.getCell(batchCol, i);
+                batch = cell.getContents();
+
+                cell = sheet.getCell(doeCol, i);
+                temStr = cell.getContents();
+                try {
+                    doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
+                } catch (Exception e) {
+                    doe = new Date();
+                }
+
+                getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setItem(amp) = " + getPharmacyPurchaseController().getCurrentBillItem().getItem());
+                getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty) = " + getPharmacyPurchaseController().getCurrentBillItem().getTmpQty());
+                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp); = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate());
+                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp); = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate());
+                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe) = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getDoe());
+                if (batch == null || batch.trim().equals("")) {
+                    getPharmacyPurchaseController().setBatch();
+                } else {
+                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(batch);
+                }
+                getPharmacyPurchaseController().addItem();
+            }
+            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            return "/pharmacy/pharmacy_purchase";
+        } catch (IOException | BiffException ex) {
+            UtilityController.addErrorMessage(ex.getMessage());
+            return "";
+        }
+    }
+
+    public String importFromExcelByBarcode() {
+        //System.out.println("importing to excel");
+        String strAmp;
+        Amp amp;
+
+        double stockQty;
+        double pp;
+        double sp;
+        String batch;
+        Date doe;
+        String temStr;
+
+        File inputWorkbook;
+        Workbook w;
+        Cell cell;
+        InputStream in;
+        UtilityController.addSuccessMessage(file.getFileName());
+        try {
+            UtilityController.addSuccessMessage(file.getFileName());
+            in = file.getInputstream();
+            File f;
+            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
+            FileOutputStream out = new FileOutputStream(f);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+
+            inputWorkbook = new File(f.getAbsolutePath());
+
+            UtilityController.addSuccessMessage("Excel File Opened");
+            w = Workbook.getWorkbook(inputWorkbook);
+            Sheet sheet = w.getSheet(0);
+
+            getPharmacyPurchaseController().makeNull();
+
+            for (int i = startRow; i < sheet.getRows(); i++) {
+
+                Map m = new HashMap();
+
+                cell = sheet.getCell(ampCol, 0);
+                strAmp = cell.getContents();
+                //System.out.println("strAmp = " + strAmp);
+                m = new HashMap();
+                m.put("n", strAmp.toUpperCase());
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.code)=:n ");
+                System.out.println("m = " + m);
+
+                if (amp == null) {
+                    continue;
+                }
 
                 cell = sheet.getCell(stockQtyCol, i);
                 temStr = cell.getContents();
