@@ -1969,6 +1969,7 @@ public class PharmacySaleReport implements Serializable {
         return departmentFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
+    //pasan
     public void createLabReportByDateWithCashAndCredit() {
         billedSummery = new PharmacySummery();
 

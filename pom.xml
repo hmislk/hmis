@@ -38,34 +38,9 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.6</version>
         </dependency>
-        
-        <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>eclipselink</artifactId>
-            <version>2.5.2</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-            <version>2.5.2</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.antlr</artifactId>
-            <version>SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.asm</artifactId>
-            <version>SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.core</artifactId>
+            <artifactId>org.eclipse.persistence.jpa.modelgen</artifactId>
             <version>SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -77,7 +52,13 @@
         </dependency>
         <dependency>
             <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.jpa.modelgen</artifactId>
+            <artifactId>org.eclipse.persistence.core</artifactId>
+            <version>SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>unknown.binary</groupId>
+            <artifactId>org.eclipse.persistence.oracle</artifactId>
             <version>SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -89,7 +70,13 @@
         </dependency>
         <dependency>
             <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.oracle</artifactId>
+            <artifactId>org.eclipse.persistence.antlr</artifactId>
+            <version>SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>unknown.binary</groupId>
+            <artifactId>org.eclipse.persistence.asm</artifactId>
             <version>SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
