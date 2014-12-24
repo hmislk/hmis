@@ -87,36 +87,39 @@ public class StaffShift implements Serializable {
     private double multiplyingFactorSalary;
     //Multyiplying factor for Ot is Actual one.there is no substration
     double multiplyingFactorOverTime;
-    double basicPerSecond;
-    double earlyInLogged;
-    double earlyOutLogged;
+    //Varified Data
     double earlyInVarified;
     double earlyOutVarified;
-    double workedWithinTimeFrameLogged;
-    double workedOutSideTimeFrameLogged;
-    double workedTimeLogged;
     double workedWithinTimeFrameVarified;
     double workedOutSideTimeFrameVarified;
     double workedTimeVarified;
     double lateInVarified;
     double lateOutVarified;
-    double lateInLogged;
-    double lateOutLogged;
-    double leavedTime;
-    private double leavedTimeNoPay;
-    double leavedTimeOther;
-    @Column(name = "overTimeFromStartRecordLogged")
-    double extraTimeFromStartRecordLogged;
-    @Column(name = "overTimeFromEndRecordLogged")
-    double extraTimeFromEndRecordLogged;
-    @Column(name = "overTimeCompleteRecordLogged")
-    double extraTimeCompleteRecordLogged;
     @Column(name = "overTimeFromStartRecordVarified")
     double extraTimeFromStartRecordVarified;
     @Column(name = "overTimeFromEndRecordVarified")
     double extraTimeFromEndRecordVarified;
     @Column(name = "overTimeCompleteRecordVarified")
     double extraTimeCompleteRecordVarified;
+    //Logged Data
+    double basicPerSecond;
+    double earlyInLogged;
+    double earlyOutLogged;
+    double workedWithinTimeFrameLogged;
+    double workedOutSideTimeFrameLogged;
+    double workedTimeLogged;
+    double lateInLogged;
+    double lateOutLogged;
+    @Column(name = "overTimeFromStartRecordLogged")
+    double extraTimeFromStartRecordLogged;
+    @Column(name = "overTimeFromEndRecordLogged")
+    double extraTimeFromEndRecordLogged;
+    @Column(name = "overTimeCompleteRecordLogged")
+    double extraTimeCompleteRecordLogged;
+    //Leaved Time
+    double leavedTime;
+    private double leavedTimeNoPay;
+    double leavedTimeOther;
 
     private boolean dayOff;
     private boolean sleepingDay;
@@ -147,8 +150,6 @@ public class StaffShift implements Serializable {
     public void setDayOfWeek(int dayOfWeek) {
         this.dayOfWeek = dayOfWeek;
     }
-    
-    
 
     public boolean isTransChecked() {
         return transChecked;
@@ -158,10 +159,15 @@ public class StaffShift implements Serializable {
         this.transChecked = transChecked;
     }
 
-    public void reset() {
-        multiplyingFactorOverTime = 0;
-        multiplyingFactorSalary = 0;
-        basicPerSecond = 0;
+    public void resetLeaveData() {
+        leavedTime = 0;
+        leavedTimeNoPay = 0;
+        leavedTimeOther = 0;
+        lieuQty = 0;
+        lieuPaymentAllowed = false;
+    }
+
+    public void resetFingerPrintRecordTime() {
         earlyInLogged = 0;
         earlyOutLogged = 0;
         earlyInVarified = 0;
@@ -176,17 +182,25 @@ public class StaffShift implements Serializable {
         lateOutVarified = 0;
         lateInLogged = 0;
         lateOutLogged = 0;
-        leavedTime = 0;
-        leavedTimeNoPay = 0;
-        leavedTimeOther = 0;
+
+    }
+
+    public void resetExtraTime() {
         extraTimeFromStartRecordLogged = 0;
         extraTimeFromEndRecordLogged = 0;
         extraTimeCompleteRecordLogged = 0;
         extraTimeFromStartRecordVarified = 0;
         extraTimeFromEndRecordVarified = 0;
         extraTimeCompleteRecordVarified = 0;
-        lieuQty = 0;
-        lieuPaymentAllowed = false;
+    }
+
+    public void reset() {
+        resetFingerPrintRecordTime();
+        resetExtraTime();
+        resetLeaveData();
+        multiplyingFactorOverTime = 0;
+        multiplyingFactorSalary = 0;
+        basicPerSecond = 0;
     }
 
     public void processLieuQtyUtilized(LeaveType leaveType) {
@@ -853,12 +867,12 @@ public class StaffShift implements Serializable {
         calShiftStartEndTime();
         calDayOfWeek();
     }
-    
-    public void calDayOfWeek(){
-        Calendar cal=Calendar.getInstance();
+
+    public void calDayOfWeek() {
+        Calendar cal = Calendar.getInstance();
         cal.setTime(shiftDate);
-        dayOfWeek=cal.get(Calendar.DAY_OF_WEEK);
-        
+        dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+
     }
 
     public void calShiftStartEndTime() {
