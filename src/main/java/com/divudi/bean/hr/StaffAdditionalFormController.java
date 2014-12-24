@@ -55,6 +55,12 @@ public class StaffAdditionalFormController implements Serializable {
 
     public void deleteAdditionalForm() {
         if (getCurrentAdditionalForm() != null) {
+            if(getCurrentAdditionalForm().getStaffShift()!=null){
+                getCurrentAdditionalForm().getStaffShift().resetExtraTime();
+                staffShiftFacade.edit(getCurrentAdditionalForm().getStaffShift());
+            }
+            
+            
             currentAdditionalForm.setRetired(true);
             currentAdditionalForm.setRetirer(getSessionController().getLoggedUser());
             currentAdditionalForm.setRetiredAt(new Date());
@@ -228,6 +234,7 @@ public class StaffAdditionalFormController implements Serializable {
         }
 
         if (currentAdditionalForm.getStaffShift() != null) {
+            currentAdditionalForm.getStaffShift().resetExtraTime();
             currentAdditionalForm.getStaffShift().setHrForm(currentAdditionalForm);
             staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
         } else {

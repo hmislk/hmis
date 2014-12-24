@@ -111,8 +111,8 @@ public class HrReportController implements Serializable {
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
-     public void createFingerPrintRecordNoShiftSetted() {        
+
+    public void createFingerPrintRecordNoShiftSetted() {
         HashMap hm = new HashMap();
         String sql = "";
         sql = "select ss from FingerPrintRecord ss "
@@ -148,7 +148,6 @@ public class HrReportController implements Serializable {
             sql += " and ss.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-
 
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
@@ -425,8 +424,9 @@ public class HrReportController implements Serializable {
         sql = "select distinct(ss.staff)"
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-                + " and (ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -469,8 +469,9 @@ public class HrReportController implements Serializable {
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
-                + " and (ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -513,8 +514,9 @@ public class HrReportController implements Serializable {
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
-                + " and (ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -550,6 +552,58 @@ public class HrReportController implements Serializable {
         return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
 
+    private List<Object[]> fetchStaffShiftData() {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select ss.staff,"
+                + " sum(ss.earlyInVarified),"
+                + " sum(ss.earlyOutVarified),"
+                + " sum(ss.workedWithinTimeFrameVarified),"
+                + " sum(ss.workedOutSideTimeFrameVarified),"
+                + " sum(ss.workedTimeVarified),"
+                + " sum(ss.lateInVarified),"
+                + " sum(ss.lateOutVarified),"
+                + " sum(ss.extraTimeFromStartRecordVarified),"
+                + " sum(ss.extraTimeFromEndRecordVarified),"
+                + " sum(ss.extraTimeCompleteRecordVarified),"
+                + "sum(ss.leavedTime),"
+                + " sum(ss.leavedTimeNoPay),"
+                + " sum(ss.leavedTimeOther)"
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null)) "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " group by ss.staff "
+                + " order by ss.staff.codeInterger";
+        return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
+    }
+
     private long fetchExtraDutyDays(Staff staff) {
         String sql = "";
 
@@ -559,8 +613,9 @@ public class HrReportController implements Serializable {
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
                 + " and (ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)>0"
-                + " and (ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -603,9 +658,10 @@ public class HrReportController implements Serializable {
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
-                + " and (ss.lateInVarified)>0"
-                + " and (ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null ) "
+                + " and (ss.lateInVarified)>0 "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -649,8 +705,9 @@ public class HrReportController implements Serializable {
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
                 + " and ss.shift.dayType=:dtp"
-                + " and (ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -777,6 +834,45 @@ public class HrReportController implements Serializable {
         }
     }
 
+    public void createMonthEndStaffShiftReport() {
+        List<Object[]> list = fetchStaffShiftData();
+        staffShifts = new ArrayList<>();
+        for (Object[] obj : list) {
+            StaffShift s = new StaffShift();
+            Staff staff = (Staff) obj[0];
+            Double earlyInVarified = (Double) obj[1];
+            Double earlyOutVarified = (Double) obj[2];
+            Double workedWithinTimeFrameVarified = (Double) obj[3];
+            Double workedOutSideTimeFrameVarified = (Double) obj[4];
+            Double workedTimeVarified = (Double) obj[5];
+            Double lateInVarified = (Double) obj[6];
+            Double lateOutVarified = (Double) obj[7];
+            Double extraTimeFromStartRecordVarified = (Double) obj[8];
+            Double extraTimeFromEndRecordVarified = (Double) obj[9];
+            Double extraTimeCompleteRecordVarified = (Double) obj[10];
+            Double leavedTime = (Double) obj[11];
+            Double leavedTimeNoPay = (Double) obj[12];
+            Double leavedTimeOther = (Double) obj[13];
+
+            s.setStaff(staff);
+            s.setEarlyInVarified(earlyInVarified == null ? 0 : earlyInVarified);
+            s.setEarlyOutVarified(earlyOutVarified == null ? 0 : earlyOutVarified);
+            s.setWorkedWithinTimeFrameVarified(workedWithinTimeFrameVarified == null ? 0 : workedWithinTimeFrameVarified);
+            s.setWorkedOutSideTimeFrameVarified(workedOutSideTimeFrameVarified == null ? 0 : workedOutSideTimeFrameVarified);
+            s.setWorkedTimeVarified(workedTimeVarified == null ? 0 : workedTimeVarified);
+            s.setLateInVarified(lateInVarified == null ? 0 : lateInVarified);
+            s.setLateOutVarified(lateOutVarified == null ? 0 : lateOutVarified);
+            s.setExtraTimeFromStartRecordVarified(extraTimeFromStartRecordVarified == null ? 0 : extraTimeFromStartRecordVarified);
+            s.setExtraTimeFromEndRecordVarified(extraTimeFromEndRecordVarified == null ? 0 : extraTimeFromEndRecordVarified);
+            s.setExtraTimeCompleteRecordVarified(extraTimeCompleteRecordVarified == null ? 0 : extraTimeCompleteRecordVarified);
+            s.setLeavedTime(leavedTime == null ? 0 : leavedTime);
+            s.setLeavedTimeNoPay(leavedTimeNoPay == null ? 0 : leavedTimeNoPay);
+            s.setLeavedTimeOther(leavedTimeOther == null ? 0 : leavedTimeOther);
+
+            staffShifts.add(s);
+        }
+    }
+
     public void createMonthEndWorkTimeReportNoPay() {
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
         Long numOfWeeks = dateCount / 7;
@@ -832,7 +928,7 @@ public class HrReportController implements Serializable {
                 weekDayWork.setNoPay(noPays);
                 weekDayWorks.add(weekDayWork);
             }
-        
+
         }
     }
 
@@ -857,8 +953,9 @@ public class HrReportController implements Serializable {
                 + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-                + " and (ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
