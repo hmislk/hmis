@@ -492,9 +492,10 @@ public class StaffController implements Serializable {
             sql = "select c from Staff c"
                     + " where c.retired=false "
                     + " and type(c)!=:class"
-                    + " and upper(c.person.name) like :q "
+                    + " and (upper(c.person.name) like :q or upper(c.code) like :p) "
                     + " order by c.person.name";
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
+            hm.put("p", "%" + getSelectText().toUpperCase() + "%");
         }
 
         hm.put("class", Consultant.class);
