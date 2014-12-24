@@ -14,9 +14,9 @@ import javax.ejb.Stateless;
 public class FinalVariables {
 
 
-    public double getMaximumWorkingHourPerWeek() {
-        return 45;
-    }
+//    public double getMaximumWorkingHourPerWeek() {
+//        return 45;
+//    }
 
     public double getMinimumWorkingHourPerWeek() {
         return 28;

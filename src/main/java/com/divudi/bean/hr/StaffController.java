@@ -147,7 +147,7 @@ public class StaffController implements Serializable {
             formItems = new ArrayList<>();
         }
         
-        
+        fivs = new ArrayList<>();
         for(CommonReportItem crf : formItems){
             if(crf.getIxItemType() == InvestigationItemType.ItemsCatetgory || crf.getIxItemType() == InvestigationItemType.Value ){
                 FormItemValue fiv = formItemValue(crf, getCurrent().getPerson());
@@ -492,9 +492,10 @@ public class StaffController implements Serializable {
             sql = "select c from Staff c"
                     + " where c.retired=false "
                     + " and type(c)!=:class"
-                    + " and upper(c.person.name) like :q "
+                    + " and (upper(c.person.name) like :q or upper(c.code) like :p) "
                     + " order by c.person.name";
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
+            hm.put("p", "%" + getSelectText().toUpperCase() + "%");
         }
 
         hm.put("class", Consultant.class);
@@ -740,6 +741,7 @@ public class StaffController implements Serializable {
 
     public void changeStaff() {
         formItems = null;
+        listFormItems();
     }
 
     private StaffFacade getFacade() {
