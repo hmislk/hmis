@@ -87,6 +87,7 @@ public enum Privileges {
     LabDataentry,
     LabAutherizing,
     LabDeAutherizing,
+    LabRevertSample,
     LabPrinting,
     LabReprinting,
     LabSummeriesLevel1,

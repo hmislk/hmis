@@ -1498,7 +1498,7 @@ public class CommonReport implements Serializable {
         }
         return false;
     }
-
+    
     public void createLabCashierSummeryReport() {
 
         recreteModal();
