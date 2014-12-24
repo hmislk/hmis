@@ -1518,6 +1518,12 @@ public class PharmacyItemExcelManager implements Serializable {
 
             getPharmacyPurchaseController().makeNull();
 
+            int doeCol = 1;
+            int batchCol = 2;
+            int stockQtyCol = 3;
+            int pruchaseRateCol = 4;
+            int saleRateCol = 5;
+
             for (int i = startRow; i < sheet.getRows(); i++) {
 
                 Map m = new HashMap();
