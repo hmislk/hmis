@@ -258,7 +258,6 @@ public class StaffLeaveApplicationFormController implements Serializable {
 //                JsfUtil.addErrorMessage("Date range should be 1");
 //                return true;
 //            }
-
             if (ltp == LeaveType.Lieu && stf.getLieuQtyUtilized() != 0) {
                 JsfUtil.addErrorMessage("You cant get Liue leave from this Shift");
                 return true;
@@ -279,6 +278,46 @@ public class StaffLeaveApplicationFormController implements Serializable {
     @EJB
     HumanResourceBean humanResourceBean;
 
+    private List<StaffShift> fetchStaffShift(Date date, Staff staff) {
+        String sql = "select s from StaffShift s "
+                + " where s.retired=false "
+                + " and s.shiftDate=:dt "
+                + " and s.staff=:st ";
+        HashMap hm = new HashMap();
+        hm.put("dt", date);
+        hm.put("st", staff);
+
+        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void addLeaveDataToStaffShift(Date date, Staff staff, LeaveType ltp) {
+        List<StaffShift> list = fetchStaffShift(date, staff);
+        if (list == null) {
+            return;
+        }
+
+        for (StaffShift ss : list) {
+            ss.resetLeaveData();
+            ss.calLeaveTime();
+            ss.calLieu();
+            ss.setLeaveType(ltp);
+            staffShiftFacade.edit(ss);
+        }
+    }
+
+    public void removeLeaveDataFromStaffShift(Date date, Staff staff) {
+        List<StaffShift> list = fetchStaffShift(date, staff);
+        if (list == null) {
+            return;
+        }
+
+        for (StaffShift ss : list) {
+            ss.resetLeaveData();
+            ss.setLeaveType(null);           
+            staffShiftFacade.edit(ss);
+        }
+    }
+
     private void saveStaffLeaves() {
         Calendar nowDate = Calendar.getInstance();
         nowDate.setTime(getCurrentLeaveForm().getFromDate());
@@ -297,6 +336,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
             staffLeave.setForm(getCurrentLeaveForm());
             staffLeave.calLeaveQty();
             staffLeaveFacade.create(staffLeave);
+
+            addLeaveDataToStaffShift(staffLeave.getLeaveDate(), staffLeave.getStaff(), staffLeave.getLeaveType());
 
             nowDate.add(Calendar.DATE, 1);
         }
@@ -376,24 +417,26 @@ public class StaffLeaveApplicationFormController implements Serializable {
         leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
-    public void deleteStaffLeave(Form form){
-        String sql="Select l from StaffLeave l where l.form=:frm ";
-        HashMap nm=new HashMap();
+
+    public void deleteStaffLeave(Form form) {
+        String sql = "Select l from StaffLeave l where l.form=:frm ";
+        HashMap nm = new HashMap();
         nm.put("frm", form);
-        List<StaffLeave> list=staffLeaveFacade.findBySQL(sql, nm);
-        for(StaffLeave stf:list){
+        List<StaffLeave> list = staffLeaveFacade.findBySQL(sql, nm);
+        for (StaffLeave stf : list) {
             stf.setRetired(true);
             stf.setRetiredAt(new Date());
             stf.setRetirer(sessionController.getLoggedUser());
             staffLeaveFacade.edit(stf);
+            
+            removeLeaveDataFromStaffShift(stf.getLeaveDate(),stf.getStaff());
         }
     }
 
     public void deleteLeaveForm() {
         if (currentLeaveForm != null) {
             deleteStaffLeave(currentLeaveForm);
-            
+
             currentLeaveForm.setRetired(true);
             currentLeaveForm.setRetirer(getSessionController().getLoggedUser());
             currentLeaveForm.setRetiredAt(new Date());
