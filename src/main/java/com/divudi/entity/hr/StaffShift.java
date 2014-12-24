@@ -159,10 +159,15 @@ public class StaffShift implements Serializable {
         this.transChecked = transChecked;
     }
 
-    public void reset() {
-        multiplyingFactorOverTime = 0;
-        multiplyingFactorSalary = 0;
-        basicPerSecond = 0;
+    public void resetLeaveData() {
+        leavedTime = 0;
+        leavedTimeNoPay = 0;
+        leavedTimeOther = 0;
+        lieuQty = 0;
+        lieuPaymentAllowed = false;
+    }
+
+    public void resetFingerPrintRecordTime() {
         earlyInLogged = 0;
         earlyOutLogged = 0;
         earlyInVarified = 0;
@@ -177,17 +182,25 @@ public class StaffShift implements Serializable {
         lateOutVarified = 0;
         lateInLogged = 0;
         lateOutLogged = 0;
-        leavedTime = 0;
-        leavedTimeNoPay = 0;
-        leavedTimeOther = 0;
+
+    }
+
+    public void resetExtraTime() {
         extraTimeFromStartRecordLogged = 0;
         extraTimeFromEndRecordLogged = 0;
         extraTimeCompleteRecordLogged = 0;
         extraTimeFromStartRecordVarified = 0;
         extraTimeFromEndRecordVarified = 0;
         extraTimeCompleteRecordVarified = 0;
-        lieuQty = 0;
-        lieuPaymentAllowed = false;
+    }
+
+    public void reset() {
+        resetFingerPrintRecordTime();
+        resetExtraTime();
+        resetLeaveData();
+        multiplyingFactorOverTime = 0;
+        multiplyingFactorSalary = 0;
+        basicPerSecond = 0;
     }
 
     public void processLieuQtyUtilized(LeaveType leaveType) {

@@ -424,9 +424,9 @@ public class HrReportController implements Serializable {
         sql = "select distinct(ss.staff)"
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null) "
-                + " or (ss.leaveType is not null) ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -469,9 +469,9 @@ public class HrReportController implements Serializable {
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null) "
-                + " or (ss.leaveType is not null) ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -514,9 +514,9 @@ public class HrReportController implements Serializable {
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null) "
-                + " or (ss.leaveType is not null) ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -572,9 +572,9 @@ public class HrReportController implements Serializable {
                 + " sum(ss.leavedTimeOther)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null) "
-                + " or (ss.leaveType is not null)) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null)) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -613,9 +613,9 @@ public class HrReportController implements Serializable {
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
                 + " and (ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)>0"
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null) "
-                + " or (ss.leaveType is not null) ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -659,9 +659,9 @@ public class HrReportController implements Serializable {
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
                 + " and (ss.lateInVarified)>0 "
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null) "
-                + " or (ss.leaveType is not null) ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -705,9 +705,9 @@ public class HrReportController implements Serializable {
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
                 + " and ss.shift.dayType=:dtp"
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null) "
-                + " or (ss.leaveType is not null) ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -953,9 +953,9 @@ public class HrReportController implements Serializable {
                 + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null) "
-                + " or (ss.leaveType is not null) ) "
+//                + " and ((ss.startRecord.recordTimeStamp is not null "
+//                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
