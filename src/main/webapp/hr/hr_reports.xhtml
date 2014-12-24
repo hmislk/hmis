@@ -26,12 +26,16 @@
                                                  action="hr_report_attendance_early_out" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
-                                <p:commandButton value="(3) Late In " 
+                                <p:commandButton value="(4) Late In " 
                                                  action="hr_report_attendance_late_in" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
-                                <p:commandButton value="(3) Late Out " 
+                                <p:commandButton value="(5) Late Out " 
                                                  action="hr_report_attendance_late_out" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                    <p:commandButton value="(6) Late In and Early Out " 
+                                                 action="hr_report_attendance_late_in_early_out" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
                             </h:panelGrid>

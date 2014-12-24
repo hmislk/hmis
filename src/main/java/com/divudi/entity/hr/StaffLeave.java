@@ -55,6 +55,7 @@ public class StaffLeave implements Serializable {
     Form form;
     @ManyToOne
     Roster roster;
+    
 
     public Roster getRoster() {
         return roster;

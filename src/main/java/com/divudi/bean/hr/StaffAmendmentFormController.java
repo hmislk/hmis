@@ -173,31 +173,39 @@ public class StaffAmendmentFormController implements Serializable {
         if (fromStaffShift1st != null && toStaffShift1st != null) {
             fromStaffShift1st.setShift(toStaffShift1st.getShift());
             toStaffShift1st.setShift(fromStaffShift1st.getShift());
+            toStaffShift1st.setAmendmentForm(currAmendmentForm);
+            fromStaffShift1st.setAmendmentForm(currAmendmentForm);
             staffShiftFacade.edit(toStaffShift1st);
             staffShiftFacade.edit(fromStaffShift1st);
         }
 
         if (fromStaffShift2nd != null && toStaffShift2nd == null) {
             fromStaffShift2nd.setShift(null);
+            fromStaffShift2nd.setAmendmentForm(currAmendmentForm);
             staffShiftFacade.edit(fromStaffShift2nd);
         } else if (fromStaffShift2nd == null && toStaffShift2nd != null) {
             toStaffShift2nd.setShift(null);
+            toStaffShift2nd.setAmendmentForm(currAmendmentForm);
             staffShiftFacade.edit(toStaffShift2nd);
         } else if (fromStaffShift2nd != null && toStaffShift2nd != null) {
             fromStaffShift2nd.setShift(toStaffShift2nd.getShift());
             toStaffShift2nd.setShift(fromStaffShift2nd.getShift());
+            toStaffShift2nd.setAmendmentForm(currAmendmentForm);
+            fromStaffShift2nd.setAmendmentForm(currAmendmentForm);
             staffShiftFacade.edit(toStaffShift2nd);
             staffShiftFacade.edit(fromStaffShift2nd);
         }
 
         if (fromStaffShift1st != null && fromStaffShift1st.isTransChecked()) {
             fromStaffShift1st.setShift(null);
+            fromStaffShift1st.setAmendmentForm(currAmendmentForm);
             staffShiftFacade.edit(fromStaffShift1st);
 
         }
 
         if (fromStaffShift2nd != null && fromStaffShift2nd.isTransChecked()) {
             fromStaffShift2nd.setShift(null);
+            fromStaffShift2nd.setAmendmentForm(currAmendmentForm);
             staffShiftFacade.edit(fromStaffShift2nd);
 
         }

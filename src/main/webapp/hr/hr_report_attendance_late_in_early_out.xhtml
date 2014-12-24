@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Attendance Report" />
+                            <h:outputLabel value="Attendance Report (Late In and Early Out)" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -35,9 +35,14 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                             <h:outputLabel value="Shift : "/>
                             <hr:completeShift value="#{hrReportController.reportKeyWord.shift}"/>
+                            <h:outputLabel value="From Minute : "/>
+                            <p:inputText value="#{hrReportController.reportKeyWord.from}"/>
+                            <h:outputLabel value="To Minute : "/>
+                            <p:inputText value="#{hrReportController.reportKeyWord.to}"/>
+                            
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShiftLateIn()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShiftLateInEarlyOut()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -62,6 +67,16 @@
                                 </p:column>           
                                 <p:column headerText="Late In Minute Varified">
                                     <h:outputLabel value="#{ss.lateInVarified/60}">                                        
+                                        <f:convertNumber pattern="#0.00"/>
+                                    </h:outputLabel>
+                                </p:column>   
+                                <p:column headerText="Out Checked ">
+                                    <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                    </h:outputLabel>                                     
+                                </p:column>           
+                                <p:column headerText="Early Out Minute Varified">
+                                    <h:outputLabel value="#{ss.earlyOutVarified/60}">                                        
                                         <f:convertNumber pattern="#0.00"/>
                                     </h:outputLabel>
                                 </p:column>   
