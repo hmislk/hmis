@@ -1328,18 +1328,38 @@ public class PharmacyItemExcelManager implements Serializable {
                     continue;
                 }
                 //System.out.println("vmp = " + vmp.getName());
+                
+                //Code
+                cell = sheet.getCell(codeCol, i);
+                strCode = cell.getContents();
+                //System.out.println("strCode = " + strCode);
+                
+                
+                
+                //Code
+                cell = sheet.getCell(barcodeCol, i);
+                strBarcode = cell.getContents();
+                //System.out.println("strBarCode = " + strBarcode);
+               
+                //Distributor
+                cell = sheet.getCell(distributorCol, i);
+                
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("v", vmp);
-                m.put("n", strAmp);
+                m.put("n", strAmp.toUpperCase());
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.name)=:n "
+                            + " AND c.vmp=:v", m);
+                    System.out.println("m = " + m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
+                        amp.setCode(strCode);
+                        amp.setBarcode(strBarcode);
                         amp.setMeasurementUnit(strengthUnit);
                         amp.setDblValue((double) strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
@@ -1365,6 +1385,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 strCode = cell.getContents();
                 //System.out.println("strCode = " + strCode);
                 amp.setCode(strCode);
+                System.out.println("Code = " + amp.getCode());
                 getAmpFacade().edit(amp);
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
