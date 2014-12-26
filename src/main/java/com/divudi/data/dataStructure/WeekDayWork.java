@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.divudi.data.dataStructure;
 
 import com.divudi.entity.Staff;
@@ -13,6 +12,7 @@ import com.divudi.entity.Staff;
  * @author safrin
  */
 public class WeekDayWork {
+
     private Staff staff;
     private double sunDay;
     private double monDay;
@@ -25,15 +25,19 @@ public class WeekDayWork {
     double overTime;
     double noPay;
 
-    public double getNoPay() {
-        return noPay;
+    public String getNoPay() {
+        return getDate(noPay);
     }
 
     public void setNoPay(double noPay) {
         this.noPay = noPay;
     }
-        
-    public double getTotal() {
+
+    public String getTotal() {
+        return getDate(total);
+    }
+    
+    public double getTotalDouble() {
         return total;
     }
 
@@ -41,15 +45,13 @@ public class WeekDayWork {
         this.total = total;
     }
 
-    public double getOverTime() {
-        return overTime;
+    public String getOverTime() {
+        return getDate(overTime);
     }
 
     public void setOverTime(double overTime) {
         this.overTime = overTime;
     }
-    
-    
 
     public Staff getStaff() {
         return staff;
@@ -59,61 +61,72 @@ public class WeekDayWork {
         this.staff = staff;
     }
 
-    public double getSunDay() {
-        return sunDay;
+    private String getDate(double seconds) {
+        if (seconds == 0.0) {
+            return "";
+        }
+
+        long s = (long)seconds % 60;
+        long m = ((long)seconds / 60) % 60;
+        long h = ((long)seconds / (60 * 60)) % 24;
+        return String.format("%d:%02d:%02d", h, m, s);
+    }
+
+    public String getSunDay() {
+        return getDate(sunDay);
     }
 
     public void setSunDay(double sunDay) {
         this.sunDay = sunDay;
     }
 
-    public double getMonDay() {
-        return monDay;
+    public String getMonDay() {
+        return getDate(monDay);
+
     }
 
     public void setMonDay(double monDay) {
         this.monDay = monDay;
     }
 
-    public double getTuesDay() {
-        return tuesDay;
+    public String getTuesDay() {
+        return getDate(tuesDay);
     }
 
     public void setTuesDay(double tuesDay) {
         this.tuesDay = tuesDay;
     }
 
-    public double getWednesDay() {
-        return wednesDay;
+    public String getWednesDay() {
+        return getDate(wednesDay);
     }
 
     public void setWednesDay(double wednesDay) {
         this.wednesDay = wednesDay;
     }
 
-    public double getThursDay() {
-        return thursDay;
+    public String getThursDay() {
+        return getDate(thursDay);
     }
 
     public void setThursDay(double thursDay) {
         this.thursDay = thursDay;
     }
 
-    public double getFriDay() {
-        return friDay;
+    public String getFriDay() {
+        return getDate(friDay);
     }
 
     public void setFriDay(double friDay) {
         this.friDay = friDay;
     }
 
-    public double getSaturDay() {
-        return saturDay;
+    public String getSaturDay() {
+        return getDate(saturDay);
     }
 
     public void setSaturDay(double saturDay) {
         this.saturDay = saturDay;
     }
-    
-    
+
 }
