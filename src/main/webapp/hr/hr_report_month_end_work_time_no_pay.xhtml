@@ -49,33 +49,51 @@
                                     #{ss.staff.person.name}
                                 </p:column>
                                 <p:column headerText="Sun">
-                                    #{ss.sunDay}
+                                    <h:outputLabel  value="#{ss.sunDay*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Mon">
-                                    #{ss.monDay}
+                                    <h:outputLabel  value="#{ss.monDay*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Tue">
-                                    #{ss.tuesDay}
+                                    <h:outputLabel  value="#{ss.tuesDay*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Wed">
-                                    #{ss.wednesDay}
+                                    <h:outputLabel  value="#{ss.wednesDay*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Thur">
-                                    #{ss.thursDay}
+                                    <h:outputLabel  value="#{ss.thursDay*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Fri">
-                                    #{ss.friDay}
+                                    <h:outputLabel  value="#{ss.friDay*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Sat">
-                                    #{ss.saturDay}
+                                    <h:outputLabel  value="#{ss.saturDay*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
-                                  <p:column headerText="Total">
-                                    #{ss.total}
+                                <p:column headerText="Total">
+                                    <h:outputLabel  value="#{ss.total*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
-                                  <p:column headerText="Over Time">
-                                    #{ss.noPay}
+                                <p:column headerText="No Pay Time">
+                                    <h:outputLabel  value="#{ss.noPay*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
-                               
+
 
                             </p:dataTable>
                         </p:panel>
