@@ -58,7 +58,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     FingerPrintRecordFacade fingerPrintRecordFacade;
     @EJB
     StaffLeaveFacade staffLeaveFacade;
-    String errorMessage = "";
+    private List<String> errorMessage = null;
 
     public StaffLeaveFacade getStaffLeaveFacade() {
         return staffLeaveFacade;
@@ -66,14 +66,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     public void setStaffLeaveFacade(StaffLeaveFacade staffLeaveFacade) {
         this.staffLeaveFacade = staffLeaveFacade;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
     }
 
     public DayType getDayType() {
@@ -107,7 +99,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     public void makeTableNull() {
         shiftTables = null;
-        errorMessage = "";
+        errorMessage = null;
     }
 
     public void listenStart(StaffShift staffShift) {
@@ -406,9 +398,10 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //    }
     private boolean errorCheckForSave(ShiftTable st) {
 
-        SimpleDateFormat ft = new SimpleDateFormat("MM dd");
+        SimpleDateFormat ft = new SimpleDateFormat("yyyy MMM dd");
 
         String date = ft.format(st.getDate());
+        String message = "";
 
         for (StaffShift ss : st.getStaffShift()) {
             String code = ss.getStaff().getCode();
@@ -421,17 +414,19 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             if (ss.getPreviousStaffShift() == null) {
                 if (ss.getStartRecord() == null) {
-                    errorMessage += date
+                    message = date
                             + " -> " + code
-                            + "  Has No Starting Record \r ";
+                            + "  Has No Starting Record";
+                    errorMessage.add(message);
 //                        System.err.println("SS " + ss.getId());
 //                    UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
                 if (ss.getStartRecord().getRecordTimeStamp() == null) {
-                    errorMessage += st.getDate()
+                    message = date
                             + " -> " + code
                             + " Some Starting Records Has No Time \r ";
+                    errorMessage.add(message);
 //                    UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
@@ -439,16 +434,18 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             if (ss.getNextStaffShift() == null) {
                 if (ss.getEndRecord() == null) {
-                    errorMessage += st.getDate()
+                    message = date
                             + " -> " + code
                             + " Some End Records Has No Starting Record \r";
+                    errorMessage.add(message);
 //                    UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
                 if (ss.getEndRecord().getRecordTimeStamp() == null) {
-                    errorMessage += st.getDate()
+                    message = date
                             + " -> " + code
                             + " Some End Records Has No Time \r ";
+                    errorMessage.add(message);
 //                    UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
@@ -460,13 +457,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void save() {
-        errorMessage = "";
+        errorMessage = new ArrayList<>();
 
 //        System.err.println("1");
         if (shiftTables == null) {
             final String empty_List = "Empty List";
             UtilityController.addErrorMessage(empty_List);
-            errorMessage = empty_List;
+            errorMessage.add(empty_List);
             return;
         }
 
@@ -606,6 +603,17 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public ShiftFingerPrintAnalysisController() {
+    }
+
+    public List<String> getErrorMessage() {
+        if (errorMessage == null) {
+            errorMessage = new ArrayList<>();
+        }
+        return errorMessage;
+    }
+
+    public void setErrorMessage(List<String> errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
 }
