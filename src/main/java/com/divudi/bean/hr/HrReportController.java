@@ -811,7 +811,6 @@ public class HrReportController implements Serializable {
             monthEnd.setExtraDutyDays(fetchExtraDutyDays(stf));
             monthEnd.setLatedays(fetchLateDays(stf));
             monthEnd.setDayoff(fetchDayOff(stf));
-
             monthEndRecords.add(monthEnd);
         }
     }
