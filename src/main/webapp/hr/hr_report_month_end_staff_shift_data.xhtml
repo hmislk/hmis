@@ -47,8 +47,7 @@
                                     #{ss.staff.person.name}
                                 </p:column>
                                 <p:column headerText="Worked Time All ">
-                                    <h:outputLabel rendered="#{ss.workedTimeVarified!=0}"  value="#{ss.workedTimeVarified*1000}">
-                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    <h:outputLabel rendered="#{ss.workedTimeVarified!=0}"  value="#{ss.workedTimeVarified/(60*60)}">
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Worked Time Within Shift">
@@ -62,8 +61,8 @@
                                     </h:outputLabel>                                    
                                 </p:column>
                                 <p:column headerText="Late In">
-                                     <h:outputLabel rendered="#{ss.lateInVarified!=0}"  value="#{ss.lateInVarified*1000}">
-                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                     <h:outputLabel rendered="#{ss.lateInVarified!=0}"  value="#{ss.lateInVarified/(60)}">
+                                        
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Late Out">
