@@ -36,6 +36,7 @@ import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
+import java.awt.Robot;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -260,6 +261,21 @@ public class HumanResourceBean {
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
+    
+     public List<Staff> fetchStaffShift(Date fromDate,Date toDate,Roster rs) {
+        Map m = new HashMap();
+        m.put("frm", fromDate);
+        m.put("to", toDate);
+        m.put("rs", rs);
+        String sql = "Select distinct(ss.staff) from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.roster=:rs "
+                + " and ss.shiftDate between :frm and :to "
+                + " order by ss.staff.codeInterger ";
+
+        return getStaffFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
 
     public List<StaffShift> fetchStaffShift(Date date, Roster roster) {
         Map m = new HashMap();
@@ -756,6 +772,8 @@ public class HumanResourceBean {
 
         return list;
     }
+    
+    
 
     public List<Staff> fetchStaffFromShift(Date date) {
         Map m = new HashMap();

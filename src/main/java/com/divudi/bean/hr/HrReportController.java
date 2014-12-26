@@ -1083,14 +1083,14 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
         if (getReportKeyWord().getFrom() != 0) {
-            sql += " and (ss.lateInVarified>= :frm "
-                    + " or ss.earlyOutVarified>= :frm) ";
-            hm.put("frm", getReportKeyWord().getFrom());
+            sql += " and (ss.lateInVarified>= :frmTime "
+                    + " or ss.earlyOutVarified>= :frmTime) ";
+            hm.put("frmTime", getReportKeyWord().getFrom());
         }
         if (getReportKeyWord().getTo() != 0) {
-            sql += " and (ss.lateInVarified<= :to "
-                    + " or ss.earlyOutVarified<= :to) ";
-            hm.put("to", getReportKeyWord().getTo());
+            sql += " and (ss.lateInVarified<= :toTime "
+                    + " or ss.earlyOutVarified<= :toTime) ";
+            hm.put("toTime", getReportKeyWord().getTo());
         }
 //        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
