@@ -52,40 +52,64 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Worked Time Within Shift">
-                                    #{ss.workedWithinTimeFrameVarified}
+                                     <h:outputLabel  value="#{ss.workedWithinTimeFrameVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>                                    
                                 </p:column>
                                 <p:column headerText="Worked Time Out Side Shift">
-                                    #{ss.workedOutSideTimeFrameVarified}
+                                     <h:outputLabel  value="#{ss.workedOutSideTimeFrameVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>                                    
                                 </p:column>
                                 <p:column headerText="Late In">
-                                    #{ss.lateInVarified}
+                                     <h:outputLabel  value="#{ss.lateInVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Late Out">
-                                    #{ss.lateOutVarified}
+                                     <h:outputLabel  value="#{ss.lateOutVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Early In">
-                                    #{ss.earlyInVarified}
+                                     <h:outputLabel  value="#{ss.earlyInVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Early Out">
-                                    #{ss.earlyOutVarified}
+                                     <h:outputLabel  value="#{ss.earlyOutVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty From Start">
-                                    #{ss.extraTimeFromStartRecordVarified}
+                                     <h:outputLabel  value="#{ss.extraTimeFromStartRecordVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty From End">
-                                    #{ss.extraTimeFromEndRecordVarified}
+                                     <h:outputLabel  value="#{ss.extraTimeFromEndRecordVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Complete">
-                                    #{ss.extraTimeCompleteRecordVarified}
+                                     <h:outputLabel  value="#{ss.extraTimeCompleteRecordVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Leaved Time">
-                                    #{ss.leavedTime}
+                                     <h:outputLabel  value="#{ss.leavedTime*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Leaved Time No Pay">
-                                    #{ss.leavedTimeNoPay}
+                                     <h:outputLabel  value="#{ss.leavedTimeNoPay*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Leaved Time Other">
-                                    #{ss.leavedTimeOther}
+                                     <h:outputLabel  value="#{ss.leavedTimeOther*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
