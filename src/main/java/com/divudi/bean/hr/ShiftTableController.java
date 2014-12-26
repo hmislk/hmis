@@ -60,7 +60,7 @@ public class ShiftTableController implements Serializable {
         dateRange = 0l;
         roster = null;
         shiftTables = null;
-        
+
     }
 
     private boolean errorCheck() {
@@ -226,7 +226,7 @@ public class ShiftTableController implements Serializable {
 //            for (StaffShift ss : staffShifts) {
 //                netT.getStaffShift().add(ss);
 //            }
-            List<Staff> staffs = getHumanResourceBean().fetchStaff(roster);
+            List<Staff> staffs = getHumanResourceBean().fetchStaffShift(fromDate, toDate, roster);
 
             for (Staff staff : staffs) {
                 List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);

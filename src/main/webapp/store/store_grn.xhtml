@@ -122,15 +122,15 @@
                             </f:facet>                       
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
-                                    <p:ajax process="@this" event="keyup" update="retail retailIn retailIn1 retailIn2" listener="#{storeGrnController.purchaseRateUpdateListner(bi)}" />
-                                    <p:ajax process="@this" event="blur" update="retail retailIn retailIn1 retailIn2" listener="#{storeGrnController.purchaseRateUpdateListner(bi)}" />
+<!--                                    <p:ajax process="@this" event="keyup" update="retail retailIn retailIn1 retailIn2" listener="#{storeGrnController.purchaseRateUpdateListner(bi)}" />
+                                    <p:ajax process="@this" event="blur" update="retail retailIn retailIn1 retailIn2" listener="#{storeGrnController.purchaseRateUpdateListner(bi)}" />-->
                                 </p:inputText>
                                 
                             </f:facet>
                         </p:cellEditor>                       
                     </p:column>                  
 
-                    <p:column headerText="Sale Price"  > 
+<!--                    <p:column headerText="Issue Price" > 
                         <p:cellEditor>
                             <f:facet name="output">
                                 <h:panelGroup id="retail">
@@ -146,7 +146,12 @@
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>                      
-                    </p:column>  
+                    </p:column>-->
+                    
+                    <p:column headerText="Last Purchase Price Price"  > 
+                        <h:outputText  value="#{bi.pharmaceuticalBillItem.lastPurchaseRate}" >                                   
+                        </h:outputText>                      
+                    </p:column>
 
                     <p:column headerText="Total"  >  
                         <h:panelGroup id="total">

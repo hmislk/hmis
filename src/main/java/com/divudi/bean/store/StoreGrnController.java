@@ -170,12 +170,11 @@ public class StoreGrnController implements Serializable {
 
     public String errorCheck(Bill b, List<BillItem> billItems) {
         String msg = "";
-        
-        for(BillItem bi : billItems){
-            if(bi.getPharmaceuticalBillItem().getPurchaseRate() > bi.getPharmaceuticalBillItem().getRetailRate())
-           msg = "Check Purchase Rate and Retail Rate"; 
-        }
 
+//        for(BillItem bi : billItems){
+//            if(bi.getPharmaceuticalBillItem().getPurchaseRate() > bi.getPharmaceuticalBillItem().getRetailRate())
+//           msg = "Check Purchase Rate and Retail Rate"; 
+//        }
         if (b.getInvoiceNumber() == null || "".equals(b.getInvoiceNumber().trim())) {
             msg = "Please Fill invoice number";
         }
@@ -222,6 +221,14 @@ public class StoreGrnController implements Serializable {
         if (!msg.isEmpty()) {
             UtilityController.addErrorMessage(msg);
             return;
+        }
+
+        for (BillItem bi : billItems) {
+                System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
+                System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
+                bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
+                System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
+                System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
         }
 
         storeCalculation.calSaleFreeValue(getGrnBill());
@@ -341,8 +348,8 @@ public class StoreGrnController implements Serializable {
         printPreview = true;
 
     }
-    
-    public void purchaseRateUpdateListner(BillItem bi){
+
+    public void purchaseRateUpdateListner(BillItem bi) {
         bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
         System.out.println("Updated Purchase Rate Update Listner");
     }
@@ -547,7 +554,7 @@ public class StoreGrnController implements Serializable {
         System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
 
         billItem.setSearialNo(getBillItems().size());
-       // billItem.setId(billItem.getSearialNoInteger().longValue());
+        // billItem.setId(billItem.getSearialNoInteger().longValue());
 
 //        billItem.setSearialNo(getBillItems().size() + 1);        
         getBillItems().add(billItem);
