@@ -161,6 +161,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //
 //        return (AdditionalForm) formFacade.findBySQL(sql, hm);
 //    }
+    
     public void createShiftTable() {
         if (errorCheck()) {
             return;
@@ -215,8 +216,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 FingerPrintRecord fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
                 FingerPrintRecord fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
 
-                if (ss.getHrForm() != null && ss.getHrForm() instanceof AdditionalForm) {
-                    AdditionalForm additionalForm = (AdditionalForm) ss.getHrForm();
+                if (ss.getAdditionalForm() != null && ss.getAdditionalForm() instanceof AdditionalForm) {
+                    AdditionalForm additionalForm = (AdditionalForm) ss.getAdditionalForm();
 
                     if (fingerPrintRecordIn == null) {
                         fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(additionalForm);
@@ -282,11 +283,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     }
                 }
 
-                if (ss.getHrForm() != null) {
-                    if (ss.getHrForm() instanceof AdditionalForm) {
-                        AdditionalForm additionalForm = (AdditionalForm) ss.getHrForm();
+                if (ss.getAdditionalForm() != null) {
+                    if (ss.getAdditionalForm() instanceof AdditionalForm) {
+                        AdditionalForm additionalForm = (AdditionalForm) ss.getAdditionalForm();
 
-                        switch (ss.getHrForm().getTimes()) {
+                        switch (ss.getAdditionalForm().getTimes()) {
                             case inTime:
                                 ss.getStartRecord().setAllowedExtraDuty(true);
                                 ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
@@ -497,14 +498,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.calCulateTimes();
                 //Update Extra Time
                 ss.calExtraTimeWithStartOrEndRecord();
-                //UPDATE Leave
-                ss.calLeaveTime();
                 //Update Staff Shift OT time if DayOff or Sleeping Day                
                 ss.calExtraTimeComplete();
 
                 ss.calMultiplyingFactor(ss.getShift().getDayType());
                 DayType dt = humanResourceBean.isHolidayWithDayType(ss.getShiftDate());
                 ss.calMultiplyingFactor(dt);
+
+                //UPDATE Leave
+                ss.calLeaveTime();
                 //Update Lieu Leave
                 ss.calLieu();
 

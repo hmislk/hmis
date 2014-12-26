@@ -21,6 +21,13 @@ import javax.persistence.ManyToOne;
 /**
  *
  * @author Buddhika
+ * 
+ * 
+ * Table creation sql for MySQL 
+ * 
+ * 
+ * 
+ * 
  */
 @Entity
 public class FormItemValue implements Serializable {
@@ -54,6 +61,11 @@ public class FormItemValue implements Serializable {
     Category category;
     @ManyToOne
     Person referringPerson;
+
+    public FormItemValue() {
+    }
+    
+    
     
     
     public String getStrValue() {

@@ -235,13 +235,13 @@ public class StaffAdditionalFormController implements Serializable {
 
         if (currentAdditionalForm.getStaffShift() != null) {
             currentAdditionalForm.getStaffShift().resetExtraTime();
-            currentAdditionalForm.getStaffShift().setHrForm(currentAdditionalForm);
+            currentAdditionalForm.getStaffShift().setAdditionalForm(currentAdditionalForm);
             staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
         } else {
             StaffShiftExtra staffShiftExtra = new StaffShiftExtra();
             staffShiftExtra.setCreatedAt(new Date());
             staffShiftExtra.setCreater(sessionController.getLoggedUser());
-            staffShiftExtra.setHrForm(currentAdditionalForm);
+            staffShiftExtra.setAdditionalForm(currentAdditionalForm);
             staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
             staffShiftExtra.setShiftDate(date);
             staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
