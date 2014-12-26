@@ -860,11 +860,11 @@ public class HrReportController implements Serializable {
                         break;
                 }
 
-                weekDayWork.setTotal(weekDayWork.getTotal() + value);
+                weekDayWork.setTotal(weekDayWork.getTotalDouble()+ value);
             }
 
             double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
-            double overTime = weekDayWork.getTotal() - normalWorkTime;
+            double overTime = weekDayWork.getTotalDouble() - normalWorkTime;
 
             if (overTime > 0) {
                 weekDayWork.setOverTime(overTime);
@@ -958,11 +958,11 @@ public class HrReportController implements Serializable {
                         break;
                 }
 
-                weekDayWork.setTotal(weekDayWork.getTotal() + value);
+                weekDayWork.setTotal(weekDayWork.getTotalDouble() + value);
             }
 
             double normalWorkTime = numOfWeeks * stf.getWorkingTimeForNoPayPerWeek() * 60 * 60;
-            double noPays = weekDayWork.getTotal() - normalWorkTime;
+            double noPays = weekDayWork.getTotalDouble() - normalWorkTime;
 
             if (noPays < 0) {
                 weekDayWork.setNoPay(noPays);
