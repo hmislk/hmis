@@ -24,14 +24,14 @@ public class LongToPeriodConvertor implements Converter {
 
     @Override
     public String getAsString(FacesContext context, UIComponent component, Object value) {
-        Long seconds = (Long) value;
+        Double seconds = (Double) value;
         if (seconds == null || seconds == 0.0) {
             return "";
         }
 
-        long s = (long) seconds % 60;
-        long m = ((long) seconds / 60) % 60;
-        long h = ((long) seconds / (60 * 60)) % 24;
+        long s =  seconds.longValue() % 60;
+        long m = (seconds.longValue() / 60) % 60;
+        long h = (seconds.longValue() / (60 * 60)) % 24;
         return String.format("%d:%02d:%02d", h, m, s);
     }
 
