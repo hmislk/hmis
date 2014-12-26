@@ -47,7 +47,9 @@
                                     #{ss.staff.person.name}
                                 </p:column>
                                 <p:column headerText="Worked Time All ">
-                                    #{ss.workedTimeVarified}
+                                    <h:outputLabel  value="#{ss.workedTimeVarified*1000}">
+                                        <f:convertDateTime pattern="hh:mm:s"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Worked Time Within Shift">
                                     #{ss.workedWithinTimeFrameVarified}
