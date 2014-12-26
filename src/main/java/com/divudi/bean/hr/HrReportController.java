@@ -79,7 +79,7 @@ public class HrReportController implements Serializable {
     public void createFingerPrintRecordLogged() {
         String sql = "";
         HashMap hm = new HashMap();
-        sql = createStaffShiftQuary(hm);
+        sql = createFingerPrintQuary(hm);
         sql += " and ss.fingerPrintRecordType=:ftp";
         hm.put("ftp", FingerPrintRecordType.Logged);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
@@ -105,7 +105,7 @@ public class HrReportController implements Serializable {
     public void createFingerPrintRecordVarified() {
         String sql = "";
         HashMap hm = new HashMap();
-        sql = createStaffShiftQuary(hm);
+        sql = createFingerPrintQuary(hm);
         sql += " and ss.fingerPrintRecordType=:ftp";
         hm.put("ftp", FingerPrintRecordType.Varified);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
@@ -189,6 +189,48 @@ public class HrReportController implements Serializable {
             sql += " and ss.staffShift.shift=:sh";
             hm.put("sh", getReportKeyWord().getShift());
         }
+
+    }
+    
+    public String createFingerPrintQuary(HashMap hm) {
+        String sql="";
+        sql = "select ss from FingerPrintRecord ss"
+                + " where ss.retired=false"
+                + " and ss.recordTimeStamp between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getShift() != null) {
+            sql += " and ss.staffShift.shift=:sh";
+            hm.put("sh", getReportKeyWord().getShift());
+        }
+        
+        return sql;
 
     }
 
