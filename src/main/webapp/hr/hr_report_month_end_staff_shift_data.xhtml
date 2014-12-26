@@ -102,7 +102,7 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Leaved Time No Pay">
-                                     <h:outputLabel  value="#{ss.leavedTimeNoPay*1000}">
+                                    <h:outputLabel rendered="#{ss.leavedTimeNoPay!=0}"  value="#{ss.leavedTimeNoPay*1000}">
                                         <f:convertDateTime pattern="hh:mm:s"/>
                                     </h:outputLabel>
                                 </p:column>
