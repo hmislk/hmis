@@ -131,7 +131,7 @@ public class StaffShift implements Serializable {
     LeaveType leaveType;
     double qty;
     @ManyToOne
-    @Column(name = "hrForm")
+//    @Column(name = "hrForm")
     HrForm additionalForm;
     @ManyToOne
     HrForm leaveForm;
