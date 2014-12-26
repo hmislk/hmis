@@ -26,6 +26,7 @@ import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -161,7 +162,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //
 //        return (AdditionalForm) formFacade.findBySQL(sql, hm);
 //    }
-    
     public void createShiftTable() {
         if (errorCheck()) {
             return;
@@ -405,6 +405,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        return false;
 //    }
     private boolean errorCheckForSave(ShiftTable st) {
+        String oldstring = st.getDate().toString();
+        Date date = null;
+
+        try {
+            date = new SimpleDateFormat("dd/MM").parse(oldstring);
+        } catch (Exception e) {
+            date = st.getDate();
+        }
+
         for (StaffShift ss : st.getStaffShift()) {
 
             if (ss.getShift().getDayType() == DayType.DayOff
@@ -415,14 +424,17 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             if (ss.getPreviousStaffShift() == null) {
                 if (ss.getStartRecord() == null) {
-                    errorMessage += st.getDate() + " Some Starting Records Has"
-                            + " No Starting Record <br/>";
+                    errorMessage += date
+                            + " -> " + ss.getStaff().getStaffCode()
+                            + "  Has No Starting Record \n ";
 //                        System.err.println("SS " + ss.getId());
                     UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
                 if (ss.getStartRecord().getRecordTimeStamp() == null) {
-                    errorMessage += st.getDate() + " Some Starting Records Has No Time <br/> ";
+                    errorMessage += st.getDate()
+                            + " -> " + ss.getStaff().getStaffCode()
+                            + " Some Starting Records Has No Time \n ";
                     UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
@@ -430,12 +442,16 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             if (ss.getNextStaffShift() == null) {
                 if (ss.getEndRecord() == null) {
-                    errorMessage += st.getDate() + " Some End Records Has No Starting Record <br/>";
+                    errorMessage += st.getDate()
+                            + " -> " + ss.getStaff().getStaffCode()
+                            + " Some End Records Has No Starting Record \n";
                     UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
                 if (ss.getEndRecord().getRecordTimeStamp() == null) {
-                    errorMessage += st.getDate() + " Some End Records Has No Time <br/>";
+                    errorMessage += st.getDate()
+                            + " -> " + ss.getStaff().getStaffCode()
+                            + " Some End Records Has No Time \n ";
                     UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
@@ -447,6 +463,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void save() {
+        errorMessage = "";
+
 //        System.err.println("1");
         if (shiftTables == null) {
             final String empty_List = "Empty List";
@@ -514,7 +532,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
         }
 
-        UtilityController.addSuccessMessage("All Record Successfully Updated");
+//        UtilityController.addSuccessMessage("All Record Successfully Updated");
 
     }
 
