@@ -55,12 +55,11 @@ public class StaffAdditionalFormController implements Serializable {
 
     public void deleteAdditionalForm() {
         if (getCurrentAdditionalForm() != null) {
-            if(getCurrentAdditionalForm().getStaffShift()!=null){
+            if (getCurrentAdditionalForm().getStaffShift() != null) {
                 getCurrentAdditionalForm().getStaffShift().resetExtraTime();
                 staffShiftFacade.edit(getCurrentAdditionalForm().getStaffShift());
             }
-            
-            
+
             currentAdditionalForm.setRetired(true);
             currentAdditionalForm.setRetirer(getSessionController().getLoggedUser());
             currentAdditionalForm.setRetiredAt(new Date());
@@ -217,6 +216,16 @@ public class StaffAdditionalFormController implements Serializable {
             return true;
         }
 
+        if (date == null) {
+            JsfUtil.addErrorMessage("Please Select Date");
+            return true;
+        }
+
+        if (currentAdditionalForm.getStaffShift() == null) {
+            JsfUtil.addErrorMessage("Please Select Staff Shiftt");
+            return true;
+        }
+
         //NEED To Check StaffSHift  if not selected is there any shift time on that day
         return false;
     }
@@ -235,13 +244,13 @@ public class StaffAdditionalFormController implements Serializable {
 
         if (currentAdditionalForm.getStaffShift() != null) {
             currentAdditionalForm.getStaffShift().resetExtraTime();
-            currentAdditionalForm.getStaffShift().setHrForm(currentAdditionalForm);
+            currentAdditionalForm.getStaffShift().setAdditionalForm(currentAdditionalForm);
             staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
         } else {
             StaffShiftExtra staffShiftExtra = new StaffShiftExtra();
             staffShiftExtra.setCreatedAt(new Date());
             staffShiftExtra.setCreater(sessionController.getLoggedUser());
-            staffShiftExtra.setHrForm(currentAdditionalForm);
+            staffShiftExtra.setAdditionalForm(currentAdditionalForm);
             staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
             staffShiftExtra.setShiftDate(date);
             staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());

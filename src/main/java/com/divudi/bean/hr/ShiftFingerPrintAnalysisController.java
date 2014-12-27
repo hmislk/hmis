@@ -26,6 +26,7 @@ import com.divudi.facade.StaffShiftFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -57,7 +58,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     FingerPrintRecordFacade fingerPrintRecordFacade;
     @EJB
     StaffLeaveFacade staffLeaveFacade;
-    String errorMessage = "";
+    private List<String> errorMessage = null;
 
     public StaffLeaveFacade getStaffLeaveFacade() {
         return staffLeaveFacade;
@@ -65,14 +66,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     public void setStaffLeaveFacade(StaffLeaveFacade staffLeaveFacade) {
         this.staffLeaveFacade = staffLeaveFacade;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
     }
 
     public DayType getDayType() {
@@ -106,7 +99,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     public void makeTableNull() {
         shiftTables = null;
-        errorMessage = "";
+        errorMessage = null;
     }
 
     public void listenStart(StaffShift staffShift) {
@@ -215,8 +208,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 FingerPrintRecord fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
                 FingerPrintRecord fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
 
-                if (ss.getHrForm() != null && ss.getHrForm() instanceof AdditionalForm) {
-                    AdditionalForm additionalForm = (AdditionalForm) ss.getHrForm();
+                if (ss.getAdditionalForm() != null && ss.getAdditionalForm() instanceof AdditionalForm) {
+                    AdditionalForm additionalForm = (AdditionalForm) ss.getAdditionalForm();
 
                     if (fingerPrintRecordIn == null) {
                         fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(additionalForm);
@@ -282,11 +275,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     }
                 }
 
-                if (ss.getHrForm() != null) {
-                    if (ss.getHrForm() instanceof AdditionalForm) {
-                        AdditionalForm additionalForm = (AdditionalForm) ss.getHrForm();
+                if (ss.getAdditionalForm() != null) {
+                    if (ss.getAdditionalForm() instanceof AdditionalForm) {
+                        AdditionalForm additionalForm = (AdditionalForm) ss.getAdditionalForm();
 
-                        switch (ss.getHrForm().getTimes()) {
+                        switch (ss.getAdditionalForm().getTimes()) {
                             case inTime:
                                 ss.getStartRecord().setAllowedExtraDuty(true);
                                 ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
@@ -404,7 +397,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        return false;
 //    }
     private boolean errorCheckForSave(ShiftTable st) {
+
+        SimpleDateFormat ft = new SimpleDateFormat("yyyy MMM dd");
+
+        String date = ft.format(st.getDate());
+        String message = "";
+
         for (StaffShift ss : st.getStaffShift()) {
+            String code = ss.getStaff().getCode();
 
             if (ss.getShift().getDayType() == DayType.DayOff
                     || ss.getShift().getDayType() == DayType.SleepingDay
@@ -414,28 +414,39 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             if (ss.getPreviousStaffShift() == null) {
                 if (ss.getStartRecord() == null) {
-                    errorMessage += st.getDate() + " Some Starting Records Has"
-                            + " No Starting Record <br/>";
+                    message = date
+                            + " -> " + code
+                            + "  Has No Starting Record";
+                    errorMessage.add(message);
 //                        System.err.println("SS " + ss.getId());
-                    UtilityController.addErrorMessage(errorMessage);
+//                    UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
                 if (ss.getStartRecord().getRecordTimeStamp() == null) {
-                    errorMessage += st.getDate() + " Some Starting Records Has No Time <br/> ";
-                    UtilityController.addErrorMessage(errorMessage);
+                    message = date
+                            + " -> " + code
+                            + " Some Starting Records Has No Time \r ";
+                    errorMessage.add(message);
+//                    UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
             }
 
             if (ss.getNextStaffShift() == null) {
                 if (ss.getEndRecord() == null) {
-                    errorMessage += st.getDate() + " Some End Records Has No Starting Record <br/>";
-                    UtilityController.addErrorMessage(errorMessage);
+                    message = date
+                            + " -> " + code
+                            + " Some End Records Has No Starting Record \r";
+                    errorMessage.add(message);
+//                    UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
                 if (ss.getEndRecord().getRecordTimeStamp() == null) {
-                    errorMessage += st.getDate() + " Some End Records Has No Time <br/>";
-                    UtilityController.addErrorMessage(errorMessage);
+                    message = date
+                            + " -> " + code
+                            + " Some End Records Has No Time \r ";
+                    errorMessage.add(message);
+//                    UtilityController.addErrorMessage(errorMessage);
                     return true;
                 }
             }
@@ -446,11 +457,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void save() {
+        errorMessage = new ArrayList<>();
+
 //        System.err.println("1");
         if (shiftTables == null) {
             final String empty_List = "Empty List";
             UtilityController.addErrorMessage(empty_List);
-            errorMessage = empty_List;
+            errorMessage.add(empty_List);
             return;
         }
 
@@ -497,14 +510,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.calCulateTimes();
                 //Update Extra Time
                 ss.calExtraTimeWithStartOrEndRecord();
-                //UPDATE Leave
-                ss.calLeaveTime();
                 //Update Staff Shift OT time if DayOff or Sleeping Day                
                 ss.calExtraTimeComplete();
 
                 ss.calMultiplyingFactor(ss.getShift().getDayType());
                 DayType dt = humanResourceBean.isHolidayWithDayType(ss.getShiftDate());
                 ss.calMultiplyingFactor(dt);
+
+                //UPDATE Leave
+                ss.calLeaveTime();
                 //Update Lieu Leave
                 ss.calLieu();
 
@@ -512,8 +526,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
         }
 
-        UtilityController.addSuccessMessage("All Record Successfully Updated");
-
+//        UtilityController.addSuccessMessage("All Record Successfully Updated");
     }
 
     //GETTERS AND SETTERS
@@ -590,6 +603,17 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public ShiftFingerPrintAnalysisController() {
+    }
+
+    public List<String> getErrorMessage() {
+        if (errorMessage == null) {
+            errorMessage = new ArrayList<>();
+        }
+        return errorMessage;
+    }
+
+    public void setErrorMessage(List<String> errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
 }

@@ -71,7 +71,7 @@
                                         pattern="yyyy MM dd HH:mm:ss" >
                             </p:calendar>
                             <h:outputLabel value="Staff : "/>
-                            <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                            
+                            <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                                                     
                             <h:outputLabel value="Approved Person"/>
                             <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/>                           
                             <p:commandButton ajax="false" value="Search Created Date" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
@@ -86,6 +86,9 @@
                             </p:column>
                             <p:column headerText="Staff">
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column>
+                             <p:column headerText="Staff">
+                                <p:outputLabel value="#{add.staff.roster.name}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="From">
                                 <p:outputLabel value="#{add.staffShift.shiftStartTime}" >

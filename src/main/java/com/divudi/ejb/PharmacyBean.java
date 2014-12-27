@@ -1380,8 +1380,10 @@ public class PharmacyBean {
         m.put("c", cat);
         sql = "select v from VtmsVmps v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
         VtmsVmps v = getVtmsVmpsFacade().findFirstBySQL(sql, m);
+        System.out.println("m = " + m);
         Vmp vmp;
         if (v == null) {
+            System.out.println("new created");
             vmp = new Vmp();
 
             vmp.setName(vtm.getName() + " " + strength + " " + strengthUnit.getName() + " " + cat.getName());
