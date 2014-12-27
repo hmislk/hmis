@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Attendance Report" />
+                            <h:outputLabel value="Attendance Report Late In" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -61,8 +61,8 @@
                                     </h:outputLabel>                                     
                                 </p:column>           
                                 <p:column headerText="Late In Minute Varified">
-                                    <h:outputLabel value="#{ss.lateInVarified/60}">                                        
-                                        <f:convertNumber pattern="#0.00"/>
+                                    <h:outputLabel value="#{ss.lateInVarified}">                                        
+                                        <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>   
                             </p:dataTable>

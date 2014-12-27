@@ -17,10 +17,13 @@ import com.divudi.data.hr.StaffShiftAggrgation;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
@@ -59,6 +62,36 @@ public class HrReportController implements Serializable {
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
     List<WeekDayWork> weekDayWorks;
+    Institution institution;
+    List<Department> selectDepartments;
+    @EJB
+    DepartmentFacade departmentFacade;
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public List<Department> getSelectDepartments() {
+        return selectDepartments;
+    }
+
+    public void setSelectDepartments(List<Department> selectDepartments) {
+        this.selectDepartments = selectDepartments;
+    }
+
+    public void crateDepartmentList() {
+        String sql = " select i from Department i "
+                + " where i.retired=false "
+                + " and i.institution=:ins "
+                + " order by i.name ";
+        HashMap hm = new HashMap();
+        hm.put("ins", institution);
+        selectDepartments = departmentFacade.findBySQL(sql, hm);
+    }
 
     public List<WeekDayWork> getWeekDayWorks() {
         return weekDayWorks;
@@ -191,9 +224,9 @@ public class HrReportController implements Serializable {
         }
 
     }
-    
+
     public String createFingerPrintQuary(HashMap hm) {
-        String sql="";
+        String sql = "";
         sql = "select ss from FingerPrintRecord ss"
                 + " where ss.retired=false"
                 + " and ss.recordTimeStamp between :frm  and :to ";
@@ -229,16 +262,41 @@ public class HrReportController implements Serializable {
             sql += " and ss.staffShift.shift=:sh";
             hm.put("sh", getReportKeyWord().getShift());
         }
-        
+
         return sql;
 
     }
 
     public void createStaffList() {
         String sql;
-        sql = "select s from Staff s "
-                + " where s.retired=false "
-                + " order by s.codeInterger";
+        HashMap hm = new HashMap();
+        
+        sql = "select ss from Staff ss "
+                + " where ss.retired=false ";
+
+      
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+     
+        sql += " order by ss.codeInterger";
         staffs = getStaffFacade().findBySQL(sql);
     }
 
@@ -860,7 +918,7 @@ public class HrReportController implements Serializable {
                         break;
                 }
 
-                weekDayWork.setTotal(weekDayWork.getTotalDouble()+ value);
+                weekDayWork.setTotal(weekDayWork.getTotalDouble() + value);
             }
 
             double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
@@ -1123,15 +1181,23 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
-        if (getReportKeyWord().getFrom() != 0) {
-            sql += " and (ss.lateInVarified>= :frmTime "
-                    + " or ss.earlyOutVarified>= :frmTime) ";
-            hm.put("frmTime", getReportKeyWord().getFrom());
-        }
-        if (getReportKeyWord().getTo() != 0) {
-            sql += " and (ss.lateInVarified<= :toTime "
-                    + " or ss.earlyOutVarified<= :toTime) ";
-            hm.put("toTime", getReportKeyWord().getTo());
+
+        sql += " and (ss.lateInVarified!=0"
+                + " or ss.earlyOutVarified!=0)";
+
+        if (getReportKeyWord().getFrom() != 0 && getReportKeyWord().getTo() != 0) {
+            sql += " and ((ss.lateInVarified>= :frmTime  and ss.lateInVarified<= :toTime) "
+                    + " or (ss.earlyOutVarified>= :frmTime and ss.earlyOutVarified<= :toTime )) ";
+            hm.put("frmTime", getReportKeyWord().getFrom() * 60);
+            hm.put("toTime", getReportKeyWord().getTo() * 60);
+        } else if (getReportKeyWord().getFrom() != 0 && getReportKeyWord().getTo() == 0) {
+            sql += " and ((ss.lateInVarified>= :frmTime) "
+                    + " or (ss.earlyOutVarified>= :frmTime)) ";
+            hm.put("frmTime", getReportKeyWord().getFrom() * 60);
+        } else if (getReportKeyWord().getFrom() == 0 && getReportKeyWord().getTo() != 0) {
+            sql += " and ((ss.lateInVarified<= :toTime) "
+                    + " or (ss.earlyOutVarified<= :toTime )) ";
+            hm.put("toTime", getReportKeyWord().getTo() * 60);
         }
 //        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);

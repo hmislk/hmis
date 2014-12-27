@@ -147,16 +147,22 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + "  and ss.staff=:stf ";
         hm.put("stf", getCurrentLeaveForm().getStaff());
 
-        if (getReportKeyWord().getFrom() != 0) {
-            sql += " and (ss.lateInVarified>= :frm "
-                    + " or ss.earlyOutVarified>= :frm) ";
-            hm.put("frm", getReportKeyWord().getFrom());
-        }
+        sql += " and (ss.lateInVarified!=0"
+                + " or ss.earlyOutVarified!=0)";
 
-        if (getReportKeyWord().getTo() != 0) {
-            sql += " and (ss.lateInVarified<= :to "
-                    + " or ss.earlyOutVarified<= :to) ";
-            hm.put("to", getReportKeyWord().getTo());
+        if (getReportKeyWord().getFrom() != 0 && getReportKeyWord().getTo() != 0) {
+            sql += " and ((ss.lateInVarified>= :frmTime  and ss.lateInVarified<= :toTime) "
+                    + " or (ss.earlyOutVarified>= :frmTime and ss.earlyOutVarified<= :toTime )) ";
+            hm.put("frmTime", getReportKeyWord().getFrom() * 60);
+            hm.put("toTime", getReportKeyWord().getTo() * 60);
+        } else if (getReportKeyWord().getFrom() != 0 && getReportKeyWord().getTo() == 0) {
+            sql += " and ((ss.lateInVarified>= :frmTime) "
+                    + " or (ss.earlyOutVarified>= :frmTime)) ";
+            hm.put("frmTime", getReportKeyWord().getFrom() * 60);
+        } else if (getReportKeyWord().getFrom() == 0 && getReportKeyWord().getTo() != 0) {
+            sql += " and ((ss.lateInVarified<= :toTime) "
+                    + " or (ss.earlyOutVarified<= :toTime )) ";
+            hm.put("toTime", getReportKeyWord().getTo() * 60);
         }
 
         staffShifts = staffShiftFacade.findBySQL(sql, hm, 10);

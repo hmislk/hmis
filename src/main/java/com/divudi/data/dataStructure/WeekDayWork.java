@@ -72,9 +72,9 @@ public class WeekDayWork {
 //        return double.format("%d:%02d:%02d", h, m, s);
 //    }
 
-//    public double getSunDay() {
-//        return (sunDay);
-//    }
+    public double getSunDay() {
+        return (sunDay);
+    }
 
     public void setSunDay(double sunDay) {
         this.sunDay = sunDay;

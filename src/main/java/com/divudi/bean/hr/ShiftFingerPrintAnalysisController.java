@@ -9,12 +9,16 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.dataStructure.ShiftTable;
 import com.divudi.data.hr.DayType;
+import static com.divudi.data.hr.DayType.All;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.Times;
+import static com.divudi.data.hr.Times.inTime;
+import static com.divudi.data.hr.Times.outTime;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.hr.FingerPrintRecord;
+import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffPaysheetComponent;
@@ -154,6 +158,48 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //
 //        return (AdditionalForm) formFacade.findBySQL(sql, hm);
 //    }
+    private void fetchTimeFromAddiationalFrom(StaffShift ss, FingerPrintRecord fingerPrintRecordIn, FingerPrintRecord fingerPrintRecordOut) {
+        HrForm additionalForm = ss.getAdditionalForm();
+
+        if (additionalForm == null) {
+            return;
+        }
+
+        if (fingerPrintRecordIn == null) {
+            fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss.getAdditionalForm());
+            if (fingerPrintRecordIn != null) {
+                fingerPrintRecordIn.setComments("");
+                fingerPrintRecordIn.setRecordTimeStamp(ss.getAdditionalForm().getFromTime());
+            }
+        }
+
+        if (fingerPrintRecordOut == null) {
+            fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss.getAdditionalForm());
+            if (fingerPrintRecordOut != null) {
+                fingerPrintRecordOut.setComments("");
+                fingerPrintRecordOut.setRecordTimeStamp(ss.getAdditionalForm().getToTime());
+            }
+        }
+
+        switch (additionalForm.getTimes()) {
+            case inTime:
+                ss.getStartRecord().setAllowedExtraDuty(true);
+                ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
+                break;
+            case outTime:
+                ss.getEndRecord().setAllowedExtraDuty(true);
+                ss.getEndRecord().setRecordTimeStamp(additionalForm.getToTime());
+                break;
+            case All:
+                ss.getStartRecord().setAllowedExtraDuty(true);
+                ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
+                ss.getEndRecord().setAllowedExtraDuty(true);
+                ss.getEndRecord().setRecordTimeStamp(additionalForm.getToTime());
+                break;
+        }
+
+    }
+
     public void createShiftTable() {
         if (errorCheck()) {
             return;
@@ -208,26 +254,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 FingerPrintRecord fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
                 FingerPrintRecord fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
 
-                if (ss.getAdditionalForm() != null && ss.getAdditionalForm() instanceof AdditionalForm) {
-                    AdditionalForm additionalForm = (AdditionalForm) ss.getAdditionalForm();
-
-                    if (fingerPrintRecordIn == null) {
-                        fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(additionalForm);
-                        if (fingerPrintRecordIn != null) {
-                            fingerPrintRecordIn.setComments("");
-                            fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
-                        }
-                    }
-
-                    if (fingerPrintRecordOut == null) {
-                        fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(additionalForm);
-                        if (fingerPrintRecordOut != null) {
-                            fingerPrintRecordOut.setComments("");
-                            fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
-                        }
-                    }
-
-                }
+                //Fetch Time From Additional From
+                fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut);
 
                 if (fingerPrintRecordIn != null) {
                     fingerPrintRecordIn.setTimes(Times.inTime);
@@ -253,7 +281,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
 //                        staffShiftFacade.edit(ss);
                     if (ss.getPreviousStaffShift() != null) {
-//                            System.err.println("PREV");
+                        System.err.println("PREV************************");
                         ss.getStartRecord().setComments("(NEW PREV)");
                         ss.getStartRecord().setRecordTimeStamp(ss.getShiftStartTime());
 
@@ -269,32 +297,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                        staffShiftFacade.edit(ss);
 
                     if (ss.getNextStaffShift() != null) {
-//                            System.err.println("NEXT");
+                        System.err.println("NEXT*****************");
                         ss.getEndRecord().setComments("(NEW NEXT)");
                         ss.getEndRecord().setRecordTimeStamp(ss.getShiftEndTime());
-                    }
-                }
-
-                if (ss.getAdditionalForm() != null) {
-                    if (ss.getAdditionalForm() instanceof AdditionalForm) {
-                        AdditionalForm additionalForm = (AdditionalForm) ss.getAdditionalForm();
-
-                        switch (ss.getAdditionalForm().getTimes()) {
-                            case inTime:
-                                ss.getStartRecord().setAllowedExtraDuty(true);
-                                ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
-                                break;
-                            case outTime:
-                                ss.getEndRecord().setAllowedExtraDuty(true);
-                                ss.getEndRecord().setRecordTimeStamp(additionalForm.getToTime());
-                                break;
-                            case All:
-                                ss.getStartRecord().setAllowedExtraDuty(true);
-                                ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
-                                ss.getEndRecord().setAllowedExtraDuty(true);
-                                ss.getEndRecord().setRecordTimeStamp(additionalForm.getToTime());
-                                break;
-                        }
                     }
                 }
 
@@ -481,6 +486,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //UPDATE START RECORD
                 FingerPrintRecord startRecord = ss.getStartRecord();
                 startRecord.setStaffShift(ss);
+                if (startRecord.getRecordTimeStamp() == null) {
+                    startRecord.setRecordTimeStamp(ss.getShiftStartTime());
+                }
                 if (startRecord.getId() != null) {
                     getFingerPrintRecordFacade().edit(startRecord);
                 } else {
@@ -490,6 +498,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //UPDATE END RECORD
                 FingerPrintRecord endRecord = ss.getEndRecord();
                 endRecord.setStaffShift(ss);
+                if (endRecord.getRecordTimeStamp() == null) {
+                    endRecord.setRecordTimeStamp(ss.getShiftEndTime());
+                }
                 if (endRecord.getId() != null) {
                     getFingerPrintRecordFacade().edit(endRecord);
                 } else {

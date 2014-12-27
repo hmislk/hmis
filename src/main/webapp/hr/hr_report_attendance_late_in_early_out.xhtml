@@ -66,8 +66,8 @@
                                     </h:outputLabel>                                     
                                 </p:column>           
                                 <p:column headerText="Late In Minute Varified">
-                                    <h:outputLabel value="#{ss.lateInVarified/60}">                                        
-                                        <f:convertNumber pattern="#0.00"/>
+                                    <h:outputLabel value="#{ss.lateInVarified}">                                        
+                                        <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>   
                                 <p:column headerText="Out Checked ">
@@ -76,8 +76,8 @@
                                     </h:outputLabel>                                     
                                 </p:column>           
                                 <p:column headerText="Early Out Minute Varified">
-                                    <h:outputLabel value="#{ss.earlyOutVarified/60}">                                        
-                                        <f:convertNumber pattern="#0.00"/>
+                                    <h:outputLabel value="#{ss.earlyOutVarified}">                                        
+                                        <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>   
                             </p:dataTable>

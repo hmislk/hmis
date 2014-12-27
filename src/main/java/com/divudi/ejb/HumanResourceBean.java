@@ -6,7 +6,6 @@ package com.divudi.ejb;
 
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.ExtraDutyCount;
-import com.divudi.data.dataStructure.OtNormalSpecial;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.ExtraDutyType;
 import com.divudi.data.hr.FingerPrintRecordType;
@@ -17,6 +16,7 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.hr.FingerPrintRecord;
+import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.PhDate;
 import com.divudi.entity.hr.Roster;
@@ -36,7 +36,6 @@ import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
-import java.awt.Robot;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -143,7 +142,7 @@ public class HumanResourceBean {
         return ss;
     }
 
-    public FingerPrintRecord findInTimeRecord(AdditionalForm additionalForm) {
+    public FingerPrintRecord findInTimeRecord(HrForm additionalForm) {
         if (additionalForm == null) {
             return null;
         }
@@ -169,7 +168,6 @@ public class HumanResourceBean {
         String sql = "Select ss from FingerPrintRecord ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
-                //                + " and ss.loggedRecord is not null"
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
@@ -215,7 +213,7 @@ public class HumanResourceBean {
         return ss;
     }
 
-    public FingerPrintRecord findOutTimeRecord(AdditionalForm additionalForm) {
+    public FingerPrintRecord findOutTimeRecord(HrForm additionalForm) {
         if (additionalForm == null) {
             return null;
         }

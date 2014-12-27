@@ -31,7 +31,7 @@ public class LongToPeriodConvertor implements Converter {
 
         long s =  seconds.longValue() % 60;
         long m = (seconds.longValue() / 60) % 60;
-        long h = (seconds.longValue() / (60 * 60)) % 24;
+        long h = (seconds.longValue() / (60 * 60));
         return String.format("%d:%02d:%02d", h, m, s);
     }
 

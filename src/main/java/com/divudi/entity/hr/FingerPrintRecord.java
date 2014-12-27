@@ -116,7 +116,7 @@ public class FingerPrintRecord implements Serializable {
             output = formatter.format(date);
 //         //   System.out.println(pattern + " " + output);
         } catch (Exception e) {
-//            System.err.println("error in parsing");
+            System.err.println("error in parsing");
 
         }
 

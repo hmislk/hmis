@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.divudi.data.hr;
 
 import com.divudi.data.PaymentMethod;
@@ -24,6 +23,7 @@ import com.divudi.entity.hr.StaffShift;
  * @author safrin
  */
 public class ReportKeyWord {
+
     Staff staff;
     Staff replacingStaff;
     Department department;
@@ -38,26 +38,31 @@ public class ReportKeyWord {
     Item item;
     StaffShift staffShift;
     LeaveType leaveType;
-    double from;
-    double to;
+    Double from;
+    Double to;
 
-    public double getFrom() {
+    public Double getFrom() {
+        if (from == null) {
+            from = 0.0;
+        }
+
         return from;
     }
 
-    public void setFrom(double from) {
+    public void setFrom(Double from) {
         this.from = from;
     }
 
-    public double getTo() {
+    public Double getTo() {
+        if (to == null) {
+            to = 0.0;
+        }
         return to;
     }
 
-    public void setTo(double to) {
+    public void setTo(Double to) {
         this.to = to;
     }
-    
-    
 
     public LeaveType getLeaveType() {
         return leaveType;
@@ -66,8 +71,6 @@ public class ReportKeyWord {
     public void setLeaveType(LeaveType leaveType) {
         this.leaveType = leaveType;
     }
-    
-    
 
     public StaffShift getStaffShift() {
         return staffShift;
@@ -76,10 +79,6 @@ public class ReportKeyWord {
     public void setStaffShift(StaffShift staffShift) {
         this.staffShift = staffShift;
     }
-    
-    
-    
-    
 
     public Speciality getSpeciality() {
         return speciality;
@@ -121,10 +120,6 @@ public class ReportKeyWord {
         this.item = item;
     }
 
-    
-    
-    
-
     public Staff getStaff() {
         return staff;
     }
@@ -148,8 +143,6 @@ public class ReportKeyWord {
     public void setStaffCategory(StaffCategory staffCategory) {
         this.staffCategory = staffCategory;
     }
-
-    
 
     public Designation getDesignation() {
         return designation;
@@ -182,7 +175,5 @@ public class ReportKeyWord {
     public void setReplacingStaff(Staff replacingStaff) {
         this.replacingStaff = replacingStaff;
     }
-    
-    
-    
+
 }
