@@ -170,9 +170,14 @@ public class StaffAmendmentFormController implements Serializable {
             }
         }
 
+        Shift fromShift1 = fromStaffShift1st != null ? fromStaffShift1st.getShift() : null;
+        Shift fromShift2 = fromStaffShift2nd != null ? fromStaffShift2nd.getShift() : null;
+        Shift toShift1 = toStaffShift1st != null ? toStaffShift1st.getShift() : null;;
+        Shift toShift2 = toStaffShift2nd != null ? toStaffShift2nd.getShift() : null;;
+
         if (fromStaffShift1st != null && toStaffShift1st != null) {
-            fromStaffShift1st.setShift(toStaffShift1st.getShift());
-            toStaffShift1st.setShift(fromStaffShift1st.getShift());
+            fromStaffShift1st.setShift(toShift1);
+            toStaffShift1st.setShift(fromShift1);
             toStaffShift1st.setAmendmentForm(currAmendmentForm);
             fromStaffShift1st.setAmendmentForm(currAmendmentForm);
             staffShiftFacade.edit(toStaffShift1st);
@@ -188,8 +193,8 @@ public class StaffAmendmentFormController implements Serializable {
             toStaffShift2nd.setAmendmentForm(currAmendmentForm);
             staffShiftFacade.edit(toStaffShift2nd);
         } else if (fromStaffShift2nd != null && toStaffShift2nd != null) {
-            fromStaffShift2nd.setShift(toStaffShift2nd.getShift());
-            toStaffShift2nd.setShift(fromStaffShift2nd.getShift());
+            fromStaffShift2nd.setShift(toShift2);
+            toStaffShift2nd.setShift(fromShift2);
             toStaffShift2nd.setAmendmentForm(currAmendmentForm);
             fromStaffShift2nd.setAmendmentForm(currAmendmentForm);
             staffShiftFacade.edit(toStaffShift2nd);
