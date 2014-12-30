@@ -36,7 +36,7 @@
                             <hr:completeStaff value="#{staffLeaveEntitleController.staff}"/>                                      
                             <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createItems()}" />                            
                         </h:panelGrid>
-                        <p:dataTable value="#{staffLeaveEntitleController.items}" var="add" 
+                        <p:dataTable value="#{staffLeaveEntitleController.selectedItems}" var="add" 
                                      scrollable="true"
                                      scrollHeight="300" >
                             <p:column headerText="View" >
