@@ -376,7 +376,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
 
         for (StaffShift ss : list) {
-            ss.resetLeaveData();
+//            ss.resetLeaveData();
             ss.calLeaveTime();
             ss.calLieu();
             ss.setLeaveForm(currentLeaveForm);

@@ -346,7 +346,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         if (ss == null) {
             return;
         }
-        ss.resetLeaveData();
+//        ss.resetLeaveData();
         ss.calLeaveTime();
         ss.setLeaveForm(currentLeaveForm);
         ss.setLeaveType(getCurrentLeaveForm().getLeaveType());
@@ -364,7 +364,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
         while (!list.isEmpty()) {
             StaffShift ss = list.pollFirst();
-            ss.resetLeaveData();
+//            ss.resetLeaveData();
             ss.setLeaveDivident(divide);
             ss.setConsideredForLateEarlyAttendance(true);
             ss.calLeaveTime();

@@ -236,7 +236,7 @@ public class StaffShift implements Serializable {
     public void reset() {
         resetFingerPrintRecordTime();
         resetExtraTime();
-        resetLeaveData();
+//        resetLeaveData();
         multiplyingFactorOverTime = 0;
         multiplyingFactorSalary = 0;
         basicPerSecond = 0;
