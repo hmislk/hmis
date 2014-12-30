@@ -97,20 +97,36 @@ public class ShiftTableController implements Serializable {
     private void saveHistory() {
         for (ShiftTable st : shiftTables) {
             for (StaffShift ss : st.getStaffShift()) {
-//                if (ss.getShift() == null) {
-//                    continue;
-//                }
 
-                StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
-                staffShiftHistory.setCreatedAt(new Date());
-                staffShiftHistory.setCreater(sessionController.getLoggedUser());
-                staffShiftHistory.setStaff(ss.getStaff());
-                staffShiftHistory.setStaffShift(ss);
-                staffShiftHistory.setStaff(ss.getStaff());
-                staffShiftHistory.setShift(ss.getShift());
-                staffShiftHistory.setRoster(ss.getRoster());
-                
-                staffShiftHistoryFacade.create(staffShiftHistory);
+                if (ss.getId() != null) {
+                    boolean flag = false;
+                    StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
+
+                    if (fetchStaffShift.getRoster() != ss.getRoster()) {
+                        flag = true;
+                    }
+
+                    if (fetchStaffShift.getStaff() != ss.getStaff()) {
+                        flag = true;
+                    }
+
+                    if (fetchStaffShift.getShift() != ss.getShift()) {
+                        flag = true;
+                    }
+
+                    if (flag) {
+                        StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
+                        staffShiftHistory.setStaffShift(ss);
+                        staffShiftHistory.setCreatedAt(new Date());
+                        staffShiftHistory.setCreater(sessionController.getLoggedUser());
+                        //CHanges
+                        staffShiftHistory.setStaff(ss.getStaff());
+                        staffShiftHistory.setShift(ss.getShift());
+                        staffShiftHistory.setRoster(ss.getRoster());
+
+                        staffShiftHistoryFacade.create(staffShiftHistory);
+                    }
+                }
 
             }
         }
@@ -121,10 +137,11 @@ public class ShiftTableController implements Serializable {
             return;
         }
 
+        saveHistory();
+
         saveStaffShift();
         saveStaffShift();
 
-        saveHistory();
     }
 
     public void createShiftTable() {
