@@ -35,6 +35,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -124,6 +125,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
     @EJB
     StaffShiftFacade staffShiftFacade;
     List<StaffShift> staffShifts;
+    List<StaffShift> staffShiftsLie;
     StaffShift[] staffShiftsArray;
 
     public StaffShift[] getStaffShiftsArray() {
@@ -137,12 +139,35 @@ public class StaffLeaveApplicationFormController implements Serializable {
     public void fetchStaffShift() {
         String sql = "Select s from StaffShift s"
                 + " where s.retired=false"
+                + " and s.lieuQtyUtilized==0 "
+                + " and s.staff=:stf "
+                + " and s.shiftDate between :f and :t";
+        HashMap hm = new HashMap();
+        hm.put("stf", getCurrentLeaveForm().getStaff());
+        hm.put("f", getCurrentLeaveForm().getFromDate());
+        hm.put("t", getCurrentLeaveForm().getToDate());
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public List<StaffShift> getStaffShiftsLie() {
+        return staffShiftsLie;
+    }
+
+    public void setStaffShiftsLie(List<StaffShift> staffShiftsLie) {
+        this.staffShiftsLie = staffShiftsLie;
+    }
+    
+    
+
+    public void fetchStaffShiftLie() {
+        String sql = "Select s from StaffShift s"
+                + " where s.retired=false"
                 + " and s.lieuAllowed=true"
                 + " and (s.lieuQty>s.lieuQtyUtilized)"
                 + " and s.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("stf", getCurrentLeaveForm().getStaff());
-        staffShifts = staffShiftFacade.findBySQL(sql, hm);
+        staffShiftsLie = staffShiftFacade.findBySQL(sql, hm);
     }
 
     public void fetchStaffShiftLateInErlyOut() {

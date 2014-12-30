@@ -16,7 +16,7 @@
                             <h:outputLabel value="Form Number"/>
                             <p:inputText value="#{staffLeaveApplicationFormController.currentLeaveForm.code}"/>
                             <h:outputLabel value="Staff : "/>
-                             <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"/>
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"/>
                             <h:outputLabel value="Leave Type"/>
                             <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.leaveType}">
                                 <f:selectItem itemLabel="Select Day Type"/>
@@ -39,12 +39,25 @@
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaved}"/>
                                 <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle - staffLeaveApplicationFormController.leaved}"/>
                             </h:panelGrid>
+                            <p:commandButton ajax="false" value="Process  Shift" 
+                                             action="#{staffLeaveApplicationFormController.fetchStaffShift()}" />
+                            <p:dataTable value="#{staffLeaveApplicationFormController.staffShifts}" var="l">
+                                <p:column>
+                                    #{l.shift.name}
+                                </p:column>
+                                <p:column>
+                                    #{l.shiftStartTime}
+                                </p:column>
+                                <p:column>
+                                    #{l.shiftEndTime}
+                                </p:column>
+                            </p:dataTable>
 
                             <p:commandButton ajax="false" value="Process Lie Shift" 
-                                             action="#{staffLeaveApplicationFormController.fetchStaffShift()}" />
+                                             action="#{staffLeaveApplicationFormController.fetchStaffShiftLie()}" />
                             <p:selectOneMenu id="s1" value="#{staffLeaveApplicationFormController.currentLeaveForm.staffShift}"   >
                                 <f:selectItem itemLabel="Select Staff Shift"/>
-                                <f:selectItems value="#{staffLeaveApplicationFormController.staffShifts}"
+                                <f:selectItems value="#{staffLeaveApplicationFormController.staffShiftsLie}"
                                                var="itm" itemLabel="#{itm.shiftDate}|#{itm.shift.name}" 
                                                itemValue="#{itm}" />
                             </p:selectOneMenu>
