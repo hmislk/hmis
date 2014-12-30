@@ -925,7 +925,9 @@ public class StaffShift implements Serializable {
         }
 
         Calendar sTime = Calendar.getInstance();
+        Calendar eTime = Calendar.getInstance();
         Calendar sDate = Calendar.getInstance();
+        Calendar eDate = Calendar.getInstance();
 
         if (getShift().getStartingTime() == null) {
             return;
@@ -937,10 +939,10 @@ public class StaffShift implements Serializable {
         sDate.set(Calendar.MINUTE, sTime.get(Calendar.MINUTE));
         setShiftStartTime(sDate.getTime());
 
-        Calendar eDate = Calendar.getInstance();
-        eDate.setTime(getShiftStartTime());
-        eDate.add(Calendar.HOUR_OF_DAY, getShift().getDurationHour());
-        eDate.set(Calendar.MINUTE, 0);
+        eTime.setTime(getShift().getEndingTime());
+        eDate.setTime(getShift().getEndingTime());
+        eDate.set(Calendar.HOUR_OF_DAY, (int)getShift().getDurationHour());
+        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
 
         setShiftEndTime(eDate.getTime());
     }
