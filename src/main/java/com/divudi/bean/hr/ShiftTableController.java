@@ -106,6 +106,10 @@ public class ShiftTableController implements Serializable {
                 staffShiftHistory.setCreater(sessionController.getLoggedUser());
                 staffShiftHistory.setStaff(ss.getStaff());
                 staffShiftHistory.setStaffShift(ss);
+                staffShiftHistory.setStaff(ss.getStaff());
+                staffShiftHistory.setShift(ss.getShift());
+                staffShiftHistory.setRoster(ss.getRoster());
+                
                 staffShiftHistoryFacade.create(staffShiftHistory);
 
             }

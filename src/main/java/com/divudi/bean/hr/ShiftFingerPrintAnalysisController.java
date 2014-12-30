@@ -165,36 +165,72 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
 
-        if (fingerPrintRecordIn == null) {
-            fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss.getAdditionalForm());
-            if (fingerPrintRecordIn != null) {
-                fingerPrintRecordIn.setComments("");
-                fingerPrintRecordIn.setRecordTimeStamp(ss.getAdditionalForm().getFromTime());
+        if (fingerPrintRecordIn == null && additionalForm.getTimes() == Times.inTime) {
+            fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(additionalForm);
+
+            if (fingerPrintRecordIn == null) {
+                fingerPrintRecordIn = new FingerPrintRecord();
+                fingerPrintRecordIn.setTimes(Times.inTime);
+                fingerPrintRecordIn.setCreatedAt(new Date());
+                fingerPrintRecordIn.setCreater(sessionController.getLoggedUser());
+                fingerPrintRecordIn.setFingerPrintRecordType(FingerPrintRecordType.Varified);
+                fingerPrintRecordIn.setComments("(new Additional)");
+                fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
             }
+
         }
 
-        if (fingerPrintRecordOut == null) {
-            fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss.getAdditionalForm());
-            if (fingerPrintRecordOut != null) {
-                fingerPrintRecordOut.setComments("");
-                fingerPrintRecordOut.setRecordTimeStamp(ss.getAdditionalForm().getToTime());
+        if (fingerPrintRecordOut == null && additionalForm.getTimes() == Times.outTime) {
+            fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(additionalForm);
+
+            if (fingerPrintRecordOut == null) {
+                fingerPrintRecordOut = new FingerPrintRecord();
+                fingerPrintRecordOut.setTimes(Times.outTime);
+                fingerPrintRecordOut.setCreatedAt(new Date());
+                fingerPrintRecordOut.setCreater(sessionController.getLoggedUser());
+                fingerPrintRecordOut.setFingerPrintRecordType(FingerPrintRecordType.Varified);
+                fingerPrintRecordOut.setComments("(new Additional)");
+                fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
             }
+
+        }
+
+        if (fingerPrintRecordIn == null && fingerPrintRecordOut == null && additionalForm.getTimes() == Times.All) {
+            fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(additionalForm);
+            fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(additionalForm);
+
+            if (fingerPrintRecordIn == null) {
+                fingerPrintRecordIn = new FingerPrintRecord();
+                fingerPrintRecordIn.setTimes(Times.inTime);
+                fingerPrintRecordIn.setCreatedAt(new Date());
+                fingerPrintRecordIn.setCreater(sessionController.getLoggedUser());
+                fingerPrintRecordIn.setFingerPrintRecordType(FingerPrintRecordType.Varified);
+                fingerPrintRecordIn.setComments("(new Additional)");
+                fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
+            }
+
+            if (fingerPrintRecordOut == null) {
+                fingerPrintRecordOut = new FingerPrintRecord();
+                fingerPrintRecordOut.setTimes(Times.outTime);
+                fingerPrintRecordOut.setCreatedAt(new Date());
+                fingerPrintRecordOut.setCreater(sessionController.getLoggedUser());
+                fingerPrintRecordOut.setFingerPrintRecordType(FingerPrintRecordType.Varified);
+                fingerPrintRecordOut.setComments("(new Additional)");
+                fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
+            }
+
         }
 
         switch (additionalForm.getTimes()) {
             case inTime:
-                ss.getStartRecord().setAllowedExtraDuty(true);
-                ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
+                fingerPrintRecordIn.setAllowedExtraDuty(true);
                 break;
             case outTime:
-                ss.getEndRecord().setAllowedExtraDuty(true);
-                ss.getEndRecord().setRecordTimeStamp(additionalForm.getToTime());
+                fingerPrintRecordOut.setAllowedExtraDuty(true);
                 break;
             case All:
-                ss.getStartRecord().setAllowedExtraDuty(true);
-                ss.getStartRecord().setRecordTimeStamp(additionalForm.getFromTime());
-                ss.getEndRecord().setAllowedExtraDuty(true);
-                ss.getEndRecord().setRecordTimeStamp(additionalForm.getToTime());
+                fingerPrintRecordIn.setAllowedExtraDuty(true);
+                fingerPrintRecordOut.setAllowedExtraDuty(true);
                 break;
         }
 
