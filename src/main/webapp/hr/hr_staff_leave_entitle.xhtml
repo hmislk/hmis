@@ -41,7 +41,8 @@
                                      scrollHeight="300" >
                             <p:column headerText="View" >
                                 <p:commandButton ajax="false" value="View">
-                                    <f:ajax execute="@this" render="@all"/>                                    
+                                    <f:ajax execute="@this" render="@all"/> 
+                                    <f:setPropertyActionListener target="#{staffLeaveEntitleController.current}" value="#{add}"/>
                                 </p:commandButton>
                             </p:column>
                             <p:column headerText="Staff">
@@ -52,7 +53,8 @@
                             </p:column>                          
                              <p:column headerText="Count">
                                 <p:outputLabel value="#{add.count}" ></p:outputLabel>
-                            </p:column>       
+                            </p:column> 
+                            
                         </p:dataTable>
                     </p:panel>
                 </h:panelGrid>

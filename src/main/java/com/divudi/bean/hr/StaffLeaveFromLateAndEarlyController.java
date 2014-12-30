@@ -342,11 +342,11 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
-    public void addLeaveDataToStaffShift(StaffShift ss) {
+    public void addLeaveDataToStaffShift(StaffShift ss,LeaveType leaveType) {
         if (ss == null) {
             return;
         }
-//        ss.resetLeaveData();
+        ss.resetLeaveData(getCurrentLeaveForm().getLeaveType());
         ss.calLeaveTime();
         ss.setLeaveForm(currentLeaveForm);
         ss.setLeaveType(getCurrentLeaveForm().getLeaveType());
@@ -364,7 +364,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
         while (!list.isEmpty()) {
             StaffShift ss = list.pollFirst();
-//            ss.resetLeaveData();
+            ss.resetLeaveData(getCurrentLeaveForm().getLeaveType());
             ss.setLeaveDivident(divide);
             ss.setConsideredForLateEarlyAttendance(true);
             ss.calLeaveTime();
@@ -383,7 +383,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         }
 
         for (StaffShift ss : list) {
-            ss.resetLeaveData();
+            ss.resetLeaveData(getCurrentLeaveForm().getLeaveType());
             ss.setLeaveType(null);
             staffShiftFacade.edit(ss);
         }
@@ -414,7 +414,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         }
 
         if (list.size() == 1) {
-            addLeaveDataToStaffShift(list.pollFirst());
+            addLeaveDataToStaffShift(list.pollFirst(),getCurrentLeaveForm().getLeaveType());
         } else {
             addLeaveDataToStaffShift(list);
         }
@@ -496,7 +496,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         return staffShiftFacade.findBySQL(sql, nm);
     }
 
-    public void deleteStaffLeave(Form form) {
+    public void deleteStaffLeave(LeaveForm form) {
         String sql = "Select l from StaffLeave l where l.form=:frm ";
         HashMap nm = new HashMap();
         nm.put("frm", form);
@@ -510,7 +510,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         }
         List<StaffShift> stfShf = fetchFormStaffShift(form);
         for (StaffShift s : stfShf) {
-            s.resetLeaveData();
+            s.resetLeaveData(form.getLeaveType());
             s.setConsideredForLateEarlyAttendance(false);
             s.setLeaveDivident(0);
             s.setLeaveType(null);

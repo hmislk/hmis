@@ -156,8 +156,6 @@ public class StaffLeaveApplicationFormController implements Serializable {
     public void setStaffShiftsLie(List<StaffShift> staffShiftsLie) {
         this.staffShiftsLie = staffShiftsLie;
     }
-    
-    
 
     public void fetchStaffShiftLie() {
         String sql = "Select s from StaffShift s"
@@ -376,7 +374,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
 
         for (StaffShift ss : list) {
-//            ss.resetLeaveData();
+            ss.resetLeaveData(getCurrentLeaveForm().getLeaveType());
             ss.calLeaveTime();
             ss.calLieu();
             ss.setLeaveForm(currentLeaveForm);
@@ -392,7 +390,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
 
         for (StaffShift ss : list) {
-            ss.resetLeaveData();
+            ss.resetLeaveData(getCurrentLeaveForm().getLeaveType());
             ss.setLeaveType(null);
             staffShiftFacade.edit(ss);
         }
@@ -416,9 +414,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             staffLeave.setForm(getCurrentLeaveForm());
             staffLeave.calLeaveQty();
             staffLeaveFacade.create(staffLeave);
-
             addLeaveDataToStaffShift(staffLeave.getLeaveDate(), staffLeave.getStaff(), staffLeave.getLeaveType());
-
             nowDate.add(Calendar.DATE, 1);
         }
 
