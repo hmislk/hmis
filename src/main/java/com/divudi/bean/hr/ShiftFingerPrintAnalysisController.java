@@ -287,11 +287,18 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
 
                 List<FingerPrintRecord> list = new ArrayList<>();
-                FingerPrintRecord fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
-                FingerPrintRecord fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
+                FingerPrintRecord fingerPrintRecordIn = null;
+                FingerPrintRecord fingerPrintRecordOut = null;
 
-                //Fetch Time From Additional From
-                fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut);
+                HrForm additionalForm = ss.getAdditionalForm();
+
+                if (additionalForm == null) {
+                    fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
+                    fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
+                } else {
+                    //Fetch Time From Additional From
+                    fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut);
+                }
 
                 if (fingerPrintRecordIn != null) {
                     fingerPrintRecordIn.setTimes(Times.inTime);
