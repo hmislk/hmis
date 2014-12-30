@@ -29,6 +29,7 @@ import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
+import com.divudi.facade.StaffShiftHistoryFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -271,11 +272,10 @@ public class HrReportController implements Serializable {
     public void createStaffList() {
         String sql;
         HashMap hm = new HashMap();
-        
+
         sql = "select ss from Staff ss "
                 + " where ss.retired=false ";
 
-      
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
@@ -296,7 +296,6 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-     
         sql += " order by ss.codeInterger";
         staffs = getStaffFacade().findBySQL(sql);
     }
@@ -1177,7 +1176,7 @@ public class HrReportController implements Serializable {
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
-    
+
     List<StaffShiftHistory> staffShiftHistorys;
 
     public DepartmentFacade getDepartmentFacade() {
@@ -1195,13 +1194,14 @@ public class HrReportController implements Serializable {
     public void setStaffShiftHistorys(List<StaffShiftHistory> staffShiftHistorys) {
         this.staffShiftHistorys = staffShiftHistorys;
     }
-    
-    
-    
-     public void createStaffShiftHistory() {
+
+    @EJB
+    StaffShiftHistoryFacade staffShiftHistoryFacade;
+
+    public void createStaffShiftHistory() {
         String sql = "";
         HashMap hm = new HashMap();
-        
+
         sql = "select ss from StaffShiftHistory ss "
                 + " where ss.retired=false "
                 + " and ss.staffShift.shiftDate between :frm  and :to ";
@@ -1240,10 +1240,9 @@ public class HrReportController implements Serializable {
 
 //        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
         sql += " order by ss.staffShift.id,ss.createdAt";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        staffShiftHistorys = staffShiftHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
-
 
     public void createStaffShiftLateInEarlyOut() {
         String sql = "";
