@@ -139,7 +139,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
     public void fetchStaffShift() {
         String sql = "Select s from StaffShift s"
                 + " where s.retired=false"
-                + " and s.lieuQtyUtilized==0 "
+                + " and s.lieuQtyUtilized=0 "
                 + " and s.staff=:stf "
                 + " and s.shiftDate between :f and :t";
         HashMap hm = new HashMap();
