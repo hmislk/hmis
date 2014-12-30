@@ -6,6 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.hr.Times;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
@@ -221,8 +222,13 @@ public class StaffAdditionalFormController implements Serializable {
             return true;
         }
 
-        if (currentAdditionalForm.getStaffShift() == null) {
+        if (getCurrentAdditionalForm().getTimes() != Times.All && currentAdditionalForm.getStaffShift() == null) {
             JsfUtil.addErrorMessage("Please Select Staff Shiftt");
+            return true;
+        }
+        
+          if (getCurrentAdditionalForm().getTimes() == Times.All && currentAdditionalForm.getStaffShift() != null) {
+            JsfUtil.addErrorMessage("Please Un Select Staff Shiftt");
             return true;
         }
 

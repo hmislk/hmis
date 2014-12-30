@@ -6,6 +6,8 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -469,6 +471,43 @@ public class PharmacySaleReport implements Serializable {
 
             sql += " and i.paymentScheme=:ps ";
             m.put("ps", paymentScheme);
+
+        }
+
+        sql += " order by i.deptId ";
+
+        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        return saleValue;
+
+    }
+    
+    private double getSaleValueByDepartmentPaymentSchemeP( Bill bill,PaymentScheme ps) {
+        
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", bill.getClass());
+        m.put("btp", BillType.PharmacySale);
+        sql = "select sum(i.netTotal) from Bill i where "
+                + " i.referenceBill.department=:d "
+                + " and i.billType=:btp "
+                + " and type(i)=:cl "
+                + " and i.createdAt between :fd and :td ";
+
+        if (paymentMethod != null) {
+
+            sql += " and i.paymentMethod=:pm ";
+            m.put("pm", paymentMethod);
+
+        }
+
+        if (ps != null) {
+
+            sql += " and i.paymentScheme=:ps ";
+            m.put("ps", ps);
 
         }
 
@@ -3068,6 +3107,120 @@ public class PharmacySaleReport implements Serializable {
         grantNetTotal = calGrantNetTotalByDepartmentPaymentScheme();
         grantDiscount = calGrantDiscountByDepartmentPaymentScheme();
 
+    }
+    
+    List<PaymentSchemeSummery> paymentSchemeSummerys;
+    double billTotal;
+    double canTotal;
+    double refTotal;
+    
+    @Inject
+    PaymentSchemeController paymentSchemeController;
+    
+    public List<PaymentSchemeSummery> getPaymentSchemeSummerys() {
+        return paymentSchemeSummerys;
+    }
+
+    public void setPaymentSchemeSummerys(List<PaymentSchemeSummery> paymentSchemeSummerys) {
+        this.paymentSchemeSummerys = paymentSchemeSummerys;
+    }
+
+    public double getBillTotal() {
+        return billTotal;
+    }
+
+    public void setBillTotal(double billTotal) {
+        this.billTotal = billTotal;
+    }
+
+    public double getCanTotal() {
+        return canTotal;
+    }
+
+    public void setCanTotal(double canTotal) {
+        this.canTotal = canTotal;
+    }
+
+    public double getRefTotal() {
+        return refTotal;
+    }
+
+    public void setRefTotal(double refTotal) {
+        this.refTotal = refTotal;
+    }
+    
+    
+    
+    public void createSalereportByDateSummeryPaymentscheam(){
+        if (department==null) {
+            UtilityController.addErrorMessage("Select Department");
+            return;
+        }
+        paymentSchemeSummerys=new ArrayList<>();
+        List<PaymentScheme> paymentSchemes=paymentSchemeController.getItems();
+        
+        billTotal=0.0;
+        canTotal=0.0;
+        refTotal=0.0;
+        
+        for (PaymentScheme ps : paymentSchemes) {
+            PaymentSchemeSummery pss=new PaymentSchemeSummery();
+            
+            pss.setPaymentScheme(ps.getName());
+            pss.setBillTotal(getSaleValueByDepartmentPaymentSchemeP(new BilledBill(), ps));
+            pss.setCancelBillTotal(getSaleValueByDepartmentPaymentSchemeP(new CancelledBill(), ps));
+            pss.setRefundBillTotal(getSaleValueByDepartmentPaymentSchemeP(new RefundBill(), ps));
+            
+            billTotal+=pss.getBillTotal();
+            canTotal+=pss.getCancelBillTotal();
+            refTotal+=pss.getRefundBillTotal();
+            
+            paymentSchemeSummerys.add(pss);
+            System.out.println("Added - "+ps.getName());
+        }
+        
+    }
+    
+    public class PaymentSchemeSummery{
+        String paymentScheme;
+        double billTotal;
+        double cancelBillTotal;
+        double refundBillTotal;
+
+        public String getPaymentScheme() {
+            return paymentScheme;
+        }
+
+        public void setPaymentScheme(String paymentScheme) {
+            this.paymentScheme = paymentScheme;
+        }
+
+        public double getBillTotal() {
+            return billTotal;
+        }
+
+        public void setBillTotal(double billTotal) {
+            this.billTotal = billTotal;
+        }
+
+        public double getCancelBillTotal() {
+            return cancelBillTotal;
+        }
+
+        public void setCancelBillTotal(double cancelBillTotal) {
+            this.cancelBillTotal = cancelBillTotal;
+        }
+
+        public double getRefundBillTotal() {
+            return refundBillTotal;
+        }
+
+        public void setRefundBillTotal(double refundBillTotal) {
+            this.refundBillTotal = refundBillTotal;
+        }
+        
+        
+        
     }
 
     public void createIssueReportByDateDetail() {
