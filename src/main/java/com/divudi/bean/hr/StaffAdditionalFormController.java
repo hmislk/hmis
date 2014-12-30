@@ -140,7 +140,7 @@ public class StaffAdditionalFormController implements Serializable {
         String sql = "select c from "
                 + " StaffShift c"
                 + " where c.retired=false "
-                + " and c.shift is not null"
+                + " and c.shift is not null "
                 + " and c.shiftDate between :fd and :td "
                 + " and c.staff=:stf ";
 
