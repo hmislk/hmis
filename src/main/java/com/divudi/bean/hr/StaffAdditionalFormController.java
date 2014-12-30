@@ -131,6 +131,7 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     public void viewAdditionalForm(AdditionalForm additionalForm) {
+        date = additionalForm.getFromTime();
         currentAdditionalForm = additionalForm;
     }
 
