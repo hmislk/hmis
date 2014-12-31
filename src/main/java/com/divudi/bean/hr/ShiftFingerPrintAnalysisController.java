@@ -284,7 +284,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             for (StaffShift ss : staffShifts) {
-                System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getNameWithInitials());
+                ss.setStartRecord(null);
+                ss.setEndRecord(null);
+                System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
                 StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
 
                 List<FingerPrintRecord> list = new ArrayList<>();
@@ -301,6 +303,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut);
                 }
 
+                System.err.println(" 1 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
+                
                 if (fingerPrintRecordIn != null) {
                     fingerPrintRecordIn.setTimes(Times.inTime);
                     ss.setStartRecord(fingerPrintRecordIn);
@@ -311,6 +315,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     ss.setEndRecord(fingerPrintRecordOut);
                 }
 
+                System.err.println("2 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
                 //Setting Leave Type To StaffShift From Staff Leave
                 if (staffLeave != null) {
                     ss.setLeaveType(staffLeave.getLeaveType());
@@ -347,6 +352,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     }
                 }
 
+                System.err.println("3 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
                 ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
                 ss.getFingerPrintRecordList().addAll(list);
                 netT.getStaffShift().add(ss);

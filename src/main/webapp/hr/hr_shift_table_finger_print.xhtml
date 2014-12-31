@@ -145,7 +145,7 @@
                                 <p:ajax event="click" process="@this" update="@this"
                                         listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
                             </p:calendar>
-                          
+                            <h:outputLabel value="#{sts.endRecord}"/>
                             <p:selectBooleanCheckbox value="#{sts.endRecord.allowedExtraDuty}" disabled="true"/>
 <!--                            <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.endRecord)}"/>-->
                         </h:panelGroup>
