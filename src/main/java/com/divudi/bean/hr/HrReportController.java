@@ -1247,6 +1247,7 @@ public class HrReportController implements Serializable {
     }
 
     List<FingerPrintRecordHistory> fingerPrintRecordHistorys;
+    @EJB
     FingerPrintRecordHistoryFacade fingerPrintRecordHistoryFacade;
 
     public StaffShiftHistoryFacade getStaffShiftHistoryFacade() {
