@@ -547,6 +547,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             if (fingerPrintRecord.getStaffShift() != null) {
                 fingerPrintRecordHistory.setShift(fingerPrintRecord.getStaffShift().getShift());
             }
+            if (fingerPrintRecord.getId() == null) {
+                fingerPrintRecordFacade.create(fingerPrintRecord);
+            }
             fingerPrintRecordHistoryFacade.create(fingerPrintRecordHistory);
         }
 
