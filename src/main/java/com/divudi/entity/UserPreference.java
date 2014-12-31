@@ -44,6 +44,7 @@ public class UserPreference implements Serializable {
     boolean partialPaymentOfOpdBillsAllowed;
     boolean paymentMethodAllowedInInwardMatrix;
     boolean pharmacyBillPrabodha;
+    boolean checkPaymentSchemeValidation;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
@@ -91,6 +92,14 @@ public class UserPreference implements Serializable {
 
     public void setPharmacyBillPaperType(PaperType pharmacyBillPaperType) {
         this.pharmacyBillPaperType = pharmacyBillPaperType;
+    }
+
+    public boolean isCheckPaymentSchemeValidation() {
+        return checkPaymentSchemeValidation;
+    }
+
+    public void setCheckPaymentSchemeValidation(boolean checkPaymentSchemeValidation) {
+        this.checkPaymentSchemeValidation = checkPaymentSchemeValidation;
     }
     
     
