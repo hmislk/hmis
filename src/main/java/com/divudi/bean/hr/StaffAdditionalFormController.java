@@ -6,14 +6,19 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.Times;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AdditionalForm;
+import com.divudi.entity.hr.Roster;
+import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftExtra;
 import com.divudi.facade.AdditionalFormFacade;
+import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
@@ -228,8 +233,8 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Staff Shiftt");
             return true;
         }
-        
-          if (getCurrentAdditionalForm().getTimes() == Times.All && currentAdditionalForm.getStaffShift() != null) {
+
+        if (getCurrentAdditionalForm().getTimes() == Times.All && currentAdditionalForm.getStaffShift() != null) {
             JsfUtil.addErrorMessage("Please Un Select Staff Shiftt");
             return true;
         }
@@ -238,10 +243,17 @@ public class StaffAdditionalFormController implements Serializable {
         return false;
     }
 
+    @Inject
+    PhDateController phDateController;
+
     public void saveAdditionalForm() {
         if (errorCheck()) {
             return;
         }
+
+        DayType dayType = phDateController.getHolidayType(date);
+        Shift shift = fetchShift(staff.getRoster(), dayType);
+        
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
         if (currentAdditionalForm.getId() == null) {
@@ -261,6 +273,7 @@ public class StaffAdditionalFormController implements Serializable {
             staffShiftExtra.setAdditionalForm(currentAdditionalForm);
             staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
             staffShiftExtra.setShiftDate(date);
+            staffShiftExtra.setShift(shift);
             staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
             staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
             staffShiftFacade.create(staffShiftExtra);
@@ -271,6 +284,39 @@ public class StaffAdditionalFormController implements Serializable {
 
         JsfUtil.addSuccessMessage("Sucessfully Saved");
         clear();
+    }
+
+    @EJB
+    ShiftFacade shiftFacade;
+
+    private Shift fetchShift(Roster roster, DayType dayType) {
+        if (dayType == null || roster == null) {
+            return null;
+        }
+
+        String sql = "select s from  Shift s "
+                + " where s.retired=false "
+                + " and s.roster=:rs"
+                + " and s.dayType=:dtp ";
+        HashMap hm = new HashMap();
+        hm.put("rs", roster);
+        hm.put("dtp", dayType);
+
+        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        if (sh == null) {
+            sh = new Shift();
+            sh.setCreatedAt(new Date());
+            sh.setCreater(sessionController.getLoggedUser());
+            sh.setDayType(dayType);
+            sh.setRoster(roster);
+            sh.setName(dayType.toString());
+            sh.setStartingTime(date);
+            sh.setEndingTime(date);
+            shiftFacade.create(sh);
+        }
+
+        return sh;
     }
 
     public AdditionalForm getCurrentAdditionalForm() {
