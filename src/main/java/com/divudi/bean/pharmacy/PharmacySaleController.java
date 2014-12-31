@@ -972,7 +972,7 @@ public class PharmacySaleController implements Serializable {
         getPreBill().setInsId(insId);
         String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setDeptId(deptId);
-
+        getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
         }
@@ -1000,6 +1000,7 @@ public class PharmacySaleController implements Serializable {
 
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
+        getSaleBill().setInvoiceNumber(getPreBill().getInvoiceNumber());
         getSaleBill().setComments(comment);
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
