@@ -35,6 +35,8 @@ public class FingerPrintRecordHistory implements Serializable {
     Shift shift;
     @ManyToOne
     Roster roster;
+    @ManyToOne
+    StaffShift staffShift;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date beforeChange;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -51,6 +53,16 @@ public class FingerPrintRecordHistory implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+
+    public StaffShift getStaffShift() {
+        return staffShift;
+    }
+
+    public void setStaffShift(StaffShift staffShift) {
+        this.staffShift = staffShift;
+    }
+    
+    
 
     public Shift getShift() {
         return shift;

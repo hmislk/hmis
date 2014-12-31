@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Staff Shift Histoy" />
+                            <h:outputLabel value="Finger Print Histoy" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -37,7 +37,7 @@
                             <hr:completeShift value="#{hrReportController.reportKeyWord.shift}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShiftHistory()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createFingerPrintHistory()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -45,31 +45,32 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffShiftHistorys}" var="ss">
+                            <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecordHistorys}" var="ss">
                                 <p:column headerText="Changed At">
                                     #{ss.createdAt}
-                                </p:column>     
-                                 <p:column headerText="Changed by">
+                                </p:column>    
+                                <p:column headerText="Changed by">
                                     #{ss.creater.webUserPerson.name}
-                                </p:column>     
-                                <p:column headerText="From Emp Name">
+                                </p:column>    
+                                <p:column headerText="Employee">
                                     #{ss.staff.person.nameWithTitle}
                                 </p:column>                                                           
-                                <p:column headerText="From Roster Name">
+                                <p:column headerText="Roster">
                                     #{ss.roster.name}
                                 </p:column>   
-                                <p:column headerText="From Shift Name">
+                                <p:column headerText="Shift">
                                     #{ss.shift.name}
-                                </p:column>   
-                                <p:column headerText="Curent Emp Name">
-                                    #{ss.staffShift.staff.person.nameWithInitials}
+                                </p:column> 
+                                <p:column headerText="Record Type">
+                                    #{ss.fingerPrintRecord.times}
+                                </p:column> 
+                                <p:column headerText="Before Change">
+                                    #{ss.beforeChange}
                                 </p:column>                                                           
-                                <p:column headerText="Current Roster Name">
-                                    #{ss.staffShift.roster.name}
-                                </p:column>   
-                                <p:column headerText="Current Shift Name">
-                                    #{ss.staffShift.shift.name}
-                                </p:column>   
+                                <p:column headerText="After Change">
+                                    #{ss.afterChange}
+                                </p:column>                                 
+
                             </p:dataTable>
                         </p:panel>
 
