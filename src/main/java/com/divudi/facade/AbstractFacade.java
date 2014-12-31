@@ -243,6 +243,25 @@ public abstract class AbstractFacade<T> {
         }
         return qry.getResultList();
     }
+    
+     public Object findFirstObjectBySQL(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<Object> qry = getEntityManager().createQuery(temSQL, Object.class);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal = m.getValue();
+            String pPara = (String) m.getKey();
+            if (pVal instanceof Date) {
+                Date d = (Date) pVal;
+                qry.setParameter(pPara, d, tt);
+            } else {
+                qry.setParameter(pPara, pVal);
+            }
+            //    //System.out.println("Parameter " + pPara + "\tVal" + pVal);
+        }
+        return qry.getSingleResult();
+    }
 
     public Object[] findObjectListBySQL(String temSQL, Map<String, Object> parameters, TemporalType tt) {
         TypedQuery<Object[]> qry = getEntityManager().createQuery(temSQL, Object[].class);

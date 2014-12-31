@@ -74,6 +74,17 @@ public class PhDateController implements Serializable {
 
     }
 
+    public DayType getHolidayType(Date d) {
+        String sql = "Select d.phType From PhDate d "
+                + " Where d.retired=false "
+                + " and d.phDate=:dtd ";
+        HashMap hm = new HashMap();
+        hm.put("dtd", d);
+
+        return (DayType) ejbFacade.findFirstObjectBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
     public void prepareAdd() {
         current = new PhDate();
     }
