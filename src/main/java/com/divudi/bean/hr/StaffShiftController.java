@@ -100,7 +100,7 @@ public class StaffShiftController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "select c from StaffShift c "
                 + " where c.retired=false "
-                + " and c.shiftStartTime is not nul"
+                + " and c.shiftStartTime is not null"
                 + " and c.shiftEndTime is not null ";
         lst = ejbFacade.findBySQL(sql);
 
