@@ -15,6 +15,7 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.BillFacade;
@@ -25,6 +26,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientFacade;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
@@ -75,6 +77,29 @@ public class BillNumberGenerator {
         billNumberFacade.edit(billNumber);
 
         return result.toString();
+    }
+
+    @EJB
+    CommonFunctions commonFunctions;
+
+    public String fetchPaymentSchemeCount(PaymentScheme paymentScheme, BillType billType, Institution institution) {
+        if (paymentScheme == null) {
+            return "";
+        }
+
+        String sql = "SELECT count(b) FROM PreBill b "
+                + "  where  b.retired=false "
+                + " and b.institution=:ins "
+                + " and b.billType = :bt "
+                + " and b.createdAt between :f and :t";        
+        HashMap hm = new HashMap();
+        hm.put("ins", institution);
+        hm.put("bt", billType);
+        hm.put("f", commonFunctions.getFirstDayOfYear(new Date()));
+        hm.put("t", commonFunctions.getLastDayOfYear(new Date()));
+        Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+
+        return i + "";
     }
 
     public String institutionChannelBillNumberGenerator(Institution ins, Bill bill) {
@@ -866,7 +891,6 @@ public class BillNumberGenerator {
 //
 //        return result;
 //    }
-
 //    public String departmentCancelledBill(Department dep, BillType type, BillNumberSuffix billNumberSuffix) {
 //        if (dep == null || dep.getId() == null) {
 //            return "";
@@ -911,7 +935,6 @@ public class BillNumberGenerator {
 //        }
 //
 //    }
-
 //    public String departmentReturnBill(Department dep, BillType billType, BillNumberSuffix billNumberSuffix) {
 //
 //        String sql = "SELECT count(b) FROM RefundBill b where b.retired=false "
@@ -950,7 +973,6 @@ public class BillNumberGenerator {
 //        }
 //
 //    }
-
     public boolean itemCodeExistsInPharmacyOrStoreItems(String code) {
         HashMap hm = new HashMap();
         String sql = "SELECT count(b) FROM Amp b where b.code!=:code ";
