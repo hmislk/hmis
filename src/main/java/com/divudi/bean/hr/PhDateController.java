@@ -81,7 +81,9 @@ public class PhDateController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("dtd", d);
 
-        return (DayType) ejbFacade.findFirstObjectBySQL(sql, hm, TemporalType.DATE);
+        Object obj = ejbFacade.findFirstObjectBySQL(sql, hm, TemporalType.DATE);
+
+        return obj != null ? (DayType) obj : null;
 
     }
 

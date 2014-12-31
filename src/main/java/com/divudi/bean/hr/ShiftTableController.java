@@ -252,14 +252,29 @@ public class ShiftTableController implements Serializable {
             for (Staff staff : staffs) {
                 List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
                 if (ss == null) {
-                    StaffShift newStaffShift = new StaffShift();
-                    newStaffShift.setStaff(staff);
-                    newStaffShift.setShiftDate(nowDate);
-                    newStaffShift.setCreatedAt(new Date());
-                    newStaffShift.setCreater(sessionController.getLoggedUser());
-                    netT.getStaffShift().add(newStaffShift);
+                    for (int i = 0; i < roster.getShiftPerDay(); i++) {
+                        StaffShift newStaffShift = new StaffShift();
+                        newStaffShift.setStaff(staff);
+                        newStaffShift.setShiftDate(nowDate);
+                        newStaffShift.setCreatedAt(new Date());
+                        newStaffShift.setCreater(sessionController.getLoggedUser());
+                        netT.getStaffShift().add(newStaffShift);
+                    }
                 } else {
                     netT.getStaffShift().addAll(ss);
+                    int ballance = roster.getShiftPerDay() - ss.size();
+                    if (ballance < 0) {
+                        continue;
+                    }
+                    for (int i = 0; i < ballance; i++) {
+                        StaffShift newStaffShift = new StaffShift();
+                        newStaffShift.setStaff(staff);
+                        newStaffShift.setShiftDate(nowDate);
+                        newStaffShift.setCreatedAt(new Date());
+                        newStaffShift.setCreater(sessionController.getLoggedUser());
+                        netT.getStaffShift().add(newStaffShift);
+                    }
+
                 }
             }
 

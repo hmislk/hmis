@@ -26,6 +26,7 @@ import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffSalaryComponant;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.entity.hr.StaffShiftExtra;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.PhDateFacade;
@@ -254,10 +255,12 @@ public class HumanResourceBean {
         Map m = new HashMap();
         m.put("date", date);
         m.put("s", staff);
+        m.put("tp", StaffShiftExtra.class);
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
-                + " and ss.shiftDate=:date"
+                + " and ss.shiftDate=:date "
+                + " and type(ss)!=:tp"
                 + " order by ss.staff.codeInterger ";
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);

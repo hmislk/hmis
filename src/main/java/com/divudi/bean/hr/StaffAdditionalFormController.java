@@ -136,7 +136,8 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     public void viewAdditionalForm(AdditionalForm additionalForm) {
-        date = additionalForm.getFromTime();
+        date = additionalForm.getFromTime();   
+        fetchStaffShift(date, additionalForm.getStaff());             
         currentAdditionalForm = additionalForm;
     }
 
@@ -146,14 +147,28 @@ public class StaffAdditionalFormController implements Serializable {
                 + " StaffShift c"
                 + " where c.retired=false "
                 + " and c.shift is not null "
-                + " and c.shiftDate between :fd and :td "
+                + " and c.shiftDate =:dt"
                 + " and c.staff=:stf ";
 
-        hm.put("fd", getDate());
-        hm.put("td", getDate());
+        hm.put("dt", getDate());
         hm.put("stf", getCurrentAdditionalForm().getStaff());
 
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void fetchStaffShift(Date date, Staff staff) {
+        HashMap hm = new HashMap();
+        String sql = "select c from "
+                + " StaffShift c"
+                + " where c.retired=false "
+                + " and c.shift is not null "
+                + " and c.shiftDate=:dt "
+                + " and c.staff=:stf ";
+
+        hm.put("dt", date);
+        hm.put("stf", staff);
+
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
     public List<StaffShift> getStaffShifts() {
@@ -253,7 +268,7 @@ public class StaffAdditionalFormController implements Serializable {
 
         DayType dayType = phDateController.getHolidayType(date);
         Shift shift = fetchShift(staff.getRoster(), dayType);
-        
+
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
         if (currentAdditionalForm.getId() == null) {
