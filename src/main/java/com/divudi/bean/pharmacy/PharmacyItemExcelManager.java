@@ -1545,7 +1545,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
                 Map m = new HashMap();
 
-                cell = sheet.getCell(ampCol, 0);
+                cell = sheet.getCell(0, i);
                 strAmp = cell.getContents();
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
@@ -1668,7 +1668,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
                 Map m = new HashMap();
 
-                cell = sheet.getCell(ampCol, 0);
+                cell = sheet.getCell(0, i);
                 strAmp = cell.getContents();
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
