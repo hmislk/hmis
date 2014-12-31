@@ -139,7 +139,7 @@ public class HumanResourceBean {
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
+//        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
         return ss;
     }
 
@@ -212,7 +212,7 @@ public class HumanResourceBean {
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
+//        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
         return ss;
     }
 
