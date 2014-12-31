@@ -284,6 +284,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             for (StaffShift ss : staffShifts) {
+                System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getNameWithInitials());
                 StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
 
                 List<FingerPrintRecord> list = new ArrayList<>();

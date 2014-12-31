@@ -139,7 +139,7 @@ public class HumanResourceBean {
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
+//        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
         return ss;
     }
 
@@ -172,7 +172,7 @@ public class HumanResourceBean {
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
+//        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
         return ss;
     }
     
@@ -212,7 +212,7 @@ public class HumanResourceBean {
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
+//        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
         return ss;
     }
 
@@ -246,7 +246,7 @@ public class HumanResourceBean {
                 + " and ss.fingerPrintRecordType=:ftp "
                 + " and ss.recordTimeStamp between :f and :t";
         FingerPrintRecord ss = getFingerPrintRecordFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
+//        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
         return ss;
     }
     
@@ -355,7 +355,7 @@ public class HumanResourceBean {
     }
 
     public StaffShift fetchPrevStaffShift(StaffShift tmp) {
-        System.err.println("Fetch Prev StaffShift");
+//        System.err.println("Fetch Prev StaffShift");
         if (tmp.getShift() == null) {
             return null;
         }
@@ -648,7 +648,7 @@ public class HumanResourceBean {
         hm.put("dt", d);
         hm.put("st", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
-        System.err.println("fetchStaffShiftWithShift:: " + tmp);
+//        System.err.println("fetchStaffShiftWithShift:: " + tmp);
         return tmp;
     }
 
@@ -865,7 +865,7 @@ public class HumanResourceBean {
         m.put("t", timeStamp);
         m.put("p", fingerPrintRecordType);
         FingerPrintRecord fpr = getFingerPrintRecordFacade().findFirstBySQL(jpql, m, TemporalType.TIMESTAMP);
-        System.err.println("Logged Fetched " + fpr);
+//        System.err.println("Logged Fetched " + fpr);
         return fpr;
     }
 
@@ -883,7 +883,7 @@ public class HumanResourceBean {
         m.put("p", fingerPrintRecordType);
         m.put("lfr", fingerPrintRecordLogged);
         FingerPrintRecord fpr = getFingerPrintRecordFacade().findFirstBySQL(jpql, m, TemporalType.TIMESTAMP);
-        System.err.println("Fetched Varified " + fpr);
+//        System.err.println("Fetched Varified " + fpr);
         return fpr;
     }
 
@@ -1501,7 +1501,7 @@ public class HumanResourceBean {
 
     public List<StaffShift> getOrCreateRecordsForOt(Date fromDate, Date toDate, Staff staff) {
         List<StaffShift> staffShifts = getStaffShiftFromRecordForOtCalculation(fromDate, toDate, staff);
-        System.err.println("OT SHIFT  " + staffShifts);
+//        System.err.println("OT SHIFT  " + staffShifts);
 
         Calendar lastDate = Calendar.getInstance();
         lastDate.setTime(toDate);
@@ -1513,7 +1513,7 @@ public class HumanResourceBean {
 
     public List<StaffShift> getOrCreateRecordsForSalary(Date fromDate, Date toDate, Staff staff) {
         List<StaffShift> staffShifts = getStaffShiftFromRecordForSlaryCalculation(fromDate, toDate, staff);
-        System.err.println("SALARY SHIFT  " + staffShifts);
+//        System.err.println("SALARY SHIFT  " + staffShifts);
         Calendar lastDate = Calendar.getInstance();
         lastDate.setTime(toDate);
 
@@ -1524,7 +1524,7 @@ public class HumanResourceBean {
 
     public List<StaffShift> getOrCreateRecordsForExtraDuty(Date fromDate, Date toDate, Staff staff) {
         List<StaffShift> staffShifts = getStaffShiftFromRecordForExraDutyCalculation(fromDate, toDate, staff);
-        System.err.println("EXTRA DUTY SHIFT  " + staffShifts);
+//        System.err.println("EXTRA DUTY SHIFT  " + staffShifts);
         Calendar lastDate = Calendar.getInstance();
         lastDate.setTime(toDate);
 
@@ -1735,7 +1735,7 @@ public class HumanResourceBean {
              *
              *
              */
-            System.err.println("SETTING SALARY TRUE");
+//            System.err.println("SETTING SALARY TRUE");
             getStaffShiftFacade().edit(ser);
         }
     }
@@ -1758,7 +1758,7 @@ public class HumanResourceBean {
 //            workedMinute += netTime;
 
 //            ser.setConsideredForExtraDuty(Boolean.TRUE);
-            System.err.println("SETTING SALARY TRUE");
+//            System.err.println("SETTING SALARY TRUE");
             getStaffShiftFacade().edit(ser);
         }
     }
