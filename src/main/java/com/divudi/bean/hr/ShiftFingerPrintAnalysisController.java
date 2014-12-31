@@ -303,8 +303,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut);
                 }
 
-                System.err.println(" 1 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
-                
+//                System.err.println(" 1 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
                 if (fingerPrintRecordIn != null) {
                     fingerPrintRecordIn.setTimes(Times.inTime);
                     ss.setStartRecord(fingerPrintRecordIn);
@@ -315,7 +314,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     ss.setEndRecord(fingerPrintRecordOut);
                 }
 
-                System.err.println("2 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
+                System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
                 //Setting Leave Type To StaffShift From Staff Leave
                 if (staffLeave != null) {
                     ss.setLeaveType(staffLeave.getLeaveType());
@@ -352,7 +351,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     }
                 }
 
-                System.err.println("3 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
+                System.err.println("3 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
                 ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
                 ss.getFingerPrintRecordList().addAll(list);
                 netT.getStaffShift().add(ss);
@@ -510,6 +509,44 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         return false;
     }
+
+//    private void saveHistory() {
+//        for (ShiftTable st : shiftTables) {
+//            for (StaffShift ss : st.getStaffShift()) {
+//
+//                if (ss.getId() != null) {
+//                    boolean flag = false;
+//                    StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
+//
+//                    if (fetchStaffShift.getRoster() != ss.getRoster()) {
+//                        flag = true;
+//                    }
+//
+//                    if (fetchStaffShift.getStaff() != ss.getStaff()) {
+//                        flag = true;
+//                    }
+//
+//                    if (fetchStaffShift.getShift() != ss.getShift()) {
+//                        flag = true;
+//                    }
+//
+//                    if (flag) {
+//                        StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
+//                        staffShiftHistory.setStaffShift(ss);
+//                        staffShiftHistory.setCreatedAt(new Date());
+//                        staffShiftHistory.setCreater(sessionController.getLoggedUser());
+//                        //CHanges
+//                        staffShiftHistory.setStaff(ss.getStaff());
+//                        staffShiftHistory.setShift(ss.getShift());
+//                        staffShiftHistory.setRoster(ss.getRoster());
+//
+//                        staffShiftHistoryFacade.create(staffShiftHistory);
+//                    }
+//                }
+//
+//            }
+//        }
+//    }
 
     public void save() {
         errorMessage = new ArrayList<>();
