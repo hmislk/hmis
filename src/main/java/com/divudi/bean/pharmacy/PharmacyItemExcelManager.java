@@ -1673,9 +1673,9 @@ public class PharmacyItemExcelManager implements Serializable {
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp.toUpperCase());
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.code)=:n ");
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.code)=:n ",m);
                 System.out.println("m = " + m);
-
+                System.out.println("amp");
                 if (amp == null) {
                     continue;
                 }
