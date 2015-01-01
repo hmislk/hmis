@@ -21,13 +21,17 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
+import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FingerPrintRecordFacade;
+import com.divudi.facade.FingerPrintRecordHistoryFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
+import com.divudi.facade.StaffShiftHistoryFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -270,11 +274,10 @@ public class HrReportController implements Serializable {
     public void createStaffList() {
         String sql;
         HashMap hm = new HashMap();
-        
+
         sql = "select ss from Staff ss "
                 + " where ss.retired=false ";
 
-      
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
@@ -295,7 +298,6 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-     
         sql += " order by ss.codeInterger";
         staffs = getStaffFacade().findBySQL(sql);
     }
@@ -1174,6 +1176,149 @@ public class HrReportController implements Serializable {
         sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
 //        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
+    List<StaffShiftHistory> staffShiftHistorys;
+
+    public DepartmentFacade getDepartmentFacade() {
+        return departmentFacade;
+    }
+
+    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
+        this.departmentFacade = departmentFacade;
+    }
+
+    public List<StaffShiftHistory> getStaffShiftHistorys() {
+        return staffShiftHistorys;
+    }
+
+    public void setStaffShiftHistorys(List<StaffShiftHistory> staffShiftHistorys) {
+        this.staffShiftHistorys = staffShiftHistorys;
+    }
+
+    @EJB
+    StaffShiftHistoryFacade staffShiftHistoryFacade;
+
+    public void createStaffShiftHistory() {
+        String sql = "";
+        HashMap hm = new HashMap();
+
+        sql = "select ss from StaffShiftHistory ss "
+                + " where ss.retired=false "
+                + " and ss.staffShift.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getShift() != null) {
+            sql += " and ss.shift=:sh ";
+            hm.put("sh", getReportKeyWord().getShift());
+        }
+
+//        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
+        sql += " order by ss.staffShift.id,ss.createdAt";
+        staffShiftHistorys = staffShiftHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    List<FingerPrintRecordHistory> fingerPrintRecordHistorys;
+    @EJB
+    FingerPrintRecordHistoryFacade fingerPrintRecordHistoryFacade;
+
+    public StaffShiftHistoryFacade getStaffShiftHistoryFacade() {
+        return staffShiftHistoryFacade;
+    }
+
+    public void setStaffShiftHistoryFacade(StaffShiftHistoryFacade staffShiftHistoryFacade) {
+        this.staffShiftHistoryFacade = staffShiftHistoryFacade;
+    }
+
+    public List<FingerPrintRecordHistory> getFingerPrintRecordHistorys() {
+        return fingerPrintRecordHistorys;
+    }
+
+    public void setFingerPrintRecordHistorys(List<FingerPrintRecordHistory> fingerPrintRecordHistorys) {
+        this.fingerPrintRecordHistorys = fingerPrintRecordHistorys;
+    }
+
+    public FingerPrintRecordHistoryFacade getFingerPrintRecordHistoryFacade() {
+        return fingerPrintRecordHistoryFacade;
+    }
+
+    public void setFingerPrintRecordHistoryFacade(FingerPrintRecordHistoryFacade fingerPrintRecordHistoryFacade) {
+        this.fingerPrintRecordHistoryFacade = fingerPrintRecordHistoryFacade;
+    }
+    
+    
+
+    public void createFingerPrintHistory() {
+        String sql = "";
+        HashMap hm = new HashMap();
+
+        sql = "select ss from FingerPrintRecordHistory ss "
+                + " where ss.retired=false "
+                + " and ss.beforeChange between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getShift() != null) {
+            sql += " and ss.shift=:sh ";
+            hm.put("sh", getReportKeyWord().getShift());
+        }
+
+//        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
+        sql += " order by ss.fingerPrintRecord.id,ss.id";
+        fingerPrintRecordHistorys = fingerPrintRecordHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
 

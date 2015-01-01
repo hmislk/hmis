@@ -21,20 +21,26 @@ import javax.persistence.Temporal;
  * @author safrin
  */
 @Entity
-public class StaffShiftHistory implements Serializable {
+public class FingerPrintRecordHistory implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ManyToOne
-    StaffShift staffShift;
+    private FingerPrintRecord fingerPrintRecord;
     @ManyToOne
     Staff staff;
     @ManyToOne
     Shift shift;
     @ManyToOne
     Roster roster;
+    @ManyToOne
+    StaffShift staffShift;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date beforeChange;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date afterChange;
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -47,6 +53,16 @@ public class StaffShiftHistory implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+
+    public StaffShift getStaffShift() {
+        return staffShift;
+    }
+
+    public void setStaffShift(StaffShift staffShift) {
+        this.staffShift = staffShift;
+    }
+    
+    
 
     public Shift getShift() {
         return shift;
@@ -63,8 +79,6 @@ public class StaffShiftHistory implements Serializable {
     public void setRoster(Roster roster) {
         this.roster = roster;
     }
-    
-    
 
     public Long getId() {
         return id;
@@ -84,10 +98,10 @@ public class StaffShiftHistory implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof StaffShiftHistory)) {
+        if (!(object instanceof FingerPrintRecordHistory)) {
             return false;
         }
-        StaffShiftHistory other = (StaffShiftHistory) object;
+        FingerPrintRecordHistory other = (FingerPrintRecordHistory) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -96,15 +110,7 @@ public class StaffShiftHistory implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.hr.StaffShiftHistory[ id=" + id + " ]";
-    }
-
-    public StaffShift getStaffShift() {
-        return staffShift;
-    }
-
-    public void setStaffShift(StaffShift staffShift) {
-        this.staffShift = staffShift;
+        return id + "";
     }
 
     public Staff getStaff() {
@@ -162,7 +168,29 @@ public class StaffShiftHistory implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
-    
+
+    public FingerPrintRecord getFingerPrintRecord() {
+        return fingerPrintRecord;
+    }
+
+    public void setFingerPrintRecord(FingerPrintRecord fingerPrintRecord) {
+        this.fingerPrintRecord = fingerPrintRecord;
+    }
+
+    public Date getBeforeChange() {
+        return beforeChange;
+    }
+
+    public void setBeforeChange(Date beforeChange) {
+        this.beforeChange = beforeChange;
+    }
+
+    public Date getAfterChange() {
+        return afterChange;
+    }
+
+    public void setAfterChange(Date afterChange) {
+        this.afterChange = afterChange;
+    }
 
 }

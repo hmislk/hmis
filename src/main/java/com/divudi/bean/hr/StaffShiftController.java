@@ -95,6 +95,27 @@ public class StaffShiftController implements Serializable {
 
     }
 
+    public void updateStaffShiftStartTimeAndEndTime() {
+        List<StaffShift> lst;
+        HashMap hm = new HashMap();
+        String sql = "select c from StaffShift c "
+                + " where c.retired=false "
+                + " and c.shiftStartTime is not null"
+                + " and c.shiftEndTime is not null ";
+        lst = ejbFacade.findBySQL(sql);
+
+        if (lst == null) {
+            return;
+        }
+
+        for (StaffShift ss : lst) {
+            ss.calShiftStartEndTime();
+            staffShiftFacade.edit(ss);
+        }
+        //   System.out.println("lst = " + lst);
+
+    }
+
     Date date;
 
     public void staffShiftListner(StaffShift staffShift) {
