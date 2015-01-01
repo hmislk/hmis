@@ -17,25 +17,6 @@ import javax.persistence.TemporalType;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class AdditionalForm extends HrForm  {
     
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fromTime;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date toTime;
-
-    public Date getFromTime() {
-        return fromTime;
-    }
-
-    public void setFromTime(Date fromTime) {
-        this.fromTime = fromTime;
-    }
-
-    public Date getToTime() {
-        return toTime;
-    }
-
-    public void setToTime(Date toTime) {
-        this.toTime = toTime;
-    }
+  
 
 }

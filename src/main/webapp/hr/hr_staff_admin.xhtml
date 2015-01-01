@@ -193,27 +193,27 @@
                                                 <f:ajax execute="cmbIns" render="cmbDep" event="change"/>  
                                             </p:selectOneMenu>                                          
                                             <h:outputText value="Working Department" ></h:outputText>                                     
-                                            <p:selectOneMenu   id="cmbDep" value="#{staffController.current.workingDepartment}" disabled="#{staffController.current.workingDepartment ne null}" >
+                                            <p:selectOneMenu   id="cmbDep" value="#{staffController.current.workingDepartment}">
                                                 <f:selectItem itemLabel="Please select a Department"/>
                                                 <f:selectItems value="#{staffController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                             </p:selectOneMenu>
                                             <p:outputLabel value="Employee Status "/>
-                                            <p:selectOneMenu value="#{staffController.current.employeeStatus}" disabled="#{staffController.current.employeeStatus ne null}">
+                                            <p:selectOneMenu value="#{staffController.current.employeeStatus}" >
                                                 <f:selectItem itemLabel="Please select Employee Status"/>
                                                 <f:selectItems value="#{staffController.employeeStatuses}"/>
                                             </p:selectOneMenu>
                                             <p:outputLabel value="Staff Category "/>
-                                            <p:selectOneMenu value="#{staffController.current.staffCategory}" disabled="#{staffController.current.staffCategory ne null}">
+                                            <p:selectOneMenu value="#{staffController.current.staffCategory}">
                                                 <f:selectItem itemLabel="Please Staff Category"/>
                                                 <f:selectItems value="#{staffCategoryController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
                                             </p:selectOneMenu>
                                             <p:outputLabel value="Staff Grade "/>
-                                            <p:selectOneMenu value="#{staffController.current.grade}" disabled="#{staffController.current.grade ne null}">
+                                            <p:selectOneMenu value="#{staffController.current.grade}">
                                                 <f:selectItem itemLabel="Please Staff Grade"/>
                                                 <f:selectItems value="#{gradeController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
                                             </p:selectOneMenu>
                                             <p:outputLabel value="Staff Designation " />
-                                            <p:selectOneMenu value="#{staffController.current.designation}" disabled="#{staffController.current.designation ne null}">
+                                            <p:selectOneMenu value="#{staffController.current.designation}" >
                                                 <f:selectItem itemLabel="Please Staff Designation"/>
                                                 <f:selectItems value="#{designationController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
                                             </p:selectOneMenu>

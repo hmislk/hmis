@@ -66,34 +66,6 @@
                                 <p:column headerText="Staff Shift">
                                     #{ss.shift.name}
                                 </p:column>
-<!--                                <p:column headerText="In Actual " >
-                                    <h:outputLabel value="#{ss.startRecord.loggedRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>  
-                                    <h:outputLabel value="Previous" rendered="#{ss.previousStaffShift ne null}"/>
-                                </p:column>                           
-                                <p:column headerText="Out Actual" >
-                                    <h:outputLabel value="#{ss.endRecord.loggedRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>  
-                                    <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
-                                </p:column> 
-                                <p:column headerText="Worked Time Within Shift Logged" >
-                                    <h:outputLabel value="#{ss.workedWithinTimeFrameLogged/60}">                                        
-                                        <f:convertNumber pattern="#0.00"/>
-                                    </h:outputLabel>
-                                </p:column> 
-                                <p:column headerText="Worked Time Outside Shift Logged" >
-                                    <h:outputLabel value="#{ss.workedOutSideTimeFrameLogged/60}">
-                                        <f:convertNumber pattern="#0.00"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="Worked Time Logged" >
-                                    <h:outputLabel value="#{(ss.workedWithinTimeFrameLogged+ss.workedOutSideTimeFrameLogged)/60}">
-                                        <f:convertNumber pattern="#0.00"/>
-                                    </h:outputLabel>
-                                </p:column> -->
                                 <p:column headerText="In Checked ">
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
@@ -105,18 +77,18 @@
                                     </h:outputLabel>  
                                 </p:column>  
                                 <p:column headerText="Worked Time Within Shift Varified">
-                                    <h:outputLabel value="#{ss.workedWithinTimeFrameVarified/60}">
-                                        <f:convertNumber pattern="#0.00"/>
+                                    <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
+                                      <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column> 
                                 <p:column headerText="Worked Time Outside Shift Varified">
-                                    <h:outputLabel value="#{ss.workedOutSideTimeFrameVarified/60}">                                        
-                                        <f:convertNumber pattern="#0.00"/>
+                                    <h:outputLabel value="#{ss.workedOutSideTimeFrameVarified}">                                        
+                                        <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column> 
                                 <p:column headerText="Worked Time Varified">
-                                    <h:outputLabel value="#{(ss.workedWithinTimeFrameVarified+ss.workedOutSideTimeFrameVarified)/60}">
-                                        <f:convertNumber pattern="#0.00"/>
+                                    <h:outputLabel value="#{(ss.workedWithinTimeFrameVarified+ss.workedOutSideTimeFrameVarified)}">
+                                        <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column> 
                             </p:dataTable>

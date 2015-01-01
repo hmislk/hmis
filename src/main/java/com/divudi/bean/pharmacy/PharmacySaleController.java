@@ -972,7 +972,7 @@ public class PharmacySaleController implements Serializable {
         getPreBill().setInsId(insId);
         String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setDeptId(deptId);
-
+        getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
         }
@@ -1000,6 +1000,7 @@ public class PharmacySaleController implements Serializable {
 
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
+        getSaleBill().setInvoiceNumber(getPreBill().getInvoiceNumber());
         getSaleBill().setComments(comment);
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
@@ -1169,8 +1170,15 @@ public class PharmacySaleController implements Serializable {
     public void settleBillWithPay() {
         editingQty = null;
 
+        if (sessionController.getInstitutionPreference().isCheckPaymentSchemeValidation()) {
+            if (getPaymentScheme() == null) {
+                UtilityController.addErrorMessage("Please select Payment Scheme");
+                return;
+            }
+        }
+
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select Payment Scheme");
+            UtilityController.addErrorMessage("Please select Payment Method");
             return;
         }
 

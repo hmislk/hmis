@@ -25,16 +25,16 @@ public class WeekDayWork {
     double overTime;
     double noPay;
 
-    public String getNoPay() {
-        return getDate(noPay);
+    public double getNoPay() {
+        return (noPay);
     }
 
     public void setNoPay(double noPay) {
         this.noPay = noPay;
     }
 
-    public String getTotal() {
-        return getDate(total);
+    public double getTotal() {
+        return (total);
     }
     
     public double getTotalDouble() {
@@ -45,8 +45,8 @@ public class WeekDayWork {
         this.total = total;
     }
 
-    public String getOverTime() {
-        return getDate(overTime);
+    public double getOverTime() {
+        return (overTime);
     }
 
     public void setOverTime(double overTime) {
@@ -61,27 +61,27 @@ public class WeekDayWork {
         this.staff = staff;
     }
 
-    private String getDate(double seconds) {
-        if (seconds == 0.0) {
-            return "";
-        }
+//    private double (double seconds) {
+//        if (seconds == 0.0) {
+//            return "";
+//        }
+//
+//        long s = (long)seconds % 60;
+//        long m = ((long)seconds / 60) % 60;
+//        long h = ((long)seconds / (60 * 60)) % 24;
+//        return double.format("%d:%02d:%02d", h, m, s);
+//    }
 
-        long s = (long)seconds % 60;
-        long m = ((long)seconds / 60) % 60;
-        long h = ((long)seconds / (60 * 60)) % 24;
-        return String.format("%d:%02d:%02d", h, m, s);
-    }
-
-    public String getSunDay() {
-        return getDate(sunDay);
+    public double getSunDay() {
+        return (sunDay);
     }
 
     public void setSunDay(double sunDay) {
         this.sunDay = sunDay;
     }
 
-    public String getMonDay() {
-        return getDate(monDay);
+    public double getMonDay() {
+        return (monDay);
 
     }
 
@@ -89,40 +89,40 @@ public class WeekDayWork {
         this.monDay = monDay;
     }
 
-    public String getTuesDay() {
-        return getDate(tuesDay);
+    public double getTuesDay() {
+        return (tuesDay);
     }
 
     public void setTuesDay(double tuesDay) {
         this.tuesDay = tuesDay;
     }
 
-    public String getWednesDay() {
-        return getDate(wednesDay);
+    public double getWednesDay() {
+        return (wednesDay);
     }
 
     public void setWednesDay(double wednesDay) {
         this.wednesDay = wednesDay;
     }
 
-    public String getThursDay() {
-        return getDate(thursDay);
+    public double getThursDay() {
+        return (thursDay);
     }
 
     public void setThursDay(double thursDay) {
         this.thursDay = thursDay;
     }
 
-    public String getFriDay() {
-        return getDate(friDay);
+    public double getFriDay() {
+        return (friDay);
     }
 
     public void setFriDay(double friDay) {
         this.friDay = friDay;
     }
 
-    public String getSaturDay() {
-        return getDate(saturDay);
+    public double getSaturDay() {
+        return (saturDay);
     }
 
     public void setSaturDay(double saturDay) {

@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Attendance Report Late In" />
+                            <h:outputLabel value="Staff Shift Histoy" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -37,7 +37,7 @@
                             <hr:completeShift value="#{hrReportController.reportKeyWord.shift}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShiftLateIn()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShiftHistory()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -45,25 +45,30 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
-                                <p:column headerText="Emp No">
-                                    #{ss.staff.code}
-                                </p:column>
-                                <p:column headerText="Emp Name">
+                            <p:dataTable id="tb1" value="#{hrReportController.staffShiftHistorys}" var="ss">
+                                <p:column headerText="Changed At">
+                                    #{ss.createdAt}
+                                </p:column>     
+                                 <p:column headerText="Changed by">
+                                    #{ss.creater.webUserPerson.name}
+                                </p:column>     
+                                <p:column headerText="From Emp Name">
                                     #{ss.staff.person.nameWithTitle}
-                                </p:column>
-                                <p:column headerText="Department Name">
-                                    #{ss.staff.department.name}
-                                </p:column>                               
-                                <p:column headerText="In Checked ">
-                                    <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>                                     
-                                </p:column>           
-                                <p:column headerText="Late In Minute Varified">
-                                    <h:outputLabel value="#{ss.lateInVarified}">                                        
-                                        <f:converter converterId="longToTime"/>
-                                    </h:outputLabel>
+                                </p:column>                                                           
+                                <p:column headerText="From Roster Name">
+                                    #{ss.roster.name}
+                                </p:column>   
+                                <p:column headerText="From Shift Name">
+                                    #{ss.shift.name}
+                                </p:column>   
+                                <p:column headerText="Curent Emp Name">
+                                    #{ss.staffShift.staff.person.nameWithInitials}
+                                </p:column>                                                           
+                                <p:column headerText="Current Roster Name">
+                                    #{ss.staffShift.roster.name}
+                                </p:column>   
+                                <p:column headerText="Current Shift Name">
+                                    #{ss.staffShift.shift.name}
                                 </p:column>   
                             </p:dataTable>
                         </p:panel>

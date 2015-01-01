@@ -97,16 +97,36 @@ public class ShiftTableController implements Serializable {
     private void saveHistory() {
         for (ShiftTable st : shiftTables) {
             for (StaffShift ss : st.getStaffShift()) {
-//                if (ss.getShift() == null) {
-//                    continue;
-//                }
 
-                StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
-                staffShiftHistory.setCreatedAt(new Date());
-                staffShiftHistory.setCreater(sessionController.getLoggedUser());
-                staffShiftHistory.setStaff(ss.getStaff());
-                staffShiftHistory.setStaffShift(ss);
-                staffShiftHistoryFacade.create(staffShiftHistory);
+                if (ss.getId() != null) {
+                    boolean flag = false;
+                    StaffShift fetchStaffShift = staffShiftFacade.find(ss.getId());
+
+                    if (fetchStaffShift.getRoster() != ss.getRoster()) {
+                        flag = true;
+                    }
+
+                    if (fetchStaffShift.getStaff() != ss.getStaff()) {
+                        flag = true;
+                    }
+
+                    if (fetchStaffShift.getShift() != ss.getShift()) {
+                        flag = true;
+                    }
+
+                    if (flag) {
+                        StaffShiftHistory staffShiftHistory = new StaffShiftHistory();
+                        staffShiftHistory.setStaffShift(ss);
+                        staffShiftHistory.setCreatedAt(new Date());
+                        staffShiftHistory.setCreater(sessionController.getLoggedUser());
+                        //CHanges
+                        staffShiftHistory.setStaff(ss.getStaff());
+                        staffShiftHistory.setShift(ss.getShift());
+                        staffShiftHistory.setRoster(ss.getRoster());
+
+                        staffShiftHistoryFacade.create(staffShiftHistory);
+                    }
+                }
 
             }
         }
@@ -117,10 +137,11 @@ public class ShiftTableController implements Serializable {
             return;
         }
 
+        saveHistory();
+
         saveStaffShift();
         saveStaffShift();
 
-        saveHistory();
     }
 
     public void createShiftTable() {
@@ -231,14 +252,29 @@ public class ShiftTableController implements Serializable {
             for (Staff staff : staffs) {
                 List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
                 if (ss == null) {
-                    StaffShift newStaffShift = new StaffShift();
-                    newStaffShift.setStaff(staff);
-                    newStaffShift.setShiftDate(nowDate);
-                    newStaffShift.setCreatedAt(new Date());
-                    newStaffShift.setCreater(sessionController.getLoggedUser());
-                    netT.getStaffShift().add(newStaffShift);
+                    for (int i = 0; i < roster.getShiftPerDay(); i++) {
+                        StaffShift newStaffShift = new StaffShift();
+                        newStaffShift.setStaff(staff);
+                        newStaffShift.setShiftDate(nowDate);
+                        newStaffShift.setCreatedAt(new Date());
+                        newStaffShift.setCreater(sessionController.getLoggedUser());
+                        netT.getStaffShift().add(newStaffShift);
+                    }
                 } else {
                     netT.getStaffShift().addAll(ss);
+                    int ballance = roster.getShiftPerDay() - ss.size();
+                    if (ballance < 0) {
+                        continue;
+                    }
+                    for (int i = 0; i < ballance; i++) {
+                        StaffShift newStaffShift = new StaffShift();
+                        newStaffShift.setStaff(staff);
+                        newStaffShift.setShiftDate(nowDate);
+                        newStaffShift.setCreatedAt(new Date());
+                        newStaffShift.setCreater(sessionController.getLoggedUser());
+                        netT.getStaffShift().add(newStaffShift);
+                    }
+
                 }
             }
 

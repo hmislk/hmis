@@ -25,6 +25,7 @@ import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.entity.pharmacy.PharmaceuticalItemType;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.entity.pharmacy.StoreItemCategory;
@@ -44,6 +45,7 @@ import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.MeasurementUnitFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemCategoryFacade;
+import com.divudi.facade.PharmaceuticalItemTypeFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.facade.StoreItemCategoryFacade;
@@ -1221,6 +1223,33 @@ public class PharmacyBean {
         return cat;
     }
 
+    @EJB
+    PharmaceuticalItemTypeFacade pharmaceuticalItemTypeFacade;
+    
+    public PharmaceuticalItemType getPharmaceuticalItemTypeByName(String name, boolean createNew) {
+        if (name == null || name.trim().equals("")) {
+            return null;
+        }
+        name = name.trim();
+        PharmaceuticalItemType cat;
+        cat = pharmaceuticalItemTypeFacade.findFirstBySQL("SELECT c FROM PharmaceuticalItemType c Where upper(c.name) = '" + name.toUpperCase() + "' ");
+        if (cat == null && createNew == true) {
+            cat = new PharmaceuticalItemType();
+            cat.setName(name);
+            pharmaceuticalItemTypeFacade.create(cat);
+        } else if (cat != null) {
+            cat.setRetired(false);
+            cat.setName(name);
+            pharmaceuticalItemTypeFacade.edit(cat);
+        }
+        return cat;
+    }
+    
+    public PharmaceuticalItemType getPharmaceuticalItemTypeByName(String name) {
+        return getPharmaceuticalItemTypeByName(name,true);
+    }
+
+    
     public StoreItemCategory getStoreItemCategoryByName(String name, boolean createNew) {
         if (name == null || name.trim().equals("")) {
             return null;
@@ -1244,6 +1273,7 @@ public class PharmacyBean {
         return getPharmaceuticalCategoryByName(name, true);
     }
 
+    
     public StoreItemCategory getStoreItemCategoryByName(String name) {
         return getStoreItemCategoryByName(name, true);
     }
