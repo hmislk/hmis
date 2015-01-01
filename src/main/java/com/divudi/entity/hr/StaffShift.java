@@ -120,7 +120,6 @@ public class StaffShift implements Serializable {
     double leavedTime;
     private double leavedTimeNoPay;
     double leavedTimeOther;
-
     private boolean dayOff;
     private boolean sleepingDay;
     @Transient
@@ -198,12 +197,36 @@ public class StaffShift implements Serializable {
         this.transChecked = transChecked;
     }
 
-    public void resetLeaveData() {
-        leavedTime = 0;
-        leavedTimeNoPay = 0;
-        leavedTimeOther = 0;
-        lieuQty = 0;
-        lieuPaymentAllowed = false;
+    public void resetLeaveData(LeaveType leaveType) {
+        if (leaveType == LeaveType.Lieu || leaveType == LeaveType.LieuHalf) {
+            lieuQty = 0;
+            lieuPaymentAllowed = false;
+        }
+
+        switch (leaveType) {
+            case Annual:
+            case AnnualHalf:
+            case Casual:
+            case CasualHalf:
+            case Lieu:
+            case LieuHalf:
+                leavedTime = 0;
+                break;
+            case No_Pay:
+            case No_Pay_Half:
+                leavedTimeNoPay = 0;
+                break;
+            case Medical:
+            case Maternity1st:
+            case Maternity1stHalf:
+            case Maternity2nd:
+            case Maternity2ndHalf:
+                leavedTimeOther=0;
+                break;
+                
+
+        }
+
     }
 
     public void resetFingerPrintRecordTime() {
@@ -236,7 +259,7 @@ public class StaffShift implements Serializable {
     public void reset() {
         resetFingerPrintRecordTime();
         resetExtraTime();
-        resetLeaveData();
+//        resetLeaveData();
         multiplyingFactorOverTime = 0;
         multiplyingFactorSalary = 0;
         basicPerSecond = 0;
@@ -925,7 +948,9 @@ public class StaffShift implements Serializable {
         }
 
         Calendar sTime = Calendar.getInstance();
+        Calendar eTime = Calendar.getInstance();
         Calendar sDate = Calendar.getInstance();
+        Calendar eDate = Calendar.getInstance();
 
         if (getShift().getStartingTime() == null) {
             return;
@@ -937,10 +962,11 @@ public class StaffShift implements Serializable {
         sDate.set(Calendar.MINUTE, sTime.get(Calendar.MINUTE));
         setShiftStartTime(sDate.getTime());
 
-        Calendar eDate = Calendar.getInstance();
-        eDate.setTime(getShiftStartTime());
-        eDate.add(Calendar.HOUR_OF_DAY, getShift().getDurationHour());
-        eDate.set(Calendar.MINUTE, 0);
+        eTime.setTime(getShift().getEndingTime());
+        eDate.setTime(shiftDate);
+        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
+        eDate.add(Calendar.HOUR_OF_DAY, (int) getShift().getDurationHour());
+        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
 
         setShiftEndTime(eDate.getTime());
     }

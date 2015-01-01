@@ -433,6 +433,7 @@ public class Bill implements Serializable {
         bookingId = bill.getBookingId();
         appointmentAt = bill.getAppointmentAt();
         referredByInstitution = bill.getReferredByInstitution();
+        invoiceNumber = bill.getInvoiceNumber();
         //      referenceBill=bill.getReferenceBill();
     }
 

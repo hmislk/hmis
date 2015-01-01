@@ -16,7 +16,7 @@ import java.util.List;
 public enum LeaveType {
 
     Casual, //7 working Days
-    CasualHalf,
+    CasualHalf(Casual),
     Annual, //14
     AnnualHalf(Annual),
     Medical, //14   

@@ -122,13 +122,18 @@
                     <p:column headerText="Starting Record Varified">
                         <h:panelGroup >
                             <p:calendar id="strRc"       
-                                        disabled="#{sts.previousStaffShift ne null}"
+                                        rendered="#{sts.previousStaffShift eq null}"
                                         value="#{sts.startRecord.recordTimeStamp}" 
                                         pattern="dd MM yy hh mm ss a"  >                           
                                 <p:ajax event="click" process="@this" update="@this"
                                         listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                             </p:calendar>
-                          
+                            <p:outputLabel     
+                                rendered="#{sts.previousStaffShift ne null}"
+                                value="#{sts.startRecord.recordTimeStamp}" >                           
+                                <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
+                            </p:outputLabel>
+
                             <p:selectBooleanCheckbox value="#{sts.startRecord.allowedExtraDuty}" disabled="true" />
                             <!--<p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.startRecord)}"/>-->
 
@@ -139,12 +144,17 @@
                     <p:column headerText="Ending Record  Varified">
                         <h:panelGroup>
                             <p:calendar id="endRc"
-                                        disabled="#{sts.nextStaffShift ne null}"
+                                        rendered="#{sts.nextStaffShift eq null}"
                                         value="#{sts.endRecord.recordTimeStamp}" 
                                         pattern="dd MM yy hh mm ss a" >          
                                 <p:ajax event="click" process="@this" update="@this"
                                         listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
                             </p:calendar>
+                            <p:outputLabel     
+                                rendered="#{sts.nextStaffShift ne null}"
+                                value="#{sts.endRecord.recordTimeStamp}" >                           
+                                <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
+                            </p:outputLabel>
                           
                             <p:selectBooleanCheckbox value="#{sts.endRecord.allowedExtraDuty}" disabled="true"/>
 <!--                            <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.endRecord)}"/>-->

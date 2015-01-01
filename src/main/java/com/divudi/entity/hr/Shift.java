@@ -58,7 +58,7 @@ public class Shift implements Serializable {
     private boolean dayOff;
 //    private int count;
     @Transient
-    private int durationHour;
+    private double durationHour;
     @Transient
     private int durationMin;
     double shiftDuration;
@@ -145,7 +145,7 @@ public class Shift implements Serializable {
 
     }
 
-    public int getDurationHour() {
+    public double getDurationHour() {
         if (getStartingTime() == null && getEndingTime() == null) {
             return 0;
         }
@@ -170,6 +170,8 @@ public class Shift implements Serializable {
             durationHour = ((eHour - sHour) + 24);
 
         }
+        
+        durationHour=Math.floor(durationHour);
 
         return durationHour;
     }

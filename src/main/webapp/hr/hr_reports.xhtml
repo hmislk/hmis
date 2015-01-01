@@ -128,6 +128,17 @@
                                              styleClass="linkButton" ajax="false" /> 
 
                         </p:panel>
+                        
+                        <p:panel header="History">
+                            <p:commandButton value="(1) Staff Shift History" 
+                                                 action="hr_report_staff_shift_history" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                             <p:commandButton value="(2)Finger Print History" 
+                                                 action="hr_report_finger_print_history" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                        </p:panel>
 
                     </h:panelGrid>
                 </h:form>
