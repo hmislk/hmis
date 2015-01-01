@@ -93,6 +93,7 @@
                                     <p:commandButton ajax="false" value="Import from Excel" action="pharmacy_item_import" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Import from Excel With Stock" action="/pharmacy/pharmacy_item_import_with_stock" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Import from Excel With Stock with barcode" action="/pharmacy/pharmacy_item_import_by_barcode" ></p:commandButton>
+                                     <p:commandButton ajax="false" value="Import from Excel With Stock with name" action="/pharmacy/pharmacy_item_import_stocks_by_name" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Purchase Openning Stock" action="/pharmacy/pharmacy_purchase_openning_stock" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Fix Categories from Excel" action="pharmacy_importer_category" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Fix Barcodes" action="pharmacy_item_import_barcode" ></p:commandButton>

@@ -208,6 +208,18 @@
                         </p:panelGrid>
                     </p:panelGrid>
                 </p:panel>
+            
+            
+                <h:panelGroup rendered="#{not empty pharmacyItemExcelManager.itemNamesFailedToImport}" >
+                    <p:dataTable value="#{pharmacyItemExcelManager.itemNamesFailedToImport}" 
+                                 var="f">
+                        <p:column >
+                            #{f}
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGroup>
+            
+            
             </p:panel>
 
             <p:panel rendered="#{pharmacyPurchaseController.printPreview}">
