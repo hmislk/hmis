@@ -34,29 +34,29 @@
                 </div>
             </div>
 
-            <div class="headingBill" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Sale Bill"   />    
+            <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
+                <h:outputLabel value="#{sessionController.loggedUser.department.name}"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
             <div class="billline">
-                <h:outputLabel value="------------------------------------------------------"   />                           
+                <h:outputLabel value="---------------------------------------------------------------------------------------"   />                           
             </div>
 
-            <div class="billDetails" >
+            <div class="billDetailsFiveFive" >
                 <table style="width: 100%;" >
                     <tr>
                         <td style="width: 15%; text-align: left;" >
-                            <h:outputLabel value="Date" class="billDetails" ></h:outputLabel>
+                            <h:outputLabel value="Date" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
-                        <td>:</td>
+                        <td style="width: 5%">:</td>
                         <td style="width:50%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" >
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive" >
                                 <f:convertDateTime pattern="dd/MM/yy " ></f:convertDateTime>
                             </h:outputLabel>
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
                                 <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -79,12 +79,12 @@
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            <h:outputLabel value="Inv.No" ></h:outputLabel>
+                            <h:outputLabel class="billDetailsFiveFive" value="Inv.No" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  >
+                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.deptId}"  >
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -96,20 +96,20 @@
 
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
-                            </h:outputLabel>
+<!--                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
+                            </h:outputLabel>-->
                         </td>
 
                     </tr>
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            <h:outputLabel value="Name" ></h:outputLabel>
+                            <h:outputLabel class="billDetailsFiveFive" value="Name" ></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 100%;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  >
+                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.patient.person.nameWithTitle}"  >
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -213,33 +213,34 @@
 
 
             <div class="billline">
-                <h:outputLabel value="--------------------------------------------------------"   />                           
+                <h:outputLabel value="---------------------------------------------------------------------------------------"   />                           
             </div>
 
 
-            <div >
+            <div class="itemHeadingsFiveFive" >
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
-                        <td style="width:40%!important;">
-                            <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
+                        <td style="width:45%!important;">
+                            <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
-                        <td  style="width:10%!important;text-align: right;">
-                            <h:outputLabel value="QTY"  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-
-                        <td  style="width:10%!important;text-align: right; ">
-                            <h:outputLabel value="RATE"  styleClass="itemHeadings" ></h:outputLabel>
+                        <td  style="width:5%!important;text-align: right; padding-right: 10px!important">
+                            <h:outputLabel value="QTY"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
 
-                        <td  style="width:10%!important;text-align: right; ">
-                            <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
+                        <td  style="width:10%!important;text-align: right; padding-right: 10px!important">
+                            <h:outputLabel value="RATE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
+
+                        <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
+                            <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
+                        </td>
+
                     </tr>
 
                     <tr>
                         <td colspan="4" style="text-align: center;" >
-                            <h:outputLabel value="-----------------------------------------"   />                           
+                            <h:outputLabel value="---------------------------------------------------------------"   />                           
                         </td>
                     </tr>
 
@@ -250,21 +251,21 @@
                                 </h:outputLabel>
                                 -
                                 &nbsp;-->
-                                <h:outputLabel value="#{bip.searialNo+1} - #{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.searialNo+1} - #{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
                             <td>
-                                <h:outputLabel    value="#{bip.qty}"     style="text-align: right;" >
+                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.qty}"     style="text-align: right;" >
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputLabel>
                             </td>
-                            <td  styleClass="itemsBlockRight"  style="text-align: right;" >
-                                <h:outputLabel    value="#{bip.rate}"     >
+                            <td    style="text-align: right;" >
+                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}"     >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
-                            <td  styleClass="itemsBlockRight" style="text-align: right;" >
-                                <h:outputLabel    value="#{bip.grossValue}"    >
+                            <td style="text-align: right;" >
+                                <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -286,7 +287,7 @@
 
 
             <div class="billline">
-                <h:outputLabel value="---------------------------------"   />                           
+                <h:outputLabel value="---------------------------------------------------------------------------------------"   />                           
             </div>
 
 
@@ -325,7 +326,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
                             <h:outputLabel value="Balance" />
@@ -336,7 +337,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel   value="Number of Items Count" />
@@ -357,8 +358,8 @@
             <div class="footer" style="text-align: center;">
                 <br/>
                 THANK YOU. PLEASE COME AGAIN<br/>
-                Returns Accepted only within 3 days<br/>
                 Software by www.lakmedi.com - 0776285007<br/>
+                -----<br/>
             </div>
 
 
