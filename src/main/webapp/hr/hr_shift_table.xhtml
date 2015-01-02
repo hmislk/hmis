@@ -31,7 +31,7 @@
                                  actionListener="#{shiftTableController.makeTableNull()}"
                                  action="#{shiftTableController.createShiftTable()}"
                                  onclick="onSubmitButton();" />   
-                <p:commandButton ajax="false" value="Fill Old"
+                <p:commandButton ajax="false" value="Fill Old Roster"
                                  actionListener="#{shiftTableController.makeTableNull()}"
                                  action="#{shiftTableController.fetchShiftTable()}"
                                  onclick="onSubmitButton();" />   
@@ -65,8 +65,8 @@
                         <p:column headerText="Staff Name" rendered="#{data.flag eq true}">                      
                             <h:outputLabel value="#{sts.staff.person.name}" />
                         </p:column>
-                        <p:column headerText="Staff Code" rendered="#{data.flag eq true}">                        
-                            <h:outputLabel value="#{sts.staff.code}"/>
+                        <p:column headerText="Staff Code" rendered="#{data.flag eq true}" >                        
+                            <h:outputLabel value="#{sts.staff.code}"/>                           
                         </p:column>
 
                         <p:column rendered="#{data.date ne null}">

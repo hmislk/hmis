@@ -49,33 +49,51 @@
                                     #{ss.staff.person.name}
                                 </p:column>
                                 <p:column headerText="Sun">
-                                    #{ss.sunDay}
+                                    <h:outputLabel value="#{ss.sunDay}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Mon">
-                                    #{ss.monDay}
+                                    <h:outputLabel value="#{ss.monDay}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Tue">
-                                    #{ss.tuesDay}
+                                    <h:outputLabel value="#{ss.tuesDay}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Wed">
-                                    #{ss.wednesDay}
+                                    <h:outputLabel value="#{ss.wednesDay}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Thur">
-                                    #{ss.thursDay}
+                                    <h:outputLabel  value="#{ss.thursDay}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Fri">
-                                    #{ss.friDay}
+                                    <h:outputLabel value="#{ss.friDay}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Sat">
-                                    #{ss.saturDay}
+                                    <h:outputLabel  value="#{ss.saturDay}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
-                                  <p:column headerText="Total">
-                                    #{ss.total}
+                                <p:column headerText="Total">
+                                    <h:outputLabel value="#{ss.total}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Over Time">
+                                    <h:outputLabel value="#{ss.overTime}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
-                                  <p:column headerText="Over Time">
-                                    #{ss.overTime}
-                                </p:column>
-                               
+
 
                             </p:dataTable>
                         </p:panel>

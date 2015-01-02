@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.divudi.data.dataStructure;
 
 import com.divudi.entity.Staff;
@@ -13,6 +12,7 @@ import com.divudi.entity.Staff;
  * @author safrin
  */
 public class WeekDayWork {
+
     private Staff staff;
     private double sunDay;
     private double monDay;
@@ -26,14 +26,18 @@ public class WeekDayWork {
     double noPay;
 
     public double getNoPay() {
-        return noPay;
+        return (noPay);
     }
 
     public void setNoPay(double noPay) {
         this.noPay = noPay;
     }
-        
+
     public double getTotal() {
+        return (total);
+    }
+    
+    public double getTotalDouble() {
         return total;
     }
 
@@ -42,14 +46,12 @@ public class WeekDayWork {
     }
 
     public double getOverTime() {
-        return overTime;
+        return (overTime);
     }
 
     public void setOverTime(double overTime) {
         this.overTime = overTime;
     }
-    
-    
 
     public Staff getStaff() {
         return staff;
@@ -59,8 +61,19 @@ public class WeekDayWork {
         this.staff = staff;
     }
 
+//    private double (double seconds) {
+//        if (seconds == 0.0) {
+//            return "";
+//        }
+//
+//        long s = (long)seconds % 60;
+//        long m = ((long)seconds / 60) % 60;
+//        long h = ((long)seconds / (60 * 60)) % 24;
+//        return double.format("%d:%02d:%02d", h, m, s);
+//    }
+
     public double getSunDay() {
-        return sunDay;
+        return (sunDay);
     }
 
     public void setSunDay(double sunDay) {
@@ -68,7 +81,8 @@ public class WeekDayWork {
     }
 
     public double getMonDay() {
-        return monDay;
+        return (monDay);
+
     }
 
     public void setMonDay(double monDay) {
@@ -76,7 +90,7 @@ public class WeekDayWork {
     }
 
     public double getTuesDay() {
-        return tuesDay;
+        return (tuesDay);
     }
 
     public void setTuesDay(double tuesDay) {
@@ -84,7 +98,7 @@ public class WeekDayWork {
     }
 
     public double getWednesDay() {
-        return wednesDay;
+        return (wednesDay);
     }
 
     public void setWednesDay(double wednesDay) {
@@ -92,7 +106,7 @@ public class WeekDayWork {
     }
 
     public double getThursDay() {
-        return thursDay;
+        return (thursDay);
     }
 
     public void setThursDay(double thursDay) {
@@ -100,7 +114,7 @@ public class WeekDayWork {
     }
 
     public double getFriDay() {
-        return friDay;
+        return (friDay);
     }
 
     public void setFriDay(double friDay) {
@@ -108,12 +122,11 @@ public class WeekDayWork {
     }
 
     public double getSaturDay() {
-        return saturDay;
+        return (saturDay);
     }
 
     public void setSaturDay(double saturDay) {
         this.saturDay = saturDay;
     }
-    
-    
+
 }

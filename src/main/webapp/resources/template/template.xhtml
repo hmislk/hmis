@@ -102,6 +102,7 @@
                                     <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Billitem Search" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('LabCasheirBillSearch')}" ></p:menuitem>
 
                                     <p:menuitem  ajax="false"  action="/lab_bill_collecting_centre" value="Collecting Centre / Inward Billing" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/inward/inward_bill_service" value="Add Inward Services" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('LabAddInwardServices') or true}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/lab_collecting_bill_search_all" value="Collecting Centre Bill Search" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
 
                                     <p:menuitem  ajax="false" action="/lab_sample"  actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
@@ -447,7 +448,8 @@
 
                                     <p:submenu label="Agent"  rendered="#{webUserController.hasPrivilege('Payment')}">
                                         <p:menuitem  ajax="false"  action="/agent_bill" value="Agent Payment"  ></p:menuitem>
-                                        <p:menuitem  ajax="false"  action="/agent_bill_search_own" actionListener="#{searchController.makeListNull}"  value="Agent Payment Bill Search"  ></p:menuitem>
+                                        <p:menuitem  ajax="false"  action="/agent_bill_search_own"
+                                                     actionListener="#{searchController.makeListNull}"  value="Agent Payment Bill Search"  ></p:menuitem>
                                     </p:submenu>                                    
                                 </p:submenu>
                                 <p:submenu label="Human Resource" rendered="#{webUserController.hasPrivilege('Hr')}" >
@@ -460,8 +462,7 @@
                                         <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print" value="Finger Print Analyse For Shift"  ></p:menuitem>
                                     </p:submenu>
                                     <p:submenu label="Staff">
-                                        <p:menuitem  ajax="false"  action="/hr/hr_staff_admin" value="New Staff"  />                                    
-                                        <p:menuitem  ajax="false"  action="/hr/hr_change_staff" value="Change Staff"  />
+                                        <p:menuitem  ajax="false"  action="/hr/hr_staff_admin" value="New Staff"  />
                                         <p:menuitem  ajax="false"  action="/hr/hr_staff_category" value="Staff Category"  />     
                                         <p:menuitem  ajax="false"  action="/hr/hr_staff_grade" value="Staff Grade"  />                                    
                                         <p:menuitem  ajax="false"  action="/hr/hr_staff_designation" value="Staff Designation"  /> 
@@ -476,14 +477,14 @@
                                         </p:submenu>                                    
                                         <p:menuitem  ajax="false"  action="/hr/hr_staff_basic_list" value="Staff Basic List" actionListener="#{staffBasicController.makeItemNul()}"  ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/hr/hr_ph_date" value="Public Holiday"  />
-
                                         <p:menuitem  ajax="false"  action="/hr/hr_paysheet_component" value="Paysheet Component Name"  />
                                         <p:menuitem  ajax="false"  action="/hr/hr_hrm_variables" value="HRM Variable"  />
                                     </p:submenu>
                                     <p:submenu label="Forms">
                                         <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave" value="Leave form"  />
+                                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave_from_attendance" value="Leave From Attendance"  />
                                         <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional" value="Additional Form"  />
-                                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_amendment" value="Amendment Form"  />
+                                     
                                         <p:menuitem  ajax="false"  action="/hr/hr_form_staff_transfer" value="Transfer Form"  />                                        
                                     </p:submenu>
 
@@ -491,7 +492,6 @@
                                                  actionListener="#{staffSalaryController.clear}"/>
                                     <p:menuitem  ajax="false"  action="/hr/hr_reports" value="Reports"  />
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_leave" value="Staff Leave"  ></p:menuitem>
-
                                     <p:menuitem  ajax="false"  action="/hr/hr_admin" value="Administration"  ></p:menuitem>
                                 </p:submenu>
                                 <p:submenu label="Clinicals"  rendered="#{webUserController.hasPrivilege('Clinical')}">

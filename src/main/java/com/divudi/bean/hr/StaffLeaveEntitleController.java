@@ -48,7 +48,7 @@ public class StaffLeaveEntitleController implements Serializable {
     String selectText = "";
 
     public List<StaffLeaveEntitle> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from StaffLeaveEntitle c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+//        selectedItems = getFacade().findBySQL("select c from StaffLeaveEntitle c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

@@ -26,12 +26,16 @@
                                                  action="hr_report_attendance_early_out" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
-                                <p:commandButton value="(3) Late In " 
+                                <p:commandButton value="(4) Late In " 
                                                  action="hr_report_attendance_late_in" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
-                                <p:commandButton value="(3) Late Out " 
+                                <p:commandButton value="(5) Late Out " 
                                                  action="hr_report_attendance_late_out" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                    <p:commandButton value="(6) Late In and Early Out " 
+                                                 action="hr_report_attendance_late_in_early_out" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
                             </h:panelGrid>
@@ -93,7 +97,7 @@
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
                             <p:commandButton value="(4) Month End Employee (No Pay) Report-By Minute " 
-                                             action="hr_report_month_end_work_time" 
+                                             action="hr_report_month_end_work_time_no_pay" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
                             <p:commandButton value="(5) Month End Employee Summery " 
@@ -123,6 +127,17 @@
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
 
+                        </p:panel>
+                        
+                        <p:panel header="History">
+                            <p:commandButton value="(1) Staff Shift History" 
+                                                 action="hr_report_staff_shift_history" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                             <p:commandButton value="(2)Finger Print History" 
+                                                 action="hr_report_finger_print_history" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
                         </p:panel>
 
                     </h:panelGrid>

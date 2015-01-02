@@ -8,6 +8,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.LeaveType;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
@@ -34,6 +35,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -65,6 +67,26 @@ public class StaffLeaveApplicationFormController implements Serializable {
     double leaved;
     @EJB
     FinalVariables finalVariables;
+    ReportKeyWord reportKeyWord;
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public StaffShiftFacade getStaffShiftFacade() {
+        return staffShiftFacade;
+    }
+
+    public void setStaffShiftFacade(StaffShiftFacade staffShiftFacade) {
+        this.staffShiftFacade = staffShiftFacade;
+    }
 
     public double getLeaveEntitle() {
         return leaveEntitle;
@@ -103,8 +125,39 @@ public class StaffLeaveApplicationFormController implements Serializable {
     @EJB
     StaffShiftFacade staffShiftFacade;
     List<StaffShift> staffShifts;
+    List<StaffShift> staffShiftsLie;
+    StaffShift[] staffShiftsArray;
+
+    public StaffShift[] getStaffShiftsArray() {
+        return staffShiftsArray;
+    }
+
+    public void setStaffShiftsArray(StaffShift[] staffShiftsArray) {
+        this.staffShiftsArray = staffShiftsArray;
+    }
 
     public void fetchStaffShift() {
+        String sql = "Select s from StaffShift s"
+                + " where s.retired=false"
+                + " and s.lieuQtyUtilized=0 "
+                + " and s.staff=:stf "
+                + " and s.shiftDate between :f and :t";
+        HashMap hm = new HashMap();
+        hm.put("stf", getCurrentLeaveForm().getStaff());
+        hm.put("f", getCurrentLeaveForm().getFromDate());
+        hm.put("t", getCurrentLeaveForm().getToDate());
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public List<StaffShift> getStaffShiftsLie() {
+        return staffShiftsLie;
+    }
+
+    public void setStaffShiftsLie(List<StaffShift> staffShiftsLie) {
+        this.staffShiftsLie = staffShiftsLie;
+    }
+
+    public void fetchStaffShiftLie() {
         String sql = "Select s from StaffShift s"
                 + " where s.retired=false"
                 + " and s.lieuAllowed=true"
@@ -112,7 +165,31 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 + " and s.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("stf", getCurrentLeaveForm().getStaff());
-        staffShifts = staffShiftFacade.findBySQL(sql, hm);
+        staffShiftsLie = staffShiftFacade.findBySQL(sql, hm);
+    }
+
+    public void fetchStaffShiftLateInErlyOut() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.consideredForLateEarlyAttendance=false "
+                + "  and ss.staff=:stf ";
+        hm.put("stf", getCurrentLeaveForm().getStaff());
+
+        if (getReportKeyWord().getFrom() != 0) {
+            sql += " and (ss.lateInVarified>= :frm "
+                    + " or ss.earlyOutVarified>= :frm) ";
+            hm.put("frm", getReportKeyWord().getFrom());
+        }
+
+        if (getReportKeyWord().getTo() != 0) {
+            sql += " and (ss.lateInVarified<= :to "
+                    + " or ss.earlyOutVarified<= :to) ";
+            hm.put("to", getReportKeyWord().getTo());
+        }
+
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, 10);
     }
 
     public FinalVariables getFinalVariables() {
@@ -297,9 +374,10 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
 
         for (StaffShift ss : list) {
-            ss.resetLeaveData();
+            ss.resetLeaveData(getCurrentLeaveForm().getLeaveType());
             ss.calLeaveTime();
             ss.calLieu();
+            ss.setLeaveForm(currentLeaveForm);
             ss.setLeaveType(ltp);
             staffShiftFacade.edit(ss);
         }
@@ -312,8 +390,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
 
         for (StaffShift ss : list) {
-            ss.resetLeaveData();
-            ss.setLeaveType(null);           
+            ss.resetLeaveData(getCurrentLeaveForm().getLeaveType());
+            ss.setLeaveType(null);
             staffShiftFacade.edit(ss);
         }
     }
@@ -336,9 +414,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             staffLeave.setForm(getCurrentLeaveForm());
             staffLeave.calLeaveQty();
             staffLeaveFacade.create(staffLeave);
-
             addLeaveDataToStaffShift(staffLeave.getLeaveDate(), staffLeave.getStaff(), staffLeave.getLeaveType());
-
             nowDate.add(Calendar.DATE, 1);
         }
 
@@ -428,8 +504,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
             stf.setRetiredAt(new Date());
             stf.setRetirer(sessionController.getLoggedUser());
             staffLeaveFacade.edit(stf);
-            
-            removeLeaveDataFromStaffShift(stf.getLeaveDate(),stf.getStaff());
+
+            removeLeaveDataFromStaffShift(stf.getLeaveDate(), stf.getStaff());
         }
     }
 
@@ -456,6 +532,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         currentLeaveForm = null;
         leaveEntitle = 0;
         leaved = 0;
+        reportKeyWord = null;
 
     }
 
