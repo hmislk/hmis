@@ -1550,8 +1550,8 @@ public class PharmacyItemExcelManager implements Serializable {
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp.toUpperCase());
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.name)=:n ");
-                System.out.println("m = " + m);
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.name)=:n ",m);
+                System.out.println("m is " + m);
 
                 if (amp == null) {
                     itemNamesFailedToImport.add(strAmp);
