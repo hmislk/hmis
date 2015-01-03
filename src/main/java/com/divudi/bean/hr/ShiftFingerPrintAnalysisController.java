@@ -463,8 +463,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             String code = ss.getStaff().getCode();
 
             if (ss.getShift().getDayType() == DayType.DayOff
+                    || ss.getShift().getDayType() == DayType.PublicHoliday
                     || ss.getShift().getDayType() == DayType.SleepingDay
-                    || ss.getLeaveType() != null) {
+                    || ss.getLeaveType() != null                    ) {
                 continue;
             }
 
@@ -524,9 +525,22 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         boolean flag = false;
         FingerPrintRecord fetchFingerPrintRecord = fingerPrintRecord.getId() != null ? fingerPrintRecordFacade.find(fingerPrintRecord.getId()) : null;
 
-        if (fetchFingerPrintRecord == null
-                || (fetchFingerPrintRecord.getRecordTimeStamp() != fingerPrintRecord.getRecordTimeStamp())) {
+        if (fetchFingerPrintRecord == null) {
             flag = true;
+        }
+
+        if (fetchFingerPrintRecord != null) {
+            Date date1 = fetchFingerPrintRecord.getRecordTimeStamp();
+            Date date2 = fingerPrintRecord.getRecordTimeStamp();
+
+            System.err.println("Date 1 " + date1);
+            System.err.println("Date 2 " + date2);
+
+            if (date1 != null & date2 != null) {
+                if (!date1.equals(date2)) {
+                    flag = true;
+                }
+            }
         }
 
         if (flag) {
@@ -546,6 +560,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
             if (fingerPrintRecord.getStaffShift() != null) {
                 fingerPrintRecordHistory.setShift(fingerPrintRecord.getStaffShift().getShift());
+            }
+            if (fingerPrintRecord.getId() == null) {
+                fingerPrintRecordFacade.create(fingerPrintRecord);
             }
             fingerPrintRecordHistoryFacade.create(fingerPrintRecordHistory);
         }

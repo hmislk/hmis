@@ -99,7 +99,7 @@ public class BillNumberGenerator {
         hm.put("t", commonFunctions.getLastDayOfYear(new Date()));
         Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
-        return i + "";
+        return (i+1) + "";
     }
 
     public String institutionChannelBillNumberGenerator(Institution ins, Bill bill) {

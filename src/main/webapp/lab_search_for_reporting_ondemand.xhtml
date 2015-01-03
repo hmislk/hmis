@@ -75,11 +75,8 @@
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
-
-
                                 </p:tooltip>
                             </p:column>
-
 
                             <p:column  headerText="Patient" styleClass="alignTop" >
                                 <h:commandLink id="colPtDetail" 
@@ -105,11 +102,7 @@
                             <p:column headerText="Investigation"  styleClass="alignTop" >
                                 <h:outputLabel value="#{pi.billItem.item.name}" >
                                 </h:outputLabel>
-
-                                
                             </p:column>
-
-
 
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
                                 <h:panelGrid columns="4" style="border: none;" styleClass="noBorderGrid"
@@ -197,8 +190,17 @@
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                             <p:graphicImage id="imgPrinted" library="image/icon" name="print_ok.png" 
                                                             style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
-                                        </h:panelGrid>
 
+                                            <p:commandLink style="float: right" ajax="false" 
+                                                           id="btnRevert" 
+                                                           disabled="#{!pi.collected}"
+                                                           action="#{patientInvestigationController.revertMarkedSample()}" 
+                                                           rendered="#{webUserController.hasPrivilege('LabBillRefundSpecial')}">
+                                                <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                                <p:graphicImage library="image/icon" styleClass="standedicon" name="Cancel.png" ></p:graphicImage>
+                                            </p:commandLink>
+
+                                        </h:panelGrid>
 
                                         <p:tooltip for="imgApproved" >
                                             <h:outputLabel value="Approved" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
@@ -234,17 +236,10 @@
                                                 <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                             </h:outputLabel>
                                         </p:tooltip>
-
+                                        <p:tooltip for="btnRevert" value="Revert Report" ></p:tooltip>
 
                                     </h:column>
-                                    <p:commandLink style="float: right" process="btnRevert" update="tblBills"  
-                                               id="btnRevert" 
-                                               action="#{patientInvestigationController.revertMarkedSample()}" 
-                                               rendered="#{webUserController.hasPrivilege('LabBillRefundSpecial')}">
-                                    <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                    <p:graphicImage library="image/icon" styleClass="standedicon" name="Cancel.png" ></p:graphicImage>
-                                </p:commandLink>
-                                <p:tooltip for="btnRevert" value="Revert Report" ></p:tooltip>
+
                                 </h:dataTable>
 
 
