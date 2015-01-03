@@ -113,10 +113,17 @@
 
                 </h:panelGrid>
 
-                <p:dataTable styleClass="noBorder" var="ph" value="#{pharmacyPurchaseController.billItems}" id="itemList">  
+                <p:dataTable styleClass="noBorder" rowIndexVar="i" var="ph" value="#{pharmacyPurchaseController.billItems}" id="itemList">  
                     <f:facet name="header">  
                         Ordered Item 
-                    </f:facet>  
+                    </f:facet>
+                    
+                    <p:column headerText="No" style="width:30%">  
+
+                        <h:outputLabel id="no" value="#{i+1}">
+                        </h:outputLabel>
+
+                    </p:column>
 
                     <p:column headerText="Item Name" style="width:30%">  
 
