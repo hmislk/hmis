@@ -43,6 +43,7 @@ public class StaffLeaveEntitleController implements Serializable {
     @EJB
     private StaffLeaveEntitleFacade ejbFacade;
     List<StaffLeaveEntitle> selectedItems;
+    List<StaffLeaveEntitle> selectedAllItems;
     private StaffLeaveEntitle current;
     private List<StaffLeaveEntitle> items = null;
     String selectText = "";
@@ -173,11 +174,30 @@ public class StaffLeaveEntitleController implements Serializable {
 
         selectedItems = getFacade().findBySQL(sql, hm);
     }
+    
+    public void createAllItems() {
+        HashMap hm = new HashMap();
+        String sql = "select c from StaffLeaveEntitle c "
+                + " where c.retired=false "
+                + " order by c.staff.code ";
+
+        selectedAllItems = getFacade().findBySQL(sql, hm);
+    }
 
     public List<StaffLeaveEntitle> getItems() {
 //        items = getFacade().findAll("name", true);
         return items;
     }
+
+    public List<StaffLeaveEntitle> getSelectedAllItems() {
+        return selectedAllItems;
+    }
+
+    public void setSelectedAllItems(List<StaffLeaveEntitle> selectedAllItems) {
+        this.selectedAllItems = selectedAllItems;
+    }
+    
+    
 
     /**
      *
