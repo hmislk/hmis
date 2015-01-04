@@ -50,13 +50,33 @@
                             <p:column headerText="Leave Type">
                                 <p:outputLabel value="#{add.leaveType}" ></p:outputLabel>
                             </p:column>                          
-                             <p:column headerText="Count">
+                            <p:column headerText="Count">
                                 <p:outputLabel value="#{add.count}" ></p:outputLabel>
                             </p:column> 
-                            
+
                         </p:dataTable>
                     </p:panel>
                 </h:panelGrid>
+                <p:panel header="Forms">
+                    <h:panelGrid columns="1">                           
+                        <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createAllItems()}" />                            
+                    </h:panelGrid>
+                    <p:dataTable value="#{staffLeaveEntitleController.selectedAllItems}" var="add">
+                        <p:column headerText="Staff">
+                            <p:outputLabel value="#{add.staff.code}" ></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Staff">
+                            <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
+                        </p:column>                          
+                        <p:column headerText="Leave Type">
+                            <p:outputLabel value="#{add.leaveType}" ></p:outputLabel>
+                        </p:column>                          
+                        <p:column headerText="Count">
+                            <p:outputLabel value="#{add.count}" ></p:outputLabel>
+                        </p:column> 
+
+                    </p:dataTable>
+                </p:panel>
             </p:panel>
         </h:form>
     </ui:define> 

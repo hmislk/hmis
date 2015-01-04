@@ -20,7 +20,7 @@
 
                             <hr/>
                             <p:commandButton value="Reprint" ajax="false"   >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                                <p:printer target="gpBillPreviewFiveFive" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Cancel" 
                                              action="pharmacy_cancel_bill_retail_bht"
@@ -133,9 +133,19 @@
                     </p:dataTable>
 
 
-                    <h:panelGroup id="gpBillPreview" >
+<!--                    <h:panelGroup id="gpBillPreview" >
                         <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
-                    </h:panelGroup>
+                    </h:panelGroup>-->
+
+                    <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+
+                        <div >
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                <ph:issueBill_five_five bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>  
 
 
                 </h:form>

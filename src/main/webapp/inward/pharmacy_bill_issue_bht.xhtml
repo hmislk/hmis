@@ -140,21 +140,7 @@
 
                                     <p:tabView id="tabI" dynamic="true" activeIndex="#{pharmacySaleBhtController.activeIndex}" >
 
-                                        <p:tab title="Availability" >
-                                            <h:panelGrid columns="1" >
-                                                <p:panel header="Not Available" >
-                                                    <p:selectOneListbox id="lstSelectItems" style="width: 300px; height: 200px; max-width: 300px; max-height: 200px; min-width: 300px; min-height: 200px;" value="#{pharmacySaleBhtController.selectedAlternative}"  >
-                                                        <f:selectItems  value="#{pharmacySaleBhtController.itemsWithoutStocks}" var="si" itemLabel="#{si.name}" itemValue="#{si}" ></f:selectItems>
-                                                        <p:ajax event="change" process="lstSelectItems" update="lstReplaceableBatch" listener="#{pharmacySaleBhtController.selectReplaceableStocks}" ></p:ajax>
-                                                    </p:selectOneListbox>
-                                                </p:panel>
-                                                <p:panel header="Available" >
-                                                    <p:selectOneListbox id="lstReplaceableBatch" style="width: 300px; height: 200px; max-width: 300px; max-height: 200px; min-width: 300px; min-height: 200px;"  >
-                                                        <f:selectItems  value="#{pharmacySaleBhtController.replaceableStocks}" var="rs" itemLabel="#{rs.itemBatch.item.name}" itemValue="#{rs}" ></f:selectItems>
-                                                    </p:selectOneListbox>
-                                                </p:panel>
-                                            </h:panelGrid>
-                                        </p:tab>
+                                        
                                         <p:tab title="Bill Items" >
                                             <h:panelGrid columns="1">
                                                 <p:panel header="Bill Items" id="pBis">
@@ -203,6 +189,7 @@
                                                 </p:panel>
                                             </h:panelGrid>
                                         </p:tab>
+                                        
                                     </p:tabView>
 
 

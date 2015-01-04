@@ -126,6 +126,29 @@
                         </td>
 
                     </tr>
+                    
+                    <tr>
+                        <td style="width: 15% ;text-align: left;" >
+                            <h:outputLabel class="billDetailsFiveFive" value="Order No" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 100%;" >
+                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.intInvoiceNumber}"  >
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" >
+
+                        </td>
+                        <td style="width: 15%" >
+                            <!--<h:outputLabel value="User" ></h:outputLabel>-->
+                        </td>
+
+                        <td style="width: 30%" >
+                            
+                        </td>
+
+                    </tr>
 
 <!--                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
@@ -358,10 +381,13 @@
             <div class="footer" style="text-align: center;">
                 <br/>
                 THANK YOU. PLEASE COME AGAIN<br/>
-                Software by www.lakmedi.com - 0776285007<br/>
-                -----<br/>
+                Software by www.lakmedi.com - 0715812399<br/>
+                <br/>
             </div>
 
+            <div class="cashierPrinting">
+                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"/>
+            </div>
 
 
         </div>
