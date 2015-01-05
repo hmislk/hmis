@@ -88,7 +88,9 @@
 
                     <p:column headerText="Starting Record Frm Attendence"> 
                         <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
-                            <h:panelGroup  rendered="#{sts.startRecord.staffShift eq null}">                           
+                            <h:panelGroup  
+                                <!--rendered="#{sts.startRecord.staffShift eq null}"-->
+                                >                           
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
@@ -97,15 +99,17 @@
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
-                            <h:outputLabel value="#{sts.startRecord.timeLabel}"
-                                           rendered="#{sts.startRecord.staffShift ne null}"/>
+<!--                            <h:outputLabel value="#{sts.startRecord.timeLabel}"
+                                           rendered="#{sts.startRecord.staffShift ne null}"/>-->
                         </h:panelGroup>
                         <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
                     </p:column>
 
                     <p:column headerText="Ending Record Frm Attendence">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
-                            <h:panelGroup rendered="#{sts.endRecord.staffShift eq null}">                           
+                            <h:panelGroup 
+<!--                                rendered="#{sts.endRecord.staffShift eq null}"-->
+                                >                           
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
@@ -113,8 +117,8 @@
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>   
                             </h:panelGroup>
-                            <h:outputLabel value="#{sts.endRecord.timeLabel}"
-                                           rendered="#{sts.endRecord.staffShift ne null}"/>
+<!--                            <h:outputLabel value="#{sts.endRecord.timeLabel}"
+                                           rendered="#{sts.endRecord.staffShift ne null}"/>-->
                         </h:panelGroup>
                         <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
                     </p:column>
