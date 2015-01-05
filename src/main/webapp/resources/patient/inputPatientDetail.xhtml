@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="2" >
+        <h:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="2" >
             <h:outputLabel value="Title"/>
             <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}"  >
                 <f:selectItem itemLabel="Select Title" />
