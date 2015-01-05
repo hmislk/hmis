@@ -996,11 +996,13 @@ public class HumanResourceBean {
         String sql = "Select sum(s.qty) From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st "
-                + " and s.leaveType in :ltp"
+//                + " and s.leaveType in :ltp"
+                + " and s.leaveType=:ltp "
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
-        hm.put("ltp", list);
+//        hm.put("ltp", list);
+        hm.put("ltp", leaveType);
         hm.put("frm", frmDate);
         hm.put("to", toDate);
 

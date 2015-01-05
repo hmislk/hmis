@@ -267,7 +267,7 @@ public class StaffAdditionalFormController implements Serializable {
         }
 
         DayType dayType = phDateController.getHolidayType(date);
-        Shift shift = fetchShift(staff.getRoster(), dayType);
+        Shift shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
 
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
