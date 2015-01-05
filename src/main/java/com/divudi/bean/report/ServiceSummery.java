@@ -157,6 +157,41 @@ public class ServiceSummery implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public double calServiceTot(BillType billType, FeeType feeType) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(bi.feeValue) FROM BillFee bi "
+                + " where  bi.bill.institution=:ins"
+                + " and  bi.bill.billType= :bTp "
+                + " and bi.fee.feeType=:ftp "
+                + " and bi.billItem.item=:itm "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (billType != BillType.InwardBill) {
+            sql += " and ( bi.bill.paymentMethod = :pm1 "
+                    + " or  bi.bill.paymentMethod = :pm2 "
+                    + " or  bi.bill.paymentMethod = :pm3"
+                    + " or  bi.bill.paymentMethod = :pm4) ";
+            temMap.put("pm1", PaymentMethod.Cash);
+            temMap.put("pm2", PaymentMethod.Card);
+            temMap.put("pm3", PaymentMethod.Cheque);
+            temMap.put("pm4", PaymentMethod.Slip);
+
+        }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bTp", billType);
+        temMap.put("ftp", feeType);
+        temMap.put("itm", getService());
+        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
 
     public double calServiceTot(BillType billType, Item item, FeeType feeType, Department department, PaymentMethod paymentMethod, boolean discharged) {
         String sql;
@@ -327,6 +362,40 @@ public class ServiceSummery implements Serializable {
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    private long calCount(Bill bill, BillType billType) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select count(bi) FROM BillItem bi "
+                + " where bi.bill.billType=:bType "
+                + " and bi.item=:itm "
+                + " and type(bi.bill)=:billClass "
+                + " and bi.bill.toInstitution=:ins "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (billType != BillType.InwardBill) {
+            sql += " and ( bi.bill.paymentMethod = :pm1 "
+                    + " or  bi.bill.paymentMethod = :pm2 "
+                    + " or  bi.bill.paymentMethod = :pm3"
+                    + " or  bi.bill.paymentMethod = :pm4) ";
+            temMap.put("pm1", PaymentMethod.Cash);
+            temMap.put("pm2", PaymentMethod.Card);
+            temMap.put("pm3", PaymentMethod.Cheque);
+            temMap.put("pm4", PaymentMethod.Slip);
+
+        }
+        
+        sql += " order by bi.item.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("itm", getService());
+        temMap.put("billClass", bill.getClass());
+        temMap.put("bType", billType);
+
+        temMap.put("ins", getSessionController().getInstitution());
+        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
 
     public void calCountTotalItem(BillType billType, boolean discharged) {
         count = 0;
@@ -334,6 +403,17 @@ public class ServiceSummery implements Serializable {
         long billed = calCount(new BilledBill(), billType, discharged);
         long cancelled = calCount(new CancelledBill(), billType, discharged);
         long refunded = calCount(new RefundBill(), billType, discharged);
+
+        count = billed - (refunded + cancelled);
+
+    }
+    
+    public void calCountTotalItem(BillType billType) {
+        count = 0;
+
+        long billed = calCount(new BilledBill(), billType);
+        long cancelled = calCount(new CancelledBill(), billType);
+        long refunded = calCount(new RefundBill(), billType);
 
         count = billed - (refunded + cancelled);
 
@@ -366,6 +446,41 @@ public class ServiceSummery implements Serializable {
         } else {
             sql += " and  bi.bill.createdAt between :fromDate and :toDate ";
         }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bTp", billType);
+        temMap.put("itm", item);
+        List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        return tmp;
+
+    }
+    
+    private List<BillItem> getBillItem(BillType billType, Item item) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select bi FROM BillItem bi "
+                + " where  bi.bill.institution=:ins "
+                + " and  bi.bill.billType= :bTp  "
+                + " and bi.item=:itm "
+                + " and  bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (billType != BillType.InwardBill) {
+            sql += " and ( bi.bill.paymentMethod = :pm1 "
+                    + " or  bi.bill.paymentMethod = :pm2 "
+                    + " or  bi.bill.paymentMethod = :pm3"
+                    + " or  bi.bill.paymentMethod = :pm4) ";
+
+            temMap.put("pm1", PaymentMethod.Cash);
+            temMap.put("pm2", PaymentMethod.Card);
+            temMap.put("pm3", PaymentMethod.Cheque);
+            temMap.put("pm4", PaymentMethod.Slip);
+
+        }
+
 
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
@@ -703,6 +818,26 @@ public class ServiceSummery implements Serializable {
         proFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Staff, false);
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, false);
+
+    }
+    
+    public void createServiceSummeryInwardAddedDate() {
+        serviceSummery = new ArrayList<>();
+        for (BillItem i : getBillItem(BillType.InwardBill, service)) {
+            BillItemWithFee bi = new BillItemWithFee();
+            bi.setBillItem(i);
+            bi.setProFee(calFee(i, FeeType.Staff));
+            bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
+            bi.setOutSideFee(calFee(i, FeeType.OtherInstitution));
+            bi.setReagentFee(calFee(i, FeeType.Chemical));
+            serviceSummery.add(bi);
+        }
+
+        calCountTotalItem(BillType.InwardBill, false);
+        proFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Staff);
+        hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution);
+        outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution);
+        reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
 
     }
 
