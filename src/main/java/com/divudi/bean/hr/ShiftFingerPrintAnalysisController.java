@@ -381,7 +381,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
 
-        if (staffShift.getStartRecord().getStaffShift() != null) {
+        if (staffShift.getStartRecord().getStaffShift() != null) {            
             UtilityController.addErrorMessage("This record associated with anther staff shift");
             return;
         }
