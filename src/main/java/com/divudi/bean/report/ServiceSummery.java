@@ -21,6 +21,7 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceCategory;
@@ -163,10 +164,8 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi "
-                + " where  bi.bill.institution=:ins"
-                + " and  bi.bill.billType= :bTp "
-                + " and bi.fee.feeType=:ftp "
-                + " and bi.billItem.item=:itm "
+                + " where bi.bill.billType= :bTp "
+                + " and bi.fee.feeType=:ftp "                
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
 
         if (billType != BillType.InwardBill) {
@@ -180,13 +179,27 @@ public class ServiceSummery implements Serializable {
             temMap.put("pm4", PaymentMethod.Slip);
 
         }
+        
+        if (service != null) {
+            sql +=" and bi.billItem.item=:itm ";
+            temMap.put("itm", getService());
+        }
+        
+        if (institution != null) {
+            sql += " and  bi.bill.institution=:ins";
+            temMap.put("ins", getInstitution());
+        }
+
+        if (department != null) {
+            sql += " and  bi.bill.department=:dep ";
+            temMap.put("dep", getDepartment());
+        }
 
         temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("fromDate", getFromDate());        
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
-        temMap.put("itm", getService());
+        
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -367,10 +380,8 @@ public class ServiceSummery implements Serializable {
         String sql;
         Map temMap = new HashMap();
         sql = "select count(bi) FROM BillItem bi "
-                + " where bi.bill.billType=:bType "
-                + " and bi.item=:itm "
-                + " and type(bi.bill)=:billClass "
-                + " and bi.bill.toInstitution=:ins "
+                + " where bi.bill.billType=:bType "                
+                + " and type(bi.bill)=:billClass "                
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
 
         if (billType != BillType.InwardBill) {
@@ -385,14 +396,28 @@ public class ServiceSummery implements Serializable {
 
         }
         
+        if (service != null) {
+            sql += " and bi.item=:itm ";
+            temMap.put("itm", getService());
+        }
+        
+        if (institution != null) {
+            sql += " and  bi.bill.institution=:ins";
+            temMap.put("ins", getInstitution());
+        }
+
+        if (department != null) {
+            sql += " and  bi.bill.department=:dep ";
+            temMap.put("dep", getDepartment());
+        }
+        
         sql += " order by bi.item.name";
         temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        temMap.put("itm", getService());
+        temMap.put("fromDate", getFromDate());        
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", billType);
 
-        temMap.put("ins", getSessionController().getInstitution());
+        
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -463,9 +488,7 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select bi FROM BillItem bi "
-                + " where  bi.bill.institution=:ins "
-                + " and  bi.bill.billType= :bTp  "
-                + " and bi.item=:itm "
+                + " where bi.bill.billType= :bTp  "                
                 + " and  bi.bill.createdAt between :fromDate and :toDate ";
 
         if (billType != BillType.InwardBill) {
@@ -480,13 +503,26 @@ public class ServiceSummery implements Serializable {
             temMap.put("pm4", PaymentMethod.Slip);
 
         }
+        
+        if (item != null) {
+            sql += " and bi.item=:itm ";
+            temMap.put("itm", item);
+        }
+        
+        if (institution != null) {
+            sql += " and  bi.bill.institution=:ins";
+            temMap.put("ins", getInstitution());
+        }
 
-
+        if (department != null) {
+            sql += " and  bi.bill.department=:dep ";
+            temMap.put("dep", getDepartment());
+        }
+        
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("bTp", billType);
-        temMap.put("itm", item);
+        
+        temMap.put("bTp", billType);        
         List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
@@ -659,6 +695,7 @@ public class ServiceSummery implements Serializable {
     }
 
     Department department;
+    Institution institution;
     PaymentMethod paymentMethod;
 
     @EJB
@@ -833,7 +870,7 @@ public class ServiceSummery implements Serializable {
             serviceSummery.add(bi);
         }
 
-        calCountTotalItem(BillType.InwardBill, false);
+        calCountTotalItem(BillType.InwardBill);
         proFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Staff);
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution);
@@ -1508,6 +1545,16 @@ public class ServiceSummery implements Serializable {
     public void setDepartment(Department department) {
         this.department = department;
     }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+    
+    
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;

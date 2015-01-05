@@ -39,9 +39,18 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy  HH:mm:ss" >
                         </p:calendar>
+                        
+                        <h:outputLabel value="Department" ></h:outputLabel>
+                        <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{serviceSummery.department}" converter="dep" >
+                        </p:autoComplete>
 
+                        <h:outputLabel value="Instituion"/>
+                        <p:autoComplete styleClass="noPrintButton"  value="#{serviceSummery.institution}"  
+                                        completeMethod="#{institutionController.completeCompany}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                        </p:autoComplete>
+                        
                         <h:outputLabel value="Service Name"/>
-                        <p:autoComplete value="#{serviceSummery.service}" completeMethod="#{itemController.completeService}" var="ix" 
+                        <p:autoComplete value="#{serviceSummery.service}" completeMethod="#{itemController.completeItem}" var="ix" 
                                         itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
                             <p:column>
                                 #{ix.name}
@@ -52,10 +61,6 @@
                             <p:column>
                                 #{ix.category.name}
                             </p:column> 
-                        </p:autoComplete>
-
-                        <h:outputLabel value="Department" ></h:outputLabel>
-                        <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{serviceSummery.department}" converter="dep" >
                         </p:autoComplete>
 
                     </h:panelGrid>
@@ -173,17 +178,31 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
-                </p:column>    
+                </p:column>
+                
+                <p:column headerText="Regent Fee" style="text-align: right;">
+                    <f:facet name="header">
+                        <p:outputLabel value="Regent Fee"/>
+                    </f:facet>
+                    <p:outputLabel value="#{d.reagentFee}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{serviceSummery.reagentFeeTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column> 
 
                 <p:column headerText="Total Fee" style="text-align: right;">
                     <f:facet name="header">
                         <p:outputLabel value="Total Fee"/>
                     </f:facet>
-                    <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee}">
+                    <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee+d.reagentFee}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
-                        <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal}">
+                        <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal+serviceSummery.reagentFeeTotal}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
