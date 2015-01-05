@@ -5,6 +5,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:ui="http://java.sun.com/jsf/facelets">
+    
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -358,10 +359,13 @@
             <div class="footer" style="text-align: center;">
                 <br/>
                 THANK YOU. PLEASE COME AGAIN<br/>
-                Software by www.lakmedi.com - 0776285007<br/>
-                -----<br/>
+                Software by www.lakmedi.com - 0715812399<br/>
+                <br/>
             </div>
 
+            <div class="cashierPrinting">
+                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"/>
+            </div>
 
 
         </div>
