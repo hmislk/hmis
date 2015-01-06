@@ -1134,7 +1134,7 @@ public class InwardSearch implements Serializable {
 
         getBillFacade().edit(b);
 
-        UtilityController.addErrorMessage("Successfully Cheked");
+        UtilityController.addSuccessMessage("Successfully Cheked");
     }
 
     public void markAsUnChecked() {
