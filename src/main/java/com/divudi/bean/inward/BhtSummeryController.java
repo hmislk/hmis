@@ -1393,11 +1393,11 @@ public class BhtSummeryController implements Serializable {
             return "";
         }
 
-        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
-            if (checkBill()) {
-                return "";
-            }
-        }
+//        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
+//            if (checkBill()) {
+//                return "";
+//            }
+//        }
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             if (getPatientEncounter().getCreditCompany() == null) {

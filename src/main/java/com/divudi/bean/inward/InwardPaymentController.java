@@ -79,7 +79,8 @@ public class InwardPaymentController implements Serializable {
                 + " b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
-                + " and b.patientEncounter=:pe";
+                + " and b.patientEncounter=:pe "
+                + " order by b.id desc";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardFinalBill);
         hm.put("pe", getCurrent().getPatientEncounter());
@@ -90,13 +91,15 @@ public class InwardPaymentController implements Serializable {
             return 0;
         }
 
-        double billValue = Math.abs(b.getNetTotal());
-        double paidByPatient = Math.abs(b.getPaidAmount());
-        double creditUsedAmount = Math.abs(getCurrent().getPatientEncounter().getCreditUsedAmount());
-        double creditPaidAmount = Math.abs(getCurrent().getPatientEncounter().getCreditPaidAmount());
-        double netCredit = creditUsedAmount - creditPaidAmount;
-
-        return billValue - (paidByPatient + netCredit);
+       return b.getNetTotal()-(b.getPaidAmount()+getCurrent().getPatientEncounter().getCreditPaidAmount());
+        
+//        double billValue = Math.abs(b.getNetTotal());
+//        double paidByPatient = Math.abs(b.getPaidAmount());
+//        double creditUsedAmount = Math.abs(getCurrent().getPatientEncounter().getCreditUsedAmount());
+//        double creditPaidAmount = Math.abs(getCurrent().getPatientEncounter().getCreditPaidAmount());
+//        double netCredit = creditUsedAmount - creditPaidAmount;
+//
+//        return billValue - (paidByPatient + netCredit);
 
     }
 
