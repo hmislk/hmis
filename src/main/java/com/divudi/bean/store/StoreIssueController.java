@@ -544,7 +544,18 @@ public class StoreIssueController implements Serializable {
             //   System.out.println("Error for sale bill");
             return;
         }
-       
+        
+        if (errorCheckForSaleBill()) {
+               System.out.println("Error for sale bill");
+            return;
+        }
+       //storeIssueController.toDepartment
+        
+        if (toDepartment.equals(sessionController.getLoggedUser().getDepartment())) {
+               System.out.println("Same Department");
+            return;
+        }
+        
         getPreBill().setPaidAmount(getPreBill().getTotal());
         //   System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
