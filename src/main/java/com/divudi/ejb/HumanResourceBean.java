@@ -833,8 +833,8 @@ public class HumanResourceBean {
                 + " and fpr.retired=false"
                 + " and  fpr.staff=:st"
                 + " and fpr.recordTimeStamp between :fd and :td "
-                + " and fpr.loggedRecord is not null "
-                + " and fpr.staffShift is null ";
+                + " and fpr.loggedRecord is not null ";
+//                + " and fpr.staffShift is null ";
         hm.put("tp", FingerPrintRecordType.Varified);
         hm.put("st", sst.getStaff());
         hm.put("fd", frm.getTime());

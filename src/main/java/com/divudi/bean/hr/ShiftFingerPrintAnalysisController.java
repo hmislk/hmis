@@ -377,6 +377,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
 
+        if (staffShift.getStartRecord() == null) {
+            return;
+        }
+
+        if (staffShift.getStartRecord().getStaffShift() != null) {            
+            UtilityController.addErrorMessage("This record associated with anther staff shift");
+            return;
+        }
+
         FingerPrintRecord fingerPrintRecord = staffShift.getStartRecord();
 
         if (fingerPrintRecord != null) {
@@ -386,6 +395,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     public void fingerPrintSelectListenerEndRecord(StaffShift staffShift) {
         if (staffShift == null) {
+            return;
+        }
+
+        if (staffShift.getEndRecord()== null) {
+            return;
+        }
+
+        if (staffShift.getEndRecord().getStaffShift() != null) {
+            UtilityController.addErrorMessage("This record associated with anther staff shift");
             return;
         }
 
@@ -465,7 +483,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             if (ss.getShift().getDayType() == DayType.DayOff
                     || ss.getShift().getDayType() == DayType.PublicHoliday
                     || ss.getShift().getDayType() == DayType.SleepingDay
-                    || ss.getLeaveType() != null                    ) {
+                    || ss.getLeaveType() != null) {
                 continue;
             }
 
