@@ -17,429 +17,364 @@
             <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <p:panel>
                 <f:facet name="header" >
-                    <h:outputLabel value="Book Keeping Summery Without Pro (DAY)"  styleClass="noPrintButton" />
+                    <h:outputLabel value="Pharmacy Report Summery All"  styleClass="noPrintButton" />
 
 
-                    <h:panelGrid columns="6"  styleClass="noPrintButton" style="min-width: 100%;" >
+                    <h:panelGrid columns="8"  styleClass="noPrintButton" style="min-width: 100%;" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="Select Institution"/>
 
                         <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
                                         forceSelection="true"
-                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
+                                        requiredMessage="Please Select Institution" value="#{commonReport.ins}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                        
+                        <h:outputLabel value="Select Department"/>
+                        <p:autoComplete completeMethod="#{departmentController.completeDept}" forceSelection="true" required="true"
+                                        requiredMessage="Please Select Department" value="#{commonReport.department}"
+                                        var="dep" itemLabel="#{dep.name}" itemValue="#{dep}"/>
                     </h:panelGrid>
 
                     <h:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
                             <p:printer target="panelPrint" />
-                        </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target="opd_new:opd_new,
-                                         outside:outside,
-                                         pharmacy:pharmacy,
-                                         inward_collection:inward_collection,
-                                         agent_collection:agent_collection,
-                                         credit_collection:credit_collection,
-                                         credit_collection_inward:credit_collection_inward,
-                                         col,
-                                         inward_professional:inward_professional,
-                                         credit_card:credit_card,
-                                         slip:slip,
-                                         cheque:cheque,
-                                         finalSum"
-                                         fileName="Book_Keeping_Summery_without_pro_day_by_category_dat_end"
-                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
-                        </p:commandButton>
+                        </p:commandButton>                        
 
                         <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                         action="#{bookKeepingSummery.createCashCategoryWithoutProDay}"/>
+                                         action="#{commonReport.fetchPharmacySummeryAll()}"/>
                     </h:panelGrid>
 
 
                 </f:facet>
             </p:panel>
             <!--            <p:spacer height="30" />-->
-
-            <in:opd_new id="opd_new" professional="false"/>
-
-
-            <p:spacer height="30"/>
-
-            <in:outside id="outside"/>
-
-            <p:spacer height="30"/>
-
-            <in:pharmacy id="pharmacy"/>
-
-            <p:spacer height="30"/>
-
-            <in:inward_collection  id="inward_collection"/>
-
-            <p:spacer height="30"/>
-
-            <in:agent_collection id="agent_collection"/>
-
-            <p:spacer height="30"/>
-
-            <in:credit_collection_opd 
-                id="credit_collection"/>
-
-            <p:spacer height="30"/>
-
-            <in:credit_collection_inward                 
-                id="credit_collection_inward"/>
-
-            <p:spacer height="30"/>
-
-
-            <p:dataTable id="col"  value="#{bookKeepingSummery.collections2Hos}" var="sm">
-                <p:column >
-                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+            
+            <p:dataTable value="#{commonReport.pharmacyCashBilledBills}" var="ca" id="tbl1">
+                <f:facet name="header">
+                    <h:outputLabel value="Cash Bill"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{ca.insId}"></h:outputLabel>
                 </p:column>
-                <p:column/>
-                <p:column/>
-                <p:column/>
-                <p:column/>
-                <p:column style="text-align: right;" >
-                    <h:outputLabel value="#{sm.value1}" > 
-                        <f:convertNumber pattern="#,##0.00"/>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{ca.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
                     </h:outputLabel>
                 </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{ca.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCashBilledBillTotals}"/>
+                    </f:facet>
+                </p:column>
+                
+            
             </p:dataTable>
-
-
-            <p:spacer height="30"/>
-
-            <in:inward_professional_payment id="inward_professional"/>
-
-            <p:spacer height="30"/>
-
-            <in:credit_card_bills id="credit_card"/>
-
-
-            <p:spacer height="30"/>
-
-            <in:slip_bills id="slip"/>
-
-            <p:spacer height="30"/>
-
-            <in:cheque_bills id="cheque"/>
-
-            <p:spacer height="30"/>
-
-            <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}" var="s">
-
-                <p:columnGroup type="header">
-
-                    <p:row>
-                        <p:column headerText="Net Cash" style="text-align: left;">
-                            <f:facet name="header">
-                                <p:outputLabel value="Net Cash" style="text-align: left;"/>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="#{s.value1}" style="text-align: left; vertical-align: bottom;" >
-                            <f:facet name="header">
-                                <h:outputLabel value="#{s.value1}" rendered="#{s.value1!=0}" style="text-align: left; vertical-align: bottom;"> 
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="B/F Cash Balance" style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value="B/F Cash Balance" style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="Mannual Adjustment" style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value="Mannual Adjustment" style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText=" " style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value=" " style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText=" " style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value=" " style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="Final Cash" style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value="Final Cash" style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="  "  style="text-align: right; vertical-align: top;">
-                            <f:facet name="header">
-                                <p:outputLabel value="  " style="text-align: right; vertical-align: top;"/>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                </p:columnGroup>
-
-
-            </p:dataTable>
-
-            <p:spacer height="30"/>
-
-
-            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b">
+            
+            <p:dataTable value="#{commonReport.pharmacyCashCancelBills}" var="cac" id="tbl2">
                 <f:facet name="header">
-                    <h:outputLabel value="Bank Deposit" />
+                    <h:outputLabel value="Cash Cancel Bills"></h:outputLabel>
                 </f:facet>
-
-
-                <p:columnGroup type="header">
-
-                    <p:row>
-                        <p:column rowspan="3" headerText="People's Bank" style="vertical-align: top; text-align: left;">
-                            <f:facet name="header">
-                                <p:outputLabel value="People's Bank" style="vertical-align: top; text-align: left;"/>
-                            </f:facet>                    
-                        </p:column>
-                        <p:column headerText="Cash" style="text-align: right; vertical-align: bottom;" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Cash" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="................" style="text-align: left; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>            
-
-                    </p:row>
-                    <p:row>
-                        <p:column headerText="Cheque" style="text-align: right; vertical-align: bottom;" >
-                            <f:facet name="header">
-                                <p:outputLabel value="Cheque" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="................" style="text-align: left; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="&nbsp;&nbsp;&nbsp;" style="text-align: right; vertical-align: bottom;" >
-                            <f:facet name="header">
-                                <p:outputLabel value="&nbsp;&nbsp;&nbsp;" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="................" style="text-align: left; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: left; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-
-                        <p:column headerText="................" style="text-align: right; vertical-align: bottom;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: bottom;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="HNB 1" style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value="HNB 1" style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column/>
-                        <p:column/>
-                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="HNB 2" style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value="HNB 2" style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column/>
-                        <p:column/>
-                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="BOC" style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value="BOC" style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column/>
-                        <p:column/>
-                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="NSB" style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value="NSB" style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column/>
-                        <p:column/>
-                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="Lab Income Banked" style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value="Lab Income Banked" style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column/>
-                        <p:column/>
-                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-                    <p:row>
-                        <p:column headerText="C/F Cash Balance" style="text-align: left">
-                            <f:facet name="header">
-                                <p:outputLabel value="C/F Cash Balance" style="text-align: left"/>
-                            </f:facet>
-                        </p:column>
-                        <p:column/>
-                        <p:column/>
-                        <p:column headerText="................"  style="text-align: right; vertical-align: top;">
-                            <f:facet name="header">
-                                <p:outputLabel value="................" style="text-align: right; vertical-align: top;"/>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-
-
-                </p:columnGroup>
-
-                <!--                <p:column >
-                                    <h:outputLabel value="#{b.string}"/>
-                                </p:column>         
-                                <p:column/>
-                                <p:column/>
-                                <p:column />
-                                <p:column/>
-                                <p:column style="text-align: right;" >
-                                    <h:outputLabel value="......................." />
-                                </p:column>-->
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{cac.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{cac.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{cac.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCashCancelBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
             </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyCashReturnbill}" var="car" id="tbl3">
+                <f:facet name="header">
+                    <h:outputLabel value="Cash Refund Bills"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{car.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{car.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{car.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCashReturnbillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:spacer height="30px"/>
+            
+            <p:dataTable value="#{commonReport.pharmacyCreditBilledBills}" var="ce" id="tbl4">
+                <f:facet name="header">
+                    <h:outputLabel value="Credit Bill"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{ce.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{ce.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{ce.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCreditBilledBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyCreditCancelBills}" var="cec" id="tbl5">
+                <f:facet name="header">
+                    <h:outputLabel value="Credit Cancel Bills"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{cec.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{cec.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{cec.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCreditCancelBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyCreditReturnbill}" var="cer" id="tbl6">
+                <f:facet name="header">
+                    <h:outputLabel value="Credit Refund Bills"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{cer.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{cer.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{cer.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCreditReturnbillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:spacer height="30px"/>
+            <p:dataTable value="#{commonReport.pharmacyBhtIssueBilledBills}" var="bi" id="tbl7">
+                <f:facet name="header">
+                    <h:outputLabel value="BHT Issue"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{bi.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{bi.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="BHT No">
+                    <h:outputLabel value="#{bi.patientEncounter.bhtNo}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{bi.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyBhtIssueBilledBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+<!--            <p:dataTable value="#{commonReport.pharmacyBhtIssueCancelBills}" var="bic" id="tbl8">
+                <f:facet name="header">
+                    <h:outputLabel value="BHT Issue Cancel"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{bic.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{bic.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{bic.netTotal}"></h:outputLabel>                    
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyBhtIssueReturnbill}" var="bir" id="tbl9">
+                <f:facet name="header">
+                    <h:outputLabel value="BHT Issue Refund"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{bir.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{bir.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{bir.netTotal}"></h:outputLabel>                    
+                </p:column>
+            
+            </p:dataTable>-->
+            
+            
+            <p:spacer height="30px"/>
+            <p:dataTable value="#{commonReport.pharmacyUnitIssueBilledBills}" var="ui" id="tbl10">
+                <f:facet name="header">
+                    <h:outputLabel value="Unit Issue"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{ui.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{ui.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="to Department">
+                    <h:outputLabel value="#{ui.toDepartment.name}">                        
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{ui.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyUnitIssueBilledBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+<!--            <p:dataTable value="#{commonReport.pharmacyUnitIssueCancelBills}" var="uic" id="tbl11">
+                <f:facet name="header">
+                    <h:outputLabel value="Unit Issue Cancel"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{uic.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{uic.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{uic.netTotal}"></h:outputLabel>                    
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyUnitIssueReturnbill}" var="uir" id="tbl12">
+                <f:facet name="header">
+                    <h:outputLabel value="Unit Issue Refund"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{uir.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{uir.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{uir.netTotal}"></h:outputLabel>                    
+                </p:column>
+            
+            </p:dataTable>-->
+            
+            <p:panelGrid columns="2">
+                <h:outputLabel value="Cash Sale Totals"/>
+                <h:outputLabel value="#{commonReport.pharmacyCashBilledBillTotals-
+                                        (commonReport.pharmacyCashCancelBillTotals+commonReport.pharmacyCashReturnbillTotals)}"/>
+                
+                <h:outputLabel value="Credit Sale Totals"/>
+                <h:outputLabel value="#{commonReport.pharmacyCreditBilledBillTotals-
+                                        (commonReport.pharmacyCreditCancelBillTotals+commonReport.pharmacyCreditReturnbillTotals)}"/>
+                
+                <h:outputLabel value="BHT Issue Totals"/>
+                <h:outputLabel value="#{commonReport.pharmacyBhtIssueBilledBillTotals}"/>
+                
+                <h:outputLabel value="Unit Issue Totals"/>
+                <h:outputLabel value="#{commonReport.pharmacyUnitIssueBilledBillTotals}"/>
+                
+                <h:outputLabel value="All Totals"/>
+                <h:outputLabel value="#{(commonReport.pharmacyCashBilledBillTotals-
+                                        (commonReport.pharmacyCashCancelBillTotals+commonReport.pharmacyCashReturnbillTotals))
+                                         +(commonReport.pharmacyCreditBilledBillTotals-
+                                        (commonReport.pharmacyCreditCancelBillTotals+commonReport.pharmacyCreditReturnbillTotals))
+                                        +(commonReport.pharmacyBhtIssueBilledBillTotals)+(commonReport.pharmacyUnitIssueBilledBillTotals)}"/>
+            </p:panelGrid>
+            
+            
 
+            
+
+            
         </h:form>
     </ui:define>
 
