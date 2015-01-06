@@ -34,7 +34,7 @@
                 </div>
             </div>
 
-            <div class="headingBillFiveFiveBHT">
+            <div class="headingBill">
                 <h:outputLabel value="#{sessionController.loggedUser.department.name}"   />    
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -43,16 +43,16 @@
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-            <div class="billDetailsFiveFiveBHT" >
+            <div class="billDetails" >
                 <table style="width: 100%;" >
                     <tr>
                         <td style="width: 20%; text-align: left;" >
-                            <h:outputLabel value="Date" styleClass="billDetailsFiveFiveBHT"></h:outputLabel>
+                            <h:outputLabel value="Date" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" styleClass="billDetailsFiveFiveBHT" >
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" style="font-size: 10px!important">
                                 <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -65,7 +65,7 @@
 
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" styleClass="billDetailsFiveFiveBHT">
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" style="font-size: 10px!important">
                                 <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -75,12 +75,12 @@
 
                     <tr>
                         <td style="width: 20%;text-align: left;" >
-                            <h:outputLabel value="Issue No" styleClass="billDetailsFiveFiveBHT" ></h:outputLabel>
+                            <h:outputLabel value="Issue No" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  styleClass="billDetailsFiveFiveBHT" >
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  class="billDetails" style="font-size: 10px!important">
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -102,11 +102,11 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 20% ;text-align: left;" >
-                                <h:outputLabel value="BHT" styleClass="billDetailsFiveFiveBHT" ></h:outputLabel>
+                                <h:outputLabel value="BHT" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" styleClass="billDetailsFiveFiveBHT"  >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" class="billDetails" style="font-size: 10px!important">
                                 </h:outputLabel>
                             </td>
                             <td style="width: 10%" >
@@ -120,11 +120,11 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Patient Name" styleClass="billDetailsFiveFiveBHT" ></h:outputLabel>
+                                <h:outputLabel value="Patient Name" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;text-align: left;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"  styleClass="billDetailsFiveFiveBHT" >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"  class="billDetails" style="font-size: 10px!important">
                                 </h:outputLabel>
                             </td>
 
@@ -213,10 +213,10 @@
                              
 
                         <tr>
-                            <td class="totalsBlockFiveFiveBHT" style="text-align: left; width: 60%;">
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
                                 <h:outputLabel value="Net Total" />
                             </td>
-                            <td  class="totalsBlockFiveFiveBHT" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
                                 <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
@@ -224,10 +224,10 @@
                         </tr> 
                     </h:panelGroup>
                     <tr>
-                        <td  class="totalsBlockFiveFiveBHT" style="text-align: left;">
+                        <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel   value="Number of Items Count" />
                         </td>
-                        <td  class="totalsBlockFiveFiveBHT">
+                        <td  class="totalsBlock">
                             <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -238,7 +238,6 @@
                 </table>
 
             </div>
-            <br></br>
             <br></br>
             <br></br>
 

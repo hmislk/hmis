@@ -833,8 +833,8 @@ public class HumanResourceBean {
                 + " and fpr.retired=false"
                 + " and  fpr.staff=:st"
                 + " and fpr.recordTimeStamp between :fd and :td "
-                + " and fpr.loggedRecord is not null "
-                + " and fpr.staffShift is null ";
+                + " and fpr.loggedRecord is not null ";
+//                + " and fpr.staffShift is null ";
         hm.put("tp", FingerPrintRecordType.Varified);
         hm.put("st", sst.getStaff());
         hm.put("fd", frm.getTime());
@@ -996,11 +996,13 @@ public class HumanResourceBean {
         String sql = "Select sum(s.qty) From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st "
-                + " and s.leaveType in :ltp"
+//                + " and s.leaveType in :ltp"
+                + " and s.leaveType=:ltp "
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
-        hm.put("ltp", list);
+//        hm.put("ltp", list);
+        hm.put("ltp", leaveType);
         hm.put("frm", frmDate);
         hm.put("to", toDate);
 

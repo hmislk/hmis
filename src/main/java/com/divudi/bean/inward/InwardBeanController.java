@@ -1467,6 +1467,46 @@ public class InwardBeanController implements Serializable {
         return patientRoom;
     }
 
+    public PatientRoom savePatientRoom(PatientRoom patientRoom,  RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
+        //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
+
+        System.err.println("Mill " + patientRoom);
+        
+        System.err.println("new " + newRoomFacilityCharge);
+        if (patientRoom == null) {
+            return null;
+        }
+
+        patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
+        patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
+        patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
+        patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
+        patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());
+        patientRoom.setCurrentMedicalCareCharge(newRoomFacilityCharge.getMedicalCareCharge());
+        patientRoom.setCurrentAdministrationCharge(newRoomFacilityCharge.getAdminstrationCharge());
+
+        
+        patientRoom.setCreatedAt(Calendar.getInstance().getTime());
+        patientRoom.setCreater(webUser);
+        patientRoom.setAdmittedAt(admittedAt);
+        patientRoom.setAddmittedBy(webUser);
+        patientRoom.setPatientEncounter(patientEncounter);
+        patientRoom.setRoomFacilityCharge(newRoomFacilityCharge);
+
+//        if (patientEncounter.getAdmissionType().isRoomChargesAllowed() == false) {
+//            patientRoom.setDischarged(true);
+//        }
+        if (patientRoom.getId() == null || patientRoom.getId() == 0) {
+            getPatientRoomFacade().create(patientRoom);
+        } else {
+            getPatientRoomFacade().edit(patientRoom);
+        }
+
+        return patientRoom;
+    }
+
+
+    
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public PatientRoomFacade getPatientRoomFacade() {

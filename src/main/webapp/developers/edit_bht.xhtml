@@ -166,26 +166,28 @@
                                     <p:calendar  value="#{bhtEditController.current.printingDischargeTime}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
                                         <f:ajax event="dateSelect" execute="@this" />
                                     </p:calendar>
-                                </p:panelGrid>
-                            </p:panel>
-                        </h:panelGrid>
-
-                    </p:panel>
-                    <p:panel id="pFBill" header="Final Bill" >
-                        <p:panel header="Final Bill Edit" rendered="#{bhtEditController.current.finalBill ne null}">
-                            <p:panelGrid columns="2">
-                                <p:outputLabel value="Net Total" />
-                                <p:outputLabel value="#{bhtEditController.current.finalBill.netTotal}" />
-                                <p:outputLabel value="Paid Amount" />
-                                <p:inputText value="#{bhtEditController.current.finalBill.paidAmount}" />
+                                    <p:outputLabel value="BHT Number" />
+                                    <p:inputText value="#{bhtEditController.current.bhtNo}"></p:inputText>
                             </p:panelGrid>
                         </p:panel>
+                    </h:panelGrid>
+
+                </p:panel>
+                <p:panel id="pFBill" header="Final Bill" >
+                    <p:panel header="Final Bill Edit" rendered="#{bhtEditController.current.finalBill ne null}">
+                        <p:panelGrid columns="2">
+                            <p:outputLabel value="Net Total" />
+                            <p:outputLabel value="#{bhtEditController.current.finalBill.netTotal}" />
+                            <p:outputLabel value="Paid Amount" />
+                            <p:inputText value="#{bhtEditController.current.finalBill.paidAmount}" />
+                        </p:panelGrid>
                     </p:panel>
                 </p:panel>
-            </h:form>
+            </p:panel>
+        </h:form>
 
-        </h:panelGroup>
+    </h:panelGroup>
 
-    </ui:define>
+</ui:define>
 
 </ui:composition>
