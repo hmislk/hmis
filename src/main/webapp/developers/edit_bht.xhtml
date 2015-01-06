@@ -94,6 +94,10 @@
                                 <h:panelGroup id="crd" style="display: #{bhtEditController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
 
                                     <credit:inputCredit  patientEncounter="#{bhtEditController.current}"/>
+                                    <h:panelGroup>
+                                    <h:outputLabel value="Credit Paid Amount : " style="min-width: 100px;" />
+                                    <p:inputText autocomplete="off" value="#{bhtEditController.current.creditPaidAmount}" />
+                                    </h:panelGroup>
                                 </h:panelGroup>
 
                             </p:panel>

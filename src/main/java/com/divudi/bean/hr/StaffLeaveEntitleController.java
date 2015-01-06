@@ -179,7 +179,7 @@ public class StaffLeaveEntitleController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "select c from StaffLeaveEntitle c "
                 + " where c.retired=false "
-                + " order by c.staff.code ";
+                + " order by c.staff.codeInterger ";
 
         selectedAllItems = getFacade().findBySQL(sql, hm);
     }

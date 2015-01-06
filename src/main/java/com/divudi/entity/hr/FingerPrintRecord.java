@@ -23,6 +23,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -72,6 +73,18 @@ public class FingerPrintRecord implements Serializable {
     @Enumerated(EnumType.STRING)
     DayType dayType;
     String comments = "";
+    @Transient
+    boolean  transNew;
+
+    public boolean isTransNew() {
+        return transNew;
+    }
+
+    public void setTransNew(boolean transNew) {
+        this.transNew = transNew;
+    }
+    
+    
 
     public Roster getRoster() {
         return roster;

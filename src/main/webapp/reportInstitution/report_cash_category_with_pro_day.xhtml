@@ -101,9 +101,12 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="col"  value="#{bookKeepingSummery.collections2Hos}" var="sm">
-                <p:column >
+                <p:column>
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
                 </p:column>
+                <p:column></p:column>
+                <p:column></p:column>
+                <p:column></p:column>
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="#{sm.value1}" > 
                         <f:convertNumber pattern="#,##0.00"/>
