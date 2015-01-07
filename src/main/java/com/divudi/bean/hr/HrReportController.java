@@ -920,14 +920,20 @@ public class HrReportController implements Serializable {
                         break;
                 }
 
-                weekDayWork.setTotal(weekDayWork.getTotalDouble() + value);
+                weekDayWork.setTotal(weekDayWork.getTotal() + value);
             }
 
-            double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
-            double overTime = weekDayWork.getTotalDouble() - normalWorkTime;
+            if (stf.getWorkingTimeForOverTimePerWeek() != 0) {
+                double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
+                double overTime = weekDayWork.getTotal() - normalWorkTime;
 
-            if (overTime > 0) {
-                weekDayWork.setOverTime(overTime);
+                System.err.println("Stf ="+stf.getCode());
+                System.err.print(" : Norm = "+normalWorkTime);
+                System.err.println(" : Over = "+overTime);
+                
+                if (overTime > 0) {
+                    weekDayWork.setOverTime(overTime);
+                }
             }
 
             weekDayWorks.add(weekDayWork);
@@ -1018,11 +1024,11 @@ public class HrReportController implements Serializable {
                         break;
                 }
 
-                weekDayWork.setTotal(weekDayWork.getTotalDouble() + value);
+                weekDayWork.setTotal(weekDayWork.getTotal()+ value);
             }
 
             double normalWorkTime = numOfWeeks * stf.getWorkingTimeForNoPayPerWeek() * 60 * 60;
-            double noPays = weekDayWork.getTotalDouble() - normalWorkTime;
+            double noPays = weekDayWork.getTotal()- normalWorkTime;
 
             if (noPays < 0) {
                 weekDayWork.setNoPay(noPays);
@@ -1273,8 +1279,6 @@ public class HrReportController implements Serializable {
     public void setFingerPrintRecordHistoryFacade(FingerPrintRecordHistoryFacade fingerPrintRecordHistoryFacade) {
         this.fingerPrintRecordHistoryFacade = fingerPrintRecordHistoryFacade;
     }
-    
-    
 
     public void createFingerPrintHistory() {
         String sql = "";
