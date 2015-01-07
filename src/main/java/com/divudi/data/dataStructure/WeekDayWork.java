@@ -37,9 +37,7 @@ public class WeekDayWork {
         return (total);
     }
     
-    public double getTotalDouble() {
-        return total;
-    }
+  
 
     public void setTotal(double total) {
         this.total = total;
