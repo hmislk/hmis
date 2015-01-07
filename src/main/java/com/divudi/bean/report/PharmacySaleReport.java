@@ -810,7 +810,9 @@ public class PharmacySaleReport implements Serializable {
         m.put("cl", bill.getClass());
         m.put("btp", BillType.PharmacySale);
         sql = "select sum(i.discount) from Bill i where i.referenceBill.department=:d "
-                + " and i.billType=:btp and type(i)=:cl and i.createdAt between :fd and :td ";
+                + " and i.billType=:btp "
+                + " and type(i)=:cl "
+                + " and i.createdAt between :fd and :td ";
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return saleValue;
