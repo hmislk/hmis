@@ -877,7 +877,8 @@ public class HrReportController implements Serializable {
 
     public void createMonthEndWorkTimeReport() {
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
-        Long numOfWeeks = dateCount / 7;
+        System.err.println(dateCount);
+        double numOfWeeks = dateCount / 7.0;
         List<Staff> staffList = fetchStaff();
         weekDayWorks = new ArrayList<>();
         for (Staff stf : staffList) {
@@ -923,14 +924,16 @@ public class HrReportController implements Serializable {
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
             }
 
-            if (stf.getWorkingTimeForOverTimePerWeek() != 0) {
+            if (stf.getWorkingTimeForOverTimePerWeek() != 0 && numOfWeeks != 0) {
                 double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
                 double overTime = weekDayWork.getTotal() - normalWorkTime;
 
-                System.err.println("Stf ="+stf.getCode());
-                System.err.print(" : Norm = "+normalWorkTime);
-                System.err.println(" : Over = "+overTime);
-                
+                System.out.println(" Stf =" + stf.getCode());
+                System.out.print(" : Week = " + numOfWeeks);
+                System.out.print(" : Hour  = " + stf.getWorkingTimeForOverTimePerWeek());
+                System.out.print(" : Total = " + weekDayWork.getTotal());
+                System.out.print(" : Over = " + overTime);
+
                 if (overTime > 0) {
                     weekDayWork.setOverTime(overTime);
                 }
@@ -1024,11 +1027,11 @@ public class HrReportController implements Serializable {
                         break;
                 }
 
-                weekDayWork.setTotal(weekDayWork.getTotal()+ value);
+                weekDayWork.setTotal(weekDayWork.getTotal() + value);
             }
 
             double normalWorkTime = numOfWeeks * stf.getWorkingTimeForNoPayPerWeek() * 60 * 60;
-            double noPays = weekDayWork.getTotal()- normalWorkTime;
+            double noPays = weekDayWork.getTotal() - normalWorkTime;
 
             if (noPays < 0) {
                 weekDayWork.setNoPay(noPays);
