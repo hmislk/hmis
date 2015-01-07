@@ -43,13 +43,15 @@
                                      inward_collection:inward_collection,
                                      agent_collection:agent_collection,
                                      credit_collection:credit_collection,
+                                     credit_collection_inward:credit_collection_inward,
                                      col,
                                      opd_professional:opd_professional,
                                      inward_professional:inward_professional,
                                      credit_card:credit_card,
                                      slip:slip,
                                      cheque:cheque,
-                                     finalSum"
+                                     finalSum,
+                                     bnkDeposit"
                                      fileName="Book_Keeping_Summery_with_pro_day"
                                      facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                      fontName="Courier New"  />
@@ -241,7 +243,7 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b">
+            <p:dataTable id="bnkDeposit" value="#{cashSummeryControllerExcel1.bankingData}" var="b">
 
                 <f:facet name="header">
                     <h:outputLabel value="Bank Deposit" />
