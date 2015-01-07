@@ -98,12 +98,20 @@ public class StorePurchaseOrderRequestController implements Serializable {
             UtilityController.addErrorMessage("Please select and item from the list");
             return;
         }
+        
+        for (BillItem bi : getBillItems()) {
+            if (getCurrentBillItem().getItem().equals(bi.getItem())) {
+                UtilityController.addErrorMessage("Already added this item");
+                return;
+            }
+        }
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getCurrentBillItem().getPharmaceuticalBillItem().
                 setPurchaseRateInUnit(getStoreBeen().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getStoreBeen().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
-
+        
+        
         getBillItems().add(getCurrentBillItem());
 
         calTotal();
