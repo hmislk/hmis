@@ -218,6 +218,22 @@ public class AmpController implements Serializable {
         }
         return ampList;
     }
+    
+    public void fillAllPharmacyitems(){
+        Map m = new HashMap();
+        m.put("dep", DepartmentType.Store);
+        
+        String sql;
+        sql = "select c from Amp c where "
+                    + " c.retired=false and"
+                    + " (c.departmentType is null"
+                    + " or c.departmentType!=:dep )and "
+                    + " c.category is null and "
+                    + "(upper(c.name) like :n ) order by c.name";
+        
+        items = getEjbFacade().findBySQL(sql, m);
+        //items = getFacade().findBySQL(sql, m);
+    }
 
     public List<Amp> completeAmpByCode(String qry) {
 
