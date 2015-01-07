@@ -285,6 +285,11 @@ public class AmpController implements Serializable {
 //            UtilityController.addErrorMessage("Please Select Manufacturer");
 //            return true;
 //        }
+        
+        if(current.getCategory() == null){
+            UtilityController.addErrorMessage("Please Select Category");
+            return true;
+        }
 
         if (getTabId().toString().equals("tabVmp")) {
             if (getCurrent().getVmp() == null) {

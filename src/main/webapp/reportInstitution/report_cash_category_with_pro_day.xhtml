@@ -49,7 +49,8 @@
                                      credit_card:credit_card,
                                      slip:slip,
                                      cheque:cheque,
-                                     finalSum"
+                                     finalSum,
+                                     bnkDiposit"
                                      fileName="Book_Keeping_Summery_with_pro_day"
                                      facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                      fontName="Courier New"  />
@@ -241,7 +242,7 @@
             <p:spacer height="30"/>
 
 
-            <p:dataTable value="#{cashSummeryControllerExcel1.bankingData}" var="b">
+            <p:dataTable id="bnkDiposit" value="#{cashSummeryControllerExcel1.bankingData}" var="b">
 
                 <f:facet name="header">
                     <h:outputLabel value="Bank Deposit" />
