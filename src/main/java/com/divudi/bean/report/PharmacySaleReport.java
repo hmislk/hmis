@@ -262,13 +262,14 @@ public class PharmacySaleReport implements Serializable {
         m.put("td", td);
         m.put("cl", bill.getClass());
         m.put("btp", BillType.PharmacySale);
-        sql = "select sum(i.netValue) from BillItem i "
-                + "where i.bill.referenceBill.department=:d"
+        sql = " select sum(i.netValue) "
+                + " from BillItem i "
+                + " where i.bill.referenceBill.department=:d "
                 + " and i.bill.retired=false"
                 + " and i.retired=false  "
                 + " and i.bill.billType=:btp "
-                + "and type(i.bill)=:cl "
-                + "and i.bill.createdAt between :fd and :td ";
+                + " and type(i.bill)=:cl "
+                + " and i.bill.createdAt between :fd and :td ";
 
         if (category != null) {
             sql += " and i.item.category=:cat";
@@ -2554,7 +2555,6 @@ public class PharmacySaleReport implements Serializable {
                 + " from Bill b "
                 + " where b.retired=false"
                 + " and b.billType=:btp ";
-
         sql += " and b.department=:dep "
                 + " and type(b)=:class1 "
                 + " and b.createdAt between :fd and :td  ";
