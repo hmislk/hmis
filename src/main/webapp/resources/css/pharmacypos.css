@@ -215,6 +215,13 @@ itemsBlockRight{
 .billline{
     text-align: center!important;
     overflow: hidden;
+    padding: 0px;
+}
+
+.bhtNoPharmacy{
+    position: absolute;
+    margin-top: 50px;
+    margin-right: 30px;
 }
 
 .headingBill{
@@ -242,7 +249,7 @@ itemsBlockRight{
     font-family:Arial, Helvetica, sans-serif!important;
 }
 
-.totalsBlockFiveFiveBHT{
+.totalsBlockFiveFiveNo{
     font-size: 10px!important;
     font-family:Arial, Helvetica, sans-serif!important;
 }
