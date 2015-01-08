@@ -35,7 +35,7 @@
                         <h:outputLabel value="Staff "/>                           
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
                         
-                        <h:outputLabel  value="From Department"  ></h:outputLabel>
+                        <h:outputLabel  value="Request For Department"  ></h:outputLabel>
                         <p:autoComplete  value="#{searchController.searchKeyword.frmDepartment}"  
                                          completeMethod="#{departmentController.completeDept}" var="dept1"
                                          itemValue="#{dept1}" itemLabel="#{dept1.name}" 
