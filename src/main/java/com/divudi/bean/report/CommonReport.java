@@ -158,6 +158,17 @@ public class CommonReport implements Serializable {
     BillsTotals cashOutBillsCancel;
     BillsTotals cashAdjustmentBills;
     BillsTotals InwardPaymentBill;
+    List<Bill> bills;
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+    
+    
 
     public double displayOutsideCalBillFees() {
         String jpql;

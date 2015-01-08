@@ -2109,6 +2109,21 @@ public class BookKeepingSummery implements Serializable {
                 + pettyCashTotal;
 
     }
+    
+     public void calGrantTotal2HosWithPro() {
+        grantTotal = 0.0;
+
+        grantTotal = opdHospitalTotal
+                +opdStaffTotal
+                + outSideFeeTotal
+                + pharmacyTotal
+                + inwardPaymentTotal
+                + agentPaymentTotal
+                + creditCompanyTotal
+                + creditCompanyTotalInward
+                + pettyCashTotal;
+
+    }
 
     private void createCollections2Hos() {
         System.err.println("createCollections2Hos");
@@ -2117,7 +2132,7 @@ public class BookKeepingSummery implements Serializable {
         /////////////////
         dd = new String1Value2();
         dd.setString("Collection For the Day");
-        calGrantTotal2HosWithoutPro();
+        calGrantTotal2HosWithPro();
         Double dbl = getGrantTotal();
         dbl = dbl - pettyCashTotal;
         dd.setValue1(dbl);
