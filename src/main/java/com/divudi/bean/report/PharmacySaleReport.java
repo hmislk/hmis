@@ -265,12 +265,12 @@ public class PharmacySaleReport implements Serializable {
         sql = " select sum(i.netTotal) "
                 + " from Bill i "
                 + " where i.referenceBill.department=:d "
-                + " and i.retired=false"
+                + " and i.retired=false "
                 + " and i.billType=:btp "
                 + " and type(i)=:cl "
                + " and i.createdAt between :fd and :td ";
 
-        sql += "  order by i.bill.deptId ";
+        sql += "  order by i.deptId ";
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return saleValue;
@@ -384,12 +384,11 @@ public class PharmacySaleReport implements Serializable {
                 + " i.bill.paymentMethod,"
                 + " sum(i.netValue)"
                 + " from BillItem i "
-                + "where i.bill.referenceBill.department=:d "
-                + " and i.retired=false "
-                + " and i.bill.retired=false "
+                + " where i.bill.referenceBill.department=:d "
+                + " and (i.retired=false or i.bill.retired=false) "
                 + " and i.bill.billType=:btp "
-                + "and type(i.bill)!=:cl "
-                + "and i.bill.createdAt between :fd and :td ";
+                + " and type(i.bill)!=:cl "
+                + " and i.bill.createdAt between :fd and :td ";
 
         if (category != null) {
             sql += " and i.item.category=:cat";
