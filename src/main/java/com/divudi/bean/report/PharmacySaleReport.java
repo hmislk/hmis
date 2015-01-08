@@ -3716,7 +3716,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setSumDiscount(sumDiscount);
             newRow.setBillItems(getSaleBillItemByDepartment(nowDate, new BilledBill()));
 
-            if (!newRow.getBills().isEmpty()) {
+            if (!newRow.getBillItems().isEmpty()) {
                 billedDetail.getDatedBills().add(newRow);
             }
 
@@ -3733,7 +3733,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setSumDiscount(sumDiscount);
             newRow.setBillItems(getSaleBillItemByDepartment(nowDate, new CancelledBill()));
 
-            if (!newRow.getBills().isEmpty()) {
+            if (!newRow.getBillItems().isEmpty()) {
                 cancelledDetail.getDatedBills().add(newRow);
             }
 
@@ -3750,7 +3750,7 @@ public class PharmacySaleReport implements Serializable {
             newRow.setSumDiscount(sumDiscount);
             newRow.setBillItems(getSaleBillItemByDepartment(nowDate, new RefundBill()));
 
-            if (!newRow.getBills().isEmpty()) {
+            if (!newRow.getBillItems().isEmpty()) {
                 refundedDetail.getDatedBills().add(newRow);
             }
 
