@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:panelGroup >
+            <h:form  >
+
+                <p:panel header="Room Details">
+                    <p:panel>
+                        <p:commandButton ajax="false" id="btnSave" value="fill"  action="#{roomFacilityChargeController.fillRoomFacilityCharge()}" styleClass="buttons" onclick="onSubmitButton();" >
+                        </p:commandButton>
+                    </p:panel>
+                    <p:panel>
+                        <p:dataTable value="#{roomFacilityChargeController.roomFacilityCharges}" var="r" >
+                            <p:column headerText="Name">
+                                <p:outputLabel value="#{r.name}" />
+                            </p:column>
+                            <p:column headerText="Department">
+                                <p:outputLabel value="#{r.department.name}" />
+                            </p:column>
+                            <p:column headerText="Administration Charge">
+                                <p:inputText autocomplete="off" value="#{r.adminstrationCharge}"/>
+                            </p:column>
+                            <p:column headerText="Madical Care Charge">
+                                <p:inputText autocomplete="off" value="#{r.medicalCareCharge}"/>
+                            </p:column>
+                            <p:column headerText="Room Charge">
+                                <p:inputText autocomplete="off" value="#{r.roomCharge}"/>
+                            </p:column>
+                            <p:column headerText="Maintanace Charge">
+                                <p:inputText autocomplete="off" value="#{r.maintananceCharge}"/>
+                            </p:column>
+                            <p:column headerText="Nursing Charge">
+                                <p:inputText autocomplete="off" value="#{r.nursingCharge}"/>
+                            </p:column>
+                            <p:column headerText="MO Charge">
+                                <p:inputText autocomplete="off" value="#{r.moCharge}"/>
+                            </p:column>
+                            <p:column headerText="Linen Charge Per Day">
+                                <p:inputText autocomplete="off" value="#{r.linenCharge}"/>
+                            </p:column>
+                            <p:column headerText="Linen Charge Per Day">
+                                <p:commandButton value="Update" action="#{roomFacilityChargeController.updateRoomFacilityCharge(r)}" ajax="false"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    <p:panel>
+                        <p:panelGrid columns="2">
+                            <h:outputLabel value="Administration Charge"/>
+                            <h:inputText autocomplete="off" value="#{roomFacilityChargeController.adminstrationCharge}"/>
+                            <h:outputLabel value="Madical Care Charge"/>
+                            <h:inputText autocomplete="off" value="#{roomFacilityChargeController.medicalCareCharge}"/>
+                            <h:outputLabel value="Room Charge"></h:outputLabel>
+                            <h:inputText autocomplete="off" value="#{roomFacilityChargeController.roomCharge}"/>
+                            <h:outputLabel value="Maintanace Charge"/>
+                            <h:inputText autocomplete="off" value="#{roomFacilityChargeController.maintananceCharge}"/>
+                            <h:outputLabel value="Nursing Charge"/>
+                            <h:inputText autocomplete="off" value="#{roomFacilityChargeController.nursingCharge}"/>
+                            <h:outputLabel value="MO Charge"/>
+                            <h:inputText autocomplete="off" value="#{roomFacilityChargeController.moCharge}"/>
+                            <h:outputLabel value="Linen Charge Per Day"/>
+                            <h:inputText autocomplete="off" value="#{roomFacilityChargeController.linenCharge}"/>
+                        </p:panelGrid>
+                        <p:commandButton value="Update All Charge" action="#{roomFacilityChargeController.updateAllCharges()}" ajax="false"/>
+                    </p:panel>
+                </p:panel>
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

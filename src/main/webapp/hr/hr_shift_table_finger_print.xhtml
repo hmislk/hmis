@@ -88,7 +88,9 @@
 
                     <p:column headerText="Starting Record Frm Attendence"> 
                         <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
-                            <h:panelGroup  rendered="#{sts.startRecord.staffShift eq null}">                           
+                            <h:panelGroup  >
+
+
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
@@ -97,15 +99,13 @@
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
-                            <h:outputLabel value="#{sts.startRecord.timeLabel}"
-                                           rendered="#{sts.startRecord.staffShift ne null}"/>
                         </h:panelGroup>
                         <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
                     </p:column>
 
                     <p:column headerText="Ending Record Frm Attendence">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
-                            <h:panelGroup rendered="#{sts.endRecord.staffShift eq null}">                           
+                            <h:panelGroup >                           
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
@@ -113,53 +113,49 @@
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>   
                             </h:panelGroup>
-                            <h:outputLabel value="#{sts.endRecord.timeLabel}"
-                                           rendered="#{sts.endRecord.staffShift ne null}"/>
                         </h:panelGroup>
                         <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
                     </p:column>
 
                     <p:column headerText="Starting Record Varified">
-                        <h:panelGroup >
-                            <p:calendar id="strRc"       
-                                        rendered="#{sts.previousStaffShift eq null}"
-                                        value="#{sts.startRecord.recordTimeStamp}" 
-                                        pattern="dd MM yy hh mm ss a"  >                           
-                                <p:ajax event="click" process="@this" update="@this"
-                                        listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
-                            </p:calendar>
-                            <p:outputLabel     
-                                rendered="#{sts.previousStaffShift ne null}"
-                                value="#{sts.startRecord.recordTimeStamp}" >                           
-                                <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
-                            </p:outputLabel>
-
-                            <p:selectBooleanCheckbox value="#{sts.startRecord.allowedExtraDuty}" disabled="true" />
-                            <!--<p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.startRecord)}"/>-->
-
+                        <h:panelGroup id="strRc"       >
+                            <h:panelGroup rendered="#{sts.startRecord ne null}" >
+                                <p:calendar 
+                                    rendered="#{sts.previousStaffShift eq null}"
+                                    value="#{sts.startRecord.recordTimeStamp}" 
+                                    pattern="dd MM yy hh mm ss a"  >                           
+                                    <p:ajax event="click" process="@this" update="@this"
+                                            listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
+                                </p:calendar>
+                                <p:outputLabel     
+                                    rendered="#{sts.previousStaffShift ne null}"
+                                    value="#{sts.startRecord.recordTimeStamp}" >                           
+                                    <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <h:outputLabel value="No Records" rendered="#{sts.startRecord eq null}"/>
                         </h:panelGroup>
-
                     </p:column>
 
                     <p:column headerText="Ending Record  Varified">
-                        <h:panelGroup>
-                            <p:calendar id="endRc"
-                                        rendered="#{sts.nextStaffShift eq null}"
-                                        value="#{sts.endRecord.recordTimeStamp}" 
-                                        pattern="dd MM yy hh mm ss a" >          
-                                <p:ajax event="click" process="@this" update="@this"
-                                        listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
-                            </p:calendar>
-                            <p:outputLabel     
-                                rendered="#{sts.nextStaffShift ne null}"
-                                value="#{sts.endRecord.recordTimeStamp}" >                           
-                                <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
-                            </p:outputLabel>
-                          
-                            <p:selectBooleanCheckbox value="#{sts.endRecord.allowedExtraDuty}" disabled="true"/>
-<!--                            <p:commandButton ajax="false" value="Reset" action="#{shiftFingerPrintAnalysisController.restTimeStamp(sts.endRecord)}"/>-->
-                        </h:panelGroup>
+                        <h:panelGroup id="endRc">
+                            <h:panelGroup rendered="#{sts.endRecord ne null}">
+                                <p:calendar 
+                                    rendered="#{sts.nextStaffShift eq null}"
+                                    value="#{sts.endRecord.recordTimeStamp}" 
+                                    pattern="dd MM yy hh mm ss a" >          
+                                    <p:ajax event="click" process="@this" update="@this"
+                                            listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
+                                </p:calendar>
+                                <p:outputLabel     
+                                    rendered="#{sts.nextStaffShift ne null}"
+                                    value="#{sts.endRecord.recordTimeStamp}" >                           
+                                    <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
+                                </p:outputLabel>
 
+                            </h:panelGroup> 
+                            <h:outputLabel value="No Records" rendered="#{sts.endRecord eq null}"/>
+                        </h:panelGroup>
                     </p:column>
 
 

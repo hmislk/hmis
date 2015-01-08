@@ -544,7 +544,15 @@ public class StoreIssueController implements Serializable {
             //   System.out.println("Error for sale bill");
             return;
         }
-       
+        
+        if (errorCheckForSaleBill()) {
+               System.out.println("Error for sale bill");
+            return;
+        }
+       //storeIssueController.toDepartment
+        
+        
+        
         getPreBill().setPaidAmount(getPreBill().getTotal());
         //   System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
@@ -586,7 +594,14 @@ public class StoreIssueController implements Serializable {
         if (billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
-
+        System.out.println("toDepartment = " + toDepartment.getName());
+        System.out.println("sessionController.getLoggedUser().getDepartment() = " + sessionController.getLoggedUser().getDepartment().getName());
+        if (toDepartment.equals(sessionController.getLoggedUser().getDepartment())) {
+            UtilityController.addErrorMessage("Please Select Deferent Department");
+            errorMessage = "Please select Deferent Department to send items";
+            return;
+        }
+        
         if (getToDepartment() == null) {
             UtilityController.addErrorMessage("Please Select To Department");
             errorMessage = "Please select the department to send items";

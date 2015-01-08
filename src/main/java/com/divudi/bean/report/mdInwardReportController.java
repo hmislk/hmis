@@ -1885,7 +1885,7 @@ public class mdInwardReportController implements Serializable {
     }
 
     //619
-    public List<Bill> billsOutSide(boolean dis, boolean add, boolean bill) {
+    public List<Bill> billsOutSide(boolean dis, boolean add, boolean bill, Bill billClass) {
 
         String sql;
         Map m = new HashMap();
@@ -1893,11 +1893,12 @@ public class mdInwardReportController implements Serializable {
         m.put("toDate", getToDate());
         m.put("fromDate", getFromDate());
         m.put("bTp", BillType.InwardBill);
-
+        m.put("billClass", billClass.getClass());
         System.out.println("in");
 
         sql = "select DISTINCT(bi.bill) FROM BillFee bi"
-                + " where bi.bill.billType= :bTp ";
+                + " where bi.bill.billType= :bTp "
+                + " and type(bi.bill)=:billClass ";
 
         if (bill) {
             sql += " and bi.bill.createdAt between :fromDate and :toDate ";
@@ -2009,7 +2010,7 @@ public class mdInwardReportController implements Serializable {
 
     public void createBillWithBillFee(boolean dis, boolean add, boolean bill) {
 
-        List<Bill> bills = billsOutSide(dis, add, bill);
+        List<Bill> bills = billsOutSide(dis, add, bill, new BilledBill());
 
         for (Bill b : bills) {
             BillWithBillFees bf = new BillWithBillFees();
