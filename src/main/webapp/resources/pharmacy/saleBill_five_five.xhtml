@@ -63,16 +63,16 @@
                                 <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                        <td style="width: 150px;"></td>
+                        <td style="width: 50px;"></td>
                         <td>
-                            <h:outputLabel value="Bht No" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
+                            <h:outputLabel value="Bht No" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel value=":" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
+                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
                         </td>
 
                     </tr>
@@ -91,14 +91,14 @@
                         </td>
                         <td></td>
                         <td>
-                            <h:outputLabel value="Room" rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"></h:outputLabel>
+                            <h:outputLabel value="Room" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel value=":" rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"></h:outputLabel>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"></h:outputLabel>
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"></h:outputLabel>
                         </td>
 
                     </tr>                    
