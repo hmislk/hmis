@@ -221,10 +221,9 @@ public class PharmacySaleReport implements Serializable {
 //select bi from BillItem bi where  bi.retired=false  and bi.bill.billType=:bt  and bi.bill.createdAt bettween :fd and :td  and bi.bill.depId like :di  and bi.bill.referenceBill.deptId like :po;
         String sql;
         Map m = new HashMap();
-        sql = "select bi from BillItem bi where "
-                + " bi.retired=false"
-                + " and bi.bill.retired=false "
-                + " and bi.bill.billType=:bt "
+        sql = "select bi from BillItem bi "
+                + " where bi.bill.billType=:bt "
+                + " and bi.bill.retired=false "                
                 + " and bi.bill.createdAt between :fd and :td ";
 
         if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")) {
@@ -265,12 +264,12 @@ public class PharmacySaleReport implements Serializable {
         sql = " select sum(i.netTotal) "
                 + " from Bill i "
                 + " where i.referenceBill.department=:d "
-                + " and i.retired=false "
+                + " and i.retired=false"
                 + " and i.billType=:btp "
                 + " and type(i)=:cl "
                + " and i.createdAt between :fd and :td ";
 
-        sql += "  order by i.deptId ";
+        sql += "  order by i.bill.deptId ";
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return saleValue;
@@ -292,7 +291,7 @@ public class PharmacySaleReport implements Serializable {
                 + " from BillItem i "
                 + " where i.bill.referenceBill.department=:d "
                 + " and i.bill.retired=false"
-                + " and i.retired=false  "
+//                + " and i.retired=false  "
                 + " and i.bill.billType=:btp "
                 + " and type(i.bill)=:cl "
                 + " and i.bill.createdAt between :fd and :td ";
@@ -322,7 +321,7 @@ public class PharmacySaleReport implements Serializable {
                 + " sum(i.netValue)"
                 + " from BillItem i "
                 + "where i.bill.referenceBill.department=:d "
-                + " and i.retired=false "
+//                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + " and i.bill.billType=:btp "
                 + "and type(i.bill)!=:cl "
@@ -350,7 +349,7 @@ public class PharmacySaleReport implements Serializable {
         sql = "select i "
                 + " from BillItem i "
                 + "where i.bill.referenceBill.department=:d "
-                + " and i.retired=false "
+//                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + " and i.bill.billType=:btp "
                 + "and type(i.bill)!=:cl "
@@ -384,11 +383,12 @@ public class PharmacySaleReport implements Serializable {
                 + " i.bill.paymentMethod,"
                 + " sum(i.netValue)"
                 + " from BillItem i "
-                + " where i.bill.referenceBill.department=:d "
-                + " and (i.retired=false or i.bill.retired=false) "
+                + "where i.bill.referenceBill.department=:d "
+//                + " and i.retired=false "
+                + " and i.bill.retired=false "
                 + " and i.bill.billType=:btp "
-                + " and type(i.bill)!=:cl "
-                + " and i.bill.createdAt between :fd and :td ";
+                + "and type(i.bill)!=:cl "
+                + "and i.bill.createdAt between :fd and :td ";
 
         if (category != null) {
             sql += " and i.item.category=:cat";
@@ -415,7 +415,7 @@ public class PharmacySaleReport implements Serializable {
         sql = "select sum(i.bill.netTotal) "
                 + " from BillItem i "
                 + "where i.bill.referenceBill.department=:d "
-                + " and i.retired=false "
+//                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + " and i.bill.billType=:btp "
                 //                + "and type(i.bill)=:cl "
@@ -445,7 +445,7 @@ public class PharmacySaleReport implements Serializable {
         sql = "select i.item.category,sum(i.netValue) "
                 + " from BillItem i "
                 + "where i.bill.referenceBill.department=:d "
-                + " and i.retired=false "
+//                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + " and i.bill.billType=:btp "
                 //                + "and type(i.bill)=:cl "
@@ -809,7 +809,7 @@ public class PharmacySaleReport implements Serializable {
         sql = "select sum(i.netValue)"
                 + "  from BillItem i "
                 + " where i.bill.paymentMethod=:pm "
-                + " and i.retired=false "
+//                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + " and  i.bill.referenceBill.department=:d "
                 + " and type(i.bill)=:class "
@@ -931,7 +931,7 @@ public class PharmacySaleReport implements Serializable {
         sql = "select sum(i.discount)"
                 + " from BillItem i "
                 + " where i.bill.referenceBill.department=:d "
-                + " and i.retired=false "
+//                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + " and i.bill.billType=:btp"
                 + "  and type(i.bill)=:cl "
@@ -1016,7 +1016,7 @@ public class PharmacySaleReport implements Serializable {
         m.put("btp", BillType.PharmacySale);
         sql = "select i from BillItem i "
                 + " where i.bill.referenceBill.department=:d "
-                + " and i.retired=false "
+//                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + " and i.bill.billType=:btp "
                 + " and type(i.bill)=:class "
@@ -1102,7 +1102,7 @@ public class PharmacySaleReport implements Serializable {
         sql = "select sum(i.netValue) from BillItem i "
                 + " where i.bill.referenceBill.department=:d "
                 + " and i.bill.retired=false"
-                + " and i.retired=false  "
+//                + " and i.retired=false  "
                 + " and i.bill.billType=:btp "
                 + " and type(i.bill)!=:cl ";
 
@@ -1229,7 +1229,7 @@ public class PharmacySaleReport implements Serializable {
                 + " from BillItem i "
                 + " where i.bill.referenceBill.department=:d "
                 + " and i.bill.retired=false "
-                + " and i.retired=false  "
+//                + " and i.retired=false  "
                 + " and i.bill.billType=:btp "
                 + " and type(i.bill)=:class ";
 
@@ -1490,7 +1490,7 @@ public class PharmacySaleReport implements Serializable {
         sql = "select sum(i.netValue)"
                 + "  from BillItem i"
                 + "  where type(i.bill)=:class"
-                + " and i.retired=false "
+//                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + "  and i.bill.paymentMethod=:pm "
                 + " and  i.bill.referenceBill.department=:d"
@@ -1531,7 +1531,7 @@ public class PharmacySaleReport implements Serializable {
         sql = "select sum(i.netValue) "
                 + " from BillItem i "
                 + " where type(i.bill)!=:class "
-                + " and i.retired=false "
+//                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + " and i.bill.paymentMethod=:pm "
                 + " and i.bill.referenceBill.department=:d "
@@ -1677,7 +1677,7 @@ public class PharmacySaleReport implements Serializable {
                 + "  from BillItem i "
                 + " where type(i.bill)!=:class "
                 + " and i.bill.referenceBill.department=:d "
-                + " and i.retired=false  "
+//                + " and i.retired=false  "
                 + " and i.bill.retired=false  "
                 + " and i.bill.billType=:btp "
                 + " and i.bill.createdAt between :fromDate and :toDate ";
