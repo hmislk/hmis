@@ -839,7 +839,8 @@ public class SearchController implements Serializable {
     }
 
     public void createIssuePharmacyReport() {
-        fetchPharmacyBills(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
+//        fetchPharmacyBills(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
+        fetchPharmacyBillsNew(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
     }
 
     public void createIssueStoreReport() {
@@ -864,6 +865,52 @@ public class SearchController implements Serializable {
         sql = "Select b From BilledBill b "
                 + " where b.retired=false "
                 //+ " and b.toDepartment=:dep "
+                + " and b.billType= :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(b.toStaff.person.name) like :stf )";
+            tmp.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getFrmDepartment() != null) {
+            sql += " and b.department=:frmdep";
+            tmp.put("frmdep", getSearchKeyword().getFrmDepartment());
+        }
+
+        if (getSearchKeyword().getTooDepartment() != null) {
+            sql += " and b.toDepartment=:tdep";
+            tmp.put("tdep", getSearchKeyword().getTooDepartment());
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        List<Bill> list = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP);
+        bills = new ArrayList<>();
+        netTotalValue = 0.0;
+        for (Bill b : list) {
+//            System.out.println("b = ");
+
+            Bill refBill = getActiveRefBillnotApprove(b, billType2);
+            if (refBill == null) {
+                System.out.println("b = " + refBill);
+                netTotalValue += b.getNetTotal();
+                bills.add(b);
+            }
+        }
+
+    }
+    
+    public void fetchPharmacyBillsNew(BillType billType, BillType billType2) {
+        String sql;
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        //tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bTp", billType);
+        sql = "Select b From BilledBill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
                 + " and b.billType= :bTp "
                 + " and b.createdAt between :fromDate and :toDate ";
 
