@@ -1062,27 +1062,26 @@ public class BillBeanController implements Serializable {
     }
 
     public List<Object[]> fetchDepartmentSale(Date fromDate, Date toDate, Institution institution) {
-        String sql = "Select b.referenceBill.department,sum(b.netTotal) "
+        PaymentMethod[] pms=new PaymentMethod[]{PaymentMethod.Cash,PaymentMethod.Card,PaymentMethod.Cheque,PaymentMethod.Slip};
+        
+        String sql = "Select b.referenceBill.department,"
+                + " sum(b.netTotal) "
                 + " from Bill b "
                 + " where b.retired=false"
                 + " and  b.billType=:bType"
                 + " and b.referenceBill.department.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate "
-                + " and (b.paymentMethod = :pm1 "
-                + " or  b.paymentMethod = :pm2 "
-                + " or  b.paymentMethod = :pm3 "
-                + " or  b.paymentMethod = :pm4)"
+                + " and b.paymentMethod in :pm"
+                + " and type(b)!=:cl "
                 + " group by b.referenceBill.department"
                 + " order by b.referenceBill.department.name";
         HashMap hm = new HashMap();
         hm.put("bType", BillType.PharmacySale);
+        hm.put("cl", PreBill.class);
         hm.put("ins", institution);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
-        hm.put("pm1", PaymentMethod.Cash);
-        hm.put("pm2", PaymentMethod.Card);
-        hm.put("pm3", PaymentMethod.Cheque);
-        hm.put("pm4", PaymentMethod.Slip);
+        hm.put("pm",Arrays.asList(pms));        
         return getBillFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
     }

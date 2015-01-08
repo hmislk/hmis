@@ -201,7 +201,6 @@ public class ReportsStock implements Serializable {
         pharmacyStockRows = lsts;
     }
     
-    
     public void fillDepartmentInventryStocks() {
         if (department == null) {
             UtilityController.addErrorMessage("Please select a department");

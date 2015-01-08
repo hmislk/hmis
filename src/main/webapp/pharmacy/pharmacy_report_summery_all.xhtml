@@ -1,0 +1,382 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery" 
+                xmlns:in="http://java.sun.com/jsf/composite/income_report" 
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+        <h:form id="panelPrint" styleClass="noBorder summeryBorder">
+
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+            <p:panel>
+                <f:facet name="header" >
+                    <h:outputLabel value="Pharmacy Report Summery All"  styleClass="noPrintButton" />
+
+
+                    <h:panelGrid columns="8"  styleClass="noPrintButton" style="min-width: 100%;" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="Select Institution"/>
+
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                                        forceSelection="true"
+                                        requiredMessage="Please Select Institution" value="#{commonReport.ins}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                        
+                        <h:outputLabel value="Select Department"/>
+                        <p:autoComplete completeMethod="#{departmentController.completeDept}" forceSelection="true" required="true"
+                                        requiredMessage="Please Select Department" value="#{commonReport.department}"
+                                        var="dep" itemLabel="#{dep.name}" itemValue="#{dep}"/>
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="3">
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>                        
+
+                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                         action="#{commonReport.fetchPharmacySummeryAll()}"/>
+                    </h:panelGrid>
+
+
+                </f:facet>
+            </p:panel>
+            <!--            <p:spacer height="30" />-->
+            
+            <p:dataTable value="#{commonReport.pharmacyCashBilledBills}" var="ca" id="tbl1">
+                <f:facet name="header">
+                    <h:outputLabel value="Cash Bill"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{ca.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{ca.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{ca.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCashBilledBillTotals}"/>
+                    </f:facet>
+                </p:column>
+                
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyCashCancelBills}" var="cac" id="tbl2">
+                <f:facet name="header">
+                    <h:outputLabel value="Cash Cancel Bills"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{cac.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{cac.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{cac.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCashCancelBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyCashReturnbill}" var="car" id="tbl3">
+                <f:facet name="header">
+                    <h:outputLabel value="Cash Refund Bills"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{car.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{car.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{car.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCashReturnbillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:spacer height="30px"/>
+            
+            <p:dataTable value="#{commonReport.pharmacyCreditBilledBills}" var="ce" id="tbl4">
+                <f:facet name="header">
+                    <h:outputLabel value="Credit Bill"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{ce.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{ce.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{ce.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCreditBilledBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyCreditCancelBills}" var="cec" id="tbl5">
+                <f:facet name="header">
+                    <h:outputLabel value="Credit Cancel Bills"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{cec.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{cec.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{cec.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCreditCancelBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyCreditReturnbill}" var="cer" id="tbl6">
+                <f:facet name="header">
+                    <h:outputLabel value="Credit Refund Bills"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{cer.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{cer.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{cer.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyCreditReturnbillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:spacer height="30px"/>
+            <p:dataTable value="#{commonReport.pharmacyBhtIssueBilledBills}" var="bi" id="tbl7">
+                <f:facet name="header">
+                    <h:outputLabel value="BHT Issue"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{bi.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{bi.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="BHT No">
+                    <h:outputLabel value="#{bi.patientEncounter.bhtNo}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{bi.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyBhtIssueBilledBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+<!--            <p:dataTable value="#{commonReport.pharmacyBhtIssueCancelBills}" var="bic" id="tbl8">
+                <f:facet name="header">
+                    <h:outputLabel value="BHT Issue Cancel"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{bic.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{bic.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{bic.netTotal}"></h:outputLabel>                    
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyBhtIssueReturnbill}" var="bir" id="tbl9">
+                <f:facet name="header">
+                    <h:outputLabel value="BHT Issue Refund"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{bir.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{bir.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{bir.netTotal}"></h:outputLabel>                    
+                </p:column>
+            
+            </p:dataTable>-->
+            
+            
+            <p:spacer height="30px"/>
+            <p:dataTable value="#{commonReport.pharmacyUnitIssueBilledBills}" var="ui" id="tbl10">
+                <f:facet name="header">
+                    <h:outputLabel value="Unit Issue"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{ui.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{ui.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="to Department">
+                    <h:outputLabel value="#{ui.toDepartment.name}">                        
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{ui.netTotal}"></h:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{commonReport.pharmacyUnitIssueBilledBillTotals}"/>
+                    </f:facet>
+                </p:column>
+            
+            </p:dataTable>
+            
+<!--            <p:dataTable value="#{commonReport.pharmacyUnitIssueCancelBills}" var="uic" id="tbl11">
+                <f:facet name="header">
+                    <h:outputLabel value="Unit Issue Cancel"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{uic.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{uic.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{uic.netTotal}"></h:outputLabel>                    
+                </p:column>
+            
+            </p:dataTable>
+            
+            <p:dataTable value="#{commonReport.pharmacyUnitIssueReturnbill}" var="uir" id="tbl12">
+                <f:facet name="header">
+                    <h:outputLabel value="Unit Issue Refund"></h:outputLabel>
+                </f:facet>
+                
+                <p:column headerText="Bill No">
+                    <h:outputLabel value="#{uir.insId}"></h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Created At">
+                    <h:outputLabel value="#{uir.createdAt}">
+                        <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Amount">
+                    <h:outputLabel value="#{uir.netTotal}"></h:outputLabel>                    
+                </p:column>
+            
+            </p:dataTable>-->
+            
+            <p:panelGrid columns="2">
+                <h:outputLabel value="Cash Sale Totals"/>
+                <h:outputLabel value="#{commonReport.pharmacyCashBilledBillTotals-
+                                        (commonReport.pharmacyCashCancelBillTotals+commonReport.pharmacyCashReturnbillTotals)}"/>
+                
+                <h:outputLabel value="Credit Sale Totals"/>
+                <h:outputLabel value="#{commonReport.pharmacyCreditBilledBillTotals-
+                                        (commonReport.pharmacyCreditCancelBillTotals+commonReport.pharmacyCreditReturnbillTotals)}"/>
+                
+                <h:outputLabel value="BHT Issue Totals"/>
+                <h:outputLabel value="#{commonReport.pharmacyBhtIssueBilledBillTotals}"/>
+                
+                <h:outputLabel value="Unit Issue Totals"/>
+                <h:outputLabel value="#{commonReport.pharmacyUnitIssueBilledBillTotals}"/>
+                
+                <h:outputLabel value="All Totals"/>
+                <h:outputLabel value="#{(commonReport.pharmacyCashBilledBillTotals-
+                                        (commonReport.pharmacyCashCancelBillTotals+commonReport.pharmacyCashReturnbillTotals))
+                                         +(commonReport.pharmacyCreditBilledBillTotals-
+                                        (commonReport.pharmacyCreditCancelBillTotals+commonReport.pharmacyCreditReturnbillTotals))
+                                        +(commonReport.pharmacyBhtIssueBilledBillTotals)+(commonReport.pharmacyUnitIssueBilledBillTotals)}"/>
+            </p:panelGrid>
+            
+            
+
+            
+
+            
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

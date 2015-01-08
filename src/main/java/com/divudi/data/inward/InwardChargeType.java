@@ -27,7 +27,7 @@ public enum InwardChargeType {
     LinenCharges("Linen Charges"),//GOES WITH PATIENT ROOM
     Laboratory("Laboratory"),
     MealCharges("Meal Charges"),
-    MedicalCareICU("Medical Care ICU"),//Goes With Room
+    MedicalCareICU("Medical Care"),//Goes With Room
     MedicalServices("Medical Services"),
     Medicine("Medicine"),//For BHT ISSUE
     MOCharges("MO Charges"),//GOES WITH PATIENT ROOM

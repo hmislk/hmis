@@ -18,6 +18,17 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.bookKeepingSummeryRows}" var="sr" >
+
+            <f:facet name="header">
+                <h:outputLabel value="#{bookKeepingSummery.fromDate}">
+                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                </h:outputLabel>
+                <h:outputLabel value="--"/>
+                <h:outputLabel value="#{bookKeepingSummery.toDate}">
+                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                </h:outputLabel>
+            </f:facet>
+
             <p:column  headerText="Category">
                 <p:outputLabel value="#{sr.categoryName}" rendered="#{sr.catRow}" ></p:outputLabel>
             </p:column>
