@@ -10,5 +10,5 @@
         <property name="URL" value="jdbc:mysql://localhost:3306/hr?zeroDateTimeBehavior=convertToNull"/>
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
     </jdbc-connection-pool>
-    <jdbc-resource enabled="true" jndi-name="hr07" object-type="user" pool-name="mysql_hr_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="hr08" object-type="user" pool-name="mysql_hr_rootPool"/>
 </resources>

@@ -265,7 +265,7 @@ public class PharmacySaleReport implements Serializable {
                 + "where i.bill.referenceBill.department=:d "
                 + " and i.bill.billType=:btp "
                 + "and type(i.bill)=:cl "
-                + "and i.bill.createdAt between :fd and :td ";
+                + "and i.createdAt between :fd and :td ";
 
         if (category != null) {
             sql += " and i.item.category=:cat";
