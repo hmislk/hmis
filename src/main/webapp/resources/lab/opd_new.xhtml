@@ -33,7 +33,7 @@
                 <p:outputLabel value="#{sr.categoryName}" rendered="#{sr.catRow}" ></p:outputLabel>
             </p:column>
             <p:column headerText="Item/Service" >
-                #{sr.itemName}
+                <h:outputLabel value="#{sr.itemName}"></h:outputLabel>
             </p:column>
             <p:column headerText="Count" >
                 <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
