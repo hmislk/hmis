@@ -13,19 +13,17 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Department Stock Report by Item" >
+                    <p:panel header="All Pharmacyutical Item report" >
 
                         <h:panelGrid columns="5" >
-                            <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="dep" >
-                            </p:autoComplete>
+                            
                             <p:commandButton ajax="false" value="Process" 
                                              actionListener="#{ampController.fillAllPharmacyitems}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
+                                <pe:exporter type="xlsx" target="tbl" fileName="All_Items"
                                              facetFontStyle="BOLD" 
                                              fontName="Courier New" />
                             </p:commandButton>
@@ -34,10 +32,14 @@
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
 
                             <p:dataTable id="tbl" rowIndexVar="ii" 
-                                         value="#{ampController.items}" var="i" >
-                                <f:facet name="header">
-                                    <h:outputLabel value="Department Stock by Item - #{reportsStock.department.name}"/>                                     
-                                </f:facet> 
+                                         value="#{ampController.pharmacyItemList}" var="i" rowStyleClass="#{i.category eq null ? 'redText':'greenText'}"
+                                 
+                                         rendered="#{reportsStock.pharmacyStockRows.size() ne 0 }"
+                                         rows="50"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20, 50, 100">
+                                
 
                                 <p:column width="40px;" headerText="No" sortBy="#{ii}">
                                     <h:outputLabel value="#{ii+1}" />
@@ -59,18 +61,18 @@
                                     <h:outputLabel value="#{i.name}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value" style="text-align: right;">
+                                
+                                <p:column headerText="Category" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Purchase Value"/>                                     
+                                        <h:outputLabel value="Category"/>                                     
                                     </f:facet>
-                                    <h:outputLabel value="#{i.category}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    <h:outputLabel value="#{i.category.name}"  >
+                                        
                                     </h:outputLabel>
                                 </p:column>
 
 
-                                
-                               
+
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

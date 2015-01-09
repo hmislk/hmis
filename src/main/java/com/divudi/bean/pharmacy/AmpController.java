@@ -71,6 +71,8 @@ public class AmpController implements Serializable {
     private VtmsVmpsFacade vivFacade;
     List<Amp> itemsByCode = null;
     List<Amp> listToRemove = null;
+    Department department;
+    List<Amp> pharmacyItemList;
 
     public List<Amp> getListToRemove() {
         if (listToRemove == null) {
@@ -227,12 +229,18 @@ public class AmpController implements Serializable {
         sql = "select c from Amp c where "
                     + " c.retired=false and"
                     + " (c.departmentType is null"
-                    + " or c.departmentType!=:dep )and "
-                    + " c.category is null and "
-                    + "(upper(c.name) like :n ) order by c.name";
+                    + " or c.departmentType!=:dep) "
+                    //+ " and c.category is null "
+                    + " order by c.name ";
         
-        items = getEjbFacade().findBySQL(sql, m);
-        //items = getFacade().findBySQL(sql, m);
+        /* select c from Amp c where "
+                    + " c.retired=false and"
+                    + " (c.departmentType is null"
+                    + " or c.departmentType!=:dep )and "
+                    + "(upper(c.name) like :n ) order by c.name */
+        System.out.println("sql = " + sql);
+        pharmacyItemList = getEjbFacade().findBySQL(sql, m);
+        System.out.println("pharmacyItemList = " + pharmacyItemList);
     }
 
     public List<Amp> completeAmpByCode(String qry) {
@@ -540,6 +548,26 @@ public class AmpController implements Serializable {
 
     }
 
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public List<Amp> getPharmacyItemList() {
+        return pharmacyItemList;
+    }
+
+    public void setPharmacyItemList(List<Amp> pharmacyItemList) {
+        this.pharmacyItemList = pharmacyItemList;
+    }
+
+    
+
+    
+    
     /**
      *
      */
