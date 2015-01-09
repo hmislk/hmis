@@ -25,8 +25,8 @@
                 
                 <h:panelGrid columns="3">
                     
-                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSalePaymentMethodDetailByBill()}"/>
-                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSalePaymentMethodDetailBillItems()}"/>
+                    <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter subTable="true" type="xlsx" target="sum1,sum2,sum3,fin" fileName="report_grn_detail_by_supplier"  />
                             </p:commandButton>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
@@ -93,23 +93,23 @@
                         </p:row>
                     </p:columnGroup>
 
-                    <p:subTable value="#{i.bills}" var="b" >
+                    <p:subTable value="#{i.billItems}" var="b" >
                         <f:facet name="header">
                             <h:outputLabel value="#{i.date}">
                                 <f:convertDateTime pattern="dd MMMM yyyy" />
                             </h:outputLabel>
                         </f:facet>
                         <p:column>
-                           <h:outputLabel value="#{b.deptId}"/>
-                            <h:outputLabel value="#{b.insId}" rendered="#{b.deptId eq null}"/>
+                           <h:outputLabel value="#{b.bill.deptId}"/>
+                            <h:outputLabel value="#{b.bill.insId}" rendered="#{b.bill.deptId eq null}"/>
                         </p:column>
                         <p:column>
-                            <h:outputLabel value="#{b.createdAt}">
+                            <h:outputLabel value="#{b.bill.createdAt}">
                                 <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>                       
                         <p:column>
-                            <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                            <h:outputLabel value="#{b.bill.creater.webUserPerson.name}"/>
                         </p:column>                        
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{b.discount}">
@@ -117,23 +117,23 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column style=" text-align: right" >                             
-                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                            <h:outputLabel rendered="#{b.bill.paymentMethod=='Cash'}" value="#{b.netValue}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                            <h:outputLabel rendered="#{b.bill.paymentMethod!='Cash'}" value="0.00" />
                         </p:column>
                         <p:column style=" text-align: right" >                            
-                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                            <h:outputLabel rendered="#{b.bill.paymentMethod=='Credit'}" value="#{b.netValue}"  >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                            <h:outputLabel rendered="#{b.bill.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
 
                         <p:column style=" text-align: right" >                           
-                            <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                            <h:outputLabel rendered="#{b.bill.paymentMethod=='Card'}" value="#{b.netValue}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
+                            <h:outputLabel rendered="#{b.bill.paymentMethod!='Card'}" value="0.00"/>
                         </p:column>
 
                         <p:columnGroup type="footer">
@@ -251,18 +251,18 @@
                         </p:row>
                     </p:columnGroup>
 
-                    <p:subTable value="#{i.bills}" var="b" >
+                    <p:subTable value="#{i.billItems}" var="b" >
                         <f:facet name="header">
                             <h:outputLabel value="#{i.date}">
                                 <f:convertDateTime pattern="dd MMMM yyyy" />
                             </h:outputLabel>
                         </f:facet>
                         <p:column>
-                           <h:outputLabel value="#{b.deptId}"/>
-                            <h:outputLabel value="#{b.insId}" rendered="#{b.deptId eq null}"/>
+                           <h:outputLabel value="#{b.bill.deptId}"/>
+                            <h:outputLabel value="#{b.bill.insId}" rendered="#{b.bill.deptId eq null}"/>
                         </p:column>
                         <p:column>
-                            <h:outputLabel value="#{b.createdAt}">
+                            <h:outputLabel value="#{b.bill.createdAt}">
                                 <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>                       
@@ -275,23 +275,23 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column style=" text-align: right"  > 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                            <h:outputLabel rendered="#{b.bill.paymentMethod=='Cash'}" value="#{b.netValue}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                            <h:outputLabel rendered="#{b.bill.paymentMethod!='Cash'}" value="0.00" />
                         </p:column>
                         <p:column style=" text-align: right" >
-                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                            <h:outputLabel rendered="#{b.bill.paymentMethod=='Credit'}" value="#{b.netValue}"  >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                            <h:outputLabel rendered="#{b.bill.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
 
                         <p:column style=" text-align: right" >                             
-                            <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                            <h:outputLabel rendered="#{b.bill.paymentMethod=='Card'}" value="#{b.netValue}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
+                            <h:outputLabel rendered="#{b.bill.paymentMethod!='Card'}" value="0.00"/>
                         </p:column>
 
                         <p:columnGroup type="footer">
@@ -409,18 +409,18 @@
                         </p:row>
                     </p:columnGroup>
 
-                    <p:subTable value="#{i.bills}" var="b" >
+                    <p:subTable value="#{i.billItems}" var="b" >
                         <f:facet name="header">
                             <h:outputLabel value="#{i.date}">
                                 <f:convertDateTime pattern="dd MMMM yyyy" />
                             </h:outputLabel>
                         </f:facet>
                         <p:column>
-                           <h:outputLabel value="#{b.deptId}"/>
-                            <h:outputLabel value="#{b.insId}" rendered="#{b.deptId eq null}"/>
+                           <h:outputLabel value="#{b.bill.deptId}"/>
+                            <h:outputLabel value="#{b.bill.insId}" rendered="#{b.bill.deptId eq null}"/>
                         </p:column>
                         <p:column>
-                            <h:outputLabel value="#{b.createdAt}">
+                            <h:outputLabel value="#{b.bill.createdAt}">
                                 <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>                       
@@ -436,29 +436,29 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                            <h:outputLabel rendered="#{b.bill.paymentMethod=='Cash'}" value="#{b.netValue}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                            <h:outputLabel rendered="#{b.bill.paymentMethod!='Cash'}" value="0.00" />
                         </p:column>
                         <p:column headerText="Credit" style=" text-align: right" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Credit"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                            <h:outputLabel rendered="#{b.bill.paymentMethod=='Credit'}" value="#{b.netValue}"  >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                            <h:outputLabel rendered="#{b.bill.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
 
                         <p:column headerText="C Card" style=" text-align: right" >
                             <f:facet name="header">  
                                 <h:outputLabel value="C Card"/>
                             </f:facet> 
-                            <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                            <h:outputLabel rendered="#{b.bill.paymentMethod=='Card'}" value="#{b.netValue}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                            <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
+                            <h:outputLabel rendered="#{b.bill.paymentMethod!='Card'}" value="0.00"/>
                         </p:column>
 
                         <p:columnGroup type="footer">
