@@ -161,6 +161,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        return (AdditionalForm) formFacade.findBySQL(sql, hm);
 //    }
     private void fetchTimeFromAddiationalFrom(StaffShift ss, FingerPrintRecord fingerPrintRecordIn, FingerPrintRecord fingerPrintRecordOut, List<FingerPrintRecord> fingerPrintRecords) {
+      
+        System.err.println("Fetch From Additional");
         HrForm additionalForm = ss.getAdditionalForm();
 
         if (additionalForm == null) {
@@ -317,11 +319,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 if (fingerPrintRecordIn != null) {
                     fingerPrintRecordIn.setTimes(Times.inTime);
                     ss.setStartRecord(fingerPrintRecordIn);
+                    list.add(fingerPrintRecordIn);
                 }
 
                 if (fingerPrintRecordOut != null) {
                     fingerPrintRecordOut.setTimes(Times.outTime);
                     ss.setEndRecord(fingerPrintRecordOut);
+                    list.add(fingerPrintRecordOut);
                 }
 
                 System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
