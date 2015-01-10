@@ -160,7 +160,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //
 //        return (AdditionalForm) formFacade.findBySQL(sql, hm);
 //    }
-    private void fetchTimeFromAddiationalFrom(StaffShift ss, FingerPrintRecord fingerPrintRecordIn, FingerPrintRecord fingerPrintRecordOut) {
+    private void fetchTimeFromAddiationalFrom(StaffShift ss, FingerPrintRecord fingerPrintRecordIn, FingerPrintRecord fingerPrintRecordOut, List<FingerPrintRecord> fingerPrintRecords) {
         HrForm additionalForm = ss.getAdditionalForm();
 
         if (additionalForm == null) {
@@ -178,6 +178,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordIn.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordIn.setComments("(new Additional)");
                 fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
+                fingerPrintRecordFacade.create(fingerPrintRecordIn);
+                fingerPrintRecords.add(fingerPrintRecordIn);
             }
 
         }
@@ -193,6 +195,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordOut.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordOut.setComments("(new Additional)");
                 fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
+                fingerPrintRecordFacade.create(fingerPrintRecordOut);
+                fingerPrintRecords.add(fingerPrintRecordOut);
             }
 
         }
@@ -209,6 +213,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordIn.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordIn.setComments("(new Additional)");
                 fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
+                fingerPrintRecordFacade.create(fingerPrintRecordIn);
+                fingerPrintRecords.add(fingerPrintRecordIn);
             }
 
             if (fingerPrintRecordOut == null) {
@@ -219,6 +225,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordOut.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordOut.setComments("(new Additional)");
                 fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
+                fingerPrintRecordFacade.create(fingerPrintRecordOut);
+                fingerPrintRecords.add(fingerPrintRecordOut);
             }
 
         }
@@ -257,7 +265,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         //CREATE FIRTS TABLE For Indexing Purpuse
         ShiftTable netT;
-      
 
         while (tmpToDate.after(nowDate)) {
             netT = new ShiftTable();
@@ -303,7 +310,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
                 } else {
                     //Fetch Time From Additional From
-                    fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut);
+                    fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut,list);
                 }
 
 //                System.err.println(" 1 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
@@ -380,7 +387,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        if (staffShift.getStartRecord() == null) {
 //            return;
 //        }
-        
         if (staffShift.getStartRecord() != null && staffShift.getStartRecord().getStaffShift() != null) {
             UtilityController.addErrorMessage("This record associated with anther staff shift");
             return;
@@ -611,7 +617,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             for (StaffShift ss : st.getStaffShift()) {
                 //UPDATE START RECORD
-                FingerPrintRecord startRecord = ss.getStartRecord();               
+                FingerPrintRecord startRecord = ss.getStartRecord();
                 startRecord.setStaffShift(ss);
                 saveHistory(startRecord);
 
@@ -622,7 +628,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 }
 
                 //UPDATE END RECORD
-                FingerPrintRecord endRecord = ss.getEndRecord();             
+                FingerPrintRecord endRecord = ss.getEndRecord();
                 endRecord.setStaffShift(ss);
                 saveHistory(endRecord);
 
