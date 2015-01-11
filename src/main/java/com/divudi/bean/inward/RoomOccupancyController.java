@@ -81,6 +81,16 @@ public class RoomOccupancyController implements Serializable {
 
     }
     
+    public void createPatientRoomVacant() {
+        String sql = "SELECT pr FROM PatientRoom pr "
+                + " where pr.retired=false "
+                + " and pr.discharged=true "
+                + " order by pr.roomFacilityCharge.name";
+
+        patientRooms = getPatientRoomFacade().findBySQL(sql);
+
+    }
+    
       public void createPatientRoomAll() {
         String sql = "SELECT pr FROM PatientRoom pr "
                 + " where pr.retired=false "

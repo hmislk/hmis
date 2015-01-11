@@ -127,6 +127,7 @@
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                                 </p:calendar>
+                               
                                 <p:outputLabel     
                                     rendered="#{sts.previousStaffShift ne null}"
                                     value="#{sts.startRecord.recordTimeStamp}" >                           
