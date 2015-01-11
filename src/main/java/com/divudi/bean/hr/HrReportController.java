@@ -868,6 +868,7 @@ public class HrReportController implements Serializable {
             monthEnd.setLeave_casual(humanResourceBean.calStaffLeave(stf, LeaveType.Casual, getFromDate(), getToDate()));
             monthEnd.setLeave_medical(humanResourceBean.calStaffLeave(stf, LeaveType.Medical, getFromDate(), getToDate()));
             monthEnd.setLeave_nopay(humanResourceBean.calStaffLeave(stf, LeaveType.No_Pay, getFromDate(), getToDate()));
+            monthEnd.setLeave_dutyLeave(humanResourceBean.calStaffLeave(stf, LeaveType.DutyLeave, getFromDate(), getToDate()));
             monthEnd.setExtraDutyDays(fetchExtraDutyDays(stf));
             monthEnd.setLatedays(fetchLateDays(stf));
             monthEnd.setDayoff(fetchDayOff(stf));
