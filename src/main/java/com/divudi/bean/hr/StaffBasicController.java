@@ -22,6 +22,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -270,6 +271,32 @@ public class StaffBasicController implements Serializable {
         }
 
         return items;
+    }
+    
+    public void resetDate() {
+        
+        for(StaffPaysheetComponent stf : items){
+            Calendar date = Calendar.getInstance();
+            if(stf.getFromDate()!=null){
+            date.setTime(stf.getFromDate());
+            date.set(Calendar.YEAR, 2014);
+            date.set(Calendar.MONTH, 01);
+              stf.setFromDate(date.getTime());
+            }
+            
+            if(stf.getToDate()!=null){
+              
+              date.setTime(stf.getToDate());
+            date.setTime(stf.getToDate());
+            date.set(Calendar.YEAR, 2015);
+            date.set(Calendar.MONTH, 11);
+            stf.setToDate(date.getTime());
+            }
+            
+            getStaffPaysheetComponentFacade().edit(stf);
+            
+          
+        }
     }
 
     public PaysheetComponent getBasicCompnent() {
