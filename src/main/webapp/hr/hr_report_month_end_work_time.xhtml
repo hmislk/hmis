@@ -94,7 +94,8 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Over Time Value">
-                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond}">                                       
+                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond}">  
+                                          <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Hour">
@@ -105,6 +106,7 @@
 
                                 <p:column headerText="Extra Duty Value">
                                     <h:outputLabel value="#{ss.extraDutyValue}">
+                                          <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 

@@ -615,7 +615,7 @@ public class HrReportController implements Serializable {
         sql = "select ss.dayOfWeek,"
                 + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
                 + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified),"
-                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime)"
+                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.basicPerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
