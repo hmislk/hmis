@@ -31,6 +31,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -548,6 +549,14 @@ public class AdmissionController implements Serializable {
     @Inject
     private InwardBeanController inwardBean;
 
+    
+    public void addPatientRoom(){
+        PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
+        getCurrent().setCurrentPatientRoom(currentPatientRoom);
+        getFacade().edit(getCurrent());
+        JsfUtil.addSuccessMessage("Patient room added");
+    }
+    
     public void saveSelected() {
 
         if (errorCheck()) {
