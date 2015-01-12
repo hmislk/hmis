@@ -938,31 +938,30 @@ public class StoreSaleReport implements Serializable {
 
     }
     
-//    List<Bill> getTransIssueValueByDate(Bill bill) {
-//
-//        String sql;
-//        Map m = new HashMap();
-//        
-//        sql = "SELECT b FROM Bill b "
-//                + " WHERE b.billType=:btp "
-//                + " and type(b)=:cl "
-//                + " and b.createdAt between :fd and :td "
-//                + " and b.singleBillItem.item.departmentType ";
-//        
-//        m.put("d", getDepartment());
-//        m.put("fd", fd);
-//        m.put("td", td);
-//        m.put("cl", bill.getClass());
-//        m.put("btp", BillType.StoreTransferIssue);
-//        m.put(m, DepartmentType.Inventry);
-//        m.put("tde", getToDepartment());
-//        sql = "select sum(i.netTotal) from Bill i where i.department=:d and i.toDepartment=:tde"
-//                + " and i.billType=:btp and type(i)=:cl and i.createdAt between :fd and :td order by i.deptId ";
-//        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-//
-//        return saleValue;
-//
-//    }
+    List<Bill> getTransIssueValueByDate(Bill bill) {
+
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "SELECT b FROM Bill b "
+                + " WHERE b.billType=:btp "
+                + " and type(b)=:cl "
+                + " and b.createdAt between :fd and :td "
+                + " and b.singleBillItem.item.departmentType=:dty "
+                + " and b.department=:dep "
+                + " and i.toDepartment=:tdep ";
+        
+        m.put("dep", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", bill.getClass());
+        m.put("btp", BillType.StoreTransferIssue);
+        m.put("dty", DepartmentType.Inventry);
+        m.put("tdep", getToDepartment());
+        
+        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
     
     private double calGrantNetTotalIssue(Bill bill) {
         //   List<Stock> billedSummery;

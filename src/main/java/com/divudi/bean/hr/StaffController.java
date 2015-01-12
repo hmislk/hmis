@@ -503,6 +503,25 @@ public class StaffController implements Serializable {
 
         return selectedItems;
     }
+    
+    public void resetWorkingHour() {
+        String sql = "";
+        HashMap hm = new HashMap();       
+            sql = "select c from Staff c "
+                    + " where c.retired=false "
+                    + " and type(c)!=:class"
+                    + " order by c.person.name";
+       
+        hm.put("class", Consultant.class);
+        selectedItems = getFacade().findBySQL(sql, hm);
+        
+        for(Staff stf : selectedItems){
+           stf.setWorkingTimeForOverTimePerWeek(45);
+           stf.setWorkingTimeForNoPayPerWeek(28);
+           getFacade().edit(stf);
+        }
+        
+    }
 
     public List<Staff> completeItems(String qry) {
         HashMap hm = new HashMap();
