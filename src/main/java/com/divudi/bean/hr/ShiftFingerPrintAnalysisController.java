@@ -182,6 +182,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
                 fingerPrintRecordFacade.create(fingerPrintRecordIn);
                 fingerPrintRecords.add(fingerPrintRecordIn);
+
+                ss.setStartRecord(fingerPrintRecordIn);
             }
 
         }
@@ -199,6 +201,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
                 fingerPrintRecordFacade.create(fingerPrintRecordOut);
                 fingerPrintRecords.add(fingerPrintRecordOut);
+                ss.setEndRecord(fingerPrintRecordOut);
             }
 
         }
@@ -217,6 +220,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
                 fingerPrintRecordFacade.create(fingerPrintRecordIn);
                 fingerPrintRecords.add(fingerPrintRecordIn);
+                ss.setStartRecord(fingerPrintRecordIn);
             }
 
             if (fingerPrintRecordOut == null) {
@@ -229,6 +233,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
                 fingerPrintRecordFacade.create(fingerPrintRecordOut);
                 fingerPrintRecords.add(fingerPrintRecordOut);
+                ss.setEndRecord(fingerPrintRecordOut);
             }
 
         }
@@ -244,6 +249,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordIn.setAllowedExtraDuty(true);
                 fingerPrintRecordOut.setAllowedExtraDuty(true);
                 break;
+        }
+
+        if (fingerPrintRecordIn != null && fingerPrintRecordIn.getId()!= null) {
+            fingerPrintRecordFacade.edit(fingerPrintRecordIn);
+        }
+
+        if (fingerPrintRecordOut != null && fingerPrintRecordOut.getId()!= null) {
+            fingerPrintRecordFacade.edit(fingerPrintRecordOut);
         }
 
     }
