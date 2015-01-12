@@ -210,6 +210,7 @@ public class StaffShift implements Serializable {
             case CasualHalf:
             case Lieu:
             case LieuHalf:
+            case DutyLeave:
                 leavedTime = 0;
                 break;
             case No_Pay:
@@ -376,6 +377,7 @@ public class StaffShift implements Serializable {
             case Annual:
             case Casual:
             case Lieu:
+            case DutyLeave:
                 setLeavedTime((shift.getLeaveHourFull() * 60 * 60) / div);
                 break;
             case Maternity1st:
