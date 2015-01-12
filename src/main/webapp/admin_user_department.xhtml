@@ -20,7 +20,10 @@
                 <p:panel header="Allow user to log on to Departments" >
                     <h:panelGrid  columns="2" >                          
                         <h:outputLabel value="Select User"/>
-                        <p:autoComplete id="user" forceSelection="true" converter="webUs"  completeMethod="#{webUserController.completeUser}" var="us" itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  value="#{userDepartmentController.selectedUser}" >
+                        <p:autoComplete id="user" forceSelection="true" converter="webUs"  
+                                        completeMethod="#{webUserController.completeUser}" var="us" 
+                                        itemLabel="#{us.webUserPerson.name}" itemValue="#{us}" 
+                                        value="#{userDepartmentController.selectedUser}" >
                             <f:ajax event="itemSelect" execute="user" render="ins" />
                         </p:autoComplete>
                     </h:panelGrid>
