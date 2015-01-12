@@ -1015,6 +1015,10 @@ public class StoreSaleReport implements Serializable {
         
         
         billItem = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        grantTotal = 0.0;
+//        for (BillItem bi:billItem){
+//            grantTotal+=getGrantTotal();
+//        }
 
     }
     
