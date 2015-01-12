@@ -87,10 +87,9 @@
                     </p:column>     
 
                     <p:column headerText="Starting Record Frm Attendence"> 
+                        
                         <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
                             <h:panelGroup  >
-
-
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
@@ -118,6 +117,7 @@
                     </p:column>
 
                     <p:column headerText="Starting Record Varified">
+                        
                         <h:panelGroup id="strRc"       >
                             <h:panelGroup rendered="#{sts.startRecord ne null}" >
                                 <p:calendar 
@@ -139,7 +139,9 @@
                     </p:column>
 
                     <p:column headerText="Ending Record  Varified">
+                       
                         <h:panelGroup id="endRc">
+                             
                             <h:panelGroup rendered="#{sts.endRecord ne null}">
                                 <p:calendar 
                                     rendered="#{sts.nextStaffShift eq null}"

@@ -222,9 +222,8 @@ public class StaffShift implements Serializable {
             case Maternity1stHalf:
             case Maternity2nd:
             case Maternity2ndHalf:
-                leavedTimeOther=0;
+                leavedTimeOther = 0;
                 break;
-                
 
         }
 
@@ -554,6 +553,10 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeWithStartOrEndRecord() {
+        if (getStartRecord() == null || getEndRecord() == null) {
+            return;
+        }
+
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
         Long inSecond = 0l;
@@ -588,7 +591,6 @@ public class StaffShift implements Serializable {
         //Over Time From Start Record Varified 
         extraTimeFromStartRecordVarified = 0;
         if (getStartRecord().isAllowedExtraDuty()) {
-
             if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
@@ -611,6 +613,10 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeComplete() {
+        if (getStartRecord() == null || getEndRecord() == null) {
+            return;
+        }
+
         if (getShift() != null) {
             DayType dayType = getShift().getDayType();
 

@@ -51,7 +51,7 @@
                                 <h:outputLabel  value="#{labReportSearchByInstitutionController.toDate}" >
                                     <f:convertDateTime pattern="dd MM yyyy"/>
                                 </h:outputLabel>
-
+                                <h:outputLabel value=" - Bills" />
                             </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
@@ -144,6 +144,18 @@
                                      var="bill"  
                                      style="min-width: 100%;"  
                                      >
+                            <f:facet name="header">
+                                <h:outputLabel value="Report by #{labReportSearchByInstitutionController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - " />
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - Cancel Bills" />
+                            </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
@@ -235,6 +247,18 @@
                                      var="bill"  
                                      style="min-width: 100%;"  
                                      >
+                            <f:facet name="header">
+                                <h:outputLabel value="Report by #{labReportSearchByInstitutionController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - " />
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - Refund Bills" />
+                            </f:facet>
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
