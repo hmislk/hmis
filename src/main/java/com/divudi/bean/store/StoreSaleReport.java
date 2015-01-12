@@ -993,7 +993,7 @@ public class StoreSaleReport implements Serializable {
                 + " WHERE b.bill.billType=:btp "
                 //+ " and type(b)=:cl "
                 + " and b.bill.createdAt between :fd and :td "
-                + " and b.bill.item.departmentType=:dty ";
+                + " and b.item.departmentType=:dty ";
         
         if(department != null){
            sql += " and b.bill.department=:dep ";
@@ -1002,7 +1002,7 @@ public class StoreSaleReport implements Serializable {
         }
         
         if(toDepartment != null){
-            sql += " and i.bill.toDepartment=:tdep ";
+            sql += " and b.bill.toDepartment=:tdep ";
             m.put("tdep", getToDepartment());
         }
         
@@ -1014,7 +1014,7 @@ public class StoreSaleReport implements Serializable {
         m.put("dty", DepartmentType.Inventry);
         
         
-        billItem = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItem = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
     
