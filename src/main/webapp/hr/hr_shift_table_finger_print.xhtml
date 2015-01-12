@@ -39,22 +39,22 @@
                                  actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                  action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
                                  onclick="onSubmitButton();" /> 
-             
-                   
+
+
                 <p:commandButton value="SAVE"
                                  process="lst"
                                  update="lst"
                                  action="#{shiftFingerPrintAnalysisController.save()}" 
                                  onclick="onSubmitButton();"/>
             </h:panelGrid>
-            
-               <p:commandButton value="Reset and Fill"
-                                 process="@this frmDate toDate roster"
-                                 update="lst"
-                                 actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                 action="#{shiftFingerPrintAnalysisController.createShiftTableReset()}" 
-                                 onclick="onSubmitButton();" 
-                                 style="float: right;"/> 
+
+            <p:commandButton value="Reset and Fill"
+                             process="@this frmDate toDate roster"
+                             update="lst"
+                             actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                             action="#{shiftFingerPrintAnalysisController.createShiftTableReset()}" 
+                             onclick="onSubmitButton();" 
+                             style="float: right;"/> 
 
             <p:dataGrid  id="lst" columns="1" var="data"
                          value="#{shiftFingerPrintAnalysisController.shiftTables}" >
@@ -107,9 +107,13 @@
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
                                                    itemLabel="#{i.timeLabel}" itemValue="#{i}" />
-                                    <f:ajax event="change" execute="@this" render="strRc"
+                                    <f:ajax event="change" execute="@this" render="strRc recSt"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
+                            </h:panelGroup>
+                            <h:panelGroup id="recSt" rendered="#{sts.startRecord ne null}">
+                                <br/>
+                                <h:outputLabel value="#{sts.startRecord.comments}" />
                             </h:panelGroup>
                         </h:panelGroup>
                         <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
@@ -121,9 +125,13 @@
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
-                                    <f:ajax event="change" execute="@this" render="endRc"
+                                    <f:ajax event="change" execute="@this" render="endRc recEnd"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>   
+                            </h:panelGroup>
+                            <h:panelGroup id="recEnd" rendered="#{sts.endRecord ne null}" >
+                                <br/>
+                                <h:outputLabel  value="#{sts.endRecord.comments}" />
                             </h:panelGroup>
                         </h:panelGroup>
                         <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
