@@ -23,10 +23,21 @@ public class MonthEndRecord {
     double leave_medical;
     double leave_nopay;
     double leave_lieuleave;
+    double leave_dutyLeave;
     double overtime;
     double latedays;
     double absent;
     double dayoff;
+
+    public double getLeave_dutyLeave() {
+        return leave_dutyLeave;
+    }
+
+    public void setLeave_dutyLeave(double leave_dutyLeave) {
+        this.leave_dutyLeave = leave_dutyLeave;
+    }
+    
+    
 
     public Department getDepartment() {
         return department;

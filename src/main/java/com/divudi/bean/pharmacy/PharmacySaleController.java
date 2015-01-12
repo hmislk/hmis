@@ -827,7 +827,7 @@ public class PharmacySaleController implements Serializable {
             discount = discount + b.getDiscount();
             getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
         }
-
+        System.out.println("2.discount = " + discount);
         //   netTot = netTot + getPreBill().getServiceCharge();
         getPreBill().setNetTotal(netTot);
         getPreBill().setTotal(grossTot);
@@ -1336,7 +1336,7 @@ public class PharmacySaleController implements Serializable {
             discount = discount + b.getDiscount();
             getPreBill().setTotal(getPreBill().getTotal() + b.getGrossValue());
         }
-
+        System.out.println("1.discount = " + discount);
         netTot = netTot + getPreBill().getServiceCharge();
 
         getPreBill().setNetTotal(netTot);
@@ -1401,7 +1401,7 @@ public class PharmacySaleController implements Serializable {
         //System.out.println("bi.getRate() = " + bi.getRate());
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getNetRate());
-//        bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
+        bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
         //System.out.println("bi.getNetValue() = " + bi.getNetValue());
 
     }

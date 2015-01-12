@@ -93,6 +93,7 @@ public class StaffLeave implements Serializable {
             case Casual:
             case Lieu:
             case No_Pay:
+            case DutyLeave:
                 qty = 1;
                 break;
             case AnnualHalf:

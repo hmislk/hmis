@@ -55,6 +55,8 @@ public class LeaveForm extends HrForm {
     public void setLeaveType(LeaveType leaveType) {
         this.leaveType = leaveType;
     }
+
+    
     
     
   

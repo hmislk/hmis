@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
 
     <body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -29,10 +30,8 @@
                                             <p:inputText autocomplete="off" required="true" value="#{webUserController.current.webUserPerson.address}" ></p:inputText>
                                             <h:outputText value="Mobile" ></h:outputText>
                                             <p:inputMask mask="999-9999999" required="true" value="#{webUserController.current.webUserPerson.mobile}" ></p:inputMask>
-                                            <h:outputText value="Speciality" ></h:outputText>
-                                            <p:autoComplete value="#{webUserController.speciality}" forceSelection="true" converter="specilityCon"
-                                                            completeMethod="#{specialityController.completeSpeciality}" var="s"
-                                                            itemLabel="#{s.name}" itemValue="#{s}" ></p:autoComplete>
+                                            <h:outputText value="Speciality" ></h:outputText>                                            
+                                            <autocomplete:completeSpeciality value="#{webUserController.speciality}"/>
                                         </h:panelGrid>
 
                                     </p:panel>

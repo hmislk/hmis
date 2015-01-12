@@ -269,7 +269,7 @@ public class PharmacySaleReport implements Serializable {
                 + " and type(i)=:cl "
                + " and i.createdAt between :fd and :td ";
 
-        sql += "  order by i.bill.deptId ";
+        sql += "  order by i.deptId ";
         double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return saleValue;
