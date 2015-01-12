@@ -107,14 +107,11 @@
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
                                                    itemLabel="#{i.timeLabel}" itemValue="#{i}" />
-                                    <f:ajax event="change" execute="@this" render="strRc recSt"
+                                    <f:ajax event="change" execute="@this" render="strRc"
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerStartRecord(sts)}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
-                            <h:panelGroup id="recSt" rendered="#{sts.startRecord ne null}">
-                                <br/>
-                                <h:outputLabel value="#{sts.startRecord.comments}" />
-                            </h:panelGroup>
+                           
                         </h:panelGroup>
                         <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
                     </p:column>
@@ -125,14 +122,11 @@
                                 <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
-                                    <f:ajax event="change" execute="@this" render="endRc recEnd"
+                                    <f:ajax event="change" execute="@this" render="endRc "
                                             listener="#{shiftFingerPrintAnalysisController.fingerPrintSelectListenerEndRecord(sts)}"/>
                                 </p:selectOneMenu>   
                             </h:panelGroup>
-                            <h:panelGroup id="recEnd" rendered="#{sts.endRecord ne null}" >
-                                <br/>
-                                <h:outputLabel  value="#{sts.endRecord.comments}" />
-                            </h:panelGroup>
+                           
                         </h:panelGroup>
                         <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
                     </p:column>
@@ -155,7 +149,7 @@
                                     <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
                                 </p:outputLabel>
                                 <h:panelGroup rendered="#{sts.startRecord.allowedExtraDuty}">
-                                    <h:outputLabel value="E"/>
+                                    <h:outputLabel value="Extra"/>
                                 </h:panelGroup>
                             </h:panelGroup>
                             <h:outputLabel value="No Records" rendered="#{sts.startRecord eq null}"/>
@@ -181,7 +175,7 @@
                                     <f:convertDateTime   pattern="dd MM yy hh mm ss a"/>
                                 </p:outputLabel>
                                 <h:panelGroup rendered="#{sts.endRecord.allowedExtraDuty}">
-                                    <h:outputLabel value="E"/>
+                                    <h:outputLabel value="Extra"/>
                                 </h:panelGroup>
                             </h:panelGroup> 
                             <h:outputLabel value="No Records" rendered="#{sts.endRecord eq null}"/>
