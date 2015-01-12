@@ -7,7 +7,10 @@
                 xmlns:f="http://java.sun.com/jsf/core">
 
     <ui:define name="content">
-        <h:form>          
+        <h:form>
+            <p:panel>
+                <p:commandButton value="Reset Date" action="#{staffBasicController.resetDate()}" ajax="false"/>
+            </p:panel>
             <p:dataTable id="lst" value="#{staffBasicController.items2}" 
                          filteredValue="#{staffBasicController.filteredStaffPaysheet}"
                          var="i"   rowKey="#{i.id}"  >

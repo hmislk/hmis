@@ -8,6 +8,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.report.*;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.DatedBills;
 import com.divudi.data.dataStructure.PharmacyDetail;
@@ -936,6 +937,32 @@ public class StoreSaleReport implements Serializable {
         return saleValue;
 
     }
+    
+//    List<Bill> getTransIssueValueByDate(Bill bill) {
+//
+//        String sql;
+//        Map m = new HashMap();
+//        
+//        sql = "SELECT b FROM Bill b "
+//                + " WHERE b.billType=:btp "
+//                + " and type(b)=:cl "
+//                + " and b.createdAt between :fd and :td "
+//                + " and b.singleBillItem.item.departmentType ";
+//        
+//        m.put("d", getDepartment());
+//        m.put("fd", fd);
+//        m.put("td", td);
+//        m.put("cl", bill.getClass());
+//        m.put("btp", BillType.StoreTransferIssue);
+//        m.put(m, DepartmentType.Inventry);
+//        m.put("tde", getToDepartment());
+//        sql = "select sum(i.netTotal) from Bill i where i.department=:d and i.toDepartment=:tde"
+//                + " and i.billType=:btp and type(i)=:cl and i.createdAt between :fd and :td order by i.deptId ";
+//        double saleValue = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+//
+//        return saleValue;
+//
+//    }
     
     private double calGrantNetTotalIssue(Bill bill) {
         //   List<Stock> billedSummery;
