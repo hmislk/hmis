@@ -18,6 +18,7 @@ import com.divudi.data.table.String1Value3;
 import com.divudi.data.table.String2Value4;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
@@ -61,6 +62,9 @@ public class StoreSaleReport implements Serializable {
     private double grantCashTotal;
     private double grantCreditTotal;
     private double grantCardTotal;
+    double billedBillTotal;
+    double cancelledBillTotal;
+    double refundBillTotal;
     ///////
     private PharmacySummery billedSummery;
     private PharmacyDetail billedDetail;
@@ -68,6 +72,12 @@ public class StoreSaleReport implements Serializable {
     private PharmacyDetail refundedDetail;
     private PharmacyPaymetMethodSummery billedPaymentSummery;
   //  private List<DatedBills> billDetail;
+    List<Bill> billedBills;
+    List<Bill> cancelledBills;
+    List<Bill> refundBills;
+    
+    List<BillItem> billItem; 
+            
     
     Department toDepartment;
 
@@ -909,6 +919,7 @@ public class StoreSaleReport implements Serializable {
             nowDate = nc.getTime();
 
         }
+        
 
         billedSummery.setBilledTotal(calGrantNetTotalIssue(new BilledBill()));
         billedSummery.setCancelledTotal(calGrantNetTotalIssue(new CancelledBill()));
@@ -938,6 +949,16 @@ public class StoreSaleReport implements Serializable {
 
     }
     
+    public void fetchTrasferAssetBills() {
+        billedBills = getTransIssueValueByDate(new BilledBill());
+        cancelledBills = getTransIssueValueByDate(new CancelledBill());
+        refundBills = getTransIssueValueByDate(new RefundBill());
+        
+        billedBillTotal = getTransIssueValueByDateTotal(new BilledBill());
+        cancelledBillTotal = getTransIssueValueByDateTotal(new CancelledBill());
+        refundBillTotal = getTransIssueValueByDateTotal(new RefundBill());
+    }
+    
     List<Bill> getTransIssueValueByDate(Bill bill) {
 
         String sql;
@@ -960,6 +981,65 @@ public class StoreSaleReport implements Serializable {
         m.put("tdep", getToDepartment());
         
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    public void getTransIssueValueByDate() {
+
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "SELECT b FROM BillItem b "
+                + " WHERE b.bill.billType=:btp "
+                //+ " and type(b)=:cl "
+                + " and b.bill.createdAt between :fd and :td "
+                + " and b.bill.item.departmentType=:dty ";
+        
+        if(department != null){
+           sql += " and b.bill.department=:dep ";
+           m.put("dep", getDepartment());
+                
+        }
+        
+        if(toDepartment != null){
+            sql += " and i.bill.toDepartment=:tdep ";
+            m.put("tdep", getToDepartment());
+        }
+        
+        
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        //m.put("cl", bill.getClass());
+        m.put("btp", BillType.StoreTransferIssue);
+        m.put("dty", DepartmentType.Inventry);
+        
+        
+        billItem = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    double getTransIssueValueByDateTotal(Bill bill) {
+
+        String sql;
+        Map m = new HashMap();
+        
+        sql = "SELECT sum(b.netTotal) FROM Bill b "
+                + " WHERE b.billType=:btp "
+                + " and type(b)=:cl "
+                + " and b.createdAt between :fd and :td "
+                + " and b.singleBillItem.item.departmentType=:dty "
+                + " and b.department=:dep "
+                + " and i.toDepartment=:tdep ";
+        
+        m.put("dep", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", bill.getClass());
+        m.put("btp", BillType.StoreTransferIssue);
+        m.put("dty", DepartmentType.Inventry);
+        m.put("tdep", getToDepartment());
+        
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
     
@@ -1010,6 +1090,16 @@ public class StoreSaleReport implements Serializable {
         return fromDate;
     }
 
+    public List<BillItem> getBillItem() {
+        return billItem;
+    }
+
+    public void setBillItem(List<BillItem> billItem) {
+        this.billItem = billItem;
+    }
+    
+    
+
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
@@ -1021,6 +1111,56 @@ public class StoreSaleReport implements Serializable {
         return toDate;
     }
 
+    public double getBilledBillTotal() {
+        return billedBillTotal;
+    }
+
+    public void setBilledBillTotal(double billedBillTotal) {
+        this.billedBillTotal = billedBillTotal;
+    }
+
+    public double getCancelledBillTotal() {
+        return cancelledBillTotal;
+    }
+
+    public void setCancelledBillTotal(double cancelledBillTotal) {
+        this.cancelledBillTotal = cancelledBillTotal;
+    }
+
+    public double getRefundBillTotal() {
+        return refundBillTotal;
+    }
+
+    public void setRefundBillTotal(double refundBillTotal) {
+        this.refundBillTotal = refundBillTotal;
+    }
+
+    public List<Bill> getBilledBills() {
+        return billedBills;
+    }
+
+    public void setBilledBills(List<Bill> billedBills) {
+        this.billedBills = billedBills;
+    }
+
+    public List<Bill> getCancelledBills() {
+        return cancelledBills;
+    }
+
+    public void setCancelledBills(List<Bill> cancelledBills) {
+        this.cancelledBills = cancelledBills;
+    }
+
+    public List<Bill> getRefundBills() {
+        return refundBills;
+    }
+
+    public void setRefundBills(List<Bill> refundBills) {
+        this.refundBills = refundBills;
+    }
+    
+    
+    
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
