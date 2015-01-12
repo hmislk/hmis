@@ -186,7 +186,7 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-//        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.recordTimeStamp";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
