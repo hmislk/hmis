@@ -348,6 +348,23 @@ public class AdmissionController implements Serializable {
         current = new Admission();
     }
 
+    List<Admission> admissionsWithErrors;
+
+    public List<Admission> getAdmissionsWithErrors() {
+        String sql;
+        sql = "select p from Admission p where p.retired=false "
+                + "and (p.patient is null or p.bhtNo is null)";
+        admissionsWithErrors = getFacade().findBySQL(sql, 20);
+        if (admissionsWithErrors == null) {
+            admissionsWithErrors = new ArrayList<>();
+        }
+        return admissionsWithErrors;
+    }
+
+    public void setAdmissionsWithErrors(List<Admission> admissionsWithErrors) {
+        this.admissionsWithErrors = admissionsWithErrors;
+    }
+
     public List<Admission> completeBht(String query) {
         List<Admission> suggestions;
         String sql;
@@ -499,7 +516,6 @@ public class AdmissionController implements Serializable {
 //            UtilityController.addErrorMessage("Please Select Referring Doctor Speciality");
 //            return true;
 //        }
-
         if (getPatientTabId().toString().equals("tabNewPt")) {
             if ("".equals(getAgeText())) {
                 UtilityController.addErrorMessage("Patient Age Should be Typed");
@@ -549,14 +565,50 @@ public class AdmissionController implements Serializable {
     @Inject
     private InwardBeanController inwardBean;
 
-    
-    public void addPatientRoom(){
+    public void addPatientRoom() {
         PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
         getCurrent().setCurrentPatientRoom(currentPatientRoom);
         getFacade().edit(getCurrent());
         JsfUtil.addSuccessMessage("Patient room added");
     }
-    
+
+    public void updateSelected() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission");
+            return;
+        }
+        getFacade().edit(current);
+        JsfUtil.addSuccessMessage("Updated");
+    }
+
+    public void addPatient() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission");
+            return;
+        }
+        Person p = new Person();
+        getPersonFacade().create(p);
+        Patient pt = new Patient();
+        pt.setPerson(p);
+        getPatientFacade().create(pt);
+        getCurrent().setPatient(pt);
+        getFacade().edit(current);
+        JsfUtil.addSuccessMessage("Patient Added. Go to Edit BHT and edit. ALso add a patient room");
+
+    }
+
+    public void addGuardian() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission");
+            return;
+        }
+        Person p = new Person();
+        getPersonFacade().create(p);
+        getCurrent().setGuardian(p);
+        JsfUtil.addSuccessMessage("Patient Added. Go to Edit BHT and edit. ALso add a patient room");
+
+    }
+
     public void saveSelected() {
 
         if (errorCheck()) {
