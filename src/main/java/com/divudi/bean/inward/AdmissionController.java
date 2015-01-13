@@ -608,6 +608,31 @@ public class AdmissionController implements Serializable {
         JsfUtil.addSuccessMessage("Patient Added. Go to Edit BHT and edit. ALso add a patient room");
 
     }
+    
+    public void updateBHTNo(){
+        System.out.println("current.getBhtNo() = " + current.getBhtNo());
+        System.out.println("current.getCurrentPatientRoom() = " + patientRoom.getRoomFacilityCharge());
+        System.out.println("current.getAdmissionType() = " + current.getAdmissionType());
+        if (current.getBhtNo()==null || current.getBhtNo().isEmpty()) {
+            UtilityController.addErrorMessage("BHT NO");
+            return;
+        }
+        if (patientRoom.getRoomFacilityCharge()==null) {
+            UtilityController.addErrorMessage("Room...");
+            return;
+        }
+        if (current.getAdmissionType()==null) {
+            UtilityController.addErrorMessage("Admission Type.");
+            return;
+        }
+        addPatient();
+        addGuardian();
+        addPatientRoom();
+        System.out.println("BHT No = " + current.getBhtNo());
+        getFacade().edit(current);
+        current=new Admission();
+        patientRoom=new PatientRoom();
+    }
 
     public void saveSelected() {
 
