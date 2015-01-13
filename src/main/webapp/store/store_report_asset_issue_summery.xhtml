@@ -91,11 +91,11 @@
                         <h:outputLabel value="#{i.item.name}" />
                     </p:column>
                     
-                    <p:column headerText="Item Description">
+                    <p:column headerText="Quentity">
                         <f:facet name="header">
-                            <h:outputLabel value="Item Description" />
+                            <h:outputLabel value="Quentity" />
                         </f:facet>
-                        <h:outputLabel value="#{i.pharmaceuticalBillItem.stock.stock}" />
+                        <h:outputLabel value="#{i.qty}" />
                     </p:column>
                     
                     <p:column headerText="Cost">
@@ -109,7 +109,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Value" />
                         </f:facet>
-                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate*i.pharmaceuticalBillItem.stock.stock}" />
+                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate*i.qty}" />
                     </p:column>
                     
                     <p:column headerText="Location From">
