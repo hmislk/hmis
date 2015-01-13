@@ -400,6 +400,32 @@ public class PharmacySaleReport implements Serializable {
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    private List<Object[]> fetchSaleValueByPaymentmethodByBill() {
+        String sql;
+
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", BillType.PharmacySale);
+        sql = "select FUNC('Date',i.createdAt),"
+                + " i.paymentMethod,"
+                + " sum(i.netTotal)"
+                + " from Bill i "
+                + "where i.referenceBill.department=:d "
+//                + " and i.retired=false "
+                + " and i.retired=false "
+                + " and i.billType=:btp "
+                + "and type(i)!=:cl "
+                + "and i.createdAt between :fd and :td ";
+
+        sql += " group by FUNC('Date',i.createdAt),i.paymentMethod"
+                + " order by i.createdAt,i.paymentMethod ";
+        return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     private double getSaleValueByDepartment(Date date) {
 
@@ -3139,6 +3165,69 @@ public class PharmacySaleReport implements Serializable {
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
 
         List<Object[]> list = fetchSaleValueByPaymentmethod();
+        TreeMap<Date, String2Value4> hm = new TreeMap<>();
+
+        for (Object[] obj : list) {
+            Date date = (Date) obj[0];
+            PaymentMethod pm = (PaymentMethod) obj[1];
+            Double value = (Double) obj[2];
+
+            String2Value4 newRow = (String2Value4) hm.get(date);
+
+            if (newRow == null) {
+                newRow = new String2Value4();
+                newRow.setDate(date);
+            } else {
+                hm.remove(date);
+            }
+
+            switch (pm) {
+                case Cash:
+                    newRow.setValue1(value);
+                    break;
+                case Credit:
+                    newRow.setValue2(value);
+                    break;
+                case Card:
+                    newRow.setValue3(value);
+                    break;
+            }
+
+            hm.put(date, newRow);
+
+        }
+
+        List<String2Value4> listRow = new ArrayList<>();
+        Iterator it = hm.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pairs = (Map.Entry) it.next();
+            System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            listRow.add((String2Value4) pairs.getValue());
+//            it.remove(); // avoids a ConcurrentModificationException
+        }
+
+        System.err.println(listRow);
+
+        billedPaymentSummery.setBills(listRow);
+
+        billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash));
+
+        ////////////
+        billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit));
+
+        ////////////////
+        billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card));
+
+        grantCardTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card);
+        grantCashTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash);
+        grantCreditTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit);
+
+    }
+    
+    public void createSalePaymentMethodByBill() {
+        billedPaymentSummery = new PharmacyPaymetMethodSummery();
+
+        List<Object[]> list = fetchSaleValueByPaymentmethodByBill();
         TreeMap<Date, String2Value4> hm = new TreeMap<>();
 
         for (Object[] obj : list) {
