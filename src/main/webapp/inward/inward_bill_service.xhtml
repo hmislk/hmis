@@ -6,6 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:bi="http://java.sun.com/jsf/composite/bill"
                 xmlns:in="http://java.sun.com/jsf/composite/inward">
 
 
@@ -256,20 +257,12 @@
                 </p:panel>
 
                 <h:panelGroup rendered="#{billBhtController.printPreview}" >
-                    <div class="nonPrintBlock" >
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-                        <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.makeNull()}" onclick="onSubmitButton();" >
-                        </p:commandButton>
-                        <p:commandButton ajax="false" value="Batch Cancel"  action="#{billBhtController.cancellAll}" style="float: right;"
-                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                     return false;"/>
-                    </div>
+
                     <div >
 
 
-                        <h:panelGroup   id="gpBillPreview"   >
+
+<!--                        <h:panelGroup   id="gpBillPreview"   >
 
                             <div>
 
@@ -293,7 +286,7 @@
 
                                             <div class="paymentPrinting" >
                                                 <h:outputLabel value="#{bill.paymentMethod}">
-                                                    
+
                                                 </h:outputLabel>
                                             </div>
 
@@ -341,7 +334,7 @@
                                                         </h:panelGroup>
                                                     </h:column>
                                                     <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" >
-                                                       
+
                                                         <h:outputLabel  value="#{bip.billItem.grossValue}" 
                                                                         rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
                                                                         style="margin: 4px; font-size: 11px!important;"  styleClass="noPrintButton" >
@@ -358,7 +351,7 @@
                                                     <h:column   rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">                                                       
                                                         <h:outputLabel value="#{bip.billItem.netValue}" 
                                                                        rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}"
-                                                                        style="margin: 4px; font-size: 11px!important;"  styleClass="noPrintButton"   >
+                                                                       style="margin: 4px; font-size: 11px!important;"  styleClass="noPrintButton"   >
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </h:column>
@@ -373,11 +366,52 @@
                                 </ui:repeat>
 
                             </div>
+                            
+                            
+
+                        </h:panelGroup>-->
 
 
-                        </h:panelGroup>
 
+                        <p:panel rendered="#{billBhtController.printPreview}">
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
 
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+
+                                    <div class="nonPrintBlock">
+                                        <p:commandButton value="Print" ajax="false" action="#"  >
+                                            <p:printer target="gpBillPreview" ></p:printer>
+                                        </p:commandButton>
+
+                                        <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.prepareNewBill()}" >
+                                        </p:commandButton>
+                                    </div>
+                                    <h:panelGroup id="gpBillPreview">
+                                        <ui:repeat value="#{billBhtController.bills}" var="bill">
+                                            <bi:billBhtPrintRuhunu bill="#{bill}" dup="false"/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+
+                                    <div class="nonPrintBlock">
+                                        <p:commandButton value="Print" ajax="false" action="#"  >
+                                            <p:printer target="gpBillPreviewCoop" ></p:printer>
+                                        </p:commandButton>
+
+                                        <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.prepareNewBill()}" >
+                                        </p:commandButton>
+                                    </div>
+                                    <h:panelGroup id="gpBillPreviewCoop">
+                                        <ui:repeat value="#{billBhtController.bills}" var="b">
+                                            <bi:billBhtPrintCoop bill="#{b}" dup="false"/>                        
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+
+                        </p:panel>
 
 
                     </div>

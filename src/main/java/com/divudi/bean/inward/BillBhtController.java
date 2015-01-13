@@ -130,7 +130,7 @@ public class BillBhtController implements Serializable {
     private boolean printPreview;
     private List<Bill> bills;
     Date date;
-
+    
     public InwardBeanController getInwardBean() {
         return inwardBean;
     }
@@ -392,6 +392,8 @@ public class BillBhtController implements Serializable {
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
         temp.setCreater(getSessionController().getLoggedUser());
 
         temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill));
