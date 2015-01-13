@@ -43,15 +43,15 @@
                             <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}"/>
+                                    <h:outputLabel value="#{rowIndex+1}"/>
                                 </p:column>
                                 <p:column>
                                     <f:facet name="header">Item</f:facet>
-                                        <h:outputLabel value="#{bip.item.name}"/>
+                                    <h:outputLabel value="#{bip.item.name}"/>
                                 </p:column>
                                 <p:column>
                                     <f:facet name="header">Value</f:facet>
-                                        <h:outputLabel value="#{bip.netValue}"/>
+                                    <h:outputLabel value="#{bip.netValue}"/>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
@@ -62,7 +62,15 @@
 
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <pharmacy:grnReturn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+<!--                        <pharmacy:grnReturn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                            <pharmacy:grn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                            <pharmacy:grn_detail bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                        </h:panelGroup>
                     </h:panelGroup>
 
 

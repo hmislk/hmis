@@ -34,7 +34,15 @@
                     <h:panelGroup >
 
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:grnReturn bill="#{pharmacyBillSearch.bill}" />
+<!--                            <ph:grnReturn bill="#{pharmacyBillSearch.bill}" />-->
+                            
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                                <ph:grn bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                                <ph:grn_detail bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
 
                         </h:panelGroup>
 
