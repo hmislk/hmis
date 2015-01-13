@@ -34,7 +34,15 @@
 
 
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:transferIssue bill="#{pharmacyBillSearch.bill}"/>
+<!--                            <ph:transferIssue bill="#{pharmacyBillSearch.bill}"/>-->
+
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                                <ph:transferIssue bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                                <ph:transferIssue_detailed bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
 
                         </h:panelGroup>
 
