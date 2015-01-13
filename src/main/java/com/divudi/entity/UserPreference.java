@@ -45,6 +45,7 @@ public class UserPreference implements Serializable {
     boolean paymentMethodAllowedInInwardMatrix;
     boolean pharmacyBillPrabodha;
     boolean checkPaymentSchemeValidation;
+    boolean grnBillDetailed;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
@@ -202,6 +203,18 @@ public class UserPreference implements Serializable {
     public void setPrintLabelForOPdBill(boolean printLabelForOPdBill) {
         this.printLabelForOPdBill = printLabelForOPdBill;
     }
+
+    public boolean isGrnBillDetailed() {
+        return grnBillDetailed;
+    }
+
+    public void setGrnBillDetailed(boolean grnBillDetailed) {
+        this.grnBillDetailed = grnBillDetailed;
+    }
+
+    
+    
+    
 
     public String getPharmacyBillFooter() {
         return pharmacyBillFooter;
