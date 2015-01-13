@@ -5,95 +5,99 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
             <p:panel header="Leave Application Form">
-                
-                    
-                    <p:panel header="Search Leave Forms" >
-                        <p:panel>
-                            <p:panelGrid columns="2" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar value="#{staffLeaveApplicationFormController.fromDate}"
-                                            pattern="dd MMMM yyyy">     
-                                </p:calendar>   
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar value="#{staffLeaveApplicationFormController.toDate}"
-                                            pattern="dd MMMM yyyy">
-                                </p:calendar> 
-                                <h:outputLabel value="Staff : "/>
-                                <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
-                                <h:outputLabel value="Leave Type"/>
-                                <p:selectOneMenu  value="#{staffLeaveApplicationFormController.leaveType}">
-                                    <f:selectItem itemLabel="Select Day Type"/>
-                                    <f:selectItems value="#{enumController.leaveType}"/>
-                                </p:selectOneMenu> 
-                                <h:outputLabel value="Leave Approved Person"/>
-                                <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>                             
-                                <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
-                                <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
-                            </p:panelGrid>
-                        </p:panel>
-                        <p:panel>
-                            <p:dataTable value="#{staffLeaveApplicationFormController.leaveForms}" var="l" 
-                                         rowStyleClass="#{l.retired eq true ? 'redText':''}"
-                                          >
-                                <p:column headerText="View" >
-                                    <p:commandButton ajax="false" value="View" action="#{staffLeaveApplicationFormController.viewLeaveForm(l)}" disabled="#{l.retired}"></p:commandButton>
-                                </p:column>
-                                <p:column headerText="Staff">
-                                    <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="From">
-                                    <p:outputLabel value="#{l.fromDate}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-                                <p:column headerText="To">
-                                    <p:outputLabel value="#{l.toDate}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="Leave Type">
-                                    <p:outputLabel value="#{l.leaveType}" ></p:outputLabel>                                    
-                                </p:column>
-                                
-                                <p:column headerText="Shift Name">
-                                    <p:outputLabel value="#{l.shift.name}" ></p:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="Request Date">
-                                    <p:outputLabel value="#{l.requestedDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="Aproved By">
-                                    <p:outputLabel value="#{l.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="Leave Approved Date">
-                                    <p:outputLabel value="#{l.approvedAt}" >
-                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
-                                    </p:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="Comment">
-                                    <p:outputLabel value="#{l.comments}" ></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Creater">
-                                    <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
-                                    <br></br>
-                                    <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
+
+
+                <p:panel header="Search Leave Forms" >
+                    <p:panel>
+                        <p:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar value="#{staffLeaveApplicationFormController.fromDate}"
+                                        pattern="dd MMMM yyyy">     
+                            </p:calendar>   
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar value="#{staffLeaveApplicationFormController.toDate}"
+                                        pattern="dd MMMM yyyy">
+                            </p:calendar> 
+                            <h:outputLabel value="Staff : "/>
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
+                            <h:outputLabel value="Leave Type"/>
+                            <p:selectOneMenu  value="#{staffLeaveApplicationFormController.leaveType}">
+                                <f:selectItem itemLabel="Select Day Type"/>
+                                <f:selectItems value="#{enumController.leaveType}"/>
+                            </p:selectOneMenu> 
+                            <h:outputLabel value="Leave Approved Person"/>
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>                             
+                            <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
+                            <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                <pe:exporter type="xlsx" target="gpBillPreview" fileName="hr_report_attendance"  />
+                            </p:commandButton>
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                        </p:panelGrid>
                     </p:panel>
-                              
+                    <p:panel>
+                        <p:dataTable id="gpBillPreview" value="#{staffLeaveApplicationFormController.leaveForms}" var="l" 
+                                     rowStyleClass="#{l.retired eq true ? 'redText':''}"
+                                     >
+                            <p:column headerText="Staff">
+                                <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="From">
+                                <p:outputLabel value="#{l.fromDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="To">
+                                <p:outputLabel value="#{l.toDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Leave Type">
+                                <p:outputLabel value="#{l.leaveType}" ></p:outputLabel>                                    
+                            </p:column>
+
+                            <p:column headerText="Shift Name">
+                                <p:outputLabel value="#{l.staffShift.shift.name}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Request Date">
+                                <p:outputLabel value="#{l.requestedDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Aproved By">
+                                <p:outputLabel value="#{l.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Leave Approved Date">
+                                <p:outputLabel value="#{l.approvedAt}" >
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Comment">
+                                <p:outputLabel value="#{l.comments}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Creater">
+                                <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
+                                <br></br>
+                                <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </p:panel>
+
             </p:panel>
         </h:form>
     </ui:define> 
