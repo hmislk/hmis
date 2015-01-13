@@ -154,6 +154,13 @@ public class StaffAmendmentFormController implements Serializable {
         StaffShift toStaffShift1st = fetchStaffShift(getCurrAmendmentForm().getToDate(), getCurrAmendmentForm().getToShift(), getCurrAmendmentForm().getToStaff());
         StaffShift toStaffShift2nd = fetchStaffShift(getCurrAmendmentForm().getToDate(), getCurrAmendmentForm().getToShiftSecond(), getCurrAmendmentForm().getToStaff());
 
+        //Resetting Data
+        if(fromStaffShift1st!=null)fromStaffShift1st.reset();
+        if(fromStaffShift2nd!=null)fromStaffShift2nd.reset();
+        if(toStaffShift1st!=null)toStaffShift1st.reset();
+        if(toStaffShift2nd!=null)toStaffShift2nd.reset();
+        
+        
         //Create New Staff Shift if ToSatffShift is null
         if (getCurrAmendmentForm().getToShift() != null && toStaffShift1st == null) {
             toStaffShift1st = createToStaffShift(getCurrAmendmentForm().getToShift());

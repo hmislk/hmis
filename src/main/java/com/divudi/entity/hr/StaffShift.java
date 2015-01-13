@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -120,7 +121,6 @@ public class StaffShift implements Serializable {
     double leavedTime;
     private double leavedTimeNoPay;
     double leavedTimeOther;
-
     private boolean dayOff;
     private boolean sleepingDay;
     @Transient
@@ -149,6 +149,7 @@ public class StaffShift implements Serializable {
     boolean transChecked;
     int dayOfWeek;
     int leaveDivident;
+    
 
     public int getLeaveDivident() {
         return leaveDivident;
@@ -198,12 +199,36 @@ public class StaffShift implements Serializable {
         this.transChecked = transChecked;
     }
 
-    public void resetLeaveData() {
-        leavedTime = 0;
-        leavedTimeNoPay = 0;
-        leavedTimeOther = 0;
-        lieuQty = 0;
-        lieuPaymentAllowed = false;
+    public void resetLeaveData(LeaveType leaveType) {
+        if (leaveType == LeaveType.Lieu || leaveType == LeaveType.LieuHalf) {
+            lieuQty = 0;
+            lieuPaymentAllowed = false;
+        }
+
+        switch (leaveType) {
+            case Annual:
+            case AnnualHalf:
+            case Casual:
+            case CasualHalf:
+            case Lieu:
+            case LieuHalf:
+            case DutyLeave:
+                leavedTime = 0;
+                break;
+            case No_Pay:
+            case No_Pay_Half:
+                leavedTimeNoPay = 0;
+                break;
+            case Medical:
+            case Maternity1st:
+            case Maternity1stHalf:
+            case Maternity2nd:
+            case Maternity2ndHalf:
+                leavedTimeOther = 0;
+                break;
+
+        }
+
     }
 
     public void resetFingerPrintRecordTime() {
@@ -236,7 +261,7 @@ public class StaffShift implements Serializable {
     public void reset() {
         resetFingerPrintRecordTime();
         resetExtraTime();
-        resetLeaveData();
+//        resetLeaveData();
         multiplyingFactorOverTime = 0;
         multiplyingFactorSalary = 0;
         basicPerSecond = 0;
@@ -354,6 +379,7 @@ public class StaffShift implements Serializable {
             case Annual:
             case Casual:
             case Lieu:
+            case DutyLeave:
                 setLeavedTime((shift.getLeaveHourFull() * 60 * 60) / div);
                 break;
             case Maternity1st:
@@ -529,6 +555,10 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeWithStartOrEndRecord() {
+        if (getStartRecord() == null || getEndRecord() == null) {
+            return;
+        }
+
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
         Long inSecond = 0l;
@@ -563,7 +593,6 @@ public class StaffShift implements Serializable {
         //Over Time From Start Record Varified 
         extraTimeFromStartRecordVarified = 0;
         if (getStartRecord().isAllowedExtraDuty()) {
-
             if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
@@ -586,6 +615,10 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeComplete() {
+        if (getStartRecord() == null || getEndRecord() == null) {
+            return;
+        }
+
         if (getShift() != null) {
             DayType dayType = getShift().getDayType();
 
@@ -925,7 +958,9 @@ public class StaffShift implements Serializable {
         }
 
         Calendar sTime = Calendar.getInstance();
+        Calendar eTime = Calendar.getInstance();
         Calendar sDate = Calendar.getInstance();
+        Calendar eDate = Calendar.getInstance();
 
         if (getShift().getStartingTime() == null) {
             return;
@@ -937,10 +972,11 @@ public class StaffShift implements Serializable {
         sDate.set(Calendar.MINUTE, sTime.get(Calendar.MINUTE));
         setShiftStartTime(sDate.getTime());
 
-        Calendar eDate = Calendar.getInstance();
-        eDate.setTime(getShiftStartTime());
-        eDate.add(Calendar.HOUR_OF_DAY, getShift().getDurationHour());
-        eDate.set(Calendar.MINUTE, 0);
+        eTime.setTime(getShift().getEndingTime());
+        eDate.setTime(shiftDate);
+        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
+        eDate.add(Calendar.HOUR_OF_DAY, (int) getShift().getDurationHour());
+        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
 
         setShiftEndTime(eDate.getTime());
     }

@@ -1020,11 +1020,20 @@ public class PharmacyController implements Serializable {
     }
 
     public List<Ampp> getAmpps() {
+        if (pharmacyItem == null) {
+            return new ArrayList<>();
+        }
         String sql;
         Map m = new HashMap();
         sql = "select p from Ampp p where p.retired=false and p.amp=:a order by p.dblValue";
         m.put("a", pharmacyItem);
-        return getAmppFacade().findBySQL(sql, m);
+        List<Ampp> list = getAmppFacade().findBySQL(sql, m);
+
+        if (list == null) {
+            return new ArrayList<>();
+        } else {
+            return list;
+        }
     }
 
     public void setPharmacyItem(Item pharmacyItem) {

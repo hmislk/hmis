@@ -16,7 +16,7 @@ import java.util.List;
 public enum LeaveType {
 
     Casual, //7 working Days
-    CasualHalf,
+    CasualHalf(Casual),
     Annual, //14
     AnnualHalf(Annual),
     Medical, //14   
@@ -24,6 +24,7 @@ public enum LeaveType {
     Maternity2nd, // 42 working Days
     Maternity1stHalf(Maternity1st), //For Saturday
     Maternity2ndHalf(Maternity2nd), //For Saturday    
+    DutyLeave(true),
     Lieu(true),
     LieuHalf(Lieu, true),
     No_Pay(true),

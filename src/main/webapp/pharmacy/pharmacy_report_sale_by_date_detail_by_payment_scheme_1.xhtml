@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                <h:panelGrid columns="8" styleClass="noPrintButton">
+                    <h:outputLabel value="From Date"/>
+                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a"  >
+                    </p:calendar>
+                    <h:outputLabel value="To Date"/>
+                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                    </p:calendar>
+                    <h:outputLabel value="Department"/>
+                    <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    </p:autoComplete>
+                </h:panelGrid>
+
+                <h:panelGrid columns="3">
+                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSalereportByDateSummeryPaymentscheam()}"/>
+                    <p:commandButton  actionListener="#{pharmacySaleReport.createSalereportByDateSummeryPaymentscheam()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        <pe:exporter subTable="true" type="xlsx" target="sum1" fileName="sale_report_by_date_detail_payment_scheme"  />
+                    </p:commandButton>
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                </h:panelGrid>
+
+                <h:panelGrid styleClass="printBlock" columns="2">
+                    <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
+                    <h:outputLabel value=" DEPARTMENT SALE REPORT DETAIL"/>                   
+                    <h:outputLabel value="From Date :  "/>
+                    <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                        <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
+                    </h:outputLabel>
+                    <h:outputLabel value="To Date"/>
+                    <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                        <f:convertDateTime pattern="dd MMMM hh mm ss a" />
+                    </h:outputLabel>                       
+                </h:panelGrid>
+
+
+                <p:dataTable id="sum1" value="#{pharmacySaleReport.paymentSchemeSummerys}" var="pss">
+                    <f:facet name="header">                        
+                        <h:outputLabel value=" From "/>
+                        <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
+                        </h:outputLabel>
+                        <h:outputLabel value=" To "/>
+                        <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
+                        </h:outputLabel>
+                    </f:facet>
+
+                    <p:column headerText="Scheme Name">
+                        <f:facet name="header">
+                            <h:outputLabel value="Scheme Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.paymentScheme}"/>
+                    </p:column>
+                    <p:column headerText="Bill Total">
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.billTotal}" style="float: right;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.billTotal}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>                           
+                    <p:column headerText="Cancelled Total">
+                        <f:facet name="header">
+                            <h:outputLabel value="Cancelled Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.cancelBillTotal}" style="float: right;" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.canTotal}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>                            
+                    <p:column headerText="Refund Total">
+                        <f:facet name="header">
+                            <h:outputLabel value="Refund Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.refundBillTotal}" style="float: right;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.refTotal}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column headerText="Grand Total">
+                        <f:facet name="header">
+                            <h:outputLabel value="Grand Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{pss.billTotal+pss.cancelBillTotal+pss.refundBillTotal}" style="float: right;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.billTotal+pharmacySaleReport.canTotal+pharmacySaleReport.refTotal}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:dataTable>
+
+
+            </p:panel>         
+
+
+        </h:form>
+
+    </ui:define>
+
+
+
+</ui:composition>

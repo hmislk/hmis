@@ -51,23 +51,32 @@ public class EnumController implements Serializable {
         return DepartmentType.values();
     }
 
-    public ApplicationInstitution[] getApplicationInstitutions(){
+    public ApplicationInstitution[] getApplicationInstitutions() {
         return ApplicationInstitution.values();
     }
-    
+
     public PaperType[] getPaperTypes() {
         return PaperType.values();
     }
-    
+
     public ReportItemType[] getReportItemTypes() {
         Person p;
         return ReportItemType.values();
     }
 
     public LeaveType[] getLeaveType() {
-        LeaveType[] ltp = {LeaveType.Annual, LeaveType.AnnualHalf, LeaveType.Casual, LeaveType.CasualHalf,
-            LeaveType.Lieu, LeaveType.LieuHalf, LeaveType.Maternity1st, LeaveType.Maternity2nd, LeaveType.Medical,
-            LeaveType.No_Pay, LeaveType.No_Pay_Half};
+        LeaveType[] ltp = {LeaveType.Annual,
+            LeaveType.AnnualHalf,
+            LeaveType.Casual,
+            LeaveType.CasualHalf,
+            LeaveType.DutyLeave,
+            LeaveType.Lieu,
+            LeaveType.LieuHalf,
+            LeaveType.Maternity1st,
+            LeaveType.Maternity2nd,
+            LeaveType.Medical,
+            LeaveType.No_Pay,
+            LeaveType.No_Pay_Half};
         return ltp;
     }
 
@@ -84,7 +93,7 @@ public class EnumController implements Serializable {
     }
 
     public DayType[] getDayTypeForShift() {
-        DayType[] dayTypes = {DayType.Normal, DayType.DayOff, DayType.SleepingDay};
+        DayType[] dayTypes = {DayType.Normal, DayType.DayOff, DayType.SleepingDay, DayType.PublicHoliday};
 
         return dayTypes;
     }

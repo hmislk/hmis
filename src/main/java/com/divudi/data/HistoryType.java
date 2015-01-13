@@ -19,5 +19,5 @@ public enum HistoryType {
     ChannelBookingCancel,
     ChannelDeposit,
     ChannelDepositCancel,
-    MonthlyRecord,
+    MonthlyRecord,   
 }

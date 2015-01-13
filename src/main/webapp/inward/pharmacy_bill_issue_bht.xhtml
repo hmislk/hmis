@@ -6,7 +6,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:bil="http://java.sun.com/jsf/composite/bill"
-      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy/inward"
+      xmlns:phe="http://java.sun.com/jsf/composite/pharmacy/inward"
+      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
       xmlns:bill="http://java.sun.com/jsf/composite/inward">
 
     <body>
@@ -130,33 +131,13 @@
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:component('tblBillItem')} acStock focusItem tabI" onclick="onSubmitButton();"  ></p:commandButton>
+                                                          action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:component('tblBillItem')} acStock focusItem" onclick="onSubmitButton();"  ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
 
                                     </h:panelGrid>
-
-
-                                    <p:tabView id="tabI" dynamic="true" activeIndex="#{pharmacySaleBhtController.activeIndex}" >
-
-                                        <p:tab title="Availability" >
-                                            <h:panelGrid columns="1" >
-                                                <p:panel header="Not Available" >
-                                                    <p:selectOneListbox id="lstSelectItems" style="width: 300px; height: 200px; max-width: 300px; max-height: 200px; min-width: 300px; min-height: 200px;" value="#{pharmacySaleBhtController.selectedAlternative}"  >
-                                                        <f:selectItems  value="#{pharmacySaleBhtController.itemsWithoutStocks}" var="si" itemLabel="#{si.name}" itemValue="#{si}" ></f:selectItems>
-                                                        <p:ajax event="change" process="lstSelectItems" update="lstReplaceableBatch" listener="#{pharmacySaleBhtController.selectReplaceableStocks}" ></p:ajax>
-                                                    </p:selectOneListbox>
-                                                </p:panel>
-                                                <p:panel header="Available" >
-                                                    <p:selectOneListbox id="lstReplaceableBatch" style="width: 300px; height: 200px; max-width: 300px; max-height: 200px; min-width: 300px; min-height: 200px;"  >
-                                                        <f:selectItems  value="#{pharmacySaleBhtController.replaceableStocks}" var="rs" itemLabel="#{rs.itemBatch.item.name}" itemValue="#{rs}" ></f:selectItems>
-                                                    </p:selectOneListbox>
-                                                </p:panel>
-                                            </h:panelGrid>
-                                        </p:tab>
-                                        <p:tab title="Bill Items" >
-                                            <h:panelGrid columns="1">
+                                    
                                                 <p:panel header="Bill Items" id="pBis">
                                                     <p:dataTable id="tblBillItem" value="#{pharmacySaleBhtController.preBill.billItems}"
                                                                  var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
@@ -201,11 +182,7 @@
 
                                                     </p:dataTable>
                                                 </p:panel>
-                                            </h:panelGrid>
-                                        </p:tab>
-                                    </p:tabView>
-
-
+                                            
                                 </h:panelGrid>
 
                             </p:panel>
@@ -241,11 +218,44 @@
 
                         </div>
                         
-                        <div >
+<!--                        <div >
                             <h:panelGroup   id="gpBillPreview"   > 
-                                <phi:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
+                                <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                             </h:panelGroup>
-                        </div>
+                        </div>-->
+
+                        <h:panelGroup   id="gpBillPreview" > 
+
+                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+
+                                <div >
+                                    <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                                        <phi:saleBill_prabodha bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill_five_five bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_five_five>
+                                    </h:panelGroup>
+                                </div>                                
+                            </h:panelGroup>                            
+
+                        </h:panelGroup>
 
 
 
