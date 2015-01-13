@@ -214,8 +214,15 @@
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   >
-
-                    <ph:grn bill="#{grnController.grnBill}"/>
+                    
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                        <ph:grn bill="#{grnController.grnBill}"/>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                        <ph:grn_detail bill="#{grnController.grnBill}"/>
+                    </h:panelGroup>
+                    
 
                 </p:panel>
             </p:panel>

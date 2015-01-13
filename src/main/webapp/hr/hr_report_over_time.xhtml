@@ -83,12 +83,22 @@
                                 </p:column>    
                                 <p:column headerText="OT Minute From Out Record Varified">
                                     <h:outputLabel value="#{ss.extraTimeFromEndRecordVarified}">                                        
-                                         <f:converter converterId="longToTime"/>
+                                        <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="OT Minute From Complete Record Varified">
                                     <h:outputLabel value="#{ss.extraTimeCompleteRecordVarified}">                                        
-                                         <f:converter converterId="longToTime"/>
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Basic per Sec">
+                                    <h:outputLabel value="#{ss.basicPerSecond}">                                        
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Ot Value">
+                                    <h:outputLabel value="#{ss.basicPerSecond*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
+                                        <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>

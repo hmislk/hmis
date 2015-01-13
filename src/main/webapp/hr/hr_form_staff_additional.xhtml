@@ -73,9 +73,12 @@
                             <h:outputLabel value="Staff : "/>
                             <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                                                     
                             <h:outputLabel value="Approved Person"/>
-                            <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/>                           
+                            <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/> 
                             <p:commandButton ajax="false" value="Search Created Date" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
-                            <p:commandButton ajax="false" value="Search Approved Date " action="#{staffAdditionalFormController.createAmmendmentTableApprovedDate()}" />
+                            <h:panelGroup>
+                                <p:commandButton ajax="false" value="Search Approved Date " action="#{staffAdditionalFormController.createAmmendmentTableApprovedDate()}" />
+                                <p:commandButton ajax="false" value="Search Shift Date " action="#{staffAdditionalFormController.createAmmendmentTableShiftDate()}" />
+                            </h:panelGroup>
                         </h:panelGrid>
                         <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 
                                      rowStyleClass="#{add.retired eq true ? 'redText':''}"
@@ -87,9 +90,10 @@
                             <p:column headerText="Staff">
                                 <p:outputLabel value="#{add.staff.person.nameWithTitle}" ></p:outputLabel>
                             </p:column>
-                             <p:column headerText="Roster">
+                            <p:column headerText="Roster">
                                 <p:outputLabel value="#{add.staff.roster.name}" ></p:outputLabel>
                             </p:column>
+                           
                             <p:column headerText="From">
                                 <p:outputLabel value="#{add.fromTime}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
@@ -100,8 +104,8 @@
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                 </p:outputLabel>
                             </p:column>
-                             <p:column headerText="Shift Start">
-                                 <p:outputLabel value="#{add.staffShift.shiftStartTime}" >
+                            <p:column headerText="Shift Start">
+                                <p:outputLabel value="#{add.staffShift.shiftStartTime}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                                 </p:outputLabel>
                             </p:column>

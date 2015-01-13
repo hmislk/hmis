@@ -109,6 +109,12 @@
                                 <p:commandButton ajax="false" value="2)Stock Variant Adjustment(After)" 
                                                  action="pharmacy_variant_ajustment_pre_list" />
                             </p:panel>
+                            <p:panel header="Bulk Update"> 
+                                <p:commandButton ajax="false" value="Update Bulk Categery" 
+                                                 action="pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                <p:commandButton ajax="false" value="Update Bulk Discount Allowed" 
+                                                 action="pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                            </p:panel>
                           
                         </h:panelGrid>
 

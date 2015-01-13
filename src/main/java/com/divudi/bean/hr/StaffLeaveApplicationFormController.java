@@ -472,6 +472,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
             sql += " and l.approvedStaff=:app ";
             m.put("app", approvedStaff);
         }
+        
+        if (leaveType != null) {
+            sql += " and l.leaveType=:lt ";
+            m.put("lt", leaveType);
+        }
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -495,6 +500,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
         if (approvedStaff != null) {
             sql += " and l.approvedStaff=:app ";
             m.put("app", approvedStaff);
+        }
+        
+        if (leaveType != null) {
+            sql += " and l.leaveType=:lt ";
+            m.put("lt", leaveType);
         }
 
         m.put("fd", fromDate);

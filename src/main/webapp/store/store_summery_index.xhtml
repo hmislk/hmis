@@ -95,6 +95,16 @@
                         </h:panelGrid>
 
                     </h:panelGrid>
+                    
+                    <h:panelGrid columns="4" style="width: 100%">
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Asset Transfer Report" />
+                            </f:facet>    
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Transfer Issue Summery Report By Date" action="store_report_asset_issue_summery.xhtml" actionListener="#{storeSaleReport.makeNull}" disabled="fasle"/>
+
+                        </h:panelGrid>
+                    </h:panelGrid> 
 
                 </h:form>
             </ui:define>
