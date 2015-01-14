@@ -93,9 +93,18 @@
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
+                                <p:column headerText="Over Time Second">
+                                    <h:outputLabel value="#{ss.overTime}">
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Basic Per Second">
+                                    <h:outputLabel value="#{ss.basicPerSecond}">
+                                        <f:convertNumber pattern="0.0000" />
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Over Time Value">
-                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond}">  
-                                          <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">  
+                                          <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Hour">
@@ -106,7 +115,7 @@
 
                                 <p:column headerText="Extra Duty Value">
                                     <h:outputLabel value="#{ss.extraDutyValue}">
-                                          <f:convertNumber pattern="#,##0.00" />
+                                          <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
 

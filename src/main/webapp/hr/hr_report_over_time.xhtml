@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Attendance Report" />
+                            <h:outputLabel value="Extra Duty Attendance Report" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -35,7 +35,8 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShift()}"/>
+                        <p:commandButton ajax="false" value="Process All" action="#{hrReportController.createStaffShift()}"/>
+                        <p:commandButton ajax="false" value="Process Only Extra Duty" action="#{hrReportController.createStaffShiftOnlyOt()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -69,36 +70,41 @@
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>                                     
-                                </p:column>  
-                                <p:column headerText="OT Minute From In Record Varified">
-                                    <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified}">                                        
-                                        <f:converter converterId="longToTime"/>
-                                    </h:outputLabel>
-                                </p:column>
+                                </p:column>                                
                                 <p:column headerText="Out Checked">
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>  
                                     <h:outputLabel value="Next" rendered="#{ss.nextStaffShift ne null}"/>
-                                </p:column>    
-                                <p:column headerText="OT Minute From Out Record Varified">
+                                </p:column>  
+                                <p:column headerText="Extra From In Record">
+                                    <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified}">                                        
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Extra From Out Record">
                                     <h:outputLabel value="#{ss.extraTimeFromEndRecordVarified}">                                        
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="OT Minute From Complete Record Varified">
+                                <p:column headerText="Extra From Complete Record">
                                     <h:outputLabel value="#{ss.extraTimeCompleteRecordVarified}">                                        
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Basic per Sec">
                                     <h:outputLabel value="#{ss.basicPerSecond}">                                        
-<!--                                        <f:convertNumber pattern="0.00" />-->
+                                        <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Ot Value">
-                                    <h:outputLabel value="#{ss.basicPerSecond*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
-                                        <f:convertNumber pattern="0.00" />
+                                <p:column headerText="Multiplying Factor">
+                                    <h:outputLabel value="#{ss.multiplyingFactorOverTime}">                                        
+                                        <f:convertNumber pattern="0.0000" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Extra Duty Value">
+                                    <h:outputLabel value="#{ss.basicPerSecond*ss.multiplyingFactorOverTime*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
+                                        <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
