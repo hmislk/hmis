@@ -613,7 +613,7 @@ public class HrReportController implements Serializable {
 
         HashMap hm = new HashMap();
         sql = "select ss.dayOfWeek,"
-                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime+ss.leavedTimeOther),"
+                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
                 + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified),"
                 + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.basicPerSecond)"
                 + " from StaffShift ss "
@@ -1076,12 +1076,12 @@ public class HrReportController implements Serializable {
 
         HashMap hm = new HashMap();
         sql = "select new com.divudi.data.hr.StaffShiftAggrgation(ss.staff,"
-                + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime)) "
+                + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime+ss.leavedTimeOther)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-                //                + " and ((ss.startRecord.recordTimeStamp is not null "
-                //                + " and ss.endRecord.recordTimeStamp is not null) "
-                //                + " or (ss.leaveType is not null) ) "
+                //  + " and ((ss.startRecord.recordTimeStamp is not null "
+                //   + " and ss.endRecord.recordTimeStamp is not null) "
+                // + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
