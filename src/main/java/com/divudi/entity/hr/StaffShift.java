@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -590,7 +591,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From Start Record Varified 
         extraTimeFromStartRecordVarified = 0;
-        if (getStartRecord().isAllowedExtraDuty()) {
+        if (getStartRecord().isAllowedExtraDuty() && getStartRecord().getRecordTimeStamp() != null) {
             if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
@@ -601,7 +602,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From End Record Varified
         extraTimeFromEndRecordVarified = 0;
-        if (getEndRecord().isAllowedExtraDuty()) {
+        if (getEndRecord().isAllowedExtraDuty() && getEndRecord().getRecordTimeStamp() != null) {
             if (getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());

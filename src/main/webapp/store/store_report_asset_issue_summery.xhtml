@@ -28,9 +28,9 @@
                 <p:watermark value="To Department" for="toDep"/>
                 
                 <h:panelGrid columns="3">
-                    <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.createIssueReportByDateStore()}"/>
-                    <p:commandButton ajax="false" value="Excel" actionListener="#{storeSaleReport.createIssueReportByDateStore()}" styleClass="noPrintButton" style="float: right;" >
-                        <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
+                    <p:commandButton ajax="false" value="Process" action="#{storeSaleReport.getTransIssueValueByDate()}"/>
+                    <p:commandButton ajax="false" value="Excel" actionListener="#{storeSaleReport.getTransIssueValueByDate()}" styleClass="noPrintButton" style="float: right;" >
+                        <pe:exporter type="xlsx" target="sum1" fileName="report_store_issue_by_item_summery"  />
                     </p:commandButton>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                         <p:printer target="panelPrint" />
@@ -39,7 +39,7 @@
 
                 <h:panelGrid styleClass="printBlock" columns="2">
                     <h:outputLabel value="#{storeSaleReport.department.name}"/>
-                    <h:outputLabel value=" DEPARTMENT ISSUE REPORT SUMMERY"/>                   
+                    <h:outputLabel value=" DEPARTMENT ASSET ISSUE REPORT SUMMERY"/>                   
                     <h:outputLabel value="From Date :  "/>
                     <h:outputLabel value="#{storeSaleReport.fromDate}"  >
                         <f:convertDateTime pattern="dd MMMM yyyy" />
@@ -51,92 +51,85 @@
                 </h:panelGrid>
 
 
-                <p:dataTable id="sum1" value="#{storeSaleReport.billedSummery.bills}" var="i">   
+                <p:dataTable id="sum1" value="#{storeSaleReport.billItem}" var="i">   
                     <f:facet name="header">
-                        <p:outputLabel value="Sales Summery Report By Date" />
+                        <p:outputLabel value="Issue Report Bill" />
                     </f:facet>
+                    
+                    <p:column headerText="Bill No">
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill No" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.bill.insId}" />
+                    </p:column>
                     
                     <p:column headerText="Date">
                         <f:facet name="header">
                             <h:outputLabel value="Date" />
                         </f:facet>
-                        <h:outputLabel value="#{i.string}" />
+                        <h:outputLabel value="#{i.bill.createdAt}" />
                     </p:column>
-                    <p:column headerText="Billed" style="text-align: right;">
+                    
+                    <p:column headerText="Item Code">
                         <f:facet name="header">
-                            <h:outputLabel value="Billed" />
+                            <h:outputLabel value="Item Code" />
                         </f:facet>
-                        <h:outputLabel value="#{i.value1}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
+                        <h:outputLabel value="#{i.item.code}" />
                     </p:column>
-                    <p:column headerText="Cancelled" style="text-align: right;">
+                    
+                    <p:column headerText="Batch No">
                         <f:facet name="header">
-                            <h:outputLabel value="Cancelled" />
+                            <h:outputLabel value="Batch No" />
                         </f:facet>
-                        <h:outputLabel value="#{i.value2}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
+                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.batchNo}" />
                     </p:column>
-                    <p:column headerText="Refunded" style="text-align: right;">
+                    
+                    <p:column headerText="Item Description">
                         <f:facet name="header">
-                            <h:outputLabel value="Refunded" />
+                            <h:outputLabel value="Item Description" />
                         </f:facet>
-                        <h:outputLabel value="#{i.value3}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
+                        <h:outputLabel value="#{i.item.name}" />
                     </p:column>
-                    <p:column headerText="Net Value" style="text-align: right;">
+                    
+                    <p:column headerText="Quentity">
                         <f:facet name="header">
-                            <h:outputLabel value="Net Value" />
+                            <h:outputLabel value="Quentity" />
                         </f:facet>
-                        <h:outputLabel value="#{i.value1+i.value2+i.value3}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
+                        <h:outputLabel value="#{i.qty}" />
                     </p:column>
-                    <p:columnGroup type="footer">
-                        <p:row>
-                            <p:column footerText="Total  "/>
-                            <p:column footerText="#{storeSaleReport.billedSummery.billedTotal}" style="text-align: right;">
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{storeSaleReport.billedSummery.billedTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column footerText="#{storeSaleReport.billedSummery.cancelledTotal}" style="text-align: right;">
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{storeSaleReport.billedSummery.cancelledTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column footerText="#{storeSaleReport.billedSummery.refundedTotal}" style="text-align: right;">
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{storeSaleReport.billedSummery.refundedTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column footerText="#{storeSaleReport.billedSummery.billedTotal+storeSaleReport.billedSummery.cancelledTotal+storeSaleReport.billedSummery.refundedTotal}" style="text-align: right;">
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{storeSaleReport.billedSummery.billedTotal+storeSaleReport.billedSummery.cancelledTotal+storeSaleReport.billedSummery.refundedTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                        </p:row>
-                    </p:columnGroup>
+                    
+                    <p:column headerText="Cost">
+                        <f:facet name="header">
+                            <h:outputLabel value="Cost" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}" />
+                    </p:column>
+                    
+                    <p:column headerText="Value">
+                        <f:facet name="header">
+                            <h:outputLabel value="Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate*i.qty}" />
+                    </p:column>
+                    
+                    <p:column headerText="Location From">
+                        <f:facet name="header">
+                            <h:outputLabel value="Location From" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.bill.department.name}" />
+                    </p:column>
+                    
+                    <p:column headerText="Location To">
+                        <f:facet name="header">
+                            <h:outputLabel value="Location To" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.bill.toDepartment.name}" />
+                    </p:column>
+                    
+                    
                 </p:dataTable>
 
-                <h:panelGrid columns="2" style="min-width: 100%;">
-                    <h:outputLabel value="Net Amount"/>
-                    <h:outputLabel value="#{storeSaleReport.grantNetTotal}" style="float:  right;">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>                    
-                </h:panelGrid>
+                
 
             </p:panel>         
 

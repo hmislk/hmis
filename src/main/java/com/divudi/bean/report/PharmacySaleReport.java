@@ -146,6 +146,9 @@ public class PharmacySaleReport implements Serializable {
     double totalUnitIssueBC = 0.0;
     double totalUnitIssueRC = 0.0;
     double totalUnitIssueNC = 0.0;
+
+    List<Bill> labBhtIssueBilledBills;
+    double labBhtIssueBilledBillTotals;
     /////
 
     /////
@@ -397,6 +400,32 @@ public class PharmacySaleReport implements Serializable {
 
         sql += " group by FUNC('Date',i.createdAt),i.bill.paymentMethod"
                 + " order by i.createdAt,i.bill.paymentMethod ";
+        return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    private List<Object[]> fetchSaleValueByPaymentmethodByBill() {
+        String sql;
+
+        Map m = new HashMap();
+        m.put("d", getDepartment());
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("cl", PreBill.class);
+        m.put("btp", BillType.PharmacySale);
+        sql = "select FUNC('Date',i.createdAt),"
+                + " i.paymentMethod,"
+                + " sum(i.netTotal)"
+                + " from Bill i "
+                + "where i.referenceBill.department=:d "
+//                + " and i.retired=false "
+                + " and i.retired=false "
+                + " and i.billType=:btp "
+                + "and type(i)!=:cl "
+                + "and i.createdAt between :fd and :td ";
+
+        sql += " group by FUNC('Date',i.createdAt),i.paymentMethod"
+                + " order by i.createdAt,i.paymentMethod ";
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -2367,9 +2396,62 @@ public class PharmacySaleReport implements Serializable {
 
         }
 
+        labBhtIssueBilledBills = getLabBills(BillType.InwardBill, new BilledBill());
+        labBhtIssueBilledBillTotals = getLabBillTotal(BillType.InwardBill, new BilledBill());
+
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
+
+    }
+
+    List<Bill> getLabBills(BillType billType, Bill bill) {
+        Map hm = new HashMap();
+        String sql;
+        System.out.println("In to method");
+        sql = "SELECT b FROM Bill b "
+                + " WHERE b.createdAt between :fromDate and :toDate "
+                + " and type(b)=:bill "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.institution=:ins "
+                + " and b.department=:dep ";
+        
+        
+
+        hm.put("btp", billType);
+        hm.put("bill", bill.getClass());
+        hm.put("fromDate", getFromDate());
+        hm.put("toDate", getToDate());
+        hm.put("ins", getInstitution());
+        hm.put("dep", getDepartment());
+
+        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public double getLabBillTotal(BillType billType, Bill bill) {
+        Map hm = new HashMap();
+        String sql;
+
+        sql = "SELECT sum(b.netTotal) FROM Bill b "
+                + " WHERE b.createdAt between :fromDate and :toDate "
+                + " and type(b)=:bill "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.institution=:ins "
+                + " and b.department=:dep ";
+        
+        
+
+        hm.put("btp", billType);
+        hm.put("bill", bill.getClass());
+        hm.put("fromDate", getFromDate());
+        hm.put("toDate", getToDate());
+        hm.put("ins", getInstitution());
+        hm.put("dep", getDepartment());
+
+        return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -3139,6 +3221,69 @@ public class PharmacySaleReport implements Serializable {
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
 
         List<Object[]> list = fetchSaleValueByPaymentmethod();
+        TreeMap<Date, String2Value4> hm = new TreeMap<>();
+
+        for (Object[] obj : list) {
+            Date date = (Date) obj[0];
+            PaymentMethod pm = (PaymentMethod) obj[1];
+            Double value = (Double) obj[2];
+
+            String2Value4 newRow = (String2Value4) hm.get(date);
+
+            if (newRow == null) {
+                newRow = new String2Value4();
+                newRow.setDate(date);
+            } else {
+                hm.remove(date);
+            }
+
+            switch (pm) {
+                case Cash:
+                    newRow.setValue1(value);
+                    break;
+                case Credit:
+                    newRow.setValue2(value);
+                    break;
+                case Card:
+                    newRow.setValue3(value);
+                    break;
+            }
+
+            hm.put(date, newRow);
+
+        }
+
+        List<String2Value4> listRow = new ArrayList<>();
+        Iterator it = hm.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pairs = (Map.Entry) it.next();
+            System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            listRow.add((String2Value4) pairs.getValue());
+//            it.remove(); // avoids a ConcurrentModificationException
+        }
+
+        System.err.println(listRow);
+
+        billedPaymentSummery.setBills(listRow);
+
+        billedPaymentSummery.setCashTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash));
+
+        ////////////
+        billedPaymentSummery.setCreditTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit));
+
+        ////////////////
+        billedPaymentSummery.setCardTotal(calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card));
+
+        grantCardTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card);
+        grantCashTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash);
+        grantCreditTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit);
+
+    }
+    
+    public void createSalePaymentMethodByBill() {
+        billedPaymentSummery = new PharmacyPaymetMethodSummery();
+
+        List<Object[]> list = fetchSaleValueByPaymentmethodByBill();
         TreeMap<Date, String2Value4> hm = new TreeMap<>();
 
         for (Object[] obj : list) {
@@ -4441,6 +4586,23 @@ public class PharmacySaleReport implements Serializable {
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
 
+    }
+
+   
+    public List<Bill> getLabBhtIssueBilledBills() {
+        return labBhtIssueBilledBills;
+    }
+
+    public void setLabBhtIssueBilledBills(List<Bill> labBhtIssueBilledBills) {
+        this.labBhtIssueBilledBills = labBhtIssueBilledBills;
+    }
+
+    public double getLabBhtIssueBilledBillTotals() {
+        return labBhtIssueBilledBillTotals;
+    }
+
+    public void setLabBhtIssueBilledBillTotals(double labBhtIssueBilledBillTotals) {
+        this.labBhtIssueBilledBillTotals = labBhtIssueBilledBillTotals;
     }
 
     public class CategoryMovementReportRow {
