@@ -1076,12 +1076,12 @@ public class HrReportController implements Serializable {
 
         HashMap hm = new HashMap();
         sql = "select new com.divudi.data.hr.StaffShiftAggrgation(ss.staff,"
-                + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime)) "
+                + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime+ss.leavedTimeOther)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-                //                + " and ((ss.startRecord.recordTimeStamp is not null "
-                //                + " and ss.endRecord.recordTimeStamp is not null) "
-                //                + " or (ss.leaveType is not null) ) "
+                //  + " and ((ss.startRecord.recordTimeStamp is not null "
+                //   + " and ss.endRecord.recordTimeStamp is not null) "
+                // + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -1163,7 +1163,8 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
-//        sql += " order by ss.shift,ss.shiftDate";
+        sql += " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -1173,16 +1174,12 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " and (ss.startRecord.allowedExtraDuty=true or "
                 + " ss.endRecord.allowedExtraDuty=true )";
-//        sql += " order by ss.shift,ss.shiftDate";
+        sql += " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
-        if (staffShifts == null) {
-            return;
-        }
+  
 
-//        for (StaffShift ss : staffShifts) {
-//             
-//        }
     }
 
     public void createStaffShiftEarlyIn() {

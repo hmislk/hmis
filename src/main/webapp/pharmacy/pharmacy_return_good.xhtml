@@ -127,7 +127,15 @@
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   >
 
-                    <ph:grnReturn bill="#{goodsReturnController.returnBill}"/>
+<!--                    <ph:grnReturn bill="#{goodsReturnController.returnBill}"/>-->
+                    
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                        <ph:grn bill="#{goodsReturnController.returnBill}"/>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                        <ph:grn_detail bill="#{goodsReturnController.returnBill}"/>
+                    </h:panelGroup>
 
                 </p:panel>
             </p:panel>

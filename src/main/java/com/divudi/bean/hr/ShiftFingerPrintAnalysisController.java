@@ -249,11 +249,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 break;
         }
 
-        if (fingerPrintRecordIn != null && fingerPrintRecordIn.getId()!= null) {
+        if (fingerPrintRecordIn != null && fingerPrintRecordIn.getId() != null) {
             fingerPrintRecordFacade.edit(fingerPrintRecordIn);
         }
 
-        if (fingerPrintRecordOut != null && fingerPrintRecordOut.getId()!= null) {
+        if (fingerPrintRecordOut != null && fingerPrintRecordOut.getId() != null) {
             fingerPrintRecordFacade.edit(fingerPrintRecordOut);
         }
 
@@ -313,14 +313,19 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
 
                 List<FingerPrintRecord> list = new ArrayList<>();
-                FingerPrintRecord fingerPrintRecordIn = null;
-                FingerPrintRecord fingerPrintRecordOut = null;
+                FingerPrintRecord fingerPrintRecordIn = ss.getStartRecord();
+                FingerPrintRecord fingerPrintRecordOut = ss.getEndRecord();
 
                 HrForm additionalForm = ss.getAdditionalForm();
 
                 if (additionalForm == null) {
-                    fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
-                    fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
+                    if (fingerPrintRecordIn == null) {
+                        fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
+                    }
+
+                    if (fingerPrintRecordOut == null) {
+                        fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
+                    }
                 } else {
                     //Fetch Time From Additional From
                     fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut, list);
@@ -392,8 +397,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
     }
-    
-     public void createShiftTableReset() {
+
+    public void createShiftTableReset() {
         if (errorCheck()) {
             return;
         }
@@ -526,7 +531,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
     }
-    
 
     public void fingerPrintSelectListenerStartRecord(StaffShift staffShift) {
         if (staffShift == null) {

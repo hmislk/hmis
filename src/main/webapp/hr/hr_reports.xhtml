@@ -126,7 +126,28 @@
                                              action="hr_report_over_time" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
-
+                        </p:panel>
+                        
+                        <p:panel header="History">
+                            <p:commandButton value="(1) Staff Shift History" 
+                                                 action="hr_report_staff_shift_history" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                             <p:commandButton value="(2)Finger Print History" 
+                                                 action="hr_report_finger_print_history" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                        </p:panel>
+                        
+                        <p:panel header="Form">
+                            <p:commandButton value="Additional Form Report" 
+                                                 action="hr_form_staff_additional_report" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" />
+                            <p:commandButton value="Leave Form Report" 
+                                                 action="hr_form_staff_leave_report" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" />
                         </p:panel>
                         
                         <p:panel header="History">
