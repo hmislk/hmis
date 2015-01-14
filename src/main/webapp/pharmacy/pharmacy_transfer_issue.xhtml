@@ -89,7 +89,15 @@
 
                 <p:panel   id="gpBillPreview"   >
 
-                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+<!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
+                    
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                        <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                        <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
+                    </h:panelGroup>
 
                 </p:panel>
 
