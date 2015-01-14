@@ -146,6 +146,9 @@ public class PharmacySaleReport implements Serializable {
     double totalUnitIssueBC = 0.0;
     double totalUnitIssueRC = 0.0;
     double totalUnitIssueNC = 0.0;
+
+    List<Bill> labBhtIssueBilledBills;
+    double labBhtIssueBilledBillTotals;
     /////
 
     /////
@@ -2393,9 +2396,62 @@ public class PharmacySaleReport implements Serializable {
 
         }
 
+        labBhtIssueBilledBills = getLabBills(BillType.InwardBill, new BilledBill());
+        labBhtIssueBilledBillTotals = getLabBillTotal(BillType.InwardBill, new BilledBill());
+
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
+
+    }
+
+    List<Bill> getLabBills(BillType billType, Bill bill) {
+        Map hm = new HashMap();
+        String sql;
+        System.out.println("In to method");
+        sql = "SELECT b FROM Bill b "
+                + " WHERE b.createdAt between :fromDate and :toDate "
+                + " and type(b)=:bill "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.institution=:ins "
+                + " and b.department=:dep ";
+        
+        
+
+        hm.put("btp", billType);
+        hm.put("bill", bill.getClass());
+        hm.put("fromDate", getFromDate());
+        hm.put("toDate", getToDate());
+        hm.put("ins", getInstitution());
+        hm.put("dep", getDepartment());
+
+        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public double getLabBillTotal(BillType billType, Bill bill) {
+        Map hm = new HashMap();
+        String sql;
+
+        sql = "SELECT sum(b.netTotal) FROM Bill b "
+                + " WHERE b.createdAt between :fromDate and :toDate "
+                + " and type(b)=:bill "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.institution=:ins "
+                + " and b.department=:dep ";
+        
+        
+
+        hm.put("btp", billType);
+        hm.put("bill", bill.getClass());
+        hm.put("fromDate", getFromDate());
+        hm.put("toDate", getToDate());
+        hm.put("ins", getInstitution());
+        hm.put("dep", getDepartment());
+
+        return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -4530,6 +4586,23 @@ public class PharmacySaleReport implements Serializable {
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
 
+    }
+
+   
+    public List<Bill> getLabBhtIssueBilledBills() {
+        return labBhtIssueBilledBills;
+    }
+
+    public void setLabBhtIssueBilledBills(List<Bill> labBhtIssueBilledBills) {
+        this.labBhtIssueBilledBills = labBhtIssueBilledBills;
+    }
+
+    public double getLabBhtIssueBilledBillTotals() {
+        return labBhtIssueBilledBillTotals;
+    }
+
+    public void setLabBhtIssueBilledBillTotals(double labBhtIssueBilledBillTotals) {
+        this.labBhtIssueBilledBillTotals = labBhtIssueBilledBillTotals;
     }
 
     public class CategoryMovementReportRow {
