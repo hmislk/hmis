@@ -51,7 +51,7 @@
                                      rowsPerPageTemplate="5,10,15"
                                      >    
                             <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_service" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="View Bill" action="/inward/inward_reprint_bill_service" onclick="onSubmitButton();" >
                                     <f:setPropertyActionListener value="#{bill}" target="#{inwardSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>

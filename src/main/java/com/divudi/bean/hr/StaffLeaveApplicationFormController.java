@@ -310,6 +310,26 @@ public class StaffLeaveApplicationFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Comment");
             return true;
         }
+        
+        if (currentLeaveForm.getFromDate()== null ) {
+            JsfUtil.addErrorMessage("Please Select From Date");
+            return true;
+        }
+        
+        if (currentLeaveForm.getToDate()== null ) {
+            JsfUtil.addErrorMessage("Please Select to Date");
+            return true;
+        }
+
+        if (currentLeaveForm.getFromDate() == null) {
+            JsfUtil.addErrorMessage("Please Select From Date");
+            return true;
+        }
+
+        if (currentLeaveForm.getToDate() == null) {
+            JsfUtil.addErrorMessage("Please Select to Date");
+            return true;
+        }
 
         if (currentLeaveForm.getFromDate() == null) {
             JsfUtil.addErrorMessage("Please Select From Date");
