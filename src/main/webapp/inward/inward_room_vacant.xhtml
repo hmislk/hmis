@@ -14,7 +14,7 @@
                              action="#{roomOccupancyController.createPatientRoomVacant()}"
                              value="Fill" onclick="onSubmitButton();" />             
             <p:dataTable 
-                value="#{roomOccupancyController.patientRooms}" 
+                value="#{roomOccupancyController.roomFacilityCharges}" 
                 var="pr"
                 paginator="true"
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -25,26 +25,26 @@
                 </f:facet>
                  
                 <p:column headerText="Room">
-                    #{pr.roomFacilityCharge.room.name}                    
+                    #{pr.room.name}                    
                 </p:column>
                 
                 <p:column headerText="Category">
-                    #{pr.roomFacilityCharge.roomCategory.name}                   
+                    #{pr.roomCategory.name}                   
                 </p:column>
                 
                 <p:column headerText="Department">
-                    #{pr.roomFacilityCharge.department.name}                    
+                    #{pr.department.name}                    
                 </p:column>
                 
 <!--                <p:column headerText="Chargers for 24">
-                    #{(pr.roomFacilityCharge.linenCharge)+
-                      ((pr.roomFacilityCharge.adminstrationCharge + pr.roomFacilityCharge.maintananceCharge
-                      + pr.roomFacilityCharge.medicalCareCharge + pr.roomFacilityCharge.roomCharge
-                      + pr.roomFacilityCharge.nursingCharge + pr.roomFacilityCharge.moCharge)*8)}                    
+                    #{(pr.linenCharge)+
+                      ((pr.adminstrationCharge + pr.maintananceCharge
+                      + pr.medicalCareCharge + pr.roomCharge
+                      + pr.nursingCharge + pr.moCharge)*8)}                    
                 </p:column>-->
 
                 <p:column headerText="Room Chargers for 24">
-                    #{pr.roomFacilityCharge.roomCharge*8}                    
+                    #{pr.roomCharge*8}                    
                 </p:column>
                 
             </p:dataTable>

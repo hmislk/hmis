@@ -69,6 +69,9 @@ public class StaffLeaveApplicationFormController implements Serializable {
     FinalVariables finalVariables;
     ReportKeyWord reportKeyWord;
 
+    StaffLeave staffLeave;
+    List<StaffLeave> staffLeaves;
+
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {
             reportKeyWord = new ReportKeyWord();
@@ -321,6 +324,26 @@ public class StaffLeaveApplicationFormController implements Serializable {
             return true;
         }
 
+        if (currentLeaveForm.getFromDate() == null) {
+            JsfUtil.addErrorMessage("Please Select From Date");
+            return true;
+        }
+
+        if (currentLeaveForm.getToDate() == null) {
+            JsfUtil.addErrorMessage("Please Select to Date");
+            return true;
+        }
+
+        if (currentLeaveForm.getFromDate() == null) {
+            JsfUtil.addErrorMessage("Please Select From Date");
+            return true;
+        }
+
+        if (currentLeaveForm.getToDate() == null) {
+            JsfUtil.addErrorMessage("Please Select to Date");
+            return true;
+        }
+
         if (checkingForLieLeave()) {
             return true;
         }
@@ -506,6 +529,42 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     }
 
+    public void createStaffleaveTable() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select l from StaffLeave l where "
+                + " l.createdAt between :fd and :td ";
+
+        if (staff != null) {
+            sql += " and l.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and l.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        if (leaveType != null) {
+            sql += " and l.leaveType=:lt ";
+            m.put("lt", leaveType);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        staffLeaves = getStaffLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void saveStaffLeave() {
+        if (staffLeave != null) {
+            getStaffLeaveFacade().edit(staffLeave);
+            UtilityController.addSuccessMessage("Updated");
+        }
+    }
+
     public void createleaveTableApprovedDate() {
         String sql;
         Map m = new HashMap();
@@ -596,6 +655,10 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public void viewLeaveForm(LeaveForm leaveForm) {
         currentLeaveForm = leaveForm;
+    }
+
+    public void viewStaffLeave(StaffLeave leave) {
+        staffLeave = leave;
     }
 
     public void clear() {
@@ -696,4 +759,19 @@ public class StaffLeaveApplicationFormController implements Serializable {
         this.leaveForms = leaveForms;
     }
 
+    public StaffLeave getStaffLeave() {
+        return staffLeave;
+    }
+
+    public void setStaffLeave(StaffLeave staffLeave) {
+        this.staffLeave = staffLeave;
+    }
+
+    public List<StaffLeave> getStaffLeaves() {
+        return staffLeaves;
+    }
+
+    public void setStaffLeaves(List<StaffLeave> staffLeaves) {
+        this.staffLeaves = staffLeaves;
+    }
 }

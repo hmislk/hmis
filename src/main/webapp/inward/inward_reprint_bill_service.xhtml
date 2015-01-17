@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill">
+      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
+      xmlns:bill="http://java.sun.com/jsf/composite/bill">
 
     <body>
 
@@ -120,6 +121,22 @@
                                 </p:column>                               
                             </p:dataTable>
                         </p:panel>
+
+
+                    </p:panel>
+
+                    <p:panel>
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                            <ui:repeat value="#{inwardSearch.bill}" var="bill">
+                                <bill:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
+                            </ui:repeat>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+                            <ui:repeat value="#{inwardSearch.bill}" var="b">
+                                <bill:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
+                            </ui:repeat>  
+                        </h:panelGroup>
                     </p:panel>
 
 
