@@ -6,8 +6,10 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.entity.inward.PatientRoom;
+import com.divudi.entity.inward.RoomFacilityCharge;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.RoomFacade;
+import com.divudi.facade.RoomFacilityChargeFacade;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Date;
@@ -29,7 +31,10 @@ public class RoomOccupancyController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     RoomFacade roomFacade;
+    @EJB
+    RoomFacilityChargeFacade roomFacilityChargeFacade;
     private List<PatientRoom> patientRooms;
+    List<RoomFacilityCharge> roomFacilityCharges;
 
     public RoomFacade getRoomFacade() {
         return roomFacade;
@@ -80,18 +85,19 @@ public class RoomOccupancyController implements Serializable {
         patientRooms = getPatientRoomFacade().findBySQL(sql);
 
     }
-    
-    public void createPatientRoomVacant() {
-        String sql = "SELECT pr FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.discharged=true "
-                + " order by pr.roomFacilityCharge.name";
 
-        patientRooms = getPatientRoomFacade().findBySQL(sql);
+    public void createPatientRoomVacant() {
+        String sql = "SELECT rf FROM RoomFacilityCharge rf "
+                + " where rf.retired=false "
+                + " and rf.room.filled=false"
+                + " and rf.room.retired=false"
+                + " order by rf.name";
+
+        roomFacilityCharges = getRoomFacilityChargeFacade().findBySQL(sql);
 
     }
-    
-      public void createPatientRoomAll() {
+
+    public void createPatientRoomAll() {
         String sql = "SELECT pr FROM PatientRoom pr "
                 + " where pr.retired=false "
                 + " and pr.discharged=false "
@@ -109,4 +115,21 @@ public class RoomOccupancyController implements Serializable {
     public void setPatientRooms(List<PatientRoom> patientRooms) {
         this.patientRooms = patientRooms;
     }
+
+    public RoomFacilityChargeFacade getRoomFacilityChargeFacade() {
+        return roomFacilityChargeFacade;
+    }
+
+    public void setRoomFacilityChargeFacade(RoomFacilityChargeFacade roomFacilityChargeFacade) {
+        this.roomFacilityChargeFacade = roomFacilityChargeFacade;
+    }
+
+    public List<RoomFacilityCharge> getRoomFacilityCharges() {
+        return roomFacilityCharges;
+    }
+
+    public void setRoomFacilityCharges(List<RoomFacilityCharge> roomFacilityCharges) {
+        this.roomFacilityCharges = roomFacilityCharges;
+    }
+
 }

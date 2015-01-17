@@ -68,6 +68,9 @@
                         </f:facet>
                         <h:outputLabel value="#{i.string}" />
                     </p:column>
+                    <p:column></p:column>
+                    <p:column></p:column>
+                    <p:column></p:column>
                     <p:column headerText="Net Value" style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Net Value" />
@@ -80,8 +83,9 @@
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column footerText="Total  "/>
-                            
-                            
+                            <p:column></p:column>
+                            <p:column></p:column>
+                            <p:column></p:column>
                             <p:column footerText="#{pharmacySaleReport.billedSummery.billedTotal+pharmacySaleReport.billedSummery.cancelledTotal+pharmacySaleReport.billedSummery.refundedTotal}" style="text-align: right;">
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{pharmacySaleReport.billedSummery.billedTotal+pharmacySaleReport.billedSummery.cancelledTotal+pharmacySaleReport.billedSummery.refundedTotal}">
@@ -94,10 +98,62 @@
                     </p:columnGroup>
                    
                 </p:dataTable>
+                <p:spacer height="30px"/>
                 
+                <p:dataTable value="#{pharmacySaleReport.labBhtIssueBilledBills}" var="bi" id="tbl" style="text-align: right">
+                    <f:facet name="header">
+                        <h:outputLabel value="BHT Issue"></h:outputLabel>
+                    </f:facet>
                 
+                    <p:column headerText="Bill No" style="text-align: left!important">
+                        <h:outputLabel value="#{bi.insId}"></h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Created At"  style="text-align: left!important">
+                        <h:outputLabel value="#{bi.createdAt}">
+                            <f:convertDateTime pattern="dd MM yy HH:mm:ss"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="BHT No">
+                        <h:outputLabel value="#{bi.patientEncounter.bhtNo}"></h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total"/>
+                        </f:facet>
+                    </p:column>
+
+                    <p:column headerText="Amount"  style="text-align: right!important">
+                        <h:outputLabel value="#{bi.netTotal}"></h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.labBhtIssueBilledBillTotals}"/>
+                        </f:facet>
+                    </p:column>
+
+                </p:dataTable>
+
+
 
             </p:panel>         
+            <p:panelGrid columns="2">
+                <h:outputLabel value="Hospital Fee Total"/>
+                <h:outputLabel value="#{pharmacySaleReport.billedSummery.billedTotal}"/>
+
+                <h:outputLabel value="Regent Fee Total"/>
+                <h:outputLabel value="#{pharmacySaleReport.billedSummery.refundedTotal}"/>
+
+                <h:outputLabel value="Professional Fee Total"/>
+                <h:outputLabel value="#{pharmacySaleReport.billedSummery.cancelledTotal}"/>
+
+                <h:outputLabel value="BHT Issue Total"/>
+                <h:outputLabel value="#{pharmacySaleReport.labBhtIssueBilledBillTotals}"/>
+
+                <h:outputLabel value="Net Total"/>
+                <h:outputLabel style="font-size: large; color: blue; font-style: italic" value="#{pharmacySaleReport.billedSummery.billedTotal + 
+                                                                                                  pharmacySaleReport.billedSummery.refundedTotal + 
+                                                                                                  pharmacySaleReport.billedSummery.cancelledTotal + 
+                                                                                                  pharmacySaleReport.billedSummery.cancelledTotal + 
+                                                                                                  pharmacySaleReport.labBhtIssueBilledBillTotals}"/>
+            </p:panelGrid>
 
 
         </h:form>
