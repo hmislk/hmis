@@ -455,14 +455,14 @@ public class InwardBeanController implements Serializable {
     }
 
     public List<BillFee> createProfesionallFee(PatientEncounter patientEncounter) {
-
         HashMap hm = new HashMap();
         String sql = "SELECT bt FROM BillFee bt WHERE "
                 + " bt.retired=false "
                 + " and type(bt.staff)=:class "
                 + " and bt.fee.feeType=:ftp "
                 + " and (bt.bill.billType=:btp)"
-                + " and bt.bill.patientEncounter=:pe ";
+                + " and bt.bill.patientEncounter=:pe "
+                + " order by bt.feeAdjusted desc ";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
