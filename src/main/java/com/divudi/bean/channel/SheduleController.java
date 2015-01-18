@@ -8,20 +8,24 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.FeeType;
 import com.divudi.entity.Fee;
+import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.FeeFacade;
+import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -54,6 +58,73 @@ public class SheduleController implements Serializable {
     private Fee doctorFee;
     private Fee tax;
     List<SessionNumberGenerator> lstSessionNumberGenerator;
+    List<ItemFee> itemFees;
+
+    public List<ItemFee> getItemFees() {
+        return itemFees;
+    }
+
+    public void setItemFees(List<ItemFee> itemFees) {
+        this.itemFees = itemFees;
+    }
+
+    @EJB
+    ItemFeeFacade itemFeeFacade;
+
+    public void fillFees() {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select f from ItemFee f "
+                + " where f.retired=false and "
+                + " f.serviceSession=:ses "
+                + " order by f.id";
+        m.put("ses", current);
+        itemFees = itemFeeFacade.findBySQL(sql, m);
+    }
+
+    public ItemFee createStaffFee() {
+        ItemFee stf = new ItemFee();
+        stf.setName("Staff Fee");
+        stf.setFeeType(FeeType.Staff);
+        stf.setFee(0.0);
+        stf.setFfee(0.0);
+        stf.setInstitution(getCurrent().getInstitution());
+        stf.setSpeciality(speciality);
+        stf.setStaff(currentStaff);
+        stf.setServiceSession(current);
+        return stf;
+    }
+
+    public ItemFee createHospitalFee() {
+        ItemFee hos = new ItemFee();
+        hos.setName("Hospital Fee");
+        hos.setFeeType(FeeType.OwnInstitution);
+        hos.setFee(0.0);
+        hos.setFfee(0.0);
+        hos.setInstitution(getCurrent().getInstitution());
+        hos.setServiceSession(current);
+
+        return hos;
+    }
+
+    public ItemFee createScanFee() {
+        ItemFee scn = new ItemFee();
+        scn.setName("Scan Fee");
+        scn.setFee(0.0);
+        scn.setFfee(0.0);
+        scn.setFeeType(FeeType.Service);
+        scn.setInstitution(getCurrent().getInstitution());
+        scn.setServiceSession(current);
+        return scn;
+    }
+
+    private void createFees() {
+        itemFees = new ArrayList<>();
+
+        itemFees.add(createHospitalFee());
+        itemFees.add(createStaffFee());
+        itemFees.add(createScanFee());
+    }
 
     public void makeNull() {
         speciality = null;
@@ -63,6 +134,7 @@ public class SheduleController implements Serializable {
         hospitalFee = null;
         doctorFee = null;
         tax = null;
+        itemFees = null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -146,6 +218,7 @@ public class SheduleController implements Serializable {
     public ServiceSession getCurrent() {
         if (current == null) {
             current = new ServiceSession();
+            current.setInstitution(sessionController.getInstitution());
         }
         return current;
     }
@@ -160,23 +233,23 @@ public class SheduleController implements Serializable {
 
     public void setCurrent(ServiceSession current) {
         this.current = current;
+        fillFees();
 
-        List<Fee> tmp = new ArrayList<Fee>();
-
-        if (getCurrent().getId() != null) {
-            tmp = getFeeFacade().findBySQL("Select i from Fee i where i.retired=false and i.serviceSession.id=" + getCurrent().getId());
-        }
-
-        for (Fee f : tmp) {
-            if (f.getFeeType() == FeeType.Staff) {
-                doctorFee = f;
-            } else if (f.getFeeType() == FeeType.OwnInstitution) {
-                hospitalFee = f;
-            } else if (f.getFeeType() == FeeType.Tax) {
-                tax = f;
-            }
-        }
-
+//        List<Fee> tmp = new ArrayList<Fee>();
+//
+//        if (getCurrent().getId() != null) {
+//            tmp = getFeeFacade().findBySQL("Select i from Fee i where i.retired=false and i.serviceSession.id=" + getCurrent().getId());
+//        }
+//
+//        for (Fee f : tmp) {
+//            if (f.getFeeType() == FeeType.Staff) {
+//                doctorFee = f;
+//            } else if (f.getFeeType() == FeeType.OwnInstitution) {
+//                hospitalFee = f;
+//            } else if (f.getFeeType() == FeeType.Tax) {
+//                tax = f;
+//            }
+//        }
     }
 
     public List<ServiceSession> getItems() {
@@ -199,10 +272,11 @@ public class SheduleController implements Serializable {
     }
 
     public void prepareAdd() {
-        current = new ServiceSession();
+        current = null;
         hospitalFee = null;
         doctorFee = null;
         tax = null;
+        createFees();
 //        speciality = null;
 //        currentStaff = null;
     }
@@ -287,14 +361,44 @@ public class SheduleController implements Serializable {
 
     }
 
+    private void saveFees() {
+        if (getItemFees() == null) {
+            System.err.println("null");
+            return;
+        }
+        
+        System.err.println("size "+getItemFees().size());
+
+        
+        for (ItemFee i : getItemFees()) {
+            i.setServiceSession(current);
+            i.setInstitution(current.getInstitution());
+            if (i.getId() == null) {
+                i.setCreatedAt(new Date());
+                i.setCreater(sessionController.getLoggedUser());
+                System.err.println("cRE");
+                itemFeeFacade.create(i);
+            } else {
+                System.err.println("Edit");
+                itemFeeFacade.edit(i);
+            }
+
+        }
+    }
+
     public void saveSelected() {
+        System.err.println("1 "+getItemFees().size());
+        if (checkError()) {
+            return;
+        }
+
+        System.err.println("1 "+getItemFees().size());
         if (getCurrent().getSessionNumberGenerator() == null) {
             SessionNumberGenerator ss = saveSessionNumber();
             current.setSessionNumberGenerator(ss);
         }
-        if (checkError()) {
-            return;
-        }
+        
+        System.err.println("1 "+getItemFees().size());
 
         current.setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
@@ -306,6 +410,10 @@ public class SheduleController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
+        System.err.println("1 "+getItemFees().size());
+
+        saveFees();
+
         prepareAdd();
         getItems();
     }
@@ -315,6 +423,7 @@ public class SheduleController implements Serializable {
     }
 
     public void setSessionController(SessionController sessionController) {
+
         this.sessionController = sessionController;
     }
 
