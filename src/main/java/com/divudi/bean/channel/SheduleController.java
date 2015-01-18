@@ -61,6 +61,9 @@ public class SheduleController implements Serializable {
     List<ItemFee> itemFees;
 
     public List<ItemFee> getItemFees() {
+        if (itemFees == null) {
+            itemFees = new ArrayList<>();
+        }
         return itemFees;
     }
 
@@ -79,6 +82,7 @@ public class SheduleController implements Serializable {
                 + " f.serviceSession=:ses "
                 + " order by f.id";
         m.put("ses", current);
+        System.err.println("Fill  Fees");
         itemFees = itemFeeFacade.findBySQL(sql, m);
     }
 
@@ -119,11 +123,10 @@ public class SheduleController implements Serializable {
     }
 
     private void createFees() {
-        itemFees = new ArrayList<>();
 
-        itemFees.add(createHospitalFee());
-        itemFees.add(createStaffFee());
-        itemFees.add(createScanFee());
+        getItemFees().add(createHospitalFee());
+        getItemFees().add(createStaffFee());
+        getItemFees().add(createScanFee());
     }
 
     public void makeNull() {
@@ -219,6 +222,7 @@ public class SheduleController implements Serializable {
         if (current == null) {
             current = new ServiceSession();
             current.setInstitution(sessionController.getInstitution());
+//            createFees();
         }
         return current;
     }
@@ -233,7 +237,7 @@ public class SheduleController implements Serializable {
 
     public void setCurrent(ServiceSession current) {
         this.current = current;
-        fillFees();
+//        fillFees();
 
 //        List<Fee> tmp = new ArrayList<Fee>();
 //
@@ -276,6 +280,7 @@ public class SheduleController implements Serializable {
         hospitalFee = null;
         doctorFee = null;
         tax = null;
+        itemFees=null;
         createFees();
 //        speciality = null;
 //        currentStaff = null;
@@ -366,12 +371,11 @@ public class SheduleController implements Serializable {
             System.err.println("null");
             return;
         }
-        
-        System.err.println("size "+getItemFees().size());
 
-        
+        System.err.println("size " + getItemFees().size());
+
         for (ItemFee i : getItemFees()) {
-            i.setServiceSession(current);
+//            i.setServiceSession(current);
             i.setInstitution(current.getInstitution());
             if (i.getId() == null) {
                 i.setCreatedAt(new Date());
@@ -387,18 +391,18 @@ public class SheduleController implements Serializable {
     }
 
     public void saveSelected() {
-        System.err.println("1 "+getItemFees().size());
+        System.err.println("1 " + getItemFees().size());
         if (checkError()) {
             return;
         }
 
-        System.err.println("1 "+getItemFees().size());
+        System.err.println("1 " + getItemFees().size());
         if (getCurrent().getSessionNumberGenerator() == null) {
             SessionNumberGenerator ss = saveSessionNumber();
             current.setSessionNumberGenerator(ss);
         }
-        
-        System.err.println("1 "+getItemFees().size());
+
+        System.err.println("1 " + getItemFees().size());
 
         current.setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
@@ -410,7 +414,7 @@ public class SheduleController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("savedNewSuccessfully");
         }
-        System.err.println("1 "+getItemFees().size());
+        System.err.println("1 " + getItemFees().size());
 
         saveFees();
 
