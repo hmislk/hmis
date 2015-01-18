@@ -62,6 +62,7 @@
                 <p:panel id="gpDetail">  
 
                     <p:panelGrid columns="2">  
+
                         <p:outputLabel value="Session Name"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
                         <h:outputText value="Institution" ></h:outputText>
@@ -122,6 +123,8 @@
                             </p:calendar>
                         </p:tab>
                     </p:tabView>  
+                    <p:outputLabel value="Session Value"/>
+                    <p:outputLabel value="#{sheduleController.current.total}"/>
                     <p:dataTable value="#{sheduleController.itemFees}" var="i" >
                         <p:column headerText="Name">
                             #{i.name}
