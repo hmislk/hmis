@@ -12,9 +12,9 @@
         <h:form id="form">  
             <h:panelGrid columns="2">
                 <h:outputLabel value="From Date"/>
-                <p:calendar id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
+                <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
                 <h:outputLabel value="To Date"/>
-                <p:calendar id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
+                <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
                 <h:outputLabel value="Roster"/>
                 <p:selectOneMenu id="roster" value="#{shiftTableController.roster}">
                     <f:selectItem itemLabel="Select Roster"/>

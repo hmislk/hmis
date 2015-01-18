@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+
+                <p:panel header="Item Report">                    
+                    <h:outputLabel value="From"/>
+                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{pharmacySaleReport.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    </p:calendar>
+
+                    <h:outputLabel value="To"/>
+                    <p:calendar id="toDate" value="#{pharmacySaleReport.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    </p:calendar>
+                    <p:panelGrid columns="3">
+                        <p:commandButton ajax="false" value="Process by Bill Created Date" 
+                                         action="#{pharmacySaleReport.createPharmacyIssueBHT}" style="float: right;" onclick="onSubmitButton();" />
+                    </p:panelGrid>                    
+
+                </p:panel>   
+
+                <p:panel id="reportPrint">
+                    <p:dataTable id="tbl" value="#{pharmacySaleReport.itemWithDepBHTIssues}" var="iwbi">
+                        <p:columnGroup type="header">
+                            <p:row>
+                                <p:column headerText="Department">                                    
+                                </p:column>
+                                <p:column headerText="Unit Margine">                                    
+                                </p:column>
+                                <p:column headerText="Qty">                                    
+                                </p:column>
+                                <p:column headerText="Margine">                                    
+                                </p:column>
+                                <p:column headerText="Total">                                    
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{iwbi.list}" var="i" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Item Name - #{iwbi.itemString} 
+                                               &nbsp;&nbsp;&nbsp; Item Rate - #{iwbi.itemRate}" />
+                                <h:outputLabel value="Item Total - #{iwbi.itemTotal}" style="float: right;"/>
+                            </f:facet>
+                            <p:column headerText="Department" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Department" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.string}"/>
+                            </p:column> 
+                            <p:column headerText="Unit Margine">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Unit Margine" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.value2/i.value1}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Qty">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Qty" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.value1}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Margine">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Margine" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.value2}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Total">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.value3}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                        </p:subTable>
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column footerText="Total" colspan="3" />
+                                <p:column style="text-align: right;" >
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacySaleReport.totalBHTIssue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+
+                    </p:dataTable>
+                </p:panel>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

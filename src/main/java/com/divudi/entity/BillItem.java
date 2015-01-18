@@ -25,6 +25,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -129,6 +130,7 @@ public class BillItem implements Serializable {
     @OneToMany(mappedBy = "billItem", fetch = FetchType.LAZY)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
+    @OrderBy("feeAdjusted")
     private List<BillFee> proFees = new ArrayList<>();
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;
