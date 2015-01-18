@@ -272,7 +272,9 @@ public class ChannelSessionWizard implements Serializable {
         hospitalFee.setFee(0.0);
         hospitalFee.setFfee(0.0);
         hospitalFee.setInstitution(getSessionController().getLoggedUser().getInstitution());
-        hospitalFee.setServiceSession(current);
+        if (current.getId() != null) {
+            hospitalFee.setServiceSession(current);
+        }
         getItemFeeFacade().create(hospitalFee);
     }
 
