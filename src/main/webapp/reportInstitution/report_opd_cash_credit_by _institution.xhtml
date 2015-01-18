@@ -1,0 +1,359 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="OPD BILL SEARCH "/>                          
+                            <h:panelGrid columns="8" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{labReportSearchByInstitutionController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{labReportSearchByInstitutionController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                                <h:outputLabel value="paymentMethod"/>
+                                <p:selectOneMenu   id="cmbPs" value="#{labReportSearchByInstitutionController.paymentMethod}"  >
+                                    <f:selectItem itemLabel="Select" />                           
+                                    <f:selectItems value="#{labReportSearchByInstitutionController.paymentMethord}" />
+                                </p:selectOneMenu>
+                                <h:outputLabel   value="Institution" />
+                                <p:selectOneMenu styleClass="noPrintButton"  value="#{labReportSearchByInstitutionController.institution}"                                        
+                                                 requiredMessage="You must select a institution" >
+                                    <f:selectItem itemLabel="Select Institution"/>
+                                    <f:selectItems value="#{institutionController.company}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
+                                </p:selectOneMenu>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{labReportSearchByInstitutionController.createTableCashCreditBills}"/>
+
+                            </h:panelGrid>
+
+                        </f:facet>
+
+                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{labReportSearchByInstitutionController.billBills}" 
+                                     var="bill"  
+                                     style="min-width: 100%;"  
+                                     >
+                            <f:facet name="header">
+                                <h:outputLabel value="Report by #{labReportSearchByInstitutionController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - " />
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - Bills" />
+                            </f:facet>
+                            <p:column headerText="No" styleClass="alignTop">
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
+                                <h:outputLabel   value="#{bill.insId}"/>
+                            </p:column>    
+                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
+                                <h:outputLabel   value="#{bill.deptId}"/>
+                            </p:column> 
+                            <p:column headerText="Billed For"  >                                
+                                <h:outputLabel value="#{bill.toInstitution.name} - #{bill.toDepartment.name}" />
+                            </p:column>
+                            <p:column headerText="Billed at"  >
+                                <h:outputLabel value="#{bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>  
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
+                            <p:column headerText="Client">                               
+                                <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />                                   
+                            </p:column>
+                            <p:column headerText="Client Phone No">                              
+                                <h:outputLabel value="#{bill.patient.person.phone}" />
+                            </p:column>
+                            <p:column headerText="Paymentmethod" >                                
+                                <h:outputLabel value="#{bill.paymentMethod}" /><br/>
+                                <h:outputLabel value="#{bill.paymentScheme.name}" />
+                            </p:column>
+                            <p:column headerText="Gross Value"  >
+
+                                <h:outputLabel value="#{bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Discount" >
+
+                                <h:outputLabel value="#{bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Net Value" >
+
+                                <h:outputLabel value="#{bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{labReportSearchByInstitutionController.totalBill}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>                         
+                            <p:column headerText="Comments" >
+                                <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
+                                </h:outputLabel>
+                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable rowIndexVar="i" id="tblBills2" value="#{labReportSearchByInstitutionController.canBills}" 
+                                     var="bill"  
+                                     style="min-width: 100%;"  
+                                     >
+                            <f:facet name="header">
+                                <h:outputLabel value="Report by #{labReportSearchByInstitutionController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - " />
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - Cancel Bills" />
+                            </f:facet>
+                            <p:column headerText="No" styleClass="alignTop">
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
+                                <h:outputLabel   value="#{bill.insId}"/>
+                            </p:column>    
+                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
+                                <h:outputLabel   value="#{bill.deptId}"/>
+                            </p:column> 
+                            <p:column headerText="Billed For"  >                                
+                                <h:outputLabel value="#{bill.toInstitution.name} - #{bill.toDepartment.name}" />
+                            </p:column>
+                            <p:column headerText="Billed at"  >
+                                <h:outputLabel value="#{bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>  
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
+                            <p:column headerText="Client">                               
+                                <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />                                   
+                            </p:column>
+                            <p:column headerText="Client Phone No">                              
+                                <h:outputLabel value="#{bill.patient.person.phone}" />
+                            </p:column>
+                            <p:column headerText="Paymentmethod" >                                
+                                <h:outputLabel value="#{bill.paymentMethod}" /><br/>
+                                <h:outputLabel value="#{bill.paymentScheme.name}" />
+                            </p:column>
+                            <p:column headerText="Gross Value"  >
+
+                                <h:outputLabel value="#{bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Discount" >
+
+                                <h:outputLabel value="#{bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Net Value" >
+
+                                <h:outputLabel value="#{bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{labReportSearchByInstitutionController.totalCan}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>                         
+                            <p:column headerText="Comments" >
+                                <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
+                                </h:outputLabel>
+                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable rowIndexVar="i" id="tblBills3" value="#{labReportSearchByInstitutionController.refBills}" 
+                                     var="bill"  
+                                     style="min-width: 100%;"  
+                                     >
+                            <f:facet name="header">
+                                <h:outputLabel value="Report by #{labReportSearchByInstitutionController.paymentMethod} Bill OPD From &nbsp;&nbsp; : "/>
+
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.fromDate}">
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - " />
+                                <h:outputLabel  value="#{labReportSearchByInstitutionController.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - Refund Bills" />
+                            </f:facet>
+                            <p:column headerText="No" styleClass="alignTop">
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
+                                <h:outputLabel   value="#{bill.insId}"/>
+                            </p:column>    
+                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
+                                <h:outputLabel   value="#{bill.deptId}"/>
+                            </p:column> 
+                            <p:column headerText="Billed For"  >                                
+                                <h:outputLabel value="#{bill.toInstitution.name} - #{bill.toDepartment.name}" />
+                            </p:column>
+                            <p:column headerText="Billed at"  >
+                                <h:outputLabel value="#{bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded at " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>  
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded By " />
+                                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>    
+                            <p:column headerText="Client">                               
+                                <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />                                   
+                            </p:column>
+                            <p:column headerText="Client Phone No">                              
+                                <h:outputLabel value="#{bill.patient.person.phone}" />
+                            </p:column>
+                            <p:column headerText="Paymentmethod" >                                
+                                <h:outputLabel value="#{bill.paymentMethod}" /><br/>
+                                <h:outputLabel value="#{bill.paymentScheme.name}" />
+                            </p:column>
+                            <p:column headerText="Gross Value"  >
+
+                                <h:outputLabel value="#{bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Discount" >
+
+                                <h:outputLabel value="#{bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+
+                            </p:column>
+                            <p:column headerText="Net Value" >
+
+                                <h:outputLabel value="#{bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{labReportSearchByInstitutionController.totalRef}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>                         
+                            <p:column headerText="Comments" >
+                                <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
+                                </h:outputLabel>
+                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

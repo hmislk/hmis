@@ -51,7 +51,7 @@
                                 <p:column headerText="Sun">
                                     <h:outputLabel value="#{ss.sunDay}">
                                         <f:converter converterId="longToTime"/>
-                                    </h:outputLabel>
+                                    </h:outputLabel>                                    
                                 </p:column>
                                 <p:column headerText="Mon">
                                     <h:outputLabel value="#{ss.monDay}">
@@ -88,9 +88,34 @@
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column> 
-                                <p:column headerText="Over Time">
+                                <p:column headerText="Over Time Hour">
                                     <h:outputLabel value="#{ss.overTime}">
                                         <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Over Time Second">
+                                    <h:outputLabel value="#{ss.overTime}">
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Basic Per Second">
+                                    <h:outputLabel value="#{ss.basicPerSecond}">
+                                        <f:convertNumber pattern="0.0000" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Over Time Value">
+                                    <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">  
+                                          <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Extra Duty Hour">
+                                    <h:outputLabel value="#{ss.extraDuty}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Extra Duty Value">
+                                    <h:outputLabel value="#{ss.extraDutyValue}">
+                                          <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
 

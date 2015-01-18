@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
 
     <body>
 
@@ -21,8 +22,7 @@
                             <h:outputLabel value="Select the staff" >
                             </h:outputLabel>
 
-                            <p:autoComplete forceSelection="true" converter="stfcon"  value="#{staffController.current}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
-                            </p:autoComplete>                           
+                            <autocomplete:completeStaff value="#{staffController.current}"/>
                             <h:commandButton value="Refresh" />
                             
                             <p:fileUpload value="#{staffImageController.file}" mode="simple"/>

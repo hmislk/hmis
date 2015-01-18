@@ -135,9 +135,38 @@ public class StaffAdditionalFormController implements Serializable {
 
     }
 
+    public void createAmmendmentTableShiftDate() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select a from AdditionalForm a where "
+                + " a.staffShift.shiftDate between :fd and :td ";
+
+        if (department != null) {
+            sql += " and a.department=:dept ";
+            m.put("dept", department);
+        }
+
+        if (staff != null) {
+            sql += " and a.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and a.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
     public void viewAdditionalForm(AdditionalForm additionalForm) {
-        date = additionalForm.getFromTime();   
-        fetchStaffShift(date, additionalForm.getStaff());             
+        date = additionalForm.getFromTime();
+        fetchStaffShift(date, additionalForm.getStaff());
         currentAdditionalForm = additionalForm;
     }
 
@@ -269,6 +298,14 @@ public class StaffAdditionalFormController implements Serializable {
         DayType dayType = phDateController.getHolidayType(date);
         Shift shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
 
+        if (shift == null) {
+            shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), DayType.DayOff);
+        }
+
+        if (shift == null) {
+            shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), DayType.SleepingDay);
+        }
+
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
         if (currentAdditionalForm.getId() == null) {
@@ -326,8 +363,8 @@ public class StaffAdditionalFormController implements Serializable {
             sh.setDayType(dayType);
             sh.setRoster(roster);
             sh.setName(dayType.toString());
-            sh.setStartingTime(date);
-            sh.setEndingTime(date);
+            sh.setStartingTime(null);
+            sh.setEndingTime(null);
             shiftFacade.create(sh);
         }
 

@@ -472,13 +472,15 @@ public class SearchController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
+        m.put("ldep", getSessionController().getLoggedUser().getDepartment());
         String sql;
 
         sql = "Select b from PreBill b where "
                 + " b.createdAt between :fd and :td "
                 + " and b.billType=:bt"
                 + " and b.billedBill is null "
-                + " and b.institution=:ins ";
+                + " and b.institution=:ins "
+                + " and b.department=:ldep";
         //  + " and type(b)=:class ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {

@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -210,6 +211,7 @@ public class StaffShift implements Serializable {
             case CasualHalf:
             case Lieu:
             case LieuHalf:
+            case DutyLeave:
                 leavedTime = 0;
                 break;
             case No_Pay:
@@ -221,9 +223,8 @@ public class StaffShift implements Serializable {
             case Maternity1stHalf:
             case Maternity2nd:
             case Maternity2ndHalf:
-                leavedTimeOther=0;
+                leavedTimeOther = 0;
                 break;
-                
 
         }
 
@@ -377,6 +378,7 @@ public class StaffShift implements Serializable {
             case Annual:
             case Casual:
             case Lieu:
+            case DutyLeave:
                 setLeavedTime((shift.getLeaveHourFull() * 60 * 60) / div);
                 break;
             case Maternity1st:
@@ -552,6 +554,10 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeWithStartOrEndRecord() {
+        if (getStartRecord() == null || getEndRecord() == null) {
+            return;
+        }
+
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
         Long inSecond = 0l;
@@ -585,8 +591,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From Start Record Varified 
         extraTimeFromStartRecordVarified = 0;
-        if (getStartRecord().isAllowedExtraDuty()) {
-
+        if (getStartRecord().isAllowedExtraDuty() && getStartRecord().getRecordTimeStamp() != null) {
             if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
@@ -597,7 +602,7 @@ public class StaffShift implements Serializable {
 
         //Over Time From End Record Varified
         extraTimeFromEndRecordVarified = 0;
-        if (getEndRecord().isAllowedExtraDuty()) {
+        if (getEndRecord().isAllowedExtraDuty() && getEndRecord().getRecordTimeStamp() != null) {
             if (getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());
@@ -609,6 +614,10 @@ public class StaffShift implements Serializable {
     }
 
     public void calExtraTimeComplete() {
+        if (getStartRecord() == null || getEndRecord() == null) {
+            return;
+        }
+
         if (getShift() != null) {
             DayType dayType = getShift().getDayType();
 

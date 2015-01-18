@@ -23,6 +23,7 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.StaffLeave;
+import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.DepartmentFacade;
@@ -186,7 +187,7 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-//        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.recordTimeStamp";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
@@ -611,7 +612,10 @@ public class HrReportController implements Serializable {
         String sql = "";
 
         HashMap hm = new HashMap();
-        sql = "select ss.dayOfWeek,sum(ss.workedWithinTimeFrameVarified+ss.leavedTime)"
+        sql = "select ss.dayOfWeek,"
+                + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
+                + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified),"
+                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.basicPerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
@@ -868,6 +872,7 @@ public class HrReportController implements Serializable {
             monthEnd.setLeave_casual(humanResourceBean.calStaffLeave(stf, LeaveType.Casual, getFromDate(), getToDate()));
             monthEnd.setLeave_medical(humanResourceBean.calStaffLeave(stf, LeaveType.Medical, getFromDate(), getToDate()));
             monthEnd.setLeave_nopay(humanResourceBean.calStaffLeave(stf, LeaveType.No_Pay, getFromDate(), getToDate()));
+            monthEnd.setLeave_dutyLeave(humanResourceBean.calStaffLeave(stf, LeaveType.DutyLeave, getFromDate(), getToDate()));
             monthEnd.setExtraDutyDays(fetchExtraDutyDays(stf));
             monthEnd.setLatedays(fetchLateDays(stf));
             monthEnd.setDayoff(fetchDayOff(stf));
@@ -887,41 +892,46 @@ public class HrReportController implements Serializable {
             List<Object[]> list = fetchWorkedTime(stf);
 
             for (Object[] obj : list) {
-                Integer dayOfWeek = (Integer) obj[0];
-                Double value = (Double) obj[1];
+                Integer dayOfWeek = (Integer) obj[0] != null ? (Integer) obj[0] : -1;
+                Double value = (Double) obj[1] != null ? (Double) obj[1] : 0;
+                Double valueExtra = (Double) obj[2] != null ? (Double) obj[2] : 0;
+                Double totalExtraDuty = (Double) obj[3] != null ? (Double) obj[3] : 0;
 
-                if (value == null) {
-                    value = 0.0;
-                }
-
-                if (dayOfWeek == null) {
-                    dayOfWeek = -1;
-                }
                 switch (dayOfWeek) {
                     case Calendar.SUNDAY:
                         weekDayWork.setSunDay(value);
+                        weekDayWork.setSunDayExtra(valueExtra);
                         break;
                     case Calendar.MONDAY:
                         weekDayWork.setMonDay(value);
+                        weekDayWork.setMonDayExtra(valueExtra);
                         break;
                     case Calendar.TUESDAY:
                         weekDayWork.setTuesDay(value);
+                        weekDayWork.setTuesDayExtra(valueExtra);
                         break;
                     case Calendar.WEDNESDAY:
                         weekDayWork.setWednesDay(value);
+                        weekDayWork.setWednesDayExtra(valueExtra);
                         break;
                     case Calendar.THURSDAY:
                         weekDayWork.setThursDay(value);
+                        weekDayWork.setThursDayExtra(valueExtra);
                         break;
                     case Calendar.FRIDAY:
                         weekDayWork.setFriDay(value);
+                        weekDayWork.setFriDayExtra(valueExtra);
                         break;
                     case Calendar.SATURDAY:
                         weekDayWork.setSaturDay(value);
+                        weekDayWork.setSaturDayExtra(valueExtra);
                         break;
                 }
 
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
+                weekDayWork.setExtraDutyValue(weekDayWork.getExtraDutyValue() + totalExtraDuty);
+                weekDayWork.setExtraDuty(weekDayWork.getExtraDuty() + valueExtra);
+
             }
 
             if (stf.getWorkingTimeForOverTimePerWeek() != 0 && numOfWeeks != 0) {
@@ -937,6 +947,13 @@ public class HrReportController implements Serializable {
                 if (overTime > 0) {
                     weekDayWork.setOverTime(overTime);
                 }
+            }
+
+            //Fetch Basic
+            StaffPaysheetComponent basic = humanResourceBean.getBasic(stf);
+
+            if (basic != null) {
+                weekDayWork.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
             }
 
             weekDayWorks.add(weekDayWork);
@@ -1059,12 +1076,12 @@ public class HrReportController implements Serializable {
 
         HashMap hm = new HashMap();
         sql = "select new com.divudi.data.hr.StaffShiftAggrgation(ss.staff,"
-                + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime)) "
+                + "sum(ss.workedWithinTimeFrameVarified),sum(ss.leavedTime+ss.leavedTimeOther)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-                //                + " and ((ss.startRecord.recordTimeStamp is not null "
-                //                + " and ss.endRecord.recordTimeStamp is not null) "
-                //                + " or (ss.leaveType is not null) ) "
+                //  + " and ((ss.startRecord.recordTimeStamp is not null "
+                //   + " and ss.endRecord.recordTimeStamp is not null) "
+                // + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -1146,7 +1163,8 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
-//        sql += " order by ss.shift,ss.shiftDate";
+        sql += " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -1156,16 +1174,12 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " and (ss.startRecord.allowedExtraDuty=true or "
                 + " ss.endRecord.allowedExtraDuty=true )";
-//        sql += " order by ss.shift,ss.shiftDate";
+        sql += " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
-        if (staffShifts == null) {
-            return;
-        }
+  
 
-//        for (StaffShift ss : staffShifts) {
-//             
-//        }
     }
 
     public void createStaffShiftEarlyIn() {

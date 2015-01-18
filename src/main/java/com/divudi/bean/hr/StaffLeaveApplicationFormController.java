@@ -69,6 +69,9 @@ public class StaffLeaveApplicationFormController implements Serializable {
     FinalVariables finalVariables;
     ReportKeyWord reportKeyWord;
 
+    StaffLeave staffLeave;
+    List<StaffLeave> staffLeaves;
+
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {
             reportKeyWord = new ReportKeyWord();
@@ -310,13 +313,33 @@ public class StaffLeaveApplicationFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Comment");
             return true;
         }
-        
-        if (currentLeaveForm.getFromDate()== null ) {
+
+        if (currentLeaveForm.getFromDate() == null) {
             JsfUtil.addErrorMessage("Please Select From Date");
             return true;
         }
-        
-        if (currentLeaveForm.getToDate()== null ) {
+
+        if (currentLeaveForm.getToDate() == null) {
+            JsfUtil.addErrorMessage("Please Select to Date");
+            return true;
+        }
+
+        if (currentLeaveForm.getFromDate() == null) {
+            JsfUtil.addErrorMessage("Please Select From Date");
+            return true;
+        }
+
+        if (currentLeaveForm.getToDate() == null) {
+            JsfUtil.addErrorMessage("Please Select to Date");
+            return true;
+        }
+
+        if (currentLeaveForm.getFromDate() == null) {
+            JsfUtil.addErrorMessage("Please Select From Date");
+            return true;
+        }
+
+        if (currentLeaveForm.getToDate() == null) {
             JsfUtil.addErrorMessage("Please Select to Date");
             return true;
         }
@@ -406,6 +429,22 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
     }
 
+    private StaffLeave fetchStaffLeave(Date date, Staff staff, LeaveType leaveType) {
+        String sql = "select s from StaffLeave s"
+                + " where s.staff=:st"
+                + " and s.retired=false "
+                + " and s.leaveDate=:dt "
+                + " and s.leaveType=:lt";
+
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+        hm.put("dt", date);
+        hm.put("lt", leaveType);
+
+        return staffLeaveFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+
+    }
+
     private void saveStaffLeaves() {
         Calendar nowDate = Calendar.getInstance();
         nowDate.setTime(getCurrentLeaveForm().getFromDate());
@@ -414,7 +453,12 @@ public class StaffLeaveApplicationFormController implements Serializable {
         while (toDateCal.getTime().after(nowDate.getTime())
                 || toDateCal.get(Calendar.DATE) == nowDate.get(Calendar.DATE)) {
 
-            StaffLeave staffLeave = new StaffLeave();
+            StaffLeave staffLeave = fetchStaffLeave(nowDate.getTime(), getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType());
+            if (staffLeave != null) {
+                continue;
+            }
+
+            staffLeave = new StaffLeave();
             staffLeave.setCreatedAt(new Date());
             staffLeave.setCreater(sessionController.getLoggedUser());
             staffLeave.setLeaveType(getCurrentLeaveForm().getLeaveType());
@@ -473,11 +517,52 @@ public class StaffLeaveApplicationFormController implements Serializable {
             m.put("app", approvedStaff);
         }
 
+        if (leaveType != null) {
+            sql += " and l.leaveType=:lt ";
+            m.put("lt", leaveType);
+        }
+
         m.put("fd", fromDate);
         m.put("td", toDate);
 
         leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
+    }
+
+    public void createStaffleaveTable() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select l from StaffLeave l where "
+                + " l.createdAt between :fd and :td ";
+
+        if (staff != null) {
+            sql += " and l.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and l.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        if (leaveType != null) {
+            sql += " and l.leaveType=:lt ";
+            m.put("lt", leaveType);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        staffLeaves = getStaffLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void saveStaffLeave() {
+        if (staffLeave != null) {
+            getStaffLeaveFacade().edit(staffLeave);
+            UtilityController.addSuccessMessage("Updated");
+        }
     }
 
     public void createleaveTableApprovedDate() {
@@ -495,6 +580,40 @@ public class StaffLeaveApplicationFormController implements Serializable {
         if (approvedStaff != null) {
             sql += " and l.approvedStaff=:app ";
             m.put("app", approvedStaff);
+        }
+
+        if (leaveType != null) {
+            sql += " and l.leaveType=:lt ";
+            m.put("lt", leaveType);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createleaveTableShiftDate() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select l from LeaveForm l where "
+                + " ((l.fromDate between :fd and :td)or(l.toDate between :fd and :td)) ";
+
+        if (staff != null) {
+            sql += " and l.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and l.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        if (leaveType != null) {
+            sql += " and l.leaveType=:lt ";
+            m.put("lt", leaveType);
         }
 
         m.put("fd", fromDate);
@@ -536,6 +655,10 @@ public class StaffLeaveApplicationFormController implements Serializable {
 
     public void viewLeaveForm(LeaveForm leaveForm) {
         currentLeaveForm = leaveForm;
+    }
+
+    public void viewStaffLeave(StaffLeave leave) {
+        staffLeave = leave;
     }
 
     public void clear() {
@@ -636,4 +759,19 @@ public class StaffLeaveApplicationFormController implements Serializable {
         this.leaveForms = leaveForms;
     }
 
+    public StaffLeave getStaffLeave() {
+        return staffLeave;
+    }
+
+    public void setStaffLeave(StaffLeave staffLeave) {
+        this.staffLeave = staffLeave;
+    }
+
+    public List<StaffLeave> getStaffLeaves() {
+        return staffLeaves;
+    }
+
+    public void setStaffLeaves(List<StaffLeave> staffLeaves) {
+        this.staffLeaves = staffLeaves;
+    }
 }
