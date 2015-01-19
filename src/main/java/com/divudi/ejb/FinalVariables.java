@@ -40,6 +40,14 @@ public class FinalVariables {
         return 1.5;
     }
 
+    public double getPoyaDayAllowanceMultiply() {
+        return 1.5;
+    }
+    
+      public double getDayOffAllowanceMultiply() {
+        return 1.5;
+    }
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
 }

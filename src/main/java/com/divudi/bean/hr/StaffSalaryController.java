@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.dataStructure.ExtraDutyCount;
 import com.divudi.data.dataStructure.OtNormalSpecial;
+import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
@@ -352,7 +353,6 @@ public class StaffSalaryController implements Serializable {
 //        getCurrent().getStaffSalaryComponants().add(ss);
 //
 //    }
-    
     private void setExtraDuty() {
         StaffSalaryComponant ss = new StaffSalaryComponant();
         ss.setCreatedAt(new Date());
@@ -373,7 +373,7 @@ public class StaffSalaryController implements Serializable {
         ss.setCreater(getSessionController().getLoggedUser());
         ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(getCurrent().getStaff(), getSessionController().getLoggedUser(), PaysheetComponentType.PoyaAllowance));
         if (ss.getStaffPaysheetComponent() != null) {
-            double noPayTime = getHumanResourceBean().calculateNoPay(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff());
+            double count = getHumanResourceBean().calculateHolidayWork(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff(), DayType.Poya);
 
             double salaryValue = 0;
 
@@ -387,15 +387,15 @@ public class StaffSalaryController implements Serializable {
                     continue;
                 }
 
-                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForNoPay()) {
+                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludeForAllowance()) {
                     salaryValue += staffSalaryComponant.getComponantValue();
                 }
             }
 
             //Need Calculation Sum
-            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * (noPayTime / (60 * 60 * 24)));
+            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * finalVariables.getPoyaDayAllowanceMultiply() * count);
             System.err.println("Sal Val " + salaryValue);
-            System.err.println("No Pa " + noPayTime);
+            System.err.println("No Pa " + count);
         } else {
             return;
         }
@@ -407,8 +407,49 @@ public class StaffSalaryController implements Serializable {
         getCurrent().getStaffSalaryComponants().add(ss);
 
     }
-    
-     private void setNoPay() {
+
+    private void setDayOffAllowance() {
+        StaffSalaryComponant ss = new StaffSalaryComponant();
+        ss.setCreatedAt(new Date());
+        ss.setCreater(getSessionController().getLoggedUser());
+        ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(getCurrent().getStaff(), getSessionController().getLoggedUser(), PaysheetComponentType.DayOffAllowance));
+        if (ss.getStaffPaysheetComponent() != null) {
+            double count = getHumanResourceBean().calculateHolidayWork(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff(), DayType.DayOff);
+
+            double salaryValue = 0;
+
+            if (getCurrent().getStaffSalaryComponants() == null) {
+                return;
+            }
+
+            for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
+                if (staffSalaryComponant.getStaffPaysheetComponent() == null
+                        || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
+                    continue;
+                }
+
+                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludeForAllowance()) {
+                    salaryValue += staffSalaryComponant.getComponantValue();
+                }
+            }
+
+            //Need Calculation Sum
+            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * finalVariables.getDayOffAllowanceMultiply() * count);
+            System.err.println("Sal Val " + salaryValue);
+            System.err.println("No Pa " + count);
+        } else {
+            return;
+        }
+
+        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
+        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+
+        System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
+        getCurrent().getStaffSalaryComponants().add(ss);
+
+    }
+
+    private void setNoPay() {
         StaffSalaryComponant ss = new StaffSalaryComponant();
         ss.setCreatedAt(new Date());
         ss.setCreater(getSessionController().getLoggedUser());
@@ -497,6 +538,8 @@ public class StaffSalaryController implements Serializable {
             setOT();
             setExtraDuty();
             setNoPay();
+            setPoyaDayAllowance();
+            setDayOffAllowance();
         }
 
     }

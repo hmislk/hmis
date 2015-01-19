@@ -65,6 +65,8 @@
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForNoPay}" />
                                     <h:outputText value="Included For PH" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForPh}" />
+                                       <h:outputText value="Included For Allowances(For Dayment in PH and Dayoff)" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includeForAllowance}" />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" ajax="false" value="Save"  action="#{paysheetComponentController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">

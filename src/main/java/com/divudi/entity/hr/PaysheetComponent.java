@@ -45,6 +45,7 @@ public class PaysheetComponent implements Serializable {
     private boolean includedForOt;
     private boolean includedForPh;
     private boolean includedForNoPay;
+    boolean includeForAllowance;
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -61,6 +62,14 @@ public class PaysheetComponent implements Serializable {
     @ManyToOne
     private Institution sendingInstitution;
     int orderNo;
+
+    public boolean isIncludeForAllowance() {
+        return includeForAllowance;
+    }
+
+    public void setIncludeForAllowance(boolean includeForAllowance) {
+        this.includeForAllowance = includeForAllowance;
+    }
     
     
 
