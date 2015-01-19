@@ -10,6 +10,7 @@
         <h:form>
             <p:panel>
                 <p:commandButton ajax="false" value="Generated Salary" action="#{staffSalaryController.generate}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Save Salary" action="#{staffSalaryController.saveSalary}" onclick="onSubmitButton();"/>
                 <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" />
             </p:panel>
 

@@ -860,6 +860,7 @@ public class HrReportController implements Serializable {
 
     @EJB
     HumanResourceBean humanResourceBean;
+   
 
     public void createMonthEndReport() {
         List<Staff> staffList = fetchStaff();
@@ -934,21 +935,16 @@ public class HrReportController implements Serializable {
 
             }
 
-            if (stf.getWorkingTimeForOverTimePerWeek() != 0 && numOfWeeks != 0) {
-                double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
-                double overTime = weekDayWork.getTotal() - normalWorkTime;
+//            if (stf.getWorkingTimeForOverTimePerWeek() != 0 && numOfWeeks != 0) {
+//                double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
+//                double overTime = weekDayWork.getTotal() - normalWorkTime;
+//                if (overTime > 0) {
+//                    weekDayWork.setOverTime(overTime);
+//                }
+//            }
 
-                System.out.println(" Stf =" + stf.getCode());
-                System.out.print(" : Week = " + numOfWeeks);
-                System.out.print(" : Hour  = " + stf.getWorkingTimeForOverTimePerWeek());
-                System.out.print(" : Total = " + weekDayWork.getTotal());
-                System.out.print(" : Over = " + overTime);
-
-                if (overTime > 0) {
-                    weekDayWork.setOverTime(overTime);
-                }
-            }
-
+             weekDayWork.setOverTime(humanResourceBean.getOverTimeFromRoster(stf.getWorkingTimeForOverTimePerWeek(), numOfWeeks, weekDayWork.getTotal()));
+            
             //Fetch Basic
             StaffPaysheetComponent basic = humanResourceBean.getBasic(stf);
 
