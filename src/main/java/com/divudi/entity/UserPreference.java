@@ -46,6 +46,7 @@ public class UserPreference implements Serializable {
     boolean pharmacyBillPrabodha;
     boolean checkPaymentSchemeValidation;
     boolean grnBillDetailed;
+    boolean bhtNumberWithYear;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
@@ -101,6 +102,14 @@ public class UserPreference implements Serializable {
 
     public void setCheckPaymentSchemeValidation(boolean checkPaymentSchemeValidation) {
         this.checkPaymentSchemeValidation = checkPaymentSchemeValidation;
+    }
+
+    public boolean isBhtNumberWithYear() {
+        return bhtNumberWithYear;
+    }
+
+    public void setBhtNumberWithYear(boolean bhtNumberWithYear) {
+        this.bhtNumberWithYear = bhtNumberWithYear;
     }
     
     
