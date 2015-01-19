@@ -1424,8 +1424,8 @@ public class HumanResourceBean {
                 + " where s.retired=false "
                 + " and  s.staff=:stf "
                 + " and s.paysheetComponent.componentType=:type "
-                + " and s.fromDate>=:cu  "
-                + " and s.toDate<=:cu ";
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
 
         hm = new HashMap();
         hm.put("stf", staff);
@@ -1438,7 +1438,7 @@ public class HumanResourceBean {
 //                    + " where s.retired=false and "
 //                    + " s.staff=:stf "
 //                    + " and s.paysheetComponent.componentType=:type"
-//                    + " and s.fromDate>=:cu "
+//                    + " and s.fromDate<=:cu "
 //                    + " and s.toDate is null ";
 //
 //            hm = new HashMap();
@@ -1712,7 +1712,7 @@ public class HumanResourceBean {
     }
 
     public double calculateExtraWorkTimeValue(Date fromDate, Date toDate, Staff staff) {
-        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.basicPerSecond)"
+        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.shiftDate between :fd  and :td "
