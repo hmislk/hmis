@@ -14,23 +14,19 @@
                     <p:panel header="Search Leave Forms" >
                         <p:panel>
                             <p:panelGrid columns="2" >
-                                <h:outputLabel value="From Date or Leave Date"/>
-                                <p:calendar value="#{staffLeaveApplicationFormController.fromDate}"
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar value="#{staffShiftController.fromDate}"
                                             pattern="dd MMMM yyyy">     
                                 </p:calendar>   
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar value="#{staffLeaveApplicationFormController.toDate}"
+                                <p:calendar value="#{staffShiftController.toDate}"
                                             pattern="dd MMMM yyyy">
                                 </p:calendar> 
                                 <h:outputLabel value="Staff : "/>
-                                <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
-                                <h:outputLabel value="Leave Type"/>
-                                <p:selectOneMenu  value="#{staffLeaveApplicationFormController.leaveType}">
-                                    <f:selectItem itemLabel="Select Day Type"/>
-                                    <f:selectItems value="#{enumController.leaveType}"/>
-                                </p:selectOneMenu> 
+                                <au:completeStaff value="#{staffShiftController.staff}"/>                               
+                                
                                 <p:commandButton value="Search Created Date" ajax="false" action="#{staffShiftController.createStaffShiftTablebyCreatedDate()}" />
-                                <p:commandButton value="Search Leave Date" ajax="false" action="#{staffShiftController.createStaffShiftTablebyShiftDate()}" />
+                                <p:commandButton value="Search Shift Date" ajax="false" action="#{staffShiftController.createStaffShiftTablebyShiftDate()}" />
                             </p:panelGrid>
                         </p:panel>
                         <p:panel>
