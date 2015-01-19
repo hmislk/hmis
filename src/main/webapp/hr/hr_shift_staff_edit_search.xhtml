@@ -15,44 +15,35 @@
                         <p:panel>
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar value="#{staffLeaveApplicationFormController.fromDate}"
+                                <p:calendar value="#{staffShiftController.fromDate}"
                                             pattern="dd MMMM yyyy">     
                                 </p:calendar>   
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar value="#{staffLeaveApplicationFormController.toDate}"
+                                <p:calendar value="#{staffShiftController.toDate}"
                                             pattern="dd MMMM yyyy">
                                 </p:calendar> 
                                 <h:outputLabel value="Staff : "/>
-                                <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
-                                <h:outputLabel value="Leave Type"/>
-                                <p:selectOneMenu  value="#{staffLeaveApplicationFormController.leaveType}">
-                                    <f:selectItem itemLabel="Select Day Type"/>
-                                    <f:selectItems value="#{enumController.leaveType}"/>
-                                </p:selectOneMenu> 
-                                <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createStaffleaveTable()}" />
-                                <p:commandButton value="Search Leave Date" ajax="false" action="#{staffLeaveApplicationFormController.createStaffleaveTablebyLeaveDate()}" />
-<!--                                <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
-                                <p:commandButton value="Search Shift Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}" />-->
+                                <au:completeStaff value="#{staffShiftController.staff}"/>                               
+                                
+                                <p:commandButton value="Search Created Date" ajax="false" action="#{staffShiftController.createStaffShiftTablebyCreatedDate()}" />
+                                <p:commandButton value="Search Shift Date" ajax="false" action="#{staffShiftController.createStaffShiftTablebyShiftDate()}" />
                             </p:panelGrid>
                         </p:panel>
                         <p:panel>
-                            <p:dataTable value="#{staffLeaveApplicationFormController.staffLeaves}" var="l" 
+                            <p:dataTable value="#{staffShiftController.staffShifts}" var="l" 
                                          rowStyleClass="#{l.retired eq true ? 'redText':''}"
                                          scrollable="true"
                                          scrollHeight="300" >
                                 <p:column headerText="View" >
-                                    <p:commandButton ajax="false" value="View" action="hr_staff_leave_edit" actionListener="#{staffLeaveApplicationFormController.viewStaffLeave(l)}" disabled="#{l.retired}"></p:commandButton>
+                                    <p:commandButton ajax="false" value="View" action="hr_staff_shift_edit" actionListener="#{staffShiftController.viewStaffShift(l)}" disabled="#{l.retired}"></p:commandButton>
                                 </p:column>
                                 <p:column headerText="Staff">
                                     <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="From">
-                                    <p:outputLabel value="#{l.leaveDate}" >
+                                    <p:outputLabel value="#{l.shiftDate}" >
                                         <f:convertDateTime pattern="yyyy MM dd" />
                                     </p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Comment">
-                                    <p:outputLabel value="#{l.leaveType}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Creater">
                                     <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
