@@ -550,6 +550,21 @@ public class StaffLeaveApplicationFormController implements Serializable {
             sql += " and l.leaveType=:lt ";
             m.put("lt", leaveType);
         }
+        
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and l.roster=:ros ";
+            m.put("ros", getReportKeyWord().getRoster());
+        }
+        
+        if (getReportKeyWord().getDesignation()!= null) {
+            sql += " and l.staff.designation=:des ";
+            m.put("des", getReportKeyWord().getDesignation());
+        }
+        
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and l.roster.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -557,6 +572,35 @@ public class StaffLeaveApplicationFormController implements Serializable {
         staffLeaves = getStaffLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+//    public void createStaffleaveTablebyLeaveDate() {
+//        String sql;
+//        Map m = new HashMap();
+//
+//        sql = " select l from StaffLeave l where "
+//                + " l.leaveDate between :fd and :td ";
+//
+//        if (staff != null) {
+//            sql += " and l.staff=:st ";
+//            m.put("st", staff);
+//        }
+//
+//        if (approvedStaff != null) {
+//            sql += " and l.approvedStaff=:app ";
+//            m.put("app", approvedStaff);
+//        }
+//
+//        if (leaveType != null) {
+//            sql += " and l.leaveType=:lt ";
+//            m.put("lt", leaveType);
+//        }
+//
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//
+//        staffLeaves = getStaffLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//
+//    }
     
     public void createStaffleaveTablebyLeaveDate() {
         String sql;
@@ -579,6 +623,21 @@ public class StaffLeaveApplicationFormController implements Serializable {
             sql += " and l.leaveType=:lt ";
             m.put("lt", leaveType);
         }
+        
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and l.roster=:ros ";
+            m.put("ros", getReportKeyWord().getRoster());
+        }
+        
+        if (getReportKeyWord().getDesignation()!= null) {
+            sql += " and l.staff.designation=:des ";
+            m.put("des", getReportKeyWord().getDesignation());
+        }
+        
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and l.roster.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -586,6 +645,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         staffLeaves = getStaffLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
 
     public void saveStaffLeave() {
         if (staffLeave != null) {

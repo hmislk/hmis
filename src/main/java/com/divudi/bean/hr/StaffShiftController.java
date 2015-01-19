@@ -194,9 +194,24 @@ public class StaffShiftController implements Serializable {
         sql = " select ss from StaffShift ss where "
                 + " ss.createdAt between :fd and :td ";
 
-        if (staff != null) {
+        if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:st ";
-            m.put("st", staff);
+            m.put("st", getReportKeyWord().getStaff());
+        }
+        
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.roster.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:ros ";
+            m.put("ros", getReportKeyWord().getRoster());
+        }
+        
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.designation=:des ";
+            m.put("des", getReportKeyWord().getDesignation());
         }
 
         m.put("fd", fromDate);
@@ -206,6 +221,25 @@ public class StaffShiftController implements Serializable {
 
     }
     
+//    public void createStaffShiftTablebyShiftDate() {
+//        String sql;
+//        Map m = new HashMap();
+//
+//        sql = " select ss from StaffShift ss where "
+//                + " ss.shiftDate between :fd and :td ";
+//
+//        if (staff != null) {
+//            sql += " and ss.staff=:st ";
+//            m.put("st", staff);
+//        }
+//
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//
+//        staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//
+//    }
+    
     public void createStaffShiftTablebyShiftDate() {
         String sql;
         Map m = new HashMap();
@@ -213,9 +247,24 @@ public class StaffShiftController implements Serializable {
         sql = " select ss from StaffShift ss where "
                 + " ss.shiftDate between :fd and :td ";
 
-        if (staff != null) {
+        if (getReportKeyWord().getStaff() != null) {
             sql += " and ss.staff=:st ";
-            m.put("st", staff);
+            m.put("st", getReportKeyWord().getStaff());
+        }
+        
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.roster.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:ros ";
+            m.put("ros", getReportKeyWord().getRoster());
+        }
+        
+        if (getReportKeyWord().getDesignation()!= null) {
+            sql += " and ss.staff.designation=:des ";
+            m.put("des", getReportKeyWord().getDesignation());
         }
 
         m.put("fd", fromDate);
