@@ -22,18 +22,18 @@
                             </p:calendar>
                             
                             <h:outputLabel value="Shift Start Time"/>
-                            <p:calendar id="toDate" value="#{staffShiftController.staffshift.shiftStartTime}"
+                            <p:calendar value="#{staffShiftController.staffshift.shiftStartTime}"
                                         pattern="hh:mm:ss">
                             </p:calendar>
                             
                             <h:outputLabel value="Shift End Time"/>
-                            <p:calendar id="toDate" value="#{staffShiftController.staffshift.shiftEndTime}"
+                            <p:calendar value="#{staffShiftController.staffshift.shiftEndTime}"
                                         pattern="hh:mm:ss">
                             </p:calendar>
                             
                             <h:outputLabel value="Roster"/>
                             <p:autoComplete completeMethod="#{rosterController.completeRoster}" value="#{staffShiftController.staffshift.roster}" forceSelection="true"
-                                            var="ros" itemLabel="#{ros.name}" itemValue="#{ros}">
+                                            var="ros" itemLabel="#{ros.name}" itemValue="#{ros}"></p:autoComplete>
                             
                             <h:outputLabel value="Delete StaffShift: "/>
                             <h:selectBooleanCheckbox value="#{staffShiftController.staffshift.retired}" />
