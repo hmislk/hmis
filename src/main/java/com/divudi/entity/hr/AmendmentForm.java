@@ -14,9 +14,11 @@ import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@XmlRootElement
 public class AmendmentForm extends HrForm {
 
     @Temporal(TemporalType.TIMESTAMP)

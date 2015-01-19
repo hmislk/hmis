@@ -248,12 +248,12 @@ public class StaffSalaryController implements Serializable {
 //        return false;
 //    }
     private void setBasic() {
-        getHumanResourceBean().calculateBasic(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff());
+//        getHumanResourceBean().calculateBasic(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff());
 
         StaffSalaryComponant ss = new StaffSalaryComponant();
         ss.setCreatedAt(new Date());
         ss.setCreater(getSessionController().getLoggedUser());
-        ss.setStaffPaysheetComponent(getHumanResourceBean().getBasic(getCurrent().getStaff()));
+        ss.setStaffPaysheetComponent(getHumanResourceBean().getBasic(getCurrent().getStaff(), getSalaryToDate()));
         if (ss.getStaffPaysheetComponent() != null) {
             ss.setComponantValue(ss.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
         } else {
@@ -302,7 +302,21 @@ public class StaffSalaryController implements Serializable {
             Long dateCount = commonFunctions.getDayCount(getOverTimeFromDate(), getOverTimeToDate());
             Long numOfWeeks = dateCount / 7;
 
-            ss.setComponantValue(humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), numOfWeeks, workedWithinTimeFrameVarified));
+            double overTime = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), numOfWeeks, workedWithinTimeFrameVarified);
+            double basicPerSecond = 0;
+
+            for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
+                if (staffSalaryComponant.getStaffPaysheetComponent() == null
+                        || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
+                    continue;
+                }
+
+                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
+                    basicPerSecond = staffSalaryComponant.getComponantValue() / (200 * 60 * 60);
+                }
+            }
+
+            ss.setComponantValue(overTime * basicPerSecond * finalVariables.getOverTimeMultiply());
 
         } else {
             return;
@@ -338,6 +352,7 @@ public class StaffSalaryController implements Serializable {
 //        getCurrent().getStaffSalaryComponants().add(ss);
 //
 //    }
+    
     private void setExtraDuty() {
         StaffSalaryComponant ss = new StaffSalaryComponant();
         ss.setCreatedAt(new Date());
@@ -352,15 +367,76 @@ public class StaffSalaryController implements Serializable {
 
     }
 
-    private void setNoPay() {
+    private void setPoyaDayAllowance() {
+        StaffSalaryComponant ss = new StaffSalaryComponant();
+        ss.setCreatedAt(new Date());
+        ss.setCreater(getSessionController().getLoggedUser());
+        ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(getCurrent().getStaff(), getSessionController().getLoggedUser(), PaysheetComponentType.PoyaAllowance));
+        if (ss.getStaffPaysheetComponent() != null) {
+            double noPayTime = getHumanResourceBean().calculateNoPay(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff());
+
+            double salaryValue = 0;
+
+            if (getCurrent().getStaffSalaryComponants() == null) {
+                return;
+            }
+
+            for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
+                if (staffSalaryComponant.getStaffPaysheetComponent() == null
+                        || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
+                    continue;
+                }
+
+                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForNoPay()) {
+                    salaryValue += staffSalaryComponant.getComponantValue();
+                }
+            }
+
+            //Need Calculation Sum
+            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * (noPayTime / (60 * 60 * 24)));
+            System.err.println("Sal Val " + salaryValue);
+            System.err.println("No Pa " + noPayTime);
+        } else {
+            return;
+        }
+
+        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
+        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+
+        System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
+        getCurrent().getStaffSalaryComponants().add(ss);
+
+    }
+    
+     private void setNoPay() {
         StaffSalaryComponant ss = new StaffSalaryComponant();
         ss.setCreatedAt(new Date());
         ss.setCreater(getSessionController().getLoggedUser());
         ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(getCurrent().getStaff(), getSessionController().getLoggedUser(), PaysheetComponentType.No_Pay_Deduction));
         if (ss.getStaffPaysheetComponent() != null) {
-            double noPay = getHumanResourceBean().calculateNoPay(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff());
+            double noPayTime = getHumanResourceBean().calculateNoPay(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff());
+
+            double salaryValue = 0;
+
+            if (getCurrent().getStaffSalaryComponants() == null) {
+                return;
+            }
+
+            for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
+                if (staffSalaryComponant.getStaffPaysheetComponent() == null
+                        || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
+                    continue;
+                }
+
+                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForNoPay()) {
+                    salaryValue += staffSalaryComponant.getComponantValue();
+                }
+            }
+
             //Need Calculation Sum
-            ss.setComponantValue(noPay);
+            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * (noPayTime / (60 * 60 * 24)));
+            System.err.println("Sal Val " + salaryValue);
+            System.err.println("No Pa " + noPayTime);
         } else {
             return;
         }

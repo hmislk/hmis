@@ -10,12 +10,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class PayeeTaxRange implements Serializable {
     @ManyToOne
     private HrmVariables hrmVariables;

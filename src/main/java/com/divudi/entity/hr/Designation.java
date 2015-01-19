@@ -11,6 +11,8 @@ import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -18,6 +20,7 @@ import javax.persistence.OneToMany;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@XmlRootElement
 public class Designation extends Category implements Serializable {
    
     private static final long serialVersionUID = 1L;
@@ -26,6 +29,7 @@ public class Designation extends Category implements Serializable {
 
     
     
+    @XmlTransient
     public List<Staff> getStaffs() {
         return staffs;
     }

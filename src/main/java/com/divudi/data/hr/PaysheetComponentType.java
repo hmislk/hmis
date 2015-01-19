@@ -20,6 +20,8 @@ public enum PaysheetComponentType {
     Bonus(addition),
     OT(addition),
     ExtraDuty(addition),
+    PoyaAllowance(addition),
+    DayOffAllowance(addition),
     //////////////////////
     subtraction(null),
     FixedDeduction(subtraction),

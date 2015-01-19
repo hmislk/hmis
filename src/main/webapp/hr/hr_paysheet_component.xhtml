@@ -52,7 +52,7 @@
                                         <f:selectItem itemLabel="Please select component Type "/>
                                         <f:selectItems value="#{enumController.paysheetComponentTypes}"/>
                                     </p:selectOneMenu>  
-                                    
+
                                     <h:outputText value="Included For EPF" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForEpf}" />
                                     <h:outputText value="Included For ETF" ></h:outputText>
@@ -61,6 +61,8 @@
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForPayTax}" />
                                     <h:outputText value="Included For OT" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForOt}" />
+                                    <h:outputText value="Included For No Pay" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForNoPay}" />
                                     <h:outputText value="Included For PH" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{paysheetComponentController.current.includedForPh}" />
                                 </h:panelGrid>

@@ -19,12 +19,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
+@XmlRootElement
 public class WorkingTime implements Serializable {
 
     @OneToOne(mappedBy = "continuedTo")

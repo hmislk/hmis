@@ -8,12 +8,14 @@ package com.divudi.entity.memberShip;
 
 import com.divudi.entity.Category;
 import javax.persistence.Entity;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Administrator
  */
 @Entity
+@XmlRootElement
 public class MembershipScheme extends Category {
 
 }
