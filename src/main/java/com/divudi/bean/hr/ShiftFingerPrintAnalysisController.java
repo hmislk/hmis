@@ -309,6 +309,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             for (StaffShift ss : staffShifts) {
 //                ss.setStartRecord(null);
 //                ss.setEndRecord(null);
+               
                 System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
                 StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
 
@@ -348,6 +349,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //Setting Leave Type To StaffShift From Staff Leave
                 if (staffLeave != null) {
                     ss.setLeaveType(staffLeave.getLeaveType());
+                }else{
+                    ss.setLeaveType(null);
                 }
 
                 FingerPrintRecord fpr = null;
@@ -482,6 +485,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //Setting Leave Type To StaffShift From Staff Leave
                 if (staffLeave != null) {
                     ss.setLeaveType(staffLeave.getLeaveType());
+                }else{
+                    ss.setLeaveType(null);
                 }
 
                 FingerPrintRecord fpr = null;
