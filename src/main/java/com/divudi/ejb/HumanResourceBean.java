@@ -1739,20 +1739,55 @@ public class HumanResourceBean {
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
-    public double calculateHolidayWork(Date fromDate, Date toDate, Staff staff, DayType dayType) {
+    public long calculateHolidayWork(Date fromDate, Date toDate, Staff staff) {
         String sql = "Select count(distinct(ss.shiftDate)) "
                 + " from StaffShift ss "
-                + " where ss.retired=false"
-                + " and ss.dayType=:dtp "
+                + " where ss.retired=false "
+                + " and ss.lieuPaymentAllowed=true "
+                + " and ss.dayType in :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
         hm.put("td", toDate);
-        hm.put("dtp", dayType);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.Poya, DayType.MurchantileHoliday}));
         hm.put("stf", staff);
 
-        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public long calculateDayOffWork(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select count(distinct(ss.shiftDate)) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.lieuPaymentAllowed=true "
+                + " and ss.dayType in :dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public List<StaffShift> fetchStaffShiftLiePaymentAllowed(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select ss "
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.lieuPaymentAllowed=true "
+                + " and ss.dayType in :dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff,DayType.SleepingDay,DayType.MurchantileHoliday,DayType.Poya}));
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
     public double calculateExtraDutyTime(Date fromDate, Date toDate, Staff staff) {

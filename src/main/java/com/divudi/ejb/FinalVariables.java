@@ -40,7 +40,7 @@ public class FinalVariables {
         return 1.5;
     }
 
-    public double getPoyaDayAllowanceMultiply() {
+    public double getHoliDayAllowanceMultiply() {
         return 1.5;
     }
     
