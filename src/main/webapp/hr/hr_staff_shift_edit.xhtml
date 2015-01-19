@@ -12,15 +12,32 @@
             <p:panel header="Staff Shift">
                 <h:panelGrid columns="2" >
                     <p:panel header="Staff Shift Details">
-                        <h:panelGrid columns="1">
+                        <h:panelGrid columns="2">
                             <h:outputLabel value="Staff : "/>
-                            <au:completeStaff value="#{staffShiftController.staffshift.staff}"/>                                                                               
+                            <au:completeStaff value="#{staffShiftController.staffshift.staff}"/>
+                            
                             <h:outputLabel value="Shift Date"/>
                             <p:calendar id="toDate" value="#{staffShiftController.staffshift.shiftDate}"
                                         pattern="dd MM yy">
-                            </p:calendar>   
-                            <h:outputLabel value="Staff : "/>
+                            </p:calendar>
+                            
+                            <h:outputLabel value="Shift Start Time"/>
+                            <p:calendar id="toDate" value="#{staffShiftController.staffshift.shiftStartTime}"
+                                        pattern="hh:mm:ss">
+                            </p:calendar>
+                            
+                            <h:outputLabel value="Shift End Time"/>
+                            <p:calendar id="toDate" value="#{staffShiftController.staffshift.shiftEndTime}"
+                                        pattern="hh:mm:ss">
+                            </p:calendar>
+                            
+                            <h:outputLabel value="Roster"/>
+                            <p:autoComplete completeMethod="#{rosterController.completeRoster}" value="#{staffShiftController.staffshift.roster}" forceSelection="true"
+                                            var="ros" itemLabel="#{ros.name}" itemValue="#{ros}">
+                            
+                            <h:outputLabel value="Delete StaffShift: "/>
                             <h:selectBooleanCheckbox value="#{staffShiftController.staffshift.retired}" />
+                            
                             <h:panelGroup>
                                 <p:commandButton id="btnAdd" ajax="false" value="Save" 
                                                  action="#{staffShiftController.saveStaffShift()}"/>
