@@ -319,11 +319,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 HrForm additionalForm = ss.getAdditionalForm();
 
                 if (additionalForm == null) {
-                    if (fingerPrintRecordIn != null) {
+                    if (fingerPrintRecordIn == null) {
                         fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
                     }
 
-                    if (fingerPrintRecordOut != null) {
+                    if (fingerPrintRecordOut == null) {
                         fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
                     }
                 } else {

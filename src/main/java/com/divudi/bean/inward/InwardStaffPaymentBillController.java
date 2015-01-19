@@ -96,6 +96,14 @@ public class InwardStaffPaymentBillController implements Serializable {
     List<String2Value1> list1;
     List<BillFee> docPayingBillFee;
     List<BillItem> billItems1;
+    
+    List<String2Value1> docPayListDischarged;
+    List<String2Value1> docPayListNotDischarged;
+    
+    double totalDocPayListDischarged;
+    double totalDocPayListNotDischarged;
+    
+    
 
     public void makenull() {
         currentStaff = null;
@@ -382,6 +390,85 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         }
 
+    }
+    
+    public void fillDocPayDischargeAndNotDischarge(){
+        docPayListDischarged=inwardDoctorPaySummery(true);
+        docPayListNotDischarged=inwardDoctorPaySummery(false);
+        
+        totalDocPayListDischarged=calTotal(docPayListDischarged);
+        totalDocPayListNotDischarged=calTotal(docPayListNotDischarged);
+    }
+    
+    public double calTotal(List<String2Value1> string2Value1s){
+        double total=0.0;
+        for (String2Value1 s2v1 : string2Value1s) {
+            total+=s2v1.getValue();
+        }
+        return total;
+    }
+    
+    public List<String2Value1> inwardDoctorPaySummery(boolean dischargeDate) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select bf.paidForBillFee.staff,"
+                + " sum(bf.paidForBillFee.feeValue) "
+                + " from BillItem bf"
+                + " where bf.retired=false "
+                + " and bf.bill.billType=:btp"
+                + " and (bf.paidForBillFee.bill.billType=:refBtp1"
+                + " or bf.paidForBillFee.bill.billType=:refBtp2)";
+
+        if (dischargeDate) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
+        } 
+
+        if (speciality != null) {
+            sql += " and bf.paidForBillFee.staff.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        if (admissionType != null) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
+            m.put("admTp", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
+            m.put("pm", paymentMethod);
+        }
+        if (institution != null) {
+            sql += " and bf.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
+            m.put("cd", institution);
+        }
+        sql += " and bf.createdAt between :fd and :td ";
+
+        sql += " group by bf.paidForBillFee.staff "
+                + " order by bf.paidForBillFee.staff.person.name ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("btp", BillType.PaymentBill);
+        m.put("refBtp1", BillType.InwardBill);
+        m.put("refBtp2", BillType.InwardProfessional);
+
+        List<String2Value1> st2val1s = new ArrayList<>();
+        List<Object[]> objs = getBillFeeFacade().findAggregates(sql, m);
+        for (Object[] objc : objs) {
+//            String1Value1 roe = new String1Value1();
+            String2Value1 roe1 = new String2Value1();
+            Staff st = (Staff) objc[0];
+//            Staff stc = (Staff) objc[0];
+            double val = (double) objc[1];
+            roe1.setString1(st.getPerson().getNameWithTitle());
+            roe1.setString2(st.getCode());
+            roe1.setValue(val);
+            st2val1s.add(roe1);
+
+        }
+
+        return st2val1s;
     }
 
     public List<BillComponent> getBillComponents() {
@@ -983,6 +1070,38 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setTotalPayingCan(double totalPayingCan) {
         this.totalPayingCan = totalPayingCan;
+    }
+
+    public List<String2Value1> getDocPayListDischarged() {
+        return docPayListDischarged;
+    }
+
+    public void setDocPayListDischarged(List<String2Value1> docPayListDischarged) {
+        this.docPayListDischarged = docPayListDischarged;
+    }
+
+    public List<String2Value1> getDocPayListNotDischarged() {
+        return docPayListNotDischarged;
+    }
+
+    public void setDocPayListNotDischarged(List<String2Value1> docPayListNotDischarged) {
+        this.docPayListNotDischarged = docPayListNotDischarged;
+    }
+
+    public double getTotalDocPayListDischarged() {
+        return totalDocPayListDischarged;
+    }
+
+    public void setTotalDocPayListDischarged(double totalDocPayListDischarged) {
+        this.totalDocPayListDischarged = totalDocPayListDischarged;
+    }
+
+    public double getTotalDocPayListNotDischarged() {
+        return totalDocPayListNotDischarged;
+    }
+
+    public void setTotalDocPayListNotDischarged(double totalDocPayListNotDischarged) {
+        this.totalDocPayListNotDischarged = totalDocPayListNotDischarged;
     }
 
 }

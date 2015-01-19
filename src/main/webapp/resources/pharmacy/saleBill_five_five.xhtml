@@ -112,7 +112,7 @@
                         <td></td>
                         <td>
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.intInvoiceNumber}"  >
+                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.invoiceNumber}"  >
                             </h:outputLabel>
                         </td>
                         <td></td>
@@ -242,14 +242,14 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
                         <tr>
-                            <td style="text-align: left;" >
-                                <h:outputLabel value="Company" ></h:outputLabel>
+                            <td style="text-align: left; font-size: 12px;" >
+                                <h:outputLabel value="Company" style="font-size: 12px;"></h:outputLabel>
                             </td>
                             <td></td>
                             <td>:</td>
                             <td></td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"  >
+                                <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"  style="font-size: 12px;">
                                 </h:outputLabel>
                             </td>
                             <td></td>
