@@ -171,7 +171,7 @@
                                                     <ui:repeat value="#{bip.proFees}" var="fe">
                                                         <h:panelGroup rendered="#{fe.feeAdjusted ne 0 
                                                                                   and fe.bill.cancelled eq false 
-                                                                                  and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                                                                  and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}" style="">
                                                             <tr>
 
                                                                 <td style="text-align: left;font-size: 8px!important;">
@@ -180,7 +180,7 @@
                                                                     </h:panelGroup>
                                                                 </td>
                                                                 <td  style="text-align: right;font-size: 8px!important;">
-                                                                    <h:panelGroup >
+                                                                    <h:panelGroup>
                                                                         <h:outputLabel value="#{fe.feeAdjusted}">
                                                                             <f:convertNumber pattern="#,##0.00" />
                                                                         </h:outputLabel>
