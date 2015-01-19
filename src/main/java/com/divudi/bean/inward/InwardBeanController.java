@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.DepartmentBillItems;
@@ -102,6 +103,8 @@ public class InwardBeanController implements Serializable {
     BillBeanController billBean;
     @Inject
     InwardReportControllerBht inwardReportControllerBht;
+    @Inject
+    SessionController sessionController;
 
     public List<BillItem> createBillItems(Item item, PatientEncounter patientEncounter) {
         String sql = "SELECT  b FROM BillItem b "
@@ -1467,11 +1470,11 @@ public class InwardBeanController implements Serializable {
         return patientRoom;
     }
 
-    public PatientRoom savePatientRoom(PatientRoom patientRoom,  RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
+    public PatientRoom savePatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
         //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
 
         System.err.println("Mill " + patientRoom);
-        
+
         System.err.println("new " + newRoomFacilityCharge);
         if (patientRoom == null) {
             return null;
@@ -1485,7 +1488,6 @@ public class InwardBeanController implements Serializable {
         patientRoom.setCurrentMedicalCareCharge(newRoomFacilityCharge.getMedicalCareCharge());
         patientRoom.setCurrentAdministrationCharge(newRoomFacilityCharge.getAdminstrationCharge());
 
-        
         patientRoom.setCreatedAt(Calendar.getInstance().getTime());
         patientRoom.setCreater(webUser);
         patientRoom.setAdmittedAt(admittedAt);
@@ -1505,8 +1507,6 @@ public class InwardBeanController implements Serializable {
         return patientRoom;
     }
 
-
-    
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public PatientRoomFacade getPatientRoomFacade() {
@@ -1573,6 +1573,16 @@ public class InwardBeanController implements Serializable {
         this.inwardReportControllerBht = inwardReportControllerBht;
     }
 
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+    
+    
+
     public List<PatientRoom> getPatientRooms(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
         String sql = "SELECT pr FROM PatientRoom pr where pr.retired=false"
@@ -1599,7 +1609,12 @@ public class InwardBeanController implements Serializable {
         temp = temp + admissionType.getAdditionToCount();
 
         bhtText = admissionType.getCode().trim() + Long.toString(temp);
+        
+        if(getSessionController().getInstitutionPreference().isBhtNumberWithYear()){
+        Calendar c = Calendar.getInstance();
 
+        bhtText = bhtText + "/" + c.get(Calendar.YEAR);
+        }
         return bhtText;
     }
 
