@@ -80,6 +80,18 @@ public class HumanResourceBean {
     @EJB
     private FinalVariables finalVariables;
 
+    public double getOverTimeFromRoster(double workingTimeForOverTimePerWeek, double numberOfWeeks, double totalWorkedTime) {
+        if (workingTimeForOverTimePerWeek != 0 && numberOfWeeks != 0) {
+            double normalWorkTime = numberOfWeeks * workingTimeForOverTimePerWeek * 60 * 60;
+            double overTime = totalWorkedTime - normalWorkTime;
+            if (overTime > 0) {
+                return overTime;
+            }
+        }
+
+        return 0.0;
+
+    }
 //    public StaffShift findInTime(FingerPrintRecord r) {
 //        Date recordedDate = r.getRecordTimeStamp();
 //        Calendar min = Calendar.getInstance();
@@ -105,6 +117,7 @@ public class HumanResourceBean {
 //        //   System.err.println("Fetch Staff 1 : " + ss);
 //        return ss;
 //    }
+
     public FingerPrintRecord findInTimeRecord(StaffShift staffShift) {
         if (staffShift == null) {
             return null;
@@ -175,8 +188,6 @@ public class HumanResourceBean {
 //        System.err.println("findInTimeRecordWithOutDayOffSleeping : " + ss);
         return ss;
     }
-    
-
 
     public FingerPrintRecord findOutTimeRecord(StaffShift staffShift) {
         if (staffShift == null) {
@@ -249,8 +260,7 @@ public class HumanResourceBean {
 //        System.err.println("findOutTimeRecordWithoutDayOffSleeping : " + ss);
         return ss;
     }
-    
- 
+
     public List<StaffShift> fetchStaffShift(Date date, Staff staff) {
         Map m = new HashMap();
         m.put("date", date);
@@ -996,7 +1006,7 @@ public class HumanResourceBean {
         String sql = "Select sum(s.qty) From StaffLeave s"
                 + " where s.retired=false "
                 + " and s.staff=:st "
-//                + " and s.leaveType in :ltp"
+                //                + " and s.leaveType in :ltp"
                 + " and s.leaveType=:ltp "
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
@@ -1661,8 +1671,21 @@ public class HumanResourceBean {
         String sql = "Select sum(ss.workedWithinTimeFrameVarified+ss.leavedTime) "
                 + " from StaffShift ss "
                 + " where ss.retired=false"
-                + " and ss.shiftDate>=:fd "
-                + " and ss.shiftDate<=:td "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+
+        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public double calculateExtraWorkTimeValue(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.basicPerSecond)"
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
@@ -1939,8 +1962,8 @@ public class HumanResourceBean {
         String sql = "Select s From StaffSalary s "
                 + " where s.retired=false "
                 + " and s.staff=:s "
-                + " and s.salaryCycle.salaryFromDate>=:fd "
-                + " and s.salaryCycle.salaryToDate<=:td";
+                + " and s.salaryCycle.salaryFromDate=:fd "
+                + " and s.salaryCycle.salaryToDate=:td";
 
         HashMap hm = new HashMap<>();
         hm.put("fd", fromDate);

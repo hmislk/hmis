@@ -5,26 +5,36 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Leave Application Form">
-                <h:panelGrid columns="2" >
-                    <p:panel header="Search Leave Forms" >
+            <p:panel header="Staff Shift">
+                
+                    <p:panel header="Search Staff Shift" >
                         <p:panel>
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar value="#{staffShiftController.fromDate}"
-                                            pattern="dd MMMM yyyy">     
-                                </p:calendar>   
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar value="#{staffShiftController.toDate}"
-                                            pattern="dd MMMM yyyy">
-                                </p:calendar> 
-                                <h:outputLabel value="Staff : "/>
-                                <au:completeStaff value="#{staffShiftController.staff}"/>                               
+                                <p:calendar value="#{staffShiftController.fromDate}" pattern="dd MM yyyy">                                    
+                                </p:calendar>
                                 
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar value="#{staffShiftController.toDate}" pattern="dd MM yyyy">
+                                </p:calendar>
+                                
+                                <h:outputLabel value="Staff : "/>
+                                <au:completeStaff value="#{staffShiftController.reportKeyWord.staff}"/>
+
+                                <h:outputLabel value="Department : "/>
+                                <au:department value="#{staffShiftController.reportKeyWord.department}"/>
+
+                                <h:outputLabel value="Staff Designation : "/>
+                                <au:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                                
+                                <h:outputLabel value="Staff Roster : "/>
+                                <au:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+
                                 <p:commandButton value="Search Created Date" ajax="false" action="#{staffShiftController.createStaffShiftTablebyCreatedDate()}" />
                                 <p:commandButton value="Search Shift Date" ajax="false" action="#{staffShiftController.createStaffShiftTablebyShiftDate()}" />
                             </p:panelGrid>
@@ -45,6 +55,19 @@
                                         <f:convertDateTime pattern="yyyy MM dd" />
                                     </p:outputLabel>
                                 </p:column>
+                                
+                                <p:column headerText="Starting Date">
+                                    <p:outputLabel value="#{l.shiftStartTime}" >
+                                        <f:convertDateTime pattern="yyyy MM dd" />
+                                    </p:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Starting Date">
+                                    <p:outputLabel value="#{l.shiftEndTime}" >
+                                        <f:convertDateTime pattern="yyyy MM dd" />
+                                    </p:outputLabel>
+                                </p:column>
+                                
                                 <p:column headerText="Creater">
                                     <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                     <br></br>
@@ -53,7 +76,7 @@
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
-                </h:panelGrid>              
+                              
             </p:panel>
         </h:form>
     </ui:define> 
