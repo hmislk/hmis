@@ -107,9 +107,6 @@
                                             </h:selectOneListbox>
 
                                         </h:panelGrid> 
-
-
-
                                     </p:tab>
                                     <p:tab title="Details" >
                                         <p:selectOneMenu id="mnuCat" value="#{staffController.formCategory}" >
@@ -137,24 +134,14 @@
                                                         </h:inputText>
                                                         <p:watermark for="txtValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
                                                         
-                                                        
-
                                                         <h:panelGroup rendered="#{myFiv.reportItem.retired ne true and myFiv.reportItem.ixItemType eq 'ItemsCatetgory'}" >
                                                             <h:selectOneMenu value="#{myFiv.strValue}" id="cmbRefCat" style="#{myFiv.reportItem.innerCssStyle}" >
                                                                 <f:selectItem itemLabel="#{myFiv.reportItem.name}"></f:selectItem>
                                                                 <f:selectItems value="#{categoryController.getSubCategories(myFiv.reportItem.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
                                                             </h:selectOneMenu>
                                                         </h:panelGroup>
-
-
-
-
-
                                                     </div>
                                                 </ui:repeat>
-
-
-
                                             </div>
 
                                         </h:panelGroup>

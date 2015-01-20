@@ -19,6 +19,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.FormFormat;
 import java.util.TimeZone;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
@@ -37,6 +38,7 @@ import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FormFacade;
+import com.divudi.facade.FormFormatFacade;
 import com.divudi.facade.FormItemValueFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PersonFacade;
@@ -103,6 +105,9 @@ public class StaffController implements Serializable {
     Category formCategory;
     private List<CommonReportItem> formItems = null;
 
+    List<FormFormat> formFormats;
+    FormFormatFacade formFormatFacade;
+
     public FormItemValue formItemValue(ReportItem ri, Person p) {
         if (ri == null || p == null) {
             System.out.println("ri = " + ri);
@@ -121,23 +126,32 @@ public class StaffController implements Serializable {
             v.setReportItem(ri);
             fivFacade.create(v);
         }
-        
+
         return v;
     }
 
     public Category getFormCategory() {
+        listFormItems();
         return formCategory;
     }
 
     public void setFormCategory(Category formCategory) {
         this.formCategory = formCategory;
-        listFormItems();
     }
 
     public void listFormItems() {
         System.out.println("getting form items");
         String temSql;
         System.out.println("formCategory = " + formCategory);
+
+//        if (formCategory != null) {
+//            temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
+//            Map m = new HashMap();
+//            m.put("cat", formCategory);
+//            formItems = criFacade.findBySQL(temSql, m);
+//        } else {
+//            formItems = new ArrayList<>();
+//        }
         if (formCategory != null) {
             temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
@@ -146,10 +160,9 @@ public class StaffController implements Serializable {
         } else {
             formItems = new ArrayList<>();
         }
-        
-        
-        for(CommonReportItem crf : formItems){
-            if(crf.getIxItemType() == InvestigationItemType.ItemsCatetgory || crf.getIxItemType() == InvestigationItemType.Value ){
+
+        for (CommonReportItem crf : formItems) {
+            if (crf.getIxItemType() == InvestigationItemType.ItemsCatetgory || crf.getIxItemType() == InvestigationItemType.Value) {
                 FormItemValue fiv = formItemValue(crf, getCurrent().getPerson());
                 fivs.add(fiv);
             }
@@ -165,18 +178,15 @@ public class StaffController implements Serializable {
     public void setFivs(List<FormItemValue> fivs) {
         this.fivs = fivs;
     }
-    
-    
-    
+
     public List<CommonReportItem> getFormItems() {
         return formItems;
     }
 
     public void setFormItems(List<CommonReportItem> formItems) {
-        this.formItems=formItems;
+        this.formItems = formItems;
     }
 
-    
     public List<Staff> getStaffWithCode() {
         return staffWithCode;
     }
@@ -799,6 +809,52 @@ public class StaffController implements Serializable {
 
     public void setSelectedList(List<Staff> selectedList) {
         this.selectedList = selectedList;
+    }
+
+    public List<FormFormat> listFormFormats() {
+
+        List<FormFormat> listFrmFormats = null;
+        
+        if (listFrmFormats == null) {
+            listFrmFormats = new ArrayList<>();
+        } else {
+            String sql = "SELECT i FROM FormFormat i where i.retired=false order by i.name";
+            listFrmFormats = getFormFormatFacade().findBySQL(sql);
+
+        }
+        return listFrmFormats;
+    }
+
+    public List<FormFormat> getFormFormats() {
+        return formFormats;
+    }
+
+    public void setFormFormats(List<FormFormat> formFormats) {
+        this.formFormats = formFormats;
+    }
+
+    public CommonReportItemFacade getCriFacade() {
+        return criFacade;
+    }
+
+    public void setCriFacade(CommonReportItemFacade criFacade) {
+        this.criFacade = criFacade;
+    }
+
+    public FormItemValueFacade getFivFacade() {
+        return fivFacade;
+    }
+
+    public void setFivFacade(FormItemValueFacade fivFacade) {
+        this.fivFacade = fivFacade;
+    }
+
+    public FormFormatFacade getFormFormatFacade() {
+        return formFormatFacade;
+    }
+
+    public void setFormFormatFacade(FormFormatFacade formFormatFacade) {
+        this.formFormatFacade = formFormatFacade;
     }
 
     /**

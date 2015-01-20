@@ -54,6 +54,11 @@ public class FormItemValue implements Serializable {
     Category category;
     @ManyToOne
     Person referringPerson;
+
+    public FormItemValue() {
+    }
+    
+    
     
     
     public String getStrValue() {
