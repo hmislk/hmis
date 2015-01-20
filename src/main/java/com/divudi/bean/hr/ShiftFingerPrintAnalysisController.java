@@ -20,7 +20,6 @@ import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.FingerPrintRecordHistoryFacade;
@@ -259,6 +258,31 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     }
 
+    private void fetchAndSetDayType(StaffShift ss) {
+        ss.setDayType(null);
+
+        DayType dayType = phDateController.getHolidayType(ss.getShiftDate());
+        ss.setDayType(dayType);
+        if (ss.getDayType() == null) {
+            if (ss.getShift() != null) {
+                ss.setDayType(ss.getShift().getDayType());
+            }
+        }
+    }
+
+    private void fetchAndSetStaffLeave(StaffShift ss) {
+        ss.setLeaveType(null);
+        StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
+        //Setting Leave Type To StaffShift From Staff Leave
+        if (staffLeave != null) {
+            ss.setLeaveType(staffLeave.getLeaveType());
+        }
+
+    }
+
+    @Inject
+    PhDateController phDateController;
+
     public void createShiftTable() {
         if (errorCheck()) {
             return;
@@ -309,9 +333,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             for (StaffShift ss : staffShifts) {
 //                ss.setStartRecord(null);
 //                ss.setEndRecord(null);
-               
                 System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
-                StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
+                fetchAndSetStaffLeave(ss);
+                fetchAndSetDayType(ss);
 
                 List<FingerPrintRecord> list = new ArrayList<>();
                 FingerPrintRecord fingerPrintRecordIn = ss.getStartRecord();
@@ -346,12 +370,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 }
 
                 System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
-                //Setting Leave Type To StaffShift From Staff Leave
-                if (staffLeave != null) {
-                    ss.setLeaveType(staffLeave.getLeaveType());
-                }else{
-                    ss.setLeaveType(null);
-                }
 
                 FingerPrintRecord fpr = null;
                 if (ss.getStartRecord() == null) {
@@ -452,7 +470,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.setStartRecord(null);
                 ss.setEndRecord(null);
                 System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
-                StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
+                fetchAndSetStaffLeave(ss);
+                fetchAndSetDayType(ss);
 
                 List<FingerPrintRecord> list = new ArrayList<>();
                 FingerPrintRecord fingerPrintRecordIn = null;
@@ -482,13 +501,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 }
 
                 System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
-                //Setting Leave Type To StaffShift From Staff Leave
-                if (staffLeave != null) {
-                    ss.setLeaveType(staffLeave.getLeaveType());
-                }else{
-                    ss.setLeaveType(null);
-                }
-
+             
                 FingerPrintRecord fpr = null;
                 if (ss.getStartRecord() == null) {
                     fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.inTime);
@@ -804,12 +817,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 //Ress Old Calculated Data
                 ss.reset();
 
-                //Fetch Basic
-                StaffPaysheetComponent basic = humanResourceBean.getBasic(ss.getStaff());
+                //Fetch Value for Oer Time per Month
+                double valueForOverTime = humanResourceBean.calValueForOverTime(ss.getStaff(), ss.getShiftDate());
 
-                if (basic != null) {
-                    ss.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
-                }
+                //Chang to Second
+                ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
 
                 //UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();

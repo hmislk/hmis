@@ -27,12 +27,14 @@ import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class StaffShift implements Serializable {
 
     @ManyToOne
@@ -49,6 +51,8 @@ public class StaffShift implements Serializable {
     private Date shiftStartTime;
     @Temporal(TemporalType.TIMESTAMP)
     private Date shiftEndTime;
+    @Enumerated(EnumType.STRING)
+    DayType dayType;
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -103,7 +107,8 @@ public class StaffShift implements Serializable {
     @Column(name = "overTimeCompleteRecordVarified")
     double extraTimeCompleteRecordVarified;
     //Logged Data
-    double basicPerSecond;
+    @Column(name = "basicPerSecond")
+    double overTimeValuePerSecond;
     double earlyInLogged;
     double earlyOutLogged;
     double workedWithinTimeFrameLogged;
@@ -149,6 +154,16 @@ public class StaffShift implements Serializable {
     boolean transChecked;
     int dayOfWeek;
     int leaveDivident;
+
+    public DayType getDayType() {
+        return dayType;
+    }
+
+    public void setDayType(DayType dayType) {
+        this.dayType = dayType;
+    }
+    
+    
 
     public int getLeaveDivident() {
         return leaveDivident;
@@ -263,7 +278,7 @@ public class StaffShift implements Serializable {
 //        resetLeaveData();
         multiplyingFactorOverTime = 0;
         multiplyingFactorSalary = 0;
-        basicPerSecond = 0;
+        overTimeValuePerSecond = 0;
     }
 
     public void processLieuQtyUtilized(LeaveType leaveType) {
@@ -1208,12 +1223,12 @@ public class StaffShift implements Serializable {
         this.leavedTimeOther = leavedTimeOther;
     }
 
-    public double getBasicPerSecond() {
-        return basicPerSecond;
+    public double getOverTimeValuePerSecond() {
+        return overTimeValuePerSecond;
     }
 
-    public void setBasicPerSecond(double basicPerSecond) {
-        this.basicPerSecond = basicPerSecond;
+    public void setOverTimeValuePerSecond(double OverTimeValuePerSecond) {
+        this.overTimeValuePerSecond = OverTimeValuePerSecond;
     }
 
     public boolean isConsideredForSalary() {

@@ -25,6 +25,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -32,6 +34,7 @@ import javax.persistence.Transient;
  * Informatics)
  */
 @Entity
+@XmlRootElement
 public class Person implements Serializable {
 
     @OneToMany(mappedBy = "person")
@@ -360,6 +363,7 @@ public class Person implements Serializable {
         this.nic = nic;
     }
 
+    @XmlTransient
     public List<ClinicalFindingValue> getClinicalFindingValues() {
         return clinicalFindingValues;
     }
