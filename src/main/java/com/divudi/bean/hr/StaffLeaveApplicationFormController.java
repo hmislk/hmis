@@ -742,8 +742,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
     }
 
-    public void viewLeaveForm(LeaveForm leaveForm) {
+    public void viewLeaveForm(LeaveForm leaveForm) {        
         currentLeaveForm = leaveForm;
+        calLeaveCount();
+        fetchStaffShift();
+        fetchStaffShiftLie();
     }
 
     public void viewStaffLeave(StaffLeave leave) {

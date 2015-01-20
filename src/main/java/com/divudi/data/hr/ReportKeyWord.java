@@ -40,6 +40,7 @@ public class ReportKeyWord {
     LeaveType leaveType;
     Double from;
     Double to;
+    
 
     public Double getFrom() {
         if (from == null) {

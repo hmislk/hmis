@@ -1472,7 +1472,7 @@ public class HumanResourceBean {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(user);
             tmp.setPaysheetComponent(getComponentName(user, paysheetComponentType));
-            tmp.setStaff(staff);
+            tmp.setStaff(staff);            
             getStaffPaysheetComponentFacade().create(tmp);
         }
 
