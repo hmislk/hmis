@@ -50,10 +50,14 @@
                                     #{ss.staff.person.name}
                                 </p:column>
                                 <p:column headerText="Worked Time">
-                                    #{ss.workingTime}
+                                    <h:outputLabel value="#{ss.workingTime}">
+                                         <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Leaved Time">
-                                    #{ss.leavedTime}
+                                    <h:outputLabel value="#{ss.leavedTime}">
+                                         <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>

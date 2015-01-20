@@ -24,13 +24,22 @@
                             </p:commandButton>     
                         </f:facet>
 
-                    
+
                     </p:panel>
 
 
 
                     <h:panelGroup id="gpBillPreview" >
-                        <ph:transferReceive bill="#{pharmacyBillSearch.bill}" />
+<!--                        <ph:transferReceive bill="#{pharmacyBillSearch.bill}" />-->
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                            <ph:transferReceive bill="#{pharmacyBillSearch.bill}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                            <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
+                        </h:panelGroup>
+                        
                     </h:panelGroup>
 
 

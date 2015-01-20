@@ -12,30 +12,13 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@XmlRootElement
 public class AdditionalForm extends HrForm  {
     
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fromTime;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date toTime;
-
-    public Date getFromTime() {
-        return fromTime;
-    }
-
-    public void setFromTime(Date fromTime) {
-        this.fromTime = fromTime;
-    }
-
-    public Date getToTime() {
-        return toTime;
-    }
-
-    public void setToTime(Date toTime) {
-        this.toTime = toTime;
-    }
+  
 
 }

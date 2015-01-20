@@ -44,6 +44,9 @@ public class UserPreference implements Serializable {
     boolean partialPaymentOfOpdBillsAllowed;
     boolean paymentMethodAllowedInInwardMatrix;
     boolean pharmacyBillPrabodha;
+    boolean checkPaymentSchemeValidation;
+    boolean grnBillDetailed;
+    boolean bhtNumberWithYear;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
@@ -91,6 +94,22 @@ public class UserPreference implements Serializable {
 
     public void setPharmacyBillPaperType(PaperType pharmacyBillPaperType) {
         this.pharmacyBillPaperType = pharmacyBillPaperType;
+    }
+
+    public boolean isCheckPaymentSchemeValidation() {
+        return checkPaymentSchemeValidation;
+    }
+
+    public void setCheckPaymentSchemeValidation(boolean checkPaymentSchemeValidation) {
+        this.checkPaymentSchemeValidation = checkPaymentSchemeValidation;
+    }
+
+    public boolean isBhtNumberWithYear() {
+        return bhtNumberWithYear;
+    }
+
+    public void setBhtNumberWithYear(boolean bhtNumberWithYear) {
+        this.bhtNumberWithYear = bhtNumberWithYear;
     }
     
     
@@ -193,6 +212,18 @@ public class UserPreference implements Serializable {
     public void setPrintLabelForOPdBill(boolean printLabelForOPdBill) {
         this.printLabelForOPdBill = printLabelForOPdBill;
     }
+
+    public boolean isGrnBillDetailed() {
+        return grnBillDetailed;
+    }
+
+    public void setGrnBillDetailed(boolean grnBillDetailed) {
+        this.grnBillDetailed = grnBillDetailed;
+    }
+
+    
+    
+    
 
     public String getPharmacyBillFooter() {
         return pharmacyBillFooter;

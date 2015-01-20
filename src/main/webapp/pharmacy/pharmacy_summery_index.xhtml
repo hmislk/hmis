@@ -41,7 +41,11 @@
                             <p:commandButton styleClass="linkButton" ajax="false" 
                                              value="Sale Summery - By Paymentmethod "
                                              action="pharmacy_report_sale_by_date_summery_payment_method.xhtml" 
-                                             actionListener="#{pharmacySaleReport.makeNull}"/>                          
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>   
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             value="Sale Summery - By Paymentmethod(By Bill) "
+                                             action="pharmacy_report_sale_by_date_summery_payment_method_by_bill.xhtml" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
                         </h:panelGrid>
 
                         <h:panelGrid columns="1" >
@@ -59,6 +63,10 @@
                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Sale Detail -By Payment Scheme"
                                              action="pharmacy_report_sale_by_date_detail_by_payment_scheme.xhtml" 
+                                             actionListener="#{pharmacySaleReport.makeNull}"/>
+                            <p:commandButton styleClass="linkButton" ajax="false"
+                                             value="Sale Summery By Payment Scheme Summery"
+                                             action="pharmacy_report_sale_by_date_detail_by_payment_scheme_1.xhtml" 
                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" 
                                              value="Sale Detail - By Paymentmethod"
@@ -132,6 +140,9 @@
                             <p:commandButton styleClass="linkButton" ajax="false" 
                                              value="BHT Issue - Staff " 
                                              action="pharmacy_report_staff_issue_bill" />
+                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                             value="BHT Issue With Margine report " 
+                                             action="pharmacy_report_bht_issue_item_with_margin" />
                         </h:panelGrid>
 
                         <h:panelGrid columns="1" >
@@ -149,6 +160,14 @@
                             </f:facet>    
                             <p:commandButton styleClass="linkButton" ajax="false" value="Movement Report Stock By Date" action="pharmacy_report_category_vice_movement.xhtml" />
                             <p:commandButton styleClass="linkButton" ajax="false" value="Movement Report Stock By Date-By Batch" action="pharmacy_report_category_vice_movement_item_batch.xhtml" />
+                        </h:panelGrid>
+                        
+                        <h:panelGrid columns="1" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Summery All Report" />
+                            </f:facet>    
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Pharmacy All Report" action="pharmacy_report_summery_all.xhtml" />
+                            
                         </h:panelGrid>
 
 

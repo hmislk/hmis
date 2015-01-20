@@ -23,12 +23,15 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
+@XmlRootElement
 public class FingerPrintRecord implements Serializable {
 
     @OneToOne(mappedBy = "loggedRecord")
@@ -72,6 +75,18 @@ public class FingerPrintRecord implements Serializable {
     @Enumerated(EnumType.STRING)
     DayType dayType;
     String comments = "";
+    @Transient
+    boolean  transNew;
+
+    public boolean isTransNew() {
+        return transNew;
+    }
+
+    public void setTransNew(boolean transNew) {
+        this.transNew = transNew;
+    }
+    
+    
 
     public Roster getRoster() {
         return roster;
@@ -116,7 +131,7 @@ public class FingerPrintRecord implements Serializable {
             output = formatter.format(date);
 //         //   System.out.println(pattern + " " + output);
         } catch (Exception e) {
-//            System.err.println("error in parsing");
+            System.err.println(e.getMessage());
 
         }
 

@@ -1,0 +1,196 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form>
+
+                    <p:panel header="Department Stock Report by Batch" >
+
+                        <h:panelGrid columns="5" >
+                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="dep" >
+                            </p:autoComplete>
+                            <p:commandButton ajax="false"  value="Fill" action="#{reportsStock.fillDepartmentStocks}" >
+                               
+                            </p:commandButton>
+                            <p:commandButton value="Print"  action="#" ajax="false">
+                                <p:printer target="gpBillPreview" ></p:printer>
+                                
+                            </p:commandButton>
+                            <p:commandButton value="Excel" ajax="false">
+                                <pe:exporter type="xlsx" target="tbl" fileName="Total Stock"
+                                             facetBackground="#008000" facetFontSize="15" 
+                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
+                                             fontName="Courier New" />                               
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" value="#{reportsStock.stocks}" var="i"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="#{reportsStock.department.name} Stock"/>  
+                                </f:facet>
+                                
+                                <p:column headerText="Category"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.category.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Product"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Product"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Code">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Code"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Bar Code">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bar Code"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.barcode}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Generic Name">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Generic Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Strength">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Strength"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.dblValue}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Strength Unit">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Strength Unit"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.measurementUnit.name}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Pack Size">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Pack Size"/>
+                                    </f:facet>
+                                    <h:outputLabel value="1" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Issue Unit">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Issue Unit"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.category.name}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                
+                                <p:column headerText="Pack Unit">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Pack Unit"/>
+                                    </f:facet>
+                                    <h:outputLabel value="" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Distributor">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Distributor"/>
+                                    </f:facet>
+                                    <h:outputLabel value="" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Manufacturer">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Manufacturer"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.manufacturer.name}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Importer">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Importer"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.importer.name}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Date of Expiary">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date of Expiary"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
+                                        <f:convertDateTime pattern="m/d/yyyy" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Batch">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Batch"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.batchNo}"  >                                        
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Quentity">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Quentity"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.stock}"  >
+                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    
+                                </p:column>
+
+
+                                <p:column headerText="Purchase Price" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Price"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+
+                                <p:column headerText="Sale Price" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Price"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </body>
+</html>

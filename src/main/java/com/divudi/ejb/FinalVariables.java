@@ -13,9 +13,11 @@ import javax.ejb.Stateless;
 @Stateless
 public class FinalVariables {
 
-
-    public double getMaximumWorkingHourPerWeek() {
-        return 45;
+//    public double getMaximumWorkingHourPerWeek() {
+//        return 45;
+//    }
+    public double getWorkingDaysPerMonth() {
+        return 26;
     }
 
     public double getMinimumWorkingHourPerWeek() {
@@ -33,6 +35,19 @@ public class FinalVariables {
     public double getOtTime() {
         return 45;
     }
+
+    public double getOverTimeMultiply() {
+        return 1.5;
+    }
+
+    public double getHoliDayAllowanceMultiply() {
+        return 1.5;
+    }
+    
+      public double getDayOffAllowanceMultiply() {
+        return 1.5;
+    }
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
 }

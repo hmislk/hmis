@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Attendance Report" />
+                            <h:outputLabel value="Attendance Report Late In" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -54,43 +54,15 @@
                                 </p:column>
                                 <p:column headerText="Department Name">
                                     #{ss.staff.department.name}
-                                </p:column>
-<!--                                <p:column headerText="Staff Category" >
-                                    #{ss.staff.staffCategory.name}
-                                </p:column>
-                                <p:column headerText="Staff Designation" >
-                                    #{ss.staff.designation.name}
-                                </p:column>-->
-                                <p:column headerText="Staff Roster" >
-                                    #{ss.staff.roster.name}
-                                </p:column>
-                                <p:column headerText="Staff Shift">
-                                    #{ss.shift.name}
-                                </p:column>
-                                <p:column headerText="Shift In Time ">
-                                    <h:outputLabel value="#{ss.shiftStartTime}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>                                      
-                                </p:column> 
-<!--                                <p:column headerText="In Actual " >
-                                    <h:outputLabel value="#{ss.startRecord.loggedRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>  
-                                    <h:outputLabel value="Previous" rendered="#{ss.previousStaffShift ne null}"/>
-                                </p:column> 
-                                <p:column headerText="Late In Minute Logged">
-                                    <h:outputLabel value="#{ss.lateInLogged/60}">                                        
-                                        <f:convertNumber pattern="#0.00"/>
-                                    </h:outputLabel>
-                                </p:column>   -->
+                                </p:column>                               
                                 <p:column headerText="In Checked ">
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>                                     
                                 </p:column>           
                                 <p:column headerText="Late In Minute Varified">
-                                    <h:outputLabel value="#{ss.lateInVarified/60}">                                        
-                                        <f:convertNumber pattern="#0.00"/>
+                                    <h:outputLabel value="#{ss.lateInVarified}">                                        
+                                        <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>   
                             </p:dataTable>

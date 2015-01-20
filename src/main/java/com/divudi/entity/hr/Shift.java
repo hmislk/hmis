@@ -25,12 +25,15 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class Shift implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -58,7 +61,7 @@ public class Shift implements Serializable {
     private boolean dayOff;
 //    private int count;
     @Transient
-    private int durationHour;
+    private double durationHour;
     @Transient
     private int durationMin;
     double shiftDuration;
@@ -81,6 +84,15 @@ public class Shift implements Serializable {
     Shift previousShift;
     @ManyToOne
     Shift nextShift;
+    boolean halfShift;
+
+    public boolean isHalfShift() {
+        return halfShift;
+    }
+
+    public void setHalfShift(boolean halfShift) {
+        this.halfShift = halfShift;
+    }
 
     public double getLeaveHourFull() {
         return leaveHourFull;
@@ -98,10 +110,6 @@ public class Shift implements Serializable {
         this.leaveHourHalf = leaveHourHalf;
     }
 
-   
-    
-    
-
     public double getShiftDuration() {
         return shiftDuration;
     }
@@ -109,8 +117,6 @@ public class Shift implements Serializable {
     public void setShiftDuration(double shiftDuration) {
         this.shiftDuration = shiftDuration;
     }
-    
-    
 
     private boolean hideShift;
 
@@ -134,7 +140,7 @@ public class Shift implements Serializable {
 
     }
 
-    public int getDurationHour() {
+    public double getDurationHour() {
         if (getStartingTime() == null && getEndingTime() == null) {
             return 0;
         }
@@ -150,15 +156,15 @@ public class Shift implements Serializable {
 
         System.err.println("S H " + sHour);
         System.err.println("E H " + eHour);
-
-        if (sHour < eHour) {
+        durationHour = ((getEndingTime().getTime() - getStartingTime().getTime()) / (1000 * 60 * 60));
+        System.err.println(durationHour);
+        if (sHour > eHour) {
             System.err.println("1 ");
-            durationHour = eHour - sHour;
+            durationHour = (durationHour + 24);
             System.err.println("2 " + durationHour);
-        } else {
-            durationHour = ((eHour - sHour) + 24);
-
         }
+
+        durationHour = Math.floor(durationHour);
 
         return durationHour;
     }
@@ -291,6 +297,7 @@ public class Shift implements Serializable {
         this.retireComments = retireComments;
     }
 
+    @XmlTransient
     public List<StaffShift> getStaffShifts() {
         return staffShifts;
     }

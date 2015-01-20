@@ -21,6 +21,13 @@ import javax.persistence.ManyToOne;
 /**
  *
  * @author Buddhika
+ * 
+ * 
+ * Table creation sql for MySQL 
+ * 
+ * 
+ * 
+ * 
  */
 @Entity
 public class FormItemValue implements Serializable {

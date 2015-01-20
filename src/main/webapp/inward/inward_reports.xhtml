@@ -11,7 +11,7 @@
 
             <ui:define name="content">
                 <h:form>
-                    <h:panelGrid columns="3" >    
+                    <h:panelGrid columns="3" styleClass="alignTop">    
                         <p:panel header=" Service Report " >
                             <h:panelGrid columns="1">
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill" action="report_md_inward_bill" actionListener="#{mdInwardReportController.makeNull()}"/> 
@@ -61,6 +61,8 @@
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment(By Bill Item)" action="report_doctor_payment" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment(By Bill)" action="report_doctor_payment_by_bill" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Summery" action="report_doctor_payment_summery" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Summery for Discharged or Not Discharged Patients" action="report_doctor_payment_summery_discharged_and_notdischarged" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Summery for Discharged or Not Discharged Patients BHT" action="report_doctor_payment_summery_discharged_and_notdischarged_with_bht" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Due Report Inwad" action="inward_report_professional_payment_due" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                                 <p:commandButton styleClass="linkButton" ajax="false" value="All Doctors Search" action="report_all_doctors" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                             </h:panelGrid>

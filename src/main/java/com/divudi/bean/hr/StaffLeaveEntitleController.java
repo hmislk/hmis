@@ -43,12 +43,13 @@ public class StaffLeaveEntitleController implements Serializable {
     @EJB
     private StaffLeaveEntitleFacade ejbFacade;
     List<StaffLeaveEntitle> selectedItems;
+    List<StaffLeaveEntitle> selectedAllItems;
     private StaffLeaveEntitle current;
     private List<StaffLeaveEntitle> items = null;
     String selectText = "";
 
     public List<StaffLeaveEntitle> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from StaffLeaveEntitle c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+//        selectedItems = getFacade().findBySQL("select c from StaffLeaveEntitle c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -173,11 +174,30 @@ public class StaffLeaveEntitleController implements Serializable {
 
         selectedItems = getFacade().findBySQL(sql, hm);
     }
+    
+    public void createAllItems() {
+        HashMap hm = new HashMap();
+        String sql = "select c from StaffLeaveEntitle c "
+                + " where c.retired=false "
+                + " order by c.staff.codeInterger ";
+
+        selectedAllItems = getFacade().findBySQL(sql, hm);
+    }
 
     public List<StaffLeaveEntitle> getItems() {
 //        items = getFacade().findAll("name", true);
         return items;
     }
+
+    public List<StaffLeaveEntitle> getSelectedAllItems() {
+        return selectedAllItems;
+    }
+
+    public void setSelectedAllItems(List<StaffLeaveEntitle> selectedAllItems) {
+        this.selectedAllItems = selectedAllItems;
+    }
+    
+    
 
     /**
      *

@@ -17,12 +17,14 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class ShiftPreference implements Serializable {
     @OneToOne(mappedBy = "shiftPreference")
     private Shift shift;

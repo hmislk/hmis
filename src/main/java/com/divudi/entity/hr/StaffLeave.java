@@ -20,12 +20,14 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
+@XmlRootElement
 public class StaffLeave implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -55,6 +57,7 @@ public class StaffLeave implements Serializable {
     Form form;
     @ManyToOne
     Roster roster;
+    
 
     public Roster getRoster() {
         return roster;
@@ -92,6 +95,7 @@ public class StaffLeave implements Serializable {
             case Casual:
             case Lieu:
             case No_Pay:
+            case DutyLeave:
                 qty = 1;
                 break;
             case AnnualHalf:

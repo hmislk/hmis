@@ -10,6 +10,7 @@
         <h:form>
             <p:panel>
                 <p:commandButton ajax="false" value="Generated Salary" action="#{staffSalaryController.generate}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Save Salary" action="#{staffSalaryController.saveSalary}" onclick="onSubmitButton();"/>
                 <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" />
             </p:panel>
 
@@ -58,6 +59,9 @@
 
                         <p:column >
                             #{i+1}
+                        </p:column>
+                        <p:column headerText="Grade"  filterBy="#{s.roster.name}"  filterMatchMode="contains" >
+                            <h:outputLabel value="#{s.roster.name}"/>
                         </p:column>
                         <p:column headerText="Grade"  filterBy="#{s.grade}"  filterMatchMode="contains" >
                             <h:outputLabel value="#{s.grade}"/>

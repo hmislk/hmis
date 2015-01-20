@@ -827,7 +827,7 @@ public class PharmacySaleController implements Serializable {
             discount = discount + b.getDiscount();
             getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
         }
-
+        System.out.println("2.discount = " + discount);
         //   netTot = netTot + getPreBill().getServiceCharge();
         getPreBill().setNetTotal(netTot);
         getPreBill().setTotal(grossTot);
@@ -972,7 +972,7 @@ public class PharmacySaleController implements Serializable {
         getPreBill().setInsId(insId);
         String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setDeptId(deptId);
-
+        getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
         }
@@ -1000,6 +1000,7 @@ public class PharmacySaleController implements Serializable {
 
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
+        getSaleBill().setInvoiceNumber(getPreBill().getInvoiceNumber());
         getSaleBill().setComments(comment);
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
@@ -1169,8 +1170,15 @@ public class PharmacySaleController implements Serializable {
     public void settleBillWithPay() {
         editingQty = null;
 
+        if (sessionController.getInstitutionPreference().isCheckPaymentSchemeValidation()) {
+            if (getPaymentScheme() == null) {
+                UtilityController.addErrorMessage("Please select Payment Scheme");
+                return;
+            }
+        }
+
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select Payment Scheme");
+            UtilityController.addErrorMessage("Please select Payment Method");
             return;
         }
 
@@ -1328,7 +1336,7 @@ public class PharmacySaleController implements Serializable {
             discount = discount + b.getDiscount();
             getPreBill().setTotal(getPreBill().getTotal() + b.getGrossValue());
         }
-
+        System.out.println("1.discount = " + discount);
         netTot = netTot + getPreBill().getServiceCharge();
 
         getPreBill().setNetTotal(netTot);
@@ -1393,7 +1401,7 @@ public class PharmacySaleController implements Serializable {
         //System.out.println("bi.getRate() = " + bi.getRate());
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getNetRate());
-//        bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
+        bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
         //System.out.println("bi.getNetValue() = " + bi.getNetValue());
 
     }

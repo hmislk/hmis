@@ -22,6 +22,7 @@
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
 
                         <h:panelGrid id="gpSelect" columns="1" styleClass="alignTop" >
+                            <p:commandButton value="Reset" action="#{staffController.resetWorkingHour()}" ajax="false" disabled="false"/>
                             <p:panel >
 
                                 <h:panelGrid id="gpSelectText" >
@@ -59,7 +60,7 @@
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
                             </f:facet>
-                            <h:panelGrid id="gpDetail" columns="1" styleClass="alignTop">
+                            <h:panelGrid id="gpDetail" columns="1" styleClass="alignTop" >
                                 <p:tabView>
                                     <p:tab title="General">
                                         <h:panelGrid  columns="2">
@@ -107,12 +108,16 @@
                                             </h:selectOneListbox>
 
                                         </h:panelGrid> 
+
+
+
                                     </p:tab>
-                                    <p:tab title="Details" >
+                                    <p:tab title="Details" rendered="#{staffController.current.id ne null}" >
+
                                         <p:selectOneMenu id="mnuCat" value="#{staffController.formCategory}" >
                                             <f:selectItem itemLabel="Select Form" ></f:selectItem>
-                                            <f:selectItems value="#{staffController.listFormItems()}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
-                                            <f:ajax event="change" execute="mnuCat" render="gpStaffForm" />
+                                            <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
+                                            <f:ajax event="change" execute="mnuCat" render="gpStaffForm" listener="#{staffController.listFormItems()}" />
                                         </p:selectOneMenu>
 
                                         <h:panelGroup id="gpStaffForm"  >
@@ -133,15 +138,31 @@
                                                             <f:ajax event="blur" execute="txtValue" listener="#{staffController.updateFormItem(myFiv)}"   ></f:ajax>
                                                         </h:inputText>
                                                         <p:watermark for="txtValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
-                                                        
+
+                                                        <h:inputText id="txtdValue" 
+                                                                     rendered="#{myFiv.reportItem.ixItemType eq 'Value' and myFiv.reportItem.ixItemValueType eq 'Double' and myFiv.reportItem.retired eq false}"  
+                                                                     value="#{myFiv.doubleValue}" 
+                                                                     style="color: #{myFiv.reportItem.cssColor}"  >
+                                                            <f:ajax event="blur" execute="txtdValue" listener="#{staffController.updateFormItem(myFiv)}"   ></f:ajax>
+                                                        </h:inputText>
+                                                        <p:watermark for="txtdValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+
                                                         <h:panelGroup rendered="#{myFiv.reportItem.retired ne true and myFiv.reportItem.ixItemType eq 'ItemsCatetgory'}" >
                                                             <h:selectOneMenu value="#{myFiv.strValue}" id="cmbRefCat" style="#{myFiv.reportItem.innerCssStyle}" >
                                                                 <f:selectItem itemLabel="#{myFiv.reportItem.name}"></f:selectItem>
-                                                                <f:selectItems value="#{categoryController.getSubCategories(myFiv.reportItem.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc}" ></f:selectItems>
+                                                                <f:selectItems value="#{categoryController.getSubCategories(myFiv.reportItem.referringCategory) }" var="sc" itemLabel="#{sc.name}" itemValue="#{sc.name}" ></f:selectItems>
                                                             </h:selectOneMenu>
                                                         </h:panelGroup>
+
+
+
+
+
                                                     </div>
                                                 </ui:repeat>
+
+
+
                                             </div>
 
                                         </h:panelGroup>
@@ -173,27 +194,27 @@
                                                 <f:ajax execute="cmbIns" render="cmbDep" event="change"/>  
                                             </p:selectOneMenu>                                          
                                             <h:outputText value="Working Department" ></h:outputText>                                     
-                                            <p:selectOneMenu   id="cmbDep" value="#{staffController.current.workingDepartment}" disabled="#{staffController.current.workingDepartment ne null}" >
+                                            <p:selectOneMenu   id="cmbDep" value="#{staffController.current.workingDepartment}">
                                                 <f:selectItem itemLabel="Please select a Department"/>
                                                 <f:selectItems value="#{staffController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                             </p:selectOneMenu>
                                             <p:outputLabel value="Employee Status "/>
-                                            <p:selectOneMenu value="#{staffController.current.employeeStatus}" disabled="#{staffController.current.employeeStatus ne null}">
+                                            <p:selectOneMenu value="#{staffController.current.employeeStatus}" >
                                                 <f:selectItem itemLabel="Please select Employee Status"/>
                                                 <f:selectItems value="#{staffController.employeeStatuses}"/>
                                             </p:selectOneMenu>
                                             <p:outputLabel value="Staff Category "/>
-                                            <p:selectOneMenu value="#{staffController.current.staffCategory}" disabled="#{staffController.current.staffCategory ne null}">
+                                            <p:selectOneMenu value="#{staffController.current.staffCategory}">
                                                 <f:selectItem itemLabel="Please Staff Category"/>
                                                 <f:selectItems value="#{staffCategoryController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
                                             </p:selectOneMenu>
                                             <p:outputLabel value="Staff Grade "/>
-                                            <p:selectOneMenu value="#{staffController.current.grade}" disabled="#{staffController.current.grade ne null}">
+                                            <p:selectOneMenu value="#{staffController.current.grade}">
                                                 <f:selectItem itemLabel="Please Staff Grade"/>
                                                 <f:selectItems value="#{gradeController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
                                             </p:selectOneMenu>
                                             <p:outputLabel value="Staff Designation " />
-                                            <p:selectOneMenu value="#{staffController.current.designation}" disabled="#{staffController.current.designation ne null}">
+                                            <p:selectOneMenu value="#{staffController.current.designation}" >
                                                 <f:selectItem itemLabel="Please Staff Designation"/>
                                                 <f:selectItems value="#{designationController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
                                             </p:selectOneMenu>
@@ -231,6 +252,14 @@
 
                                             <h:outputText  value="Account No" ></h:outputText>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.bankAccount.accountNo}"  />
+                                        </h:panelGrid>
+                                    </p:tab>
+                                       <p:tab title="Working Time">
+                                        <h:panelGrid columns="2">
+                                            <p:outputLabel value="Working Time Per Week in Hour (For Over Time)"/>                                                                                     
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.workingTimeForOverTimePerWeek}"  />
+                                            <p:outputLabel value="Working Time Per Week in Hour (For No Pay)"/>                                                                                     
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.workingTimeForNoPayPerWeek}"  />
                                         </h:panelGrid>
                                     </p:tab>
 

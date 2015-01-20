@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:bill="http://java.sun.com/jsf/composite/inward"
+                xmlns:in="http://java.sun.com/jsf/composite/patient"
+                xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
+
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGroup rendered="#{!admissionController.printPreview}" >
+                <p:panel>
+                    <p:panelGrid columns="2" >
+                        <p:outputLabel value="Select BHT with Errors" ></p:outputLabel>
+                        <p:selectOneMenu value="#{admissionController.current}"
+
+                                         converter="admis"
+                                         >
+                            <f:selectItems value="#{admissionController.admissionsWithErrors}"
+                                           var="admi"
+                                           itemLabel="#{admi.bhtNo}"
+                                           itemValue="#{admi}" ></f:selectItems>
+                            <f:ajax event="change" execute="@this" render="panelAdmissionDetails" ></f:ajax>
+                        </p:selectOneMenu>
+
+                    </p:panelGrid>
+
+                    <h:panelGrid id="panelAdmissionDetails" columns="5" styleClass="alignTop" >                   
+                        <p:outputLabel value="Admission Type" ></p:outputLabel>
+                        <p:selectOneMenu  id="lstSelect"   value="#{admissionController.current.admissionType}" >
+                            <f:selectItem itemLabel="Select Admission Type"/>
+                            <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="" ></p:outputLabel>
+                        <p:outputLabel value="" ></p:outputLabel>
+                        <p:outputLabel value="" ></p:outputLabel>
+
+                        <p:outputLabel value="BHT" ></p:outputLabel>
+                        <p:outputLabel id="bh" value="#{admissionController.current.bhtNo}" style="font-weight: bold ; margin: 1px; border: 3px  solid black ; padding: 3px; min-width: 150px; display: block; text-align: center ;  "   />
+                        <p:inputText id="bht" value="#{admissionController.current.bhtNo}" />
+                        
+                        <p:autoComplete  converter="fac" forceSelection="true"  
+                                         id="cmbDoc" 
+                                         value="#{admissionController.patientRoom.roomFacilityCharge}" 
+                                         completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                         var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
+                                         style="width: 400px;">                            
+                        </p:autoComplete>
+                        <p:commandButton ajax="false" value="Update BHT" actionListener="#{admissionController.updateBHTNo}" onclick="onSubmitButton();"/>
+                        <p:watermark for="bht" value="BHT No" />
+                    </h:panelGrid>
+                </p:panel>
+
+            </h:panelGroup>
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

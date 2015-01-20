@@ -17,12 +17,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class StaffPaysheetComponent implements Serializable {
 
     private static final long serialVersionUID = 1L;

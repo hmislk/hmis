@@ -32,12 +32,12 @@
             <p:inputText autocomplete="off" value="#{cc.attrs.patientEncounter.policyNo}" />
             <h:outputLabel value="Referance Number : " style="min-width: 100px;" />
             <p:inputText autocomplete="off" value="#{cc.attrs.patientEncounter.referanceNo}" />
-            <p:outputLabel value="Credit Paid By Credit company" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+<!--            <p:outputLabel value="Credit Paid By Credit company" rendered="#{webUserController.hasPrivilege('Developers')}"/>
             <p:inputText value="#{bhtEditController.current.paidByCreditCompany}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:inputText>
             <p:outputLabel value="Credit Paid Amount" rendered="#{webUserController.hasPrivilege('Developers')}"/>
             <p:inputText value="#{bhtEditController.current.creditPaidAmount}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:inputText>
             <p:outputLabel value="Credit Used Amount" rendered="#{webUserController.hasPrivilege('Developers')}"/>
-            <p:inputText value="#{bhtEditController.current.creditUsedAmount}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:inputText>
+            <p:inputText value="#{bhtEditController.current.creditUsedAmount}" rendered="#{webUserController.hasPrivilege('Developers')}"></p:inputText>-->
             <p:commandButton ajax="false" value="Reset" action="#{admissionController.resetCreditDetail(cc.attrs.patientEncounter)}"/>
         </h:panelGrid>
     </cc:implementation>

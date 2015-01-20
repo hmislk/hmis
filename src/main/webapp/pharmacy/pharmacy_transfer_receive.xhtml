@@ -72,7 +72,15 @@
 
                 <p:panel   id="gpBillPreview"   >
 
-                    <ph:transferReceive bill="#{transferReceiveController.receivedBill}" />
+<!--                    <ph:transferReceive bill="#{transferReceiveController.receivedBill}" />-->
+                    
+                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                            <ph:transferReceive bill="#{transferReceiveController.receivedBill}" />
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                            <ph:transfeRecieve_detailed bill="#{transferReceiveController.receivedBill}"/>
+                        </h:panelGroup>
 
                 </p:panel>
 

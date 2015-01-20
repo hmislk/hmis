@@ -34,12 +34,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author buddhika
  */
 @Entity
+@XmlRootElement
 public class Staff implements Serializable {
 
     @ManyToOne
@@ -121,10 +123,35 @@ public class Staff implements Serializable {
 
 //    double workingHourPerShift;
 //    double leaveHour;
-
     double annualWelfareQualified;
     double annualWelfareUtilized;
+    double workingTimeForOverTimePerWeek;
+    double workingTimeForNoPayPerWeek;
     Integer codeInterger;
+
+    public double getWorkingTimeForNoPayPerWeek() {
+        return workingTimeForNoPayPerWeek;
+    }
+
+    public void setWorkingTimeForNoPayPerWeek(double workingTimeForNoPayPerWeek) {
+        this.workingTimeForNoPayPerWeek = workingTimeForNoPayPerWeek;
+    }
+
+    public double getTransWorkedDays() {
+        return transWorkedDays;
+    }
+
+    public void setTransWorkedDays(double transWorkedDays) {
+        this.transWorkedDays = transWorkedDays;
+    }
+
+    public double getWorkingTimeForOverTimePerWeek() {
+        return workingTimeForOverTimePerWeek;
+    }
+
+    public void setWorkingTimeForOverTimePerWeek(double workingTimeForOverTimePerWeek) {
+        this.workingTimeForOverTimePerWeek = workingTimeForOverTimePerWeek;
+    }
 
     public Integer getCodeInterger() {
         return codeInterger;
@@ -141,7 +168,7 @@ public class Staff implements Serializable {
 
         try {
             codeInterger = Integer.parseInt(code);
-            
+
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -163,7 +190,6 @@ public class Staff implements Serializable {
 //    public void setLeaveHour(double leaveHour) {
 //        this.leaveHour = leaveHour;
 //    }
-
     public byte[] getBaImage() {
         return baImage;
     }
@@ -390,6 +416,7 @@ public class Staff implements Serializable {
 
     public void setWorkingDepartment(Department workingDepartment) {
         this.workingDepartment = workingDepartment;
+        this.department = workingDepartment;
     }
 
     public EmployeeLeavingStatus getEmployeeLeavingStatus() {
@@ -548,7 +575,6 @@ public class Staff implements Serializable {
 //    public void setWorkingHourPerShift(double workingHourPerShift) {
 //        this.workingHourPerShift = workingHourPerShift;
 //    }
-
     public double getCharge() {
         return charge;
     }
