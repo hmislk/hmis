@@ -54,7 +54,7 @@ public class PatientItem implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date fromTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date toTime;
+    Date toTime=null;
     Double serviceValue;
     double discount;
     double adjustedValue;
