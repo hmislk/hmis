@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Leave Application Form">
+                <h:panelGrid columns="2" >
+                    <p:panel header="Search Leave Forms" >
+                        <p:panel>
+                            <p:panelGrid columns="2" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar value="#{fingerPrintRecordController.fromDate}"
+                                            pattern="dd MM yyyy">     
+                                </p:calendar>   
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar value="#{fingerPrintRecordController.toDate}"
+                                            pattern="dd MM yyyy">
+                                </p:calendar> 
+                                <h:outputLabel value="Staff : "/>
+                                <au:completeStaff value="#{fingerPrintRecordController.staff}"/>                               
+                                <h:outputLabel value="Leave Type"/>
+
+                                <h:outputLabel value="Department : "/>
+                                <au:department value="#{fingerPrintRecordController.department}"/>
+
+                                <p:commandButton value="Search Created Date" ajax="false" action="#{fingerPrintRecordController.createFingerPrintRecordTableCreatedAt()}" />
+                                <p:commandButton value="Search Sift Date" ajax="false" action="#{fingerPrintRecordController.createFingerPrintRecordTableSiftDate()}" />
+                            </p:panelGrid>
+                        </p:panel>
+                        <p:panel>
+                            <p:dataTable value="#{fingerPrintRecordController.fingerPrintRecords}" var="l" 
+                                         rowStyleClass="#{l.retired eq true ? 'redText':''}"
+                                         scrollable="true"
+                                         scrollHeight="300" >
+                                <p:column headerText="View" >
+                                    <p:commandButton ajax="false" value="View" action="hr_staff_finger_edit" actionListener="#{fingerPrintRecordController.viewStaffFinger(l)}" disabled="#{l.retired}"></p:commandButton>
+                                </p:column>
+                                <p:column headerText="Staff">
+                                    <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Date">
+                                    <p:outputLabel value="#{l.staffShift.shiftDate}" >
+                                        <f:convertDateTime pattern="yyyy MM dd" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Created At">
+                                    <p:outputLabel value="#{l.createdAt}" >
+                                        <f:convertDateTime pattern="yyyy MM dd" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Creater">
+                                    <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </p:panel>
+                </h:panelGrid>              
+            </p:panel>
+        </h:form>
+    </ui:define> 
+
+</ui:composition>
