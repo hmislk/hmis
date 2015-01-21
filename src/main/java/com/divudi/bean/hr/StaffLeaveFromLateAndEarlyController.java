@@ -342,7 +342,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
-    public void addLeaveDataToStaffShift(StaffShift ss,LeaveType leaveType) {
+    public void addLeaveDataToStaffShift(StaffShift ss, LeaveType leaveType) {
         if (ss == null) {
             return;
         }
@@ -414,7 +414,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         }
 
         if (list.size() == 1) {
-            addLeaveDataToStaffShift(list.pollFirst(),getCurrentLeaveForm().getLeaveType());
+            addLeaveDataToStaffShift(list.pollFirst(), getCurrentLeaveForm().getLeaveType());
         } else {
             addLeaveDataToStaffShift(list);
         }
@@ -422,6 +422,10 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
     }
 
     public void saveLeaveform() {
+        if (currentLeaveForm.getId() != null) {
+            return;
+        }
+        
         if (errorCheck()) {
             return;
         }

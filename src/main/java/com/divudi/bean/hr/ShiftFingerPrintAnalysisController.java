@@ -278,11 +278,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     }
 
-    private void fetchAndSetDayType(StaffShift ss) {
+    public void fetchAndSetDayType(StaffShift ss) {
         ss.setDayType(null);
 
-        DayType dayType = phDateController.getHolidayType(ss.getShiftDate());
-        ss.setDayType(dayType);
+        DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
+        ss.setDayType(dtp);
         if (ss.getDayType() == null) {
             if (ss.getShift() != null) {
                 ss.setDayType(ss.getShift().getDayType());
@@ -340,6 +340,143 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShiftWithShift(nowDate, roster);
+
+            if (staffShifts.isEmpty()) {
+//                    System.err.println("CONTINUE");
+                Calendar c = Calendar.getInstance();
+                c.setTime(nowDate);
+                c.add(Calendar.DATE, 1);
+                nowDate = c.getTime();
+                continue;
+            }
+
+            for (StaffShift ss : staffShifts) {
+//                ss.setStartRecord(null);
+//                ss.setEndRecord(null);
+                System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
+                fetchAndSetStaffLeave(ss);
+                fetchAndSetDayType(ss);
+
+                List<FingerPrintRecord> list = new ArrayList<>();
+                FingerPrintRecord fingerPrintRecordIn = ss.getStartRecord();
+                FingerPrintRecord fingerPrintRecordOut = ss.getEndRecord();
+
+                HrForm additionalForm = ss.getAdditionalForm();
+
+                if (additionalForm == null) {
+                    if (fingerPrintRecordIn == null) {
+                        fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
+
+                    }
+
+                    if (fingerPrintRecordOut == null) {
+                        fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
+                    }
+                } else {
+                    //Fetch Time From Additional From
+                    fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut, list);
+                }
+
+//                System.err.println(" 1 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
+                if (fingerPrintRecordIn != null) {
+                    fingerPrintRecordIn.setTimes(Times.inTime);
+                    ss.setStartRecord(fingerPrintRecordIn);
+                    list.add(fingerPrintRecordIn);
+                }
+
+                if (fingerPrintRecordOut != null) {
+                    fingerPrintRecordOut.setTimes(Times.outTime);
+                    ss.setEndRecord(fingerPrintRecordOut);
+                    list.add(fingerPrintRecordOut);
+                }
+
+                System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
+
+                FingerPrintRecord fpr = null;
+                if (ss.getStartRecord() == null) {
+                    fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.inTime);
+                    list.add(fpr);
+                    ss.setStartRecord(fpr);
+
+//                        staffShiftFacade.edit(ss);
+                    if (ss.getPreviousStaffShift() != null) {
+                        System.err.println("PREV************************");
+                        ss.getStartRecord().setComments("(NEW PREV)");
+                        ss.getStartRecord().setRecordTimeStamp(ss.getShiftStartTime());
+
+                    }
+
+                }
+
+                if (ss.getEndRecord() == null) {
+                    fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.outTime);
+                    list.add(fpr);
+                    ss.setEndRecord(fpr);
+//                        staffShiftFacade.edit(ss);
+
+                    if (ss.getNextStaffShift() != null) {
+                        System.err.println("NEXT*****************");
+                        ss.getEndRecord().setComments("(NEW NEXT)");
+                        ss.getEndRecord().setRecordTimeStamp(ss.getShiftEndTime());
+                    }
+                }
+
+                System.err.println("3 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
+                ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
+                ss.getFingerPrintRecordList().addAll(list);
+                netT.getStaffShift().add(ss);
+
+            }
+
+            shiftTables.add(netT);
+
+            Calendar c = Calendar.getInstance();
+            c.setTime(nowDate);
+            c.add(Calendar.DATE, 1);
+            nowDate = c.getTime();
+
+        }
+
+        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+    }
+    
+     public void createShiftTableAdditional() {
+        if (errorCheck()) {
+            return;
+        }
+
+        shiftTables = new ArrayList<>();
+
+        Calendar nc = Calendar.getInstance();
+        nc.setTime(getFromDate());
+        Date nowDate = nc.getTime();
+//        System.out.println("Line1 = " + new Date());
+
+        nc.setTime(getToDate());
+        nc.add(Calendar.DATE, 1);
+        Date tmpToDate = nc.getTime();
+//        System.out.println("Line2 = " + new Date());
+
+        //CREATE FIRTS TABLE For Indexing Purpuse
+        ShiftTable netT;
+
+        while (tmpToDate.after(nowDate)) {
+            netT = new ShiftTable();
+            netT.setDate(nowDate);
+
+            Calendar calNowDate = Calendar.getInstance();
+            calNowDate.setTime(nowDate);
+
+            Calendar calFromDate = Calendar.getInstance();
+            calFromDate.setTime(getFromDate());
+
+            if (calNowDate.get(Calendar.DATE) == calFromDate.get(Calendar.DATE)) {
+                netT.setFlag(Boolean.TRUE);
+            } else {
+                netT.setFlag(Boolean.FALSE);
+            }
+
+            List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShiftWithShiftAdditional(nowDate, roster);
 
             if (staffShifts.isEmpty()) {
 //                    System.err.println("CONTINUE");
