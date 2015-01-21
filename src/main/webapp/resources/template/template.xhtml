@@ -480,7 +480,7 @@
                                         </p:submenu>
                                         <p:submenu label="By Individual">
                                             <p:menuitem  ajax="false"  action="/hr/hr_staff_basic_individual" value="Manage Staff Basic " actionListener="#{staffBasicController.makeNull}" />    
-                                             <p:menuitem  ajax="false"  action="/hr/hr_staff_paysheet_component_individual" value="Manage Staff Paysheet " actionListener="#{staffBasicController.makeNull}" />    
+                                            <p:menuitem  ajax="false"  action="/hr/hr_staff_paysheet_component_individual" value="Manage Staff Paysheet " actionListener="#{staffBasicController.makeNull}" />    
                                             <p:menuitem  ajax="false"  action="/hr/hr_staff_loan_installment" value="Manage Staff Loan Individual" actionListener="#{staffLoanController.makeNull}"  />                                                                                                           
                                         </p:submenu>                                    
                                         <p:menuitem  ajax="false"  action="/hr/hr_staff_basic_list" value="Staff Basic List" actionListener="#{staffBasicController.makeItemNul()}"  ></p:menuitem>
@@ -489,11 +489,15 @@
                                         <p:menuitem  ajax="false"  action="/hr/hr_hrm_variables" value="HRM Variable"  />
                                     </p:submenu>
                                     <p:submenu label="Forms">
-                                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave" value="Leave form"  />
-                                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave_from_attendance" value="Leave From Attendance"  />
-                                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional" value="Additional Form"  />
-
-                                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_transfer" value="Transfer Form"  />                                        
+                                        <p:submenu label="Leave">
+                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave" value="Leave form"  />
+                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave_from_attendance" value="Leave From Attendance"  />
+                                        </p:submenu>
+                                        <p:submenu label="Additional">
+                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_extra" value="Extra Time" actionListener="#{staffAdditionalFormController.clear()}"  />    
+                                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift" value="Extra Shift" actionListener="#{staffAdditionalFormController.clear()}"  />    
+                                        </p:submenu>
+                                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_transfer" value="Roster Transfer"  />                                        
                                     </p:submenu>
 
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"   

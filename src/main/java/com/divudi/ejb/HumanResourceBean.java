@@ -679,6 +679,24 @@ public class HumanResourceBean {
 //        System.err.println("fetchStaffShiftWithShift:: " + tmp);
         return tmp;
     }
+    
+    public List<StaffShift> fetchStaffShiftWithShiftAdditional(Date d, Roster roster) {
+        // List<StaffShift> tmp=new ArrayList<>();
+        String sql;
+        HashMap hm = new HashMap();
+
+        sql = "select st From StaffShift st "
+                + " where st.retired=false"
+                + " and st.shiftDate=:dt "
+                + " and st.roster=:rs"
+                + " and st.shift is not null"
+                + " order by st.staff.codeInterger";
+        hm.put("dt", d);
+        hm.put("rs", roster);
+        List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
+//        System.err.println("fetchStaffShiftWithShift:: " + tmp);
+        return tmp;
+    }
 
     public StaffShift calPrevStaffShift(StaffShift tmp) {
         //  System.err.println("Cal Prev Shift");
