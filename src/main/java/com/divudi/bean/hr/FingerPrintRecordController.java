@@ -67,8 +67,6 @@ public class FingerPrintRecordController implements Serializable {
     private void createFingerPrintRecordTable(boolean createdDate) {
         String sql;
         Map m = new HashMap();
-        FingerPrintRecord f = new FingerPrintRecord();
-        f.getRoster().getDepartment();
         sql = " select f from FingerPrintRecord f where "
                 + " f.retired=false ";
 
