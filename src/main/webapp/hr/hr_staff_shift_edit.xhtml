@@ -15,33 +15,41 @@
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Staff : "/>
                             <au:completeStaff value="#{staffShiftController.staffshift.staff}"/>
-                            
+
                             <h:outputLabel value="Shift Date"/>
                             <p:calendar id="toDate" value="#{staffShiftController.staffshift.shiftDate}"
                                         pattern="dd MM yy">
                             </p:calendar>
-                            
+
                             <h:outputLabel value="Shift Start Time"/>
                             <p:calendar value="#{staffShiftController.staffshift.shiftStartTime}"
                                         pattern="hh:mm:ss">
                             </p:calendar>
-                            
+
                             <h:outputLabel value="Shift End Time"/>
                             <p:calendar value="#{staffShiftController.staffshift.shiftEndTime}"
                                         pattern="hh:mm:ss">
                             </p:calendar>
-                            
-                            <h:outputLabel value="Roster"/>
-                            <p:autoComplete completeMethod="#{rosterController.completeRoster}" value="#{staffShiftController.staffshift.roster}" forceSelection="true"
-                                            var="ros" itemLabel="#{ros.name}" itemValue="#{ros}"></p:autoComplete>
-                            
-                            <h:outputLabel value="Delete StaffShift: "/>
-                            <h:selectBooleanCheckbox value="#{staffShiftController.staffshift.retired}" />
-                            
-                            <h:panelGroup>
-                                <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                                 action="#{staffShiftController.saveStaffShift()}"/>
-                            </h:panelGroup>                     
+
+                            <h:outputLabel value="Multiply"/>
+                            <p:inputText value="#{staffShiftController.staffshift.multiplyingFactorOverTime}"/>
+
+                            <h:outputLabel value="Basi Per Sec"/>
+                            <p:inputText value="#{staffShiftController.staffshift.overTimeValuePerSecond}"/>
+
+
+
+                                <h:outputLabel value="Roster"/>
+                                <p:autoComplete completeMethod="#{rosterController.completeRoster}" value="#{staffShiftController.staffshift.roster}" forceSelection="true"
+                                                var="ros" itemLabel="#{ros.name}" itemValue="#{ros}"></p:autoComplete>
+
+                                <h:outputLabel value="Delete StaffShift: "/>
+                                <h:selectBooleanCheckbox value="#{staffShiftController.staffshift.retired}" />
+
+                                <h:panelGroup>
+                                    <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                                                     action="#{staffShiftController.saveStaffShift()}"/>
+                                </h:panelGroup>                     
                         </h:panelGrid>
                     </p:panel> 
                 </h:panelGrid>              

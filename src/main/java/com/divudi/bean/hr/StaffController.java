@@ -254,14 +254,14 @@ public class StaffController implements Serializable {
     public void createTable() {
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
-        String sql = "select p from Staff p "
-                + " where p.retired=false "
-                + " and type(p)!=:class "
-                + " and LENGTH(p.code) > 0 "
-                + " and LENGTH(p.person.name) > 0 ";
+        String sql = "select ss from Staff ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:class "
+                + " and LENGTH(ss.code) > 0 "
+                + " and LENGTH(ss.person.name) > 0 ";
 
         if (getReportKeyWord().getStaff() != null) {
-            sql += " and ss.staff=:stf ";
+            sql += " and ss=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
 
