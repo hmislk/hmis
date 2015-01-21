@@ -49,6 +49,7 @@
                             <h:outputLabel/>
                             <h:panelGroup>
                                 <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                                                   disabled="#{staffLeaveFromLateAndEarlyController.currentLeaveForm.id ne null}"
                                                  action="#{staffLeaveFromLateAndEarlyController.saveLeaveform()}"/>
 
                                 <p:commandButton ajax="false" value="Clear" 

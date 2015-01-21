@@ -9,7 +9,6 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.Times;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AdditionalForm;
@@ -177,13 +176,13 @@ public class StaffAdditionalFormController implements Serializable {
                 + " where c.retired=false "
                 + " and (c)!=:cl "
                 + " and c.shift is not null "
-                + " and c.shift.dayType!=:dtp1 "
-                + " and c.shift.dayType!=:dtp2 "
+                //                + " and c.shift.dayType!=:dtp1 "
+                //                + " and c.shift.dayType!=:dtp2 "
                 + " and c.shiftDate =:dt "
                 + " and c.staff=:stf ";
 
-        hm.put("dtp1", DayType.DayOff);
-        hm.put("dtp2", DayType.SleepingDay);
+//        hm.put("dtp1", DayType.DayOff);
+//        hm.put("dtp2", DayType.SleepingDay);
         hm.put("cl", StaffShiftExtra.class);
         hm.put("dt", getDate());
         hm.put("stf", getCurrentAdditionalForm().getStaff());
@@ -249,7 +248,68 @@ public class StaffAdditionalFormController implements Serializable {
         currentAdditionalForm = null;
     }
 
-    public boolean errorCheck() {
+    public boolean errorCheckExtra() {
+        if (currentAdditionalForm.getStaff() == null) {
+            JsfUtil.addErrorMessage("Please Enter Staff");
+            return true;
+        }
+
+        if (currentAdditionalForm.getStaffShift() == null) {
+            JsfUtil.addErrorMessage("Please Enter Staff Shift");
+            return true;
+        }
+
+        if (currentAdditionalForm.getCode().isEmpty()) {
+            JsfUtil.addErrorMessage("Please Enter Form Number");
+            return true;
+        }
+
+        if (currentAdditionalForm.getFromTime() == null) {
+            JsfUtil.addErrorMessage("Please Select From Time");
+            return true;
+        }
+        if (currentAdditionalForm.getToTime() == null) {
+            JsfUtil.addErrorMessage("Please Select From Time");
+            return true;
+        }
+        if (currentAdditionalForm.getApprovedStaff() == null) {
+            JsfUtil.addErrorMessage("Please Select Approved Person");
+            return true;
+        }
+        if (currentAdditionalForm.getApprovedAt() == null) {
+            JsfUtil.addErrorMessage("Please Select Approved Date");
+            return true;
+        }
+        if (currentAdditionalForm.getComments() == null || "".equals(currentAdditionalForm.getComments())) {
+            JsfUtil.addErrorMessage("Please Add Comment");
+            return true;
+        }
+
+        if (currentAdditionalForm.getTimes() == null) {
+            JsfUtil.addErrorMessage("Please Select Time Type");
+            return true;
+        }
+
+        if (date == null) {
+            JsfUtil.addErrorMessage("Please Select Date");
+            return true;
+        }
+
+        if (getCurrentAdditionalForm().getTimes() != Times.All && currentAdditionalForm.getStaffShift() == null) {
+            JsfUtil.addErrorMessage("Please Select Staff Shiftt");
+            return true;
+        }
+
+        if (getCurrentAdditionalForm().getTimes() == Times.All && currentAdditionalForm.getStaffShift() != null) {
+            JsfUtil.addErrorMessage("Please Un Select Staff Shiftt");
+            return true;
+        }
+
+        //NEED To Check StaffSHift  if not selected is there any shift time on that day
+        return false;
+    }
+
+    public boolean errorCheckShift() {
         if (currentAdditionalForm.getStaff() == null) {
             JsfUtil.addErrorMessage("Please Enter Staff");
             return true;
@@ -308,16 +368,9 @@ public class StaffAdditionalFormController implements Serializable {
     @Inject
     PhDateController phDateController;
 
-    public void saveAdditionalForm() {
-        if (errorCheck()) {
+    public void saveAdditionalFormExtra() {
+        if (errorCheckExtra()) {
             return;
-        }
-
-        DayType dayType = phDateController.getHolidayType(date);
-        Shift shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
-
-        if (shift == null) {
-            shift = fetchShift(currentAdditionalForm.getStaff().getRoster());
         }
 
         currentAdditionalForm.setCreatedAt(new Date());
@@ -328,25 +381,44 @@ public class StaffAdditionalFormController implements Serializable {
             getAdditionalFormFacade().edit(currentAdditionalForm);
         }
 
-        if (currentAdditionalForm.getStaffShift() != null) {
-            currentAdditionalForm.getStaffShift().resetExtraTime();
-            currentAdditionalForm.getStaffShift().setAdditionalForm(currentAdditionalForm);
-            staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
-        } else {
-            StaffShiftExtra staffShiftExtra = new StaffShiftExtra();
-            staffShiftExtra.setCreatedAt(new Date());
-            staffShiftExtra.setCreater(sessionController.getLoggedUser());
-            staffShiftExtra.setAdditionalForm(currentAdditionalForm);
-            staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
-            staffShiftExtra.setShiftDate(date);
-            staffShiftExtra.setShift(shift);
-            staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
-            staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
-            staffShiftFacade.create(staffShiftExtra);
+        currentAdditionalForm.getStaffShift().resetExtraTime();
+        currentAdditionalForm.getStaffShift().setAdditionalForm(currentAdditionalForm);
+        staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
 
-            currentAdditionalForm.setStaffShift(staffShiftExtra);
-            additionalFormFacade.edit(currentAdditionalForm);
+        JsfUtil.addSuccessMessage("Sucessfully Saved");
+        clear();
+    }
+
+    public void saveAdditionalFormShift() {
+        if (errorCheckShift()) {
+            return;
         }
+
+        DayType dayType = phDateController.getHolidayType(date);
+        Shift shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
+
+        currentAdditionalForm.setTimes(Times.All);
+        currentAdditionalForm.setCreatedAt(new Date());
+        currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
+        if (currentAdditionalForm.getId() == null) {
+            getAdditionalFormFacade().create(currentAdditionalForm);
+        } else {
+            getAdditionalFormFacade().edit(currentAdditionalForm);
+        }
+
+        StaffShiftExtra staffShiftExtra = new StaffShiftExtra();
+        staffShiftExtra.setCreatedAt(new Date());
+        staffShiftExtra.setCreater(sessionController.getLoggedUser());
+        staffShiftExtra.setAdditionalForm(currentAdditionalForm);
+        staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
+        staffShiftExtra.setShiftDate(date);
+        staffShiftExtra.setShift(shift);
+        staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
+        staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
+        staffShiftFacade.create(staffShiftExtra);
+
+        currentAdditionalForm.setStaffShift(staffShiftExtra);
+        additionalFormFacade.edit(currentAdditionalForm);
 
         JsfUtil.addSuccessMessage("Sucessfully Saved");
         clear();
@@ -355,7 +427,7 @@ public class StaffAdditionalFormController implements Serializable {
     @EJB
     ShiftFacade shiftFacade;
 
-    private Shift fetchShift(Roster roster, DayType dayType) {
+    private Shift fetchShiftForPh(Roster roster, DayType dayType) {
         if (dayType == null || roster == null) {
             return null;
         }
