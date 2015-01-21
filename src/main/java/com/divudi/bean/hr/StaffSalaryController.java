@@ -327,6 +327,28 @@ public class StaffSalaryController implements Serializable {
 
     }
 
+    private StaffSalaryComponant createStaffSalaryComponant(PaysheetComponentType paysheetComponentType) {
+        StaffSalaryComponant ss = new StaffSalaryComponant();
+        ss.setCreatedAt(new Date());
+        ss.setCreater(getSessionController().getLoggedUser());
+        ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(getCurrent().getStaff(), getSessionController().getLoggedUser(), paysheetComponentType));
+        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
+        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+
+        return ss;
+    }
+
+    private void setAdjustments() {
+
+        //
+        getCurrent().getStaffSalaryComponants().add(createStaffSalaryComponant(PaysheetComponentType.AdjustmentBasicAdd));
+        getCurrent().getStaffSalaryComponants().add(createStaffSalaryComponant(PaysheetComponentType.AdjustmentBasicSub));
+        getCurrent().getStaffSalaryComponants().add(createStaffSalaryComponant(PaysheetComponentType.AdjustmentAllowanceAdd));
+        getCurrent().getStaffSalaryComponants().add(createStaffSalaryComponant(PaysheetComponentType.AdjustmentAllowanceSub));
+
+        //
+    }
+
 //    private void setExtraDuty() {
 //        getHumanResourceBean().calculateExtraDuty(getExtraDutyFromDate(), getExtraDutyToDate(), getCurrent().getStaff());
 //
@@ -536,6 +558,7 @@ public class StaffSalaryController implements Serializable {
             setNoPay();
             setHoliDayAllowance();
             setDayOffAllowance();
+            setAdjustments();
         }
 
     }

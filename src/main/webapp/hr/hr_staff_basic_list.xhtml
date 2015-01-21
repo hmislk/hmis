@@ -49,6 +49,9 @@
                 <p:column headerText="Staff" filterBy="#{i.staff.person.nameWithTitle}" filterMatchMode="contains">
                     <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
                 </p:column>
+                 <p:column headerText="Staff Code" filterBy="#{i.staff.code}" filterMatchMode="contains">
+                    <h:outputLabel value="#{i.staff.code}"/>
+                </p:column>
                 <p:column headerText="Basic"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains">
 
                     <h:outputLabel value="#{i.staffPaySheetComponentValue}">

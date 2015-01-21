@@ -440,12 +440,16 @@ public class InwardStaffPaymentBillController implements Serializable {
         sql = "select bf from BillItem bf "
                 + " where bf.retired=false "
                 + " and bf.bill.billType=:btp"
+                
                 + " and (bf.paidForBillFee.bill.billType=:refBtp1"
                 + " or bf.paidForBillFee.bill.billType=:refBtp2)";
 
         if (dischargeDate) {
             sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
-        } 
+        } else{
+            sql += " and (bf.paidForBillFee.bill.patientEncounter.dateOfDischarge not between :fd and :td "
+                    + " or bf.paidForBillFee.bill.patientEncounter.discharged=false)";
+        }
 
         if (speciality != null) {
             sql += " and bf.paidForBillFee.staff.speciality=:s ";

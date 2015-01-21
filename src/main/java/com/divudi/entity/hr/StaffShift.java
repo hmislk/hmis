@@ -162,8 +162,6 @@ public class StaffShift implements Serializable {
     public void setDayType(DayType dayType) {
         this.dayType = dayType;
     }
-    
-    
 
     public int getLeaveDivident() {
         return leaveDivident;
@@ -582,7 +580,8 @@ public class StaffShift implements Serializable {
                 && getStartRecord().getLoggedRecord() != null
                 && getStartRecord().getLoggedRecord().getRecordTimeStamp() != null) {
 
-            if (getStartRecord().getLoggedRecord().getRecordTimeStamp().before(getShiftStartTime())) {
+            if (getShiftStartTime() != null
+                    && getStartRecord().getLoggedRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getLoggedRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -596,7 +595,7 @@ public class StaffShift implements Serializable {
                 && getEndRecord().getLoggedRecord() != null
                 && getEndRecord().getLoggedRecord().getRecordTimeStamp() != null) {
 
-            if (getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
+            if (getShiftEndTime() != null && getShiftEndTime().before(getEndRecord().getLoggedRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -607,7 +606,8 @@ public class StaffShift implements Serializable {
         //Over Time From Start Record Varified 
         extraTimeFromStartRecordVarified = 0;
         if (getStartRecord().isAllowedExtraDuty() && getStartRecord().getRecordTimeStamp() != null) {
-            if (getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
+            if (getShiftStartTime() != null
+                    && getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
@@ -618,7 +618,7 @@ public class StaffShift implements Serializable {
         //Over Time From End Record Varified
         extraTimeFromEndRecordVarified = 0;
         if (getEndRecord().isAllowedExtraDuty() && getEndRecord().getRecordTimeStamp() != null) {
-            if (getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
+            if (getShiftEndTime() != null && getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);

@@ -22,6 +22,8 @@ public enum PaysheetComponentType {
     ExtraDuty(addition),
     PoyaAllowance(addition),
     DayOffAllowance(addition),
+    AdjustmentBasicAdd(addition),
+    AdjustmentAllowanceAdd(addition),
     //////////////////////
     subtraction(null),
     FixedDeduction(subtraction),
@@ -30,7 +32,9 @@ public enum PaysheetComponentType {
     VariableDeductionToBasicSalary(subtraction),
     LoanInstallemant(subtraction),
     Institution_Deduction(subtraction),
-    No_Pay_Deduction(subtraction),;
+    No_Pay_Deduction(subtraction),
+    AdjustmentBasicSub(subtraction),
+    AdjustmentAllowanceSub(subtraction),;
 
     public String getLabel() {
         switch (this) {

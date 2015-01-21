@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
@@ -37,6 +38,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private double staffPaySheetComponentValue;
+    ReportKeyWord reportKeyWord;
     ////////////////
     private List<StaffPaysheetComponent> filteredStaffPaysheet;
     private List<StaffPaysheetComponent> items;
@@ -53,10 +55,22 @@ public class StaffPaySheetComponentAllController implements Serializable {
     @Inject
     private StaffController staffController;
 
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
     public void makeItemNull() {
         items = null;
         filteredStaffPaysheet = null;
         selectedStaffComponent = null;
+        reportKeyWord = null;
     }
 
     public void removeAll() {
@@ -202,28 +216,62 @@ public class StaffPaySheetComponentAllController implements Serializable {
         getStaffController().setFilteredStaff(null);
     }
 
-    public List<StaffPaysheetComponent> getItems() {
-        if (items == null) {
-            String sql = "Select s from StaffPaysheetComponent s"
-                    + " where s.retired=false and s.paysheetComponent=:tp";
+    public void createStaffPaysheetComponent() {
+        String sql = "Select ss "
+                + " from StaffPaysheetComponent ss"
+                + " where ss.retired=false "
+                + " and ss.paysheetComponent=:tp "
+                + " and ss.fromDate >=:fd"
+                + " and ss.toDate <=:td ";
 
-            HashMap hm = new HashMap();
-            //   hm.put("current", new Date());
+        HashMap hm = new HashMap();
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        if (paysheetComponent != null) {
             hm.put("tp", getPaysheetComponent());
+        }
 
-            items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
 
-            if (!getRepeatedComponent().isEmpty()) {
-                for (StaffPaysheetComponent sp : items) {
-                    for (StaffPaysheetComponent err : getRepeatedComponent()) {
-                        if (sp.getId() == err.getId()) {
-                            sp.setExist(true);
-                            //System.out.println("settin");
-                        }
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (!getRepeatedComponent().isEmpty()) {
+            for (StaffPaysheetComponent sp : items) {
+                for (StaffPaysheetComponent err : getRepeatedComponent()) {
+                    if (sp.getId().equals(err.getId())) {
+                        sp.setExist(true);
+                        //System.out.println("settin");
                     }
                 }
             }
         }
+    }
+
+    public List<StaffPaysheetComponent> getItems() {
 
         return items;
     }
