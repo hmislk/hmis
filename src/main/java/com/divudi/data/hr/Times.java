@@ -14,4 +14,5 @@ public enum Times {
     inTime,
     outTime,
     All,
+//    Shift,
 }

@@ -25,12 +25,15 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class Shift implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -294,6 +297,7 @@ public class Shift implements Serializable {
         this.retireComments = retireComments;
     }
 
+    @XmlTransient
     public List<StaffShift> getStaffShifts() {
         return staffShifts;
     }

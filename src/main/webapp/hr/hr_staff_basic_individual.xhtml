@@ -2,7 +2,7 @@
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition template="/resources/template/template.xhtml"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
-
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core">
@@ -16,7 +16,7 @@
                 <h:panelGrid columns="2" >
                     <p:panel header="Detail" >
                         <h:panelGrid columns="2"  >
-                           
+
                             <h:outputLabel value="Staff Name"/>
                             <p:autoComplete  forceSelection="true" 
                                              value="#{staffBasicController.current.staff}"
@@ -27,20 +27,20 @@
                                     <h:outputLabel value="#{mys.person.name}"/>
                                     <h:outputLabel value="#{mys.code}"/>
                                 </p:column>
-                                
+
                             </p:autoComplete>
                             <h:outputLabel value="From"/>
                             <p:calendar id="frm"  value="#{staffBasicController.current.fromDate}" pattern="dd MMMM yyyy" >                                
                             </p:calendar>
                             <h:outputLabel value="To"/>
                             <p:calendar id="to"  value="#{staffBasicController.current.toDate}" pattern="dd MMMM yyyy">                                      
-                                </p:calendar>                    
+                            </p:calendar>                    
                             <h:outputLabel value="Salary"/>
                             <p:inputText autocomplete="off"  value="#{staffBasicController.current.staffPaySheetComponentValue}"/>
 
                             <p:commandButton id="btnAdd" value="Add"  action="#{staffBasicController.save}" ajax="false" onclick="onSubmitButton();"/>
                             <p:defaultCommand target="btnAdd"/>
-                            
+
                             <p:commandButton value="Clear" action="#{staffBasicController.makeNull}"  ajax="false" onclick="onSubmitButton();" />
 
                         </h:panelGrid>
@@ -55,8 +55,24 @@
                     <f:facet name="header">
                         <h:outputLabel value="Basic List"/>
                         <p:commandButton value="Refresh" action="#{staffBasicController.makeItemNul}" ajax="false" style="float: right;" onclick="onSubmitButton();"/>
-
+                        <p:commandButton ajax="false" value="Fill" action="#{staffBasicController.createBasicTable}" />
                     </f:facet>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From : " />
+                        <p:calendar value="#{staffBasicController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                        <h:outputLabel value="To : " />
+                        <p:calendar value="#{staffBasicController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                      
+                        <h:outputLabel value="Employee : "/>
+                        <hr:completeStaff value="#{staffBasicController.reportKeyWord.staff}"/>
+                        <h:outputLabel value="Department : "/>
+                        <hr:department value="#{staffBasicController.reportKeyWord.department}"/>
+                        <h:outputLabel value="Staff Category : "/>
+                        <hr:completeStaffCategory value="#{staffBasicController.reportKeyWord.staffCategory}"/>
+                        <h:outputLabel value="Designation : "/>
+                        <hr:completeDesignation value="#{staffBasicController.reportKeyWord.designation}"/>
+                        <h:outputLabel value="Roster : "/>
+                        <hr:completeRoster value="#{staffBasicController.reportKeyWord.roster}"/>                      
+                    </h:panelGrid>
                     <p:dataTable id="lst" value="#{staffBasicController.items}" 
                                  filteredValue="#{staffBasicController.filteredStaffPaysheet}"
                                  var="i" scrollHeight="350" 
@@ -101,7 +117,6 @@
                             <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
                         </p:column>
                         <p:column headerText="Basic"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains">
-
                             <h:outputLabel value="#{i.staffPaySheetComponentValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>

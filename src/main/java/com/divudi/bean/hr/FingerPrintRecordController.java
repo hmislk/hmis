@@ -10,12 +10,20 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.hr.DayType;
+import com.divudi.data.hr.FingerPrintRecordType;
+import com.divudi.data.hr.Times;
+import com.divudi.entity.Department;
+import com.divudi.entity.Staff;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.entity.hr.FingerPrintRecord;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import javax.inject.Named;
 import javax.ejb.EJB;
@@ -25,6 +33,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -44,6 +54,73 @@ public class FingerPrintRecordController implements Serializable {
     private FingerPrintRecord current;
     private List<FingerPrintRecord> items = null;
     String selectText = "";
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date fromDate;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date toDate;
+    Staff staff;
+    Department department;
+    List<FingerPrintRecord> fingerPrintRecords;
+    FingerPrintRecord fingerPrintRecord;
+
+    private void createFingerPrintRecordTable(boolean createdDate) {
+        String sql;
+        Map m = new HashMap();
+        sql = " select f from FingerPrintRecord f where "
+                + " f.retired=false ";
+
+        if (createdDate) {
+            sql += " and f.createdAt between :fd and :td ";
+        } else {
+            sql += " and f.staffShift.shiftDate between :fd and :td ";
+        }
+
+        if (department != null) {
+            sql += " and (f.staff.department=:dep or f.roster.department=:dep) ";
+            m.put("dep", department);
+        }
+        if (staff != null) {
+            sql += " and f.staff=:staff ";
+            m.put("staff", staff);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        fingerPrintRecords = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void createFingerPrintRecordTableCreatedAt() {
+        createFingerPrintRecordTable(true);
+    }
+
+    public void createFingerPrintRecordTableSiftDate() {
+        createFingerPrintRecordTable(false);
+    }
+
+    public void viewStaffFinger(FingerPrintRecord fpr) {
+        fingerPrintRecord = fpr;
+    }
+
+    public FingerPrintRecordType[] getFingerPrintRecordType() {
+        return FingerPrintRecordType.values();
+    }
+
+    public Times[] getTimeses() {
+        return Times.values();
+    }
+
+    public DayType[] getDayTypes() {
+        return DayType.values();
+    }
+    
+    public void saveStaffFinger(){
+        if (fingerPrintRecord!=null) {
+            getFacade().create(fingerPrintRecord);
+            UtilityController.addSuccessMessage("Updated");
+        }
+    }
 
     public List<FingerPrintRecord> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from FingerPrintRecord c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -150,6 +227,57 @@ public class FingerPrintRecordController implements Serializable {
     public List<FingerPrintRecord> getItems() {
         items = getFacade().findAll("name", true);
         return items;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public List<FingerPrintRecord> getFingerPrintRecords() {
+        return fingerPrintRecords;
+    }
+
+    public void setFingerPrintRecords(List<FingerPrintRecord> fingerPrintRecords) {
+        this.fingerPrintRecords = fingerPrintRecords;
+    }
+
+    public FingerPrintRecord getFingerPrintRecord() {
+        if (fingerPrintRecord == null) {
+            fingerPrintRecord = new FingerPrintRecord();
+        }
+        return fingerPrintRecord;
+    }
+
+    public void setFingerPrintRecord(FingerPrintRecord fingerPrintRecord) {
+        this.fingerPrintRecord = fingerPrintRecord;
     }
 
     /**

@@ -1389,6 +1389,9 @@ public class BillSearch implements Serializable {
 
     public Bill getBill() {
         //recreateModel();
+        if (bill == null){
+            bill = new Bill();
+        }
         return bill;
     }
 

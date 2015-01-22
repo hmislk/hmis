@@ -10,6 +10,7 @@ package com.divudi.entity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
@@ -17,6 +18,7 @@ import javax.persistence.*;
  * Informatics)
  */
 @Entity
+@XmlRootElement
 public class WebUserRole implements Serializable {
      static final long serialVersionUID = 1L;
     @Id

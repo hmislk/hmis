@@ -10,6 +10,8 @@ import java.util.Date;
 
 import java.util.List;
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -17,6 +19,7 @@ import javax.persistence.*;
  *
  */
 @Entity
+@XmlRootElement
 public class Category implements Serializable {
 
     static final long serialVersionUID = 1L;
@@ -83,6 +86,7 @@ public class Category implements Serializable {
         this.symanticType = symanticType;
     }
 
+    @XmlTransient
     public List<Category> getChildCategories() {
         return childCategories;
     }
@@ -264,6 +268,7 @@ public class Category implements Serializable {
         this.sName = sName;
     }
 
+    @XmlTransient
     public List<Item> getItems() {
         return items;
     }

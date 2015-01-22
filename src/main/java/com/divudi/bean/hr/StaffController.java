@@ -13,6 +13,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.hr.EmployeeStatus;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.hr.SalaryPaymentFrequency;
 import com.divudi.data.hr.SalaryPaymentMethod;
 import com.divudi.entity.Category;
@@ -121,7 +122,7 @@ public class StaffController implements Serializable {
             v.setReportItem(ri);
             fivFacade.create(v);
         }
-        
+
         return v;
     }
 
@@ -146,10 +147,10 @@ public class StaffController implements Serializable {
         } else {
             formItems = new ArrayList<>();
         }
-        
+
         fivs = new ArrayList<>();
-        for(CommonReportItem crf : formItems){
-            if(crf.getIxItemType() == InvestigationItemType.ItemsCatetgory || crf.getIxItemType() == InvestigationItemType.Value ){
+        for (CommonReportItem crf : formItems) {
+            if (crf.getIxItemType() == InvestigationItemType.ItemsCatetgory || crf.getIxItemType() == InvestigationItemType.Value) {
                 FormItemValue fiv = formItemValue(crf, getCurrent().getPerson());
                 fivs.add(fiv);
             }
@@ -165,18 +166,15 @@ public class StaffController implements Serializable {
     public void setFivs(List<FormItemValue> fivs) {
         this.fivs = fivs;
     }
-    
-    
-    
+
     public List<CommonReportItem> getFormItems() {
         return formItems;
     }
 
     public void setFormItems(List<CommonReportItem> formItems) {
-        this.formItems=formItems;
+        this.formItems = formItems;
     }
 
-    
     public List<Staff> getStaffWithCode() {
         return staffWithCode;
     }
@@ -232,15 +230,76 @@ public class StaffController implements Serializable {
 
     }
 
+    ReportKeyWord reportKeyWord;
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public CommonReportItemFacade getCriFacade() {
+        return criFacade;
+    }
+
+    public void setCriFacade(CommonReportItemFacade criFacade) {
+        this.criFacade = criFacade;
+    }
+
+    public void createTable() {
+        HashMap hm = new HashMap();
+        hm.put("class", Consultant.class);
+        String sql = "select ss from Staff ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:class "
+                + " and LENGTH(ss.code) > 0 "
+                + " and LENGTH(ss.person.name) > 0 ";
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        //System.out.println(sql);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm);
+
+    }
+
     public List<Staff> completeStaffCode(String query) {
         List<Staff> suggestions;
         String sql;
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from Staff p where p.retired=false and"
-                    + " (upper(p.person.name) like '%" + query.toUpperCase() + "%'or"
-                    + "  upper(p.code) like '%" + query.toUpperCase() + "%' )"
+            sql = "select p from Staff p "
+                    + " where p.retired=false and"
+                    + " (upper(p.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " or upper(p.code) like '%" + query.toUpperCase() + "%' )"
                     + " order by p.person.name";
 
             //System.out.println(sql);
@@ -503,24 +562,24 @@ public class StaffController implements Serializable {
 
         return selectedItems;
     }
-    
+
     public void resetWorkingHour() {
         String sql = "";
-        HashMap hm = new HashMap();       
-            sql = "select c from Staff c "
-                    + " where c.retired=false "
-                    + " and type(c)!=:class"
-                    + " order by c.person.name";
-       
+        HashMap hm = new HashMap();
+        sql = "select c from Staff c "
+                + " where c.retired=false "
+                + " and type(c)!=:class"
+                + " order by c.person.name";
+
         hm.put("class", Consultant.class);
         selectedItems = getFacade().findBySQL(sql, hm);
-        
-        for(Staff stf : selectedItems){
-           stf.setWorkingTimeForOverTimePerWeek(45);
-           stf.setWorkingTimeForNoPayPerWeek(28);
-           getFacade().edit(stf);
+
+        for (Staff stf : selectedItems) {
+            stf.setWorkingTimeForOverTimePerWeek(45);
+            stf.setWorkingTimeForNoPayPerWeek(28);
+            getFacade().edit(stf);
         }
-        
+
     }
 
     public List<Staff> completeItems(String qry) {

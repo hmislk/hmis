@@ -93,7 +93,7 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Basic per Sec">
-                                    <h:outputLabel value="#{ss.basicPerSecond}">                                        
+                                    <h:outputLabel value="#{ss.overTimeValuePerSecond}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
@@ -103,7 +103,7 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Value">
-                                    <h:outputLabel value="#{ss.basicPerSecond*ss.multiplyingFactorOverTime*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
+                                    <h:outputLabel value="#{valuoverTimeValuePerSeconderSecond*ss.multiplyingFactorOverTime*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>

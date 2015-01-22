@@ -15,7 +15,19 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="posbillA4 noBorder summeryBorder">
+        <div style="position: relative!important;
+        /*padding-left: 0.5%!important;*/
+        height:800px!important;
+        width:100%!important; 
+/*        overflow:hidden!important; */
+        font-family: monospace!important; 
+        font-size: 12px!important; 
+        margin:1px!important; 
+        padding: 1px!important;
+        background-size: 100% auto!important; 
+/*        border: 1px solid!important;*/
+        font-size: 100%;
+        line-height: 2!important;">
             
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
@@ -67,11 +79,11 @@
                 
                 <h:outputLabel value="Request To"/>
                 <h:outputLabel/>
-                <h:outputLabel value="#{cc.attrs.bill.department.name}"   />
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"   style="font-weight: bold;"/>
                 <h:outputLabel/>
                 <h:outputLabel value="Request From"/>
                 <h:outputLabel/>
-                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"   />
+                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"   style="font-weight: bold;"/>
 
                 <h:outputLabel value="Issue No"/>
                 <h:outputLabel/>
