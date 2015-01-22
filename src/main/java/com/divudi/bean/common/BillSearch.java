@@ -10,9 +10,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.Privileges;
 import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.LazyBill;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
@@ -26,9 +24,10 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Institution;
-import com.divudi.entity.cashTransaction.CashTransaction;
+import com.divudi.entity.LazyBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillComponentFacade;
@@ -39,6 +38,9 @@ import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -137,17 +139,79 @@ public class BillSearch implements Serializable {
 
     }
 
-    public void updateBillRetierd() {
-
-        bill.setRetiredAt(new Date());
-        bill.setRetirer(sessionController.getLoggedUser());
-        bill.setEditedAt(new Date());
-        bill.setEditor(sessionController.getLoggedUser());
-        billFacade.edit(bill);
-        UtilityController.addSuccessMessage("Bill Retired");
+    private double roundOff(double d, int position) {
+//        BigDecimal bd = new BigDecimal(x).setScale(position, RoundingMode.HALF_EVEN);
+//        return bd.doubleValue();
+      
+        DecimalFormat newFormat = new DecimalFormat("#.##");
+        return Double.valueOf(newFormat.format(d));
 
     }
 
+    public void updateValue() {
+
+        for (BillFee bf : billFeesList) {
+            bf.setFeeGrossValue(roundOff(bf.getFeeGrossValue(), 2));
+            bf.setFeeDiscount(roundOff(bf.getFeeDiscount(), 2));
+            bf.setFeeValue(roundOff(bf.getFeeValue(), 2));
+            billFeeFacade.edit(bf);
+        }
+
+        for (BillItem bt : billItemList) {
+            String sql = "select sum(b.feeGrossValue)  "
+                    + " from BillFee b "
+                    + " where b.retired=false"
+                    + " and b.billItem.id=" + bt.getId();
+            bt.setGrossValue(billItemFacade.findDoubleByJpql(sql));
+
+            sql = "select sum(b.feeDiscount)  "
+                    + " from BillFee b "
+                    + " where b.retired=false"
+                    + " and b.billItem.id=" + bt.getId();
+
+            bt.setDiscount(billItemFacade.findDoubleByJpql(sql));
+
+            sql = "select sum(b.feeValue)  "
+                    + " from BillFee b "
+                    + " where b.retired=false"
+                    + " and b.billItem.id=" + bt.getId();
+            bt.setNetValue(billItemFacade.findDoubleByJpql(sql));
+        }
+
+        String sql = "select sum(b.grossValue)  "
+                + " from BillItem b "
+                + " where b.retired=false"
+                + " and b.bill.id=" + bill.getId();
+        bill.setTotal(billItemFacade.findDoubleByJpql(sql));
+
+        sql = "select sum(b.discount)  "
+                + " from BillItem b "
+                + " where b.retired=false"
+                + " and b.bill.id=" + bill.getId();
+
+        bill.setDiscount(billItemFacade.findDoubleByJpql(sql));
+
+        sql = "select sum(b.netValue)  "
+                + " from BillItem b "
+                + " where b.retired=false"
+                + " and b.bill.id=" + bill.getId();
+        bill.setNetTotal(billItemFacade.findDoubleByJpql(sql));
+        billFacade.edit(bill);
+
+        UtilityController.addSuccessMessage("Bill Upadted");
+
+    }
+
+//    public void updateBillRetierd() {
+//
+//        bill.setRetiredAt(new Date());
+//        bill.setRetirer(sessionController.getLoggedUser());
+//        bill.setEditedAt(new Date());
+//        bill.setEditor(sessionController.getLoggedUser());
+//        billFacade.edit(bill);
+//        UtilityController.addSuccessMessage("Bill Retired");
+//
+//    }
     public void updateBillFeeRetierd(BillFee bf) {
         if (bf.isRetired()) {
             bf.setRetiredAt(new Date());
@@ -160,12 +224,23 @@ public class BillSearch implements Serializable {
     public void updateBillItemRetierd(BillItem bi) {
 
         if (bi.isRetired()) {
-
             bi.setRetiredAt(new Date());
             bi.setRetirer(sessionController.getLoggedUser());
             getBillItemFacade().edit(bi);
             UtilityController.addSuccessMessage("Bill Item Retired");
         }
+    }
+
+    private void createBillFees() {
+        String sql = "SELECT b FROM BillFee b WHERE b.bill.id=" + getBillSearch().getId();
+        billFeesList = getBillFeeFacade().findBySQL(sql);
+    }
+
+    private List<BillItem> billItemList;
+
+    private void createBillItemsAll() {
+        String sql = "SELECT b FROM BillItem b WHERE b.bill.id=" + getBillSearch().getId();
+        billItemList = billItemFacade.findBySQL(sql);
     }
 
     public void createCashReturnBills() {
@@ -278,9 +353,9 @@ public class BillSearch implements Serializable {
         this.ejbApplication = ejbApplication;
     }
 
-    double refundTotal = 0;
-    double refundDiscount = 0;
-    double refundMargin = 0;
+    private double refundTotal = 0;
+    private double refundDiscount = 0;
+    private double refundMargin = 0;
 
     public boolean calculateRefundTotal() {
         refundAmount = 0;
@@ -524,8 +599,7 @@ public class BillSearch implements Serializable {
             if (!calculateRefundTotal()) {
                 return "";
             }
-            
-            
+
             if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
                 for (BillItem trbi : refundingItems) {
                     if (patientInvestigationController.sampledForBillItem(trbi)) {
@@ -953,7 +1027,7 @@ public class BillSearch implements Serializable {
     }
 
     @EJB
-    StaffBean staffBean;
+    private StaffBean staffBean;
     @EJB
     WebUserFacade webUserFacade;
 
@@ -1389,14 +1463,14 @@ public class BillSearch implements Serializable {
 
     public Bill getBill() {
         //recreateModel();
-        if (bill == null){
+        if (bill == null) {
             bill = new Bill();
         }
         return bill;
     }
 
     @Inject
-    BillController billController;
+    private BillController billController;
 
     public void setBill(Bill bill) {
         //recreateModel();
@@ -1480,6 +1554,8 @@ public class BillSearch implements Serializable {
         }
         return billComponents;
     }
+
+    private List<BillFee> billFeesList;
 
     public List<BillFee> getBillFees() {
         if (getBill() != null) {
@@ -1779,7 +1855,7 @@ public class BillSearch implements Serializable {
     }
 
     @Inject
-    PatientInvestigationController patientInvestigationController;
+    private PatientInvestigationController patientInvestigationController;
 
     private boolean checkCollectedReported() {
         return patientInvestigationController.sampledForAnyItemInTheBill(bill);
@@ -1861,6 +1937,8 @@ public class BillSearch implements Serializable {
         this.bill = bill;
         paymentMethod = bill.getPaymentMethod();
         createBillItemsForRetire();
+        createBillFees();
+        createBillItemsAll();
     }
 
     public void fillBillTypeIncomeRecords() {
@@ -1870,6 +1948,70 @@ public class BillSearch implements Serializable {
                 + " where b.billType in :bts "
                 + " group by b.billType "
                 + " order by b.billType";
+    }
+
+    public double getRefundTotal() {
+        return refundTotal;
+    }
+
+    public void setRefundTotal(double refundTotal) {
+        this.refundTotal = refundTotal;
+    }
+
+    public double getRefundDiscount() {
+        return refundDiscount;
+    }
+
+    public void setRefundDiscount(double refundDiscount) {
+        this.refundDiscount = refundDiscount;
+    }
+
+    public double getRefundMargin() {
+        return refundMargin;
+    }
+
+    public void setRefundMargin(double refundMargin) {
+        this.refundMargin = refundMargin;
+    }
+
+    public StaffBean getStaffBean() {
+        return staffBean;
+    }
+
+    public void setStaffBean(StaffBean staffBean) {
+        this.staffBean = staffBean;
+    }
+
+    public BillController getBillController() {
+        return billController;
+    }
+
+    public void setBillController(BillController billController) {
+        this.billController = billController;
+    }
+
+    public List<BillFee> getBillFeesList() {
+        return billFeesList;
+    }
+
+    public void setBillFeesList(List<BillFee> billFeesList) {
+        this.billFeesList = billFeesList;
+    }
+
+    public PatientInvestigationController getPatientInvestigationController() {
+        return patientInvestigationController;
+    }
+
+    public void setPatientInvestigationController(PatientInvestigationController patientInvestigationController) {
+        this.patientInvestigationController = patientInvestigationController;
+    }
+
+    public List<BillItem> getBillItemList() {
+        return billItemList;
+    }
+
+    public void setBillItemList(List<BillItem> billItemList) {
+        this.billItemList = billItemList;
     }
 
     public class BillTypeIncomeRecord {
