@@ -17,16 +17,16 @@
                     <p:panel header="Department List" >
                         <p:panel>
                             <h:outputLabel value="Institution"/>
-                            <p:autoComplete converter="institutionConverter" value="#{hrReportController.insitution}"
+                            <p:autoComplete converter="institutionConverter" value="#{hrReportController.institution}"
                                             completeMethod="#{institutionController.completeCompany}" 
                                             forceSelection="true"
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-                            <p:commandButton ajax="false" action="#{hrReportController.createDepatmentList}" value="Fill" />
+                            <p:commandButton ajax="false" action="#{hrReportController.crateDepartmentList}" value="Fill" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{hrReportController.createDepatmentList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton actionListener="#{hrReportController.crateDepartmentList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <pe:exporter type="xlsx" target="tbl1" fileName="hr_report_department"  />
                             </p:commandButton> 
                         </p:panel>

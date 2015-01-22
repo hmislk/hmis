@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffBasics;
@@ -57,6 +58,9 @@ public class StaffBasicController implements Serializable {
     ////////
     @Inject
     private SessionController sessionController;
+    private Date fromDate;
+    private Date toDate;
+    private ReportKeyWord reportKeyWord;
 
     public void removeAll() {
         for (StaffPaysheetComponent spc : getSelectedStaffComponent()) {
@@ -226,31 +230,60 @@ public class StaffBasicController implements Serializable {
         items = null;
     }
 
-    public List<StaffPaysheetComponent> getItems() {
-        if (items == null) {
-            String sql = "Select s from StaffPaysheetComponent s"
-                    + " where s.retired=false and s.paysheetComponent.componentType=:tp"
-                    + " and s.staff=:st order by s.fromDate";
-            //and (s.toDate>= :td or s.toDate is null)
-            HashMap hm = new HashMap();
-            // hm.put("td", getToDate());
-            //    hm.put("fd", getFromDate());
-            hm.put("st", getCurrent().getStaff());
-            hm.put("tp", PaysheetComponentType.BasicSalary);
+    public void createBasicTable() {
+        String sql = "Select ss from StaffPaysheetComponent ss"
+                + " where ss.retired=false"
+                + "  and ss.paysheetComponent.componentType=:tp"
+                + " and ss.staff=:st"
+                + " and ss.fromDate >=:fd"
+                + " and ss.toDate <=:td ";
+        //and (s.toDate>= :td or s.toDate is null)
+        HashMap hm = new HashMap();
+        hm.put("td", getToDate());
+        hm.put("fd", getFromDate());
+//        hm.put("st", getCurrent().getStaff());
+        hm.put("tp", PaysheetComponentType.BasicSalary);
 
-            items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
 
-            if (!getRepeatedComponent().isEmpty()) {
-                for (StaffPaysheetComponent sp : items) {
-                    for (StaffPaysheetComponent err : getRepeatedComponent()) {
-                        if (sp.getId() == err.getId()) {
-                            sp.setExist(true);
-                            //System.out.println("settin");
-                        }
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        if (!getRepeatedComponent().isEmpty()) {
+            for (StaffPaysheetComponent sp : items) {
+                for (StaffPaysheetComponent err : getRepeatedComponent()) {
+                    if (sp.getId().equals(err.getId())) {
+                        sp.setExist(true);
+                        //System.out.println("settin");
                     }
                 }
             }
         }
+    }
+
+    public List<StaffPaysheetComponent> getItems() {
 
         return items;
     }
@@ -272,30 +305,29 @@ public class StaffBasicController implements Serializable {
 
         return items;
     }
-    
+
     public void resetDate() {
-        
-        for(StaffPaysheetComponent stf : items){
+
+        for (StaffPaysheetComponent stf : items) {
             Calendar date = Calendar.getInstance();
-            if(stf.getFromDate()!=null){
-            date.setTime(stf.getFromDate());
-            date.set(Calendar.YEAR, 2014);
-            date.set(Calendar.MONTH, 01);
-              stf.setFromDate(date.getTime());
+            if (stf.getFromDate() != null) {
+                date.setTime(stf.getFromDate());
+                date.set(Calendar.YEAR, 2014);
+                date.set(Calendar.MONTH, 01);
+                stf.setFromDate(date.getTime());
             }
-            
-            if(stf.getToDate()!=null){
-              
-              date.setTime(stf.getToDate());
-            date.setTime(stf.getToDate());
-            date.set(Calendar.YEAR, 2015);
-            date.set(Calendar.MONTH, 11);
-            stf.setToDate(date.getTime());
+
+            if (stf.getToDate() != null) {
+
+                date.setTime(stf.getToDate());
+                date.setTime(stf.getToDate());
+                date.set(Calendar.YEAR, 2015);
+                date.set(Calendar.MONTH, 11);
+                stf.setToDate(date.getTime());
             }
-            
+
             getStaffPaysheetComponentFacade().edit(stf);
-            
-          
+
         }
     }
 
@@ -400,5 +432,32 @@ public class StaffBasicController implements Serializable {
 
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
     }
 }

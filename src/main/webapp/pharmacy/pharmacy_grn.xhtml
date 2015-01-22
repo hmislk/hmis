@@ -206,14 +206,14 @@
 
 
             </h:panelGroup>
-            <p:panel rendered="#{grnController.printPreview}">
+            <p:panel rendered="#{grnController.printPreview}" style="border: none;">
                 <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
                                  onclick="onSubmitButton();"
                                  actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
-                <p:panel   id="gpBillPreview"   >
+                <p:panel   id="gpBillPreview"   style="border: none;">
                     
                     <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
                         <ph:grn bill="#{grnController.grnBill}"/>

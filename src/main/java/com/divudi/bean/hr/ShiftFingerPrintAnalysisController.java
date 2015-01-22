@@ -15,20 +15,19 @@ import static com.divudi.data.hr.Times.inTime;
 import static com.divudi.data.hr.Times.outTime;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.HumanResourceBean;
+import com.divudi.entity.Form;
+import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.FingerPrintRecordHistoryFacade;
 import com.divudi.facade.FormFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,7 +35,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -63,6 +64,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     @EJB
     StaffLeaveFacade staffLeaveFacade;
     private List<String> errorMessage = null;
+    boolean flag;
+
+    public boolean isFlag() {
+        return flag;
+    }
+
+    public void setFlag(boolean flag) {
+        this.flag = flag;
+    }
 
     public StaffLeaveFacade getStaffLeaveFacade() {
         return staffLeaveFacade;
@@ -167,6 +177,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
 
+        if (additionalForm.getStaffShift() == null) {
+            return;
+        }
+
+        if (additionalForm.getTimes() != Times.All
+                && !additionalForm.getStaffShift().equals(ss)) {
+            return;
+        }
+
         if (fingerPrintRecordIn == null && additionalForm.getTimes() == Times.inTime) {
             fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(additionalForm);
 
@@ -259,6 +278,31 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
     }
 
+    public void fetchAndSetDayType(StaffShift ss) {
+        ss.setDayType(null);
+
+        DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
+        ss.setDayType(dtp);
+        if (ss.getDayType() == null) {
+            if (ss.getShift() != null) {
+                ss.setDayType(ss.getShift().getDayType());
+            }
+        }
+    }
+
+    private void fetchAndSetStaffLeave(StaffShift ss) {
+        ss.setLeaveType(null);
+        StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
+        //Setting Leave Type To StaffShift From Staff Leave
+        if (staffLeave != null) {
+            ss.setLeaveType(staffLeave.getLeaveType());
+        }
+
+    }
+
+    @Inject
+    PhDateController phDateController;
+
     public void createShiftTable() {
         if (errorCheck()) {
             return;
@@ -310,7 +354,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //                ss.setStartRecord(null);
 //                ss.setEndRecord(null);
                 System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
-                StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
+                fetchAndSetStaffLeave(ss);
+                fetchAndSetDayType(ss);
 
                 List<FingerPrintRecord> list = new ArrayList<>();
                 FingerPrintRecord fingerPrintRecordIn = ss.getStartRecord();
@@ -321,6 +366,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 if (additionalForm == null) {
                     if (fingerPrintRecordIn == null) {
                         fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
+
                     }
 
                     if (fingerPrintRecordOut == null) {
@@ -345,10 +391,143 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 }
 
                 System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
-                //Setting Leave Type To StaffShift From Staff Leave
-                if (staffLeave != null) {
-                    ss.setLeaveType(staffLeave.getLeaveType());
+
+                FingerPrintRecord fpr = null;
+                if (ss.getStartRecord() == null) {
+                    fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.inTime);
+                    list.add(fpr);
+                    ss.setStartRecord(fpr);
+
+//                        staffShiftFacade.edit(ss);
+                    if (ss.getPreviousStaffShift() != null) {
+                        System.err.println("PREV************************");
+                        ss.getStartRecord().setComments("(NEW PREV)");
+                        ss.getStartRecord().setRecordTimeStamp(ss.getShiftStartTime());
+
+                    }
+
                 }
+
+                if (ss.getEndRecord() == null) {
+                    fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.outTime);
+                    list.add(fpr);
+                    ss.setEndRecord(fpr);
+//                        staffShiftFacade.edit(ss);
+
+                    if (ss.getNextStaffShift() != null) {
+                        System.err.println("NEXT*****************");
+                        ss.getEndRecord().setComments("(NEW NEXT)");
+                        ss.getEndRecord().setRecordTimeStamp(ss.getShiftEndTime());
+                    }
+                }
+
+                System.err.println("3 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
+                ss.setFingerPrintRecordList(getHumanResourceBean().fetchMissedFingerFrintRecord(ss));
+                ss.getFingerPrintRecordList().addAll(list);
+                netT.getStaffShift().add(ss);
+
+            }
+
+            shiftTables.add(netT);
+
+            Calendar c = Calendar.getInstance();
+            c.setTime(nowDate);
+            c.add(Calendar.DATE, 1);
+            nowDate = c.getTime();
+
+        }
+
+        // Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+    }
+    
+     public void createShiftTableAdditional() {
+        if (errorCheck()) {
+            return;
+        }
+
+        shiftTables = new ArrayList<>();
+
+        Calendar nc = Calendar.getInstance();
+        nc.setTime(getFromDate());
+        Date nowDate = nc.getTime();
+//        System.out.println("Line1 = " + new Date());
+
+        nc.setTime(getToDate());
+        nc.add(Calendar.DATE, 1);
+        Date tmpToDate = nc.getTime();
+//        System.out.println("Line2 = " + new Date());
+
+        //CREATE FIRTS TABLE For Indexing Purpuse
+        ShiftTable netT;
+
+        while (tmpToDate.after(nowDate)) {
+            netT = new ShiftTable();
+            netT.setDate(nowDate);
+
+            Calendar calNowDate = Calendar.getInstance();
+            calNowDate.setTime(nowDate);
+
+            Calendar calFromDate = Calendar.getInstance();
+            calFromDate.setTime(getFromDate());
+
+            if (calNowDate.get(Calendar.DATE) == calFromDate.get(Calendar.DATE)) {
+                netT.setFlag(Boolean.TRUE);
+            } else {
+                netT.setFlag(Boolean.FALSE);
+            }
+
+            List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShiftWithShiftAdditional(nowDate, roster);
+
+            if (staffShifts.isEmpty()) {
+//                    System.err.println("CONTINUE");
+                Calendar c = Calendar.getInstance();
+                c.setTime(nowDate);
+                c.add(Calendar.DATE, 1);
+                nowDate = c.getTime();
+                continue;
+            }
+
+            for (StaffShift ss : staffShifts) {
+//                ss.setStartRecord(null);
+//                ss.setEndRecord(null);
+                System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
+                fetchAndSetStaffLeave(ss);
+                fetchAndSetDayType(ss);
+
+                List<FingerPrintRecord> list = new ArrayList<>();
+                FingerPrintRecord fingerPrintRecordIn = ss.getStartRecord();
+                FingerPrintRecord fingerPrintRecordOut = ss.getEndRecord();
+
+                HrForm additionalForm = ss.getAdditionalForm();
+
+                if (additionalForm == null) {
+                    if (fingerPrintRecordIn == null) {
+                        fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(ss);
+
+                    }
+
+                    if (fingerPrintRecordOut == null) {
+                        fingerPrintRecordOut = getHumanResourceBean().findOutTimeRecord(ss);
+                    }
+                } else {
+                    //Fetch Time From Additional From
+                    fetchTimeFromAddiationalFrom(ss, fingerPrintRecordIn, fingerPrintRecordOut, list);
+                }
+
+//                System.err.println(" 1 "+fingerPrintRecordIn+" : "+fingerPrintRecordOut);
+                if (fingerPrintRecordIn != null) {
+                    fingerPrintRecordIn.setTimes(Times.inTime);
+                    ss.setStartRecord(fingerPrintRecordIn);
+                    list.add(fingerPrintRecordIn);
+                }
+
+                if (fingerPrintRecordOut != null) {
+                    fingerPrintRecordOut.setTimes(Times.outTime);
+                    ss.setEndRecord(fingerPrintRecordOut);
+                    list.add(fingerPrintRecordOut);
+                }
+
+                System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
 
                 FingerPrintRecord fpr = null;
                 if (ss.getStartRecord() == null) {
@@ -449,7 +628,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.setStartRecord(null);
                 ss.setEndRecord(null);
                 System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
-                StaffLeave staffLeave = getHumanResourceBean().fetchFirstStaffLeave(ss.getStaff(), ss.getShiftDate());
+                fetchAndSetStaffLeave(ss);
+                fetchAndSetDayType(ss);
 
                 List<FingerPrintRecord> list = new ArrayList<>();
                 FingerPrintRecord fingerPrintRecordIn = null;
@@ -479,10 +659,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 }
 
                 System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
-                //Setting Leave Type To StaffShift From Staff Leave
-                if (staffLeave != null) {
-                    ss.setLeaveType(staffLeave.getLeaveType());
-                }
 
                 FingerPrintRecord fpr = null;
                 if (ss.getStartRecord() == null) {
@@ -631,62 +807,63 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //
 //        return false;
 //    }
-    private boolean errorCheckForSave(ShiftTable st) {
+    private boolean errorCheckForSave(StaffShift ss, ShiftTable shiftTable) {
 
         SimpleDateFormat ft = new SimpleDateFormat("yyyy MMM dd");
 
-        String date = ft.format(st.getDate());
+        String date = ft.format(ss.getShiftDate());
         String message = "";
 
-        for (StaffShift ss : st.getStaffShift()) {
-            String code = ss.getStaff().getCode();
+        String code = ss.getStaff().getCode();
 
-            if (ss.getShift().getDayType() == DayType.DayOff
-                    || ss.getShift().getDayType() == DayType.PublicHoliday
-                    || ss.getShift().getDayType() == DayType.SleepingDay
-                    || ss.getLeaveType() != null) {
-                continue;
-            }
+        if (ss.getShift().getDayType() == DayType.DayOff
+                || ss.getShift().getDayType() == DayType.PublicHoliday
+                || ss.getShift().getDayType() == DayType.SleepingDay
+                || ss.getLeaveType() != null) {
+            return false;
+        }
 
-            if (ss.getPreviousStaffShift() == null) {
-                if (ss.getStartRecord() == null) {
-                    message = date
-                            + " -> " + code
-                            + "  Has No Starting Record";
-                    errorMessage.add(message);
+        if (ss.getPreviousStaffShift() == null) {
+            if (ss.getStartRecord() == null) {
+                message = date
+                        + " -> " + code
+                        + "  Has No Starting Record";
+                errorMessage.add(message);
 //                        System.err.println("SS " + ss.getId());
 //                    UtilityController.addErrorMessage(errorMessage);
-                    return true;
-                }
-                if (ss.getStartRecord().getRecordTimeStamp() == null) {
-                    message = date
-                            + " -> " + code
-                            + " Some Starting Records Has No Time \r ";
-                    errorMessage.add(message);
-//                    UtilityController.addErrorMessage(errorMessage);
-                    return true;
-                }
+                shiftTable.getStaffShift().add(ss);
+                return true;
             }
-
-            if (ss.getNextStaffShift() == null) {
-                if (ss.getEndRecord() == null) {
-                    message = date
-                            + " -> " + code
-                            + " Some End Records Has No Starting Record \r";
-                    errorMessage.add(message);
+            if (ss.getStartRecord().getRecordTimeStamp() == null) {
+                message = date
+                        + " -> " + code
+                        + " Some Starting Records Has No Time \r ";
+                errorMessage.add(message);
 //                    UtilityController.addErrorMessage(errorMessage);
-                    return true;
-                }
-                if (ss.getEndRecord().getRecordTimeStamp() == null) {
-                    message = date
-                            + " -> " + code
-                            + " Some End Records Has No Time \r ";
-                    errorMessage.add(message);
-//                    UtilityController.addErrorMessage(errorMessage);
-                    return true;
-                }
+                shiftTable.getStaffShift().add(ss);
+                return true;
             }
+        }
 
+        if (ss.getNextStaffShift() == null) {
+            if (ss.getEndRecord() == null) {
+                message = date
+                        + " -> " + code
+                        + " Some End Records Has No Starting Record \r";
+                errorMessage.add(message);
+                shiftTable.getStaffShift().add(ss);
+//                    UtilityController.addErrorMessage(errorMessage);
+                return true;
+            }
+            if (ss.getEndRecord().getRecordTimeStamp() == null) {
+                message = date
+                        + " -> " + code
+                        + " Some End Records Has No Time \r ";
+                errorMessage.add(message);
+                shiftTable.getStaffShift().add(ss);
+//                    UtilityController.addErrorMessage(errorMessage);
+                return true;
+            }
         }
 
         return false;
@@ -749,6 +926,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void save() {
+        List<ShiftTable> tmpShiftTable = new ArrayList<>();
         errorMessage = new ArrayList<>();
 
 //        System.err.println("1");
@@ -765,11 +943,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //            return;
 //        }
         for (ShiftTable st : shiftTables) {
-            if (errorCheckForSave(st)) {
-                continue;
-            }
-
+            ShiftTable newSh = new ShiftTable();
+            newSh.setDate(st.getDate());
+            newSh.setFlag(st.isFlag());
             for (StaffShift ss : st.getStaffShift()) {
+                if (errorCheckForSave(ss, newSh)) {
+                    continue;
+                }
+
                 //UPDATE START RECORD
                 FingerPrintRecord startRecord = ss.getStartRecord();
                 if (startRecord != null) {
@@ -796,15 +977,38 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                     }
                 }
 
+                //Update Extra Duty
+                HrForm additionalForm = ss.getAdditionalForm();
+                if (additionalForm != null) {
+                    switch (additionalForm.getTimes()) {
+                        case inTime:
+                            startRecord.setAllowedExtraDuty(true);
+                            break;
+                        case outTime:
+                            endRecord.setAllowedExtraDuty(true);
+                            break;
+                        case All:
+                            startRecord.setAllowedExtraDuty(true);
+                            endRecord.setAllowedExtraDuty(true);
+                            break;
+                    }
+                } else {
+                    if (startRecord != null) {
+                        startRecord.setAllowedExtraDuty(false);
+                    }
+                    if (endRecord != null) {
+                        endRecord.setAllowedExtraDuty(false);
+                    }
+                }
+
                 //Ress Old Calculated Data
                 ss.reset();
 
-                //Fetch Basic
-                StaffPaysheetComponent basic = humanResourceBean.getBasic(ss.getStaff());
+                //Fetch Value for Oer Time per Month
+                double valueForOverTime = humanResourceBean.calValueForOverTime(ss.getStaff(), ss.getShiftDate());
 
-                if (basic != null) {
-                    ss.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
-                }
+                //Chang to Second
+                ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
 
                 //UPDATE Staff Shift Time Only if working days
                 ss.calCulateTimes();
@@ -824,9 +1028,16 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 getStaffShiftFacade().edit(ss);
             }
+            
+            tmpShiftTable.add(newSh);
         }
 
-//        UtilityController.addSuccessMessage("All Record Successfully Updated");
+        shiftTables = new ArrayList<>();
+        shiftTables.addAll(tmpShiftTable);
+
+        if (shiftTables.isEmpty()) {
+            UtilityController.addSuccessMessage("All Record Successfully Updated");
+        }
     }
 
     //GETTERS AND SETTERS
