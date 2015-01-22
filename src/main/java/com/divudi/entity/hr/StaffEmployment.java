@@ -25,12 +25,15 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
  * @author safrin
  */
 @Entity
+@XmlRootElement
 public class StaffEmployment implements Serializable {
 
     @OneToMany(mappedBy = "staffEmployment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -214,6 +217,7 @@ public class StaffEmployment implements Serializable {
         this.retireComments = retireComments;
     }
 
+    @XmlTransient
     public List<StaffEmployeeStatus> getStaffEmployeeStatuss() {
         return staffEmployeeStatuss;
     }
@@ -222,6 +226,7 @@ public class StaffEmployment implements Serializable {
         this.staffEmployeeStatuss = staffEmployeeStatuss;
     }
 
+    @XmlTransient
     public List<StaffWorkingDepartment> getStaffWorkingDepartments() {
         return staffWorkingDepartments;
     }
@@ -230,6 +235,7 @@ public class StaffEmployment implements Serializable {
         this.staffWorkingDepartments = staffWorkingDepartments;
     }
 
+    @XmlTransient
     public List<StaffStaffCategory> getStaffStaffCategorys() {
         return staffStaffCategorys;
     }
@@ -238,6 +244,7 @@ public class StaffEmployment implements Serializable {
         this.staffStaffCategorys = staffStaffCategorys;
     }
 
+    @XmlTransient
     public List<StaffGrade> getStaffGrades() {
         return staffGrades;
     }
@@ -246,6 +253,7 @@ public class StaffEmployment implements Serializable {
         this.staffGrades = staffGrades;
     }
 
+    @XmlTransient
     public List<StaffDesignation> getStaffDesignations() {
         return staffDesignations;
     }
@@ -254,6 +262,7 @@ public class StaffEmployment implements Serializable {
         this.staffDesignations = staffDesignations;
     }
 
+    @XmlTransient
     public List<StaffBasics> getStaffBasics() {
         return staffBasics;
     }

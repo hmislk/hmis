@@ -46,6 +46,8 @@ public class UserPreference implements Serializable {
     boolean pharmacyBillPrabodha;
     boolean checkPaymentSchemeValidation;
     boolean grnBillDetailed;
+    boolean bhtNumberWithYear;
+    boolean depNumGenFromToDepartment;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     PaperType pharmacyBillPaperType;
@@ -101,6 +103,14 @@ public class UserPreference implements Serializable {
 
     public void setCheckPaymentSchemeValidation(boolean checkPaymentSchemeValidation) {
         this.checkPaymentSchemeValidation = checkPaymentSchemeValidation;
+    }
+
+    public boolean isBhtNumberWithYear() {
+        return bhtNumberWithYear;
+    }
+
+    public void setBhtNumberWithYear(boolean bhtNumberWithYear) {
+        this.bhtNumberWithYear = bhtNumberWithYear;
     }
     
     
@@ -222,6 +232,14 @@ public class UserPreference implements Serializable {
 
     public void setPharmacyBillFooter(String pharmacyBillFooter) {
         this.pharmacyBillFooter = pharmacyBillFooter;
+    }
+
+    public boolean isDepNumGenFromToDepartment() {
+        return depNumGenFromToDepartment;
+    }
+
+    public void setDepNumGenFromToDepartment(boolean depNumGenFromToDepartment) {
+        this.depNumGenFromToDepartment = depNumGenFromToDepartment;
     }
     
     

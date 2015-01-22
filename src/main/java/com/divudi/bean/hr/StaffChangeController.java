@@ -71,9 +71,9 @@ public class StaffChangeController implements Serializable {
     @EJB
     private HumanResourceBean humanResourceBean;
 
-    public void findBasic() {
-        StaffPaysheetComponent tmp = getHumanResourceBean().getBasic(getStaff());
-        
+    public void findBasic(Date date) {
+        StaffPaysheetComponent tmp = getHumanResourceBean().getBasic(getStaff(), date);
+
         if (tmp != null) {
             getStaff().setBasic(tmp.getStaffPaySheetComponentValue());
         }
@@ -97,7 +97,7 @@ public class StaffChangeController implements Serializable {
         if (!getStaff().getStaffEmployment().getStaffWorkingDepartments().isEmpty()
                 && getStaff().getWorkingDepartment().getId()
                 != getStaff().getStaffEmployment().getStaffWorkingDepartments().get(
-                getStaff().getStaffEmployment().getStaffWorkingDepartments().size() - 1).getDepartment().getId()) {
+                        getStaff().getStaffEmployment().getStaffWorkingDepartments().size() - 1).getDepartment().getId()) {
             ////////
             getStaff().getStaffEmployment().getStaffWorkingDepartments().get(
                     getStaff().getStaffEmployment().getStaffWorkingDepartments().size() - 1).setToDate(getFromDate());
@@ -117,7 +117,7 @@ public class StaffChangeController implements Serializable {
         if (!getStaff().getStaffEmployment().getStaffEmployeeStatuss().isEmpty()
                 && getStaff().getEmployeeStatus()
                 != getStaff().getStaffEmployment().getStaffEmployeeStatuss().get(
-                getStaff().getStaffEmployment().getStaffEmployeeStatuss().size() - 1).getEmployeeStatus()) {
+                        getStaff().getStaffEmployment().getStaffEmployeeStatuss().size() - 1).getEmployeeStatus()) {
 
             ////////
             getStaff().getStaffEmployment().getStaffEmployeeStatuss().get(
@@ -137,7 +137,7 @@ public class StaffChangeController implements Serializable {
         if (!getStaff().getStaffEmployment().getStaffStaffCategorys().isEmpty()
                 && getStaff().getStaffCategory().getId()
                 != getStaff().getStaffEmployment().getStaffStaffCategorys().get(
-                getStaff().getStaffEmployment().getStaffStaffCategorys().size() - 1).getStaffCategory().getId()) {
+                        getStaff().getStaffEmployment().getStaffStaffCategorys().size() - 1).getStaffCategory().getId()) {
 
             ////////
             getStaff().getStaffEmployment().getStaffStaffCategorys().get(
@@ -158,7 +158,7 @@ public class StaffChangeController implements Serializable {
         if (!getStaff().getStaffEmployment().getStaffGrades().isEmpty()
                 && getStaff().getGrade().getId()
                 != getStaff().getStaffEmployment().getStaffGrades().get(
-                getStaff().getStaffEmployment().getStaffGrades().size() - 1).getGrade().getId()) {
+                        getStaff().getStaffEmployment().getStaffGrades().size() - 1).getGrade().getId()) {
 
             ////////
             getStaff().getStaffEmployment().getStaffGrades().get(
@@ -179,7 +179,7 @@ public class StaffChangeController implements Serializable {
         if (!getStaff().getStaffEmployment().getStaffDesignations().isEmpty()
                 && getStaff().getDesignation().getId()
                 != getStaff().getStaffEmployment().getStaffDesignations().get(
-                getStaff().getStaffEmployment().getStaffDesignations().size() - 1).getDesignation().getId()) {
+                        getStaff().getStaffEmployment().getStaffDesignations().size() - 1).getDesignation().getId()) {
 
             ////////
             getStaff().getStaffEmployment().getStaffDesignations().get(
@@ -196,8 +196,6 @@ public class StaffChangeController implements Serializable {
             tmp.setStaffEmployment(getStaff().getStaffEmployment());
             getStaff().getStaffEmployment().getStaffDesignations().add(tmp);
         }
-
-
 
     }
 

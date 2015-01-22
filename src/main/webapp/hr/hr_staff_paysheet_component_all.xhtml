@@ -4,7 +4,8 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"                    
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
 
     <ui:define name="content">
@@ -53,16 +54,7 @@
 
                             <p:column >
                                 #{i+1}
-                            </p:column>
-                            <p:column headerText="Grade"  filterBy="#{s.grade}"  filterMatchMode="contains" >
-                                <h:outputLabel value="#{s.grade}"/>
-                            </p:column>
-                            <p:column headerText="Category" filterBy="#{s.staffCategory.name}"  filterMatchMode="contains">
-                                <h:outputLabel value="#{s.staffCategory.name}"/>
-                            </p:column>
-                            <p:column headerText="Designation" filterBy="#{s.designation.name}"  filterMatchMode="contains">
-                                <h:outputLabel value="#{s.designation.name}"/>
-                            </p:column>                         
+                            </p:column>     
                             <p:column headerText="Code" filterBy="#{s.code}"  filterMatchMode="contains">
                                 <h:outputLabel value="#{s.code}"/>
                             </p:column>
@@ -80,7 +72,31 @@
                     <f:facet name="header">      
                         <h:outputLabel value="#{staffPaySheetComponentAllController.paysheetComponent.name}" style="text-transform:uppercase;" />
                         <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllController.removeAll}" style="float: right;" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllController.createStaffPaysheetComponent}" />
                     </f:facet>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From : " />
+                        <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                        <h:outputLabel value="To : " />
+                        <p:calendar value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                        <h:outputLabel value="Paysheet Component"/>
+                        <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
+                            <f:selectItem itemLabel="Select Paysheet Component"/>
+                            <f:selectItems value="#{staffPaySheetComponentAllController.compnent}"
+                                           var="i"  itemLabel="#{i.name}" itemValue="#{i}" />
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Employee : "/>
+                        <hr:completeStaff value="#{staffPaySheetComponentAllController.reportKeyWord.staff}"/>
+                        <h:outputLabel value="Department : "/>
+                        <hr:department value="#{staffPaySheetComponentAllController.reportKeyWord.department}"/>
+                        <h:outputLabel value="Staff Category : "/>
+                        <hr:completeStaffCategory value="#{staffPaySheetComponentAllController.reportKeyWord.staffCategory}"/>
+                        <h:outputLabel value="Designation : "/>
+                        <hr:completeDesignation value="#{staffPaySheetComponentAllController.reportKeyWord.designation}"/>
+                        <h:outputLabel value="Roster : "/>
+                        <hr:completeRoster value="#{staffPaySheetComponentAllController.reportKeyWord.roster}"/>                      
+                    </h:panelGrid>
+
                     <p:dataTable  value="#{staffPaySheetComponentAllController.items}" 
                                   filteredValue="#{staffPaySheetComponentAllController.filteredStaffPaysheet}"
                                   var="i" scrollHeight="350"  editable="true"
@@ -126,6 +142,9 @@
 
                         <p:column headerText="Staff" filterBy="#{i.staff.person.nameWithTitle}" filterMatchMode="contains">
                             <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Staff Code" filterBy="#{i.staff.code}" filterMatchMode="contains">
+                            <h:outputLabel value="#{i.staff.code}"/>
                         </p:column>
                         <p:column headerText="Value"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains">
                             <p:cellEditor>  

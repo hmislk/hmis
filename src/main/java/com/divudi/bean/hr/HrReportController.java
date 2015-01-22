@@ -615,7 +615,7 @@ public class HrReportController implements Serializable {
         sql = "select ss.dayOfWeek,"
                 + " sum(ss.workedWithinTimeFrameVarified+ss.leavedTime),"
                 + " sum(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified),"
-                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.basicPerSecond)"
+                + " sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
@@ -934,23 +934,17 @@ public class HrReportController implements Serializable {
 
             }
 
-            if (stf.getWorkingTimeForOverTimePerWeek() != 0 && numOfWeeks != 0) {
-                double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
-                double overTime = weekDayWork.getTotal() - normalWorkTime;
-
-                System.out.println(" Stf =" + stf.getCode());
-                System.out.print(" : Week = " + numOfWeeks);
-                System.out.print(" : Hour  = " + stf.getWorkingTimeForOverTimePerWeek());
-                System.out.print(" : Total = " + weekDayWork.getTotal());
-                System.out.print(" : Over = " + overTime);
-
-                if (overTime > 0) {
-                    weekDayWork.setOverTime(overTime);
-                }
-            }
+//            if (stf.getWorkingTimeForOverTimePerWeek() != 0 && numOfWeeks != 0) {
+//                double normalWorkTime = numOfWeeks * stf.getWorkingTimeForOverTimePerWeek() * 60 * 60;
+//                double overTime = weekDayWork.getTotal() - normalWorkTime;
+//                if (overTime > 0) {
+//                    weekDayWork.setOverTime(overTime);
+//                }
+//            }
+            weekDayWork.setOverTime(humanResourceBean.getOverTimeFromRoster(stf.getWorkingTimeForOverTimePerWeek(), numOfWeeks, weekDayWork.getTotal()));
 
             //Fetch Basic
-            StaffPaysheetComponent basic = humanResourceBean.getBasic(stf);
+            StaffPaysheetComponent basic = humanResourceBean.getBasic(stf, getToDate());
 
             if (basic != null) {
                 weekDayWork.setBasicPerSecond(basic.getStaffPaySheetComponentValue() / (200 * 60 * 60));
@@ -1177,8 +1171,6 @@ public class HrReportController implements Serializable {
         sql += " and ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-
-  
 
     }
 

@@ -4,12 +4,14 @@
                 template="/resources/template/template.xhtml" 
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
             <p:panel>
                 <p:commandButton ajax="false" value="Generated Salary" action="#{staffSalaryController.generate}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Save Salary" action="#{staffSalaryController.saveSalary}" onclick="onSubmitButton();"/>
                 <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" />
             </p:panel>
 
@@ -44,7 +46,19 @@
                 </p:tab>
                 <p:tab title="Staff List" >
 
-                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createStaffWithCode()}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createTable()}" onclick="onSubmitButton();"/>
+                    <h:panelGrid columns="2"> 
+                        <h:outputLabel value="Employee : "/>
+                        <hr:completeStaff value="#{staffController.reportKeyWord.staff}"/>
+                        <h:outputLabel value="Department : "/>
+                        <hr:department value="#{staffController.reportKeyWord.department}"/>
+                        <h:outputLabel value="Staff Category : "/>
+                        <hr:completeStaffCategory value="#{staffController.reportKeyWord.staffCategory}"/>
+                        <h:outputLabel value="Designation : "/>
+                        <hr:completeDesignation value="#{staffController.reportKeyWord.designation}"/>
+                        <h:outputLabel value="Roster : "/>
+                        <hr:completeRoster value="#{staffController.reportKeyWord.roster}"/>                      
+                    </h:panelGrid>
 
                     <p:dataTable  value="#{staffController.staffWithCode}" 
                                   var="s" filteredValue="#{staffController.filteredStaff}"  
@@ -58,6 +72,9 @@
 
                         <p:column >
                             #{i+1}
+                        </p:column>
+                        <p:column headerText="Roster"  filterBy="#{s.roster.name}"  filterMatchMode="contains" >
+                            <h:outputLabel value="#{s.roster.name}"/>
                         </p:column>
                         <p:column headerText="Grade"  filterBy="#{s.grade}"  filterMatchMode="contains" >
                             <h:outputLabel value="#{s.grade}"/>
@@ -213,7 +230,7 @@
                         <h:outputLabel value="#{staffSalaryController.current.netSalary}"/>
                     </h:panelGrid>
                 </p:tab>
-               
+
             </p:tabView>
 
         </h:form>        

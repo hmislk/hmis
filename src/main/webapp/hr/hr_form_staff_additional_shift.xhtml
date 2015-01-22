@@ -20,13 +20,7 @@
                             <h:outputLabel value="Shift Date "/>
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         pattern="yyyy MM dd HH:mm:ss">
-                            </p:calendar> 
-                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShift()}" />
-                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
-                                <f:selectItem itemLabel="Select Staff Shift"/>
-                                <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
-                                               var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
-                            </p:selectOneMenu>
+                            </p:calendar>                           
                             <h:outputLabel value="From Time"/>
                             <p:calendar id="requestedDate" 
                                         value="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
@@ -38,13 +32,7 @@
                             </p:calendar> 
 
                             <h:outputLabel value="Approved Staff"/>
-                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"/>
-                            <h:outputLabel value="Time Type"/>
-                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}"   >
-                                <f:selectItem itemLabel="Select Time Type"/>
-                                <f:selectItems value="#{enumController.timeses}" />
-                            </p:selectOneMenu>
-
+                            <au:completeStaff value="#{staffAdditionalFormController.currentAdditionalForm.approvedStaff}"/>                          
                             <h:outputLabel value="Approved Date"/>
                             <p:calendar id="approvedDate" 
                                         value="#{staffAdditionalFormController.currentAdditionalForm.approvedAt}"
@@ -53,7 +41,8 @@
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
                             <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                             action="#{staffAdditionalFormController.saveAdditionalForm()}"/>
+                                             disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
+                                             action="#{staffAdditionalFormController.saveAdditionalFormShift()}"/>
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
@@ -93,7 +82,7 @@
                             <p:column headerText="Roster">
                                 <p:outputLabel value="#{add.staff.roster.name}" ></p:outputLabel>
                             </p:column>
-                           
+
                             <p:column headerText="From">
                                 <p:outputLabel value="#{add.fromTime}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
