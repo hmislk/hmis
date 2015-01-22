@@ -1399,7 +1399,7 @@ public class BillSearch implements Serializable {
     BillController billController;
 
     public void setBill(Bill bill) {
-        recreateModel();
+        //recreateModel();
         System.err.println("Bill " + bill);
         this.bill = bill;
         paymentMethod = bill.getPaymentMethod();

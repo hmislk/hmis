@@ -55,7 +55,7 @@
                             </p:column>
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill" action="bill_reprint">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
                                 </p:commandButton>
                             </p:column>
                             <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
