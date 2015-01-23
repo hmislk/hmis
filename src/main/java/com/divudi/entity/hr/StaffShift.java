@@ -85,6 +85,10 @@ public class StaffShift implements Serializable {
     StaffShift nextStaffShift;
     @ManyToOne
     StaffShift referenceStaffShift;
+    @ManyToOne
+    private StaffShift referenceStaffShiftLateIn;
+    @ManyToOne
+    private StaffShift referenceStaffShiftEarlyOut;
 
     //Multiplying Factor Always come by subtrating 1
     // if Multiplying Factor for Salary is 1 ,but actual value is 2
@@ -153,7 +157,7 @@ public class StaffShift implements Serializable {
     @Transient
     boolean transChecked;
     int dayOfWeek;
-    int leaveDivident;
+//    int leaveDivident;
 
     public DayType getDayType() {
         return dayType;
@@ -161,14 +165,6 @@ public class StaffShift implements Serializable {
 
     public void setDayType(DayType dayType) {
         this.dayType = dayType;
-    }
-
-    public int getLeaveDivident() {
-        return leaveDivident;
-    }
-
-    public void setLeaveDivident(int leaveDivident) {
-        this.leaveDivident = leaveDivident;
     }
 
     public HrForm getLeaveForm() {
@@ -381,38 +377,33 @@ public class StaffShift implements Serializable {
         if (shift == null) {
             return;
         }
-        int div = leaveDivident;
-
-        if (div == 0) {
-            div = 1;
-        }
 
         switch (getLeaveType()) {
             case Annual:
             case Casual:
             case Lieu:
             case DutyLeave:
-                setLeavedTime((shift.getLeaveHourFull() * 60 * 60) / div);
+                setLeavedTime((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case Maternity1st:
             case Maternity2nd:
             case Medical:
-                setLeavedTimeOther((shift.getLeaveHourFull() * 60 * 60) / div);
+                setLeavedTimeOther((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case No_Pay:
-                setLeavedTimeNoPay((shift.getLeaveHourFull() * 60 * 60) / div);
+                setLeavedTimeNoPay((shift.getLeaveHourFull() * 60 * 60));
                 break;
             case AnnualHalf:
             case CasualHalf:
             case LieuHalf:
-                setLeavedTime((shift.getLeaveHourHalf() * 60 * 60) / div);
+                setLeavedTime((shift.getLeaveHourHalf() * 60 * 60));
                 break;
             case Maternity1stHalf:
             case Maternity2ndHalf:
-                setLeavedTimeOther((shift.getLeaveHourHalf() * 60 * 60) / div);
+                setLeavedTimeOther((shift.getLeaveHourHalf() * 60 * 60));
                 break;
             case No_Pay_Half:
-                setLeavedTimeNoPay((shift.getLeaveHourHalf() * 60 * 60) / div);
+                setLeavedTimeNoPay((shift.getLeaveHourHalf() * 60 * 60));
                 break;
         }
     }
@@ -1237,6 +1228,22 @@ public class StaffShift implements Serializable {
 
     public void setConsideredForSalary(boolean consideredForSalary) {
         this.consideredForSalary = consideredForSalary;
+    }
+
+    public StaffShift getReferenceStaffShiftLateIn() {
+        return referenceStaffShiftLateIn;
+    }
+
+    public void setReferenceStaffShiftLateIn(StaffShift referenceStaffShiftLateIn) {
+        this.referenceStaffShiftLateIn = referenceStaffShiftLateIn;
+    }
+
+    public StaffShift getReferenceStaffShiftEarlyOut() {
+        return referenceStaffShiftEarlyOut;
+    }
+
+    public void setReferenceStaffShiftEarlyOut(StaffShift referenceStaffShiftEarlyOut) {
+        this.referenceStaffShiftEarlyOut = referenceStaffShiftEarlyOut;
     }
 
 }
