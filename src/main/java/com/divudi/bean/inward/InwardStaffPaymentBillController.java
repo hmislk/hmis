@@ -6,6 +6,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String2Value1;
 import com.divudi.ejb.BillNumberGenerator;
@@ -97,21 +98,25 @@ public class InwardStaffPaymentBillController implements Serializable {
     List<String2Value1> list1;
     List<BillFee> docPayingBillFee;
     List<BillItem> billItems1;
-    
+
     List<String2Value1> docPayListDischarged;
     List<String2Value1> docPayListNotDischarged;
-    
+
     List<BillItem> docBhtPayListDischarged;
     List<BillItem> docBhtPayListnotDischarged;
-    
+
+    List<BillFee> docFeeListDischarged;
+    List<BillFee> docFeeListNotDischarged;
+
     double totalDocPayListDischarged;
     double totalDocPayListNotDischarged;
-    
-    double totalBhtDocPayListDischarged;
-    double totalBhtDocPayListNotDischarged;
-    
-    List<BillItem> bhtBillItemList;
-    
+
+    double totalDocFeeListDischarged;
+    double totalDocFeeListNotDischarged;
+
+    List<BillFee> bhtBillItemList;
+
+    SearchKeyword searchKeyword;
 
     public void makenull() {
         currentStaff = null;
@@ -266,12 +271,12 @@ public class InwardStaffPaymentBillController implements Serializable {
         }
 
     }
-    
+
     public void fillDocPayingBillCancel(boolean dischargeDate) {
 
         String sql;
         Map m = new HashMap();
-        
+
         sql = "select distinct(bf.bill.cancelledBill) from BillItem bf "
                 + " where bf.retired=false "
                 + " and bf.bill.billType=:btp "
@@ -320,7 +325,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         totalPayingCan = 0.0;
         if (billsCan == null) {
-            billsCan=new ArrayList<>();
+            billsCan = new ArrayList<>();
             return;
         }
         for (Bill b : billsCan) {
@@ -399,92 +404,104 @@ public class InwardStaffPaymentBillController implements Serializable {
         }
 
     }
-    
-    public void fillDocPayDischargeAndNotDischarge(){
-        docPayListDischarged=inwardDoctorPaySummery(true);
-        docPayListNotDischarged=inwardDoctorPaySummery(false);
-        
-        totalDocPayListDischarged=calTotal(docPayListDischarged);
-        totalDocPayListNotDischarged=calTotal(docPayListNotDischarged);
+
+    public void fillDocPayDischargeAndNotDischarge() {
+        docPayListDischarged = inwardDoctorPaySummery(true);
+        docPayListNotDischarged = inwardDoctorPaySummery(false);
+
+        totalDocPayListDischarged = calTotal(docPayListDischarged);
+        totalDocPayListNotDischarged = calTotal(docPayListNotDischarged);
     }
-    
-    public void fillDocPayDischargeAndNotDischargeWithBHT(){
-        docBhtPayListDischarged=inwardDoctorPaySummeryWithBHT(true);
-        docBhtPayListnotDischarged=inwardDoctorPaySummeryWithBHT(false);
-        
-        totalBhtDocPayListDischarged=calBhtTotal(docBhtPayListDischarged);
-        totalBhtDocPayListNotDischarged=calBhtTotal(docBhtPayListnotDischarged);
+
+    public void fillDocPayDischargeAndNotDischargeWithBHT() {
+        docFeeListDischarged = createDocFeeTable(true);
+        docFeeListNotDischarged = createDocFeeTable(false);
+
+        totalDocFeeListDischarged = calBhtTotal(docFeeListDischarged);
+        totalDocFeeListNotDischarged = calBhtTotal(docFeeListNotDischarged);
     }
-    
-    public double calTotal(List<String2Value1> string2Value1s){
-        double total=0.0;
+
+    public double calTotal(List<String2Value1> string2Value1s) {
+        double total = 0.0;
         for (String2Value1 s2v1 : string2Value1s) {
-            total+=s2v1.getValue();
+            total += s2v1.getValue();
         }
         return total;
     }
-    
-    public double calBhtTotal(List<BillItem> bhtbillItems){
-        double bhtTotal=0.0;
-        for (BillItem bhtb : bhtbillItems) {
-            bhtTotal+=bhtb.getNetValue();
+
+    public double calBhtTotal(List<BillFee> bhtbillItems) {
+        double bhtTotal = 0.0;
+        for (BillFee bhtb : bhtbillItems) {
+            bhtTotal += bhtb.getFeeValue();
         }
         return bhtTotal;
     }
-    
-    public List<BillItem> inwardDoctorPaySummeryWithBHT(boolean dischargeDate) {
+
+    public List<BillFee> createDocFeeTable(boolean dischargedDate) {
 
         String sql;
-        Map m = new HashMap();
+        Map temMap = new HashMap();
 
-        sql = "select bf from BillItem bf "
-                + " where bf.retired=false "
-                + " and bf.bill.billType=:btp"
-                
-                + " and (bf.paidForBillFee.bill.billType=:refBtp1"
-                + " or bf.paidForBillFee.bill.billType=:refBtp2)";
+        
+        sql = "select bf from BillFee bf where bf.retired=false "
+                + " and bf.bill.billType=:btp "
+                + " and bf.bill.cancelled=false "
+                + " and bf.paidValue > 0 ";
 
-        if (dischargeDate) {
-            sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
-        } else{
-            sql += " and (bf.paidForBillFee.bill.patientEncounter.dateOfDischarge not between :fd and :td "
-                    + " or bf.paidForBillFee.bill.patientEncounter.discharged=false)";
+       
+        
+        if (dischargedDate) {
+            sql += " and bf.billItem.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        } else {
+            sql += " and bf.bill.createdAt between :fromDate and :toDate";
         }
 
-        if (speciality != null) {
-            sql += " and bf.paidForBillFee.staff.speciality=:s ";
-            m.put("s", speciality);
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(bf.bill.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
-        if (admissionType != null) {
-            sql += " and bf.paidForBillFee.bill.patientEncounter.admissionType=:admTp ";
-            m.put("admTp", admissionType);
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(bf.bill.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        if (paymentMethod != null) {
-            sql += " and bf.paidForBillFee.bill.patientEncounter.paymentMethod=:pm";
-            m.put("pm", paymentMethod);
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(bf.feeValue) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
-        if (institution != null) {
-            sql += " and bf.paidForBillFee.bill.patientEncounter.creditCompany=:cd";
-            m.put("cd", institution);
+
+        if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
+            sql += " and  (upper(bf.staff.speciality.name) like :special )";
+            temMap.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
         }
-        sql += " and bf.createdAt between :fd and :td ";
 
-        sql += " group by bf.paidForBillFee.staff "
-                + " order by bf.paidForBillFee.staff.person.name ";
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(bf.staff.person.name) like :staff )";
+            temMap.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
 
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("btp", BillType.PaymentBill);
-        m.put("refBtp1", BillType.InwardBill);
-        m.put("refBtp2", BillType.InwardProfessional);
-
-        bhtBillItemList=getBillItemFacade().findBySQL(sql, m);
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (upper(bf.billItem.item.name) like :staff )";
+            temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+        
         
 
+        sql += " order by bf.staff.id ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("btp", BillType.InwardBill);
+        
+        
+
+        bhtBillItemList = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
         return bhtBillItemList;
+
     }
-    
+
     public List<String2Value1> inwardDoctorPaySummery(boolean dischargeDate) {
 
         String sql;
@@ -500,7 +517,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         if (dischargeDate) {
             sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
-        } 
+        }
 
         if (speciality != null) {
             sql += " and bf.paidForBillFee.staff.speciality=:s ";
@@ -1197,32 +1214,55 @@ public class InwardStaffPaymentBillController implements Serializable {
         this.docBhtPayListnotDischarged = docBhtPayListnotDischarged;
     }
 
-    
-
-    public double getTotalBhtDocPayListDischarged() {
-        return totalBhtDocPayListDischarged;
+    public double getTotalDocFeeListDischarged() {
+        return totalDocFeeListDischarged;
     }
 
-    public void setTotalBhtDocPayListDischarged(double totalBhtDocPayListDischarged) {
-        this.totalBhtDocPayListDischarged = totalBhtDocPayListDischarged;
+    public void setTotalDocFeeListDischarged(double totalDocFeeListDischarged) {
+        this.totalDocFeeListDischarged = totalDocFeeListDischarged;
     }
 
-    public double getTotalBhtDocPayListNotDischarged() {
-        return totalBhtDocPayListNotDischarged;
+    public double getTotalDocFeeListNotDischarged() {
+        return totalDocFeeListNotDischarged;
     }
 
-    public void setTotalBhtDocPayListNotDischarged(double totalBhtDocPayListNotDischarged) {
-        this.totalBhtDocPayListNotDischarged = totalBhtDocPayListNotDischarged;
+    public void setTotalDocFeeListNotDischarged(double totalDocFeeListNotDischarged) {
+        this.totalDocFeeListNotDischarged = totalDocFeeListNotDischarged;
     }
 
-    public List<BillItem> getBhtBillItemList() {
+    public List<BillFee> getDocFeeListDischarged() {
+        return docFeeListDischarged;
+    }
+
+    public void setDocFeeListDischarged(List<BillFee> docFeeListDischarged) {
+        this.docFeeListDischarged = docFeeListDischarged;
+    }
+
+    public List<BillFee> getDocFeeListNotDischarged() {
+        return docFeeListNotDischarged;
+    }
+
+    public void setDocFeeListNotDischarged(List<BillFee> docFeeListNotDischarged) {
+        this.docFeeListNotDischarged = docFeeListNotDischarged;
+    }
+
+    public List<BillFee> getBhtBillItemList() {
         return bhtBillItemList;
     }
 
-    public void setBhtBillItemList(List<BillItem> bhtBillItemList) {
+    public void setBhtBillItemList(List<BillFee> bhtBillItemList) {
         this.bhtBillItemList = bhtBillItemList;
     }
 
-   
+    public SearchKeyword getSearchKeyword() {
+        if (searchKeyword == null) {
+            searchKeyword = new SearchKeyword();
+        }
+        return searchKeyword;
+    }
+
+    public void setSearchKeyword(SearchKeyword searchKeyword) {
+        this.searchKeyword = searchKeyword;
+    }
 
 }
