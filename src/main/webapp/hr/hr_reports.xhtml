@@ -11,7 +11,7 @@
 
             <ui:define name="content">
                 <h:form>
-                    <h:panelGrid columns="3" >                           
+                    <h:panelGrid columns="3" styleClass="alignTop">                           
                         <p:panel header="Attendance">
                             <h:panelGrid columns="1">
                                 <p:commandButton value="(1) Attendance Report" 
@@ -115,7 +115,7 @@
                                              action="hr_report_leave_summery" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
-                              <p:commandButton value="(3) Leave Report Detail By Staff " 
+                            <p:commandButton value="(3) Leave Report Detail By Staff " 
                                              action="hr_report_leave_summery_by_staff" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" /> 
@@ -133,12 +133,12 @@
                                              styleClass="linkButton" ajax="false" /> 
                         </p:panel>
                         
-                        <p:panel header="History">
+                        <p:panel header="History" rendered="#{webUserController.hasPrivilege('EmployeeHistoryReport')}" >
                             <p:commandButton value="(1) Staff Shift History" 
                                                  action="hr_report_staff_shift_history" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
-                             <p:commandButton value="(2)Finger Print History" 
+                            <p:commandButton value="(2)Finger Print History" 
                                                  action="hr_report_finger_print_history" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 

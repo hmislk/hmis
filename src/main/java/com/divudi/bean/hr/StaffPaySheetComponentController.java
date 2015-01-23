@@ -13,6 +13,7 @@ import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -167,11 +168,15 @@ public class StaffPaySheetComponentController implements Serializable {
     }
 
     public void createTable() {
+        
+        if (getPaysheetComponent() == null){
+            JsfUtil.addErrorMessage("Set Pay Sheet Component");
+        }
 
         String sql = "Select ss from "
                 + " StaffPaysheetComponent ss"
                 + " where ss.retired=false "
-                + " and ss.staff=:st "
+               // + " and ss.staff=:st "
                 + " and ss.fromDate >=:fd "
                 + " and ss.toDate <=:td ";
         HashMap hm = new HashMap();
@@ -179,7 +184,7 @@ public class StaffPaySheetComponentController implements Serializable {
         hm.put("fd", getFromDate());
 
         if (getPaysheetComponent() != null) {
-            sql += " ss.paysheetComponent=:pt ";
+            sql += " and ss.paysheetComponent=:pt ";
             hm.put("pt", getPaysheetComponent());
         }
 
