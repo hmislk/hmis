@@ -196,18 +196,22 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             if (fingerPrintRecordIn == null) {
                 fingerPrintRecordIn = new FingerPrintRecord();
-                fingerPrintRecordIn.setTimes(Times.inTime);
                 fingerPrintRecordIn.setCreatedAt(new Date());
                 fingerPrintRecordIn.setCreater(sessionController.getLoggedUser());
                 fingerPrintRecordIn.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordIn.setComments("(new Additional)");
                 fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
                 fingerPrintRecordFacade.create(fingerPrintRecordIn);
-                fingerPrintRecords.add(fingerPrintRecordIn);
+            } else {
+                if (fingerPrintRecordIn.getRecordTimeStamp().getTime() < additionalForm.getFromTime().getTime()) {
+                    fingerPrintRecordIn.getVerifiedRecord().setRecordTimeStamp(additionalForm.getFromTime());
+                }
 
-                ss.setStartRecord(fingerPrintRecordIn);
             }
 
+            fingerPrintRecordIn.setTimes(Times.inTime);
+            fingerPrintRecords.add(fingerPrintRecordIn);
+            ss.setStartRecord(fingerPrintRecordIn);
         }
 
         if (fingerPrintRecordOut == null && additionalForm.getTimes() == Times.outTime) {
@@ -215,16 +219,23 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             if (fingerPrintRecordOut == null) {
                 fingerPrintRecordOut = new FingerPrintRecord();
-                fingerPrintRecordOut.setTimes(Times.outTime);
+
                 fingerPrintRecordOut.setCreatedAt(new Date());
                 fingerPrintRecordOut.setCreater(sessionController.getLoggedUser());
                 fingerPrintRecordOut.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordOut.setComments("(new Additional)");
                 fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
                 fingerPrintRecordFacade.create(fingerPrintRecordOut);
-                fingerPrintRecords.add(fingerPrintRecordOut);
-                ss.setEndRecord(fingerPrintRecordOut);
+
+            } else {
+                if (fingerPrintRecordOut.getRecordTimeStamp().getTime() > additionalForm.getToTime().getTime()) {
+                    fingerPrintRecordOut.getVerifiedRecord().setRecordTimeStamp(additionalForm.getToTime());
+                }
             }
+
+            fingerPrintRecordOut.setTimes(Times.outTime);
+            fingerPrintRecords.add(fingerPrintRecordOut);
+            ss.setEndRecord(fingerPrintRecordOut);
 
         }
 
@@ -234,29 +245,41 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             if (fingerPrintRecordIn == null) {
                 fingerPrintRecordIn = new FingerPrintRecord();
-                fingerPrintRecordIn.setTimes(Times.inTime);
                 fingerPrintRecordIn.setCreatedAt(new Date());
                 fingerPrintRecordIn.setCreater(sessionController.getLoggedUser());
                 fingerPrintRecordIn.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordIn.setComments("(new Additional)");
                 fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
-                fingerPrintRecordFacade.create(fingerPrintRecordIn);
-                fingerPrintRecords.add(fingerPrintRecordIn);
-                ss.setStartRecord(fingerPrintRecordIn);
+                fingerPrintRecordFacade.create(fingerPrintRecordIn);              
+            }else {
+                if (fingerPrintRecordIn.getRecordTimeStamp().getTime() < additionalForm.getFromTime().getTime()) {
+                    fingerPrintRecordIn.getVerifiedRecord().setRecordTimeStamp(additionalForm.getFromTime());
+                }
+
             }
+
+            fingerPrintRecordIn.setTimes(Times.inTime);
+            fingerPrintRecords.add(fingerPrintRecordIn);
+            ss.setStartRecord(fingerPrintRecordIn);
+            
 
             if (fingerPrintRecordOut == null) {
                 fingerPrintRecordOut = new FingerPrintRecord();
-                fingerPrintRecordOut.setTimes(Times.outTime);
                 fingerPrintRecordOut.setCreatedAt(new Date());
                 fingerPrintRecordOut.setCreater(sessionController.getLoggedUser());
                 fingerPrintRecordOut.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordOut.setComments("(new Additional)");
                 fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
-                fingerPrintRecordFacade.create(fingerPrintRecordOut);
-                fingerPrintRecords.add(fingerPrintRecordOut);
-                ss.setEndRecord(fingerPrintRecordOut);
+                fingerPrintRecordFacade.create(fingerPrintRecordOut);             
+            }else {
+                if (fingerPrintRecordOut.getRecordTimeStamp().getTime() > additionalForm.getToTime().getTime()) {
+                    fingerPrintRecordOut.getVerifiedRecord().setRecordTimeStamp(additionalForm.getToTime());
+                }
             }
+
+            fingerPrintRecordOut.setTimes(Times.outTime);
+            fingerPrintRecords.add(fingerPrintRecordOut);
+            ss.setEndRecord(fingerPrintRecordOut);
 
         }
 
@@ -481,7 +504,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         for (StaffShift stf : staffShifts) {
-            if (staffShiftLateInTenMinuteLinked != null && staffShiftLateInTenMinuteLinked.size() >= 3) {
+            if (staffShiftLateInTenMinuteLinked.size() >= 3) {
                 for (int i = 0; i < 3; i++) {
                     StaffShift lateShift = staffShiftLateInTenMinuteLinked.pollFirst();
                     lateShift.setReferenceStaffShiftLateIn(stf);
@@ -507,7 +530,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         for (StaffShift stf : staffShifts) {
-            if (staffShiftEarlyOutThirtyMinuteLinked != null && staffShiftEarlyOutThirtyMinuteLinked.size() >= 3) {
+            if (staffShiftEarlyOutThirtyMinuteLinked.size() >= 3) {
                 for (int i = 0; i < 3; i++) {
                     StaffShift earlyOut = staffShiftEarlyOutThirtyMinuteLinked.pollFirst();
                     earlyOut.setReferenceStaffShiftEarlyOut(stf);

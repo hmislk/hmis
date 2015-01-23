@@ -170,11 +170,11 @@ public class HumanResourceBean {
         Date startTime = additionalForm.getFromTime();
         Calendar min = Calendar.getInstance();
         min.setTime(startTime);
-//        min.add(Calendar.HOUR, -2);
+        min.add(Calendar.HOUR, -2);
 
         Calendar max = Calendar.getInstance();
         max.setTime(startTime);
-        max.add(Calendar.HOUR, 3);
+        max.add(Calendar.HOUR, 2);
 
         Map m = new HashMap();
         m.put("f", min.getTime());
@@ -241,11 +241,11 @@ public class HumanResourceBean {
         Date endTime = additionalForm.getToTime();
         Calendar min = Calendar.getInstance();
         min.setTime(endTime);
-//        min.add(Calendar.HOUR, -1);
+        min.add(Calendar.HOUR, -2);
 
         Calendar max = Calendar.getInstance();
         max.setTime(endTime);
-        max.add(Calendar.HOUR, -2);
+        max.add(Calendar.HOUR, 2);
 
         Map m = new HashMap();
         m.put("f", min.getTime());
@@ -336,7 +336,7 @@ public class HumanResourceBean {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("s", staff);
-        m.put("dtp", new DayType[]{DayType.DayOff, DayType.SleepingDay});
+        m.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
         m.put("tp", StaffShiftExtra.class);
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
@@ -913,8 +913,8 @@ public class HumanResourceBean {
         return staffFacade.findBySQL(sql, m, TemporalType.DATE);
 
     }
-    
-     public List<Staff> fetchStaffFromShift(Date fromDate,Date toDate) {
+
+    public List<Staff> fetchStaffFromShift(Date fromDate, Date toDate) {
         Map m = new HashMap();
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);

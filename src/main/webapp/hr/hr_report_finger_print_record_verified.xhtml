@@ -35,7 +35,9 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Finger Print Verified Record " action="#{hrReportController.createFingerPrintRecordVarified()}"/>
+                        <p:commandButton ajax="false" value="Finger Print Verified Record All" action="#{hrReportController.createFingerPrintRecordVarifiedAll()}"/>
+                        <p:commandButton ajax="false" value="Finger Print Verified Record With Logged Record" action="#{hrReportController.createFingerPrintRecordVarifiedWithLogged()}"/>
+                        <p:commandButton ajax="false" value="Finger Print Verified Record Without Logged Record " action="#{hrReportController.createFingerPrintRecordVarifiedWithOutLogged()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
