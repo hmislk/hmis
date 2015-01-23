@@ -25,6 +25,7 @@ public enum LeaveType {
     Maternity1stHalf(Maternity1st), //For Saturday
     Maternity2ndHalf(Maternity2nd), //For Saturday    
     DutyLeave(true),
+    DutyLeaveHalf(DutyLeave, true),
     Lieu(true),
     LieuHalf(Lieu, true),
     No_Pay(true),
