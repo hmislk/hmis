@@ -281,8 +281,8 @@ public class HumanResourceBean {
     @EJB
     StaffLeaveEntitleFacade staffLeaveEntitleFacade;
 
-    public StaffLeaveEntitle fetchStaffLeaveEntitle(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
-        String sql = "select l from StaffLeaveEntitle l"
+    public double fetchStaffLeaveEntitle(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select l.count from StaffLeaveEntitle l"
                 + " where l.retired=false "
                 + " and l.staff=:stf "
                 + " and l.leaveType in :ltp "
@@ -294,7 +294,7 @@ public class HumanResourceBean {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        return staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
 
     }
 
