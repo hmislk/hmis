@@ -454,9 +454,27 @@ public class HrReportController implements Serializable {
     private List<StaffLeave> staffLeavesCashual;
     private List<StaffLeave> staffLeavesNoPay;
     private List<StaffLeave> staffLeavesDutyLeave;
+    private List<StaffLeave> staffLeavesMedical;
+    private List<StaffLeave> staffLeavesMaternity1st;
+    private List<StaffLeave> staffLeavesMaternity2nd;
+    private List<StaffLeave> staffLeavesLieu;
 
     double annualEntitle;
     double annualUtilized;
+    double casualEntitle;
+    double casualUtilized;
+    double nopayEntitle;
+    double nopayUtilized;
+    double dutyLeaveEntitle;
+    double dutyLeaveUtilized;
+    private double medicalEntitle;
+    private double medicalUtilized;
+    private double maternity1Entitle;
+    private double maternity1Utilized;
+    private double maternity2Entitle;
+    private double maternity2Utilized;
+    private double lieuEntitle;
+    private double lieuUtilized;
 
     public double getAnnualEntitle() {
         return annualEntitle;
@@ -485,7 +503,34 @@ public class HrReportController implements Serializable {
         annualEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
         annualUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
         staffLeavesAnnual = createStaffLeave(LeaveType.Annual, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+        
+        casualEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Casual, fromDate, toDate);
+        casualUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Casual, fromDate, toDate);
+        staffLeavesCashual = createStaffLeave(LeaveType.Casual, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+        
+        nopayEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.No_Pay, fromDate, toDate);
+        nopayUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.No_Pay, fromDate, toDate);
+        staffLeavesNoPay = createStaffLeave(LeaveType.No_Pay, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+        
+        dutyLeaveEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.DutyLeave, fromDate, toDate);
+        dutyLeaveUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.DutyLeave, fromDate, toDate);
+        staffLeavesDutyLeave = createStaffLeave(LeaveType.DutyLeave, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+        
+        medicalEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Medical, fromDate, toDate);
+        medicalUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Medical, fromDate, toDate);
+        staffLeavesMedical = createStaffLeave(LeaveType.Medical, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+        
+        maternity1Entitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Maternity1st, fromDate, toDate);
+        maternity1Utilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Maternity1st, fromDate, toDate);
+        staffLeavesMaternity1st = createStaffLeave(LeaveType.Maternity1st, getReportKeyWord().getStaff(), getFromDate(), getToDate());
 
+        maternity2Entitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Maternity2nd, fromDate, toDate);
+        maternity2Utilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Maternity2nd, fromDate, toDate);
+        staffLeavesMaternity2nd = createStaffLeave(LeaveType.Maternity2nd, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+        
+        lieuEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Lieu, fromDate, toDate);
+        lieuUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Lieu, fromDate, toDate);
+        staffLeavesLieu = createStaffLeave(LeaveType.Lieu, getReportKeyWord().getStaff(), getFromDate(), getToDate());
     }
 
     public List<StaffLeave> createStaffLeave(LeaveType leaveType, Staff staff, Date fromDate, Date toDate) {
@@ -499,7 +544,7 @@ public class HrReportController implements Serializable {
                 + " where ss.retired=false "
                 + " and ss.leaveDate between :frm  and :to "
                 + " and ss.staff=:stf"
-                + " abd ss.leaveType in :ltp ";
+                + " and ss.leaveType in :ltp ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("stf", staff);
@@ -1593,6 +1638,150 @@ public class HrReportController implements Serializable {
 
     public void setStaffLeavesDutyLeave(List<StaffLeave> staffLeavesDutyLeave) {
         this.staffLeavesDutyLeave = staffLeavesDutyLeave;
+    }
+
+    public double getCasualEntitle() {
+        return casualEntitle;
+    }
+
+    public void setCasualEntitle(double casualEntitle) {
+        this.casualEntitle = casualEntitle;
+    }
+
+    public double getCasualUtilized() {
+        return casualUtilized;
+    }
+
+    public void setCasualUtilized(double casualUtilized) {
+        this.casualUtilized = casualUtilized;
+    }
+
+    public double getNopayEntitle() {
+        return nopayEntitle;
+    }
+
+    public void setNopayEntitle(double nopayEntitle) {
+        this.nopayEntitle = nopayEntitle;
+    }
+
+    public double getNopayUtilized() {
+        return nopayUtilized;
+    }
+
+    public void setNopayUtilized(double nopayUtilized) {
+        this.nopayUtilized = nopayUtilized;
+    }
+
+    public double getDutyLeaveEntitle() {
+        return dutyLeaveEntitle;
+    }
+
+    public void setDutyLeaveEntitle(double dutyLeaveEntitle) {
+        this.dutyLeaveEntitle = dutyLeaveEntitle;
+    }
+
+    public double getDutyLeaveUtilized() {
+        return dutyLeaveUtilized;
+    }
+
+    public void setDutyLeaveUtilized(double dutyLeaveUtilized) {
+        this.dutyLeaveUtilized = dutyLeaveUtilized;
+    }
+
+    public List<StaffLeave> getStaffLeavesMedical() {
+        return staffLeavesMedical;
+    }
+
+    public void setStaffLeavesMedical(List<StaffLeave> staffLeavesMedical) {
+        this.staffLeavesMedical = staffLeavesMedical;
+    }
+
+    public List<StaffLeave> getStaffLeavesMaternity1st() {
+        return staffLeavesMaternity1st;
+    }
+
+    public void setStaffLeavesMaternity1st(List<StaffLeave> staffLeavesMaternity1st) {
+        this.staffLeavesMaternity1st = staffLeavesMaternity1st;
+    }
+
+    public List<StaffLeave> getStaffLeavesMaternity2nd() {
+        return staffLeavesMaternity2nd;
+    }
+
+    public void setStaffLeavesMaternity2nd(List<StaffLeave> staffLeavesMaternity2nd) {
+        this.staffLeavesMaternity2nd = staffLeavesMaternity2nd;
+    }
+
+    public List<StaffLeave> getStaffLeavesLieu() {
+        return staffLeavesLieu;
+    }
+
+    public void setStaffLeavesLieu(List<StaffLeave> staffLeavesLieu) {
+        this.staffLeavesLieu = staffLeavesLieu;
+    }
+
+    public double getMedicalEntitle() {
+        return medicalEntitle;
+    }
+
+    public void setMedicalEntitle(double medicalEntitle) {
+        this.medicalEntitle = medicalEntitle;
+    }
+
+    public double getMedicalUtilized() {
+        return medicalUtilized;
+    }
+
+    public void setMedicalUtilized(double medicalUtilized) {
+        this.medicalUtilized = medicalUtilized;
+    }
+
+    public double getMaternity1Entitle() {
+        return maternity1Entitle;
+    }
+
+    public void setMaternity1Entitle(double maternity1Entitle) {
+        this.maternity1Entitle = maternity1Entitle;
+    }
+
+    public double getMaternity1Utilized() {
+        return maternity1Utilized;
+    }
+
+    public void setMaternity1Utilized(double maternity1Utilized) {
+        this.maternity1Utilized = maternity1Utilized;
+    }
+
+    public double getMaternity2Entitle() {
+        return maternity2Entitle;
+    }
+
+    public void setMaternity2Entitle(double maternity2Entitle) {
+        this.maternity2Entitle = maternity2Entitle;
+    }
+
+    public double getMaternity2Utilized() {
+        return maternity2Utilized;
+    }
+
+    public void setMaternity2Utilized(double maternity2Utilized) {
+        this.maternity2Utilized = maternity2Utilized;
+    }
+
+    public double getLieuEntitle() {
+        return lieuEntitle;
+    }
+
+    public void setLieuEntitle(double lieuEntitle) {
+        this.lieuEntitle = lieuEntitle;
+    }
+
+    public double getLieuUtilized() {
+        return lieuUtilized;
+    }
+
+    public void setLieuUtilized(double lieuUtilized) {
+        this.lieuUtilized = lieuUtilized;
     }
 
 }
