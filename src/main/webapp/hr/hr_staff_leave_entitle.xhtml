@@ -16,7 +16,8 @@
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
                             <h:outputLabel value="Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.date}"/>                           
+                            <p:calendar value="#{staffLeaveEntitleController.date}"/>
+                            <h:outputLabel value="Leave Type : "/>
                             <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
                                 <f:selectItem itemLabel="Select Leave Type"/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
