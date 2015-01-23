@@ -204,7 +204,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordFacade.create(fingerPrintRecordIn);
             } else {
                 if (fingerPrintRecordIn.getRecordTimeStamp().getTime() < additionalForm.getFromTime().getTime()) {
-                    fingerPrintRecordIn.getVerifiedRecord().setRecordTimeStamp(additionalForm.getFromTime());
+                    fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
                 }
 
             }
@@ -229,7 +229,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
             } else {
                 if (fingerPrintRecordOut.getRecordTimeStamp().getTime() > additionalForm.getToTime().getTime()) {
-                    fingerPrintRecordOut.getVerifiedRecord().setRecordTimeStamp(additionalForm.getToTime());
+                    fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
                 }
             }
 
@@ -253,7 +253,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordFacade.create(fingerPrintRecordIn);              
             }else {
                 if (fingerPrintRecordIn.getRecordTimeStamp().getTime() < additionalForm.getFromTime().getTime()) {
-                    fingerPrintRecordIn.getVerifiedRecord().setRecordTimeStamp(additionalForm.getFromTime());
+                    fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
                 }
 
             }
@@ -273,7 +273,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordFacade.create(fingerPrintRecordOut);             
             }else {
                 if (fingerPrintRecordOut.getRecordTimeStamp().getTime() > additionalForm.getToTime().getTime()) {
-                    fingerPrintRecordOut.getVerifiedRecord().setRecordTimeStamp(additionalForm.getToTime());
+                    fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
                 }
             }
 
@@ -548,15 +548,15 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public LeaveType getLeaveType(Staff staff, Date fromDate, Date toDate) {
-        StaffLeaveEntitle staffLeaveEntitle = humanResourceBean.fetchStaffLeaveEntitle(staff, LeaveType.Annual, fromDate, toDate);
+        double staffLeaveEntitle = humanResourceBean.fetchStaffLeaveEntitle(staff, LeaveType.Annual, fromDate, toDate);
 
-        if (staffLeaveEntitle.getCount() > humanResourceBean.fetchStaffLeave(staff, LeaveType.Annual, fromDate, toDate)) {
+        if (staffLeaveEntitle > humanResourceBean.fetchStaffLeave(staff, LeaveType.Annual, fromDate, toDate)) {
             return LeaveType.AnnualHalf;
         }
 
         staffLeaveEntitle = humanResourceBean.fetchStaffLeaveEntitle(staff, LeaveType.Casual, fromDate, toDate);
 
-        if (staffLeaveEntitle.getCount() > humanResourceBean.fetchStaffLeave(staff, LeaveType.Casual, fromDate, toDate)) {
+        if (staffLeaveEntitle> humanResourceBean.fetchStaffLeave(staff, LeaveType.Casual, fromDate, toDate)) {
             return LeaveType.CasualHalf;
         }
 

@@ -23,6 +23,7 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.StaffLeave;
+import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftHistory;
@@ -447,6 +448,64 @@ public class HrReportController implements Serializable {
 
         sql += " order by ss.staff.codeInterger";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    private List<StaffLeave> staffLeavesAnnual;
+    private List<StaffLeave> staffLeavesCashual;
+    private List<StaffLeave> staffLeavesNoPay;
+    private List<StaffLeave> staffLeavesDutyLeave;
+
+    double annualEntitle;
+    double annualUtilized;
+
+    public double getAnnualEntitle() {
+        return annualEntitle;
+    }
+
+    public void setAnnualEntitle(double annualEntitle) {
+        this.annualEntitle = annualEntitle;
+    }
+
+    public double getAnnualUtilized() {
+        return annualUtilized;
+    }
+
+    public void setAnnualUtilized(double annualUtilized) {
+        this.annualUtilized = annualUtilized;
+    }
+    
+    
+    
+
+    public void createStaffLeaveDetail() {
+        if (getReportKeyWord().getStaff() == null) {
+            return;
+        }
+
+        annualEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
+        annualUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
+        staffLeavesAnnual = createStaffLeave(LeaveType.Annual, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+
+    }
+
+    public List<StaffLeave> createStaffLeave(LeaveType leaveType, Staff staff, Date fromDate, Date toDate) {
+        if (leaveType == null || staff == null) {
+            return null;
+        }
+
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffLeave ss "
+                + " where ss.retired=false "
+                + " and ss.leaveDate between :frm  and :to "
+                + " and ss.staff=:stf"
+                + " abd ss.leaveType in :ltp ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+
+        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
     List<StaffLeaveBallance> staffLeaveBallances;
@@ -1502,6 +1561,38 @@ public class HrReportController implements Serializable {
 
     public void setMonthEndRecords(List<MonthEndRecord> monthEndRecords) {
         this.monthEndRecords = monthEndRecords;
+    }
+
+    public List<StaffLeave> getStaffLeavesAnnual() {
+        return staffLeavesAnnual;
+    }
+
+    public void setStaffLeavesAnnual(List<StaffLeave> staffLeavesAnnual) {
+        this.staffLeavesAnnual = staffLeavesAnnual;
+    }
+
+    public List<StaffLeave> getStaffLeavesCashual() {
+        return staffLeavesCashual;
+    }
+
+    public void setStaffLeavesCashual(List<StaffLeave> staffLeavesCashual) {
+        this.staffLeavesCashual = staffLeavesCashual;
+    }
+
+    public List<StaffLeave> getStaffLeavesNoPay() {
+        return staffLeavesNoPay;
+    }
+
+    public void setStaffLeavesNoPay(List<StaffLeave> staffLeavesNoPay) {
+        this.staffLeavesNoPay = staffLeavesNoPay;
+    }
+
+    public List<StaffLeave> getStaffLeavesDutyLeave() {
+        return staffLeavesDutyLeave;
+    }
+
+    public void setStaffLeavesDutyLeave(List<StaffLeave> staffLeavesDutyLeave) {
+        this.staffLeavesDutyLeave = staffLeavesDutyLeave;
     }
 
 }
