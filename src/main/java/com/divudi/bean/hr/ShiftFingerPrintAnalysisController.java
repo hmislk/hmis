@@ -195,19 +195,17 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             fingerPrintRecordIn = getHumanResourceBean().findInTimeRecord(additionalForm);
 
             if (fingerPrintRecordIn == null) {
-                fingerPrintRecordIn = new FingerPrintRecord();
-                fingerPrintRecordIn.setTimes(Times.inTime);
+                fingerPrintRecordIn = new FingerPrintRecord();                
                 fingerPrintRecordIn.setCreatedAt(new Date());
                 fingerPrintRecordIn.setCreater(sessionController.getLoggedUser());
                 fingerPrintRecordIn.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordIn.setComments("(new Additional)");
                 fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
                 fingerPrintRecordFacade.create(fingerPrintRecordIn);
-                fingerPrintRecords.add(fingerPrintRecordIn);
-
-                ss.setStartRecord(fingerPrintRecordIn);
             }
-
+            fingerPrintRecordIn.setTimes(Times.inTime);
+            fingerPrintRecords.add(fingerPrintRecordIn);
+            ss.setStartRecord(fingerPrintRecordIn);
         }
 
         if (fingerPrintRecordOut == null && additionalForm.getTimes() == Times.outTime) {
@@ -481,7 +479,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         for (StaffShift stf : staffShifts) {
-            if (staffShiftLateInTenMinuteLinked != null && staffShiftLateInTenMinuteLinked.size() >= 3) {
+            if (staffShiftLateInTenMinuteLinked.size() >= 3) {
                 for (int i = 0; i < 3; i++) {
                     StaffShift lateShift = staffShiftLateInTenMinuteLinked.pollFirst();
                     lateShift.setReferenceStaffShiftLateIn(stf);
@@ -507,7 +505,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         for (StaffShift stf : staffShifts) {
-            if (staffShiftEarlyOutThirtyMinuteLinked != null && staffShiftEarlyOutThirtyMinuteLinked.size() >= 3) {
+            if (staffShiftEarlyOutThirtyMinuteLinked.size() >= 3) {
                 for (int i = 0; i < 3; i++) {
                     StaffShift earlyOut = staffShiftEarlyOutThirtyMinuteLinked.pollFirst();
                     earlyOut.setReferenceStaffShiftEarlyOut(stf);

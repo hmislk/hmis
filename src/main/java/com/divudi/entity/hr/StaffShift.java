@@ -8,6 +8,7 @@ package com.divudi.entity.hr;
 
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
+import com.divudi.data.hr.Times;
 import com.divudi.data.hr.WorkingType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -897,6 +898,11 @@ public class StaffShift implements Serializable {
 
     public void setStartRecord(FingerPrintRecord startRecord) {
         this.startRecord = startRecord;
+        if (startRecord != null) {
+            if (startRecord.getLoggedRecord() != null) {
+                startRecord.getLoggedRecord().setTimes(Times.inTime);
+            }
+        }
     }
 
     public FingerPrintRecord getEndRecord() {
@@ -905,6 +911,11 @@ public class StaffShift implements Serializable {
 
     public void setEndRecord(FingerPrintRecord endRecord) {
         this.endRecord = endRecord;
+        if (endRecord != null) {
+            if (endRecord.getLoggedRecord() != null) {
+                endRecord.getLoggedRecord().setTimes(Times.outTime);
+            }
+        }
     }
 
     public Long getId() {

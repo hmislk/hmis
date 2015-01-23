@@ -336,7 +336,7 @@ public class HumanResourceBean {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("s", staff);
-        m.put("dtp", new DayType[]{DayType.DayOff, DayType.SleepingDay});
+        m.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.SleepingDay}));
         m.put("tp", StaffShiftExtra.class);
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
@@ -913,10 +913,11 @@ public class HumanResourceBean {
         return staffFacade.findBySQL(sql, m, TemporalType.DATE);
 
     }
-    
-     public List<Staff> fetchStaffFromShift(Date fromDate,Date toDate) {
+
+    public List<Staff> fetchStaffFromShift(Date fromDate, Date toDate) {
         Map m = new HashMap();
-        m.put("date", date);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
         String sql = "Select ss.staff from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.shiftDate between :fromDate and :toDate"
