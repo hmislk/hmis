@@ -916,7 +916,8 @@ public class HumanResourceBean {
     
      public List<Staff> fetchStaffFromShift(Date fromDate,Date toDate) {
         Map m = new HashMap();
-        m.put("date", date);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
         String sql = "Select ss.staff from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.shiftDate between :fromDate and :toDate"
