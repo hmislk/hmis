@@ -759,8 +759,8 @@ public class HumanResourceBean {
         HashMap hm = new HashMap();
 
         sql = "select st From StaffShift st "
-                + " join HrForm hr on st.additionalFrom.id=hr.id "
-                + " where st.retired=false"
+                + " where st.retired=false "
+                + " and st.additionalForm is not null"
                 + " and st.shiftDate=:dt "
                 + " and st.roster=:rs"
                 + " and st.shift is not null"
