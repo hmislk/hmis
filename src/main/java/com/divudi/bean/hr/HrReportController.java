@@ -446,7 +446,7 @@ public class HrReportController implements Serializable {
 
         }
 
-        sql += " order by ss.codeInterger";
+        sql += " order by ss.staff.codeInterger";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
