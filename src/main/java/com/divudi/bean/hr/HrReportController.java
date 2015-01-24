@@ -714,7 +714,7 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        sql += " order by ss.codeInterger";
+        sql += " order by ss.staff.codeInterger";
 
         return staffFacade.findBySQL(sql, hm, TemporalType.DATE);
     }

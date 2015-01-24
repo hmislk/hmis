@@ -81,7 +81,7 @@ public class EnumController implements Serializable {
     }
 
     public Times[] getTimeses() {
-        return Times.values();
+        return new Times[]{Times.inTime, Times.outTime};
     }
 
     public void setSessionNumberTypes(SessionNumberType[] sessionNumberTypes) {

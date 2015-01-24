@@ -154,7 +154,9 @@ public class StaffShift implements Serializable {
     boolean lieuPaid;
     boolean lieuAllowed;
     boolean lieuPaymentAllowed;
-    boolean consideredForLateEarlyAttendance;
+//    boolean consideredForLateEarlyAttendance;
+    boolean considerForLateIn;
+    boolean considerForEarlyOut;
     @Transient
     boolean transChecked;
     int dayOfWeek;
@@ -184,12 +186,27 @@ public class StaffShift implements Serializable {
         this.amendmentForm = amendmentForm;
     }
 
-    public boolean isConsideredForLateEarlyAttendance() {
-        return consideredForLateEarlyAttendance;
+//    public boolean isConsideredForLateEarlyAttendance() {
+//        return consideredForLateEarlyAttendance;
+//    }
+//
+//    public void setConsideredForLateEarlyAttendance(boolean consideredForLateEarlyAttendance) {
+//        this.consideredForLateEarlyAttendance = consideredForLateEarlyAttendance;
+//    }
+    public boolean isConsiderForLateIn() {
+        return considerForLateIn;
     }
 
-    public void setConsideredForLateEarlyAttendance(boolean consideredForLateEarlyAttendance) {
-        this.consideredForLateEarlyAttendance = consideredForLateEarlyAttendance;
+    public void setConsiderForLateIn(boolean considerForLateIn) {
+        this.considerForLateIn = considerForLateIn;
+    }
+
+    public boolean isConsiderForEarlyOut() {
+        return considerForEarlyOut;
+    }
+
+    public void setConsiderForEarlyOut(boolean considerForEarlyOut) {
+        this.considerForEarlyOut = considerForEarlyOut;
     }
 
     public int getDayOfWeek() {
@@ -271,7 +288,8 @@ public class StaffShift implements Serializable {
         resetFingerPrintRecordTime();
         resetExtraTime();
 //        resetLeaveData();
-        consideredForLateEarlyAttendance=false;
+//        considerForLateIn = false;
+//        considerForEarlyOut = false;
         multiplyingFactorOverTime = 0;
         multiplyingFactorSalary = 0;
         overTimeValuePerSecond = 0;
