@@ -728,18 +728,17 @@ public class HrReportController implements Serializable {
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
                 + " and ((ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null) "
+                + " and ss.endRecord.recordTimeStamp is not null)) "
                 //                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("stf", staff);
 
-        if (getReportKeyWord().getStaff() != null) {
-            sql += " and ss.staff=:stf ";
-            hm.put("stf", getReportKeyWord().getStaff());
-        }
-
+//        if (getReportKeyWord().getStaff() != null) {
+//            sql += " and ss.staff=:stf ";
+//            hm.put("stf", getReportKeyWord().getStaff());
+//        }
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
@@ -1004,6 +1003,53 @@ public class HrReportController implements Serializable {
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
 
+    private long fetchWorkedDays(Staff staff, DayType dayType) {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select count(distinct(FUNC('Date',ss.shiftDate)))"
+                + " from StaffShift ss "
+                + " where ss.retired=false"
+                + " and ss.staff=:stf "
+                + " and ss.dayType=:dtp"
+                + " and ( ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ) "
+                //                + " or (ss.leaveType is not null) ) "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("stf", staff);
+        hm.put("dtp", dayType);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+//        sql += " group by FUNC('Date',ss.shiftDate)";
+        return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
+    }
+
     private List<MonthEndRecord> monthEndRecords;
 
     public FinalVariables getFinalVariables() {
@@ -1031,7 +1077,10 @@ public class HrReportController implements Serializable {
             monthEnd.setLeave_dutyLeave(humanResourceBean.calStaffLeave(stf, LeaveType.DutyLeave, getFromDate(), getToDate()));
             monthEnd.setExtraDutyDays(fetchExtraDutyDays(stf));
             monthEnd.setLatedays(fetchLateDays(stf));
-            monthEnd.setDayoff(fetchDayOff(stf));
+            monthEnd.setDayoff(fetchWorkedDays(stf, DayType.DayOff));
+            monthEnd.setSleepingDays(fetchWorkedDays(stf, DayType.SleepingDay));
+            monthEnd.setPoyaDays(fetchWorkedDays(stf, DayType.Poya));
+            monthEnd.setMerhchantileDays(fetchWorkedDays(stf, DayType.MurchantileHoliday));
             monthEndRecords.add(monthEnd);
         }
     }
@@ -1328,14 +1377,16 @@ public class HrReportController implements Serializable {
     }
 
     public void updateOverTimeValuePerSecond() {
-        String sql = "select s from StaffShift s";
-//                + " where s.overTimeValuePerSecond=0 ";
+        String sql = "select s from StaffShift s "
+                + " where s.overTimeValuePerSecond=0"
+                + " and s.additionalForm is not null ";
         List<StaffShift> list = staffShiftFacade.findBySQL(sql);
         if (list == null) {
             return;
         }
 
         for (StaffShift ss : list) {
+            System.err.println(ss.getId());
             double valueForOverTime = humanResourceBean.calValueForOverTime(ss.getStaff(), ss.getShiftDate());
             ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
             staffShiftFacade.edit(ss);
