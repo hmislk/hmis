@@ -408,7 +408,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         ss.calLeaveTime();
         ss.setLeaveForm(currentLeaveForm);
         ss.setLeaveType(getCurrentLeaveForm().getLeaveType());
-        ss.setConsideredForLateEarlyAttendance(true);
+//        ss.setConsideredForLateEarlyAttendance(true);
         staffShiftFacade.edit(ss);
 
     }
@@ -424,7 +424,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
             StaffShift ss = list.pollFirst();
             ss.resetLeaveData(getCurrentLeaveForm().getLeaveType());
 //            ss.setLeaveDivident(divide);
-            ss.setConsideredForLateEarlyAttendance(true);
+//            ss.setConsideredForLateEarlyAttendance(true);
             ss.calLeaveTime();
             ss.setLeaveForm(currentLeaveForm);
             ss.setLeaveType(getCurrentLeaveForm().getLeaveType());
@@ -608,7 +608,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         List<StaffShift> stfShf = fetchFormStaffShift(form);
         for (StaffShift s : stfShf) {
             s.resetLeaveData(form.getLeaveType());
-            s.setConsideredForLateEarlyAttendance(false);
+//            s.setConsideredForLateEarlyAttendance(false);
 //            s.setLeaveDivident(0);
             s.setLeaveType(null);
             staffShiftFacade.edit(s);
