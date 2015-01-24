@@ -177,50 +177,37 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.consideredForLateEarlyAttendance=false"
+                + " and ss.considerForLateIn=false "
+                + " and ss.leaveType is not null "
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
-        sql += " and ss.lateInVarified!=0";
+        sql += " and ss.lateInLogged!=0";
 
-        sql += " and ss.lateInVarified>= :frmTime  "
-                + " and ss.lateInVarified<= :toTime";
+        sql += " and ss.lateInLogged>= :frmTime  "
+                + " and ss.lateInLogged<= :toTime";
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
         return staffShiftFacade.findBySQL(sql, hm);
     }
 
-    public List<StaffShift> fetchStaffShiftLateIn(Staff staff, double from) {
-        String sql = "";
-        HashMap hm = new HashMap();
-        sql = "select ss from StaffShift ss "
-                + " where ss.retired=false "
-                + " and ss.consideredForLateEarlyAttendance=false"
-                + "  and ss.staff=:stf ";
-        hm.put("stf", staff);
-
-        sql += " and ss.lateInVarified!=0";
-
-        sql += " and ss.lateInVarified>= :frmTime ";
-        hm.put("frmTime", from);
-
-        return staffShiftFacade.findBySQL(sql, hm);
-    }
+  
 
     public List<StaffShift> fetchStaffShiftEarlyOut(Staff staff, double from, double to) {
         String sql = "";
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.consideredForLateEarlyAttendance=false"
+                + " and ss.considerForEarlyOut=false"
+                + " and ss.leaveType is not null "
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
-        sql += " and ss.earlyOutVarified!=0";
+        sql += " and ss.earlyOutLogged!=0";
 
-        sql += " and ss.earlyOutVarified>= :frmTime  "
-                + " and ss.earlyOutVarified<= :toTime";
+        sql += " and ss.earlyOutLogged>= :frmTime  "
+                + " and ss.earlyOutLogged<= :toTime";
         hm.put("frmTime", from);
         hm.put("toTime", to);
 

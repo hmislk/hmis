@@ -36,8 +36,7 @@ public class StaffPaysheetComponent implements Serializable {
     @ManyToOne
     private Staff staff;
     private double createdValue;
-    private double modifiedValue;
-    @Transient
+    private double modifiedValue;    
     private double staffPaySheetComponentValue;
     @Temporal(TemporalType.DATE)
     private Date fromDate;

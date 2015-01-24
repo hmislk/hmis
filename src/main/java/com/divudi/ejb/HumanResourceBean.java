@@ -140,7 +140,7 @@ public class HumanResourceBean {
 
         Calendar max = Calendar.getInstance();
         max.setTime(startTime);
-        max.add(Calendar.HOUR, 1);
+        max.add(Calendar.HOUR, 2);
 
         Map m = new HashMap();
         m.put("f", min.getTime());
@@ -207,7 +207,7 @@ public class HumanResourceBean {
         Date endTime = staffShift.getShiftEndTime();
         Calendar min = Calendar.getInstance();
         min.setTime(endTime);
-        min.add(Calendar.HOUR, -1);
+        min.add(Calendar.HOUR, -2);
 
         Calendar max = Calendar.getInstance();
         max.setTime(endTime);
@@ -324,15 +324,14 @@ public class HumanResourceBean {
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
-        
-            + " and ss.shiftDate between :fd and :td "
-//                + " and type(ss)!=:tp"
+                + " and ss.shiftDate between :fd and :td "
+                //                + " and type(ss)!=:tp"
                 + " order by ss.shiftDate ";
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
 
-     public List<StaffShift> fetchStaffShiftExtraDuty(Date fromDate, Date toDate, Staff staff) {
+    public List<StaffShift> fetchStaffShiftExtraDuty(Date fromDate, Date toDate, Staff staff) {
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -342,14 +341,12 @@ public class HumanResourceBean {
                 + " where ss.retired=false "
                 + " and ss.staff=:s"
                 + " and ss.additionalFrom is not null "
-        
-            + " and ss.shiftDate between :fd and :td "
-//                + " and type(ss)!=:tp"
+                + " and ss.shiftDate between :fd and :td "
+                //                + " and type(ss)!=:tp"
                 + " order by ss.shiftDate ";
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
-
 
     public List<StaffShift> fetchStaffShiftForAddingLeave(Date fromDate, Date toDate, Staff staff) {
         Map m = new HashMap();
@@ -488,7 +485,8 @@ public class HumanResourceBean {
                 + " where s.retired=false"
                 + " and s.staff=:st "
                 + " and s.shiftDate=:date "
-                + " and s.shift=:preSh";
+                + " and s.shift=:preSh "
+                + " and s.shift.lastShift=true";
         hm = new HashMap();
         hm.put("st", tmp.getStaff());
         hm.put("date", beforDate);
@@ -694,7 +692,8 @@ public class HumanResourceBean {
                 + " where s.retired=false "
                 + " and s.staff=:st "
                 + " and s.shiftDate=:date  "
-                + " and s.shift=:frwSh";
+                + " and s.shift=:frwSh"
+                + " and s.shift.firstShift=true";
         hm = new HashMap();
         hm.put("st", tmp.getStaff());
         hm.put("date", afterDate);
@@ -1486,7 +1485,7 @@ public class HumanResourceBean {
         StaffPaysheetComponent staffPaysheetComponent = getBasic(staff, date);
 
         if (staffPaysheetComponent != null) {
-            value = staffPaysheetComponent.getPaysheetComponent().getComponentValue();
+            value = staffPaysheetComponent.getStaffPaySheetComponentValue();
         }
 
         PaysheetComponentType[] paysheetComponentTypes = {PaysheetComponentType.BasicSalary,
@@ -1494,7 +1493,7 @@ public class HumanResourceBean {
             PaysheetComponentType.ExtraDuty,
             PaysheetComponentType.No_Pay_Deduction};
 
-        String sql = " Select sum(s.paysheetComponent.componentValue)"
+        String sql = " Select sum(s.staffPaySheetComponentValue)"
                 + "  From StaffPaysheetComponent s "
                 + " where s.retired=false "
                 + " and s.staff=:st"
@@ -1862,8 +1861,8 @@ public class HumanResourceBean {
 
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
-    
-     public List<StaffShift>  fetchStaffShiftNoPay(Date fromDate, Date toDate, Staff staff) {
+
+    public List<StaffShift> fetchStaffShiftNoPay(Date fromDate, Date toDate, Staff staff) {
         String sql = "Select ss"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
