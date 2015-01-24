@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Leave Report" />
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From : " />
+                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="To : " />
+                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="Staff : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>                          
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffLeaveDetail()}"/>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tb1, tb2, tb3, tb4, tb5, tb6, tb7, tb8" fileName="hr_report_attendance"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:panel id="gpBillPreview">                     
+                            <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
+                                <f:facet name="header">
+                                    <h:outputLabel style="text-align: center" value="  Attendence Report : "  />                                 
+                                </f:facet>                                                                                              
+                                <p:column headerText="Staff Shift">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Staff Shift" ></p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Day Type">
+                                    <h:outputLabel value="#{ss.dayType}"/>
+                                </p:column>
+                                <p:column headerText="In Time ">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="In Time" ></p:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                    </h:outputLabel>  
+                                </p:column>                           
+                                <p:column headerText="Out Time">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Out Time" ></p:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                    </h:outputLabel>  
+                                </p:column>  
+                                <p:column headerText="Worked Time">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Worked Time" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column>  
+                            </p:dataTable>
+
+                            <p:dataTable id="tb2" value="#{hrReportController.staffShiftExtraDuties}" var="ss">
+                                <f:facet name="header">
+                                    <h:outputLabel style="text-align: center" value="  Extra Duties Report : "  />                                 
+                                </f:facet>                                                                                              
+                                <p:column headerText="Staff Shift">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Staff Shift" ></p:outputLabel>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Day Type">
+                                    <h:outputLabel value="#{ss.dayType}"/>
+                                </p:column>
+                                <p:column headerText="In Time ">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="In Time" ></p:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                    </h:outputLabel>  
+                                </p:column>                           
+                                <p:column headerText="Out Time">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Out Time" ></p:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                    </h:outputLabel>  
+                                </p:column>  
+                                <p:column headerText="Worked Time">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Worked Time" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column>  
+
+                                <p:column headerText="Extra Time">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Extra Time" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.extraTimeCompleteRecordVarified+ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified}">
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column>  
+                            </p:dataTable>
+
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

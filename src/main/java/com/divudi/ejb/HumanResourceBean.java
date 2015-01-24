@@ -320,16 +320,36 @@ public class HumanResourceBean {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("s", staff);
-        m.put("tp", StaffShiftExtra.class);
+//        m.put("tp", StaffShiftExtra.class);
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
-                + " and ss.shiftDate between :fd and :td "
-                + " and type(ss)!=:tp"
-                + " order by ss.staff.codeInterger ";
+        
+            + " and ss.shiftDate between :fd and :td "
+//                + " and type(ss)!=:tp"
+                + " order by ss.shiftDate ";
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
+
+     public List<StaffShift> fetchStaffShiftExtraDuty(Date fromDate, Date toDate, Staff staff) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+//        m.put("tp", StaffShiftExtra.class);
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s"
+                + " and ss.additionalFrom is not null "
+        
+            + " and ss.shiftDate between :fd and :td "
+//                + " and type(ss)!=:tp"
+                + " order by ss.shiftDate ";
+
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
 
     public List<StaffShift> fetchStaffShiftForAddingLeave(Date fromDate, Date toDate, Staff staff) {
         Map m = new HashMap();
