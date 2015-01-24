@@ -250,8 +250,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordIn.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordIn.setComments("(new Additional)");
                 fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
-                fingerPrintRecordFacade.create(fingerPrintRecordIn);              
-            }else {
+                fingerPrintRecordFacade.create(fingerPrintRecordIn);
+            } else {
                 if (fingerPrintRecordIn.getRecordTimeStamp().getTime() < additionalForm.getFromTime().getTime()) {
                     fingerPrintRecordIn.setRecordTimeStamp(additionalForm.getFromTime());
                 }
@@ -261,7 +261,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             fingerPrintRecordIn.setTimes(Times.inTime);
             fingerPrintRecords.add(fingerPrintRecordIn);
             ss.setStartRecord(fingerPrintRecordIn);
-            
 
             if (fingerPrintRecordOut == null) {
                 fingerPrintRecordOut = new FingerPrintRecord();
@@ -270,8 +269,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 fingerPrintRecordOut.setFingerPrintRecordType(FingerPrintRecordType.Varified);
                 fingerPrintRecordOut.setComments("(new Additional)");
                 fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
-                fingerPrintRecordFacade.create(fingerPrintRecordOut);             
-            }else {
+                fingerPrintRecordFacade.create(fingerPrintRecordOut);
+            } else {
                 if (fingerPrintRecordOut.getRecordTimeStamp().getTime() > additionalForm.getToTime().getTime()) {
                     fingerPrintRecordOut.setRecordTimeStamp(additionalForm.getToTime());
                 }
@@ -471,7 +470,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     @Inject
     StaffLeaveFromLateAndEarlyController staffLeaveFromLateAndEarlyController;
 
-    public void calStaffLeaveFromLate(Staff staff) {
+    public void calStaffLeaveFromLateIn(Staff staff, double fromTime, double toTime, double shiftCount) {
         List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
 
         if (staff == null) {
@@ -486,10 +485,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
 
-        List<StaffShift> stfLateIn10 = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(staff, 10 * 60, 90 * 60);
-        List<StaffShift> stfEarlyOut30 = staffLeaveFromLateAndEarlyController.fetchStaffShiftEarlyOut(staff, 30 * 60, 90 * 60);
+        if (!staff.isAllowedLateInLeave()) {
+            return;
+        }
+
+        List<StaffShift> stfLateIn10 = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(staff, fromTime, toTime);
         LinkedList<StaffShift> staffShiftLateInTenMinuteLinked = new LinkedList<>();
-        LinkedList<StaffShift> staffShiftEarlyOutThirtyMinuteLinked = new LinkedList<>();
 
         if (stfLateIn10 != null) {
             for (StaffShift stf : stfLateIn10) {
@@ -497,15 +498,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
         }
 
-        if (stfEarlyOut30 != null) {
-            for (StaffShift stf : stfEarlyOut30) {
-                staffShiftEarlyOutThirtyMinuteLinked.add(stf);
-            }
-        }
-
         for (StaffShift stf : staffShifts) {
-            if (staffShiftLateInTenMinuteLinked.size() >= 3) {
-                for (int i = 0; i < 3; i++) {
+            if (staffShiftLateInTenMinuteLinked.size() >= shiftCount) {
+                for (int i = 0; i < shiftCount; i++) {
                     StaffShift lateShift = staffShiftLateInTenMinuteLinked.pollFirst();
                     lateShift.setReferenceStaffShiftLateIn(stf);
                     lateShift.setConsideredForLateEarlyAttendance(true);
@@ -519,7 +514,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
         }
 
-        staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
+    }
+
+    public void calStaffLeaveFromEarlyOut(Staff staff, double fromTime, double toTime, double shiftCount) {
+        List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
+
+        if (staff == null) {
+            return;
+        }
 
         if (staffShifts == null) {
             return;
@@ -529,9 +531,22 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
 
+        if (!staff.isAllowedEarlyOutLeave()) {
+            return;
+        }
+
+        List<StaffShift> stfEarlyOut30 = staffLeaveFromLateAndEarlyController.fetchStaffShiftEarlyOut(staff, fromTime, toTime);
+        LinkedList<StaffShift> staffShiftEarlyOutThirtyMinuteLinked = new LinkedList<>();
+
+        if (stfEarlyOut30 != null) {
+            for (StaffShift stf : stfEarlyOut30) {
+                staffShiftEarlyOutThirtyMinuteLinked.add(stf);
+            }
+        }
+
         for (StaffShift stf : staffShifts) {
-            if (staffShiftEarlyOutThirtyMinuteLinked.size() >= 3) {
-                for (int i = 0; i < 3; i++) {
+            if (staffShiftEarlyOutThirtyMinuteLinked.size() >= shiftCount) {
+                for (int i = 0; i < shiftCount; i++) {
                     StaffShift earlyOut = staffShiftEarlyOutThirtyMinuteLinked.pollFirst();
                     earlyOut.setReferenceStaffShiftEarlyOut(stf);
                     earlyOut.setConsideredForLateEarlyAttendance(true);
@@ -556,7 +571,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         staffLeaveEntitle = humanResourceBean.fetchStaffLeaveEntitle(staff, LeaveType.Casual, fromDate, toDate);
 
-        if (staffLeaveEntitle> humanResourceBean.fetchStaffLeave(staff, LeaveType.Casual, fromDate, toDate)) {
+        if (staffLeaveEntitle > humanResourceBean.fetchStaffLeave(staff, LeaveType.Casual, fromDate, toDate)) {
             return LeaveType.CasualHalf;
         }
 
@@ -1053,7 +1068,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         List<ShiftTable> tmpShiftTable = new ArrayList<>();
         errorMessage = new ArrayList<>();
 
-//        System.err.println("1");
         if (shiftTables == null) {
             final String empty_List = "Empty List";
             UtilityController.addErrorMessage(empty_List);
@@ -1170,7 +1184,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         for (Staff s : staffs) {
-            calStaffLeaveFromLate(s);
+            calStaffLeaveFromLateIn(s, 10 * 60, 90 * 60, 3);
+            calStaffLeaveFromEarlyOut(s, 30 * 60, 90 * 60, 3);
         }
 
     }

@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
+import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
@@ -494,7 +495,7 @@ public class StaffSalaryController implements Serializable {
         ss.setCreater(getSessionController().getLoggedUser());
         ss.setStaffPaysheetComponent(getHumanResourceBean().getComponent(getCurrent().getStaff(), getSessionController().getLoggedUser(), PaysheetComponentType.No_Pay_Deduction));
         if (ss.getStaffPaysheetComponent() != null) {
-            double noPayTime = getHumanResourceBean().calculateNoPay(getWorkedFromDate(), getWorkedToDate(), getCurrent().getStaff());
+            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getWorkedFromDate(), getWorkedToDate());
             double salaryValue = 0;
 
             if (getCurrent().getStaffSalaryComponants() == null) {
@@ -513,9 +514,9 @@ public class StaffSalaryController implements Serializable {
             }
 
             //Need Calculation Sum
-            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * (noPayTime / (60 * 60 * 24)));
+            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * noPayCount);
             System.err.println("Sal Val " + salaryValue);
-            System.err.println("No Pa " + noPayTime);
+//            System.err.println("No Pa " + noPayTime);
         } else {
             return;
         }

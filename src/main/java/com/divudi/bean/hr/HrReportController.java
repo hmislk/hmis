@@ -502,6 +502,8 @@ public class HrReportController implements Serializable {
         this.staffShiftExtraDuties = staffShiftExtraDuties;
     }
 
+    private List<StaffShift> staffShiftsNoPay;
+
     public void createStaffWrokedDetail() {
         if (getReportKeyWord().getStaff() != null) {
             return;
@@ -510,6 +512,8 @@ public class HrReportController implements Serializable {
         staffShifts = humanResourceBean.fetchStaffShift(fromDate, toDate, getReportKeyWord().getStaff());
         staffShiftExtraDuties = humanResourceBean.fetchStaffShiftExtraDuty(fromDate, toDate, getReportKeyWord().getStaff());
     }
+    
+    
 
     public void createStaffLeaveDetail() {
         if (getReportKeyWord().getStaff() == null) {
@@ -1798,6 +1802,14 @@ public class HrReportController implements Serializable {
 
     public void setLieuUtilized(double lieuUtilized) {
         this.lieuUtilized = lieuUtilized;
+    }
+
+    public List<StaffShift> getStaffShiftsNoPay() {
+        return staffShiftsNoPay;
+    }
+
+    public void setStaffShiftsNoPay(List<StaffShift> staffShiftsNoPay) {
+        this.staffShiftsNoPay = staffShiftsNoPay;
     }
 
 }
