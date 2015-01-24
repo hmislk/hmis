@@ -174,7 +174,7 @@ public class StaffAdditionalFormController implements Serializable {
         String sql = "select c from "
                 + " StaffShift c"
                 + " where c.retired=false "
-                + " and (c)!=:cl "
+                + " and type(c)!=:cl "
                 + " and c.shift is not null "
                 //                + " and c.shift.dayType!=:dtp1 "
                 //                + " and c.shift.dayType!=:dtp2 "
@@ -341,25 +341,25 @@ public class StaffAdditionalFormController implements Serializable {
             return true;
         }
 
-        if (currentAdditionalForm.getTimes() == null) {
-            JsfUtil.addErrorMessage("Please Select Time Type");
-            return true;
-        }
+//        if (currentAdditionalForm.getTimes() == null) {
+//            JsfUtil.addErrorMessage("Please Select Time Type");
+//            return true;
+//        }
 
         if (date == null) {
             JsfUtil.addErrorMessage("Please Select Date");
             return true;
         }
 
-        if (getCurrentAdditionalForm().getTimes() != Times.All && currentAdditionalForm.getStaffShift() == null) {
-            JsfUtil.addErrorMessage("Please Select Staff Shiftt");
-            return true;
-        }
-
-        if (getCurrentAdditionalForm().getTimes() == Times.All && currentAdditionalForm.getStaffShift() != null) {
-            JsfUtil.addErrorMessage("Please Un Select Staff Shiftt");
-            return true;
-        }
+//        if (getCurrentAdditionalForm().getTimes() != Times.All && currentAdditionalForm.getStaffShift() == null) {
+//            JsfUtil.addErrorMessage("Please Select Staff Shiftt");
+//            return true;
+//        }
+//
+//        if (getCurrentAdditionalForm().getTimes() == Times.All && currentAdditionalForm.getStaffShift() != null) {
+//            JsfUtil.addErrorMessage("Please Un Select Staff Shiftt");
+//            return true;
+//        }
 
         //NEED To Check StaffSHift  if not selected is there any shift time on that day
         return false;

@@ -116,21 +116,19 @@ public class CommonFunctions {
         Calendar cal2 = Calendar.getInstance();
         cal1.setTime(to);
         cal2.setTime(frm);
-        
+
 //        System.err.println("cal 1 " + cal1.getTimeInMillis());
 //        System.err.println("cal 2 " + cal2.getTimeInMillis());
 //        System.err.println("Frm " + frm);
 //        System.err.println("TO " + to);
         Long inDays = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
 //        System.err.println("INDAYS " + inDays);
-        
+
         //we need to 1 because date rangs is missing one day as it between days
         inDays++;
         return inDays;
 
     }
-    
-
 
     public Date guessDob(String docStr) {
         //System.out.println("year string is " + docStr);
@@ -312,13 +310,13 @@ public class CommonFunctions {
         calendar.set(year, month, 1, 0, 0, 0);
         //System.err.println("DDDD " + calendar.getTime());
         calendar.add(Calendar.MONTH, 1);
-        calendar.add(Calendar.MILLISECOND, -1);
+        calendar.add(Calendar.SECOND, -1);
         //System.err.println("FFFF " + calendar.getTime());
         return calendar.getTime();
     }
 
     public Date getBeginningOfMonth(Date date) {
-        if(date==null){
+        if (date == null) {
             date = new Date();
         }
         Calendar calendar = Calendar.getInstance();
