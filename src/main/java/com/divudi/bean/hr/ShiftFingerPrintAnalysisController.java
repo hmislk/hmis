@@ -515,6 +515,12 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
     }
+    
+//    public List<StaffShift> fetchStaffShift(StaffShift referenceShift){
+//        String sql="";
+//        
+//        
+//    }
 
     public void calStaffLeaveFromEarlyOut(Staff staff, double fromTime, double toTime, double shiftCount) {
         List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);

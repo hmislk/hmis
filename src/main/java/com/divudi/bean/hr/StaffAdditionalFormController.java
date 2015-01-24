@@ -174,7 +174,7 @@ public class StaffAdditionalFormController implements Serializable {
         String sql = "select c from "
                 + " StaffShift c"
                 + " where c.retired=false "
-                + " and (c)!=:cl "
+                + " and type(c)!=:cl "
                 + " and c.shift is not null "
                 //                + " and c.shift.dayType!=:dtp1 "
                 //                + " and c.shift.dayType!=:dtp2 "
