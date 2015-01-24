@@ -63,10 +63,14 @@
                                 <p:column headerText="Day Type">
                                     #{ss.dayType}
                                 </p:column>
-                                <p:column headerText="Payment Allowed">
-                                    #{ss.lieuPaymentAllowed}
+                                <p:column headerText="Lieu Allowed">
+                                    #{ss.lieuAllowed}
                                 </p:column>
-
+                                <p:column headerText="Worked Time">
+                                     <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">                                        
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Extra Time">
                                     <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified}">                                        
                                         <f:converter converterId="longToTime"/>

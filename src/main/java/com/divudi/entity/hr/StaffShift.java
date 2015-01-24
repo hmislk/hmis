@@ -1,4 +1,4 @@
-
+l
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -359,19 +359,18 @@ public class StaffShift implements Serializable {
             lieuQty = getShift().isHalfShift() ? 0.5 : 1;
         }
 
-        if (getStartRecord() != null
-                && getEndRecord() != null
-                && getStartRecord().getRecordTimeStamp() != null
-                && getEndRecord().getRecordTimeStamp() != null) {
-
-            DayType dtp = getShift().getDayType();
-            if (dtp == DayType.DayOff
-                    || dtp == DayType.SleepingDay) {
-                lieuAllowed = true;
-                lieuPaymentAllowed = true;
-                lieuQty = getShift().isHalfShift() ? 0.5 : 1;
-            }
+//        if (getStartRecord() != null
+//                && getEndRecord() != null
+//                && getStartRecord().getRecordTimeStamp() != null
+//                && getEndRecord().getRecordTimeStamp() != null) {
+        DayType dtp = getShift().getDayType();
+        if (dtp == DayType.DayOff
+                || dtp == DayType.SleepingDay) {
+            lieuAllowed = true;
+            lieuPaymentAllowed = true;
+            lieuQty = getShift().isHalfShift() ? 0.5 : 1;
         }
+//        }
     }
 
     public Roster getRoster() {

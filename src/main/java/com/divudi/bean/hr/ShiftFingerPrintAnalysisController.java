@@ -1147,6 +1147,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         List<ShiftTable> tmpShiftTable = new ArrayList<>();
         errorMessage = new ArrayList<>();
 
+//        List<StaffShift> staffShifts = new ArrayList<>();
         if (shiftTables == null) {
             final String empty_List = "Empty List";
             UtilityController.addErrorMessage(empty_List);
@@ -1244,6 +1245,19 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.calLieu();
 
                 getStaffShiftFacade().edit(ss);
+
+                //Automatic No Pay Diduction
+                if (ss.getShift() != null
+                        && ss.getShift().getDayType() != DayType.DayOff
+                        && ss.getShift().getDayType() != DayType.SleepingDay
+                        && ss.getLeaveType() != null) {
+
+                    calStaffLeaveFromLateIn(ss, 10 * 60, 90 * 60, 3);
+                    calStaffLeaveFromLateIn(ss, 90 * 60, 600 * 60, 1);
+                    calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
+                    calStaffLeaveFromEarlyOut(ss, 90 * 60, 600 * 60, 1);
+                }
+
             }
 
             if (newSh.getStaffShift() != null && !newSh.getStaffShift().isEmpty()) {
@@ -1258,31 +1272,17 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             UtilityController.addSuccessMessage("All Record Successfully Updated");
         }
 
-//        List<Staff> staffs = humanResourceBean.fetchStaffFromShift(fromDate, toDate);
-        List<StaffShift> staffShifts = new ArrayList<>();
-        for (ShiftTable shiftTable : shiftTables) {
-            for (StaffShift ss : staffShifts) {
-                if (ss.getShift() != null
-                        && ss.getShift().getDayType() != DayType.DayOff
-                        && ss.getShift().getDayType() != DayType.SleepingDay
-                        && ss.getLeaveType() != null) {
+////        List<Staff> staffs = humanResourceBean.fetchStaffFromShift(fromDate, toDate);
+//        if (staffShifts.isEmpty()) {
+//            return;
+//        }
 
-                    staffShifts.add(ss);
-                }
-            }
-        }
-
-        if (staffShifts.isEmpty()) {
-            return;
-        }
-
-        for (StaffShift s : staffShifts) {
-            calStaffLeaveFromLateIn(s, 10 * 60, 90 * 60, 3);
-            calStaffLeaveFromLateIn(s, 90 * 60, 600 * 60, 1);
-            calStaffLeaveFromEarlyOut(s, 30 * 60, 90 * 60, 3);
-            calStaffLeaveFromEarlyOut(s, 90 * 60, 600 * 60, 1);
-        }
-
+//        for (StaffShift s : staffShifts) {
+//            calStaffLeaveFromLateIn(s, 10 * 60, 90 * 60, 3);
+//            calStaffLeaveFromLateIn(s, 90 * 60, 600 * 60, 1);
+//            calStaffLeaveFromEarlyOut(s, 30 * 60, 90 * 60, 3);
+//            calStaffLeaveFromEarlyOut(s, 90 * 60, 600 * 60, 1);
+//        }
     }
 
 //    public List<StaffShift> fetchStaffShift(StaffShift staffShift) {

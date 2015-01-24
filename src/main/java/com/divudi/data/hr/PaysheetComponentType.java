@@ -5,6 +5,7 @@
 package com.divudi.data.hr;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -82,6 +83,21 @@ public enum PaysheetComponentType {
 
     public PaysheetComponentType getParent(PaysheetComponentType tmp) {
         return tmp.parent;
+    }
+
+    public List<PaysheetComponentType> getSystemDefinedComponents() {
+
+        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.BasicSalary,
+            PaysheetComponentType.DayOffAllowance,
+            PaysheetComponentType.ExtraDuty,
+            PaysheetComponentType.No_Pay_Deduction,
+            PaysheetComponentType.OT,
+            PaysheetComponentType.PoyaAllowance,
+            PaysheetComponentType.AdjustmentAllowanceAdd,
+            PaysheetComponentType.AdjustmentAllowanceSub,
+            PaysheetComponentType.AdjustmentBasicAdd,
+            PaysheetComponentType.AdjustmentBasicSub});
+
     }
 
     public boolean is(PaysheetComponentType other) {

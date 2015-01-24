@@ -1881,7 +1881,7 @@ public class HumanResourceBean {
         String sql = "Select count(distinct(ss.shiftDate)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.lieuPaymentAllowed=true "
+                + " and ss.lieuAllowed=false "
                 + " and ss.dayType in :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
@@ -1898,7 +1898,7 @@ public class HumanResourceBean {
         String sql = "Select count(distinct(ss.shiftDate)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.lieuPaymentAllowed=true "
+//                + " and ss.lieuPaymentAllowed=true "
                 + " and ss.dayType in :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";

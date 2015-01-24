@@ -5,12 +5,10 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.data.dataStructure.OtNormalSpecial;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
