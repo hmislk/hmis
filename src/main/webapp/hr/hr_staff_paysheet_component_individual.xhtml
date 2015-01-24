@@ -83,14 +83,14 @@
                         <p:column headerText="Staff" filterBy="#{i.staff}"  
                                   filterMatchMode="contains" >
                             <h:outputLabel value="#{i.staff.person.name}" >
-                                
+
                             </h:outputLabel>
                         </p:column>
 
-                         <p:column headerText="Code" filterBy="#{i.staff}"  
+                        <p:column headerText="Code" filterBy="#{i.staff}"  
                                   filterMatchMode="contains" >
-                             <h:outputLabel value="#{i.staff.codeInterger}" >
-                                
+                            <h:outputLabel value="#{i.staff.codeInterger}" >
+
                             </h:outputLabel>
                         </p:column>
 
@@ -114,7 +114,10 @@
                                     </h:outputLabel>
                                 </f:facet>
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{i.paysheetComponent.name}"/>
+                                    <p:selectOneMenu value="#{i.paysheetComponent}">                        
+                                        <f:selectItems value="#{staffPaySheetComponentController.compnent}"
+                                                       var="ii"  itemLabel="#{ii.name}" itemValue="#{ii}"/>
+                                    </p:selectOneMenu>                                  
                                 </f:facet>
                             </p:cellEditor>
 

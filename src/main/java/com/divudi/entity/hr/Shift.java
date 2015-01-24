@@ -85,6 +85,26 @@ public class Shift implements Serializable {
     @ManyToOne
     Shift nextShift;
     boolean halfShift;
+    boolean firstShift;
+    boolean lastShift;
+
+    public boolean isFirstShift() {
+        return firstShift;
+    }
+
+    public void setFirstShift(boolean firstShift) {
+        this.firstShift = firstShift;
+    }
+
+    public boolean isLastShift() {
+        return lastShift;
+    }
+
+    public void setLastShift(boolean lastShift) {
+        this.lastShift = lastShift;
+    }
+    
+    
 
     public boolean isHalfShift() {
         return halfShift;

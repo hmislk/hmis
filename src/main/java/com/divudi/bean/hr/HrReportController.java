@@ -512,8 +512,6 @@ public class HrReportController implements Serializable {
         staffShifts = humanResourceBean.fetchStaffShift(fromDate, toDate, getReportKeyWord().getStaff());
         staffShiftExtraDuties = humanResourceBean.fetchStaffShiftExtraDuty(fromDate, toDate, getReportKeyWord().getStaff());
     }
-    
-    
 
     public void createStaffLeaveDetail() {
         if (getReportKeyWord().getStaff() == null) {
@@ -727,9 +725,9 @@ public class HrReportController implements Serializable {
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.staff=:stf "
-                //                + " and ((ss.startRecord.recordTimeStamp is not null "
-                //                + " and ss.endRecord.recordTimeStamp is not null) "
-                //                + " or (ss.leaveType is not null) ) "
+                + " and ((ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null) "
+//                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);

@@ -234,7 +234,7 @@ public class StaffBasicController implements Serializable {
         String sql = "Select ss from StaffPaysheetComponent ss"
                 + " where ss.retired=false"
                 + "  and ss.paysheetComponent.componentType=:tp"
-                + " and ss.staff=:st"
+//                + " and ss.staff=:st"
                 + " and ss.fromDate >=:fd"
                 + " and ss.toDate <=:td ";
         //and (s.toDate>= :td or s.toDate is null)
@@ -291,7 +291,9 @@ public class StaffBasicController implements Serializable {
     public List<StaffPaysheetComponent> getItems2() {
         if (items == null) {
             String sql = "Select s from StaffPaysheetComponent s"
-                    + " where s.retired=false and s.paysheetComponent.componentType=:tp";
+                    + " where s.retired=false "
+                    + " and s.paysheetComponent.componentType=:tp "
+                    + " order by s.staff.codeInterger";
             //and (s.toDate>= :td or s.toDate is null)
             HashMap hm = new HashMap();
             // hm.put("td", getToDate());

@@ -129,7 +129,11 @@
                             </p:commandButton>
                         </p:column>  
 
-
+                        <p:column style="width:6%">  
+                            <p:commandButton ajax="false" value="View" onclick="onSubmitButton();">
+                                <f:setPropertyActionListener target="#{staffBasicController.current}" value="#{i}" />
+                            </p:commandButton>
+                        </p:column> 
                     </p:dataTable>
                 </p:panel>
             </h:form>

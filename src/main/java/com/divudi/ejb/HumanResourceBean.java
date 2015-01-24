@@ -478,6 +478,7 @@ public class HumanResourceBean {
         if (stf != null) {
             return stf;
         }
+        
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(tmp.getShiftDate());
@@ -488,7 +489,8 @@ public class HumanResourceBean {
                 + " where s.retired=false"
                 + " and s.staff=:st "
                 + " and s.shiftDate=:date "
-                + " and s.shift=:preSh";
+                + " and s.shift=:preSh "
+                + " and s.shift.lastShift=true";
         hm = new HashMap();
         hm.put("st", tmp.getStaff());
         hm.put("date", beforDate);
@@ -694,7 +696,8 @@ public class HumanResourceBean {
                 + " where s.retired=false "
                 + " and s.staff=:st "
                 + " and s.shiftDate=:date  "
-                + " and s.shift=:frwSh";
+                + " and s.shift=:frwSh"
+                + " and s.shift.firstShift=true";
         hm = new HashMap();
         hm.put("st", tmp.getStaff());
         hm.put("date", afterDate);
