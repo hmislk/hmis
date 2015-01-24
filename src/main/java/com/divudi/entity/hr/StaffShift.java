@@ -228,7 +228,7 @@ public class StaffShift implements Serializable {
     public void resetLeaveData(LeaveType leaveType) {
         if (leaveType == LeaveType.Lieu || leaveType == LeaveType.LieuHalf) {
             lieuQty = 0;
-            lieuPaymentAllowed = false;
+//            lieuPaymentAllowed = false;
         }
 
         switch (leaveType) {
@@ -364,8 +364,9 @@ public class StaffShift implements Serializable {
                 && getStartRecord().getRecordTimeStamp() != null
                 && getEndRecord().getRecordTimeStamp() != null) {
 
-            DayType dayType = getShift().getDayType();
-            if (dayType == DayType.DayOff) {
+            DayType dtp = getShift().getDayType();
+            if (dtp == DayType.DayOff
+                    || dtp == DayType.SleepingDay) {
                 lieuAllowed = true;
                 lieuPaymentAllowed = true;
                 lieuQty = getShift().isHalfShift() ? 0.5 : 1;
