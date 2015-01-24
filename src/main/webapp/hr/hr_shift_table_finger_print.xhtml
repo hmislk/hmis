@@ -33,20 +33,21 @@
                     <f:ajax event="change" execute="@this" render="lst" 
                             listener="#{shiftFingerPrintAnalysisController.selectRosterLstener()}" />
                 </p:selectOneMenu>
-                <p:commandButton value="Fill"
-                                 process="@this frmDate toDate roster"
-                                 update="lst"
-                                 actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                 action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
-                                 onclick="onSubmitButton();" /> 
+                <h:panelGroup>
+                    <p:commandButton value="Fill"
+                                     process="@this frmDate toDate roster"
+                                     update="lst"
+                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                     action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
+                                     onclick="onSubmitButton();" /> 
 
-                <p:commandButton value="Fill Additional Only"
-                                 process="@this frmDate toDate roster"
-                                 update="lst"
-                                 actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                 action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
-                                 onclick="onSubmitButton();" /> 
-
+                    <p:commandButton value="Fill Additional Only"
+                                     process="@this frmDate toDate roster"
+                                     update="lst"
+                                     actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
+                                     action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
+                                     onclick="onSubmitButton();" /> 
+                </h:panelGroup>
 
                 <p:commandButton value="SAVE"
                                  process="lst"

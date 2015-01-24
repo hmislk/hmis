@@ -29,7 +29,7 @@
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Return Item" 
                                              action="pharmacy_bill_return_bht_issue"   
-                                             disabled="#{pharmacyBillSearch.bill.cancelled eq true}" onclick="onSubmitButton();" >                                
+                                             disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}" onclick="onSubmitButton();" >                                
                                 <f:setPropertyActionListener value="#{pharmacyBillSearch.bill}" 
                                                              target="#{bhtIssueReturnController.bill}"  />
                             </p:commandButton>

@@ -25,6 +25,7 @@ public enum LeaveType {
     Maternity1stHalf(Maternity1st), //For Saturday
     Maternity2ndHalf(Maternity2nd), //For Saturday    
     DutyLeave(true),
+    DutyLeaveHalf(DutyLeave, true),
     Lieu(true),
     LieuHalf(Lieu, true),
     No_Pay(true),
@@ -107,6 +108,41 @@ public enum LeaveType {
             if (other == t) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public List<LeaveType> getFullDayLeavs() {
+        List<LeaveType> list = new ArrayList<>();
+        list.add(LeaveType.Annual);
+        list.add(LeaveType.Casual);
+        list.add(LeaveType.DutyLeave);
+        list.add(LeaveType.Lieu);
+        list.add(LeaveType.Maternity1st);
+        list.add(LeaveType.Maternity2nd);
+        list.add(LeaveType.Medical);
+        list.add(LeaveType.No_Pay);
+        return list;
+    }
+
+    public boolean isFullDayLeave() {
+        switch (this) {
+            case Annual:
+                return true;
+            case Casual:
+                return true;
+            case DutyLeave:
+                return true;
+            case Lieu:
+                return true;
+            case Medical:
+                return true;
+            case Maternity1st:
+                return true;
+            case Maternity2nd:
+                return true;
+            case No_Pay:
+                return true;
         }
         return false;
     }

@@ -581,6 +581,25 @@ public class StaffController implements Serializable {
         }
 
     }
+    
+      public void resetLateInEarlyOutLeaveAllowed() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select c from Staff c "
+                + " where c.retired=false "
+                + " and type(c)!=:class"
+                + " order by c.person.name";
+
+        hm.put("class", Consultant.class);
+        selectedItems = getFacade().findBySQL(sql, hm);
+
+        for (Staff stf : selectedItems) {
+            stf.setAllowedEarlyOutLeave(true);
+            stf.setAllowedLateInLeave(true);
+            getFacade().edit(stf);
+        }
+
+    }
 
     public List<Staff> completeItems(String qry) {
         HashMap hm = new HashMap();

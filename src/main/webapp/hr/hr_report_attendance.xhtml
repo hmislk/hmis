@@ -13,7 +13,7 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                
+
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
@@ -45,6 +45,23 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
+                                <f:facet name="header">
+                                    <h:outputLabel style="text-align: center" value="  Attendence Report : "  />
+                                    <h:outputLabel/>
+                                     <h:outputLabel/>
+                                    <h:outputLabel value="  From : "  />
+                                    <h:outputLabel  value="#{hrReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                                    </h:outputLabel>
+                                     <h:outputLabel/>
+                                      <h:outputLabel/>
+                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel  value="#{hrReportController.toDate}">
+                                        <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value=""><br/>
+                                    </h:outputLabel>
+                                </f:facet>
                                 <p:column headerText="Emp No">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Emp No" ></p:outputLabel>
@@ -92,7 +109,7 @@
                                         <p:outputLabel value="In Checked" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="dd/MM/yy kk:mm:ss a"/>
                                     </h:outputLabel>  
                                 </p:column>                           
                                 <p:column headerText="Out Checked">
@@ -100,7 +117,7 @@
                                         <p:outputLabel value="Out Checked" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="dd/MM/yy kk:mm:ss a"/>
                                     </h:outputLabel>  
                                 </p:column>  
                                 <p:column headerText="Worked Time Within Shift Varified">
@@ -108,7 +125,7 @@
                                         <p:outputLabel value="Worked Time Within Shift Varified" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
-                                      <f:converter converterId="longToTime"/>
+                                        <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column> 
                                 <p:column headerText="Worked Time Outside Shift Varified">
