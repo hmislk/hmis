@@ -22,7 +22,8 @@
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
 
                         <h:panelGrid id="gpSelect" columns="1" styleClass="alignTop" >
-                            <p:commandButton value="Reset" action="#{staffController.resetWorkingHour()}" ajax="false" disabled="false"/>
+                            <p:commandButton value="Reset Working Hour" action="#{staffController.resetWorkingHour()}" ajax="false" />
+                            <p:commandButton value="Reset Late and Early Allowed" action="#{staffController.resetLateInEarlyOutLeaveAllowed()}" ajax="false" />
                             <p:panel >
 
                                 <h:panelGrid id="gpSelectText" >
@@ -254,12 +255,16 @@
                                             <p:inputText autocomplete="off"  value="#{staffController.current.bankAccount.accountNo}"  />
                                         </h:panelGrid>
                                     </p:tab>
-                                       <p:tab title="Working Time">
+                                    <p:tab title="Working Time">
                                         <h:panelGrid columns="2">
                                             <p:outputLabel value="Working Time Per Week in Hour (For Over Time)"/>                                                                                     
                                             <p:inputText autocomplete="off"  value="#{staffController.current.workingTimeForOverTimePerWeek}"  />
                                             <p:outputLabel value="Working Time Per Week in Hour (For No Pay)"/>                                                                                     
                                             <p:inputText autocomplete="off"  value="#{staffController.current.workingTimeForNoPayPerWeek}"  />
+                                            <p:outputLabel value="Allowed Late In Leave"/>
+                                            <p:selectBooleanCheckbox value="#{staffController.current.allowedLateInLeave}" />
+                                            <p:outputLabel value="Allowed Early Out Leave"/>
+                                            <p:selectBooleanCheckbox value="#{staffController.current.allowedEarlyOutLeave}" />
                                         </h:panelGrid>
                                     </p:tab>
 

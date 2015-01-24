@@ -41,6 +41,10 @@ public class SalaryCycle implements Serializable {
     private Date extraDutyFromDate;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date extraDutyToDate;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date workedToDate;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date workedFromDate;
     private int salaryYear;
     private int salaryMonth;
     private int salaryDate;
@@ -57,6 +61,24 @@ public class SalaryCycle implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+
+    public Date getWorkedToDate() {
+        return workedToDate;
+    }
+
+    public void setWorkedToDate(Date workedToDate) {
+        this.workedToDate = workedToDate;
+    }
+
+    public Date getWorkedFromDate() {
+        return workedFromDate;
+    }
+
+    public void setWorkedFromDate(Date workedFromDate) {
+        this.workedFromDate = workedFromDate;
+    }
+    
+    
 
     public Long getId() {
 
@@ -92,7 +114,6 @@ public class SalaryCycle implements Serializable {
         return "com.divudi.data.hr.SalaryCycle[ id=" + id + " ]";
     }
 
-    
     public int getSalaryYear() {
         return salaryYear;
     }
@@ -213,7 +234,4 @@ public class SalaryCycle implements Serializable {
         this.overTimeToDate = overTimeToDate;
     }
 
-   
-    
-    
 }

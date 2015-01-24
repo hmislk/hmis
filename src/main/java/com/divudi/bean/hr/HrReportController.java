@@ -23,6 +23,7 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.StaffLeave;
+import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftHistory;
@@ -118,9 +119,11 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createFingerPrintQuary(hm);
-        sql += " and ss.fingerPrintRecordType=:ftp";
+        sql += " and ss.fingerPrintRecordType=:ftp "
+                + " and ss.verifiedRecord.staffShift is not null ";
         hm.put("ftp", FingerPrintRecordType.Logged);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -140,13 +143,41 @@ public class HrReportController implements Serializable {
         this.staffs = staffs;
     }
 
-    public void createFingerPrintRecordVarified() {
+    public void createFingerPrintRecordVarifiedAll() {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createFingerPrintQuary(hm);
-        sql += " and ss.fingerPrintRecordType=:ftp";
+        sql += " and ss.fingerPrintRecordType=:ftp "
+                + " and ss.staffShift is not null ";
         hm.put("ftp", FingerPrintRecordType.Varified);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void createFingerPrintRecordVarifiedWithLogged() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createFingerPrintQuary(hm);
+        sql += " and ss.fingerPrintRecordType=:ftp "
+                + " and ss.staffShift is not null "
+                + " and ss.loggedRecord is not null ";
+        hm.put("ftp", FingerPrintRecordType.Varified);
+//        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void createFingerPrintRecordVarifiedWithOutLogged() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createFingerPrintQuary(hm);
+        sql += " and ss.fingerPrintRecordType=:ftp  "
+                + " and ss.staffShift is not null "
+                + " and ss.loggedRecord is null ";
+        hm.put("ftp", FingerPrintRecordType.Varified);
+//        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -155,9 +186,10 @@ public class HrReportController implements Serializable {
         String sql = "";
         sql = "select ss from FingerPrintRecord ss "
                 + " where ss.retired=false "
-                + " and ss.staffShift is null "
+                + " and ss.verifiedRecord.staffShift is null "
                 + " and ss.recordTimeStamp between :frm  and :to "
                 + " and ss.fingerPrintRecordType=:ftp";
+
         hm.put("ftp", FingerPrintRecordType.Logged);
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -187,7 +219,7 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        sql += " order by ss.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
@@ -414,7 +446,131 @@ public class HrReportController implements Serializable {
 
         }
 
+        sql += " order by ss.staff.codeInterger";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    private List<StaffLeave> staffLeavesAnnual;
+    private List<StaffLeave> staffLeavesCashual;
+    private List<StaffLeave> staffLeavesNoPay;
+    private List<StaffLeave> staffLeavesDutyLeave;
+    private List<StaffLeave> staffLeavesMedical;
+    private List<StaffLeave> staffLeavesMaternity1st;
+    private List<StaffLeave> staffLeavesMaternity2nd;
+    private List<StaffLeave> staffLeavesLieu;
+
+    double annualEntitle;
+    double annualUtilized;
+    double casualEntitle;
+    double casualUtilized;
+    double nopayEntitle;
+    double nopayUtilized;
+    double dutyLeaveEntitle;
+    double dutyLeaveUtilized;
+    private double medicalEntitle;
+    private double medicalUtilized;
+    private double maternity1Entitle;
+    private double maternity1Utilized;
+    private double maternity2Entitle;
+    private double maternity2Utilized;
+    private double lieuEntitle;
+    private double lieuUtilized;
+
+    public double getAnnualEntitle() {
+        return annualEntitle;
+    }
+
+    public void setAnnualEntitle(double annualEntitle) {
+        this.annualEntitle = annualEntitle;
+    }
+
+    public double getAnnualUtilized() {
+        return annualUtilized;
+    }
+
+    public void setAnnualUtilized(double annualUtilized) {
+        this.annualUtilized = annualUtilized;
+    }
+
+    List<StaffShift> staffShiftExtraDuties;
+
+    public List<StaffShift> getStaffShiftExtraDuties() {
+        return staffShiftExtraDuties;
+    }
+
+    public void setStaffShiftExtraDuties(List<StaffShift> staffShiftExtraDuties) {
+        this.staffShiftExtraDuties = staffShiftExtraDuties;
+    }
+
+    private List<StaffShift> staffShiftsNoPay;
+
+    public void createStaffWrokedDetail() {
+        if (getReportKeyWord().getStaff() != null) {
+            return;
+        }
+
+        staffShifts = humanResourceBean.fetchStaffShift(fromDate, toDate, getReportKeyWord().getStaff());
+        staffShiftExtraDuties = humanResourceBean.fetchStaffShiftExtraDuty(fromDate, toDate, getReportKeyWord().getStaff());
+    }
+    
+    
+
+    public void createStaffLeaveDetail() {
+        if (getReportKeyWord().getStaff() == null) {
+            return;
+        }
+
+        annualEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
+        annualUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Annual, fromDate, toDate);
+        staffLeavesAnnual = createStaffLeave(LeaveType.Annual, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+
+        casualEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Casual, fromDate, toDate);
+        casualUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Casual, fromDate, toDate);
+        staffLeavesCashual = createStaffLeave(LeaveType.Casual, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+
+        nopayEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.No_Pay, fromDate, toDate);
+        nopayUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.No_Pay, fromDate, toDate);
+        staffLeavesNoPay = createStaffLeave(LeaveType.No_Pay, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+
+        dutyLeaveEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.DutyLeave, fromDate, toDate);
+        dutyLeaveUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.DutyLeave, fromDate, toDate);
+        staffLeavesDutyLeave = createStaffLeave(LeaveType.DutyLeave, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+
+        medicalEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Medical, fromDate, toDate);
+        medicalUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Medical, fromDate, toDate);
+        staffLeavesMedical = createStaffLeave(LeaveType.Medical, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+
+        maternity1Entitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Maternity1st, fromDate, toDate);
+        maternity1Utilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Maternity1st, fromDate, toDate);
+        staffLeavesMaternity1st = createStaffLeave(LeaveType.Maternity1st, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+
+        maternity2Entitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Maternity2nd, fromDate, toDate);
+        maternity2Utilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Maternity2nd, fromDate, toDate);
+        staffLeavesMaternity2nd = createStaffLeave(LeaveType.Maternity2nd, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+
+        lieuEntitle = humanResourceBean.fetchStaffLeaveEntitle(getReportKeyWord().getStaff(), LeaveType.Lieu, fromDate, toDate);
+        lieuUtilized = humanResourceBean.fetchStaffLeave(getReportKeyWord().getStaff(), LeaveType.Lieu, fromDate, toDate);
+        staffLeavesLieu = createStaffLeave(LeaveType.Lieu, getReportKeyWord().getStaff(), getFromDate(), getToDate());
+    }
+
+    public List<StaffLeave> createStaffLeave(LeaveType leaveType, Staff staff, Date fromDate, Date toDate) {
+        if (leaveType == null || staff == null) {
+            return null;
+        }
+
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffLeave ss "
+                + " where ss.retired=false "
+                + " and ss.leaveDate between :frm  and :to "
+                + " and ss.staff=:stf"
+                + " and ss.leaveType in :ltp ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+
+        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
     List<StaffLeaveBallance> staffLeaveBallances;
@@ -469,7 +625,7 @@ public class HrReportController implements Serializable {
         }
 
         sql += " group by ss.staff,ss.leaveType"
-                + " order by ss.staff.person.name,ss.leaveType ";
+                + " order by ss.staff.codeInterger,ss.leaveType ";
 
         staffLeaveBallances = (List<StaffLeaveBallance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
@@ -558,7 +714,7 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        sql += " order by ss.staff.department.name";
+        sql += " order by ss.codeInterger";
 
         return staffFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
@@ -1159,6 +1315,7 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " and ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null ";
+        sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
@@ -1170,6 +1327,7 @@ public class HrReportController implements Serializable {
                 + " ss.endRecord.allowedExtraDuty=true )";
         sql += " and ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null ";
+        sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
@@ -1179,6 +1337,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
         sql += " and ss.shiftStartTime  > ss.startRecord.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger ";
 //        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
@@ -1189,6 +1348,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
         sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger ";
 //        sql += " order by ss.shift,ss.shiftDate";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
@@ -1357,7 +1517,7 @@ public class HrReportController implements Serializable {
                     + " or (ss.earlyOutVarified<= :toTime )) ";
             hm.put("toTime", getReportKeyWord().getTo() * 60);
         }
-//        sql += " order by ss.shift,ss.shiftDate";
+        sql += " order by ss.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
@@ -1367,7 +1527,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
         sql += " and ss.shiftEndTime > ss.endRecord.recordTimeStamp";
-//        sql += " order by ss.shift,ss.shiftDate";
+        sql += " order by ss.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
@@ -1377,7 +1537,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
         sql += " and ss.shiftEndTime < ss.endRecord.recordTimeStamp";
-//        sql += " order by ss.shift,ss.shiftDate";
+        sql += " order by ss.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
@@ -1466,6 +1626,190 @@ public class HrReportController implements Serializable {
 
     public void setMonthEndRecords(List<MonthEndRecord> monthEndRecords) {
         this.monthEndRecords = monthEndRecords;
+    }
+
+    public List<StaffLeave> getStaffLeavesAnnual() {
+        return staffLeavesAnnual;
+    }
+
+    public void setStaffLeavesAnnual(List<StaffLeave> staffLeavesAnnual) {
+        this.staffLeavesAnnual = staffLeavesAnnual;
+    }
+
+    public List<StaffLeave> getStaffLeavesCashual() {
+        return staffLeavesCashual;
+    }
+
+    public void setStaffLeavesCashual(List<StaffLeave> staffLeavesCashual) {
+        this.staffLeavesCashual = staffLeavesCashual;
+    }
+
+    public List<StaffLeave> getStaffLeavesNoPay() {
+        return staffLeavesNoPay;
+    }
+
+    public void setStaffLeavesNoPay(List<StaffLeave> staffLeavesNoPay) {
+        this.staffLeavesNoPay = staffLeavesNoPay;
+    }
+
+    public List<StaffLeave> getStaffLeavesDutyLeave() {
+        return staffLeavesDutyLeave;
+    }
+
+    public void setStaffLeavesDutyLeave(List<StaffLeave> staffLeavesDutyLeave) {
+        this.staffLeavesDutyLeave = staffLeavesDutyLeave;
+    }
+
+    public double getCasualEntitle() {
+        return casualEntitle;
+    }
+
+    public void setCasualEntitle(double casualEntitle) {
+        this.casualEntitle = casualEntitle;
+    }
+
+    public double getCasualUtilized() {
+        return casualUtilized;
+    }
+
+    public void setCasualUtilized(double casualUtilized) {
+        this.casualUtilized = casualUtilized;
+    }
+
+    public double getNopayEntitle() {
+        return nopayEntitle;
+    }
+
+    public void setNopayEntitle(double nopayEntitle) {
+        this.nopayEntitle = nopayEntitle;
+    }
+
+    public double getNopayUtilized() {
+        return nopayUtilized;
+    }
+
+    public void setNopayUtilized(double nopayUtilized) {
+        this.nopayUtilized = nopayUtilized;
+    }
+
+    public double getDutyLeaveEntitle() {
+        return dutyLeaveEntitle;
+    }
+
+    public void setDutyLeaveEntitle(double dutyLeaveEntitle) {
+        this.dutyLeaveEntitle = dutyLeaveEntitle;
+    }
+
+    public double getDutyLeaveUtilized() {
+        return dutyLeaveUtilized;
+    }
+
+    public void setDutyLeaveUtilized(double dutyLeaveUtilized) {
+        this.dutyLeaveUtilized = dutyLeaveUtilized;
+    }
+
+    public List<StaffLeave> getStaffLeavesMedical() {
+        return staffLeavesMedical;
+    }
+
+    public void setStaffLeavesMedical(List<StaffLeave> staffLeavesMedical) {
+        this.staffLeavesMedical = staffLeavesMedical;
+    }
+
+    public List<StaffLeave> getStaffLeavesMaternity1st() {
+        return staffLeavesMaternity1st;
+    }
+
+    public void setStaffLeavesMaternity1st(List<StaffLeave> staffLeavesMaternity1st) {
+        this.staffLeavesMaternity1st = staffLeavesMaternity1st;
+    }
+
+    public List<StaffLeave> getStaffLeavesMaternity2nd() {
+        return staffLeavesMaternity2nd;
+    }
+
+    public void setStaffLeavesMaternity2nd(List<StaffLeave> staffLeavesMaternity2nd) {
+        this.staffLeavesMaternity2nd = staffLeavesMaternity2nd;
+    }
+
+    public List<StaffLeave> getStaffLeavesLieu() {
+        return staffLeavesLieu;
+    }
+
+    public void setStaffLeavesLieu(List<StaffLeave> staffLeavesLieu) {
+        this.staffLeavesLieu = staffLeavesLieu;
+    }
+
+    public double getMedicalEntitle() {
+        return medicalEntitle;
+    }
+
+    public void setMedicalEntitle(double medicalEntitle) {
+        this.medicalEntitle = medicalEntitle;
+    }
+
+    public double getMedicalUtilized() {
+        return medicalUtilized;
+    }
+
+    public void setMedicalUtilized(double medicalUtilized) {
+        this.medicalUtilized = medicalUtilized;
+    }
+
+    public double getMaternity1Entitle() {
+        return maternity1Entitle;
+    }
+
+    public void setMaternity1Entitle(double maternity1Entitle) {
+        this.maternity1Entitle = maternity1Entitle;
+    }
+
+    public double getMaternity1Utilized() {
+        return maternity1Utilized;
+    }
+
+    public void setMaternity1Utilized(double maternity1Utilized) {
+        this.maternity1Utilized = maternity1Utilized;
+    }
+
+    public double getMaternity2Entitle() {
+        return maternity2Entitle;
+    }
+
+    public void setMaternity2Entitle(double maternity2Entitle) {
+        this.maternity2Entitle = maternity2Entitle;
+    }
+
+    public double getMaternity2Utilized() {
+        return maternity2Utilized;
+    }
+
+    public void setMaternity2Utilized(double maternity2Utilized) {
+        this.maternity2Utilized = maternity2Utilized;
+    }
+
+    public double getLieuEntitle() {
+        return lieuEntitle;
+    }
+
+    public void setLieuEntitle(double lieuEntitle) {
+        this.lieuEntitle = lieuEntitle;
+    }
+
+    public double getLieuUtilized() {
+        return lieuUtilized;
+    }
+
+    public void setLieuUtilized(double lieuUtilized) {
+        this.lieuUtilized = lieuUtilized;
+    }
+
+    public List<StaffShift> getStaffShiftsNoPay() {
+        return staffShiftsNoPay;
+    }
+
+    public void setStaffShiftsNoPay(List<StaffShift> staffShiftsNoPay) {
+        this.staffShiftsNoPay = staffShiftsNoPay;
     }
 
 }

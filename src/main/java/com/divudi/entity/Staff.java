@@ -128,6 +128,26 @@ public class Staff implements Serializable {
     double workingTimeForOverTimePerWeek;
     double workingTimeForNoPayPerWeek;
     Integer codeInterger;
+    boolean allowedLateInLeave=true;
+    boolean allowedEarlyOutLeave=true;
+
+    public boolean isAllowedLateInLeave() {
+        return allowedLateInLeave;
+    }
+
+    public void setAllowedLateInLeave(boolean allowedLateInLeave) {
+        this.allowedLateInLeave = allowedLateInLeave;
+    }
+
+    public boolean isAllowedEarlyOutLeave() {
+        return allowedEarlyOutLeave;
+    }
+
+    public void setAllowedEarlyOutLeave(boolean allowedEarlyOutLeave) {
+        this.allowedEarlyOutLeave = allowedEarlyOutLeave;
+    }
+    
+    
 
     public double getWorkingTimeForNoPayPerWeek() {
         return workingTimeForNoPayPerWeek;

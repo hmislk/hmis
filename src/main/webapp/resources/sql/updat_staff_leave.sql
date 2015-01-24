@@ -1,0 +1,1 @@
+update staffLeave set dtype='StaffLeave';

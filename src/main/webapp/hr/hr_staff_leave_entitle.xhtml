@@ -15,7 +15,9 @@
                         <h:panelGrid columns="2">                            
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
-                            <h:outputLabel value="Leave Type"/>
+                            <h:outputLabel value="Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.date}"/>
+                            <h:outputLabel value="Leave Type : "/>
                             <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
                                 <f:selectItem itemLabel="Select Leave Type"/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
@@ -30,10 +32,18 @@
                         </h:panelGrid>
                     </p:panel>
                     <p:panel header="Search Forms">
-                        <h:panelGrid columns="3">                           
+                        <h:panelGrid columns="2">                           
                             <h:outputLabel value="Staff : "/>
-                            <hr:completeStaff value="#{staffLeaveEntitleController.staff}"/>                                      
+                            <hr:completeStaff value="#{staffLeaveEntitleController.staff}"/>   
+                            <h:outputLabel value="Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.date}"/>    
+                            <h:outputLabel value="Leave Type : "/>
+                            <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}"   >
+                                <f:selectItem itemLabel="Select Leave Type"/>
+                                <f:selectItems value="#{enumController.leaveType}"/>
+                            </p:selectOneMenu>
                             <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createItems()}" />                            
+                            <p:commandButton ajax="false" value="Reset " action="#{staffLeaveEntitleController.resetDate()}" />                            
                         </h:panelGrid>
                         <p:dataTable value="#{staffLeaveEntitleController.selectedItems}" var="add" 
                                      scrollable="true"

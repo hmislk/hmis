@@ -26,22 +26,14 @@
                         <p:calendar   value="#{staffSalaryController.salaryToDate}" pattern="dd MMMM yyyy" >                            
                             <f:ajax event="dateSelect" execute="@this" />
                         </p:calendar>    
-                        <h:outputLabel value="OT From Date "/>
-                        <p:calendar value="#{staffSalaryController.overTimeFromDate}" pattern="dd MMMM yyyy" >                            
+                        <h:outputLabel value="Worked From Date "/>
+                        <p:calendar value="#{staffSalaryController.workedFromDate}" pattern="dd MMMM yyyy" >                            
                             <f:ajax event="dateSelect" execute="@this" />
                         </p:calendar> 
-                        <h:outputLabel value="OT To Date "/>
-                        <p:calendar   value="#{staffSalaryController.overTimeToDate}" pattern="dd MMMM yyyy" >                            
+                        <h:outputLabel value="Worked To Date "/>
+                        <p:calendar   value="#{staffSalaryController.workedToDate}" pattern="dd MMMM yyyy" >                            
                             <f:ajax event="dateSelect" execute="@this" />
-                        </p:calendar>   
-                        <h:outputLabel value="Extra Duty From Date "/>
-                        <p:calendar value="#{staffSalaryController.extraDutyFromDate}" pattern="dd MMMM yyyy" >                            
-                            <f:ajax event="dateSelect" execute="@this" />
-                        </p:calendar> 
-                        <h:outputLabel value="Extra Duty To Date "/>
-                        <p:calendar   value="#{staffSalaryController.extraDutyToDate}" pattern="dd MMMM yyyy" >                            
-                            <f:ajax event="dateSelect" execute="@this" />
-                        </p:calendar>   
+                        </p:calendar>                       
                     </h:panelGrid>
                 </p:tab>
                 <p:tab title="Staff List" >
@@ -138,12 +130,7 @@
                                              actionListener="#{staffSalaryController.deleteSalaryComponent(i)}" onclick="onSubmitButton();">                              
                             </p:commandButton>                          
                         </p:column>
-
-                        <p:column>
-                            <p:commandButton ajax="false" value="Remove" action="#{staffSalaryController.remove}" onclick="onSubmitButton();" >
-                                <f:setPropertyActionListener value="#{i}" target="#{staffSalaryController.current}"/>
-                            </p:commandButton>
-                        </p:column>
+                        
                     </p:dataTable>
                 </p:tab>
             </p:tabView>
