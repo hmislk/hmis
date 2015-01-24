@@ -7,6 +7,7 @@ package com.divudi.entity.hr;
 
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -61,6 +62,19 @@ public class SalaryCycle implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    
+    String transName;
+
+    public String getTransName() {
+        transName = new SimpleDateFormat("yyyy-MM-dd").format(salaryFromDate) + " to " + new SimpleDateFormat("yyyy-MM-dd").format(salaryToDate);
+        return transName;
+    }
+
+    public void setTransName(String transName) {
+        this.transName = transName;
+    }
+    
+    
 
     public Date getWorkedToDate() {
         return workedToDate;

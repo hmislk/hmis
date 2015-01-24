@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml" 
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+        <h:form>
+            <p:selectOneMenu id="advanced" 
+                             value="#{salaryCycleController.current}" 
+                             converter="salaryCycleConverter" 
+                             effect="fade" var="t" 
+                             filter="true" 
+                             filterMatchMode="startsWith">
+
+                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
+                               var="theme" 
+                               itemLabel="#{theme.transName}" 
+                               itemValue="#{theme}" ></f:selectItems>
+
+                <p:column style="width:10%" headerText="Name">
+                    <h:outputText value="#{t.transName}" />
+                </p:column>
+
+                <p:column headerText="Year">
+                    <h:outputText value="#{t.salaryYear}" />
+                </p:column>
+                <p:column headerText="Month">
+                    <h:outputText value="#{t.salaryMonth}" />
+                </p:column>
+            </p:selectOneMenu>
+
+            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffAndSalaryComponents()}" ></p:commandButton>
+
+            <p:dataTable value="#{salaryCycleController.staffAnsAndSalarySalaryComponents}" var="scc" >
+
+                <p:column headerText="Name" >
+                    <h:outputLabel value="#{scc.staff.person.nameWithTitle}" ></h:outputLabel>
+                </p:column>
+
+                <p:columns value="#{scc.staffSalaryComponants}" 
+                           var="ssc" 
+                           columnIndexVar="colIndex" >
+                    <h:outputText value="#{ssc.salaryValue}" />
+                </p:columns>
+
+            </p:dataTable>
+
+
+        </h:form>        
+    </ui:define>
+
+</ui:composition>
