@@ -130,8 +130,19 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             return;
         }
 
-        staffShift.getStartRecord().setRecordTimeStamp(staffShift.getShiftStartTime());
+        if (staffShift.getShift() != null
+                && staffShift.getLeaveType() != null
+                && !staffShift.getLeaveType().isFullDayLeave()
+                && staffShift.getEndRecord().getRecordTimeStamp() != null) {
 
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(staffShift.getEndRecord().getRecordTimeStamp());
+            cal.add(Calendar.HOUR, 0 - (int) staffShift.getShift().getLeaveHourHalf());
+            staffShift.getStartRecord().setRecordTimeStamp(cal.getTime());
+            return;
+        }
+
+        staffShift.getStartRecord().setRecordTimeStamp(staffShift.getShiftStartTime());
 //        fingerPrintRecordFacade.edit(staffShift.getStartRecord());
 //        staffShiftFacade.edit(staffShift);
     }
@@ -144,6 +155,19 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         if (staffShift.getEndRecord().getLoggedRecord() != null) {
             return;
         }
+
+        if (staffShift.getShift() != null
+                && staffShift.getLeaveType() != null
+                && !staffShift.getLeaveType().isFullDayLeave()
+                && staffShift.getStartRecord().getRecordTimeStamp() != null) {
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(staffShift.getStartRecord().getRecordTimeStamp());
+            cal.add(Calendar.HOUR, (int) staffShift.getShift().getLeaveHourHalf());
+            staffShift.getEndRecord().setRecordTimeStamp(cal.getTime());
+            return;
+        }
+
         staffShift.getEndRecord().setRecordTimeStamp(staffShift.getShiftEndTime());
 
 //        fingerPrintRecordFacade.edit(staffShift.getEndRecord());
@@ -499,48 +523,42 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     @Inject
     StaffLeaveFromLateAndEarlyController staffLeaveFromLateAndEarlyController;
 
-    public void calStaffLeaveFromLateIn(Staff staff, double fromTime, double toTime, double shiftCount) {
-        List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
+    public void calStaffLeaveFromLateIn(StaffShift staffShift, double fromTime, double toTime, double shiftCount) {
+//        List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
 
-        if (staff == null) {
+        if (staffShift == null) {
             return;
         }
 
-        if (staffShifts == null) {
+        if (staffShift.getStaff() == null) {
             return;
         }
 
-        if (staffShifts.isEmpty()) {
+        if (!staffShift.getStaff().isAllowedLateInLeave()) {
             return;
         }
 
-        if (!staff.isAllowedLateInLeave()) {
-            return;
-        }
-
-        List<StaffShift> stfLateIn10 = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(staff, fromTime, toTime);
+        List<StaffShift> staffShiftEarlyIn = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(staffShift.getStaff(), fromTime, toTime);
         LinkedList<StaffShift> staffShiftLateInTenMinuteLinked = new LinkedList<>();
 
-        if (stfLateIn10 != null) {
-            for (StaffShift stf : stfLateIn10) {
+        if (staffShiftEarlyIn != null) {
+            for (StaffShift stf : staffShiftEarlyIn) {
                 staffShiftLateInTenMinuteLinked.add(stf);
             }
         }
 
-        for (StaffShift stf : staffShifts) {
-            if (staffShiftLateInTenMinuteLinked.size() >= shiftCount) {
-                for (int i = 0; i < shiftCount; i++) {
-                    StaffShift lateShift = staffShiftLateInTenMinuteLinked.pollFirst();
-                    lateShift.setReferenceStaffShiftLateIn(stf);
-                    lateShift.setConsiderForLateIn(true);
-                    staffShiftFacade.edit(lateShift);
-                }
-
-                LeaveType leaveType = getLeaveType(staff, commonFunctions.getFirstDayOfYear(stf.getShiftDate()), commonFunctions.getLastDayOfYear(stf.getShiftDate()));
-                HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staff, leaveType, stf.getShiftDate(), stf.getShiftDate());
-                staffLeaveFromLateAndEarlyController.saveStaffLeaves(staff, leaveType, stf.getShiftDate(), hr);
-                staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stf, leaveType, hr);
+        if (staffShiftLateInTenMinuteLinked.size() >= shiftCount) {
+            for (int i = 0; i < shiftCount; i++) {
+                StaffShift lateShift = staffShiftLateInTenMinuteLinked.pollFirst();
+                lateShift.setReferenceStaffShiftLateIn(staffShift);
+                lateShift.setConsiderForLateIn(true);
+                staffShiftFacade.edit(lateShift);
             }
+
+            LeaveType leaveType = getLeaveType(staffShift.getStaff(), commonFunctions.getFirstDayOfYear(staffShift.getShiftDate()), commonFunctions.getLastDayOfYear(staffShift.getShiftDate()));
+            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staffShift.getStaff(), leaveType, staffShift.getShiftDate(), staffShift.getShiftDate());
+            staffLeaveFromLateAndEarlyController.saveStaffLeaves(staffShift.getStaff(), leaveType, staffShift.getShiftDate(), hr);
+            staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(staffShift, leaveType, hr);
         }
 
     }
@@ -550,48 +568,42 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        
 //        
 //    }
-    public void calStaffLeaveFromEarlyOut(Staff staff, double fromTime, double toTime, double shiftCount) {
-        List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
+    public void calStaffLeaveFromEarlyOut(StaffShift staffShift, double fromTime, double toTime, double shiftCount) {
+//        List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
 
-        if (staff == null) {
+        if (staffShift == null) {
             return;
         }
 
-        if (staffShifts == null) {
+        if (staffShift.getShift() == null) {
             return;
         }
 
-        if (staffShifts.isEmpty()) {
+        if (!staffShift.getStaff().isAllowedEarlyOutLeave()) {
             return;
         }
 
-        if (!staff.isAllowedEarlyOutLeave()) {
-            return;
-        }
-
-        List<StaffShift> stfEarlyOut30 = staffLeaveFromLateAndEarlyController.fetchStaffShiftEarlyOut(staff, fromTime, toTime);
+        List<StaffShift> staffShiftEarlyOut = staffLeaveFromLateAndEarlyController.fetchStaffShiftEarlyOut(staffShift.getStaff(), fromTime, toTime);
         LinkedList<StaffShift> staffShiftEarlyOutThirtyMinuteLinked = new LinkedList<>();
 
-        if (stfEarlyOut30 != null) {
-            for (StaffShift stf : stfEarlyOut30) {
+        if (staffShiftEarlyOut != null) {
+            for (StaffShift stf : staffShiftEarlyOut) {
                 staffShiftEarlyOutThirtyMinuteLinked.add(stf);
             }
         }
 
-        for (StaffShift stf : staffShifts) {
-            if (staffShiftEarlyOutThirtyMinuteLinked.size() >= shiftCount) {
-                for (int i = 0; i < shiftCount; i++) {
-                    StaffShift earlyOut = staffShiftEarlyOutThirtyMinuteLinked.pollFirst();
-                    earlyOut.setReferenceStaffShiftEarlyOut(stf);
-                    earlyOut.setConsiderForEarlyOut(true);
-                    staffShiftFacade.edit(earlyOut);
-                }
-
-                LeaveType leaveType = getLeaveType(staff, commonFunctions.getFirstDayOfYear(stf.getShiftDate()), commonFunctions.getLastDayOfYear(stf.getShiftDate()));
-                HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staff, leaveType, stf.getShiftDate(), stf.getShiftDate());
-                staffLeaveFromLateAndEarlyController.saveStaffLeaves(staff, leaveType, stf.getShiftDate(), hr);
-                staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stf, leaveType, hr);
+        if (staffShiftEarlyOutThirtyMinuteLinked.size() >= shiftCount) {
+            for (int i = 0; i < shiftCount; i++) {
+                StaffShift earlyOut = staffShiftEarlyOutThirtyMinuteLinked.pollFirst();
+                earlyOut.setReferenceStaffShiftEarlyOut(staffShift);
+                earlyOut.setConsiderForEarlyOut(true);
+                staffShiftFacade.edit(earlyOut);
             }
+
+            LeaveType leaveType = getLeaveType(staffShift.getStaff(), commonFunctions.getFirstDayOfYear(staffShift.getShiftDate()), commonFunctions.getLastDayOfYear(staffShift.getShiftDate()));
+            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staffShift.getStaff(), leaveType, staffShift.getShiftDate(), staffShift.getShiftDate());
+            staffLeaveFromLateAndEarlyController.saveStaffLeaves(staffShift.getStaff(), leaveType, staffShift.getShiftDate(), hr);
+            staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(staffShift, leaveType, hr);
         }
 
     }
@@ -1022,6 +1034,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         if (ss.getLeaveType() != null && ss.getLeaveType().isFullDayLeave()) {
             return false;
+        } else {
+            if (ss.getShift() != null
+                    && ss.getShift().getLeaveHourHalf() == ss.getShift().getDurationHour()) {
+                return false;
+            }
         }
 
         if (ss.getPreviousStaffShift() == null) {
@@ -1229,7 +1246,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 getStaffShiftFacade().edit(ss);
             }
 
-            tmpShiftTable.add(newSh);
+            if (newSh.getStaffShift() != null && !newSh.getStaffShift().isEmpty()) {
+                tmpShiftTable.add(newSh);
+            }
         }
 
         shiftTables = new ArrayList<>();
@@ -1239,13 +1258,25 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             UtilityController.addSuccessMessage("All Record Successfully Updated");
         }
 
-        List<Staff> staffs = humanResourceBean.fetchStaffFromShift(fromDate, toDate);
+//        List<Staff> staffs = humanResourceBean.fetchStaffFromShift(fromDate, toDate);
+        List<StaffShift> staffShifts = new ArrayList<>();
+        for (ShiftTable shiftTable : shiftTables) {
+            for (StaffShift ss : staffShifts) {
+                if (ss.getShift() != null
+                        && ss.getShift().getDayType() != DayType.DayOff
+                        && ss.getShift().getDayType() != DayType.SleepingDay
+                        && ss.getLeaveType() != null) {
 
-        if (staffs == null) {
+                    staffShifts.add(ss);
+                }
+            }
+        }
+
+        if (staffShifts.isEmpty()) {
             return;
         }
 
-        for (Staff s : staffs) {
+        for (StaffShift s : staffShifts) {
             calStaffLeaveFromLateIn(s, 10 * 60, 90 * 60, 3);
             calStaffLeaveFromLateIn(s, 90 * 60, 600 * 60, 1);
             calStaffLeaveFromEarlyOut(s, 30 * 60, 90 * 60, 3);

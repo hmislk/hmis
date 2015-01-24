@@ -32,12 +32,14 @@ import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.FingerPrintRecordHistoryFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
+import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -727,7 +729,7 @@ public class HrReportController implements Serializable {
                 + " and ss.staff=:stf "
                 + " and ((ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null) "
-//                + " or (ss.leaveType is not null) ) "
+                //                + " or (ss.leaveType is not null) ) "
                 + " and ss.shiftDate between :frm  and :to ";
         hm.put("frm", fromDate);
         hm.put("to", toDate);
@@ -1305,6 +1307,40 @@ public class HrReportController implements Serializable {
 
     public void setDepartmentAttendances(List<DepartmentAttendance> departmentAttendances) {
         this.departmentAttendances = departmentAttendances;
+    }
+    @EJB
+    StaffPaysheetComponentFacade staffPaysheetComponentFacade;
+
+    public void updateStaffPaySheetComponent() {
+        String sql = " Select s"
+                + "  From StaffPaysheetComponent s"
+                + " where s.staffPaySheetComponentValue=0 ";
+
+        List<StaffPaysheetComponent> list = staffPaysheetComponentFacade.findBySQL(sql);
+
+        if (list == null) {
+            return;
+        }
+        for (StaffPaysheetComponent spc : list) {
+            spc.setStaffPaySheetComponentValue(spc.getStaffPaySheetComponentValue());
+            staffPaysheetComponentFacade.edit(spc);
+        }
+    }
+
+    public void updateOverTimeValuePerSecond() {
+        String sql = "select s from StaffShift s";
+//                + " where s.overTimeValuePerSecond=0 ";
+        List<StaffShift> list = staffShiftFacade.findBySQL(sql);
+        if (list == null) {
+            return;
+        }
+
+        for (StaffShift ss : list) {
+            double valueForOverTime = humanResourceBean.calValueForOverTime(ss.getStaff(), ss.getShiftDate());
+            ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
+            staffShiftFacade.edit(ss);
+        }
+
     }
 
     public void createStaffShift() {

@@ -103,7 +103,7 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Extra Duty Value">
-                                    <h:outputLabel value="#{valuoverTimeValuePerSeconderSecond*ss.multiplyingFactorOverTime*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
+                                    <h:outputLabel value="#{ss.overTimeValuePerSecond*ss.multiplyingFactorOverTime*(ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>

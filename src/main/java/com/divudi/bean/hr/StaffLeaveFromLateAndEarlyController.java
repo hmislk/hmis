@@ -177,7 +177,8 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
-                + " and ss.considerForLateIn=false"
+                + " and ss.considerForLateIn=false "
+                + " and ss.leaveType is not null "
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
@@ -199,6 +200,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.considerForEarlyOut=false"
+                + " and ss.leaveType is not null "
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
