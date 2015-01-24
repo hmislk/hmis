@@ -350,7 +350,7 @@ public class SheduleController implements Serializable {
                 i.setCreatedAt(new Date());
                 i.setCreater(sessionController.getLoggedUser());
                 System.err.println("cRE");
-                itemFeeFacade.create(i);
+                itemFeeFacade.edit(i);
             } else {
                 System.err.println("Edit");
                 itemFeeFacade.edit(i);
