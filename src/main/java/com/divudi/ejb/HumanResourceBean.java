@@ -1464,7 +1464,7 @@ public class HumanResourceBean {
             PaysheetComponentType.OT,
             PaysheetComponentType.ExtraDuty,
             PaysheetComponentType.No_Pay_Deduction,
-            PaysheetComponentType.PoyaAllowance,
+            PaysheetComponentType.HolidayAllowance,
             PaysheetComponentType.DayOffAllowance};
 
         String sql = " Select s From StaffPaysheetComponent s "
@@ -1835,7 +1835,7 @@ public class HumanResourceBean {
     }
 
     public double calculateExtraWorkTimeValue(Date fromDate, Date toDate, Staff staff) {
-        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
+        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.shiftDate between :fd  and :td "

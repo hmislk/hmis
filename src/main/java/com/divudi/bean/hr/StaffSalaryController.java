@@ -110,16 +110,15 @@ public class StaffSalaryController implements Serializable {
         current = null;
     }
 
-    private boolean errorCheck() {
-
-        if (getCurrent().getStaff() == null) {
-            UtilityController.addErrorMessage("Please Select Staff");
-            return true;
-        }
-
-        return false;
-    }
-
+//    private boolean errorCheck() {
+//
+//        if (getCurrent().getStaff() == null) {
+//            UtilityController.addErrorMessage("Please Select Staff");
+//            return true;
+//        }
+//
+//        return false;
+//    }
     public void save() {
 //
 //        if (errorCheck()) {
@@ -193,11 +192,18 @@ public class StaffSalaryController implements Serializable {
     public void onEdit(RowEditEvent event) {
         ////System.out.println("Runn");
         StaffSalaryComponant tmp = (StaffSalaryComponant) event.getObject();
+
         getHumanResourceBean().setEpf(tmp, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(tmp, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
         tmp.setLastEditedAt(new Date());
         tmp.setLastEditor(getSessionController().getLoggedUser());
-        getStaffSalaryComponantFacade().edit(tmp);
+        if (tmp.getId() != null) {
+            getStaffSalaryComponantFacade().edit(tmp);
+        }
+
+        getCurrent().calculateComponentTotal();
+        getCurrent().calcualteEpfAndEtf();
+
     }
 
     public StaffSalaryController() {
@@ -403,7 +409,7 @@ public class StaffSalaryController implements Serializable {
     }
 
     private void setHoliDayAllowance() {
-        StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.PoyaAllowance);
+        StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.HolidayAllowance);
         if (ss.getStaffPaysheetComponent() != null) {
             long count = getHumanResourceBean().calculateHolidayWork(getWorkedFromDate(), getWorkedToDate(), getCurrent().getStaff());
 
@@ -440,7 +446,7 @@ public class StaffSalaryController implements Serializable {
 
     }
 
-    private void setDayOffAllowance() {
+    private void setDayOffSleepingDayAllowance() {
         System.err.println("DAY OFF Allowance");
 
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.DayOffAllowance);
@@ -456,9 +462,8 @@ public class StaffSalaryController implements Serializable {
                     System.err.println("Continue");
                     continue;
                 }
-                
-                System.err.println("P "+staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getName()+" : "+staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludeForAllowance());
-                
+
+                System.err.println("P " + staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getName() + " : " + staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludeForAllowance());
 
                 if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludeForAllowance()) {
                     System.err.println("INNN " + staffSalaryComponant.getComponantValue());
@@ -564,7 +569,7 @@ public class StaffSalaryController implements Serializable {
             setExtraDuty();
             setNoPay();
             setHoliDayAllowance();
-            setDayOffAllowance();
+            setDayOffSleepingDayAllowance();
             setAdjustments();
         }
 
@@ -620,11 +625,14 @@ public class StaffSalaryController implements Serializable {
 
             if (getCurrent().getId() == null) {
                 addSalaryComponent();
+
 //                save();
             } else {
                 // Allready in database
             }
 
+            getCurrent().calculateComponentTotal();
+            getCurrent().calcualteEpfAndEtf();
             getItems().add(current);
             current = null;
 

@@ -105,13 +105,13 @@
                             <h:outputLabel value="#{i.grossSalary}"/>
                         </p:column>
                         <p:column headerText="EPF">
-                            <h:outputLabel value="#{i.epfTotal}"/>
+                            <h:outputLabel value="#{i.epfStaffValue}"/>
                         </p:column>
                         <p:column headerText="EPF Company">
-                            <h:outputLabel value="#{i.epfCompanyTotal}"/>
+                            <h:outputLabel value="#{i.epfCompanyValue}"/>
                         </p:column>
                         <p:column headerText="ETF Company">
-                            <h:outputLabel value="#{i.etfCompanyTotal}"/>
+                            <h:outputLabel value="#{i.etfCompanyValue}"/>
                         </p:column>
                         <p:column headerText="Net Salary">
                             <h:outputLabel value="#{i.netSalary}"/>
@@ -130,7 +130,7 @@
                                              actionListener="#{staffSalaryController.deleteSalaryComponent(i)}" onclick="onSubmitButton();">                              
                             </p:commandButton>                          
                         </p:column>
-                        
+
                     </p:dataTable>
                 </p:tab>
             </p:tabView>
@@ -140,7 +140,7 @@
                 <p:tab title="Salary Componenetns">
                     <p:dataTable   editable="true" value="#{staffSalaryController.current.staffSalaryComponants}" var="i" >
 
-                        <p:ajax event="rowEdit" listener="#{staffSalaryController.onEdit}" update="sum" />  
+                        <p:ajax event="rowEdit" listener="#{staffSalaryController.onEdit}" />  
 
                         <p:column headerText="Compnent Name ">
                             <h:outputLabel value="#{i.staffPaysheetComponent.paysheetComponent.name}"/>
@@ -159,46 +159,28 @@
                                     <p:inputText autocomplete="off" value="#{i.componantValue}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
                                 </f:facet>
                             </p:cellEditor>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}"/>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="EPF">
                             <h:outputLabel  value="#{i.epfValue}"/>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.epfStaffValue}"/>
+                            </f:facet>
                         </p:column>       
                         <p:column headerText="EPF Company">
                             <h:outputLabel value="#{i.epfCompanyValue}"/>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.epfCompanyValue}"/>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="ETF Company">
                             <h:outputLabel value="#{i.etfCompanyValue}"/>
-                        </p:column>              
-
-                        <p:columnGroup id="sum" type="footer">
-                            <p:row>
-                                <p:column colspan="2" >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="Net"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{staffSalaryController.current.grossSalary}"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{staffSalaryController.current.epfTotal}"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{staffSalaryController.current.epfCompanyTotal}"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{staffSalaryController.current.etfTotal}"/>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.etfCompanyValue}"/>
+                            </f:facet>
+                        </p:column>      
                         <p:column style="width:6%">  
                             <f:facet name="header">
                                 <p:commandButton ajax="false" value="Refresh" onclick="onSubmitButton();" />
