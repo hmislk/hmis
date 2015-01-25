@@ -13,8 +13,6 @@ import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffBasics;
 import com.divudi.entity.hr.StaffEmployment;
 import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.entity.hr.StaffSalaryComponant;
-import com.divudi.entity.hr.StaffWorkingDepartment;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
