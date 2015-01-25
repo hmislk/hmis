@@ -9,20 +9,16 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
-import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.SalaryCycle;
-import com.divudi.entity.hr.StaffPaysheetComponent;
+import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffSalaryComponant;
 import com.divudi.facade.PaysheetComponentFacade;
-import com.divudi.facade.RosterFacade;
 import com.divudi.facade.SalaryCycleFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -30,11 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -45,16 +43,11 @@ import javax.inject.Inject;
 public class SalaryCycleController implements Serializable {
 
     private SalaryCycle current;
-    private Roster currentRoster;
     private List<SalaryCycle> salaryCycleList;
     @EJB
     private SalaryCycleFacade facade;
-    @EJB
-    private RosterFacade rosterFacade;
     @Inject
     private SessionController sessionController;
-
- 
     List<SalaryCycle> salaryCycles;
 
     public List<SalaryCycle> completeSalaryCycle(String qry) {
@@ -63,77 +56,53 @@ public class SalaryCycleController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from SalaryCycle c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
-                + " and (c.hideSalaryCycle=false or c.hideSalaryCycle is null) ";
-
-        if (getCurrentRoster() != null) {
-            sql += " and c.roster=:rs";
-            hm.put("rs", getCurrentRoster());
-        }
-
-        sql += " order by c.name";
-        hm.put("q", "%" + qry.toUpperCase() + "%");
-        salaryCycles = getFacade().findBySQL(sql, hm);
-
-        return salaryCycles;
-    }
-
-    public List<SalaryCycle> completeSalaryCycleAll(String qry) {
-        String sql = "";
-        HashMap hm = new HashMap();
-        sql = "select c from SalaryCycle c "
-                + " where c.retired=false "
                 + " and upper(c.name) like :q ";
-        if (getCurrentRoster() != null) {
-            sql += " and c.roster=:rs";
-            hm.put("rs", getCurrentRoster());
-        }
-        sql += " order by c.name";
+        sql += " order by c.id desc";
         hm.put("q", "%" + qry.toUpperCase() + "%");
         salaryCycles = getFacade().findBySQL(sql, hm);
+
         return salaryCycles;
     }
 
-    public void listAllSalaryCycles(){
-        String sql ;
-        HashMap hm = new HashMap();
+    public void listAllSalaryCycles() {
+        String sql;
         sql = "select c from SalaryCycle c "
                 + " where c.retired=false "
                 + " order by c.id desc";
-        salaryCycles = getFacade().findBySQL(sql);
+        salaryCycles = getFacade().findBySQL(sql, 20);
     }
 
-   
     @EJB
     StaffSalaryFacade staffSalaryFacade;
-    
+
     @EJB
     PaysheetComponentFacade paysheetComponentFacade;
-    
+
     @EJB
     StaffPaysheetComponentFacade staffPaysheetComponentFacade;
-    
-    
-    
-    public String hr_report_all_staff_salary(){
+
+    public String hr_report_all_staff_salary() {
         listAllSalaryCycles();
         return "/hr/hr_report_all_staff_salary";
     }
-    
-    
+
     public List<SalaryCycle> getSalaryCycles() {
+        if (salaryCycles == null) {
+            listAllSalaryCycles();
+        }
         return salaryCycles;
     }
 
     public void setSalaryCycles(List<SalaryCycle> salaryCycles) {
         this.salaryCycles = salaryCycles;
     }
-    
-    
-    
-    
-    public void saveSelected() {
 
+    public void saveSelected() {
+        if (current == null) {
+            return;
+        }
+
+        current.processName();
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("savedOldSuccessfully");
@@ -145,7 +114,8 @@ public class SalaryCycleController implements Serializable {
         }
 
         //     recreateModel();
-        createSalaryCycleList();
+//        createSalaryCycleList();
+        listAllSalaryCycles();
         current = null;
     }
 
@@ -154,10 +124,6 @@ public class SalaryCycleController implements Serializable {
 
     public void prepareAdd() {
         current = null;
-    }
-
-    private void recreateModel() {
-        currentRoster = null;
     }
 
     public void delete() {
@@ -172,7 +138,7 @@ public class SalaryCycleController implements Serializable {
 
 //            getFacade().remove(current);
 //            getCurrentRoster().getSalaryCycleList().remove(getCurrent());
-            getRosterFacade().edit(getCurrentRoster());
+//            getRosterFacade().edit(getCurrentRoster());
             UtilityController.addSuccessMessage("DeleteSuccessfull");
         } else {
             UtilityController.addSuccessMessage("NothingToDelete");
@@ -211,44 +177,6 @@ public class SalaryCycleController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public Roster getCurrentRoster() {
-        return currentRoster;
-    }
-
-    public void setCurrentRoster(Roster currentRoster) {
-        current = null;
-        this.currentRoster = currentRoster;
-    }
-
-    public RosterFacade getRosterFacade() {
-        return rosterFacade;
-    }
-
-    public void setRosterFacade(RosterFacade rosterFacade) {
-        this.rosterFacade = rosterFacade;
-    }
-
-    public void createSalaryCycleList() {
-        String sql = "Select s From SalaryCycle s "
-                + " where s.retired=false "
-                + " and s.roster=:rs ";
-        //   + " order by s.salaryCycleOrder ";
-        System.out.println("sql = " + sql);
-        HashMap hm = new HashMap();
-        hm.put("rs", getCurrentRoster());
-
-        salaryCycleList = getFacade().findBySQL(sql, hm);
-    }
-    
-    public void createSalaryCycleListReport() {
-        String sql = "Select s From SalaryCycle s "
-                + " where s.retired=false "
-                + " order by s.roster.name " ;
-                
-
-        salaryCycleList = getFacade().findBySQL(sql);
-    }
-
     public List<SalaryCycle> getSalaryCycleList() {
         return salaryCycleList;
     }
@@ -256,7 +184,7 @@ public class SalaryCycleController implements Serializable {
     public void setSalaryCycleList(List<SalaryCycle> salaryCycleList) {
         this.salaryCycleList = salaryCycleList;
     }
-    
+
     List<StaffAndSalarySalaryComponent> staffAnsAndSalarySalaryComponents;
 
     public List<StaffAndSalarySalaryComponent> getStaffAnsAndSalarySalaryComponents() {
@@ -266,45 +194,119 @@ public class SalaryCycleController implements Serializable {
     public void setStaffAnsAndSalarySalaryComponents(List<StaffAndSalarySalaryComponent> staffAnsAndSalarySalaryComponents) {
         this.staffAnsAndSalarySalaryComponents = staffAnsAndSalarySalaryComponents;
     }
-    
-    public void fillStaffAndSalaryComponents(){
+
+    @EJB
+    StaffFacade staffFacade;
+    List<StaffSalary> staffSalary;
+
+    public StaffSalaryFacade getStaffSalaryFacade() {
+        return staffSalaryFacade;
+    }
+
+    public void setStaffSalaryFacade(StaffSalaryFacade staffSalaryFacade) {
+        this.staffSalaryFacade = staffSalaryFacade;
+    }
+
+    public PaysheetComponentFacade getPaysheetComponentFacade() {
+        return paysheetComponentFacade;
+    }
+
+    public void setPaysheetComponentFacade(PaysheetComponentFacade paysheetComponentFacade) {
+        this.paysheetComponentFacade = paysheetComponentFacade;
+    }
+
+    public StaffPaysheetComponentFacade getStaffPaysheetComponentFacade() {
+        return staffPaysheetComponentFacade;
+    }
+
+    public void setStaffPaysheetComponentFacade(StaffPaysheetComponentFacade staffPaysheetComponentFacade) {
+        this.staffPaysheetComponentFacade = staffPaysheetComponentFacade;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
+    }
+
+    public List<StaffSalary> getStaffSalary() {
+        return staffSalary;
+    }
+
+    public void setStaffSalary(List<StaffSalary> staffSalary) {
+        this.staffSalary = staffSalary;
+    }
+
+    public StaffSalaryComponantFacade getStaffSalaryComponantFacade() {
+        return staffSalaryComponantFacade;
+    }
+
+    public void setStaffSalaryComponantFacade(StaffSalaryComponantFacade staffSalaryComponantFacade) {
+        this.staffSalaryComponantFacade = staffSalaryComponantFacade;
+    }
+
+    public void fillStaffAndSalaryComponents() {
+
         List<PaysheetComponent> paysheetComponents;
         List<Staff> staffes;
         String jpql;
-        StaffPaysheetComponent pc;
         Map m;
-        
-        m= new HashMap();
-        jpql="select distinct spc.paysheetComponent from StaffSalaryComponant spc where ";
-        m.put("sc", current);
-        paysheetComponents = staffPaysheetComponentFacade.findBySQL(jpql, m);
-        
+
         m = new HashMap();
-        jpql="select distinct spc.paysheetComponent from StaffSalaryComponant spc where ";
+        jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
+                + " from StaffSalaryComponant spc"
+                + " where spc.salaryCycle=:sc ";
         m.put("sc", current);
-        staffes = staffPaysheetComponentFacade.findBySQL(jpql, m);
-        
+        paysheetComponents = paysheetComponentFacade.findBySQL(jpql, m);
+
+        m = new HashMap();
+        jpql = "select distinct(spc.staffSalary.staff)"
+                + " from StaffSalaryComponant spc "
+                + " where spc.salaryCycle=:sc ";
+        m.put("sc", current);
+        staffes = staffFacade.findBySQL(jpql, m);
+
         staffAnsAndSalarySalaryComponents = new ArrayList<>();
-        
-        for (Staff s:staffes){
+
+        for (Staff s : staffes) {
             StaffAndSalarySalaryComponent sc = new StaffAndSalarySalaryComponent();
+            sc.setStaff(s);
             sc.setStaffSalaryComponants(new ArrayList<StaffSalaryComponant>());
-            for(PaysheetComponent psc:paysheetComponents){
-                jpql = "select spc from StaffSalaryComponant spc where spc.staff=:st and spc.paysheetComponent=:pc";
+            for (PaysheetComponent psc : paysheetComponents) {
+                jpql = "select spc from StaffSalaryComponant spc "
+                        + " where spc.staffSalary.staff=:st"
+                        + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
+                        + " and spc.salaryCycle=:sc ";
                 m = new HashMap();
                 m.put("st", s);
                 m.put("pc", psc);
-                StaffSalaryComponant c = staffSalaryComponantFacade.findFirstBySQL(jpql, m);
-                sc.getStaffSalaryComponants().add(c);
+                m.put("sc", current);
+                List<StaffSalaryComponant> c = staffSalaryComponantFacade.findBySQL(jpql, m);
+                sc.getStaffSalaryComponants().addAll(c);
             }
             staffAnsAndSalarySalaryComponents.add(sc);
         }
     }
-    
+
+    public void fillStaffSalary() {
+
+        String jpql = "select spc from StaffSalary spc "
+                + " where spc.retired=false"
+                + " and spc.salaryCycle=:sc"
+                + " order by spc.staff.codeInterger ";
+        HashMap m = new HashMap();
+        m.put("sc", current);
+        staffSalary = staffSalaryFacade.findBySQL(jpql, m);
+
+    }
+
     @EJB
     StaffSalaryComponantFacade staffSalaryComponantFacade;
 
     public class StaffAndSalarySalaryComponent {
+
         Staff staff;
         List<StaffSalaryComponant> staffSalaryComponants;
 
@@ -324,11 +326,8 @@ public class SalaryCycleController implements Serializable {
             this.staffSalaryComponants = staffSalaryComponants;
         }
 
-
-        
-        
     }
-    
+
     @FacesConverter(forClass = SalaryCycle.class)
     public static class SalaryCycleConverter implements Converter {
 

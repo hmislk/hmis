@@ -45,7 +45,7 @@ public class StaffSalary implements Serializable {
     private double payeeValue;
 //    private double otValue;
     private double phValue;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private SalaryCycle salaryCycle;
     @ManyToOne
     private Staff staff;
@@ -274,9 +274,9 @@ public class StaffSalary implements Serializable {
     }
 
     public SalaryCycle getSalaryCycle() {
-        if (salaryCycle == null) {
-            salaryCycle = new SalaryCycle();
-        }
+//        if (salaryCycle == null) {
+//            salaryCycle = new SalaryCycle();
+//        }
         return salaryCycle;
     }
 
