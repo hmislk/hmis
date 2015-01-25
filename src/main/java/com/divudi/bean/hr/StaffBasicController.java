@@ -13,8 +13,6 @@ import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffBasics;
 import com.divudi.entity.hr.StaffEmployment;
 import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.entity.hr.StaffSalaryComponant;
-import com.divudi.entity.hr.StaffWorkingDepartment;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
@@ -118,10 +116,10 @@ public class StaffBasicController implements Serializable {
             UtilityController.addErrorMessage("Select From Date");
             return true;
         }
-
-        if (checkStaff()) {
-            return true;
-        }
+//
+//        if (checkStaff()) {
+//            return true;
+//        }
 
         return false;
     }
@@ -164,7 +162,11 @@ public class StaffBasicController implements Serializable {
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
-        getStaffPaysheetComponentFacade().create(getCurrent());
+        if (getCurrent().getId() == null) {
+            getStaffPaysheetComponentFacade().create(getCurrent());
+        }else{
+            staffPaysheetComponentFacade.edit(current);
+        }
 
         updateStaffEmployment();
         updateExistingSalary();
@@ -234,12 +236,12 @@ public class StaffBasicController implements Serializable {
         String sql = "Select ss from StaffPaysheetComponent ss"
                 + " where ss.retired=false"
                 + "  and ss.paysheetComponent.componentType=:tp"
-                + " and ss.staff=:st"
-                + " and ss.fromDate >=:fd"
-                + " and ss.toDate <=:td ";
+                //                + " and ss.staff=:st"
+                + " and ss.fromDate <=:fd"
+                + " and ss.toDate >=:fd ";
         //and (s.toDate>= :td or s.toDate is null)
         HashMap hm = new HashMap();
-        hm.put("td", getToDate());
+//        hm.put("td", getToDate());
         hm.put("fd", getFromDate());
 //        hm.put("st", getCurrent().getStaff());
         hm.put("tp", PaysheetComponentType.BasicSalary);
@@ -291,7 +293,9 @@ public class StaffBasicController implements Serializable {
     public List<StaffPaysheetComponent> getItems2() {
         if (items == null) {
             String sql = "Select s from StaffPaysheetComponent s"
-                    + " where s.retired=false and s.paysheetComponent.componentType=:tp";
+                    + " where s.retired=false "
+                    + " and s.paysheetComponent.componentType=:tp "
+                    + " order by s.staff.codeInterger";
             //and (s.toDate>= :td or s.toDate is null)
             HashMap hm = new HashMap();
             // hm.put("td", getToDate());
