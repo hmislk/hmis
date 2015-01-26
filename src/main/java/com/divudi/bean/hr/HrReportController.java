@@ -1437,16 +1437,16 @@ public class HrReportController implements Serializable {
 
     }
 
-    public void createStaffShiftLateIn() {
-        String sql = "";
-        HashMap hm = new HashMap();
-        sql = createStaffShiftQuary(hm);
-        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
-        sql += " order by ss.staff.codeInterger ";
-//        sql += " order by ss.shift,ss.shiftDate";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-
-    }
+//    public void createStaffShiftLateIn() {
+//        String sql = "";
+//        HashMap hm = new HashMap();
+//        sql = createStaffShiftQuary(hm);
+//        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
+//        sql += " order by ss.staff.codeInterger ";
+////        sql += " order by ss.shift,ss.shiftDate";
+//        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+//
+//    }
 
     List<StaffShiftHistory> staffShiftHistorys;
 
