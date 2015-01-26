@@ -81,8 +81,10 @@ public class StaffAdditionalFormController implements Serializable {
         Map m = new HashMap();
 
         sql = " select a from AdditionalForm a where "
-                + " a.createdAt between :fd and :td ";
+                + " a.createdAt between :fd and :td"
+                + " and a.times=:tm ";
 
+        m.put("tm", Times.All);
         if (department != null) {
             sql += " and a.department=:dept ";
             m.put("dept", department);
@@ -134,12 +136,47 @@ public class StaffAdditionalFormController implements Serializable {
 
     }
 
-    public void createAmmendmentTableShiftDate() {
+    public void createAmmendmentTableShiftDateExtraShift() {
         String sql;
         Map m = new HashMap();
 
         sql = " select a from AdditionalForm a where "
-                + " a.staffShift.shiftDate between :fd and :td ";
+                + " a.staffShift.shiftDate between :fd and :td "
+                + " and a.times!=:tm";
+
+        m.put("tm", Times.All);
+
+        if (department != null) {
+            sql += " and a.department=:dept ";
+            m.put("dept", department);
+        }
+
+        if (staff != null) {
+            sql += " and a.staff=:st ";
+            m.put("st", staff);
+        }
+
+        if (approvedStaff != null) {
+            sql += " and a.approvedStaff=:app ";
+            m.put("app", approvedStaff);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createAmmendmentTableShiftDateAdditionalShift() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select a from AdditionalForm a where "
+                + " a.staffShift.shiftDate between :fd and :td "
+                + " and a.times=:tm";
+
+        m.put("tm", Times.All);
 
         if (department != null) {
             sql += " and a.department=:dept ";
@@ -496,6 +533,62 @@ public class StaffAdditionalFormController implements Serializable {
         Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
 
         return sh;
+    }
+
+    List<Shift> shifts;
+
+    public PhDateController getPhDateController() {
+        return phDateController;
+    }
+
+    public void setPhDateController(PhDateController phDateController) {
+        this.phDateController = phDateController;
+    }
+
+    public ShiftFacade getShiftFacade() {
+        return shiftFacade;
+    }
+
+    public void setShiftFacade(ShiftFacade shiftFacade) {
+        this.shiftFacade = shiftFacade;
+    }
+
+    public List<Shift> getShifts() {
+        return shifts;
+    }
+
+    public void setShifts(List<Shift> shifts) {
+        this.shifts = shifts;
+    }
+    
+    Shift shift;
+
+    public Shift getShift() {
+        return shift;
+    }
+
+    public void setShift(Shift shift) {
+        this.shift = shift;
+    }
+    
+    
+    
+
+    public void fetchShift() {
+        if (getCurrentAdditionalForm().getStaff() == null) {
+            return;
+        }
+
+        HashMap hm = new HashMap();
+        String sql = " select c from "
+                + " Shift c"
+                + " where c.retired=false "
+                + " and c.dayType in :dtp"
+                + " and c.roster=:rs ";
+
+        hm.put("dtp", new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.Poya, DayType.SleepingDay});
+        hm.put("rs", getCurrentAdditionalForm().getStaff().getRoster());
+        shifts = shiftFacade.findBySQL(sql, hm);
     }
 
     public AdditionalForm getCurrentAdditionalForm() {
