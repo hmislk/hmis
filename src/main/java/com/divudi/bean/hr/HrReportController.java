@@ -377,6 +377,47 @@ public class HrReportController implements Serializable {
 
         return sql;
     }
+    
+    public String createStaffShiftExtraQuary(HashMap hm) {
+        String sql = "";
+        sql = "select ss from StaffShiftExtra ss "
+                + " where ss.retired=false "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getShift() != null) {
+            sql += " and ss.shift=:sh ";
+            hm.put("sh", getReportKeyWord().getShift());
+        }
+
+        return sql;
+    }
 
     List<StaffLeave> staffLeaves;
     @EJB
@@ -410,6 +451,52 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = "select ss from StaffLeave ss "
+                + " where ss.retired=false "
+                + " and ss.leaveDate between :frm  and :to ";
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        if (getReportKeyWord().getLeaveType() != null) {
+            List<LeaveType> list = getReportKeyWord().getLeaveType().getLeaveTypes();
+
+            sql += " and ss.leaveType in :ltp ";
+            hm.put("ltp", list);
+
+        }
+
+        sql += " order by ss.staff.codeInterger";
+        staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
+    public void createStaffLeaveSystem() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffLeaveSystem ss "
                 + " where ss.retired=false "
                 + " and ss.leaveDate between :frm  and :to ";
         hm.put("frm", fromDate);
@@ -1400,6 +1487,14 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " and ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null ";
+        sql += " order by ss.staff.codeInterger ";
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
+    public void createStaffShiftExtra() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createStaffShiftExtraQuary(hm);        
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
