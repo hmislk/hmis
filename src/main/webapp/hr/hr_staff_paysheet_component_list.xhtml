@@ -9,13 +9,22 @@
     <ui:define name="content">
         <h:form>
             <p:panel>
-                <p:commandButton value="Reset Date" action="#{staffBasicController.resetDate()}" ajax="false"/>
+                <p:commandButton value="Reset Date" action="#{staffBasicController.resetDate()}" ajax="false" rendered="false"/>
+                <h:panelGrid columns="2">
+                    <h:outputLabel value="Paysheet Component"/>
+                    <p:selectOneMenu value="#{staffBasicController.paysheetComponent}">
+                        <f:selectItem itemLabel="Please select component Type "/>
+                        <f:selectItems value="#{enumController.paysheetComponentTypes}"/>
+                    </p:selectOneMenu> 
+                    <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
+                </h:panelGrid>
             </p:panel>
+
 
             <p:commandButton value="Print" ajax="false" action="#" >
                 <p:printer target="lst" ></p:printer>
             </p:commandButton>
-            <p:dataTable id="lst" value="#{staffBasicController.items2}" 
+            <p:dataTable id="lst" value="#{staffBasicController.items}" 
                          filteredValue="#{staffBasicController.filteredStaffPaysheet}"
                          var="i"   rowKey="#{i.id}"  >
 
