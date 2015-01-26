@@ -164,7 +164,7 @@ public class StaffBasicController implements Serializable {
 
         if (getCurrent().getId() == null) {
             getStaffPaysheetComponentFacade().create(getCurrent());
-        }else{
+        } else {
             staffPaysheetComponentFacade.edit(current);
         }
 
@@ -288,6 +288,31 @@ public class StaffBasicController implements Serializable {
     public List<StaffPaysheetComponent> getItems() {
 
         return items;
+    }
+
+    PaysheetComponent paysheetComponent;
+
+    public PaysheetComponent getPaysheetComponent() {
+        return paysheetComponent;
+    }
+
+    public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
+        this.paysheetComponent = paysheetComponent;
+    }
+    
+    
+
+    public void createTable() {
+        String sql = "Select s from StaffPaysheetComponent s"
+                + " where s.retired=false "
+                + " and s.paysheetComponent=:tp "
+                + " order by s.staff.codeInterger";
+
+        HashMap hm = new HashMap();
+        hm.put("tp", paysheetComponent);
+
+        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
     }
 
     public List<StaffPaysheetComponent> getItems2() {
