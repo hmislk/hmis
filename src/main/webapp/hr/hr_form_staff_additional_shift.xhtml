@@ -21,6 +21,8 @@
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         pattern="yyyy MM dd HH:mm:ss">
                             </p:calendar>  
+                            <h:outputText value="New Staff Shift(Ex : Ambulance)" ></h:outputText>
+                            <p:selectBooleanCheckbox value="#{staffAdditionalFormController.newStaffShift}"/>
                             <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShiftNotNormal()}" />
                             <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
                                 <f:selectItem itemLabel="Select Staff Shift"/>
