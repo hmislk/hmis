@@ -260,17 +260,6 @@ public class StaffAdditionalFormController implements Serializable {
 
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
-        hm.clear();
-        sql = "select c from "
-                + " StaffShiftExtra c"
-                + " where c.retired=false "
-                + " and c.shiftDate =:dt "
-                + " and c.staff=:stf ";
-        hm.put("dt", getDate());
-        hm.put("stf", getCurrentAdditionalForm().getStaff());
-
-        staffShifts.addAll(staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE));
-
     }
 
     public void fetchStaffShift(Date date, Staff staff) {
