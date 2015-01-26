@@ -23,7 +23,7 @@ public enum PaysheetComponentType {
     ExtraDuty(addition),
     HolidayAllowance(addition),
 //    @Deprecated
-//       HolidayAllowance(addition),
+//    HolidayAllowance(addition),
     DayOffAllowance(addition),
     AdjustmentBasicAdd(addition),
     AdjustmentAllowanceAdd(addition),
