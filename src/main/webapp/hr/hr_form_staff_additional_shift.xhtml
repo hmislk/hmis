@@ -21,12 +21,11 @@
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         pattern="yyyy MM dd HH:mm:ss">
                             </p:calendar>  
-                            <p:commandButton ajax="false" value="Process Shift" 
-                                             action="#{staffAdditionalFormController.fetchShift()}" />
-                            <p:selectOneMenu value="#{staffAdditionalFormController.shift}"   >
-                                <f:selectItem itemLabel="Select Shift "/>
-                                <f:selectItems value="#{staffAdditionalFormController.shifts}"
-                                               var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />
+                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShiftNotNormal()}" />
+                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
+                                <f:selectItem itemLabel="Select Staff Shift"/>
+                                <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
+                                               var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="From Time"/>
                             <p:calendar id="requestedDate" 

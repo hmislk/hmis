@@ -6,6 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.Times;
 import com.divudi.ejb.CommonFunctions;
@@ -23,6 +24,7 @@ import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -204,6 +206,7 @@ public class StaffAdditionalFormController implements Serializable {
         date = additionalForm.getFromTime();
         fetchStaffShift(date, additionalForm.getStaff());
         currentAdditionalForm = additionalForm;
+        shift = currentAdditionalForm.getStaffShift().getShift();
     }
 
     public void fetchStaffShift() {
@@ -220,6 +223,37 @@ public class StaffAdditionalFormController implements Serializable {
 
 //        hm.put("dtp1", DayType.DayOff);
 //        hm.put("dtp2", DayType.SleepingDay);
+        hm.put("cl", StaffShiftExtra.class);
+        hm.put("dt", getDate());
+        hm.put("stf", getCurrentAdditionalForm().getStaff());
+
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+        hm.clear();
+        sql = "select c from "
+                + " StaffShiftExtra c"
+                + " where c.retired=false "
+                + " and c.shiftDate =:dt "
+                + " and c.staff=:stf ";
+        hm.put("dt", getDate());
+        hm.put("stf", getCurrentAdditionalForm().getStaff());
+
+        staffShifts.addAll(staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE));
+
+    }
+
+    public void fetchStaffShiftNotNormal() {
+        HashMap hm = new HashMap();
+        String sql = "select c from "
+                + " StaffShift c"
+                + " where c.retired=false "
+                + " and type(c)!=:cl "
+                + " and c.shift is not null "
+                + " and c.shift.dayType!=:dtp "
+                + " and c.shiftDate =:dt "
+                + " and c.staff=:stf ";
+
+        hm.put("dtp", DayType.Normal);
         hm.put("cl", StaffShiftExtra.class);
         hm.put("dt", getDate());
         hm.put("stf", getCurrentAdditionalForm().getStaff());
@@ -283,6 +317,9 @@ public class StaffAdditionalFormController implements Serializable {
 
     public void clear() {
         currentAdditionalForm = null;
+        staffShifts = null;
+        date = null;
+        newStaffShift = false;
     }
 
     public boolean errorCheckExtra() {
@@ -424,18 +461,26 @@ public class StaffAdditionalFormController implements Serializable {
         clear();
     }
 
+    boolean newStaffShift;
+
+    public boolean isNewStaffShift() {
+        return newStaffShift;
+    }
+
+    public void setNewStaffShift(boolean newStaffShift) {
+        this.newStaffShift = newStaffShift;
+    }
+
     public void saveAdditionalFormShift() {
         if (errorCheckShift()) {
             return;
         }
 
-        DayType dayType = phDateController.getHolidayType(date);
-        Shift shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
-
-        if (shift == null) {
-            shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
-        }
-
+//        DayType dayType = phDateController.getHolidayType(date);
+//        Shift shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
+//        if (shift == null) {
+//            shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
+//        }
         currentAdditionalForm.setTimes(Times.All);
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
@@ -452,7 +497,7 @@ public class StaffAdditionalFormController implements Serializable {
         staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
         staffShiftExtra.setRoster(currentAdditionalForm.getStaff().getRoster());
         staffShiftExtra.setShiftDate(date);
-        staffShiftExtra.setShift(shift);
+        staffShiftExtra.setShift(currentAdditionalForm.getStaffShift().getShift());
         staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
         staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
         staffShiftFacade.create(staffShiftExtra);
@@ -560,7 +605,7 @@ public class StaffAdditionalFormController implements Serializable {
     public void setShifts(List<Shift> shifts) {
         this.shifts = shifts;
     }
-    
+
     Shift shift;
 
     public Shift getShift() {
@@ -570,27 +615,39 @@ public class StaffAdditionalFormController implements Serializable {
     public void setShift(Shift shift) {
         this.shift = shift;
     }
-    
-    
-    
 
-    public void fetchShift() {
-        if (getCurrentAdditionalForm().getStaff() == null) {
-            return;
-        }
-
-        HashMap hm = new HashMap();
-        String sql = " select c from "
-                + " Shift c"
-                + " where c.retired=false "
-                + " and c.dayType in :dtp"
-                + " and c.roster=:rs ";
-
-        hm.put("dtp", new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.Poya, DayType.SleepingDay});
-        hm.put("rs", getCurrentAdditionalForm().getStaff().getRoster());
-        shifts = shiftFacade.findBySQL(sql, hm);
-    }
-
+//    public void fetchShift() {
+//        if (getCurrentAdditionalForm().getStaff() == null) {
+//            UtilityController.addErrorMessage("Please Select Staff");
+//            return;
+//        }
+//
+//        if (getDate() == null) {
+//            UtilityController.addErrorMessage("Please Select Date");
+//            return;
+//        }
+//
+//        shifts = new ArrayList<>();
+//
+//        DayType dayType = phDateController.getHolidayType(date);
+//        shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
+//
+//        if (shift != null) {
+//            shifts.add(shift);
+//            return;
+//        }
+//
+//        HashMap hm = new HashMap();
+//        String sql = " select c from "
+//                + " Shift c "
+//                + " where c.retired=false "
+//                + " and c.dayType in :dtp"
+//                + " and c.roster=:rs ";
+//
+//        hm.put("dtp", new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.Poya, DayType.SleepingDay});
+//        hm.put("rs", getCurrentAdditionalForm().getStaff().getRoster());
+//        shifts = shiftFacade.findBySQL(sql, hm);
+//    }
     public AdditionalForm getCurrentAdditionalForm() {
         if (currentAdditionalForm == null) {
             currentAdditionalForm = new AdditionalForm();
