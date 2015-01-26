@@ -27,4 +27,5 @@ public enum DayType {
     Holiday,
     @Deprecated
     All,
+    Extra,
 }

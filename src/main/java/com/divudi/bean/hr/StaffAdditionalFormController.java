@@ -206,7 +206,7 @@ public class StaffAdditionalFormController implements Serializable {
         date = additionalForm.getFromTime();
         fetchStaffShift(date, additionalForm.getStaff());
         currentAdditionalForm = additionalForm;
-        shift = currentAdditionalForm.getStaffShift().getShift();
+//        shift = currentAdditionalForm.getStaffShift().getShift();
     }
 
     public void fetchStaffShift() {
@@ -476,11 +476,28 @@ public class StaffAdditionalFormController implements Serializable {
             return;
         }
 
-//        DayType dayType = phDateController.getHolidayType(date);
-//        Shift shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
-//        if (shift == null) {
-//            shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
-//        }
+        Shift shift = null;
+
+        if (isNewStaffShift()) {
+            if (currentAdditionalForm.getStaffShift() == null) {
+                UtilityController.addErrorMessage("Please Un Select Staff Shift");
+                return;
+            }
+
+            DayType dayType = phDateController.getHolidayType(date);
+            shift = fetchShift(currentAdditionalForm.getStaff().getRoster(), dayType);
+            
+            if(shift==null){
+                shift=fetchShift(currentAdditionalForm.getStaff().getRoster(), DayType.Extra);
+            }
+
+        } else {
+            if (currentAdditionalForm.getStaffShift() != null) {
+                UtilityController.addErrorMessage("Please Select Staff Shift");
+                return;
+            }
+        }
+
         currentAdditionalForm.setTimes(Times.All);
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
@@ -491,13 +508,23 @@ public class StaffAdditionalFormController implements Serializable {
         }
 
         StaffShiftExtra staffShiftExtra = new StaffShiftExtra();
+
+        if (currentAdditionalForm.getStaffShift() != null) {
+            staffShiftExtra.copy(currentAdditionalForm.getStaffShift());
+            currentAdditionalForm.getStaffShift().setRetired(true);
+            currentAdditionalForm.getStaffShift().setRetiredAt(new Date());
+            currentAdditionalForm.getStaffShift().setRetirer(sessionController.getLoggedUser());
+            staffShiftFacade.edit(currentAdditionalForm.getStaffShift());
+        }else{
+            staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
+            staffShiftExtra.setRoster(currentAdditionalForm.getStaff().getRoster());
+            staffShiftExtra.setShift(shift);
+        }
+
         staffShiftExtra.setCreatedAt(new Date());
         staffShiftExtra.setCreater(sessionController.getLoggedUser());
         staffShiftExtra.setAdditionalForm(currentAdditionalForm);
-        staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
-        staffShiftExtra.setRoster(currentAdditionalForm.getStaff().getRoster());
         staffShiftExtra.setShiftDate(date);
-        staffShiftExtra.setShift(currentAdditionalForm.getStaffShift().getShift());
         staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
         staffShiftExtra.setShiftEndTime(currentAdditionalForm.getToTime());
         staffShiftFacade.create(staffShiftExtra);
@@ -512,7 +539,7 @@ public class StaffAdditionalFormController implements Serializable {
     @EJB
     ShiftFacade shiftFacade;
 
-    private Shift fetchShiftForPh(Roster roster, DayType dayType) {
+    private Shift fetchShift(Roster roster, DayType dayType) {
         if (dayType == null || roster == null) {
             return null;
         }
@@ -606,16 +633,7 @@ public class StaffAdditionalFormController implements Serializable {
         this.shifts = shifts;
     }
 
-    Shift shift;
-
-    public Shift getShift() {
-        return shift;
-    }
-
-    public void setShift(Shift shift) {
-        this.shift = shift;
-    }
-
+  
 //    public void fetchShift() {
 //        if (getCurrentAdditionalForm().getStaff() == null) {
 //            UtilityController.addErrorMessage("Please Select Staff");
