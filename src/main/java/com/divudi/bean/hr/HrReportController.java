@@ -8,6 +8,8 @@ package com.divudi.bean.hr;
 import com.divudi.data.MonthEndRecord;
 import com.divudi.data.dataStructure.WeekDayWork;
 import com.divudi.data.hr.DayType;
+import com.divudi.entity.hr.StaffLeaveSystem;
+import com.divudi.facade.FormFacade;
 import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
@@ -23,7 +25,6 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.StaffLeave;
-import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftHistory;
@@ -39,7 +40,6 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -377,7 +377,7 @@ public class HrReportController implements Serializable {
 
         return sql;
     }
-    
+
     public String createStaffShiftExtraQuary(HashMap hm) {
         String sql = "";
         sql = "select ss from StaffShiftExtra ss "
@@ -492,7 +492,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffLeaveSystem() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -1481,6 +1481,46 @@ public class HrReportController implements Serializable {
 
     }
 
+    public void updateAutomaticData() {
+        String sql = "select s from StaffLeaveSystem s ";
+
+        List<StaffLeave> list = staffLeaveFacade.findBySQL(sql);
+        if (list == null) {
+            return;
+        }
+
+        for (StaffLeave ss : list) {
+            ss.setRetired(true);
+            ss.setRetireComments("Deleted By System");
+            staffLeaveFacade.edit(ss);
+
+            if (ss.getForm() != null) {
+                ss.getForm().setRetired(true);
+                ss.getForm().setRetireComments("Deleted By System");
+                formFacade.edit(ss.getForm());
+            }
+        }
+        
+         sql = "select s from StaffShift s"
+                 + " where  (s.considerForEarlyOut=true "
+                 + " or s.considerForLateIn=true)";
+
+        List<StaffShift> list2 = staffShiftFacade.findBySQL(sql);
+        if (list2 == null) {
+            return;
+        }
+        
+        for(StaffShift s:list2){
+            s.setConsiderForEarlyOut(false);
+            s.setConsiderForLateIn(false);
+            staffShiftFacade.edit(s);
+        }
+
+    }
+
+    @EJB
+    FormFacade formFacade;
+
     public void createStaffShift() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -1490,11 +1530,11 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
     public void createStaffShiftExtra() {
         String sql = "";
         HashMap hm = new HashMap();
-        sql = createStaffShiftExtraQuary(hm);        
+        sql = createStaffShiftExtraQuary(hm);
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
@@ -1542,7 +1582,6 @@ public class HrReportController implements Serializable {
 //        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 //
 //    }
-
     List<StaffShiftHistory> staffShiftHistorys;
 
     public DepartmentFacade getDepartmentFacade() {

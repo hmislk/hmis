@@ -59,9 +59,23 @@
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>                                     
-                                </p:column>           
+                                </p:column>                                
+                                <p:column headerText="Considered For No Pay">
+                                    <h:outputLabel value="#{ss.considerForLateIn}">                                        
+                                    </h:outputLabel>                                     
+                                </p:column>   
+                                  <p:column headerText="Reference Staff Shift">
+                                      <h:outputLabel value="#{ss.referenceStaffShiftLateIn.shiftDate}">                                        
+                                    </h:outputLabel>                                     
+                                </p:column> 
+                                
                                 <p:column headerText="Late In Minute Varified">
                                     <h:outputLabel value="#{ss.lateInVarified}">                                        
+                                        <f:converter converterId="longToTime"/>
+                                    </h:outputLabel>
+                                </p:column>   
+                                 <p:column headerText="Late In Minute Logged">
+                                     <h:outputLabel value="#{ss.lateInLogged}">                                        
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
                                 </p:column>   

@@ -527,14 +527,27 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
 
         if (staffShift == null) {
+            System.err.println("STF 1 ");
             return;
         }
 
         if (staffShift.getStaff() == null) {
+            System.err.println("STF 2 ");
+            return;
+        }
+
+        if (staffShift.getLeaveType() != null) {
+            System.err.println("STF 3 ");
+            return;
+        }
+
+        if (staffShift.isConsiderForLateIn()) {
+            System.err.println("STF 4 ");
             return;
         }
 
         if (!staffShift.getStaff().isAllowedLateInLeave()) {
+            System.err.println("STF 5 ");
             return;
         }
 
@@ -556,11 +569,55 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             LeaveType leaveType = getLeaveType(staffShift.getStaff(), commonFunctions.getFirstDayOfYear(staffShift.getShiftDate()), commonFunctions.getLastDayOfYear(staffShift.getShiftDate()));
-            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staffShift.getStaff(), leaveType, staffShift.getShiftDate(), staffShift.getShiftDate());
-            staffLeaveFromLateAndEarlyController.saveStaffLeaves(staffShift.getStaff(), leaveType, staffShift.getShiftDate(), hr);
+            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staffShift, leaveType, staffShift.getShiftDate(), staffShift.getShiftDate());
+            staffLeaveFromLateAndEarlyController.saveStaffLeaves(staffShift, leaveType, hr);
             staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(staffShift, leaveType, hr);
         }
 
+        System.err.println("Automatic " + staffShift.getStaff().getCodeInterger());
+
+    }
+
+    public void calStaffLeaveFromLateIn(StaffShift staffShift, double fromTime) {
+//        List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
+
+        if (staffShift == null) {
+            return;
+        }
+
+        if (staffShift.getStaff() == null) {
+            return;
+        }
+
+        if (staffShift.getLeaveType() != null) {
+            return;
+        }
+
+        if (staffShift.isConsiderForLateIn()) {
+            return;
+        }
+
+        if (!staffShift.getStaff().isAllowedLateInLeave()) {
+            return;
+        }
+
+//        List<StaffShift> staffShiftEarlyIn = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(staffShift.getStaff(), fromTime);
+//        LinkedList<StaffShift> staffShiftLateInTenMinuteLinked = new LinkedList<>();
+//        if (staffShiftEarlyIn != null) {
+//            for (StaffShift stf : staffShiftEarlyIn) {
+//                staffShiftLateInTenMinuteLinked.add(stf);
+//            }
+//        }
+        if (staffShift.getLateInLogged() >= fromTime) {
+            staffShift.setReferenceStaffShiftLateIn(staffShift);
+            staffShift.setConsiderForLateIn(true);
+            staffShiftFacade.edit(staffShift);
+
+            LeaveType leaveType = getLeaveType(staffShift.getStaff(), commonFunctions.getFirstDayOfYear(staffShift.getShiftDate()), commonFunctions.getLastDayOfYear(staffShift.getShiftDate()));
+            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staffShift, leaveType, staffShift.getShiftDate(), staffShift.getShiftDate());
+            staffLeaveFromLateAndEarlyController.saveStaffLeaves(staffShift, leaveType, hr);
+            staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(staffShift, leaveType, hr);
+        }
     }
 
 //    public List<StaffShift> fetchStaffShift(StaffShift referenceShift){
@@ -576,6 +633,14 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         if (staffShift.getShift() == null) {
+            return;
+        }
+
+        if (staffShift.getLeaveType() != null) {
+            return;
+        }
+
+        if (staffShift.isConsiderForEarlyOut()) {
             return;
         }
 
@@ -601,11 +666,46 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             }
 
             LeaveType leaveType = getLeaveType(staffShift.getStaff(), commonFunctions.getFirstDayOfYear(staffShift.getShiftDate()), commonFunctions.getLastDayOfYear(staffShift.getShiftDate()));
-            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staffShift.getStaff(), leaveType, staffShift.getShiftDate(), staffShift.getShiftDate());
-            staffLeaveFromLateAndEarlyController.saveStaffLeaves(staffShift.getStaff(), leaveType, staffShift.getShiftDate(), hr);
+            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staffShift, leaveType, staffShift.getShiftDate(), staffShift.getShiftDate());
+            staffLeaveFromLateAndEarlyController.saveStaffLeaves(staffShift, leaveType, hr);
             staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(staffShift, leaveType, hr);
         }
 
+    }
+
+    public void calStaffLeaveFromEarlyOut(StaffShift staffShift, double fromTime) {
+//        List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAddingLeave(fromDate, toDate, staff);
+
+        if (staffShift == null) {
+            return;
+        }
+
+        if (staffShift.getShift() == null) {
+            return;
+        }
+
+        if (staffShift.getLeaveType() != null) {
+            return;
+        }
+
+        if (staffShift.isConsiderForEarlyOut()) {
+            return;
+        }
+
+        if (!staffShift.getStaff().isAllowedEarlyOutLeave()) {
+            return;
+        }
+
+        if (staffShift.getEarlyOutLogged() >= fromTime) {
+            staffShift.setReferenceStaffShiftEarlyOut(staffShift);
+            staffShift.setConsiderForEarlyOut(true);
+            staffShiftFacade.edit(staffShift);
+            LeaveType leaveType = getLeaveType(staffShift.getStaff(), commonFunctions.getFirstDayOfYear(staffShift.getShiftDate()), commonFunctions.getLastDayOfYear(staffShift.getShiftDate()));
+            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(staffShift, leaveType, staffShift.getShiftDate(), staffShift.getShiftDate());
+            staffLeaveFromLateAndEarlyController.saveStaffLeaves(staffShift, leaveType, hr);
+            staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(staffShift, leaveType, hr);
+
+        }
     }
 
     public LeaveType getLeaveType(Staff staff, Date fromDate, Date toDate) {
@@ -1251,11 +1351,11 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                         && ss.getShift().getDayType() != DayType.DayOff
                         && ss.getShift().getDayType() != DayType.SleepingDay
                         && ss.getLeaveType() != null) {
-
+                    System.err.println("******Automatic Leave " + ss.getStaff().getCodeInterger());
                     calStaffLeaveFromLateIn(ss, 10 * 60, 90 * 60, 3);
-                    calStaffLeaveFromLateIn(ss, 90 * 60, 600 * 60, 1);
+                    calStaffLeaveFromLateIn(ss, 90 * 60);
                     calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
-                    calStaffLeaveFromEarlyOut(ss, 90 * 60, 600 * 60, 1);
+                    calStaffLeaveFromEarlyOut(ss, 90 * 60);
                 }
 
             }
@@ -1276,7 +1376,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        if (staffShifts.isEmpty()) {
 //            return;
 //        }
-
 //        for (StaffShift s : staffShifts) {
 //            calStaffLeaveFromLateIn(s, 10 * 60, 90 * 60, 3);
 //            calStaffLeaveFromLateIn(s, 90 * 60, 600 * 60, 1);
