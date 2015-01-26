@@ -764,7 +764,7 @@ public class HumanResourceBean {
                 + " where st.retired=false"
                 + " and st.shiftDate=:dt "
                 + " and st.roster=:rs"
-                + " and st.shift is not null"
+                + " and st.shift is not null "
                 + " order by st.staff.codeInterger";
         hm.put("dt", d);
         hm.put("rs", roster);
@@ -1132,12 +1132,12 @@ public class HumanResourceBean {
                 + " where s.retired=false "
                 + " and s.staff=:st "
                 //                + " and s.leaveType in :ltp"
-                + " and s.leaveType=:ltp "
+                + " and s.leaveType in :ltp "
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
 //        hm.put("ltp", list);
-        hm.put("ltp", leaveType);
+        hm.put("ltp", leaveType.getLeaveTypes());
         hm.put("frm", frmDate);
         hm.put("to", toDate);
 
@@ -1883,6 +1883,8 @@ public class HumanResourceBean {
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.lieuAllowed=false "
+                + " and ( ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null ) "
                 + " and ss.dayType in :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
@@ -1899,7 +1901,9 @@ public class HumanResourceBean {
         String sql = "Select count(distinct(ss.shiftDate)) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
-//                + " and ss.lieuPaymentAllowed=true "
+                //                + " and ss.lieuPaymentAllowed=true "
+                + " and ss.startRecord.recordTimeStamp is not null "
+                + " and ss.endRecord.recordTimeStamp is not null  "
                 + " and ss.dayType in :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
@@ -2182,7 +2186,7 @@ public class HumanResourceBean {
                 + " and s.salaryCycle=:sal ";
 
         HashMap hm = new HashMap<>();
-        hm.put("sal", salaryCycle);        
+        hm.put("sal", salaryCycle);
         hm.put("s", s);
 
         StaffSalary tmp = getStaffSalaryFacade().findFirstBySQL(sql, hm, TemporalType.DATE);

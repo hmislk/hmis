@@ -553,11 +553,19 @@ public class StaffSalaryController implements Serializable {
     }
 
     public void deleteSalaryComponent(StaffSalary staffSalary) {
-        if (getCurrent().getId() == null) {
+        if (staffSalary.getId() == null) {
+            System.err.println("RETURE 1");
             return;
         }
 
         if (staffSalary.getStaff() != null) {
+            
+            staffSalary.setRetireComments("deleted");
+            staffSalary.setRetired(true);
+            staffSalary.setRetiredAt(new Date());
+            staffSalary.setRetirer(getSessionController().getLoggedUser());
+            
+            staffSalaryFacade.edit(staffSalary);
 
             for (StaffSalaryComponant spc : getHumanResourceBean().fetchStaffSalaryComponent(staffSalary)) {
                 spc.setRetireComments("deleted");
@@ -568,7 +576,8 @@ public class StaffSalaryController implements Serializable {
                 getStaffSalaryComponantFacade().edit(spc);
 
             }
-
+            
+            System.err.println("Return 2");
             updateStaffShiftRedo(staffSalary.getStaff(), staffSalary.getSalaryCycle().getSalaryFromDate(), staffSalary.getSalaryCycle().getSalaryToDate());
 
 //            for (StaffShift ss : getHumanResourceBean().fetchStaffShifts(staffSalary)) {
