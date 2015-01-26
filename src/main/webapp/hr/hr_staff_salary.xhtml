@@ -17,23 +17,49 @@
 
             <p:tabView style="min-height:300px;">
                 <p:tab title="Cycle">
-                    <h:panelGrid columns="2">
+                    <p:selectOneMenu id="advanced" 
+                                     value="#{staffSalaryController.salaryCycle}" 
+                                     converter="salaryCycleConverter" 
+                                     effect="fade" var="t" 
+                                     filter="true" 
+                                     filterMatchMode="startsWith"  >
+
+                        <f:selectItem itemLabel="Slect Cycle"/>
+                        <f:selectItems value="#{salaryCycleController.salaryCycles}" 
+                                       var="theme" 
+                                       itemLabel="#{theme.name}" 
+                                       itemValue="#{theme}" ></f:selectItems>
+
+                        <p:column style="width:10%" headerText="Name">
+                            <h:outputText value="#{t.name}" />
+                        </p:column>
+
+                        <p:column headerText="Year">
+                            <h:outputText value="#{t.salaryYear}" />
+                        </p:column>
+                        <p:column headerText="Month">
+                            <h:outputText value="#{t.salaryMonth}" />
+                        </p:column>
+                        <f:ajax execute="@this" render="cycleDetail" event="change" />
+                    </p:selectOneMenu>
+                    <p:commandButton value="Process Salary Cycle" ajax="false" action="#{salaryCycleController.listAllSalaryCycles()}" ></p:commandButton>
+                    <h:panelGrid columns="2" id="cycleDetail">
                         <h:outputLabel value="Salary From Date "/>
-                        <p:calendar value="#{staffSalaryController.salaryFromDate}" pattern="dd MMMM yyyy" >                            
-                            <f:ajax event="dateSelect" execute="@this" />
-                        </p:calendar> 
+                        <h:outputLabel value="#{staffSalaryController.salaryCycle.salaryFromDate}"  >                                                        
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
                         <h:outputLabel value="Salary To Date "/>
-                        <p:calendar   value="#{staffSalaryController.salaryToDate}" pattern="dd MMMM yyyy" >                            
-                            <f:ajax event="dateSelect" execute="@this" />
-                        </p:calendar>    
+                        <h:outputLabel   value="#{staffSalaryController.salaryCycle.salaryToDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
                         <h:outputLabel value="Worked From Date "/>
-                        <p:calendar value="#{staffSalaryController.workedFromDate}" pattern="dd MMMM yyyy" >                            
-                            <f:ajax event="dateSelect" execute="@this" />
-                        </p:calendar> 
+                        <h:outputLabel value="#{staffSalaryController.salaryCycle.workedFromDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
                         <h:outputLabel value="Worked To Date "/>
-                        <p:calendar   value="#{staffSalaryController.workedToDate}" pattern="dd MMMM yyyy" >                            
-                            <f:ajax event="dateSelect" execute="@this" />
-                        </p:calendar>                       
+                        <h:outputLabel   value="#{staffSalaryController.salaryCycle.workedToDate}">
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
                     </h:panelGrid>
                 </p:tab>
                 <p:tab title="Staff List" >
@@ -102,19 +128,19 @@
                             <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
                         </p:column>
                         <p:column headerText="Gross">
-                            <h:outputLabel value="#{i.grossSalary}"/>
+                            <h:outputLabel value="#{i.transGrossSalary}"/>
                         </p:column>
                         <p:column headerText="EPF">
-                            <h:outputLabel value="#{i.epfTotal}"/>
+                            <h:outputLabel value="#{i.epfStaffValue}"/>
                         </p:column>
                         <p:column headerText="EPF Company">
-                            <h:outputLabel value="#{i.epfCompanyTotal}"/>
+                            <h:outputLabel value="#{i.epfCompanyValue}"/>
                         </p:column>
                         <p:column headerText="ETF Company">
-                            <h:outputLabel value="#{i.etfCompanyTotal}"/>
+                            <h:outputLabel value="#{i.etfCompanyValue}"/>
                         </p:column>
                         <p:column headerText="Net Salary">
-                            <h:outputLabel value="#{i.netSalary}"/>
+
                         </p:column>
                         <p:column>
                             <p:commandButton process="@this" 
@@ -130,7 +156,7 @@
                                              actionListener="#{staffSalaryController.deleteSalaryComponent(i)}" onclick="onSubmitButton();">                              
                             </p:commandButton>                          
                         </p:column>
-                        
+
                     </p:dataTable>
                 </p:tab>
             </p:tabView>
@@ -140,7 +166,7 @@
                 <p:tab title="Salary Componenetns">
                     <p:dataTable   editable="true" value="#{staffSalaryController.current.staffSalaryComponants}" var="i" >
 
-                        <p:ajax event="rowEdit" listener="#{staffSalaryController.onEdit}" update="sum" />  
+                        <p:ajax event="rowEdit" listener="#{staffSalaryController.onEdit}" />  
 
                         <p:column headerText="Compnent Name ">
                             <h:outputLabel value="#{i.staffPaysheetComponent.paysheetComponent.name}"/>
@@ -159,46 +185,28 @@
                                     <p:inputText autocomplete="off" value="#{i.componantValue}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
                                 </f:facet>
                             </p:cellEditor>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}"/>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="EPF">
                             <h:outputLabel  value="#{i.epfValue}"/>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.epfStaffValue}"/>
+                            </f:facet>
                         </p:column>       
                         <p:column headerText="EPF Company">
                             <h:outputLabel value="#{i.epfCompanyValue}"/>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.epfCompanyValue}"/>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="ETF Company">
                             <h:outputLabel value="#{i.etfCompanyValue}"/>
-                        </p:column>              
-
-                        <p:columnGroup id="sum" type="footer">
-                            <p:row>
-                                <p:column colspan="2" >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="Net"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{staffSalaryController.current.grossSalary}"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{staffSalaryController.current.epfTotal}"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{staffSalaryController.current.epfCompanyTotal}"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column >
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{staffSalaryController.current.etfTotal}"/>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.etfCompanyValue}"/>
+                            </f:facet>
+                        </p:column>      
                         <p:column style="width:6%">  
                             <f:facet name="header">
                                 <p:commandButton ajax="false" value="Refresh" onclick="onSubmitButton();" />
@@ -210,11 +218,7 @@
                 <p:tab title="Value">
                     <h:panelGrid columns="2">
                         <h:outputLabel value="Gross Salary : "/>
-                        <h:outputLabel value="#{staffSalaryController.current.grossSalary}"/>
-                        <h:outputLabel value="Epf Total : "/>
-                        <h:outputLabel value="#{staffSalaryController.current.epfTotal}"/>                    
-                        <h:outputLabel value="Net Salary : "/>
-                        <h:outputLabel value="#{staffSalaryController.current.netSalary}"/>
+                        <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}"/>                        
                     </h:panelGrid>
                 </p:tab>
 

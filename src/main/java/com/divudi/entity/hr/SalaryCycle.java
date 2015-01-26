@@ -7,6 +7,8 @@ package com.divudi.entity.hr;
 
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -61,6 +63,27 @@ public class SalaryCycle implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    private String name;
+
+    public void processName() {
+        name = "";
+        if (salaryFromDate != null) {
+            name = new SimpleDateFormat("yyyy-MM-dd").format(salaryFromDate);
+        }
+
+        if (salaryToDate != null) {
+            name += " to " + new SimpleDateFormat("yyyy-MM-dd").format(salaryToDate);
+        }
+
+        if (salaryFromDate != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(salaryFromDate);
+            salaryYear = cal.get(Calendar.YEAR);
+            salaryMonth = cal.get(Calendar.MONTH);
+            salaryDate = cal.get(Calendar.DATE);
+        }
+
+    }
 
     public Date getWorkedToDate() {
         return workedToDate;
@@ -77,8 +100,6 @@ public class SalaryCycle implements Serializable {
     public void setWorkedFromDate(Date workedFromDate) {
         this.workedFromDate = workedFromDate;
     }
-    
-    
 
     public Long getId() {
 
@@ -232,6 +253,14 @@ public class SalaryCycle implements Serializable {
 
     public void setOverTimeToDate(Date overTimeToDate) {
         this.overTimeToDate = overTimeToDate;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
 }

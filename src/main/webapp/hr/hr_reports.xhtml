@@ -11,7 +11,21 @@
 
             <ui:define name="content">
                 <h:form>
-                    <h:panelGrid columns="3" styleClass="alignTop">                           
+                    <h:panelGrid columns="3" styleClass="alignTop">   
+                        <p:panel header="Salary">
+                            <h:panelGrid columns="1">
+                                <!--                                <p:commandButton value="(1) All Staff Salary" 
+                                                                                 action="#{salaryCycleController.hr_report_all_staff_salary()}" 
+                                                                                 styleClass="linkButton" ajax="false" /> -->
+                                <p:commandButton value="(1) All Staff Salary" 
+                                                 action="/hr/hr_report_staff_salary" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                <p:commandButton  ajax="false"  action="/hr/hr_staff_basic_list"
+                                                  value="(2) Staff Basic List" 
+                                                  styleClass="linkButton"
+                                                  actionListener="#{staffBasicController.makeItemNul()}"  />
+                            </h:panelGrid>
+                        </p:panel>
                         <p:panel header="Attendance">
                             <h:panelGrid columns="1">
                                 <p:commandButton value="(1) Attendance Report" 

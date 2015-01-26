@@ -19,6 +19,7 @@ import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.PhDate;
 import com.divudi.entity.hr.Roster;
+import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffLeaveEntitle;
@@ -1464,7 +1465,7 @@ public class HumanResourceBean {
             PaysheetComponentType.OT,
             PaysheetComponentType.ExtraDuty,
             PaysheetComponentType.No_Pay_Deduction,
-            PaysheetComponentType.PoyaAllowance,
+            PaysheetComponentType.HolidayAllowance,
             PaysheetComponentType.DayOffAllowance};
 
         String sql = " Select s From StaffPaysheetComponent s "
@@ -1835,7 +1836,7 @@ public class HumanResourceBean {
     }
 
     public double calculateExtraWorkTimeValue(Date fromDate, Date toDate, Staff staff) {
-        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified+ss.extraTimeCompleteRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
+        String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.shiftDate between :fd  and :td "
@@ -2173,17 +2174,15 @@ public class HumanResourceBean {
 //
 //        return tmp;
 //    }
-    public StaffSalary getStaffSalary(Staff s, Date fromDate, Date toDate) {
+    public StaffSalary getStaffSalary(Staff s, SalaryCycle salaryCycle) {
 
         String sql = "Select s From StaffSalary s "
                 + " where s.retired=false "
                 + " and s.staff=:s "
-                + " and s.salaryCycle.salaryFromDate=:fd "
-                + " and s.salaryCycle.salaryToDate=:td";
+                + " and s.salaryCycle=:sal ";
 
         HashMap hm = new HashMap<>();
-        hm.put("fd", fromDate);
-        hm.put("td", toDate);
+        hm.put("sal", salaryCycle);        
         hm.put("s", s);
 
         StaffSalary tmp = getStaffSalaryFacade().findFirstBySQL(sql, hm, TemporalType.DATE);

@@ -33,14 +33,14 @@
 
 
                     <h:panelGrid id="gpSelectText" >
-                        <p:selectOneListbox  id="lstSelect" converter="sscon"   value="#{sheduleController.current}" style="min-width: 100%;" >
+                        <p:selectOneListbox  id="lstSelect" converter="sscon"    value="#{sheduleController.current}" style="min-width: 100%;" >
                             <f:selectItems  value="#{sheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                            <f:ajax render="gpDetail" execute="lstSelect" >
+                            <f:ajax render="gpDetail" execute="lstSelect" event="click" listener="#{sheduleController.fillFees()}" >
                             </f:ajax>
                         </p:selectOneListbox>
                     </h:panelGrid>
-                    
-                    
+
+
                     <h:panelGrid id="gpSelectButtons" columns="3"  >                     
                         <p:commandButton ajax="false" id="btnAdd" value="Add"  action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
                             <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail" execute="" >
@@ -50,21 +50,27 @@
                                     return false;" action="#{sheduleController.delete()}"  value="Delete"  >
                         </p:commandButton>
 
+                        <p:commandButton ajax="false" id="btnSave" value="Save"  
+                                         action="#{sheduleController.saveSelected}"
+                                         styleClass="buttons" onclick="onSubmitButton();">
+
+                        </p:commandButton>
                     </h:panelGrid>
 
                 </p:panel>
 
-                <p:panel id="gpDetail">                    
-                    <f:facet name="header">
-                        <p:commandButton ajax="false"  id="btnSave" value="Save"  
-                                         action="#{sheduleController.saveSelected}" styleClass="buttons" onclick="onSubmitButton();">
-                            <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail "  execute="gpDetail" >
-                            </f:ajax>
-                        </p:commandButton>
-                    </f:facet>
+                <p:panel id="gpDetail">  
+
                     <p:panelGrid columns="2">  
+
                         <p:outputLabel value="Session Name"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
+                        <h:outputText value="Institution" ></h:outputText>
+                        <h:selectOneListbox id="cmbIns"   size="1" value="#{sheduleController.current.institution}" >
+                            <f:selectItem itemLabel="Please select a Institution"/>
+                            <f:selectItems value="#{institutionController.company}" 
+                                           var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />                                                                   
+                        </h:selectOneListbox>
                         <p:outputLabel value="Start Time"/>                        
                         <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
                         </p:calendar>
@@ -116,7 +122,32 @@
                             <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="dd MMMM yyyy" >                              
                             </p:calendar>
                         </p:tab>
-                    </p:tabView>                    
+                    </p:tabView>  
+                    <p:outputLabel value="Session Value"/>
+                    <p:outputLabel value="#{sheduleController.current.total}"/>
+                    <p:dataTable value="#{sheduleController.itemFees}" var="i" >
+                        <p:column headerText="Name">
+                            #{i.name}
+                        </p:column>
+                        <p:column headerText="Fee Type">
+                            #{i.feeType}
+                        </p:column>
+                        <p:column headerText="Specialtiy">
+                            #{i.speciality.name}
+                        </p:column>
+                        <p:column headerText="Staff">
+                            #{i.staff.person.name}
+                        </p:column>                        
+                        <p:column headerText="Institution">
+                            #{i.institution.name}
+                        </p:column>
+                        <p:column headerText="Local Fee">
+                            <p:inputText value="#{i.fee}"/>
+                        </p:column>
+                        <p:column headerText="Foriegn Fee">
+                            <p:inputText value="#{i.ffee}"/>
+                        </p:column>
+                    </p:dataTable>
 
                 </p:panel>
 
