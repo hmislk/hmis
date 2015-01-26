@@ -345,7 +345,6 @@ public class StaffAdditionalFormController implements Serializable {
 //            JsfUtil.addErrorMessage("Please Select Time Type");
 //            return true;
 //        }
-
         if (date == null) {
             JsfUtil.addErrorMessage("Please Select Date");
             return true;
@@ -360,7 +359,6 @@ public class StaffAdditionalFormController implements Serializable {
 //            JsfUtil.addErrorMessage("Please Un Select Staff Shiftt");
 //            return true;
 //        }
-
         //NEED To Check StaffSHift  if not selected is there any shift time on that day
         return false;
     }
@@ -397,6 +395,10 @@ public class StaffAdditionalFormController implements Serializable {
         DayType dayType = phDateController.getHolidayType(date);
         Shift shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
 
+        if (shift == null) {
+            shift = fetchShiftForPh(currentAdditionalForm.getStaff().getRoster(), dayType);
+        }
+
         currentAdditionalForm.setTimes(Times.All);
         currentAdditionalForm.setCreatedAt(new Date());
         currentAdditionalForm.setCreater(getSessionController().getLoggedUser());
@@ -411,6 +413,7 @@ public class StaffAdditionalFormController implements Serializable {
         staffShiftExtra.setCreater(sessionController.getLoggedUser());
         staffShiftExtra.setAdditionalForm(currentAdditionalForm);
         staffShiftExtra.setStaff(currentAdditionalForm.getStaff());
+        staffShiftExtra.setRoster(currentAdditionalForm.getStaff().getRoster());
         staffShiftExtra.setShiftDate(date);
         staffShiftExtra.setShift(shift);
         staffShiftExtra.setShiftStartTime(currentAdditionalForm.getFromTime());
@@ -458,6 +461,25 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     private Shift fetchShift(Roster roster) {
+        if (roster == null) {
+            return null;
+        }
+
+        String sql = "select s from  Shift s "
+                + " where s.retired=false "
+                + " and s.roster=:rs"
+                + " and (s.dayType=:dtp1 or s.dayType=:dtp2 )";
+        HashMap hm = new HashMap();
+        hm.put("rs", roster);
+        hm.put("dtp1", DayType.DayOff);
+        hm.put("dtp2", DayType.SleepingDay);
+
+        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        return sh;
+    }
+
+    private Shift fetchShift(Roster roster, Date date) {
         if (roster == null) {
             return null;
         }

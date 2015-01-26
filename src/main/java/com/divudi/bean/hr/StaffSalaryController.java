@@ -553,11 +553,16 @@ public class StaffSalaryController implements Serializable {
     }
 
     public void deleteSalaryComponent(StaffSalary staffSalary) {
-        if (getCurrent().getId() == null) {
+        if (staffSalary.getId() == null) {
             return;
         }
 
         if (staffSalary.getStaff() != null) {
+            staffSalary.setRetireComments("deleted");
+            staffSalary.setRetired(true);
+            staffSalary.setRetiredAt(new Date());
+            staffSalary.setRetirer(getSessionController().getLoggedUser());
+            staffSalaryFacade.edit(staffSalary);
 
             for (StaffSalaryComponant spc : getHumanResourceBean().fetchStaffSalaryComponent(staffSalary)) {
                 spc.setRetireComments("deleted");
