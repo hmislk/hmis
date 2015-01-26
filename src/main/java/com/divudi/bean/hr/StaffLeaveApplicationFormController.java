@@ -728,20 +728,34 @@ public class StaffLeaveApplicationFormController implements Serializable {
             removeLeaveDataFromStaffShift(stf.getLeaveDate(), stf.getStaff());
         }
     }
+    
+    public boolean errorcheckDeleteLeaveFom() {
+        if(currentLeaveForm == null){
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return true;
+        }
+        
+        if(currentLeaveForm.getRetireComments() == null || "".equals(currentLeaveForm.getRetireComments())){
+            JsfUtil.addErrorMessage("Enter a Comment");
+            return true;
+        }
+        
+        
+        return false; 
+    }
 
     public void deleteLeaveForm() {
-        if (currentLeaveForm != null) {
+        if (errorcheckDeleteLeaveFom()) {
+            return;
+        }      
             deleteStaffLeave(currentLeaveForm);
-
             currentLeaveForm.setRetired(true);
             currentLeaveForm.setRetirer(getSessionController().getLoggedUser());
             currentLeaveForm.setRetiredAt(new Date());
             getLeaveFormFacade().edit(currentLeaveForm);
             JsfUtil.addSuccessMessage("Sucessfuly Deleted.");
             clear();
-        } else {
-            JsfUtil.addErrorMessage("Nothing to Delete.");
-        }
+        
     }
 
     public void viewLeaveForm(LeaveForm leaveForm) {
