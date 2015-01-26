@@ -5,6 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
@@ -36,27 +37,31 @@
             <p:commandButton value="Process Salary Cycle" ajax="false" action="#{salaryCycleController.listAllSalaryCycles()}" ></p:commandButton>
             <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffAndSalaryComponents()}" ></p:commandButton>
 
-            <p:dataTable value="#{salaryCycleController.staffAnsAndSalarySalaryComponents}" var="scc" >
 
-                <p:column headerText="Name" >
-                    <h:outputLabel value="#{scc.staff.person.nameWithTitle}" ></h:outputLabel>
-                </p:column>
+            <table id="tbl">
+                <thead>
+                    <tr>                       
+                        <ui:repeat value="#{salaryCycleController.headers}" var="h">
+                            <th>#{h}</th>
+                        </ui:repeat>
+                    </tr>
+                </thead>
+                <tbody>                   
+                    <ui:repeat value="#{salaryCycleController.staffAnsAndSalarySalaryComponents}" var="scc">
+                        <tr>
+                            <td><h:outputLabel value="#{scc.staff.person.nameWithTitle}" /></td>
+                            <ui:repeat value="#{scc.staffSalaryComponants}"  var="col">
+                                <td><h:outputText value="#{col.componantValue}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputText>
+                                </td>
+                            </ui:repeat>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
 
-                <p:column headerText="Name" >
-                    <h:outputLabel value="#{scc.staffSalaryComponants.size()}" ></h:outputLabel>
-                </p:column>
-                <p:columns value="#{scc.staffSalaryComponants}" 
-                           var="column" 
-                           columnIndexVar="colIndex" >
-                    <f:facet name="header">
-                        <h:outputLabel value="#{column.staffPaysheetComponent.paysheetComponent.name}"/>
-                        
-                    </f:facet>
-                 
-                    <h:outputText value="#{scc[ssc.componantValue]}" />
-                </p:columns>
 
-            </p:dataTable>
 
 
         </h:form>        
