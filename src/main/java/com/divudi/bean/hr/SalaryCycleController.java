@@ -49,6 +49,18 @@ public class SalaryCycleController implements Serializable {
     @Inject
     private SessionController sessionController;
     List<SalaryCycle> salaryCycles;
+    List<String> headers;
+
+    public List<String> getHeaders() {
+        if (headers == null) {
+            headers = new ArrayList<>();
+        }
+        return headers;
+    }
+
+    public void setHeaders(List<String> headers) {
+        this.headers = headers;
+    }
 
     public List<SalaryCycle> completeSalaryCycle(String qry) {
 
@@ -254,12 +266,21 @@ public class SalaryCycleController implements Serializable {
         String jpql;
         Map m;
 
+        headers = new ArrayList<>();
+
         m = new HashMap();
         jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
                 + " from StaffSalaryComponant spc"
-                + " where spc.salaryCycle=:sc ";
+                + " where spc.salaryCycle=:sc"
+                + " order by spc.staffPaysheetComponent.paysheetComponent.id ";
         m.put("sc", current);
         paysheetComponents = paysheetComponentFacade.findBySQL(jpql, m);
+
+        headers.add("Staff Name");
+
+        for (PaysheetComponent paysheetComponent : paysheetComponents) {
+            headers.add(paysheetComponent.getName());
+        }
 
         m = new HashMap();
         jpql = "select distinct(spc.staffSalary.staff)"

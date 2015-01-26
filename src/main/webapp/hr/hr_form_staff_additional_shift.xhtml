@@ -12,7 +12,7 @@
             <p:panel header="Additional Working Shift Sheet">
                 <h:panelGrid columns="2">
                     <p:panel header="Additional Working Details">
-                        <h:panelGrid columns="2">
+                        <h:panelGrid columns="2">                           
                             <h:outputLabel value="Form Number"/>
                             <p:inputText value="#{staffAdditionalFormController.currentAdditionalForm.code}"/>
                             <h:outputLabel value="Staff : "/>
@@ -20,7 +20,15 @@
                             <h:outputLabel value="Shift Date "/>
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         pattern="yyyy MM dd HH:mm:ss">
-                            </p:calendar>                           
+                            </p:calendar>  
+                            <h:outputText value="New Staff Shift(Ex : Ambulance)" ></h:outputText>
+                            <p:selectBooleanCheckbox value="#{staffAdditionalFormController.newStaffShift}"/>
+                            <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShiftNotNormal()}" />
+                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
+                                <f:selectItem itemLabel="Select Staff Shift"/>
+                                <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
+                                               var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                            </p:selectOneMenu>
                             <h:outputLabel value="From Time"/>
                             <p:calendar id="requestedDate" 
                                         value="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
@@ -63,11 +71,9 @@
                             <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                                                     
                             <h:outputLabel value="Approved Person"/>
                             <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/> 
-                            <p:commandButton ajax="false" value="Search Created Date" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
-                            <h:panelGroup>
-                                <p:commandButton ajax="false" value="Search Approved Date " action="#{staffAdditionalFormController.createAmmendmentTableApprovedDate()}" />
-                                <p:commandButton ajax="false" value="Search Shift Date " action="#{staffAdditionalFormController.createAmmendmentTableShiftDate()}" />
-                            </h:panelGroup>
+
+                            <p:commandButton ajax="false" value="Search Shift Date " action="#{staffAdditionalFormController.createAmmendmentTableShiftDateAdditionalShift()}" />
+
                         </h:panelGrid>
                         <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 
                                      rowStyleClass="#{add.retired eq true ? 'redText':''}"

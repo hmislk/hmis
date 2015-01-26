@@ -1404,6 +1404,15 @@ public class HrReportController implements Serializable {
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
+    public void createStaffShiftLateIn() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createStaffShiftQuary(hm);
+        sql += " and ss.lateInLogged>0 "
+                + " order by ss.staff.codeInterger ";
+        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
     public void createStaffShiftOnlyOt() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -1427,17 +1436,17 @@ public class HrReportController implements Serializable {
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
-
-    public void createStaffShiftLateIn() {
-        String sql = "";
-        HashMap hm = new HashMap();
-        sql = createStaffShiftQuary(hm);
-        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
-        sql += " order by ss.staff.codeInterger ";
-//        sql += " order by ss.shift,ss.shiftDate";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-
-    }
+//
+//    public void createStaffShiftLateIn() {
+//        String sql = "";
+//        HashMap hm = new HashMap();
+//        sql = createStaffShiftQuary(hm);
+//        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
+//        sql += " order by ss.staff.codeInterger ";
+////        sql += " order by ss.shift,ss.shiftDate";
+//        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+//
+//    }
 
     List<StaffShiftHistory> staffShiftHistorys;
 

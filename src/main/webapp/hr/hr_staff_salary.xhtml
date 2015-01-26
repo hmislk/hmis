@@ -150,8 +150,7 @@
                             </p:commandButton>                          
                         </p:column>
                         <p:column>
-                            <p:commandButton process="@this" 
-                                             update="@all" 
+                            <p:commandButton ajax="false"
                                              value="Delete"  
                                              actionListener="#{staffSalaryController.deleteSalaryComponent(i)}" onclick="onSubmitButton();">                              
                             </p:commandButton>                          
