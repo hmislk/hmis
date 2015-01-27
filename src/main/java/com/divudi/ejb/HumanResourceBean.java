@@ -1902,6 +1902,7 @@ public class HumanResourceBean {
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.lieuAllowed=false "
+                + " and ss.lieuQtyUtilized=0"
                 + " and ( ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null ) "
                 + " and ss.dayType in :dtp "

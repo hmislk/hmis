@@ -161,11 +161,14 @@ public class StaffLeaveApplicationFormController implements Serializable {
     }
 
     public void fetchStaffShiftLie() {
+        
         String sql = "Select s from StaffShift s"
                 + " where s.retired=false"
                 + " and s.lieuAllowed=true"
                 + " and (s.lieuQty>s.lieuQtyUtilized)"
-                + " and s.staff=:stf ";
+                + " and s.staff=:stf "
+                + " and s.startRecord.recordTimeStamp is not null "
+                + " and s.endRecord.recordTimeStamp is not null";
         HashMap hm = new HashMap();
         hm.put("stf", getCurrentLeaveForm().getStaff());
         staffShiftsLie = staffShiftFacade.findBySQL(sql, hm);
