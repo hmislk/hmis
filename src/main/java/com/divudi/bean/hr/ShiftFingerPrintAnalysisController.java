@@ -612,7 +612,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         if (staffShiftLateInTenMinuteLinked.size() >= shiftCount) {
             for (int i = 0; i < shiftCount; i++) {
+                
                 StaffShift lateShift = staffShiftLateInTenMinuteLinked.pollFirst();
+                System.err.println("Late In Shift ID "+lateShift.getId());
                 lateShift.setReferenceStaffShiftLateIn(stfCurrent);
                 lateShift.setConsiderForLateIn(true);
                 staffShiftFacade.edit(lateShift);
@@ -632,6 +634,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         if (stfCurrent.getLateInLogged() >= fromTime) {
             stfCurrent.setReferenceStaffShiftLateIn(stfCurrent);
+            System.err.println("Late In Shift ID "+stfCurrent.getId());
             stfCurrent.setConsiderForLateIn(true);
             staffShiftFacade.edit(stfCurrent);
 
@@ -661,6 +664,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         if (staffShiftEarlyOutThirtyMinuteLinked.size() >= shiftCount) {
             for (int i = 0; i < shiftCount; i++) {
                 StaffShift earlyOut = staffShiftEarlyOutThirtyMinuteLinked.pollFirst();
+                System.err.println("Early Out  Shift ID "+earlyOut.getId());
                 earlyOut.setReferenceStaffShiftEarlyOut(stfCurrent);
                 earlyOut.setConsiderForEarlyOut(true);
                 staffShiftFacade.edit(earlyOut);
@@ -678,6 +682,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     public void calStaffLeaveFromEarlyOut(StaffShift stfCurrent, double fromTime) {
 
         if (stfCurrent.getEarlyOutLogged() >= fromTime) {
+            System.err.println("Early Out  Shift ID "+stfCurrent.getId());
             stfCurrent.setReferenceStaffShiftEarlyOut(stfCurrent);
             stfCurrent.setConsiderForEarlyOut(true);
             staffShiftFacade.edit(stfCurrent);
