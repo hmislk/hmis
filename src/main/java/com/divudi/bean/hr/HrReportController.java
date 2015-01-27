@@ -1503,7 +1503,10 @@ public class HrReportController implements Serializable {
         
          sql = "select s from StaffShift s"
                  + " where  (s.considerForEarlyOut=true "
-                 + " or s.considerForLateIn=true)";
+                 + " or s.considerForLateIn=true "
+                 + " or s.referenceStaffShiftLateIn is not null "
+                 + " or s.referenceStaffShiftEarlyOut is not null "
+                 + " or s.referenceStaffShift is not null )";
 
         List<StaffShift> list2 = staffShiftFacade.findBySQL(sql);
         if (list2 == null) {
