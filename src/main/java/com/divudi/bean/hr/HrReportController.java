@@ -1513,6 +1513,7 @@ public class HrReportController implements Serializable {
         for(StaffShift s:list2){
             s.setConsiderForEarlyOut(false);
             s.setConsiderForLateIn(false);
+            s.setLeaveType(null);
             staffShiftFacade.edit(s);
         }
 
