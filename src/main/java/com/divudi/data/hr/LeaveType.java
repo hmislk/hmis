@@ -39,6 +39,17 @@ public enum LeaveType {
 //    Other,;
 
     private boolean exceptionalLeave = false;
+    boolean autoLeave = false;
+
+    public boolean isAutoLeave() {
+        return autoLeave;
+    }
+
+    public void setAutoLeave(boolean autoLeave) {
+        this.autoLeave = autoLeave;
+    }
+    
+    
 
     public boolean isExceptionalLeave() {
         return exceptionalLeave;
@@ -56,6 +67,8 @@ public enum LeaveType {
     }
 
     private LeaveType parent = null;
+    
+    
 
     private LeaveType(LeaveType parent) {
         this.parent = parent;

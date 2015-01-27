@@ -57,6 +57,9 @@
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
+                            <p:inputText id="recomment" value="#{staffAdditionalFormController.currentAdditionalForm.retireComments}" />
+                            
+                            <p:watermark for="recomment" value="Comment"/>
 
                         </h:panelGrid>
                     </p:panel>

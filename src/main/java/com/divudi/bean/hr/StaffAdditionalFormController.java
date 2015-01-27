@@ -59,6 +59,25 @@ public class StaffAdditionalFormController implements Serializable {
     Staff approvedStaff;
     Date fromDate;
     Date toDate;
+    
+    public boolean errorCheckAdditionalForm() {
+        if(getCurrentAdditionalForm() == null){
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return true;
+        }
+        
+        if(getCurrentAdditionalForm().getRetireComments()==null ){
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return true;
+        }
+        
+        if(getCurrentAdditionalForm().getStaffShift()==null ){
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return true;
+        }
+        
+        return false;
+    }
 
     public void deleteAdditionalForm() {
         if (getCurrentAdditionalForm() != null) {
@@ -74,7 +93,7 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addSuccessMessage("Sucessfuly Deleted.");
             clear();
         } else {
-            JsfUtil.addErrorMessage("Nothing to Delete.");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
     }
 

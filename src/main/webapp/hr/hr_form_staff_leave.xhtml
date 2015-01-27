@@ -84,6 +84,9 @@
                                                  action="#{staffLeaveApplicationFormController.clear}"/>
                                 <p:commandButton ajax="false" value="Delete" 
                                                  action="#{staffLeaveApplicationFormController.deleteLeaveForm()}"/>
+                                <p:inputText id="recomment" value="#{staffLeaveApplicationFormController.currentLeaveForm.retireComments}"/>
+                                <p:watermark for="recomment" value="Comment"/>
+                                
                             </h:panelGroup>                     
                         </h:panelGrid>
                     </p:panel> 

@@ -747,7 +747,7 @@ public class HumanResourceBean {
                 + " and st.shiftDate=:dt "
                 + " and st.staff=:st"
                 + " and st.shift is not null"
-                + " order by st.shift.shiftOrder,st.shift.id";
+                + " order by st.shift.id";
         hm.put("dt", d);
         hm.put("st", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
@@ -787,6 +787,25 @@ public class HumanResourceBean {
                 + " order by st.staff.codeInterger";
         hm.put("dt", d);
         hm.put("rs", roster);
+        List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
+//        System.err.println("fetchStaffShiftWithShift:: " + tmp);
+        return tmp;
+    }
+
+    public List<StaffShift> fetchStaffShiftWithShiftAdditional(Date d, Staff staff) {
+        // List<StaffShift> tmp=new ArrayList<>();
+        String sql;
+        HashMap hm = new HashMap();
+
+        sql = "select st From StaffShift st "
+                + " where st.retired=false "
+                + " and st.additionalForm is not null"
+                + " and st.shiftDate=:dt "
+                + " and st.staff=:rs"
+                + " and st.shift is not null"
+                + " order by st.staff.codeInterger";
+        hm.put("dt", d);
+        hm.put("rs", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
 //        System.err.println("fetchStaffShiftWithShift:: " + tmp);
         return tmp;
@@ -1132,12 +1151,12 @@ public class HumanResourceBean {
                 + " where s.retired=false "
                 + " and s.staff=:st "
                 //                + " and s.leaveType in :ltp"
-                + " and s.leaveType=:ltp "
+                + " and s.leaveType in :ltp "
                 + " and (s.leaveDate between :frm and :to)";
         HashMap hm = new HashMap();
         hm.put("st", staff);
 //        hm.put("ltp", list);
-        hm.put("ltp", leaveType);
+        hm.put("ltp", leaveType.getLeaveTypes());
         hm.put("frm", frmDate);
         hm.put("to", toDate);
 
@@ -1148,8 +1167,8 @@ public class HumanResourceBean {
 
         String sql = "Select s From StaffLeave s"
                 + " where s.retired=false "
-                + " and s.form.retired=false "
-                + " and s.retired=false "
+//                + " and s.form.retired=false "
+//                + " and s.retired=false "
                 + " and s.staff=:st"
                 + " and s.leaveDate=:date";
         HashMap hm = new HashMap();

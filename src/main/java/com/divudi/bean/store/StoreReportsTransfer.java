@@ -287,6 +287,43 @@ public class StoreReportsTransfer implements Serializable {
             netTotalValues = netTotalValues + b.getNetTotal();
         }
     }
+    
+    public void fillDepartmentUnitIssueByBillItemStore() {
+        Map m = new HashMap();
+        String sql;
+
+        sql = "select b from BillItem b where "
+                + " b.bill.createdAt "
+                + " between :fd and :td"
+                + " and b.billType=:bt";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", BillType.StoreIssue);
+
+        if (fromDepartment != null) {
+            sql += " and b.bill.fromDepartment=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            sql += " and b.bill.toDepartment=:tdept  ";
+            m.put("tdept", toDepartment);
+        }
+
+        sql += " order by b.bill.id";
+
+        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        totalsValue = 0.0;
+        discountsValue = 0.0;
+        netTotalValues = 0.0;
+
+        for (BillItem b : transferItems) {
+            totalsValue = totalsValue + (b.getRate());
+            discountsValue = discountsValue + b.getDiscount();
+            netTotalValues = netTotalValues + b.getNetValue();
+        }
+    }
 
     public void fillFromDepartmentUnitIssueByBillStore() {
         Map m = new HashMap();

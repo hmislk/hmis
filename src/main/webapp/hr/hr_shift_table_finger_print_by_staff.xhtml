@@ -4,7 +4,8 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form id="form">
@@ -25,21 +26,15 @@
                 <p:calendar id="toDate" 
                             value="#{shiftFingerPrintAnalysisController.toDate}" 
                             pattern="dd MMMM yyyy" />
-                <h:outputLabel value="Roster"/>
-                <p:selectOneMenu id="roster" value="#{shiftFingerPrintAnalysisController.roster}">
-                    <f:selectItem itemLabel="Select Roster"/>
-                    <f:selectItems value="#{rosterController.items}" 
-                                   var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
-                    <f:ajax event="change" execute="@this" render="lst" 
-                            listener="#{shiftFingerPrintAnalysisController.selectRosterLstener()}" />
-                    
-                </p:selectOneMenu>
+                
+                <h:outputLabel value="Staff : "/>
+                <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
                 <h:panelGroup>
                     <p:commandButton value="Fill"
                                      process="@this frmDate toDate roster"
                                      update="lst"
                                      actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                     action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
+                                     action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
                                      onclick="onSubmitButton();" /> 
 
                     <p:commandButton value="Fill Additional Only"
@@ -61,7 +56,7 @@
                              process="@this frmDate toDate roster"
                              update="lst"
                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                             action="#{shiftFingerPrintAnalysisController.createShiftTableReset()}" 
+                             action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
                              onclick="onSubmitButton();" 
                              style="float: right;"/> 
 
@@ -90,7 +85,7 @@
                             <h:outputLabel value="Staff Name"/>
                         </f:facet>
                         <h:outputLabel value="#{sts.staff.person.name}"/>
-                        
+
                     </p:column> 
                     <p:column>
                         <f:facet name="header">
