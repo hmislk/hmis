@@ -516,7 +516,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         ss.calLeaveTime();
         ss.setLeaveForm(form);
         ss.setLeaveType(leaveType);
-        staffShiftFacade.edit(ss);
+//        staffShiftFacade.edit(ss);
 
     }
 
