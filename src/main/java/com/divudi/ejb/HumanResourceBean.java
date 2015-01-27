@@ -1167,8 +1167,8 @@ public class HumanResourceBean {
 
         String sql = "Select s From StaffLeave s"
                 + " where s.retired=false "
-                + " and s.form.retired=false "
-                + " and s.retired=false "
+//                + " and s.form.retired=false "
+//                + " and s.retired=false "
                 + " and s.staff=:st"
                 + " and s.leaveDate=:date";
         HashMap hm = new HashMap();
