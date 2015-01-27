@@ -272,6 +272,7 @@ public class SalaryCycleController implements Serializable {
         jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
                 + " from StaffSalaryComponant spc"
                 + " where spc.salaryCycle=:sc"
+                + " and spc.retired=false"
                 + " order by spc.staffPaysheetComponent.paysheetComponent.id ";
         m.put("sc", current);
         paysheetComponents = paysheetComponentFacade.findBySQL(jpql, m);
@@ -285,7 +286,8 @@ public class SalaryCycleController implements Serializable {
         m = new HashMap();
         jpql = "select distinct(spc.staffSalary.staff)"
                 + " from StaffSalaryComponant spc "
-                + " where spc.salaryCycle=:sc ";
+                + " where spc.salaryCycle=:sc "
+                + " and spc.retired=false";
         m.put("sc", current);
         staffes = staffFacade.findBySQL(jpql, m);
 
@@ -298,6 +300,8 @@ public class SalaryCycleController implements Serializable {
             for (PaysheetComponent psc : paysheetComponents) {
                 jpql = "select spc from StaffSalaryComponant spc "
                         + " where spc.staffSalary.staff=:st"
+                        + " and spc.retired=false"
+                        + " and spc.staffSalary.retired=false"
                         + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
                         + " and spc.salaryCycle=:sc ";
                 m = new HashMap();

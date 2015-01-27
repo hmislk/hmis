@@ -35,9 +35,12 @@
             </p:selectOneMenu>
 
             <p:commandButton value="Process Salary Cycle" ajax="false" action="#{salaryCycleController.listAllSalaryCycles()}" ></p:commandButton>
+            <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="print" ></p:printer>
+                                </p:commandButton>
             <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffAndSalaryComponents()}" ></p:commandButton>
 
-
+            <p:panel id="print">
             <table id="tbl" border="1">
                 <thead>
                     <tr>                       
@@ -61,7 +64,7 @@
                 </tbody>
             </table>
 
-
+</p:panel>
 
 
         </h:form>        
