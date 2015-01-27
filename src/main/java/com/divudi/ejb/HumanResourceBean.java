@@ -747,7 +747,7 @@ public class HumanResourceBean {
                 + " and st.shiftDate=:dt "
                 + " and st.staff=:st"
                 + " and st.shift is not null"
-                + " order by st.shift.shiftOrder,st.shift.id";
+                + " order by st.shift.id";
         hm.put("dt", d);
         hm.put("st", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
@@ -787,6 +787,25 @@ public class HumanResourceBean {
                 + " order by st.staff.codeInterger";
         hm.put("dt", d);
         hm.put("rs", roster);
+        List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
+//        System.err.println("fetchStaffShiftWithShift:: " + tmp);
+        return tmp;
+    }
+
+    public List<StaffShift> fetchStaffShiftWithShiftAdditional(Date d, Staff staff) {
+        // List<StaffShift> tmp=new ArrayList<>();
+        String sql;
+        HashMap hm = new HashMap();
+
+        sql = "select st From StaffShift st "
+                + " where st.retired=false "
+                + " and st.additionalForm is not null"
+                + " and st.shiftDate=:dt "
+                + " and st.staff=:rs"
+                + " and st.shift is not null"
+                + " order by st.staff.codeInterger";
+        hm.put("dt", d);
+        hm.put("rs", staff);
         List<StaffShift> tmp = getStaffShiftFacade().findBySQLWithoutCache(sql, hm, TemporalType.DATE);
 //        System.err.println("fetchStaffShiftWithShift:: " + tmp);
         return tmp;
