@@ -1362,6 +1362,8 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                         calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
                         calStaffLeaveFromEarlyOut(ss, 90 * 60);
                     }
+                    
+                    staffShiftFacade.edit(ss);
                 }
 
             }
