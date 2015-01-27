@@ -1503,7 +1503,10 @@ public class HrReportController implements Serializable {
         
          sql = "select s from StaffShift s"
                  + " where  (s.considerForEarlyOut=true "
-                 + " or s.considerForLateIn=true)";
+                 + " or s.considerForLateIn=true "
+                 + " or s.referenceStaffShiftLateIn is not null "
+                 + " or s.referenceStaffShiftEarlyOut is not null "
+                 + " or s.referenceStaffShift is not null )";
 
         List<StaffShift> list2 = staffShiftFacade.findBySQL(sql);
         if (list2 == null) {
@@ -1513,6 +1516,7 @@ public class HrReportController implements Serializable {
         for(StaffShift s:list2){
             s.setConsiderForEarlyOut(false);
             s.setConsiderForLateIn(false);
+            s.setLeaveType(null);
             staffShiftFacade.edit(s);
         }
 
@@ -1754,8 +1758,8 @@ public class HrReportController implements Serializable {
         String sql = "";
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
-        sql += " and ss.shiftEndTime > ss.endRecord.recordTimeStamp";
-        sql += " order by ss.codeInterger";
+        sql += " and ss.earlyOutLogged>0 ";
+        sql += " order by ss.staff.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
