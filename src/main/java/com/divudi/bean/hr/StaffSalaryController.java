@@ -383,11 +383,11 @@ public class StaffSalaryController implements Serializable {
 
     }
 
-    private Long setHoliDayAllowance(PaysheetComponentType paysheetComponentType) {
+    private Long setHoliDayAllowance(PaysheetComponentType paysheetComponentType, DayType dayType) {
         long count = 0;
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
-            count = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff());
+            count = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType);
 
             double salaryValue = 0;
 
@@ -406,8 +406,10 @@ public class StaffSalaryController implements Serializable {
                 }
             }
 
+            double salaryPerDay = (salaryValue / finalVariables.getWorkingDaysPerMonth());
+            double value = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
             //Need Calculation Sum
-            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * finalVariables.getHoliDayAllowanceMultiply() * count);
+            ss.setComponantValue(value);
 
             System.err.println("Sal Val " + salaryValue);
             System.err.println("No Pa " + count);
@@ -450,8 +452,10 @@ public class StaffSalaryController implements Serializable {
                 }
             }
 
+            double salaryPerDay = (salaryValue / finalVariables.getWorkingDaysPerMonth());
+            double value = getHumanResourceBean().calculateOffDays(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
             //Need Calculation Sum
-            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * finalVariables.getDayOffAllowanceMultiply() * count);
+            ss.setComponantValue(value);
             System.err.println("Day Off Val " + salaryValue);
             System.err.println("Day Off Count " + count);
         } else {
@@ -591,9 +595,9 @@ public class StaffSalaryController implements Serializable {
 
             setOT();
             setExtraDuty();
-            Long count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance);
+            Long count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
             getCurrent().setMerchantileCount(count.doubleValue());
-            count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance);
+            count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
             getCurrent().setMerchantileCount(count.doubleValue());
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.DayOffAllowance, DayType.DayOff);
             getCurrent().setDayOffCount(count.doubleValue());
