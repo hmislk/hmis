@@ -5,9 +5,8 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.data.dataStructure.ExtraDutyCount;
-import com.divudi.data.dataStructure.OtNormalSpecial;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -79,11 +78,23 @@ public class StaffSalary implements Serializable {
     private double epfCompanyValue;
     double componentValueAddition;
     double componentValueSubstraction;
+    @ManyToOne
+    Institution institution;
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsAddition;
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction;
 
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    
+    
     public double getBrValue() {
         return brValue;
     }
