@@ -666,6 +666,19 @@ public class StaffSalaryController implements Serializable {
 
         //   createStaffSalaryTable();
     }
+    
+    public void fetchStaffSalay() {
+      String sql;
+      HashMap hm = new HashMap();
+      
+      sql= "SELECT ss FROM StaffSalary ss "
+              + " WHERE ss.retired=false "
+              + " and ss.salaryCycle=:sc ";
+      
+      hm.put("sc", getSalaryCycle());
+      items=getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+      
+    }
 
     public void saveSalary() {
         if (getStaffController().getSelectedList() == null) {
