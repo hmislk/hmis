@@ -7,6 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.SalaryCycle;
@@ -20,6 +21,7 @@ import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -49,17 +51,17 @@ public class SalaryCycleController implements Serializable {
     @Inject
     private SessionController sessionController;
     List<SalaryCycle> salaryCycles;
-    List<String> headers;
+    List<String> headersAdd;
 
-    public List<String> getHeaders() {
-        if (headers == null) {
-            headers = new ArrayList<>();
+    public List<String> getHeadersAdd() {
+        if (headersAdd == null) {
+            headersAdd = new ArrayList<>();
         }
-        return headers;
+        return headersAdd;
     }
 
-    public void setHeaders(List<String> headers) {
-        this.headers = headers;
+    public void setHeadersAdd(List<String> headersAdd) {
+        this.headersAdd = headersAdd;
     }
 
     public List<SalaryCycle> completeSalaryCycle(String qry) {
@@ -259,28 +261,100 @@ public class SalaryCycleController implements Serializable {
         this.staffSalaryComponantFacade = staffSalaryComponantFacade;
     }
 
+//    public void fillStaffAndSalaryComponents2() {
+//
+//        List<PaysheetComponent> paysheetComponents;
+//        List<Staff> staffes;
+//        String jpql;
+//        Map m;
+//
+//        headersAdd = new ArrayList<>();
+//
+//        m = new HashMap();
+//        jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
+//                + " from StaffSalaryComponant spc"
+//                + " where spc.salaryCycle=:sc"
+//                + " and spc.retired=false"
+//                + " order by spc.staffPaysheetComponent.paysheetComponent.orderNo";
+//        m.put("sc", current);
+//        paysheetComponents = paysheetComponentFacade.findBySQL(jpql, m);
+//
+//        headersAdd.add("Staff Name");
+//        for (PaysheetComponent paysheetComponent : paysheetComponents) {
+//            headersAdd.add(paysheetComponent.getName());
+//        }
+//
+//        m = new HashMap();
+//        jpql = "select distinct(spc.staffSalary.staff)"
+//                + " from StaffSalaryComponant spc "
+//                + " where spc.salaryCycle=:sc "
+//                + " and spc.retired=false";
+//        m.put("sc", current);
+//        staffes = staffFacade.findBySQL(jpql, m);
+//
+//        staffAnsAndSalarySalaryComponents = new ArrayList<>();
+//
+//        for (Staff s : staffes) {
+//            StaffAndSalarySalaryComponent sc = new StaffAndSalarySalaryComponent();
+//            sc.setStaff(s);          
+//            for (PaysheetComponent psc : paysheetComponents) {
+//                jpql = "select spc from StaffSalaryComponant spc "
+//                        + " where spc.staffSalary.staff=:st"
+//                        + " and spc.retired=false"
+//                        + " and spc.staffSalary.retired=false"
+//                        + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
+//                        + " and spc.salaryCycle=:sc ";
+//                m = new HashMap();
+//                m.put("st", s);
+//                m.put("pc", psc);
+//                m.put("sc", current);
+//                List<StaffSalaryComponant> c = staffSalaryComponantFacade.findBySQL(jpql, m);
+//                sc.getStaffSalaryComponant().addAll(c);
+//            }
+//            staffAnsAndSalarySalaryComponents.add(sc);
+//        }
+//    }
+    private List<PaysheetComponent> fetchPaysheetComponents(PaysheetComponentType paysheetComponentType) {
+        HashMap m = new HashMap();
+        String jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
+                + " from StaffSalaryComponant spc"
+                + " where spc.salaryCycle=:sc"
+                + " and spc.retired=false "
+                + " and spc.staffPaysheetComponent.paysheetComponent.componentType in :tp"
+                + " order by spc.staffPaysheetComponent.paysheetComponent.orderNo";
+        m.put("sc", current);
+        m.put("tp", Arrays.asList(paysheetComponentType.children()));
+        return paysheetComponentFacade.findBySQL(jpql, m);
+    }
+
+    List<String> headersSub;
+
+    public List<String> getHeadersSub() {
+        return headersSub;
+    }
+
+    public void setHeadersSub(List<String> headersSub) {
+        this.headersSub = headersSub;
+    }
+
     public void fillStaffAndSalaryComponents() {
 
-        List<PaysheetComponent> paysheetComponents;
+        List<PaysheetComponent> paysheetComponentsAddition;
+        List<PaysheetComponent> paysheetComponentsSubstraction;
         List<Staff> staffes;
         String jpql;
         Map m;
 
-        headers = new ArrayList<>();
+        headersAdd = new ArrayList<>();
+        paysheetComponentsAddition = fetchPaysheetComponents(PaysheetComponentType.addition);
+        for (PaysheetComponent paysheetComponent : paysheetComponentsAddition) {
+            headersAdd.add(paysheetComponent.getName());
+        }
 
-        m = new HashMap();
-        jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
-                + " from StaffSalaryComponant spc"
-                + " where spc.salaryCycle=:sc"
-                + " and spc.retired=false"
-                + " order by spc.staffPaysheetComponent.paysheetComponent.id ";
-        m.put("sc", current);
-        paysheetComponents = paysheetComponentFacade.findBySQL(jpql, m);
-
-        headers.add("Staff Name");
-
-        for (PaysheetComponent paysheetComponent : paysheetComponents) {
-            headers.add(paysheetComponent.getName());
+        headersSub = new ArrayList<>();
+        paysheetComponentsSubstraction = fetchPaysheetComponents(PaysheetComponentType.subtraction);
+        for (PaysheetComponent paysheetComponent : paysheetComponentsSubstraction) {
+            headersSub.add(paysheetComponent.getName());
         }
 
         m = new HashMap();
@@ -296,23 +370,36 @@ public class SalaryCycleController implements Serializable {
         for (Staff s : staffes) {
             StaffAndSalarySalaryComponent sc = new StaffAndSalarySalaryComponent();
             sc.setStaff(s);
-            sc.setStaffSalaryComponants(new ArrayList<StaffSalaryComponant>());
-            for (PaysheetComponent psc : paysheetComponents) {
-                jpql = "select spc from StaffSalaryComponant spc "
-                        + " where spc.staffSalary.staff=:st"
-                        + " and spc.retired=false"
-                        + " and spc.staffSalary.retired=false"
-                        + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
-                        + " and spc.salaryCycle=:sc ";
-                m = new HashMap();
-                m.put("st", s);
-                m.put("pc", psc);
-                m.put("sc", current);
-                List<StaffSalaryComponant> c = staffSalaryComponantFacade.findBySQL(jpql, m);
-                sc.getStaffSalaryComponants().addAll(c);
+            for (PaysheetComponent psc : paysheetComponentsAddition) {
+                List<StaffSalaryComponant> c = fetchSalaryComponents(s, psc);
+                if (c != null) {
+                    sc.getStaffSalaryComponantsAddition().addAll(c);
+                }
             }
+            for (PaysheetComponent psc : paysheetComponentsSubstraction) {
+                List<StaffSalaryComponant> c = fetchSalaryComponents(s, psc);
+                if (c != null) {
+                    sc.getStaffSalaryComponantsSubstraction().addAll(c);
+                }
+            }
+            sc.calValue();
             staffAnsAndSalarySalaryComponents.add(sc);
         }
+    }
+
+    private List<StaffSalaryComponant> fetchSalaryComponents(Staff s, PaysheetComponent psc) {
+        String jpql = "select spc from StaffSalaryComponant spc "
+                + " where spc.staffSalary.staff=:st"
+                + " and spc.retired=false"
+                + " and spc.staffSalary.retired=false"
+                + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
+                + " and spc.salaryCycle=:sc ";
+        HashMap m = new HashMap();
+        m.put("st", s);
+        m.put("pc", psc);
+        m.put("sc", current);
+        return staffSalaryComponantFacade.findBySQL(jpql, m);
+
     }
 
     public void fillStaffSalary() {
@@ -333,7 +420,68 @@ public class SalaryCycleController implements Serializable {
     public class StaffAndSalarySalaryComponent {
 
         Staff staff;
-        List<StaffSalaryComponant> staffSalaryComponants;
+        double valueAdding;
+        double epf;
+        double etf;
+        double valueSubstarction;
+        List<StaffSalaryComponant> staffSalaryComponantsAddition;
+        List<StaffSalaryComponant> staffSalaryComponantsSubstraction;
+
+        public void calValue() {
+            valueAdding = 0;
+            valueSubstarction = 0;
+            epf = 0;
+            etf = 0;
+
+            if (staffSalaryComponantsAddition != null) {
+                for (StaffSalaryComponant componant : staffSalaryComponantsAddition) {
+                    valueAdding += componant.getComponantValue();
+                    epf += componant.getEpfValue();
+                    etf += componant.getEtfValue();
+                }
+            }
+
+            if (staffSalaryComponantsSubstraction != null) {
+                for (StaffSalaryComponant componant : staffSalaryComponantsSubstraction) {
+                    valueSubstarction += componant.getComponantValue();
+                    epf += componant.getEpfValue();
+                    etf += componant.getEtfValue();
+                }
+            }
+
+        }
+
+        public double getEpf() {
+            return epf;
+        }
+
+        public void setEpf(double epf) {
+            this.epf = epf;
+        }
+
+        public double getEtf() {
+            return etf;
+        }
+
+        public void setEtf(double etf) {
+            this.etf = etf;
+        }
+
+        public double getValueAdding() {
+            return valueAdding;
+        }
+
+        public void setValueAdding(double valueAdding) {
+            this.valueAdding = valueAdding;
+        }
+
+        public double getValueSubstarction() {
+            return valueSubstarction;
+        }
+
+        public void setValueSubstarction(double valueSubstarction) {
+            this.valueSubstarction = valueSubstarction;
+        }
 
         public Staff getStaff() {
             return staff;
@@ -343,12 +491,26 @@ public class SalaryCycleController implements Serializable {
             this.staff = staff;
         }
 
-        public List<StaffSalaryComponant> getStaffSalaryComponants() {
-            return staffSalaryComponants;
+        public List<StaffSalaryComponant> getStaffSalaryComponantsAddition() {
+            if (staffSalaryComponantsAddition == null) {
+                staffSalaryComponantsAddition = new ArrayList<>();
+            }
+            return staffSalaryComponantsAddition;
         }
 
-        public void setStaffSalaryComponants(List<StaffSalaryComponant> staffSalaryComponants) {
-            this.staffSalaryComponants = staffSalaryComponants;
+        public void setStaffSalaryComponantsAddition(List<StaffSalaryComponant> staffSalaryComponantsAddition) {
+            this.staffSalaryComponantsAddition = staffSalaryComponantsAddition;
+        }
+
+        public List<StaffSalaryComponant> getStaffSalaryComponantsSubstraction() {
+            if (staffSalaryComponantsSubstraction == null) {
+                staffSalaryComponantsSubstraction = new ArrayList<>();
+            }
+            return staffSalaryComponantsSubstraction;
+        }
+
+        public void setStaffSalaryComponantsSubstraction(List<StaffSalaryComponant> staffSalaryComponantsSubstraction) {
+            this.staffSalaryComponantsSubstraction = staffSalaryComponantsSubstraction;
         }
 
     }
