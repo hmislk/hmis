@@ -474,7 +474,7 @@ public class StaffSalaryController implements Serializable {
             double salaryValue = 0;
 
             if (getCurrent().getStaffSalaryComponants() == null) {
-                return ;
+                return;
             }
 
             for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
@@ -493,7 +493,7 @@ public class StaffSalaryController implements Serializable {
             System.err.println("Sal Val " + salaryValue);
 //            System.err.println("No Pa " + noPayTime);
         } else {
-            return ;
+            return;
         }
 
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
@@ -604,6 +604,16 @@ public class StaffSalaryController implements Serializable {
             setAdjustments();
         }
 
+    }
+
+    public void deleteAll() {
+        if (items == null) {
+            return;
+        }
+
+        for (StaffSalary s : items) {
+            deleteSalaryComponent(s);
+        }
     }
 
     public void deleteSalaryComponent(StaffSalary staffSalary) {
