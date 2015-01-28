@@ -1854,30 +1854,34 @@ public class HumanResourceBean {
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
-    public double calculateExtraWorkTimeValue(Date fromDate, Date toDate, Staff staff) {
+    public double calculateExtraWorkTimeValue(Date fromDate, Date toDate, Staff staff, DayType dayType) {
         String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified)*ss.multiplyingFactorOverTime*ss.overTimeValuePerSecond)"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.shiftDate between :fd  and :td "
-                + " and ss.staff=:stf ";
+                + " and ss.staff=:stf"
+                + " and ss.dayType=:dtp ";
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("stf", staff);
+        hm.put("dtp", dayType);
 
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
-    public double calculateExtraWorkTime(Date fromDate, Date toDate, Staff staff) {
+    public double calculateExtraWorkTime(Date fromDate, Date toDate, Staff staff, DayType dayType) {
         String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified))"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
                 + " and ss.shiftDate between :fd  and :td "
-                + " and ss.staff=:stf ";
+                + " and ss.staff=:stf"
+                + " and ss.dayType=:dtp ";
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("stf", staff);
+        hm.put("dtp", dayType);
 
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
@@ -1989,7 +1993,6 @@ public class HumanResourceBean {
 //
 //        return staffShiftFacade.findLongByJpql(sql, hm, TemporalType.DATE);
 //    }
-    
     public long calculateOffDays(Date fromDate, Date toDate, Staff staff, DayType dayType) {
         String sql = "Select count(distinct(ss.shiftDate)) "
                 + " from StaffShift ss "

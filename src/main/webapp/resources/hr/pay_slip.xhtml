@@ -41,7 +41,7 @@
                     <h:outputText value="Pay Advance Slip"/> 
                 </div>
 
-                <table>                    
+                <table border="1px;">                    
                     <tr>
                         <td style="text-align: left;">
                             <h:outputText value="Month" style="text-align: left;"/> 
@@ -91,20 +91,19 @@
                         <td></td>
                         <td></td>
                         <td style="text-align: left;">
-                            <h:outputText value="Name" style="text-align: left;"/> 
+                        
                         </td>
                         <td>
-                            <h:outputLabel value=":"/>
+                           
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.staff.person.name}">                                 
-                            </h:outputText>
+                          
                         </td>
                     </tr>
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="E.P.F. No." style="text-align: left;"/> 
+                            <h:outputText value="E.P.F. No" style="text-align: left;"/> 
                         </td>
                         <td>
                             <h:outputLabel value=":"/>
@@ -115,9 +114,14 @@
                         </td>
                         <td></td>
 
+                        <td style="text-align: left;">
+                            <h:outputText value="Poya Day" style="text-align: left;"/>
+                        </td>
                         <td></td>
-                        <td></td>
-                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.poyaCount}">                                 
+                            </h:outputText>
+                        </td>
                         <td></td>
                         <td style="text-align: left;">
                             <h:outputText value="E.M.P. No." style="text-align: left;"/> 
@@ -143,7 +147,7 @@
                         <td></td>
 
                         <td style="text-align: left;">
-                            <h:outputText value="PH Day" style="text-align: left;"/>
+                            <h:outputText value="Merchantile Day" style="text-align: left;"/>
                         </td>
                         <td></td>
                         <td style="text-align: right;">
@@ -156,7 +160,7 @@
                         </td>
                         <td></td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.merchantileCount}">                                 
+                            <h:outputText value="#{cc.attrs.bill.transGrossSalary}">                                 
                             </h:outputText>
                         </td>
                     </tr>
@@ -190,11 +194,11 @@
                         <td></td>
                         <td></td>                        
                         <td style="text-align: left;">
-                            <h:outputText value="Poya Day" style="text-align: left;"/>
+                            <h:outputText value="Sleeping Day" style="text-align: left;"/>
                         </td>
                         <td></td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.poyaCount}">                                 
+                            <h:outputText value="#{cc.attrs.bill.sleepingDayCount}">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -217,6 +221,7 @@
                         </td>
                         <td style="text-align: right;">
                             <h:outputText value="#{cc.attrs.bill.basicValue}">                                 
+                                <f:convertNumber pattern="#0.00" />
                             </h:outputText>
                         </td>
                         <td></td>
@@ -259,13 +264,67 @@
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="Poya Day Salary" style="text-align: left;"/> 
+                            <h:outputText value="Mercantile Day Allowance" style="text-align: left;"/> 
+                        </td>
+                        <td>
+                            <h:outputLabel value=":"/>
+                        </td>
+                        <td style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.merchantileAllowanceValue}">                                 
+                            </h:outputText>
+                        </td>
+
+                        <td></td>
+
+                        <td style="text-align: left;">
+
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;">
+                            <h:outputText value="Poya Day Allowance" style="text-align: left;"/> 
                         </td>
                         <td>
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
                             <h:outputText value="#{cc.attrs.bill.poyaAllowanceValue}">                                 
+                            </h:outputText>
+                        </td>
+
+                        <td></td>
+
+                        <td style="text-align: left;">
+
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;">
+                            <h:outputText value="Day Off Allowance" style="text-align: left;"/> 
+                        </td>
+                        <td>
+                            <h:outputLabel value=":"/>
+                        </td>
+                        <td style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.dayOffAllowance}">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -285,13 +344,13 @@
 
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputText value="Mercantile Day Salary" style="text-align: left;"/> 
+                            <h:outputText value="Sleeping Day Allowance" style="text-align: left;"/> 
                         </td>
                         <td>
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.merchantileAllowanceValue}">                                 
+                            <h:outputText value="#{cc.attrs.bill.sleepingDayAllowance}">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -308,32 +367,6 @@
                         <td></td>
                         <td></td>
                     </tr>
-
-                    <!--                    <tr>
-                                            <td style="text-align: left;">
-                                                <h:outputText value="Sleeping Day Salary" style="text-align: left;"/> 
-                                            </td>
-                                            <td>
-                                                <h:outputLabel value=":"/>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <h:outputText value="#{cc.attrs.bill.sleepingDayAllowance}">                                 
-                                                </h:outputText>
-                                            </td>
-                                            <td></td>
-                                            
-                                            <td style="text-align: left;">
-                                                
-                                            </td>
-                                            <td></td>
-                                            <td style="text-align: right;">
-                                                
-                                            </td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                        </tr>-->
 
                     <tr>
                         <td colspan="3" style="text-align: center; text-decoration: underline;">
@@ -352,16 +385,18 @@
                         <td></td>
                     </tr>
 
-                    <ui:repeat var="we" value="">
+                    <ui:repeat var="we" value="#{cc.attrs.bill.transStaffSalaryComponantsAddition}">
                         <tr>
                             <td style="text-align: left;">
-                               for additional name
+                                <h:outputText value="#{we.paysheetComponent.name}"/> 
                             </td>
                             <td>
                                 <h:outputLabel value=":"/>
                             </td>
                             <td style="text-align: right;">
-                                value
+                                <h:outputText value="#{we.componantValue}" >
+                                    <f:convertNumber pattern="0.00" />
+                                </h:outputText>
                             </td>
 
 
@@ -394,7 +429,7 @@
                         </td>
                         <td></td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.overTimeMinute}min">                                 
+                            <h:outputText value="#{cc.attrs.bill.overTimeMinute} min">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -416,11 +451,11 @@
                         <td></td>
 
                         <td style="text-align: left;">
-                            <h:outputText value="Extra OT" style="text-align: left;"/>
+                            <h:outputText value="Extra Normal OT" style="text-align: left;"/>
                         </td>
                         <td></td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.extraDutyMinute}min">                                 
+                            <h:outputText value="#{cc.attrs.bill.extraDutyNormalMinute}min">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -442,11 +477,11 @@
                         <td></td>
 
                         <td style="text-align: left;">
-                            <h:outputText value="PH OT" style="text-align: left;"/>
+                            <h:outputText value="Merchantile OT" style="text-align: left;"/>
                         </td>
                         <td></td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.overTimeMinute}min">                                 
+                            <h:outputText value="#{cc.attrs.bill.extraDutyMerchantileMinute}min">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -468,11 +503,11 @@
                         <td></td>
 
                         <td style="text-align: left;">
-                            <h:outputText value="Total" style="text-align: left;"/>
+                            <h:outputText value="Poya OT" style="text-align: left;"/>
                         </td>
                         <td></td>
                         <td style="text-align: right;  border-bottom: 1px solid black; border-top: 1px solid black;">
-                            <h:outputText value="#{cc.attrs.bill.poyaCount}min">                                 
+                            <h:outputText value="#{cc.attrs.bill.extraDutyPoyaMinute}min">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -499,7 +534,7 @@
                         </td>
                         <td></td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.poyaCount}min">                                 
+                            <h:outputText value="#{cc.attrs.bill.extraDutyDayOffMinute}min">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -522,11 +557,11 @@
                         <td></td>
 
                         <td style="text-align: left;">
-                            <h:outputText value="Total" style="text-align: left;"/>
+                            <h:outputText value="Sleeping Day OT" style="text-align: left;"/>
                         </td>
                         <td></td>
                         <td style="text-align: right; border-bottom: 1px solid black; border-top: 1px solid black;">
-                            <h:outputText value="#{cc.attrs.bill.poyaCount}min">                                 
+                            <h:outputText value="#{cc.attrs.bill.extraDutySleepingDayMinute}min">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -534,6 +569,59 @@
                         <td></td>
                         <td></td>
                     </tr>
+
+                    <tr>
+                        <td style="text-align: left;">
+                            <h:outputText value="Basic Adjustment" style="text-align: left;"/> 
+                        </td>
+                        <td>
+                            <h:outputLabel value=":"/>
+                        </td>
+                        <td style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.adjustmentToBasic}">                                 
+                            </h:outputText>
+                        </td>
+                        <td></td>
+
+                        <td style="text-align: left;">
+
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;">
+                            <h:outputText value="Allowance Adjustment" style="text-align: left;"/> 
+                        </td>
+                        <td>
+                            <h:outputLabel value=":"/>
+                        </td>
+                        <td style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.adjustmentToAllowance}">                                 
+                            </h:outputText>
+                        </td>
+                        <td></td>
+
+                        <td style="text-align: left;">
+
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;">
+
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
 
                     <tr>
                         <td style="text-align: left;">
@@ -602,7 +690,7 @@
                                             </td>
                                             <td></td>
                                             <td style="text-align: right;">
-                                                <h:outputText value="#{cc.attrs.bill.extraDutyMinute}min">                                 
+                                                <h:outputText value="#{cc.attrs.bill.extraDutyNormalMinute}min">                                 
                                                 </h:outputText>
                                             </td>
                                             <td></td>
@@ -759,16 +847,18 @@
                         <td></td>
                     </tr>
 
-                    <ui:repeat var="t" value="">
+                    <ui:repeat var="t" value="#{cc.attrs.bill.transStaffSalaryComponantsSubtraction}">
                         <tr>
                             <td style="text-align: left;">
-                               for deduction name
+                                <h:outputText value="#{t.paysheetComponent.name}"/> 
                             </td>
                             <td>
                                 <h:outputLabel value=":"/>
                             </td>
                             <td style="text-align: right;">
-                                value
+                                <h:outputText value="#{t.componantValue}" >
+                                    <f:convertNumber pattern="0.00" />
+                                </h:outputText>
                             </td>
 
 
@@ -897,7 +987,7 @@
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.noPayValueAllowance}">                                 
+                            <h:outputText value="#{cc.attrs.bill.epfCompanyValue}">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -919,7 +1009,7 @@
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.noPayValueAllowance}">                                 
+                            <h:outputText value="#{cc.attrs.bill.etfCompanyValue}">                                 
                             </h:outputText>
                         </td>
                         <td></td>
@@ -963,7 +1053,7 @@
                             <h:outputLabel value=":"/>
                         </td>
                         <td style="text-align: right;">
-                            <h:outputText value="#{cc.attrs.bill.overTimeValue}">                                 
+                            <h:outputText value="#{cc.attrs.bill.transExtraDutyValue}">                                 
                             </h:outputText>
                         </td>
                         <td></td>

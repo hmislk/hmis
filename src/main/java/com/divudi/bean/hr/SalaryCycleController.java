@@ -337,7 +337,7 @@ public class SalaryCycleController implements Serializable {
         return paysheetComponentFacade.findBySQL(jpql, m);
     }
 
-    private List<PaysheetComponent> fetchPaysheetComponentsUserDefinded(List<PaysheetComponentType> list) {
+    public List<PaysheetComponent> fetchPaysheetComponentsUserDefinded(List<PaysheetComponentType> list) {
         HashMap m = new HashMap();
         String jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
                 + " from StaffSalaryComponant spc"
@@ -460,7 +460,7 @@ public class SalaryCycleController implements Serializable {
         }
     }
 
-    private List<StaffSalaryComponant> fetchSalaryComponents(Staff s, PaysheetComponent psc) {
+    public List<StaffSalaryComponant> fetchSalaryComponents(Staff s, PaysheetComponent psc) {
         String jpql = "select spc from StaffSalaryComponant spc "
                 + " where spc.staffSalary.staff=:st"
                 + " and spc.retired=false"
@@ -475,7 +475,7 @@ public class SalaryCycleController implements Serializable {
 
     }
 
-    private List<StaffSalaryComponant> fetchSalaryComponents(StaffSalary s, PaysheetComponent psc) {
+    public List<StaffSalaryComponant> fetchSalaryComponents(StaffSalary s, PaysheetComponent psc) {
         String jpql = "select spc from StaffSalaryComponant spc "
                 + " where spc.staffSalary=:st"
                 + " and spc.retired=false"
