@@ -85,6 +85,8 @@ public class StaffSalary implements Serializable {
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction;
 
+    
+    
     public Institution getInstitution() {
         return institution;
     }
