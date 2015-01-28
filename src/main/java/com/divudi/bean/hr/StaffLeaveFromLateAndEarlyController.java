@@ -178,7 +178,8 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.considerForLateIn=false "
-                + " and ss.leaveType is null "
+                + " and (ss.leaveType is null"
+                + " or ss.autoLeave=true) "
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
@@ -218,7 +219,8 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         sql = "select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.considerForEarlyOut=false "
-                + " and ss.leaveType is null "
+                + " and (ss.leaveType is null"
+                + " or ss.autoLeave=true) "
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
@@ -516,7 +518,8 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         ss.calLeaveTime();
         ss.setLeaveForm(form);
         ss.setLeaveType(leaveType);
-//        staffShiftFacade.edit(ss);
+        ss.setAutoLeave(true);
+        staffShiftFacade.edit(ss);
 
     }
 

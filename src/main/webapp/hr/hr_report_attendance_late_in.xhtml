@@ -46,6 +46,9 @@
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
+                                <p:column headerText="ID">
+                                    #{ss.id}
+                                </p:column>
                                 <p:column headerText="Emp No">
                                     #{ss.staff.code}
                                 </p:column>
@@ -65,6 +68,10 @@
                                 </p:column>
                                 <p:column headerText="Considered For Late In">
                                     <h:outputLabel value="#{ss.considerForLateIn}">                                        
+                                    </h:outputLabel>                                     
+                                </p:column>                                   
+                                  <p:column headerText="Considered For Early Out">
+                                      <h:outputLabel value="#{ss.considerForEarlyOut}">                                        
                                     </h:outputLabel>                                     
                                 </p:column>                                   
                                 <p:column headerText="Reference Staff Shift">

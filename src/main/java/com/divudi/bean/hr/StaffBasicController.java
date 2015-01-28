@@ -299,18 +299,19 @@ public class StaffBasicController implements Serializable {
     public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
         this.paysheetComponent = paysheetComponent;
     }
-    
-    
 
     public void createTable() {
         String sql = "Select s from StaffPaysheetComponent s"
-                + " where s.retired=false "
-                + " and s.paysheetComponent=:tp "
-                + " order by s.staff.codeInterger";
+                + " where s.retired=false ";
 
         HashMap hm = new HashMap();
-        hm.put("tp", paysheetComponent);
 
+        if (paysheetComponent != null) {
+            sql += " and s.paysheetComponent=:tp ";
+            hm.put("tp", paysheetComponent);
+        }
+
+        sql += " order by s.staff.codeInterger,s.paysheetComponent.orderNo";
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
     }
