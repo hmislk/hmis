@@ -99,18 +99,11 @@
                         <p:column>
                             <p:commandButton process="@this" 
                                              update=":#{p:component('lst')} :#{p:component('lst')}" 
-                                             value="Edit"  
+                                             value="View"  
                                              actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
                             </p:commandButton>                          
                         </p:column>
-                        <p:column>
-                            <p:commandButton process="@this"
-                                             update="@all"
-                                             value="Delete"  
-                                             actionListener="#{staffSalaryController.deleteSalaryComponent(i)}" onclick="onSubmitButton();">                              
-                            </p:commandButton>                          
-                        </p:column>
-
+                        
                     </p:dataTable>
                 </p:tab>
             </p:tabView>
@@ -171,8 +164,10 @@
                 </p:tab>
 
                 <p:tab id="print" title="Print">
-                    
-                    <h:panelGroup   id="gpBillPreviewSingle">
+                    <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+                    <h:panelGroup   id="gpBillPreview">
                         <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
                     </h:panelGroup>
                 </p:tab>
