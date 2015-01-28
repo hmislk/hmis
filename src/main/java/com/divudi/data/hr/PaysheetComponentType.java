@@ -23,9 +23,10 @@ public enum PaysheetComponentType {
     ExtraDuty(addition),
     @Deprecated
     HolidayAllowance(addition),
-    MerchantileAllowance(addition),        
+    MerchantileAllowance(addition),
     PoyaAllowance(addition),
     DayOffAllowance(addition),
+    SleepingDayAllowance(addition),
     AdjustmentBasicAdd(addition),
     AdjustmentAllowanceAdd(addition),
     //////////////////////
@@ -98,7 +99,8 @@ public enum PaysheetComponentType {
     public List<PaysheetComponentType> getSystemDefinedComponents() {
 
         return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.BasicSalary,
-            PaysheetComponentType.DayOffAllowance,
+            PaysheetComponentType.DayOffAllowance, 
+            PaysheetComponentType.SleepingDayAllowance,
             PaysheetComponentType.ExtraDuty,
             PaysheetComponentType.No_Pay_Deduction_Basic,
             PaysheetComponentType.No_Pay_Deduction_Allowance,
@@ -123,15 +125,15 @@ public enum PaysheetComponentType {
             PaysheetComponentType.VariableDeduction});
 
     }
-    
+
     public List<PaysheetComponentType> getUserDefinedComponentsAddidtions() {
 
         return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
-            PaysheetComponentType.FixedAllowance,            
+            PaysheetComponentType.FixedAllowance,
             PaysheetComponentType.VariableAllowance,});
 
     }
-    
+
     public List<PaysheetComponentType> getUserDefinedComponentsDeductions() {
 
         return Arrays.asList(new PaysheetComponentType[]{

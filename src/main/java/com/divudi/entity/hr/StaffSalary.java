@@ -69,13 +69,21 @@ public class StaffSalary implements Serializable {
     private double noPayValueAllowance;
     private double merchantileAllowanceValue;
     private double poyaAllowanceValue;
-    private double dayOffSleepingDayAllowance;
+    private double dayOffAllowance;
+    double sleepingDayAllowance;
     private double adjustmentToBasic;
     private double adjustmentToAllowance;
     private double etfSatffValue;
     private double etfCompanyValue;
     private double epfStaffValue;
     private double epfCompanyValue;
+    double noPayCount;
+    double merchantileCount;
+    double poyaCount;
+    double dayOffCount;
+    double extraDutyMinute;
+    double overTimeMinute;
+    double sleepingDayCount;
     double componentValueAddition;
     double componentValueSubstraction;
     @ManyToOne
@@ -85,8 +93,86 @@ public class StaffSalary implements Serializable {
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction;
 
+    public double getOverTimeMinute() {
+        return overTimeMinute;
+    }
+
+    public void setOverTimeMinute(double overTimeMinute) {
+        this.overTimeMinute = overTimeMinute;
+    }
     
     
+    
+    
+
+    public double getExtraDutyMinute() {
+        return extraDutyMinute;
+    }
+
+    public void setExtraDutyMinute(double extraDutyMinute) {
+        this.extraDutyMinute = extraDutyMinute;
+    }
+    
+    
+
+    public double getNoPayCount() {
+        return noPayCount;
+    }
+
+    public void setNoPayCount(double noPayCount) {
+        this.noPayCount = noPayCount;
+    }
+
+    public double getMerchantileCount() {
+        return merchantileCount;
+    }
+
+    public void setMerchantileCount(double merchantileCount) {
+        this.merchantileCount = merchantileCount;
+    }
+
+    public double getPoyaCount() {
+        return poyaCount;
+    }
+
+    public void setPoyaCount(double poyaCount) {
+        this.poyaCount = poyaCount;
+    }
+
+    public double getDayOffCount() {
+        return dayOffCount;
+    }
+
+    public void setDayOffCount(double dayOffCount) {
+        this.dayOffCount = dayOffCount;
+    }
+
+    public double getSleepingDayCount() {
+        return sleepingDayCount;
+    }
+
+    public void setSleepingDayCount(double sleepingDayCount) {
+        this.sleepingDayCount = sleepingDayCount;
+    }
+    
+    
+
+    public double getDayOffAllowance() {
+        return dayOffAllowance;
+    }
+
+    public void setDayOffAllowance(double dayOffAllowance) {
+        this.dayOffAllowance = dayOffAllowance;
+    }
+
+    public double getSleepingDayAllowance() {
+        return sleepingDayAllowance;
+    }
+
+    public void setSleepingDayAllowance(double sleepingDayAllowance) {
+        this.sleepingDayAllowance = sleepingDayAllowance;
+    }
+
     public Institution getInstitution() {
         return institution;
     }
@@ -95,8 +181,6 @@ public class StaffSalary implements Serializable {
         this.institution = institution;
     }
 
-    
-    
     public double getBrValue() {
         return brValue;
     }
@@ -200,7 +284,8 @@ public class StaffSalary implements Serializable {
         return basicValue
                 + phValue
                 + merchantileAllowanceValue
-                + dayOffSleepingDayAllowance
+                + dayOffAllowance
+                + sleepingDayAllowance
                 + adjustmentToBasic;
     }
 
@@ -217,7 +302,8 @@ public class StaffSalary implements Serializable {
         noPayValueAllowance = 0;
         poyaAllowanceValue = 0;
         merchantileAllowanceValue = 0;
-        dayOffSleepingDayAllowance = 0;
+        dayOffAllowance = 0;
+        sleepingDayAllowance = 0;
         adjustmentToBasic = 0;
         adjustmentToAllowance = 0;
         componentValueAddition = 0;
@@ -264,7 +350,10 @@ public class StaffSalary implements Serializable {
                         poyaAllowanceValue += value;
                         break;
                     case DayOffAllowance:
-                        dayOffSleepingDayAllowance += value;
+                        dayOffAllowance += value;
+                        break;
+                    case SleepingDayAllowance:
+                        sleepingDayAllowance += value;
                         break;
                     case AdjustmentAllowanceAdd:
                     case AdjustmentAllowanceSub:
@@ -426,14 +515,6 @@ public class StaffSalary implements Serializable {
 
     public void setNoPayValueAllowance(double noPayValueAllowance) {
         this.noPayValueAllowance = noPayValueAllowance;
-    }
-
-    public double getDayOffSleepingDayAllowance() {
-        return dayOffSleepingDayAllowance;
-    }
-
-    public void setDayOffSleepingDayAllowance(double dayOffSleepingDayAllowance) {
-        this.dayOffSleepingDayAllowance = dayOffSleepingDayAllowance;
     }
 
     public double getAdjustmentToBasic() {
