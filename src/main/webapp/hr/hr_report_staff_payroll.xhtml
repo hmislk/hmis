@@ -54,6 +54,7 @@
                             <th>Merchatile</th>
                             <th>Poya</th>
                             <th>Off Days</th>
+                            <th>Sleeping Days</th>
                             <th>No Pay Basic</th>
                             <th>Basic Adjust</th>
                             <th>Tot Salary</th>
@@ -98,7 +99,11 @@
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputText>
                                 </td>
-                                <td><h:outputText value="#{scc.dayOffSleepingDayAllowance}" >
+                                <td><h:outputText value="#{scc.dayOffAllowance}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td><h:outputText value="#{scc.sleepingDayAllowance}" >
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputText>
                                 </td>
