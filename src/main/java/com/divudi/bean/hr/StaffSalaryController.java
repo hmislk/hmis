@@ -51,6 +51,7 @@ public class StaffSalaryController implements Serializable {
     private StaffSalary current;
     //////////   
     List<StaffSalary> items;
+    List<StaffSalary> getSelectedStaffSalaryList;
     ///////
     @EJB
     private StaffSalaryFacade staffSalaryFacade;
@@ -74,6 +75,7 @@ public class StaffSalaryController implements Serializable {
     @Inject
     private StaffController staffController;
     SalaryCycle salaryCycle;
+    boolean printPreview=false;
 
     public SalaryCycle getSalaryCycle() {
         return salaryCycle;
@@ -89,6 +91,33 @@ public class StaffSalaryController implements Serializable {
 
     public void setFinalVariables(FinalVariables finalVariables) {
         this.finalVariables = finalVariables;
+    }
+
+    public List<StaffSalary> getGetSelectedStaffSalaryList() {
+        return getSelectedStaffSalaryList;
+    }
+
+    public void setGetSelectedStaffSalaryList(List<StaffSalary> getSelectedStaffSalaryList) {
+        this.getSelectedStaffSalaryList = getSelectedStaffSalaryList;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+    
+    
+    public void printPreview() {
+        printPreview=true;
+    }
+    
+    public void recreateModel() {
+        getSelectedStaffSalaryList = null;
+        current = null;
+        printPreview=false;
     }
 
     public void remove() {

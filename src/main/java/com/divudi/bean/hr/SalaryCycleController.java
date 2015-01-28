@@ -432,7 +432,7 @@ public class SalaryCycleController implements Serializable {
 
         m = new HashMap();
         jpql = "select spc"
-                + " from SatffSalary spc "
+                + " from StaffSalary spc "
                 + " where spc.salaryCycle=:sc "
                 + " and spc.retired=false "
                 + " order by spc.staff.codeInterger ";
