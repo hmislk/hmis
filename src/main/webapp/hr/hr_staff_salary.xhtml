@@ -112,6 +112,8 @@
                     </p:dataTable> 
                 </p:tab>
                 <p:tab title="Staff Salary">
+                    <p:commandButton ajax="false" value="Delete All"
+                                     action="#{staffSalaryController.deleteAll()}"/>
                     <p:dataTable value="#{staffSalaryController.items}" var="i" 
                                  rowStyleClass="#{i.exist eq true ? 'exist':null}">
                         <p:column headerText="From">
