@@ -1010,10 +1010,10 @@ public class StaffShift implements Serializable {
         setShiftStartTime(sDate.getTime());
 
         eTime.setTime(getShift().getEndingTime());
-        eDate.setTime(shiftDate);
-        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
-        eDate.add(Calendar.HOUR_OF_DAY, (int) getShift().getDurationHour());
-        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
+        eDate.setTime(shiftStartTime);
+//        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
+        eDate.add(Calendar.MINUTE, (int) getShift().getDurationMin());
+//        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
 
         setShiftEndTime(eDate.getTime());
     }

@@ -30,6 +30,7 @@ public enum PaysheetComponentType {
     //////////////////////
     subtraction(null),
     FixedDeduction(subtraction),
+    VariableDeduction(subtraction),
     VariableDeductionToGrossSalary(subtraction),
     VariableDeductionToNetSalary(subtraction),
     VariableDeductionToBasicSalary(subtraction),
@@ -99,6 +100,21 @@ public enum PaysheetComponentType {
             PaysheetComponentType.AdjustmentAllowanceSub,
             PaysheetComponentType.AdjustmentBasicAdd,
             PaysheetComponentType.AdjustmentBasicSub});
+
+    }
+
+    public List<PaysheetComponentType> getUserDefinedComponents() {
+
+        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
+            PaysheetComponentType.FixedAllowance,
+            PaysheetComponentType.FixedDeduction,
+            PaysheetComponentType.Institution_Deduction,
+            PaysheetComponentType.LoanInstallemant,
+            PaysheetComponentType.VariableAllowance,
+            PaysheetComponentType.VariableDeduction,
+            PaysheetComponentType.VariableDeductionToBasicSalary,
+            PaysheetComponentType.VariableDeductionToGrossSalary,
+            PaysheetComponentType.VariableDeductionToNetSalary});
 
     }
 
