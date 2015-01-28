@@ -16,13 +16,15 @@
                 <h:form>
                     <p:panel header="Doctor Payment" >
 
-                        
+
                         <p:commandButton ajax="false" value="List" action="#{doctorController.listDoctors()}"></p:commandButton>
 
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">
-                                <p:dataTable id="tbl" value="#{doctorController.doctors}" var="dc" >
-
+                                <p:dataTable id="tbl" value="#{doctorController.doctors}" var="dc" rowIndexVar="i">
+                                    <p:column headerText="No" styleClass="alignTop">
+                                        <h:outputLabel value="#{i+1}"/>
+                                    </p:column>
                                     <p:column headerText="Doctor Speciality" filterBy="#{dc.speciality.name}" filterMatchMode="contains">
                                         <f:facet name="header">
                                             <p:outputLabel value="Doctor Speciality" />
