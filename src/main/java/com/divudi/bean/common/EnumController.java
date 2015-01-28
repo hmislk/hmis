@@ -29,6 +29,8 @@ import com.divudi.entity.Person;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -123,7 +125,25 @@ public class EnumController implements Serializable {
     }
 
     public PaysheetComponentType[] getPaysheetComponentTypes() {
-        return PaysheetComponentType.values();
+        List<PaysheetComponentType> list = new ArrayList<>();
+
+        for (PaysheetComponentType pct : PaysheetComponentType.addition.children()) {
+            list.add(pct);
+        }
+
+        for (PaysheetComponentType pct : PaysheetComponentType.subtraction.children()) {
+            list.add(pct);
+        }
+
+        return list.toArray(new PaysheetComponentType[list.size()]);
+    }
+
+    public List<PaysheetComponentType> getPaysheetComponentTypesUserDefinded() {
+        return PaysheetComponentType.addition.getUserDefinedComponents();
+    }
+    
+    public List<PaysheetComponentType> getPaysheetComponentTypesSystemDefinded() {
+        return PaysheetComponentType.addition.getSystemDefinedComponents();
     }
 
     public Title[] getTitle() {

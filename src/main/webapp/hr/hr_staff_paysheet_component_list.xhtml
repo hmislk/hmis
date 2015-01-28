@@ -10,17 +10,15 @@
         <h:form>
             <p:panel id="lst"> 
                 <p:commandButton value="Reset Date" action="#{staffBasicController.resetDate()}" ajax="false" rendered="false"/>
-                <h:panelGrid columns="2">
-                    <h:outputLabel value="Paysheet Component"/>
-                    <p:selectOneMenu value="#{staffBasicController.paysheetComponent}">
-                        <f:selectItem itemLabel="Please select component Type "/>
-                        <f:selectItems value="#{enumController.paysheetComponentTypes}"/>
-                    </p:selectOneMenu> 
-                    <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
-                    <p:commandButton value="Print" ajax="false" action="#" >
-                        <p:printer target="lst" ></p:printer>
-                    </p:commandButton>
-                </h:panelGrid>
+                <p:selectOneMenu value="#{staffBasicController.paysheetComponent}">
+                    <f:selectItem itemLabel="Please select component Type "/>
+                    <f:selectItems value="#{paysheetComponentController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                </p:selectOneMenu> 
+                <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="lst" ></p:printer>
+                </p:commandButton>
+
 
 
 
@@ -46,6 +44,9 @@
                             </f:facet>
                         </p:cellEditor>
 
+                    </p:column>
+                    <p:column headerText="Component Name" filterBy="#{i.paysheetComponent.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{i.paysheetComponent.name}"/>                           
                     </p:column>
 
                     <p:column headerText="Grade" filterBy="#{i.staff.grade}" filterMatchMode="contains">

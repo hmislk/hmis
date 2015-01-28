@@ -60,9 +60,13 @@
 
                         <p:defaultCommand target="btnSearch" />
 
-                        <p:panelGrid styleClass="alignTop" columns="2">
+                        <p:panelGrid styleClass="alignTop" columns="1">
 
                             <p:dataTable rowIndexVar="i"  id="tblFee1" value="#{inwardStaffPaymentBillController.docFeeListDischarged}" var="bf"   >
+
+                                <f:facet name="header">
+                                    <h:outputLabel value="Doctor Payments For Discharged patients"/>
+                                </f:facet>
                                 <p:column headerText="No" styleClass="alignTop">
                                     <h:outputLabel value="#{i+1}"/>
                                 </p:column>
@@ -159,7 +163,13 @@
                                 </p:columnGroup>
 
                             </p:dataTable>
+
+                            <p:spacer width="30px"></p:spacer>
                             <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{inwardStaffPaymentBillController.docFeeListNotDischarged}" var="bf"   >
+
+                                <f:facet name="header">
+                                    <h:outputLabel value="Doctor Payments For Not Discharged patients"/>
+                                </f:facet>                                
                                 <p:column headerText="No" styleClass="alignTop">
                                     <h:outputLabel value="#{i+1}"/>
                                 </p:column>
@@ -256,6 +266,16 @@
                                 </p:columnGroup>
 
                             </p:dataTable>
+                        </p:panelGrid>
+                    </p:panel>
+                    <p:panel>
+                        <p:panelGrid columns="2">
+                            <p:outputLabel value="Doctor payment Total for Discharged Patients"></p:outputLabel>
+                            <p:outputLabel value="#{inwardStaffPaymentBillController.totalDocFeeListDischarged}"></p:outputLabel>
+                            <p:outputLabel value="Doctor payment Total for Not Discharged"></p:outputLabel>
+                            <p:outputLabel value="#{inwardStaffPaymentBillController.totalDocFeeListNotDischarged}"></p:outputLabel>
+                            <p:outputLabel value="Net Total"></p:outputLabel>
+                            <p:outputLabel style="color: blue; font-style: italic;" value="#{inwardStaffPaymentBillController.totalDocFeeListDischarged + inwardStaffPaymentBillController.totalDocFeeListNotDischarged}"></p:outputLabel>
                         </p:panelGrid>
                     </p:panel>
 
