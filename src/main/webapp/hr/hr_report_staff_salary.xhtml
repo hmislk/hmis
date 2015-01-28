@@ -68,25 +68,31 @@
                 </p:column>
 
                 <p:column headerText="No Pay" >
-                    <h:outputLabel value="#{scc.noPayValue}" >
+                    <h:outputLabel value="#{scc.noPayValueBasic+scc.noPayValueAllowance}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
                 </p:column>
 
                 <p:column headerText="Holiday Allowance" >
-                    <h:outputLabel value="#{scc.holidayAllowanceValue}" >
+                    <h:outputLabel value="#{scc.merchantileAllowanceValue+scc.poyaAllowanceValue}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
                 </p:column>
 
                 <p:column headerText="Day Off Allownace" >
-                    <h:outputLabel value="#{scc.dayOffSleepingDayAllowance}" >
+                    <h:outputLabel value="#{scc.dayOffAllowance+scc.sleepingDayAllowance}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
                 </p:column>
 
-                <p:column headerText="Other Componnet" >
-                    <h:outputLabel value="#{scc.componentValue}" >
+                <p:column headerText="Additional Componnet" >
+                    <h:outputLabel value="#{scc.componentValueAddition}" >
+                        <f:convertNumber pattern="0.00" />
+                    </h:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Deductional Componnet" >
+                    <h:outputLabel value="#{scc.componentValueSubstraction}" >
                         <f:convertNumber pattern="0.00" />
                     </h:outputLabel>
                 </p:column>
