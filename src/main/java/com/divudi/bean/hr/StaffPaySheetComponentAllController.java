@@ -279,15 +279,9 @@ public class StaffPaySheetComponentAllController implements Serializable {
     public List<PaysheetComponent> getCompnent() {
         String sql = "Select pc From PaysheetComponent pc "
                 + " where pc.retired=false"
-                + " and pc.componentType!=:tp1 "
-                + " and pc.componentType!=:tp2 "
-                + " and pc.componentType!=:tp3 "
-                + " and pc.componentType!=:tp4 ";
+                + " and pc.componentType not in :tp1 ";
         HashMap hm = new HashMap();
-        hm.put("tp1", PaysheetComponentType.BasicSalary);
-        hm.put("tp2", PaysheetComponentType.LoanInstallemant);
-        hm.put("tp3", PaysheetComponentType.OT);
-        hm.put("tp4", PaysheetComponentType.ExtraDuty);
+        hm.put("tp1", PaysheetComponentType.addition.getSystemDefinedComponents());
 
         return getPaysheetComponentFacade().findBySQL(sql, hm);
 

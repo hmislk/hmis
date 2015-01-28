@@ -9,8 +9,10 @@ import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.Times;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.lab.ReportItem;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 import javax.persistence.Column;
@@ -76,7 +78,7 @@ public class FingerPrintRecord implements Serializable {
     DayType dayType;
     String comments = "";
     @Transient
-    boolean  transNew;
+    boolean transNew;
 
     public boolean isTransNew() {
         return transNew;
@@ -85,8 +87,6 @@ public class FingerPrintRecord implements Serializable {
     public void setTransNew(boolean transNew) {
         this.transNew = transNew;
     }
-    
-    
 
     public Roster getRoster() {
         return roster;
@@ -95,8 +95,6 @@ public class FingerPrintRecord implements Serializable {
     public void setRoster(Roster roster) {
         this.roster = roster;
     }
-    
-    
 
     public DayType getDayType() {
         return dayType;
@@ -294,5 +292,7 @@ public class FingerPrintRecord implements Serializable {
     public void setAllowedExtraDuty(boolean allowedExtraDuty) {
         this.allowedExtraDuty = allowedExtraDuty;
     }
+
+  
 
 }

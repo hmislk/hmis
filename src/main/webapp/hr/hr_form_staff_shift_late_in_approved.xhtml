@@ -13,11 +13,10 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Leave Report" />
+                            <h:outputLabel value="Attendance Report (Staff Shift)" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -32,58 +31,74 @@
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Staff Roster : "/>
+                            <h:outputLabel value="Staff Roster : " />
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            <h:outputLabel value="Leave Type : "/>
-                            <p:selectOneMenu  value="#{hrReportController.reportKeyWord.leaveType}">
-                                <f:selectItem itemLabel="Select Day Type : "/>
-                                <f:selectItems value="#{enumController.leaveType}"/>
-                            </p:selectOneMenu>   
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffLeave()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShift()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
+                        <p:panel id="gpBillPreview" >
+                            
+                            <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
+                                <p:column headerText="Department Name">
+                                    #{ss.staff.department.name}
+                                </p:column>
                                 <p:column headerText="Emp No">
                                     #{ss.staff.code}
                                 </p:column>
                                 <p:column headerText="Emp Name">
                                     #{ss.staff.person.nameWithTitle}
                                 </p:column>
-                                <p:column headerText="Department Name">
-                                    #{ss.staff.department.name}
+                                
+                                <p:column headerText="Created by">
+                                    #{ss.shift.creater.staff.person.nameWithInitials}
                                 </p:column>
-                                <p:column headerText="Staff Category">
-                                    #{ss.staff.staffCategory.name}
+                                
+                                <p:column headerText="Staff Shift">
+                                    #{ss.shift.name}
                                 </p:column>
-                                <p:column headerText="Staff Designation">
-                                    #{ss.staff.designation.name}
+                                
+                                <p:column headerText="Shift Start">
+                                    #{ss.shift.startingTime}
                                 </p:column>
-                                <p:column headerText="Staff Roster" >
-                                    #{ss.staff.roster.name}
-                                </p:column>  
-                                <p:column headerText="Leave Type" >
-                                    #{ss.leaveType}
+                                
+                                <p:column headerText="Shift Ending">
+                                    #{ss.shift.endingTime}
                                 </p:column>
-                               
-                                  <p:column headerText="Crated Date" >
-                                    #{ss.createdAt}
-                                </p:column>  
-                                <p:column headerText="Leave Date" >
-                                    #{ss.leaveDate}
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
-                                    #{ss.qty}
-                                </p:column> 
-                                <p:column headerText="Comments" >
-                                    #{ss.form.comments}
-                                </p:column> 
+                                
+                                <p:column headerText="Previous Shift">
+                                    #{ss.shift.previousShift.name}
+                                </p:column>
+                                
+                                <p:column headerText="Next Shift">
+                                    #{ss.shift.nextShift.name}
+                                </p:column>
+                                
+                                <p:column headerText="Leave Hour Full">
+                                    #{ss.shift.leaveHourFull}
+                                </p:column>
+                                
+                                <p:column headerText="Leave Hour Half">
+                                    #{ss.shift.leaveHourHalf}
+                                </p:column>
+                                
+                                <p:column headerText="Duration Hour">
+                                    #{ss.shift.durationHour}
+                                </p:column>
+                                
+                                <p:column headerText="Half Shift">
+                                    #{ss.shift.halfShift}
+                                </p:column>
+                                
+                                <p:column headerText="Hide Shift">
+                                    #{ss.shift.hideShift}
+                                </p:column>
+                                
 
                             </p:dataTable>
                         </p:panel>

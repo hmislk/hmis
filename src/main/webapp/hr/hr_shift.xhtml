@@ -22,7 +22,7 @@
                         </h:panelGrid>
                         <p:panel >
                             <h:panelGrid id="gpSelectText" >
-                                <p:selectOneListbox  id="lstSelect"   value="#{shiftController.current}" style="min-width: 223px;min-height: 300px;">
+                                <p:selectOneListbox  id="lstSelect"   value="#{shiftController.current}" style="min-width: 223px;">
                                     <f:selectItems  value="#{shiftController.shiftList}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     <p:ajax update="gpDetail" process="@this" >
                                     </p:ajax>
@@ -81,8 +81,8 @@
                             <h:inputText value="#{shiftController.current.leaveHourFull}"/>
                             <h:outputLabel value="Leave Hour Half"/>
                             <h:inputText value="#{shiftController.current.leaveHourHalf}"/>
-                            <h:outputLabel value="Duration Hour"/>
-                            <h:outputLabel value="#{shiftController.current.durationHour}"/>
+                            <h:outputLabel value="Duration Minute"/>
+                            <h:outputLabel value="#{shiftController.current.durationMin}"/>
 
                             <p:outputLabel value="First Shift"/>
                             <p:selectBooleanCheckbox value="#{shiftController.current.firstShift}" />

@@ -15,6 +15,7 @@ import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Form;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.LeaveForm;
+import com.divudi.entity.hr.LeaveFormSystem;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.entity.hr.StaffShift;
@@ -35,7 +36,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -161,11 +161,14 @@ public class StaffLeaveApplicationFormController implements Serializable {
     }
 
     public void fetchStaffShiftLie() {
+        
         String sql = "Select s from StaffShift s"
                 + " where s.retired=false"
                 + " and s.lieuAllowed=true"
                 + " and (s.lieuQty>s.lieuQtyUtilized)"
-                + " and s.staff=:stf ";
+                + " and s.staff=:stf "
+                + " and s.startRecord.recordTimeStamp is not null "
+                + " and s.endRecord.recordTimeStamp is not null";
         HashMap hm = new HashMap();
         hm.put("stf", getCurrentLeaveForm().getStaff());
         staffShiftsLie = staffShiftFacade.findBySQL(sql, hm);
@@ -690,7 +693,11 @@ public class StaffLeaveApplicationFormController implements Serializable {
         Map m = new HashMap();
 
         sql = " select l from LeaveForm l where "
-                + " ((l.fromDate between :fd and :td)or(l.toDate between :fd and :td)) ";
+                + " ((l.fromDate between :fd and :td)"
+                + " or(l.toDate between :fd and :td)) "
+                + " and type(l)!=:class";
+
+        m.put("class", LeaveFormSystem.class);
 
         if (staff != null) {
             sql += " and l.staff=:st ";
@@ -729,19 +736,32 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
     }
 
-    public void deleteLeaveForm() {
-        if (currentLeaveForm != null) {
-            deleteStaffLeave(currentLeaveForm);
-
-            currentLeaveForm.setRetired(true);
-            currentLeaveForm.setRetirer(getSessionController().getLoggedUser());
-            currentLeaveForm.setRetiredAt(new Date());
-            getLeaveFormFacade().edit(currentLeaveForm);
-            JsfUtil.addSuccessMessage("Sucessfuly Deleted.");
-            clear();
-        } else {
-            JsfUtil.addErrorMessage("Nothing to Delete.");
+    public boolean errorcheckDeleteLeaveFom() {
+        if (currentLeaveForm == null) {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return true;
         }
+
+        if (currentLeaveForm.getRetireComments() == null || "".equals(currentLeaveForm.getRetireComments())) {
+            JsfUtil.addErrorMessage("Enter a Comment");
+            return true;
+        }
+
+        return false;
+    }
+
+    public void deleteLeaveForm() {
+        if (errorcheckDeleteLeaveFom()) {
+            return;
+        }
+        deleteStaffLeave(currentLeaveForm);
+        currentLeaveForm.setRetired(true);
+        currentLeaveForm.setRetirer(getSessionController().getLoggedUser());
+        currentLeaveForm.setRetiredAt(new Date());
+        getLeaveFormFacade().edit(currentLeaveForm);
+        JsfUtil.addSuccessMessage("Sucessfuly Deleted.");
+        clear();
+
     }
 
     public void viewLeaveForm(LeaveForm leaveForm) {

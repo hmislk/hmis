@@ -5,12 +5,14 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:salary="http://java.sun.com/jsf/composite/hr">
 
     <ui:define name="content">
         <h:form>
             <p:panel>
-                <p:commandButton ajax="false" value="Generated Salary" action="#{staffSalaryController.generate}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Generated Salary" action="#{staffSalaryController.fetchStaffSalay}" onclick="onSubmitButton();"/>
                 <p:commandButton ajax="false" value="Save Salary" action="#{staffSalaryController.saveSalary}" onclick="onSubmitButton();"/>
                 <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" />
             </p:panel>
@@ -62,58 +64,8 @@
                         </h:outputLabel>
                     </h:panelGrid>
                 </p:tab>
-                <p:tab title="Staff List" >
 
-                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createTable()}" onclick="onSubmitButton();"/>
-                    <h:panelGrid columns="2"> 
-                        <h:outputLabel value="Employee : "/>
-                        <hr:completeStaff value="#{staffController.reportKeyWord.staff}"/>
-                        <h:outputLabel value="Department : "/>
-                        <hr:department value="#{staffController.reportKeyWord.department}"/>
-                        <h:outputLabel value="Staff Category : "/>
-                        <hr:completeStaffCategory value="#{staffController.reportKeyWord.staffCategory}"/>
-                        <h:outputLabel value="Designation : "/>
-                        <hr:completeDesignation value="#{staffController.reportKeyWord.designation}"/>
-                        <h:outputLabel value="Roster : "/>
-                        <hr:completeRoster value="#{staffController.reportKeyWord.roster}"/>                      
-                    </h:panelGrid>
-
-                    <p:dataTable  value="#{staffController.staffWithCode}" 
-                                  var="s" filteredValue="#{staffController.filteredStaff}"  
-                                  rowKey="#{s.id}" 
-                                  selection="#{staffController.selectedList}"
-                                  rowIndexVar="i"
-                                  scrollable="true"
-                                  scrollHeight="250">
-                        <p:column  selectionMode="multiple" >                            
-                        </p:column>
-
-                        <p:column >
-                            #{i+1}
-                        </p:column>
-                        <p:column headerText="Roster"  filterBy="#{s.roster.name}"  filterMatchMode="contains" >
-                            <h:outputLabel value="#{s.roster.name}"/>
-                        </p:column>
-                        <p:column headerText="Grade"  filterBy="#{s.grade}"  filterMatchMode="contains" >
-                            <h:outputLabel value="#{s.grade}"/>
-                        </p:column>
-                        <p:column headerText="Category" filterBy="#{s.staffCategory.name}"  filterMatchMode="contains">
-                            <h:outputLabel value="#{s.staffCategory.name}"/>
-                        </p:column>
-                        <p:column headerText="Designation" filterBy="#{s.designation.name}"  filterMatchMode="contains">
-                            <h:outputLabel value="#{s.designation.name}"/>
-                        </p:column>                         
-                        <p:column headerText="Code" filterBy="#{s.code}"  filterMatchMode="contains">
-                            <h:outputLabel value="#{s.code}"/>
-                        </p:column>
-                        <p:column headerText="Name" filterBy="#{s.person.nameWithTitle}"  filterMatchMode="contains">
-                            <h:outputLabel value="#{s.person.nameWithTitle}"/>
-                        </p:column>
-                    </p:dataTable> 
-                </p:tab>
                 <p:tab title="Staff Salary">
-                    <p:commandButton ajax="false" value="Delete All"
-                                     action="#{staffSalaryController.deleteAll()}"/>
                     <p:dataTable value="#{staffSalaryController.items}" var="i" 
                                  rowStyleClass="#{i.exist eq true ? 'exist':null}">
                         <p:column headerText="From">
@@ -146,35 +98,28 @@
                         </p:column>
                         <p:column>
                             <p:commandButton process="@this" 
-                                             update=":#{p:component('lst')}" 
-                                             value="Edit"  
+                                             update=":#{p:component('lst')} :#{p:component('lst')}" 
+                                             value="View"  
                                              actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
                             </p:commandButton>                          
                         </p:column>
-                        <p:column>
-                            <p:commandButton process="@this"
-                                             update="@all"
-                                             value="Delete"  
-                                             actionListener="#{staffSalaryController.deleteSalaryComponent(i)}" onclick="onSubmitButton();">                              
-                            </p:commandButton>                          
-                        </p:column>
-
+                        
                     </p:dataTable>
                 </p:tab>
             </p:tabView>
 
 
             <p:tabView  id="lst" style="min-height:300px;">
-                <p:tab title="Salary Componenetns">
-                    <p:dataTable   editable="true" value="#{staffSalaryController.current.staffSalaryComponants}" var="i" >
+                <p:tab title="Salary Components">
+                    <p:dataTable value="#{staffSalaryController.current.staffSalaryComponants}" var="i" >
 
-                        <p:ajax event="rowEdit" listener="#{staffSalaryController.onEdit}" />  
+                         
 
                         <p:column headerText="Compnent Name ">
                             <h:outputLabel value="#{i.staffPaysheetComponent.paysheetComponent.name}"/>
                         </p:column>
                         <p:column headerText="Type">
-                            <h:outputLabel  value="#{i.staffPaysheetComponent.paysheetComponent.componentType}"/>
+                            <h:outputLabel value="#{i.staffPaysheetComponent.paysheetComponent.componentType}"/>
                         </p:column>
                         <p:column headerText="Value">                        
                             <p:cellEditor>  
@@ -208,13 +153,7 @@
                             <f:facet name="footer">
                                 <h:outputLabel value="#{staffSalaryController.current.etfCompanyValue}"/>
                             </f:facet>
-                        </p:column>      
-                        <p:column style="width:6%">  
-                            <f:facet name="header">
-                                <p:commandButton ajax="false" value="Refresh" onclick="onSubmitButton();" />
-                            </f:facet>
-                            <p:rowEditor />  
-                        </p:column>  
+                        </p:column>
                     </p:dataTable>
                 </p:tab>
                 <p:tab title="Value">
@@ -222,6 +161,15 @@
                         <h:outputLabel value="Gross Salary : "/>
                         <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}"/>                        
                     </h:panelGrid>
+                </p:tab>
+
+                <p:tab id="print" title="Print">
+                    <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+                    <h:panelGroup   id="gpBillPreview">
+                        <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
+                    </h:panelGroup>
                 </p:tab>
 
             </p:tabView>

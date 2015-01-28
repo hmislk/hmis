@@ -41,7 +41,7 @@
                             </p:selectOneMenu>   
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffLeave()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffLeaveSystem()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -70,8 +70,7 @@
                                 </p:column>  
                                 <p:column headerText="Leave Type" >
                                     #{ss.leaveType}
-                                </p:column>
-                               
+                                </p:column>  
                                   <p:column headerText="Crated Date" >
                                     #{ss.createdAt}
                                 </p:column>  
@@ -81,6 +80,7 @@
                                 <p:column headerText="Leave Qty" >
                                     #{ss.qty}
                                 </p:column> 
+                              
                                 <p:column headerText="Comments" >
                                     #{ss.form.comments}
                                 </p:column> 

@@ -54,9 +54,21 @@ public class StaffLeave implements Serializable {
     Date leaveDate;
     double qty;
     @ManyToOne
-    Form form;
+    HrForm form;
     @ManyToOne
     Roster roster;
+    @ManyToOne
+    StaffShift staffShift;
+
+    public StaffShift getStaffShift() {
+        return staffShift;
+    }
+
+    public void setStaffShift(StaffShift staffShift) {
+        this.staffShift = staffShift;
+    }
+    
+    
     
 
     public Roster getRoster() {
@@ -77,11 +89,11 @@ public class StaffLeave implements Serializable {
         this.leaveDate = leaveDate;
     }
 
-    public Form getForm() {
+    public HrForm getForm() {
         return form;
     }
 
-    public void setForm(Form form) {
+    public void setForm(HrForm form) {
         this.form = form;
     }
 

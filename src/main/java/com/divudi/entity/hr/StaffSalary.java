@@ -5,15 +5,14 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.data.dataStructure.ExtraDutyCount;
-import com.divudi.data.dataStructure.OtNormalSpecial;
+import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -42,9 +41,9 @@ public class StaffSalary implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private double payeeValue;
-    private double otValue;
+//    private double otValue;
     private double phValue;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private SalaryCycle salaryCycle;
     @ManyToOne
     private Staff staff;
@@ -62,44 +61,149 @@ public class StaffSalary implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    private double basicValue;
+    double brValue;
+    private double overTimeValue;
+    private double extraDutyValue;
+    private double noPayValueBasic;
+    private double noPayValueAllowance;
+    private double merchantileAllowanceValue;
+    private double poyaAllowanceValue;
+    private double dayOffAllowance;
+    double sleepingDayAllowance;
+    private double adjustmentToBasic;
+    private double adjustmentToAllowance;
+    private double etfSatffValue;
+    private double etfCompanyValue;
+    private double epfStaffValue;
+    private double epfCompanyValue;
+    double noPayCount;
+    double merchantileCount;
+    double poyaCount;
+    double dayOffCount;
+    double extraDutyMinute;
+    double overTimeMinute;
+    double sleepingDayCount;
+    double componentValueAddition;
+    double componentValueSubstraction;
+    @ManyToOne
+    Institution institution;
     @Transient
-    private OtNormalSpecial tmpOtNormalSpecial;
+    private List<StaffSalaryComponant> transStaffSalaryComponantsAddition;
     @Transient
-    private List<ExtraDutyCount> tmpExtraDutyCount;
-    @Transient
-    List<StaffShift> transStaffShiftsSalary;
-    @Transient
-    List<StaffShift> transStaffShiftsOverTime;
-    @Transient
-    List<StaffShift> transStaffShiftsExtraDuty;
+    private List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction;
 
-    public List<StaffShift> getTransStaffShiftsExtraDuty() {
-        return transStaffShiftsExtraDuty;
+    public double getOverTimeMinute() {
+        return overTimeMinute;
     }
 
-    public void setTransStaffShiftsExtraDuty(List<StaffShift> transStaffShiftsExtraDuty) {
-        this.transStaffShiftsExtraDuty = transStaffShiftsExtraDuty;
+    public void setOverTimeMinute(double overTimeMinute) {
+        this.overTimeMinute = overTimeMinute;
+    }
+    
+    
+    
+    
+
+    public double getExtraDutyMinute() {
+        return extraDutyMinute;
+    }
+
+    public void setExtraDutyMinute(double extraDutyMinute) {
+        this.extraDutyMinute = extraDutyMinute;
     }
     
     
 
-    public List<StaffShift> getTransStaffShiftsSalary() {
-        return transStaffShiftsSalary;
+    public double getNoPayCount() {
+        return noPayCount;
     }
 
-    public void setTransStaffShiftsSalary(List<StaffShift> transStaffShiftsSalary) {
-        this.transStaffShiftsSalary = transStaffShiftsSalary;
+    public void setNoPayCount(double noPayCount) {
+        this.noPayCount = noPayCount;
     }
 
-    public List<StaffShift> getTransStaffShiftsOverTime() {
-        return transStaffShiftsOverTime;
+    public double getMerchantileCount() {
+        return merchantileCount;
     }
 
-    public void setTransStaffShiftsOverTime(List<StaffShift> transStaffShiftsOverTime) {
-        this.transStaffShiftsOverTime = transStaffShiftsOverTime;
+    public void setMerchantileCount(double merchantileCount) {
+        this.merchantileCount = merchantileCount;
+    }
+
+    public double getPoyaCount() {
+        return poyaCount;
+    }
+
+    public void setPoyaCount(double poyaCount) {
+        this.poyaCount = poyaCount;
+    }
+
+    public double getDayOffCount() {
+        return dayOffCount;
+    }
+
+    public void setDayOffCount(double dayOffCount) {
+        this.dayOffCount = dayOffCount;
+    }
+
+    public double getSleepingDayCount() {
+        return sleepingDayCount;
+    }
+
+    public void setSleepingDayCount(double sleepingDayCount) {
+        this.sleepingDayCount = sleepingDayCount;
     }
     
     
+
+    public double getDayOffAllowance() {
+        return dayOffAllowance;
+    }
+
+    public void setDayOffAllowance(double dayOffAllowance) {
+        this.dayOffAllowance = dayOffAllowance;
+    }
+
+    public double getSleepingDayAllowance() {
+        return sleepingDayAllowance;
+    }
+
+    public void setSleepingDayAllowance(double sleepingDayAllowance) {
+        this.sleepingDayAllowance = sleepingDayAllowance;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public double getBrValue() {
+        return brValue;
+    }
+
+    public void setBrValue(double brValue) {
+        this.brValue = brValue;
+    }
+
+    public double getComponentValueAddition() {
+        return componentValueAddition;
+    }
+
+    public void setComponentValueAddition(double componentValueAddition) {
+        this.componentValueAddition = componentValueAddition;
+    }
+
+    public double getComponentValueSubstraction() {
+        return componentValueSubstraction;
+    }
+
+    public void setComponentValueSubstraction(double componentValueSubstraction) {
+        this.componentValueSubstraction = componentValueSubstraction;
+    }
 
     public Date getFromDate() {
         return getSalaryCycle() != null ? getSalaryCycle().getSalaryFromDate() : null;
@@ -154,35 +258,6 @@ public class StaffSalary implements Serializable {
         return "com.divudi.entity.hr.StaffSalary[ id=" + id + " ]";
     }
 
-    public double getGrossSalary() {
-        double grossSalary = 0.0;
-        for (StaffSalaryComponant spc : getStaffSalaryComponants()) {
-            grossSalary += spc.getComponantValue();
-        }
-        return grossSalary;
-    }
-
-    public double getNetSalary() {
-        double netSalary = getGrossSalary() + getEpfTotal() + getEtfTotal();
-        return netSalary;
-    }
-
-    public double getEpfTotal() {
-        double epfTotal = 0.0;
-        for (StaffSalaryComponant spc : getStaffSalaryComponants()) {
-            epfTotal += spc.getEpfValue();
-        }
-        return epfTotal;
-    }
-
-    public double getEtfTotal() {
-        double etfTotal = 0.0;
-        for (StaffSalaryComponant spc : getStaffSalaryComponants()) {
-            etfTotal += spc.getEtfValue();
-        }
-        return etfTotal;
-    }
-
     public double getPayeeValue() {
         return payeeValue;
     }
@@ -191,26 +266,133 @@ public class StaffSalary implements Serializable {
         this.payeeValue = payeeValue;
     }
 
-    public double getEpfCompanyTotal() {
-        double epfCompanyTotal = 0.0;
+    public void calcualteEpfAndEtf() {
+        etfCompanyValue = 0.0;
+        etfSatffValue = 0;
+        epfCompanyValue = 0;
+        epfStaffValue = 0;
         for (StaffSalaryComponant spc : getStaffSalaryComponants()) {
-            epfCompanyTotal += spc.getEpfCompanyValue();
+            etfCompanyValue += spc.getEtfCompanyValue();
+            etfSatffValue += spc.getEtfValue();
+            epfCompanyValue += spc.getEpfCompanyValue();
+            epfStaffValue += spc.getEpfValue();
         }
-        return epfCompanyTotal;
+
     }
 
-    public double getEtfCompanyTotal() {
-        double etfCompanyTotal = 0.0;
+    public double getTransGrossSalary() {
+        return basicValue
+                + phValue
+                + merchantileAllowanceValue
+                + dayOffAllowance
+                + sleepingDayAllowance
+                + adjustmentToBasic;
+    }
+
+    public double getTransEpfEtfDiductableSalary() {
+        return getTransGrossSalary() - noPayValueBasic;
+    }
+
+    public void calculateComponentTotal() {
+        basicValue = 0;
+        brValue = 0;
+        overTimeValue = 0;
+        extraDutyValue = 0;
+        noPayValueBasic = 0;
+        noPayValueAllowance = 0;
+        poyaAllowanceValue = 0;
+        merchantileAllowanceValue = 0;
+        dayOffAllowance = 0;
+        sleepingDayAllowance = 0;
+        adjustmentToBasic = 0;
+        adjustmentToAllowance = 0;
+        componentValueAddition = 0;
+        componentValueSubstraction = 0;
+
         for (StaffSalaryComponant spc : getStaffSalaryComponants()) {
-            etfCompanyTotal += spc.getEtfCompanyValue();
+            PaysheetComponentType paysheetComponentType = null;
+            double value = 0;
+
+            if (spc.getStaffPaysheetComponent() != null
+                    && spc.getStaffPaysheetComponent().getPaysheetComponent() != null) {
+                paysheetComponentType = spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType();
+            }
+
+            if (paysheetComponentType != null) {
+
+                if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
+                    value = spc.getComponantValue();
+                } else {
+                    value = 0 - spc.getComponantValue();
+                }
+
+                switch (paysheetComponentType) {
+                    case BasicSalary:
+                        basicValue += value;
+                        brValue += spc.getStaffPaysheetComponent().getDblValue();
+                        break;
+                    case OT:
+                        overTimeValue += value;
+                        break;
+                    case ExtraDuty:
+                        extraDutyValue += value;
+                        break;
+                    case No_Pay_Deduction_Basic:
+                        noPayValueBasic += value;
+                        break;
+                    case No_Pay_Deduction_Allowance:
+                        noPayValueAllowance += value;
+                        break;
+                    case MerchantileAllowance:
+                        merchantileAllowanceValue += value;
+                        break;
+                    case PoyaAllowance:
+                        poyaAllowanceValue += value;
+                        break;
+                    case DayOffAllowance:
+                        dayOffAllowance += value;
+                        break;
+                    case SleepingDayAllowance:
+                        sleepingDayAllowance += value;
+                        break;
+                    case AdjustmentAllowanceAdd:
+                    case AdjustmentAllowanceSub:
+                        adjustmentToAllowance += value;
+                        break;
+                    case AdjustmentBasicAdd:
+                    case AdjustmentBasicSub:
+                        adjustmentToBasic += value;
+                        break;
+                    default:
+                        if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
+                            componentValueAddition += value;
+                        } else {
+                            componentValueSubstraction += value;
+                        }
+                }
+
+            }
+
         }
-        return etfCompanyTotal;
+
+    }
+
+    public double getTransTotalAllowance() {
+        return componentValueAddition + adjustmentToAllowance + noPayValueAllowance;
+    }
+
+    public double getTransTotalDeduction() {
+        return componentValueSubstraction + epfStaffValue;
+    }
+
+    public double getTransNetSalry() {
+        return getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction();
     }
 
     public SalaryCycle getSalaryCycle() {
-        if (salaryCycle == null) {
-            salaryCycle = new SalaryCycle();
-        }
+//        if (salaryCycle == null) {
+//            salaryCycle = new SalaryCycle();
+//        }
         return salaryCycle;
     }
 
@@ -275,14 +457,6 @@ public class StaffSalary implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public double getOtValue() {
-        return otValue;
-    }
-
-    public void setOtValue(double otValue) {
-        this.otValue = otValue;
-    }
-
     public double getPhValue() {
         return phValue;
     }
@@ -303,20 +477,130 @@ public class StaffSalary implements Serializable {
         this.exist = exist;
     }
 
-    public OtNormalSpecial getTmpOtNormalSpecial() {
-        return tmpOtNormalSpecial;
+    public double getBasicValue() {
+        return basicValue;
     }
 
-    public void setTmpOtNormalSpecial(OtNormalSpecial tmpOtNormalSpecial) {
-        this.tmpOtNormalSpecial = tmpOtNormalSpecial;
+    public void setBasicValue(double basicValue) {
+        this.basicValue = basicValue;
     }
 
-    public List<ExtraDutyCount> getTmpExtraDutyCount() {
-        return tmpExtraDutyCount;
+    public double getOverTimeValue() {
+        return overTimeValue;
     }
 
-    public void setTmpExtraDutyCount(List<ExtraDutyCount> tmpExtraDutyCount) {
-        this.tmpExtraDutyCount = tmpExtraDutyCount;
+    public void setOverTimeValue(double overTimeValue) {
+        this.overTimeValue = overTimeValue;
+    }
+
+    public double getExtraDutyValue() {
+        return extraDutyValue;
+    }
+
+    public void setExtraDutyValue(double extraDutyValue) {
+        this.extraDutyValue = extraDutyValue;
+    }
+
+    public double getNoPayValueBasic() {
+        return noPayValueBasic;
+    }
+
+    public void setNoPayValueBasic(double noPayValueBasic) {
+        this.noPayValueBasic = noPayValueBasic;
+    }
+
+    public double getNoPayValueAllowance() {
+        return noPayValueAllowance;
+    }
+
+    public void setNoPayValueAllowance(double noPayValueAllowance) {
+        this.noPayValueAllowance = noPayValueAllowance;
+    }
+
+    public double getAdjustmentToBasic() {
+        return adjustmentToBasic;
+    }
+
+    public void setAdjustmentToBasic(double adjustmentToBasic) {
+        this.adjustmentToBasic = adjustmentToBasic;
+    }
+
+    public double getAdjustmentToAllowance() {
+        return adjustmentToAllowance;
+    }
+
+    public void setAdjustmentToAllowance(double adjustmentToAllowance) {
+        this.adjustmentToAllowance = adjustmentToAllowance;
+    }
+
+    public double getEtfSatffValue() {
+        return etfSatffValue;
+    }
+
+    public void setEtfSatffValue(double etfSatffValue) {
+        this.etfSatffValue = etfSatffValue;
+    }
+
+    public double getEtfCompanyValue() {
+        return etfCompanyValue;
+    }
+
+    public void setEtfCompanyValue(double etfCompanyValue) {
+        this.etfCompanyValue = etfCompanyValue;
+    }
+
+    public double getEpfStaffValue() {
+        return epfStaffValue;
+    }
+
+    public void setEpfStaffValue(double epfStaffValue) {
+        this.epfStaffValue = epfStaffValue;
+    }
+
+    public double getEpfCompanyValue() {
+        return epfCompanyValue;
+    }
+
+    public void setEpfCompanyValue(double epfCompanyValue) {
+        this.epfCompanyValue = epfCompanyValue;
+    }
+
+    public List<StaffSalaryComponant> getTransStaffSalaryComponantsAddition() {
+        if (transStaffSalaryComponantsAddition == null) {
+            transStaffSalaryComponantsAddition = new ArrayList<>();
+        }
+        return transStaffSalaryComponantsAddition;
+    }
+
+    public void setTransStaffSalaryComponantsAddition(List<StaffSalaryComponant> transStaffSalaryComponantsAddition) {
+        this.transStaffSalaryComponantsAddition = transStaffSalaryComponantsAddition;
+    }
+
+    public List<StaffSalaryComponant> getTransStaffSalaryComponantsSubtraction() {
+        if (transStaffSalaryComponantsSubtraction == null) {
+            transStaffSalaryComponantsSubtraction = new ArrayList<>();
+        }
+        return transStaffSalaryComponantsSubtraction;
+    }
+
+    public void setTransStaffSalaryComponantsSubtraction(List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction) {
+        this.transStaffSalaryComponantsSubtraction = transStaffSalaryComponantsSubtraction;
+    }
+
+    public double getMerchantileAllowanceValue() {
+        return merchantileAllowanceValue;
+    }
+
+    public void setMerchantileAllowanceValue(double merchantileAllowanceValue) {
+        this.merchantileAllowanceValue = merchantileAllowanceValue;
+    }
+
+    public double getPoyaAllowanceValue() {
+        return poyaAllowanceValue;
+    }
+
+    public void setPoyaAllowanceValue(double poyaAllowanceValue) {
+        this.poyaAllowanceValue = poyaAllowanceValue;
     }
 
 }

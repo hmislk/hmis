@@ -57,6 +57,9 @@
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
+                            <p:inputText id="recomment" value="#{staffAdditionalFormController.currentAdditionalForm.retireComments}" />
+                            
+                            <p:watermark for="recomment" value="Comment"/>
 
                         </h:panelGrid>
                     </p:panel>
@@ -73,12 +76,9 @@
                             <h:outputLabel value="Staff : "/>
                             <au:completeStaff value="#{staffAdditionalFormController.staff}"/>                                                     
                             <h:outputLabel value="Approved Person"/>
-                            <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/> 
-                            <p:commandButton ajax="false" value="Search Created Date" action="#{staffAdditionalFormController.createAmmendmentTable()}" />
-                            <h:panelGroup>
-                                <p:commandButton ajax="false" value="Search Approved Date " action="#{staffAdditionalFormController.createAmmendmentTableApprovedDate()}" />
-                                <p:commandButton ajax="false" value="Search Shift Date " action="#{staffAdditionalFormController.createAmmendmentTableShiftDate()}" />
-                            </h:panelGroup>
+                            <au:completeStaff value="#{staffAdditionalFormController.approvedStaff}"/>                             
+                            <p:commandButton ajax="false" value="Search " action="#{staffAdditionalFormController.createAmmendmentTableShiftDateExtraShift()}" />
+
                         </h:panelGrid>
                         <p:dataTable value="#{staffAdditionalFormController.additionalForms}" var="add" 
                                      rowStyleClass="#{add.retired eq true ? 'redText':''}"
@@ -93,7 +93,7 @@
                             <p:column headerText="Roster">
                                 <p:outputLabel value="#{add.staff.roster.name}" ></p:outputLabel>
                             </p:column>
-                           
+
                             <p:column headerText="From">
                                 <p:outputLabel value="#{add.fromTime}" >
                                     <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
@@ -125,7 +125,6 @@
                                 <br></br>
                                 <p:outputLabel value="Deleted By  #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"></p:outputLabel>
                             </p:column>
-
                         </p:dataTable>
                     </p:panel>
                 </h:panelGrid>

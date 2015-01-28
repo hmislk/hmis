@@ -139,6 +139,7 @@ public class StaffShift implements Serializable {
     @Enumerated(EnumType.STRING)
     LeaveType leaveType;
     double qty;
+    private boolean autoLeave;
     @ManyToOne
 //    @Column(name = "hrForm")
     HrForm additionalForm;
@@ -172,6 +173,8 @@ public class StaffShift implements Serializable {
     public HrForm getLeaveForm() {
         return leaveForm;
     }
+    
+    
 
     public void setLeaveForm(HrForm leaveForm) {
         this.leaveForm = leaveForm;
@@ -1007,10 +1010,10 @@ public class StaffShift implements Serializable {
         setShiftStartTime(sDate.getTime());
 
         eTime.setTime(getShift().getEndingTime());
-        eDate.setTime(shiftDate);
-        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
-        eDate.add(Calendar.HOUR_OF_DAY, (int) getShift().getDurationHour());
-        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
+        eDate.setTime(shiftStartTime);
+//        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
+        eDate.add(Calendar.MINUTE, (int) getShift().getDurationMin());
+//        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
 
         setShiftEndTime(eDate.getTime());
     }
@@ -1273,6 +1276,14 @@ public class StaffShift implements Serializable {
 
     public void setReferenceStaffShiftEarlyOut(StaffShift referenceStaffShiftEarlyOut) {
         this.referenceStaffShiftEarlyOut = referenceStaffShiftEarlyOut;
+    }
+
+    public boolean isAutoLeave() {
+        return autoLeave;
+    }
+
+    public void setAutoLeave(boolean autoLeave) {
+        this.autoLeave = autoLeave;
     }
 
 }

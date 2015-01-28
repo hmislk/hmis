@@ -12,11 +12,21 @@
             <ui:define name="content">
                 <h:form>
                     <h:panelGrid columns="3" styleClass="alignTop">   
-                        <p:panel header="Attendance">
+                        <p:panel header="Salary">
                             <h:panelGrid columns="1">
-                                <p:commandButton value="(1) All Staff Salary" 
-                                                 action="#{salaryCycleController.hr_report_all_staff_salary()}" 
+                                <p:commandButton value="(1) All Staff Salary Detail" 
+                                                 action="/hr/hr_report_all_staff_salary" 
                                                  styleClass="linkButton" ajax="false" /> 
+                                <p:commandButton value="(2) All Staff Salary Summery" 
+                                                 action="/hr/hr_report_staff_salary" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                 <p:commandButton value="(3) Staff Payroll" 
+                                                 action="/hr/hr_report_staff_payroll" 
+                                                 styleClass="linkButton" ajax="false" />                                 
+                                <p:commandButton  ajax="false"  action="/hr/hr_staff_paysheet_component_list"
+                                                  value="(4) Staff Paysheet Component  List" 
+                                                  styleClass="linkButton"
+                                                  actionListener="#{staffBasicController.makeItemNul()}"  />
                             </h:panelGrid>
                         </p:panel>
                         <p:panel header="Attendance">
@@ -44,7 +54,12 @@
                                 <p:commandButton value="(6) Late In and Early Out " 
                                                  action="hr_report_attendance_late_in_early_out" 
                                                  actionListener="#{hrReportController.makeNull()}" 
-                                                 styleClass="linkButton" ajax="false" /> 
+                                                 styleClass="linkButton" ajax="false" />
+                                <p:commandButton value="(7) Staff Shift Extra" 
+                                                 action="hr_report_staff_shift_extra" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" />
+                                
                             </h:panelGrid>
                         </p:panel>
                         <p:panel header="Administration">
@@ -125,7 +140,12 @@
                             <p:commandButton value="(3) Leave Report Detail By Staff " 
                                              action="hr_report_leave_summery_by_staff" 
                                              actionListener="#{hrReportController.makeNull()}" 
-                                             styleClass="linkButton" ajax="false" /> 
+                                             styleClass="linkButton" ajax="false" />
+                            
+                            <p:commandButton value="(4) Leave Report Extra " 
+                                             action="hr_report_leave_system" 
+                                             actionListener="#{hrReportController.makeNull()}" 
+                                             styleClass="linkButton" ajax="false" />
 
                         </p:panel>
 

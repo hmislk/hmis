@@ -5,6 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
@@ -18,11 +19,11 @@
 
                 <f:selectItems value="#{salaryCycleController.salaryCycles}" 
                                var="theme" 
-                               itemLabel="#{theme.transName}" 
+                               itemLabel="#{theme.name}" 
                                itemValue="#{theme}" ></f:selectItems>
 
                 <p:column style="width:10%" headerText="Name">
-                    <h:outputText value="#{t.transName}" />
+                    <h:outputText value="#{t.name}" />
                 </p:column>
 
                 <p:column headerText="Year">
@@ -33,21 +34,67 @@
                 </p:column>
             </p:selectOneMenu>
 
+            <p:commandButton value="Process Salary Cycle" ajax="false" action="#{salaryCycleController.listAllSalaryCycles()}" ></p:commandButton>
+            <p:commandButton value="Print" ajax="false" action="#"  >
+                <p:printer target="print" ></p:printer>
+            </p:commandButton>
             <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffAndSalaryComponents()}" ></p:commandButton>
 
-            <p:dataTable value="#{salaryCycleController.staffAnsAndSalarySalaryComponents}" var="scc" >
+            <p:panel id="print">
+                <table id="tbl" border="1">
+                    <thead>
+                        <tr>  
+                            <th>Staff Name</th>
+                            <ui:repeat value="#{salaryCycleController.headersAdd}" var="h">
+                                <th>#{h}</th>
+                            </ui:repeat>
+                            <th>Gross Salary</th>
+                            <ui:repeat value="#{salaryCycleController.headersSub}" var="hh">
+                                <th>#{hh}</th>
+                            </ui:repeat>
+                            <th>EPF</th>
+                            <th>ETF</th>
+                            <th>Net Salary</th>
+                        </tr>
+                    </thead>
+                    <tbody>                   
+                        <ui:repeat value="#{salaryCycleController.staffAnsAndSalarySalaryComponents}" var="scc">
+                            <tr>
+                                <td><h:outputLabel value="#{scc.staff.person.nameWithTitle}" /></td>
+                                <ui:repeat value="#{scc.staffSalaryComponantsAddition}"  var="col">
+                                    <td><h:outputText value="#{col.componantValue}" >
+                                            <f:convertNumber pattern="0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </ui:repeat>
+                                <td><h:outputLabel value="#{scc.valueAdding}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <ui:repeat value="#{scc.staffSalaryComponantsSubstraction}"  var="col2">
+                                    <td><h:outputText value="#{col2.componantValue}" >
+                                            <f:convertNumber pattern="0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </ui:repeat>
+                                <td><h:outputLabel value="#{scc.epf}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td><h:outputLabel value="#{scc.etf}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td><h:outputLabel value="#{scc.valueAdding+(scc.valueSubstarction+scc.epf+scc.etf)}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
 
-                <p:column headerText="Name" >
-                    <h:outputLabel value="#{scc.staff.person.nameWithTitle}" ></h:outputLabel>
-                </p:column>
-
-                <p:columns value="#{scc.staffSalaryComponants}" 
-                           var="ssc" 
-                           columnIndexVar="colIndex" >
-                    <h:outputText value="#{ssc.salaryValue}" />
-                </p:columns>
-
-            </p:dataTable>
+            </p:panel>
 
 
         </h:form>        

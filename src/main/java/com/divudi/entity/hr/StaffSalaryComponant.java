@@ -31,9 +31,6 @@ public class StaffSalaryComponant implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private double generatedValue;
-    private double modifiedValue;
-    @Transient
     private double componantValue;
     private double epfValue;
     private double etfValue;
@@ -53,49 +50,42 @@ public class StaffSalaryComponant implements Serializable {
     private String retireComments;
     @ManyToOne
     StaffPaysheetComponent staffPaysheetComponent;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     StaffSalary staffSalary;
+    @ManyToOne
+    SalaryCycle salaryCycle;
     //////////
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date lastEditedAt;
     @ManyToOne
     private WebUser lastEditor;
-    
-            
-            
+
+    public SalaryCycle getSalaryCycle() {
+        return salaryCycle;
+    }
+
+    public void setSalaryCycle(SalaryCycle salaryCycle) {
+        this.salaryCycle = salaryCycle;
+    }
+
     public double getComponantValue() {
-        if (modifiedValue != 0.0) {
-            componantValue = modifiedValue;
-        } else {
-            componantValue = generatedValue;
-        }
-
-        if (getStaffPaysheetComponent() != null
-                && getStaffPaysheetComponent().getPaysheetComponent() != null && getStaffPaysheetComponent().getPaysheetComponent().getComponentType()!=null 
-                && getStaffPaysheetComponent().getPaysheetComponent().getComponentType().is(PaysheetComponentType.subtraction)) {
-
-            componantValue = 0 - componantValue;
-        }
-
         return componantValue;
     }
 
+    public void calComponentValue() {
+
+    }
+
     public void setComponantValue(double componantValue) {
-        if (generatedValue == 0.0) {
-            generatedValue = componantValue;
+        if (getStaffPaysheetComponent() != null
+                && getStaffPaysheetComponent().getPaysheetComponent() != null
+                && getStaffPaysheetComponent().getPaysheetComponent().getComponentType() != null
+                && getStaffPaysheetComponent().getPaysheetComponent().getComponentType().is(PaysheetComponentType.subtraction)) {
+
+            this.componantValue = 0 - componantValue;
         } else {
-            modifiedValue = componantValue;
+            this.componantValue = componantValue;
         }
-
-        this.componantValue = componantValue;
-    }
-
-    public double getGeneratedValue() {
-        return generatedValue;
-    }
-
-    public void setGeneratedValue(double generatedValue) {
-        this.generatedValue = generatedValue;
     }
 
     public WebUser getCreater() {
@@ -179,7 +169,7 @@ public class StaffSalaryComponant implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof StaffSalaryComponant)) {
             return false;
         }
@@ -193,14 +183,6 @@ public class StaffSalaryComponant implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.hr.StaffSalaryComponant[ id=" + id + " ]";
-    }
-
-    public double getModifiedValue() {
-        return modifiedValue;
-    }
-
-    public void setModifiedValue(double modifiedValue) {
-        this.modifiedValue = modifiedValue;
     }
 
     public Date getLastEditedAt() {
@@ -220,7 +202,7 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public double getEpfValue() {
-        return 0-epfValue;
+        return 0 - epfValue;
     }
 
     public void setEpfValue(double epfValue) {
@@ -228,7 +210,7 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public double getEtfValue() {
-        return 0-etfValue;
+        return 0 - etfValue;
     }
 
     public void setEtfValue(double etfValue) {
@@ -236,7 +218,7 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public double getEpfCompanyValue() {
-        return 0-epfCompanyValue;
+        return 0 - epfCompanyValue;
     }
 
     public void setEpfCompanyValue(double epfCompanyValue) {
@@ -244,12 +226,11 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public double getEtfCompanyValue() {
-        return 0-etfCompanyValue;
+        return 0 - etfCompanyValue;
     }
 
     public void setEtfCompanyValue(double etfCompanyValue) {
         this.etfCompanyValue = etfCompanyValue;
     }
 
-   
 }
