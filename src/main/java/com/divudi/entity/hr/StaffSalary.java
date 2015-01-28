@@ -8,6 +8,7 @@ package com.divudi.entity.hr;
 import com.divudi.data.dataStructure.ExtraDutyCount;
 import com.divudi.data.dataStructure.OtNormalSpecial;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -73,6 +74,7 @@ public class StaffSalary implements Serializable {
     List<StaffShift> transStaffShiftsOverTime;
     @Transient
     List<StaffShift> transStaffShiftsExtraDuty;
+    Institution institution; 
     private double basicValue;
     private double overTimeValue;
     private double extraDutyValue;
