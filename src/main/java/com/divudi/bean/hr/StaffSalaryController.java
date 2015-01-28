@@ -380,8 +380,8 @@ public class StaffSalaryController implements Serializable {
 
     }
 
-    private void setHoliDayAllowance() {
-        StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.HolidayAllowance);
+    private void setHoliDayAllowance(PaysheetComponentType paysheetComponentType) {
+        StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
             long count = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff());
 
@@ -459,8 +459,8 @@ public class StaffSalaryController implements Serializable {
 
     }
 
-    private void setNoPay() {
-        StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction);
+    private void setNoPay_Basic() {
+        StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction_Basic);
         if (ss.getStaffPaysheetComponent() != null) {
             double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
             double salaryValue = 0;
@@ -475,7 +475,45 @@ public class StaffSalaryController implements Serializable {
                     continue;
                 }
 
-                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForNoPay()) {
+                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
+                    salaryValue += staffSalaryComponant.getComponantValue();
+                }
+            }
+
+            //Need Calculation Sum
+            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * noPayCount);
+            System.err.println("Sal Val " + salaryValue);
+//            System.err.println("No Pa " + noPayTime);
+        } else {
+            return;
+        }
+
+        getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
+        getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
+
+        System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
+        getCurrent().getStaffSalaryComponants().add(ss);
+
+    }
+
+    private void setNoPay_Allowance() {
+        StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction_Allowance);
+        if (ss.getStaffPaysheetComponent() != null) {
+            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+            double salaryValue = 0;
+
+            if (getCurrent().getStaffSalaryComponants() == null) {
+                return;
+            }
+
+            for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
+                if (staffSalaryComponant.getStaffPaysheetComponent() == null
+                        || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
+                    continue;
+                }
+
+                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForNoPay()
+                        && staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() != PaysheetComponentType.BasicSalary) {
                     salaryValue += staffSalaryComponant.getComponantValue();
                 }
             }
@@ -544,9 +582,11 @@ public class StaffSalaryController implements Serializable {
 
             setOT();
             setExtraDuty();
-            setNoPay();
-            setHoliDayAllowance();
+            setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance);
+            setHoliDayAllowance(PaysheetComponentType.PoyaAllowance);
             setDayOffSleepingDayAllowance();
+            setNoPay_Basic();
+            setNoPay_Allowance();
             setAdjustments();
         }
 
@@ -559,12 +599,12 @@ public class StaffSalaryController implements Serializable {
         }
 
         if (staffSalary.getStaff() != null) {
-            
+
             staffSalary.setRetireComments("deleted");
             staffSalary.setRetired(true);
             staffSalary.setRetiredAt(new Date());
             staffSalary.setRetirer(getSessionController().getLoggedUser());
-            
+
             staffSalaryFacade.edit(staffSalary);
 
             for (StaffSalaryComponant spc : getHumanResourceBean().fetchStaffSalaryComponent(staffSalary)) {
@@ -576,7 +616,7 @@ public class StaffSalaryController implements Serializable {
                 getStaffSalaryComponantFacade().edit(spc);
 
             }
-            
+
             System.err.println("Return 2");
             updateStaffShiftRedo(staffSalary.getStaff(), staffSalary.getSalaryCycle().getSalaryFromDate(), staffSalary.getSalaryCycle().getSalaryToDate());
 

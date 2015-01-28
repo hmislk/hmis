@@ -14,7 +14,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -63,21 +62,14 @@ public class StaffSalary implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    @Transient
-    private OtNormalSpecial tmpOtNormalSpecial;
-    @Transient
-    private List<ExtraDutyCount> tmpExtraDutyCount;
-    @Transient
-    List<StaffShift> transStaffShiftsSalary;
-    @Transient
-    List<StaffShift> transStaffShiftsOverTime;
-    @Transient
-    List<StaffShift> transStaffShiftsExtraDuty;
     private double basicValue;
+    double brValue;
     private double overTimeValue;
     private double extraDutyValue;
-    private double noPayValue;
-    private double holidayAllowanceValue;
+    private double noPayValueBasic;
+    private double noPayValueAllowance;
+    private double merchantileAllowanceValue;
+    private double poyaAllowanceValue;
     private double dayOffSleepingDayAllowance;
     private double adjustmentToBasic;
     private double adjustmentToAllowance;
@@ -85,38 +77,35 @@ public class StaffSalary implements Serializable {
     private double etfCompanyValue;
     private double epfStaffValue;
     private double epfCompanyValue;
-    double componentValue;
+    double componentValueAddition;
+    double componentValueSubstraction;
+    @Transient
+    private List<StaffSalaryComponant> transStaffSalaryComponantsAddition;
+    @Transient
+    private List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction;
 
-    public List<StaffShift> getTransStaffShiftsExtraDuty() {
-        return transStaffShiftsExtraDuty;
+    public double getBrValue() {
+        return brValue;
     }
 
-    public double getComponentValue() {
-        return componentValue;
+    public void setBrValue(double brValue) {
+        this.brValue = brValue;
     }
 
-    public void setComponentValue(double componentValue) {
-        this.componentValue = componentValue;
+    public double getComponentValueAddition() {
+        return componentValueAddition;
     }
 
-    public void setTransStaffShiftsExtraDuty(List<StaffShift> transStaffShiftsExtraDuty) {
-        this.transStaffShiftsExtraDuty = transStaffShiftsExtraDuty;
+    public void setComponentValueAddition(double componentValueAddition) {
+        this.componentValueAddition = componentValueAddition;
     }
 
-    public List<StaffShift> getTransStaffShiftsSalary() {
-        return transStaffShiftsSalary;
+    public double getComponentValueSubstraction() {
+        return componentValueSubstraction;
     }
 
-    public void setTransStaffShiftsSalary(List<StaffShift> transStaffShiftsSalary) {
-        this.transStaffShiftsSalary = transStaffShiftsSalary;
-    }
-
-    public List<StaffShift> getTransStaffShiftsOverTime() {
-        return transStaffShiftsOverTime;
-    }
-
-    public void setTransStaffShiftsOverTime(List<StaffShift> transStaffShiftsOverTime) {
-        this.transStaffShiftsOverTime = transStaffShiftsOverTime;
+    public void setComponentValueSubstraction(double componentValueSubstraction) {
+        this.componentValueSubstraction = componentValueSubstraction;
     }
 
     public Date getFromDate() {
@@ -196,26 +185,30 @@ public class StaffSalary implements Serializable {
 
     public double getTransGrossSalary() {
         return basicValue
-                + overTimeValue
-                + extraDutyValue
-                + noPayValue
-                + holidayAllowanceValue
+                + phValue
+                + merchantileAllowanceValue
                 + dayOffSleepingDayAllowance
-                + adjustmentToBasic
-                + adjustmentToAllowance
-                + componentValue;
+                + adjustmentToBasic;
+    }
+
+    public double getTransEpfEtfDiductableSalary() {
+        return getTransGrossSalary() - noPayValueBasic;
     }
 
     public void calculateComponentTotal() {
         basicValue = 0;
+        brValue = 0;
         overTimeValue = 0;
         extraDutyValue = 0;
-        noPayValue = 0;
-        holidayAllowanceValue = 0;
+        noPayValueBasic = 0;
+        noPayValueAllowance = 0;
+        poyaAllowanceValue = 0;
+        merchantileAllowanceValue = 0;
         dayOffSleepingDayAllowance = 0;
         adjustmentToBasic = 0;
         adjustmentToAllowance = 0;
-        componentValue = 0;
+        componentValueAddition = 0;
+        componentValueSubstraction = 0;
 
         for (StaffSalaryComponant spc : getStaffSalaryComponants()) {
             PaysheetComponentType paysheetComponentType = null;
@@ -226,11 +219,9 @@ public class StaffSalary implements Serializable {
                 paysheetComponentType = spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType();
             }
 
-            if (paysheetComponentType == null) {
-                componentValue += spc.getComponantValue();
-            } else {
+            if (paysheetComponentType != null) {
 
-                if (paysheetComponentType.is(PaysheetComponentType.addition)) {
+                if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
                     value = spc.getComponantValue();
                 } else {
                     value = 0 - spc.getComponantValue();
@@ -239,6 +230,7 @@ public class StaffSalary implements Serializable {
                 switch (paysheetComponentType) {
                     case BasicSalary:
                         basicValue += value;
+                        brValue += spc.getStaffPaysheetComponent().getDblValue();
                         break;
                     case OT:
                         overTimeValue += value;
@@ -246,11 +238,17 @@ public class StaffSalary implements Serializable {
                     case ExtraDuty:
                         extraDutyValue += value;
                         break;
-                    case No_Pay_Deduction:
-                        noPayValue += value;
+                    case No_Pay_Deduction_Basic:
+                        noPayValueBasic += value;
                         break;
-                    case HolidayAllowance:
-                        holidayAllowanceValue += value;
+                    case No_Pay_Deduction_Allowance:
+                        noPayValueAllowance += value;
+                        break;
+                    case MerchantileAllowance:
+                        merchantileAllowanceValue += value;
+                        break;
+                    case PoyaAllowance:
+                        poyaAllowanceValue += value;
                         break;
                     case DayOffAllowance:
                         dayOffSleepingDayAllowance += value;
@@ -264,13 +262,29 @@ public class StaffSalary implements Serializable {
                         adjustmentToBasic += value;
                         break;
                     default:
-                        componentValue += value;
+                        if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
+                            componentValueAddition += value;
+                        } else {
+                            componentValueSubstraction += value;
+                        }
                 }
 
             }
 
         }
 
+    }
+
+    public double getTransTotalAllowance() {
+        return componentValueAddition + adjustmentToAllowance + noPayValueAllowance;
+    }
+
+    public double getTransTotalDeduction() {
+        return componentValueSubstraction + epfStaffValue;
+    }
+
+    public double getTransNetSalry() {
+        return getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction();
     }
 
     public SalaryCycle getSalaryCycle() {
@@ -361,22 +375,6 @@ public class StaffSalary implements Serializable {
         this.exist = exist;
     }
 
-    public OtNormalSpecial getTmpOtNormalSpecial() {
-        return tmpOtNormalSpecial;
-    }
-
-    public void setTmpOtNormalSpecial(OtNormalSpecial tmpOtNormalSpecial) {
-        this.tmpOtNormalSpecial = tmpOtNormalSpecial;
-    }
-
-    public List<ExtraDutyCount> getTmpExtraDutyCount() {
-        return tmpExtraDutyCount;
-    }
-
-    public void setTmpExtraDutyCount(List<ExtraDutyCount> tmpExtraDutyCount) {
-        this.tmpExtraDutyCount = tmpExtraDutyCount;
-    }
-
     public double getBasicValue() {
         return basicValue;
     }
@@ -401,20 +399,20 @@ public class StaffSalary implements Serializable {
         this.extraDutyValue = extraDutyValue;
     }
 
-    public double getNoPayValue() {
-        return noPayValue;
+    public double getNoPayValueBasic() {
+        return noPayValueBasic;
     }
 
-    public void setNoPayValue(double noPayValue) {
-        this.noPayValue = noPayValue;
+    public void setNoPayValueBasic(double noPayValueBasic) {
+        this.noPayValueBasic = noPayValueBasic;
     }
 
-    public double getHolidayAllowanceValue() {
-        return holidayAllowanceValue;
+    public double getNoPayValueAllowance() {
+        return noPayValueAllowance;
     }
 
-    public void setHolidayAllowanceValue(double holidayAllowanceValue) {
-        this.holidayAllowanceValue = holidayAllowanceValue;
+    public void setNoPayValueAllowance(double noPayValueAllowance) {
+        this.noPayValueAllowance = noPayValueAllowance;
     }
 
     public double getDayOffSleepingDayAllowance() {
@@ -471,6 +469,44 @@ public class StaffSalary implements Serializable {
 
     public void setEpfCompanyValue(double epfCompanyValue) {
         this.epfCompanyValue = epfCompanyValue;
+    }
+
+    public List<StaffSalaryComponant> getTransStaffSalaryComponantsAddition() {
+        if (transStaffSalaryComponantsAddition == null) {
+            transStaffSalaryComponantsAddition = new ArrayList<>();
+        }
+        return transStaffSalaryComponantsAddition;
+    }
+
+    public void setTransStaffSalaryComponantsAddition(List<StaffSalaryComponant> transStaffSalaryComponantsAddition) {
+        this.transStaffSalaryComponantsAddition = transStaffSalaryComponantsAddition;
+    }
+
+    public List<StaffSalaryComponant> getTransStaffSalaryComponantsSubtraction() {
+        if (transStaffSalaryComponantsSubtraction == null) {
+            transStaffSalaryComponantsSubtraction = new ArrayList<>();
+        }
+        return transStaffSalaryComponantsSubtraction;
+    }
+
+    public void setTransStaffSalaryComponantsSubtraction(List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction) {
+        this.transStaffSalaryComponantsSubtraction = transStaffSalaryComponantsSubtraction;
+    }
+
+    public double getMerchantileAllowanceValue() {
+        return merchantileAllowanceValue;
+    }
+
+    public void setMerchantileAllowanceValue(double merchantileAllowanceValue) {
+        this.merchantileAllowanceValue = merchantileAllowanceValue;
+    }
+
+    public double getPoyaAllowanceValue() {
+        return poyaAllowanceValue;
+    }
+
+    public void setPoyaAllowanceValue(double poyaAllowanceValue) {
+        this.poyaAllowanceValue = poyaAllowanceValue;
     }
 
 }

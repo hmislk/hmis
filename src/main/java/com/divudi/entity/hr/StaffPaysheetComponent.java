@@ -38,6 +38,7 @@ public class StaffPaysheetComponent implements Serializable {
     private double createdValue;
     private double modifiedValue;    
     private double staffPaySheetComponentValue;
+    double dblValue;
     @Temporal(TemporalType.DATE)
     private Date fromDate;
     @Temporal(TemporalType.DATE)
@@ -66,6 +67,16 @@ public class StaffPaysheetComponent implements Serializable {
     private String loanNo;
     private double loanFullAmount;
     private String comment;
+
+    public double getDblValue() {
+        return dblValue;
+    }
+
+    public void setDblValue(double dblValue) {
+        this.dblValue = dblValue;
+    }
+    
+    
 
     public Long getId() {
         return id;
