@@ -163,6 +163,16 @@ public class SalaryCycleController implements Serializable {
 
     }
 
+    List<StaffSalary> staffSalarys;
+
+    public List<StaffSalary> getStaffSalarys() {
+        return staffSalarys;
+    }
+
+    public void setStaffSalarys(List<StaffSalary> staffSalarys) {
+        this.staffSalarys = staffSalarys;
+    }
+
     public SalaryCycle getCurrent() {
         if (current == null) {
             current = new SalaryCycle();
@@ -327,6 +337,19 @@ public class SalaryCycleController implements Serializable {
         return paysheetComponentFacade.findBySQL(jpql, m);
     }
 
+    private List<PaysheetComponent> fetchPaysheetComponentsUserDefinded(List<PaysheetComponentType> list) {
+        HashMap m = new HashMap();
+        String jpql = "select distinct(spc.staffPaysheetComponent.paysheetComponent) "
+                + " from StaffSalaryComponant spc"
+                + " where spc.salaryCycle=:sc"
+                + " and spc.retired=false "
+                + " and spc.staffPaysheetComponent.paysheetComponent.componentType in :tp"
+                + " order by spc.staffPaysheetComponent.paysheetComponent.orderNo";
+        m.put("sc", current);
+        m.put("tp", list);
+        return paysheetComponentFacade.findBySQL(jpql, m);
+    }
+
     List<String> headersSub;
 
     public List<String> getHeadersSub() {
@@ -387,9 +410,74 @@ public class SalaryCycleController implements Serializable {
         }
     }
 
+    public void fillStaffPayRoll() {
+
+        List<PaysheetComponent> paysheetComponentsAddition;
+        List<PaysheetComponent> paysheetComponentsSubstraction;
+        List<Staff> staffes;
+        String jpql;
+        Map m;
+
+        headersAdd = new ArrayList<>();
+        paysheetComponentsAddition = fetchPaysheetComponentsUserDefinded(PaysheetComponentType.addition.getUserDefinedComponentsAddidtions());
+        for (PaysheetComponent paysheetComponent : paysheetComponentsAddition) {
+            headersAdd.add(paysheetComponent.getName());
+        }
+
+        headersSub = new ArrayList<>();
+        paysheetComponentsSubstraction = fetchPaysheetComponentsUserDefinded(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductions());
+        for (PaysheetComponent paysheetComponent : paysheetComponentsSubstraction) {
+            headersSub.add(paysheetComponent.getName());
+        }
+
+        m = new HashMap();
+        jpql = "select spc"
+                + " from SatffSalary spc "
+                + " where spc.salaryCycle=:sc "
+                + " and spc.retired=false "
+                + " order by spc.staff.codeInterger ";
+        m.put("sc", current);
+        staffSalarys = staffSalaryFacade.findBySQL(jpql, m);
+
+        if (staffSalarys == null) {
+            return;
+        }
+
+        for (StaffSalary s : staffSalarys) {
+            for (PaysheetComponent psc : paysheetComponentsAddition) {
+                List<StaffSalaryComponant> c = fetchSalaryComponents(s, psc);
+                if (c != null) {
+                    s.getTransStaffSalaryComponantsAddition().addAll(c);
+                }
+            }
+            for (PaysheetComponent psc : paysheetComponentsSubstraction) {
+                List<StaffSalaryComponant> c = fetchSalaryComponents(s, psc);
+                if (c != null) {
+                    s.getTransStaffSalaryComponantsSubtraction().addAll(c);
+                }
+            }
+
+        }
+    }
+
     private List<StaffSalaryComponant> fetchSalaryComponents(Staff s, PaysheetComponent psc) {
         String jpql = "select spc from StaffSalaryComponant spc "
                 + " where spc.staffSalary.staff=:st"
+                + " and spc.retired=false"
+                + " and spc.staffSalary.retired=false"
+                + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
+                + " and spc.salaryCycle=:sc ";
+        HashMap m = new HashMap();
+        m.put("st", s);
+        m.put("pc", psc);
+        m.put("sc", current);
+        return staffSalaryComponantFacade.findBySQL(jpql, m);
+
+    }
+
+    private List<StaffSalaryComponant> fetchSalaryComponents(StaffSalary s, PaysheetComponent psc) {
+        String jpql = "select spc from StaffSalaryComponant spc "
+                + " where spc.staffSalary=:st"
                 + " and spc.retired=false"
                 + " and spc.staffSalary.retired=false"
                 + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
