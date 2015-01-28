@@ -8,6 +8,7 @@ package com.divudi.entity.hr;
 import com.divudi.data.dataStructure.ExtraDutyCount;
 import com.divudi.data.dataStructure.OtNormalSpecial;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
@@ -60,6 +61,8 @@ public class StaffSalary implements Serializable {
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
+    @ManyToOne
+    Institution institution;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
@@ -73,6 +76,7 @@ public class StaffSalary implements Serializable {
     List<StaffShift> transStaffShiftsOverTime;
     @Transient
     List<StaffShift> transStaffShiftsExtraDuty;
+     
     private double basicValue;
     private double overTimeValue;
     private double extraDutyValue;
@@ -126,6 +130,16 @@ public class StaffSalary implements Serializable {
     public Date getToDate() {
         return getSalaryCycle() != null ? getSalaryCycle().getSalaryToDate() : null;
     }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+    
+    
 
     @XmlTransient
     public List<StaffSalaryComponant> getStaffSalaryComponants() {

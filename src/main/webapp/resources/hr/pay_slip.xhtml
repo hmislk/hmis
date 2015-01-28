@@ -15,54 +15,66 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="posbill">
+        <h:outputStylesheet library="css" name="paySheet.css" ></h:outputStylesheet>
+        <div style="position: relative!important;
+             /*padding-left: 0.5%!important;*/
+             height:50%!important;
+             width:100%!important; 
+             overflow:hidden!important; 
+             font-family: monospace!important; 
+             font-size: 12px!important; 
+             margin:1px!important; 
+             padding: 1px!important;
+             background-size: 100% auto!important; 
+             border: 1px solid!important;
+             font-size: 100%;
+             line-height: 2!important;" class="a4HalfPaysheet">
 
             <div class="institutionName" style="text-align: center!important;
-    font-weight: bold!important;
-    font-size: 15px!important;
-    font-weight: bold;">
-                
+                 font-weight: bold!important;
+                 font-size: 15px!important;
+                 font-weight: bold;">
+                <h:outputText value="#{cc.attrs.bill.institution.name}"/>
             </div>
             <div class="institutionContact" >
                 <div>
-                    <h:outputText value="#{cc.attrs.bill.staff.person.name}"/> 
+                     
                 </div>
                 <div >
-                    
+
                 </div>
                 <div >
-                                                                     
+
                 </div>
             </div>
 
             <div class="headingBill">
-                
+
             </div>
 
             <div class="billline">
-                                          
+
             </div>
 
             <div class="billDetails" >
                 <table style="width: 100%;" >
                     <tr>
                         <td style="width: 15%; text-align: left;" >
-                            
+
                         </td>
                         <td>:</td>
                         <td style="width: 30%" >
-                            
+
                         </td>
                         <td style="width: 10%" >
 
                         </td>
                         <td style="width: 15%" >
-                            
+
                         </td>
 
                         <td style="width: 30%" >
-                            
+
                         </td>
 
                     </tr>
@@ -70,42 +82,42 @@
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            
+
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
-                            
+
                         </td>
                         <td style="width: 10%" >
 
                         </td>
                         <td style="width: 15%" >
-                            
+
                         </td>
 
                         <td style="width: 30%" >
-                            
+
                         </td>
 
                     </tr>
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            
+
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
-                            
+
                         </td>
                         <td style="width: 10%" >
 
                         </td>
                         <td style="width: 15%" >
-                            
+
                         </td>
 
                         <td style="width: 30%" >
-                            
+
 
                         </td>
 
@@ -114,11 +126,11 @@
                     <h:panelGroup>
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                
+
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                
+
                             </td>
                             <td style="width: 10%" >
                             </td>
@@ -135,11 +147,11 @@
                     <h:panelGroup>
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                
+
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                
+
                             </td>
                             <td style="width: 10%" >
                             </td>
@@ -154,11 +166,11 @@
                     <h:panelGroup>
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                
+
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                
+
                             </td>
                             <td style="width: 10%" >
                             </td>
@@ -172,11 +184,11 @@
                     <h:panelGroup  >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                
+
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                
+
                             </td>
                             <td style="width: 10%" >
                             </td>
@@ -202,18 +214,18 @@
                 <table width="100%" style="width: 100%;" >
                     <tr>
                         <td style="width: 25%; ">
-                            
+
                         </td>
                         <td  style="width:15%;text-align: right; padding-right: 30px;">
-                            
+
                         </td>
 
                         <td  style="width:25%;text-align: right; padding-right: 30px;">
-                            
+
                         </td>
 
                         <td  style="width:30%;text-align: right; padding-right: 30px;">
-                            
+
                         </td>
                     </tr>
 
@@ -227,7 +239,7 @@
 
                         <tr>
                             <td colspan="4" style="overflow: visible;">
-                                
+
 
 
                             </td>
@@ -237,13 +249,13 @@
 
                             </td>
                             <td>
-                                
+
                             </td>
                             <td  styleClass="itemsBlockRight"  style="text-align: right; padding-right: 30px;" >
-                                
+
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
-                                
+
                             </td>
 
                         </tr>
@@ -274,47 +286,47 @@
 
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            
+
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            
+
                         </td>
                     </tr>
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
-                            
+
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
-                            
+
                         </td>
                     </tr>
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
-                            
+
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                                     
+
                         </td>                        
                     </tr>
-                    
+
                     <tr>
-                        
+
                         <td  class="totalsBlock" style="text-align: left;">
-                            
+
                         </td>
-                        
+
                         <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                            
-                            
+
+
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
-                            
+
                         </td>
                         <td  class="totalsBlock">
-                            
+
                         </td>
                     </tr>
 
@@ -325,7 +337,7 @@
 
 
             <div class="footer">
-                
+
             </div>
 
 
