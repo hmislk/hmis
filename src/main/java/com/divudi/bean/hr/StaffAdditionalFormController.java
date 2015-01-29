@@ -83,6 +83,12 @@ public class StaffAdditionalFormController implements Serializable {
         if (getCurrentAdditionalForm() != null) {
             if (getCurrentAdditionalForm().getStaffShift() != null) {
                 getCurrentAdditionalForm().getStaffShift().resetExtraTime();
+                
+                if(getCurrentAdditionalForm().getStaffShift() instanceof StaffShiftExtra){
+                    getCurrentAdditionalForm().getStaffShift().setRetired(true);
+                    getCurrentAdditionalForm().getStaffShift().setRetirer(sessionController.getLoggedUser());                    
+                }
+                
                 staffShiftFacade.edit(getCurrentAdditionalForm().getStaffShift());
             }
 
@@ -486,7 +492,7 @@ public class StaffAdditionalFormController implements Serializable {
 
         Shift shift = null;
 
-        if (isNewStaffShift()) {
+        if (!isNewStaffShift()) {
             if (currentAdditionalForm.getStaffShift() == null) {
                 UtilityController.addErrorMessage("Please Un Select Staff Shift");
                 return;

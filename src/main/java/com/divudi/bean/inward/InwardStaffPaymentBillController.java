@@ -430,9 +430,9 @@ public class InwardStaffPaymentBillController implements Serializable {
         totalDocFeeListDischarged = calBhtTotal(docFeeListDischarged);
         totalDocFeeListNotDischarged = calBhtTotal(docFeeListNotDischarged);
 
-//        totalPaidDocFeeListDischarged = calBhtPaidTotal(docFeeListDischarged);
-//        totalPadDocFeeListNotDischarged = calBhtPaidTotal(docFeeListNotDischarged);
-//
+        totalPaidDocFeeListDischarged = calBhtPaidTotal(docFeeListDischarged);
+        totalPadDocFeeListNotDischarged = calBhtPaidTotal(docFeeListNotDischarged);
+
 //        totalPaid = totalDocFeeListDischarged + totalPadDocFeeListNotDischarged;
 //        totalVal = totalPaidDocFeeListDischarged + totalPadDocFeeListNotDischarged;
 

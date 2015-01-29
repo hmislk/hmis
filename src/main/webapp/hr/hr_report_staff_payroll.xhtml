@@ -38,17 +38,16 @@
             <p:commandButton value="Print" ajax="false" action="#"  >
                 <p:printer target="print" ></p:printer>
             </p:commandButton>
-            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRoll()}" ></p:commandButton>
-            
+
             <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
             <p:commandLink style="padding: .3em 1em;" 
                            styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c" 
                            ajax="false" value="Download as Excel" 
-                           download="staff_payrall" 
+                           download="staff_payrall.xls" 
                            onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');" ></p:commandLink>
-           
+
             <p:panel id="print">
-                <table id="tbl" border="1">
+                <table id="tbl" border="1" >
                     <thead>
                         <tr>  
                             <th>Staff Code</th>
@@ -178,6 +177,27 @@
                                 </td>
                             </tr>
                         </ui:repeat>
+                        <tr>
+                            <td colspan="5"><h:outputLabel value="Totals"/></td>
+                                <td><h:outputText value="#{salaryCycleController.basicVal}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.brVal}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.mercAll}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.poyaAll}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.dayOffAll}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.slpAll}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.noPayBasic}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.adjstBasic}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.tranGrossSal}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.transTotDeduct}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.adjustAll}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.noPayValAll}" ></h:outputText></td>
+                                <td><h:outputText value="#{salaryCycleController.transTotAll}" ></h:outputText></td>
+                                <td><h:outputLabel value="#{salaryCycleController.epfStaffVal}" ></h:outputLabel></td>
+                                <td><h:outputLabel value="#{salaryCycleController.transTotDeduct}" ></h:outputLabel></td>
+                                <td><h:outputLabel value="#{salaryCycleController.transNetSal}" ></h:outputLabel></td>
+                                <td><h:outputLabel value="#{salaryCycleController.epfComVal}" ></h:outputLabel></td>
+                                <td><h:outputLabel value="#{salaryCycleController.etfComVal}" ></h:outputLabel></td>
+                            </tr>
                     </tbody>
                 </table>
 

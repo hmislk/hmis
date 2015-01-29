@@ -468,7 +468,7 @@ public class StaffSalary implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-
+//
 //    public double getPhValue() {
 //        return phValue;
 //    }
@@ -476,7 +476,7 @@ public class StaffSalary implements Serializable {
 //    public void setPhValue(double phValue) {
 //        this.phValue = phValue;
 //    }
-
+//
     public boolean isExist() {
         return exist;
     }
