@@ -9,7 +9,11 @@
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
+
         <h:form>
+
+            <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
+
             <p:selectOneMenu id="advanced" 
                              value="#{salaryCycleController.current}" 
                              converter="salaryCycleConverter" 
@@ -38,8 +42,9 @@
             <p:commandButton value="Print" ajax="false" action="#"  >
                 <p:printer target="print" ></p:printer>
             </p:commandButton>
-            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffAndSalaryComponents()}" ></p:commandButton>
 
+            <p:commandLink style="padding: .3em 1em;" styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c" ajax="false" value="Download as Excel" download="#{salaryCycleController.current}.xls" onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');" ></p:commandLink>
+            
             <p:panel id="print">
                 <table id="tbl" border="1">
                     <thead>
@@ -97,7 +102,10 @@
             </p:panel>
 
 
-        </h:form>        
+        </h:form> 
+
+
+
     </ui:define>
 
 </ui:composition>

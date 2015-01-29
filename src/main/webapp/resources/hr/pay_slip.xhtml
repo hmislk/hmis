@@ -226,9 +226,14 @@
                         </td>
                         <td></td>
 
+                        <td style="text-align: left;">
+                            <h:outputText value="Over 45 OT" style="text-align: left;"/>
+                        </td>
                         <td></td>
-                        <td></td>
-                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.overTimeMinute} min">                                 
+                            </h:outputText>
+                        </td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -248,9 +253,14 @@
                         </td>
                         <td></td>
 
+                        <td style="text-align: left;">
+                            <h:outputText value="Extra Normal OT" style="text-align: left;"/>
+                        </td>
                         <td></td>
-                        <td></td>
-                        <td></td>
+                        <td style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.extraDutyNormalMinute}min">                                 
+                            </h:outputText>
+                        </td>
                         <td></td>
                         <td style="text-align: left;">
                             <h:outputText value="Over Time" style="text-align: left;"/>
@@ -277,11 +287,12 @@
                         <td></td>
 
                         <td style="text-align: left;">
-
+                            <h:outputText value="Merchantile OT" style="text-align: left;"/>
                         </td>
                         <td></td>
                         <td style="text-align: right;">
-
+                            <h:outputText value="#{cc.attrs.bill.extraDutyMerchantileMinute}min">                                 
+                            </h:outputText>
                         </td>
                         <td></td>
                         <td></td>
@@ -304,11 +315,12 @@
                         <td></td>
 
                         <td style="text-align: left;">
-
+                            <h:outputText value="Poya OT" style="text-align: left;"/>
                         </td>
                         <td></td>
-                        <td style="text-align: right;">
-
+                        <td style="text-align: right;  border-bottom: 1px solid black; border-top: 1px solid black;">
+                            <h:outputText value="#{cc.attrs.bill.extraDutyPoyaMinute}min">                                 
+                            </h:outputText>
                         </td>
                         <td></td>
                         <td></td>
@@ -388,7 +400,7 @@
                     <ui:repeat var="we" value="#{cc.attrs.bill.transStaffSalaryComponantsAddition}">
                         <tr>
                             <td style="text-align: left;">
-                                <h:outputText value="#{we.paysheetComponent.name}"/> 
+                                <h:outputText value="#{we.staffPaysheetComponent.paysheetComponent.name}"/> 
                             </td>
                             <td>
                                 <h:outputLabel value=":"/>
@@ -850,7 +862,7 @@
                     <ui:repeat var="t" value="#{cc.attrs.bill.transStaffSalaryComponantsSubtraction}">
                         <tr>
                             <td style="text-align: left;">
-                                <h:outputText value="#{t.paysheetComponent.name}"/> 
+                                <h:outputText value="#{t.staffPaysheetComponent.paysheetComponent.name}"/> 
                             </td>
                             <td>
                                 <h:outputLabel value=":"/>
