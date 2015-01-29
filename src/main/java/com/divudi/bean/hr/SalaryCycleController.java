@@ -662,6 +662,9 @@ public class SalaryCycleController implements Serializable {
             }
 
         }
+        
+        SalaryTotalCalculation(staffSalarys);
+      
     }
 
     public List<StaffSalaryComponant> fetchSalaryComponents(Staff s, PaysheetComponent psc) {
