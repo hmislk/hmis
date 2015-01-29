@@ -38,6 +38,7 @@
             <p:commandButton value="Print" ajax="false" action="#"  >
                 <p:printer target="print" ></p:printer>
             </p:commandButton>
+            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRoll()}" ></p:commandButton>
 
             <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
             <p:commandLink style="padding: .3em 1em;" 
