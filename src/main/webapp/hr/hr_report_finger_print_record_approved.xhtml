@@ -83,6 +83,12 @@
                                         <f:convertDateTime pattern="hh:mm:s a"/>
                                     </h:outputLabel>                                    
                                 </p:column>
+                                <p:column headerText="Approved By">
+                                    #{ss.approver.staff.code}
+                                </p:column>
+                                 <p:column headerText="Approved At">
+                                    #{ss.approvedAt}
+                                </p:column>
                             </p:dataTable>
                         </p:panel>
 
