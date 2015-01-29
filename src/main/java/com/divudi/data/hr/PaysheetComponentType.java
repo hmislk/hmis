@@ -20,22 +20,37 @@ public enum PaysheetComponentType {
     VariableAllowance(addition),
     Bonus(addition),
     OT(addition),
-    ExtraDuty(addition),
-    HolidayAllowance(addition),
     @Deprecated
+    ExtraDuty(addition),
+    ExtraDutyNormal(addition),
+    ExtraDutyMerchantile(addition),
+    ExtraDutyPoya(addition),
+    ExtraDutyDayOff(addition),
+    ExtraDutySleepingDay(addition),
+    @Deprecated
+    HolidayAllowance(addition),
+    MerchantileAllowance(addition),
     PoyaAllowance(addition),
     DayOffAllowance(addition),
+    SleepingDayAllowance(addition),
     AdjustmentBasicAdd(addition),
     AdjustmentAllowanceAdd(addition),
     //////////////////////
     subtraction(null),
     FixedDeduction(subtraction),
+    VariableDeduction(subtraction),
+    @Deprecated
     VariableDeductionToGrossSalary(subtraction),
+    @Deprecated
     VariableDeductionToNetSalary(subtraction),
+    @Deprecated
     VariableDeductionToBasicSalary(subtraction),
     LoanInstallemant(subtraction),
     Institution_Deduction(subtraction),
+    @Deprecated
     No_Pay_Deduction(subtraction),
+    No_Pay_Deduction_Basic(subtraction),
+    No_Pay_Deduction_Allowance(subtraction),
     AdjustmentBasicSub(subtraction),
     AdjustmentAllowanceSub(subtraction),;
 
@@ -91,14 +106,51 @@ public enum PaysheetComponentType {
 
         return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.BasicSalary,
             PaysheetComponentType.DayOffAllowance,
-            PaysheetComponentType.ExtraDuty,
-            PaysheetComponentType.No_Pay_Deduction,
+            PaysheetComponentType.SleepingDayAllowance,
+            PaysheetComponentType.ExtraDutyNormal,
+            PaysheetComponentType.ExtraDutyMerchantile,
+            PaysheetComponentType.ExtraDutyPoya,
+            PaysheetComponentType.ExtraDutyDayOff,
+            PaysheetComponentType.ExtraDutySleepingDay,
+            PaysheetComponentType.No_Pay_Deduction_Basic,
+            PaysheetComponentType.No_Pay_Deduction_Allowance,
             PaysheetComponentType.OT,
-            PaysheetComponentType.HolidayAllowance,
+            PaysheetComponentType.MerchantileAllowance,
+            PaysheetComponentType.PoyaAllowance,
             PaysheetComponentType.AdjustmentAllowanceAdd,
             PaysheetComponentType.AdjustmentAllowanceSub,
             PaysheetComponentType.AdjustmentBasicAdd,
             PaysheetComponentType.AdjustmentBasicSub});
+
+    }
+
+    public List<PaysheetComponentType> getUserDefinedComponents() {
+
+        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
+            PaysheetComponentType.FixedAllowance,
+            PaysheetComponentType.FixedDeduction,
+            PaysheetComponentType.Institution_Deduction,
+            PaysheetComponentType.LoanInstallemant,
+            PaysheetComponentType.VariableAllowance,
+            PaysheetComponentType.VariableDeduction});
+
+    }
+
+    public List<PaysheetComponentType> getUserDefinedComponentsAddidtions() {
+
+        return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.Bonus,
+            PaysheetComponentType.FixedAllowance,
+            PaysheetComponentType.VariableAllowance,});
+
+    }
+
+    public List<PaysheetComponentType> getUserDefinedComponentsDeductions() {
+
+        return Arrays.asList(new PaysheetComponentType[]{
+            PaysheetComponentType.FixedDeduction,
+            PaysheetComponentType.Institution_Deduction,
+            PaysheetComponentType.LoanInstallemant,
+            PaysheetComponentType.VariableDeduction});
 
     }
 

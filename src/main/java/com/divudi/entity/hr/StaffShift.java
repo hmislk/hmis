@@ -173,8 +173,6 @@ public class StaffShift implements Serializable {
     public HrForm getLeaveForm() {
         return leaveForm;
     }
-    
-    
 
     public void setLeaveForm(HrForm leaveForm) {
         this.leaveForm = leaveForm;
@@ -1010,10 +1008,10 @@ public class StaffShift implements Serializable {
         setShiftStartTime(sDate.getTime());
 
         eTime.setTime(getShift().getEndingTime());
-        eDate.setTime(shiftDate);
-        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
-        eDate.add(Calendar.HOUR_OF_DAY, (int) getShift().getDurationHour());
-        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
+        eDate.setTime(shiftStartTime);
+//        eDate.set(Calendar.HOUR_OF_DAY, sTime.get(Calendar.HOUR_OF_DAY));
+        eDate.add(Calendar.MINUTE, (int) getShift().getDurationMin());
+//        eDate.set(Calendar.MINUTE, eTime.get(Calendar.MINUTE));
 
         setShiftEndTime(eDate.getTime());
     }
@@ -1207,23 +1205,23 @@ public class StaffShift implements Serializable {
         // if one and half day  payment= 0.5
         switch (dayType) {
             case MurchantileHoliday:
-                multiplyingFactorSalary = 1.0;//two day payments
+                multiplyingFactorSalary = 2.0;//two day payments
                 multiplyingFactorOverTime = 1.5;
                 break;
             case Poya:
-                multiplyingFactorSalary = 0.5;// One and Half Payment
+                multiplyingFactorSalary = 1.5;// One and Half Payment
                 multiplyingFactorOverTime = 1.5;
                 break;
             case DayOff:
-                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorSalary = 2.0;// 2 Day Payments
                 multiplyingFactorOverTime = 2.5;
                 break;
             case SleepingDay:
-                multiplyingFactorSalary = 1.0;// 2 Day Payments
+                multiplyingFactorSalary = 2.0;// 2 Day Payments
                 multiplyingFactorOverTime = 2.5;
                 break;
             default:
-                multiplyingFactorSalary = 0.0;
+                multiplyingFactorSalary = getShift().isHalfShift() == true ? 1 : 2;
                 multiplyingFactorOverTime = 1.5;
                 break;
         }

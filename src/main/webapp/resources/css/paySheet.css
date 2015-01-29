@@ -46,7 +46,22 @@ root {
          
     }
     
-    
+    .a4HalfPaysheet{
+        page-break-after:always!important; 
+        font-family:Arial, Helvetica, sans-serif!important;
+        font-size: 11px!important; 
+        position: relative!important;  
+        margin: 1px!important; 
+        padding: 1px!important;
+        width: 100%!important;
+        height: 100%!important;
+        /*padding-left:0.5%!important;*/
+        font-size: 100%;
+        border: none!important;
+        line-height: 2!important;
+        /*font-family: sans-serif!important;*/ 
+         
+    }
 }
 
 
@@ -83,7 +98,22 @@ root {
         line-height: 2!important;
     }
     
-    
+    .a4HalfPaysheet{
+        position: relative!important;
+        /*padding-left: 0.5%!important;*/
+        height:400px!important;
+        width:550px!important; 
+        overflow:hidden!important; 
+        font-family: monospace!important; 
+        font-size: 12px!important; 
+        margin:1px!important; 
+        padding: 1px!important;
+        background-size: 100% auto!important; 
+        border: 1px solid!important;
+        font-size: 100%;
+        line-height: 2!important;
+    }
+
 
 }
 
@@ -136,5 +166,36 @@ root {
     padding: 1px;
     border: 1px;
     overflow: hidden;
+}
+
+.noBorder div *,
+.noBorder div ,
+.noBorder table *,
+.noBorder td{
+    border: none!important;
+    border-top:none!important;
+    font-family: Verdana!important;
+    font-size: 11px!important;
+}
+
+.summeryBorder{
+    width: 100%!important; margin:0px!important;padding:0px!important;border:none!important;
+
+}
+
+.textAlignRight{
+   text-align: right!important; 
+}
+
+#textAlignRight{
+   text-align: right!important; 
+}
+
+.textAlignLeft{
+    text-align: left!important;
+}
+
+#textAlignLeft{
+    text-align: left!important;
 }
 

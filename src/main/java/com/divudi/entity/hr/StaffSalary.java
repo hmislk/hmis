@@ -5,16 +5,14 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.data.dataStructure.ExtraDutyCount;
-import com.divudi.data.dataStructure.OtNormalSpecial;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -44,7 +42,7 @@ public class StaffSalary implements Serializable {
     private Long id;
     private double payeeValue;
 //    private double otValue;
-    private double phValue;
+//    private double phValue;
     @ManyToOne
     private SalaryCycle salaryCycle;
     @ManyToOne
@@ -63,60 +61,144 @@ public class StaffSalary implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    @Transient
-    private OtNormalSpecial tmpOtNormalSpecial;
-    @Transient
-    private List<ExtraDutyCount> tmpExtraDutyCount;
-    @Transient
-    List<StaffShift> transStaffShiftsSalary;
-    @Transient
-    List<StaffShift> transStaffShiftsOverTime;
-    @Transient
-    List<StaffShift> transStaffShiftsExtraDuty;
     private double basicValue;
+    double brValue;
     private double overTimeValue;
-    private double extraDutyValue;
-    private double noPayValue;
-    private double holidayAllowanceValue;
-    private double dayOffSleepingDayAllowance;
+    private double extraDutyNormalValue;
+    private double extraDutyMerchantileValue;
+    private double extraDutyPoyaValue;
+    private double extraDutyDayOffValue;
+    private double extraDutySleepingDayValue;
+    private double noPayValueBasic;
+    private double noPayValueAllowance;
+    private double merchantileAllowanceValue;
+    private double poyaAllowanceValue;
+    private double dayOffAllowance;
+    double sleepingDayAllowance;
     private double adjustmentToBasic;
     private double adjustmentToAllowance;
     private double etfSatffValue;
     private double etfCompanyValue;
     private double epfStaffValue;
     private double epfCompanyValue;
-    double componentValue;
+    double noPayCount;
+    double merchantileCount;
+    double poyaCount;
+    double dayOffCount;
+    private double extraDutyNormalMinute;
+    private double extraDutyMerchantileMinute;
+    private double extraDutyPoyaMinute;
+    private double extraDutyDayOffMinute;
+    private double extraDutySleepingDayMinute;
+    double overTimeMinute;
+    double sleepingDayCount;
+    double componentValueAddition;
+    double componentValueSubstraction;
+    @ManyToOne
+    Institution institution;
+    @Transient
+    private List<StaffSalaryComponant> transStaffSalaryComponantsAddition;
+    @Transient
+    private List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction;
 
-    public List<StaffShift> getTransStaffShiftsExtraDuty() {
-        return transStaffShiftsExtraDuty;
+    public double getTransExtraDutyValue() {
+        return extraDutyNormalValue + extraDutyMerchantileValue + extraDutyPoyaValue + extraDutyDayOffValue + extraDutySleepingDayValue;
     }
 
-    public double getComponentValue() {
-        return componentValue;
+    public double getOverTimeMinute() {
+        return overTimeMinute;
     }
 
-    public void setComponentValue(double componentValue) {
-        this.componentValue = componentValue;
+    public void setOverTimeMinute(double overTimeMinute) {
+        this.overTimeMinute = overTimeMinute;
     }
 
-    public void setTransStaffShiftsExtraDuty(List<StaffShift> transStaffShiftsExtraDuty) {
-        this.transStaffShiftsExtraDuty = transStaffShiftsExtraDuty;
+    public double getNoPayCount() {
+        return noPayCount;
     }
 
-    public List<StaffShift> getTransStaffShiftsSalary() {
-        return transStaffShiftsSalary;
+    public void setNoPayCount(double noPayCount) {
+        this.noPayCount = noPayCount;
     }
 
-    public void setTransStaffShiftsSalary(List<StaffShift> transStaffShiftsSalary) {
-        this.transStaffShiftsSalary = transStaffShiftsSalary;
+    public double getMerchantileCount() {
+        return merchantileCount;
     }
 
-    public List<StaffShift> getTransStaffShiftsOverTime() {
-        return transStaffShiftsOverTime;
+    public void setMerchantileCount(double merchantileCount) {
+        this.merchantileCount = merchantileCount;
     }
 
-    public void setTransStaffShiftsOverTime(List<StaffShift> transStaffShiftsOverTime) {
-        this.transStaffShiftsOverTime = transStaffShiftsOverTime;
+    public double getPoyaCount() {
+        return poyaCount;
+    }
+
+    public void setPoyaCount(double poyaCount) {
+        this.poyaCount = poyaCount;
+    }
+
+    public double getDayOffCount() {
+        return dayOffCount;
+    }
+
+    public void setDayOffCount(double dayOffCount) {
+        this.dayOffCount = dayOffCount;
+    }
+
+    public double getSleepingDayCount() {
+        return sleepingDayCount;
+    }
+
+    public void setSleepingDayCount(double sleepingDayCount) {
+        this.sleepingDayCount = sleepingDayCount;
+    }
+
+    public double getDayOffAllowance() {
+        return dayOffAllowance;
+    }
+
+    public void setDayOffAllowance(double dayOffAllowance) {
+        this.dayOffAllowance = dayOffAllowance;
+    }
+
+    public double getSleepingDayAllowance() {
+        return sleepingDayAllowance;
+    }
+
+    public void setSleepingDayAllowance(double sleepingDayAllowance) {
+        this.sleepingDayAllowance = sleepingDayAllowance;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public double getBrValue() {
+        return brValue;
+    }
+
+    public void setBrValue(double brValue) {
+        this.brValue = brValue;
+    }
+
+    public double getComponentValueAddition() {
+        return componentValueAddition;
+    }
+
+    public void setComponentValueAddition(double componentValueAddition) {
+        this.componentValueAddition = componentValueAddition;
+    }
+
+    public double getComponentValueSubstraction() {
+        return componentValueSubstraction;
+    }
+
+    public void setComponentValueSubstraction(double componentValueSubstraction) {
+        this.componentValueSubstraction = componentValueSubstraction;
     }
 
     public Date getFromDate() {
@@ -196,26 +278,36 @@ public class StaffSalary implements Serializable {
 
     public double getTransGrossSalary() {
         return basicValue
-                + overTimeValue
-                + extraDutyValue
-                + noPayValue
-                + holidayAllowanceValue
-                + dayOffSleepingDayAllowance
-                + adjustmentToBasic
-                + adjustmentToAllowance
-                + componentValue;
+                + merchantileAllowanceValue
+                +poyaAllowanceValue
+                + dayOffAllowance
+                + sleepingDayAllowance
+                + adjustmentToBasic;
+    }
+
+    public double getTransEpfEtfDiductableSalary() {
+        return getTransGrossSalary() - noPayValueBasic;
     }
 
     public void calculateComponentTotal() {
         basicValue = 0;
+        brValue = 0;
         overTimeValue = 0;
-        extraDutyValue = 0;
-        noPayValue = 0;
-        holidayAllowanceValue = 0;
-        dayOffSleepingDayAllowance = 0;
+        extraDutyNormalValue = 0;
+        extraDutyMerchantileValue = 0;
+        extraDutyPoyaValue = 0;
+        extraDutyDayOffValue = 0;
+        extraDutySleepingDayValue = 0;
+        noPayValueBasic = 0;
+        noPayValueAllowance = 0;
+        poyaAllowanceValue = 0;
+        merchantileAllowanceValue = 0;
+        dayOffAllowance = 0;
+        sleepingDayAllowance = 0;
         adjustmentToBasic = 0;
         adjustmentToAllowance = 0;
-        componentValue = 0;
+        componentValueAddition = 0;
+        componentValueSubstraction = 0;
 
         for (StaffSalaryComponant spc : getStaffSalaryComponants()) {
             PaysheetComponentType paysheetComponentType = null;
@@ -226,11 +318,9 @@ public class StaffSalary implements Serializable {
                 paysheetComponentType = spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType();
             }
 
-            if (paysheetComponentType == null) {
-                componentValue += spc.getComponantValue();
-            } else {
+            if (paysheetComponentType != null) {
 
-                if (paysheetComponentType.is(PaysheetComponentType.addition)) {
+                if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
                     value = spc.getComponantValue();
                 } else {
                     value = 0 - spc.getComponantValue();
@@ -239,21 +329,43 @@ public class StaffSalary implements Serializable {
                 switch (paysheetComponentType) {
                     case BasicSalary:
                         basicValue += value;
+                        brValue += spc.getStaffPaysheetComponent().getDblValue();
                         break;
                     case OT:
                         overTimeValue += value;
                         break;
-                    case ExtraDuty:
-                        extraDutyValue += value;
+                    case ExtraDutyNormal:
+                        extraDutyNormalValue += value;
                         break;
-                    case No_Pay_Deduction:
-                        noPayValue += value;
+                    case ExtraDutyMerchantile:
+                        extraDutyMerchantileValue += value;
                         break;
-                    case HolidayAllowance:
-                        holidayAllowanceValue += value;
+                    case ExtraDutyPoya:
+                        extraDutyPoyaValue += value;
+                        break;
+                    case ExtraDutyDayOff:
+                        extraDutyDayOffValue += value;
+                        break;
+                    case ExtraDutySleepingDay:
+                        extraDutySleepingDayValue += value;
+                        break;
+                    case No_Pay_Deduction_Basic:
+                        noPayValueBasic += value;
+                        break;
+                    case No_Pay_Deduction_Allowance:
+                        noPayValueAllowance += value;
+                        break;
+                    case MerchantileAllowance:
+                        merchantileAllowanceValue += value;
+                        break;
+                    case PoyaAllowance:
+                        poyaAllowanceValue += value;
                         break;
                     case DayOffAllowance:
-                        dayOffSleepingDayAllowance += value;
+                        dayOffAllowance += value;
+                        break;
+                    case SleepingDayAllowance:
+                        sleepingDayAllowance += value;
                         break;
                     case AdjustmentAllowanceAdd:
                     case AdjustmentAllowanceSub:
@@ -264,13 +376,29 @@ public class StaffSalary implements Serializable {
                         adjustmentToBasic += value;
                         break;
                     default:
-                        componentValue += value;
+                        if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
+                            componentValueAddition += value;
+                        } else {
+                            componentValueSubstraction += value;
+                        }
                 }
 
             }
 
         }
 
+    }
+
+    public double getTransTotalAllowance() {
+        return componentValueAddition + adjustmentToAllowance + noPayValueAllowance;
+    }
+
+    public double getTransTotalDeduction() {
+        return componentValueSubstraction + epfStaffValue;
+    }
+
+    public double getTransNetSalry() {
+        return getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction();
     }
 
     public SalaryCycle getSalaryCycle() {
@@ -340,15 +468,15 @@ public class StaffSalary implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-
-    public double getPhValue() {
-        return phValue;
-    }
-
-    public void setPhValue(double phValue) {
-        this.phValue = phValue;
-    }
-
+//
+//    public double getPhValue() {
+//        return phValue;
+//    }
+//
+//    public void setPhValue(double phValue) {
+//        this.phValue = phValue;
+//    }
+//
     public boolean isExist() {
         return exist;
     }
@@ -359,22 +487,6 @@ public class StaffSalary implements Serializable {
 
     public void setExist(boolean exist) {
         this.exist = exist;
-    }
-
-    public OtNormalSpecial getTmpOtNormalSpecial() {
-        return tmpOtNormalSpecial;
-    }
-
-    public void setTmpOtNormalSpecial(OtNormalSpecial tmpOtNormalSpecial) {
-        this.tmpOtNormalSpecial = tmpOtNormalSpecial;
-    }
-
-    public List<ExtraDutyCount> getTmpExtraDutyCount() {
-        return tmpExtraDutyCount;
-    }
-
-    public void setTmpExtraDutyCount(List<ExtraDutyCount> tmpExtraDutyCount) {
-        this.tmpExtraDutyCount = tmpExtraDutyCount;
     }
 
     public double getBasicValue() {
@@ -393,36 +505,20 @@ public class StaffSalary implements Serializable {
         this.overTimeValue = overTimeValue;
     }
 
-    public double getExtraDutyValue() {
-        return extraDutyValue;
+    public double getNoPayValueBasic() {
+        return noPayValueBasic;
     }
 
-    public void setExtraDutyValue(double extraDutyValue) {
-        this.extraDutyValue = extraDutyValue;
+    public void setNoPayValueBasic(double noPayValueBasic) {
+        this.noPayValueBasic = noPayValueBasic;
     }
 
-    public double getNoPayValue() {
-        return noPayValue;
+    public double getNoPayValueAllowance() {
+        return noPayValueAllowance;
     }
 
-    public void setNoPayValue(double noPayValue) {
-        this.noPayValue = noPayValue;
-    }
-
-    public double getHolidayAllowanceValue() {
-        return holidayAllowanceValue;
-    }
-
-    public void setHolidayAllowanceValue(double holidayAllowanceValue) {
-        this.holidayAllowanceValue = holidayAllowanceValue;
-    }
-
-    public double getDayOffSleepingDayAllowance() {
-        return dayOffSleepingDayAllowance;
-    }
-
-    public void setDayOffSleepingDayAllowance(double dayOffSleepingDayAllowance) {
-        this.dayOffSleepingDayAllowance = dayOffSleepingDayAllowance;
+    public void setNoPayValueAllowance(double noPayValueAllowance) {
+        this.noPayValueAllowance = noPayValueAllowance;
     }
 
     public double getAdjustmentToBasic() {
@@ -471,6 +567,124 @@ public class StaffSalary implements Serializable {
 
     public void setEpfCompanyValue(double epfCompanyValue) {
         this.epfCompanyValue = epfCompanyValue;
+    }
+
+    public List<StaffSalaryComponant> getTransStaffSalaryComponantsAddition() {
+        if (transStaffSalaryComponantsAddition == null) {
+            transStaffSalaryComponantsAddition = new ArrayList<>();
+        }
+        return transStaffSalaryComponantsAddition;
+    }
+
+    public void setTransStaffSalaryComponantsAddition(List<StaffSalaryComponant> transStaffSalaryComponantsAddition) {
+        this.transStaffSalaryComponantsAddition = transStaffSalaryComponantsAddition;
+    }
+
+    public List<StaffSalaryComponant> getTransStaffSalaryComponantsSubtraction() {
+        if (transStaffSalaryComponantsSubtraction == null) {
+            transStaffSalaryComponantsSubtraction = new ArrayList<>();
+        }
+        return transStaffSalaryComponantsSubtraction;
+    }
+
+    public void setTransStaffSalaryComponantsSubtraction(List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction) {
+        this.transStaffSalaryComponantsSubtraction = transStaffSalaryComponantsSubtraction;
+    }
+
+    public double getMerchantileAllowanceValue() {
+        return merchantileAllowanceValue;
+    }
+
+    public void setMerchantileAllowanceValue(double merchantileAllowanceValue) {
+        this.merchantileAllowanceValue = merchantileAllowanceValue;
+    }
+
+    public double getPoyaAllowanceValue() {
+        return poyaAllowanceValue;
+    }
+
+    public void setPoyaAllowanceValue(double poyaAllowanceValue) {
+        this.poyaAllowanceValue = poyaAllowanceValue;
+    }
+
+    public double getExtraDutyNormalMinute() {
+        return extraDutyNormalMinute;
+    }
+
+    public void setExtraDutyNormalMinute(double extraDutyNormalMinute) {
+        this.extraDutyNormalMinute = extraDutyNormalMinute;
+    }
+
+    public double getExtraDutyMerchantileMinute() {
+        return extraDutyMerchantileMinute;
+    }
+
+    public void setExtraDutyMerchantileMinute(double extraDutyMerchantileMinute) {
+        this.extraDutyMerchantileMinute = extraDutyMerchantileMinute;
+    }
+
+    public double getExtraDutyPoyaMinute() {
+        return extraDutyPoyaMinute;
+    }
+
+    public void setExtraDutyPoyaMinute(double extraDutyPoyaMinute) {
+        this.extraDutyPoyaMinute = extraDutyPoyaMinute;
+    }
+
+    public double getExtraDutyDayOffMinute() {
+        return extraDutyDayOffMinute;
+    }
+
+    public void setExtraDutyDayOffMinute(double extraDutyDayOffMinute) {
+        this.extraDutyDayOffMinute = extraDutyDayOffMinute;
+    }
+
+    public double getExtraDutySleepingDayMinute() {
+        return extraDutySleepingDayMinute;
+    }
+
+    public void setExtraDutySleepingDayMinute(double extraDutySleepingDayMinute) {
+        this.extraDutySleepingDayMinute = extraDutySleepingDayMinute;
+    }
+
+    public double getExtraDutyNormalValue() {
+        return extraDutyNormalValue;
+    }
+
+    public void setExtraDutyNormalValue(double extraDutyNormalValue) {
+        this.extraDutyNormalValue = extraDutyNormalValue;
+    }
+
+    public double getExtraDutyMerchantileValue() {
+        return extraDutyMerchantileValue;
+    }
+
+    public void setExtraDutyMerchantileValue(double extraDutyMerchantileValue) {
+        this.extraDutyMerchantileValue = extraDutyMerchantileValue;
+    }
+
+    public double getExtraDutyPoyaValue() {
+        return extraDutyPoyaValue;
+    }
+
+    public void setExtraDutyPoyaValue(double extraDutyPoyaValue) {
+        this.extraDutyPoyaValue = extraDutyPoyaValue;
+    }
+
+    public double getExtraDutyDayOffValue() {
+        return extraDutyDayOffValue;
+    }
+
+    public void setExtraDutyDayOffValue(double extraDutyDayOffValue) {
+        this.extraDutyDayOffValue = extraDutyDayOffValue;
+    }
+
+    public double getExtraDutySleepingDayValue() {
+        return extraDutySleepingDayValue;
+    }
+
+    public void setExtraDutySleepingDayValue(double extraDutySleepingDayValue) {
+        this.extraDutySleepingDayValue = extraDutySleepingDayValue;
     }
 
 }

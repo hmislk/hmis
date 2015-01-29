@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml" 
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:salary="http://java.sun.com/jsf/composite/hr">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel rendered="#{!staffSalaryController.printPreview}">
+                <p:panel>
+                    <p:commandButton ajax="false" value="Fill Salary" action="#{staffSalaryController.fetchStaffSalay}" onclick="onSubmitButton();"/>                    
+                    <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" />
+                </p:panel>
+
+                <p:tabView style="min-height:300px;">
+                    <p:tab title="Cycle">
+                        <p:selectOneMenu id="advanced" 
+                                         value="#{staffSalaryController.salaryCycle}" 
+                                         converter="salaryCycleConverter" 
+                                         effect="fade" var="t" 
+                                         filter="true" 
+                                         filterMatchMode="startsWith"  >
+
+                            <f:selectItem itemLabel="Slect Cycle"/>
+                            <f:selectItems value="#{salaryCycleController.salaryCycles}" 
+                                           var="theme" 
+                                           itemLabel="#{theme.name}" 
+                                           itemValue="#{theme}" ></f:selectItems>
+
+                            <p:column style="width:10%" headerText="Name">
+                                <h:outputText value="#{t.name}" />
+                            </p:column>
+
+                            <p:column headerText="Year">
+                                <h:outputText value="#{t.salaryYear}" />
+                            </p:column>
+                            <p:column headerText="Month">
+                                <h:outputText value="#{t.salaryMonth}" />
+                            </p:column>
+                            <f:ajax execute="@this" render="cycleDetail" event="change" />
+                        </p:selectOneMenu>                        
+                        <h:panelGrid columns="2" id="cycleDetail">
+                            <h:outputLabel value="Salary From Date "/>
+                            <h:outputLabel value="#{staffSalaryController.salaryCycle.salaryFromDate}"  >                                                        
+                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="Salary To Date "/>
+                            <h:outputLabel   value="#{staffSalaryController.salaryCycle.salaryToDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="Worked From Date "/>
+                            <h:outputLabel value="#{staffSalaryController.salaryCycle.workedFromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="Worked To Date "/>
+                            <h:outputLabel   value="#{staffSalaryController.salaryCycle.workedToDate}">
+                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            </h:outputLabel>
+                        </h:panelGrid>
+                    </p:tab>
+
+                    <p:tab title="Staff Salary">
+                        <p:commandButton value="Print" ajax="false" action="#{staffSalaryController.printPreview}" >
+                        </p:commandButton>
+                        <p:panel>
+                            <p:dataTable value="#{staffSalaryController.items}" var="i" 
+                                         rowStyleClass="#{i.exist eq true ? 'exist':null}" 
+                                         rowKey="#{i.id}"
+                                         selection="#{staffSalaryController.getSelectedStaffSalaryList}">
+
+                                <p:column  selectionMode="multiple" >                            
+                                </p:column>
+
+                                <p:column headerText="From">
+                                    <h:outputLabel value="#{i.salaryCycle.salaryFromDate}">
+                                        <f:convertDateTime pattern="dd MMMM" />
+                                    </h:outputLabel>                            
+                                </p:column>
+                                <p:column headerText="To">                            
+                                    <h:outputLabel value="#{i.salaryCycle.salaryToDate}">
+                                        <f:convertDateTime pattern="dd MMMM" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff">
+                                    <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="Gross">
+                                    <h:outputLabel value="#{i.transGrossSalary}"/>
+                                </p:column>
+                                <p:column headerText="EPF">
+                                    <h:outputLabel value="#{i.epfStaffValue}"/>
+                                </p:column>
+                                <p:column headerText="EPF Company">
+                                    <h:outputLabel value="#{i.epfCompanyValue}"/>
+                                </p:column>
+                                <p:column headerText="ETF Company">
+                                    <h:outputLabel value="#{i.etfCompanyValue}"/>
+                                </p:column>
+                                <p:column headerText="Net Salary">
+
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton process="@this" 
+                                                     update=":#{p:component('lst')} :#{p:component('lst')}" 
+                                                     value="View"  
+                                                     actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
+                                    </p:commandButton>                          
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+                    </p:tab>
+                </p:tabView>
+
+
+                <p:tabView  id="lst" style="min-height:300px;">
+                    <p:tab title="Salary Components">
+                        <p:dataTable value="#{staffSalaryController.current.staffSalaryComponants}" var="i" >
+
+
+
+                            <p:column headerText="Compnent Name ">
+                                <h:outputLabel value="#{i.staffPaysheetComponent.paysheetComponent.name}"/>
+                            </p:column>
+                            <p:column headerText="Type">
+                                <h:outputLabel value="#{i.staffPaysheetComponent.paysheetComponent.componentType}"/>
+                            </p:column>
+                            <p:column headerText="Value">                        
+                                <p:cellEditor>  
+                                    <f:facet name="output">
+                                        <h:outputLabel value="#{i.componantValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <f:facet name="input">
+                                        <p:inputText autocomplete="off" value="#{i.componantValue}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
+                                    </f:facet>
+                                </p:cellEditor>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="EPF">
+                                <h:outputLabel  value="#{i.epfValue}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{staffSalaryController.current.epfStaffValue}"/>
+                                </f:facet>
+                            </p:column>       
+                            <p:column headerText="EPF Company">
+                                <h:outputLabel value="#{i.epfCompanyValue}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{staffSalaryController.current.epfCompanyValue}"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="ETF Company">
+                                <h:outputLabel value="#{i.etfCompanyValue}"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{staffSalaryController.current.etfCompanyValue}"/>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                    <p:tab title="Value">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Gross Salary : "/>
+                            <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}"/>                        
+                        </h:panelGrid>
+                    </p:tab>
+
+                    <p:tab id="print" title="Print">
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <h:panelGroup   id="gpBillPreview">
+                            <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
+                        </h:panelGroup>
+                    </p:tab>
+
+                </p:tabView>
+            </p:panel>
+
+            <p:panel rendered="#{staffSalaryController.printPreview}">
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreviewAll" ></p:printer>
+                </p:commandButton>
+                <p:commandButton value="Back" ajax="false" action="#{staffSalaryController.recreateModel()}" >                    
+                </p:commandButton>
+                <ui:repeat value="#{staffSalaryController.getSelectedStaffSalaryList}" var="b" id="gpBillPreviewAll">
+                    <salary:pay_slip bill="#{b}"></salary:pay_slip>                        
+                </ui:repeat>
+            </p:panel>
+
+        </h:form>        
+    </ui:define>
+
+</ui:composition>

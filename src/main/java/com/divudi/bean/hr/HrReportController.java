@@ -319,12 +319,12 @@ public class HrReportController implements Serializable {
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
-            sql += " and ss.staffCategory=:stfCat";
+            sql += " and ss.staffCategory=:stfCat ";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
 
         if (getReportKeyWord().getDesignation() != null) {
-            sql += " and ss.designation=:des";
+            sql += " and ss.designation=:des ";
             hm.put("des", getReportKeyWord().getDesignation());
         }
 
@@ -333,8 +333,8 @@ public class HrReportController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        sql += " order by ss.codeInterger";
-        staffs = getStaffFacade().findBySQL(sql);
+        sql += " order by ss.codeInterger ";
+        staffs = getStaffFacade().findBySQL(sql, hm);
     }
 
     public String createStaffShiftQuary(HashMap hm) {
@@ -1769,7 +1769,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = createStaffShiftQuary(hm);
         sql += " and ss.shiftEndTime < ss.endRecord.recordTimeStamp";
-        sql += " order by ss.codeInterger";
+        sql += " order by ss.staff.codeInterger";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
