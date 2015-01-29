@@ -34,29 +34,35 @@
                             
                             <p:dataTable id="tb1" value="#{hrReportController.shiftLists}" var="ss">
                                 <p:column headerText="Roster Name">
+                                    #{ss.roster.name}
+                                </p:column>
+                                 <p:column headerText="Shift Name">
                                     #{ss.name}
                                 </p:column>
                                 <p:column headerText="Day Type">
                                     #{ss.dayType}
                                 </p:column>
-                                <p:column headerText="Shift Order">
-                                    #{ss.shiftOrder}
-                                </p:column>
-                                
+                              
                                 <p:column headerText="Starting Time">
-                                    #{ss.startingTime}
+                                    <h:outputLabel value="#{ss.startingTime}" rendered="#{ss.startingTime ne null}">
+                                        <f:convertDateTime pattern="hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="Ending Time">
-                                    #{ss.endingTime}
+                                    <h:outputLabel value="#{ss.endingTime}" rendered="#{ss.endingTime ne null}">
+                                        <f:convertDateTime pattern="hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    
                                 </p:column>
                                 
                                 <p:column headerText="Previous Shift">
-                                    #{ss.previousShift}
+                                    #{ss.previousShift.name}
                                 </p:column>
                                 
                                 <p:column headerText="Next Shift">
-                                    #{ss.nextShift}
+                                    #{ss.nextShift.name}
                                 </p:column>
                                 
                                 <p:column headerText="Leave Hour Full">
