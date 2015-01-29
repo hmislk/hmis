@@ -295,7 +295,7 @@ public class StoreReportsTransfer implements Serializable {
         sql = "select b from BillItem b where "
                 + " b.bill.createdAt "
                 + " between :fd and :td"
-                + " and b.billType=:bt";
+                + " and b.bill.billType=:bt";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
