@@ -617,7 +617,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
                 StaffShift lateShift = staffShiftLateInTenMinuteLinked.pollFirst();
                 System.err.println("Late In Shift ID " + lateShift.getId());
-                lateShift.setReferenceStaffShiftLateIn(stfCurrent);                
+                lateShift.setReferenceStaffShiftLateIn(stfCurrent);
                 lateShift.setConsiderForLateIn(true);
                 staffShiftFacade.edit(lateShift);
 //                staffShiftFacade.flush();
@@ -637,7 +637,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         stfCurrent.setReferenceStaffShiftLateIn(stfCurrent);
         System.err.println("Late In  Shift ID " + stfCurrent.getId());
-        stfCurrent.setConsiderForLateIn(true);        
+        stfCurrent.setConsiderForLateIn(true);
         staffShiftFacade.edit(stfCurrent);
 
         LeaveType leaveType = getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
@@ -686,7 +686,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        if (stfCurrent.getEarlyOutLogged() >= fromTime) {
         System.err.println("Early Out  Shift ID " + stfCurrent.getId());
         stfCurrent.setReferenceStaffShiftEarlyOut(stfCurrent);
-        stfCurrent.setConsiderForEarlyOut(true);        
+        stfCurrent.setConsiderForEarlyOut(true);
         staffShiftFacade.edit(stfCurrent);
         LeaveType leaveType = getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
         HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
@@ -1321,7 +1321,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.reset();
 
                 //Fetch Value for Oer Time per Month
-                double valueForOverTime = humanResourceBean.calValueForOverTime(ss.getStaff(), ss.getShiftDate());
+                double valueForOverTime = humanResourceBean.getBasic(ss.getStaff(), ss.getShiftDate());
 
                 //Chang to Second
                 ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
@@ -1356,7 +1356,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                         System.err.println("******Automatic Late In Leave " + ss.getStaff().getCodeInterger());
 //                        calStaffLeaveFromLateIn(ss, 10 * 60, 90 * 60, 3);
 
-                        if (ss.getLateInLogged() >= fromMinute) {
+                        if (ss.getLateInVarified() >= fromMinute) {
                             calStaffLeaveFromLateIn(ss, 90 * 60);
                         } else {
                             staffShiftsTmp.add(ss);
@@ -1367,14 +1367,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                             && !ss.isConsiderForEarlyOut()) {
                         System.err.println("******Automatic Early Out Leave " + ss.getStaff().getCodeInterger());
 //                        calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
-                        if (ss.getEarlyOutLogged() >= fromMinute) {
+                        if (ss.getEarlyOutVarified() >= fromMinute) {
                             calStaffLeaveFromEarlyOut(ss, 90 * 60);
                         } else {
                             staffShiftsTmp.add(ss);
                         }
                     }
 
-                    
                 }
 
             }
@@ -1398,7 +1397,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
 
             }
-            
+
         }
 
         shiftTables = new ArrayList<>();

@@ -94,12 +94,22 @@ public class StaffSalary implements Serializable {
     double sleepingDayCount;
     double componentValueAddition;
     double componentValueSubstraction;
+    double overTimeRatePerMinute;
+    double basicRatePerMinute;
     @ManyToOne
     Institution institution;
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsAddition;
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction;
+
+    public double getOverTimeRatePerMinute() {
+        return overTimeRatePerMinute;
+    }
+
+    public void setOverTimeRatePerMinute(double overTimeRatePerMinute) {
+        this.overTimeRatePerMinute = overTimeRatePerMinute;
+    }
 
     public double getTransExtraDutyValue() {
         return extraDutyNormalValue + extraDutyMerchantileValue + extraDutyPoyaValue + extraDutyDayOffValue + extraDutySleepingDayValue;
@@ -279,7 +289,7 @@ public class StaffSalary implements Serializable {
     public double getTransGrossSalary() {
         return basicValue
                 + merchantileAllowanceValue
-                +poyaAllowanceValue
+                + poyaAllowanceValue
                 + dayOffAllowance
                 + sleepingDayAllowance
                 + adjustmentToBasic;
@@ -477,6 +487,7 @@ public class StaffSalary implements Serializable {
 //        this.phValue = phValue;
 //    }
 //
+
     public boolean isExist() {
         return exist;
     }

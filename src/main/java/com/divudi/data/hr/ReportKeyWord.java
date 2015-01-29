@@ -6,6 +6,7 @@
 package com.divudi.data.hr;
 
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.Sex;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -14,6 +15,7 @@ import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Designation;
 import com.divudi.entity.hr.Roster;
+import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
@@ -30,6 +32,7 @@ public class ReportKeyWord {
     StaffCategory staffCategory;
     Designation designation;
     Roster roster;
+    SalaryCycle salaryCycle;
     Shift shift;
     Speciality speciality;
     Patient patient;
@@ -40,6 +43,27 @@ public class ReportKeyWord {
     LeaveType leaveType;
     Double from;
     Double to;
+    Sex sex;
+
+    public SalaryCycle getSalaryCycle() {
+        return salaryCycle;
+    }
+
+    public void setSalaryCycle(SalaryCycle salaryCycle) {
+        this.salaryCycle = salaryCycle;
+    }
+    
+    
+
+    public Sex getSex() {
+        return sex;
+    }
+
+    public void setSex(Sex sex) {
+        this.sex = sex;
+    }
+    
+    
     
 
     public Double getFrom() {

@@ -13,11 +13,10 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Leave Report" />
+                            <h:outputLabel value="Attendance Report" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -34,14 +33,11 @@
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            <h:outputLabel value="Leave Type : "/>
-                            <p:selectOneMenu  value="#{hrReportController.reportKeyWord.leaveType}">
-                                <f:selectItem itemLabel="Select Day Type : "/>
-                                <f:selectItems value="#{enumController.leaveType}"/>
-                            </p:selectOneMenu>   
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffLeaveSystem()}"/>
+                        <p:commandButton ajax="false" value="Process Not Approved" action="#{hrReportController.createFingerPrintNotApproved()}"/>
+                        <p:commandButton ajax="false" value="Process Approved" action="#{hrReportController.createFingerPrintApproved()}"/>
+                        <p:commandButton ajax="false" value="Approve Selected" action="#{hrReportController.approve()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
@@ -49,48 +45,44 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
+                            <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecords}" var="ss"
+                                         rowKey="#{ss.id}" 
+                                         selection="#{hrReportController.selectedFingerPrintRecords}">                               
+                                <p:column  selectionMode="multiple" >                            
+                                </p:column>
+
+                                <p:column >
+                                    #{i+1}
+                                </p:column>
                                 <p:column headerText="Emp No">
                                     #{ss.staff.code}
                                 </p:column>
                                 <p:column headerText="Emp Name">
                                     #{ss.staff.person.nameWithTitle}
                                 </p:column>
-                                <p:column headerText="Department Name">
-                                    #{ss.staff.department.name}
+                                <p:column headerText="Time Type">
+                                    #{ss.times}
                                 </p:column>
-                                <p:column headerText="Staff Category">
-                                    #{ss.staff.staffCategory.name}
+                                <p:column headerText="Verified Date">
+                                    <h:outputLabel  value="#{ss.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Designation">
-                                    #{ss.staff.designation.name}
+                                <p:column headerText="Verified Time">
+                                    <h:outputLabel  value="#{ss.recordTimeStamp}">
+                                        <f:convertDateTime pattern="hh:mm:s a"/>
+                                    </h:outputLabel>                                    
                                 </p:column>
-                                <p:column headerText="Staff Roster" >
-                                    #{ss.staff.roster.name}
-                                </p:column>  
-                                <p:column headerText="Leave Type" >
-                                    #{ss.leaveType}
-                                </p:column>  
-                                  <p:column headerText="Crated Date" >
-                                    #{ss.createdAt}
-                                </p:column>  
-                                <p:column headerText="Leave Date" >
-                                    #{ss.leaveDate}
-                                </p:column>  
-                                <p:column headerText="Leave Qty" >
-                                    #{ss.qty}
-                                </p:column> 
-                              
-                                <p:column headerText="Comments" >
-                                    #{ss.form.comments}
-                                </p:column> 
-                                  <p:column headerText="Delete Comments" >
-                                      <p:inputText value="#{ss.retireComments}"/>                                    
-                                </p:column> 
-                                <p:column headerText="Delete">                                    
-                                    <p:commandButton disabled="#{ss.retired}" ajax="false" value="Delete" action="#{hrReportController.delete(ss)}"></p:commandButton>                                    
+                                <p:column headerText="Logged Date">
+                                    <h:outputLabel  value="#{ss.loggedRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputLabel>
                                 </p:column>
-
+                                <p:column headerText="Logged Time">
+                                    <h:outputLabel  value="#{ss.loggedRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="hh:mm:s a"/>
+                                    </h:outputLabel>                                    
+                                </p:column>
                             </p:dataTable>
                         </p:panel>
 

@@ -20,8 +20,11 @@
                                 <p:commandButton value="(2) All Staff Salary Summery" 
                                                  action="/hr/hr_report_staff_salary" 
                                                  styleClass="linkButton" ajax="false" /> 
-                                 <p:commandButton value="(3) Staff Payroll" 
+                                <p:commandButton value="(3) Staff Payroll" 
                                                  action="/hr/hr_report_staff_payroll" 
+                                                 styleClass="linkButton" ajax="false" />                                 
+                                <p:commandButton value="(3) Staff Over Time " 
+                                                 action="/hr/hr_report_staff_over_time" 
                                                  styleClass="linkButton" ajax="false" />                                 
                                 <p:commandButton  ajax="false"  action="/hr/hr_staff_paysheet_component_list"
                                                   value="(4) Staff Paysheet Component  List" 
@@ -59,7 +62,7 @@
                                                  action="hr_report_staff_shift_extra" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" />
-                                
+
                             </h:panelGrid>
                         </p:panel>
                         <p:panel header="Administration">
@@ -89,7 +92,7 @@
                                                  action="hr_report_shift" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" />
-                                
+
                             </h:panelGrid>
                         </p:panel>
 
@@ -105,6 +108,10 @@
                                                  styleClass="linkButton" ajax="false" /> 
                                 <p:commandButton value="(3) Finger Print Record No Shift Setted" 
                                                  action="hr_report_finger_print_record_no_shift_setted" 
+                                                 actionListener="#{hrReportController.makeNull()}" 
+                                                 styleClass="linkButton" ajax="false" /> 
+                                 <p:commandButton value="(4) Finger Print Approve" 
+                                                 action="hr_report_finger_print_record_approved" 
                                                  actionListener="#{hrReportController.makeNull()}" 
                                                  styleClass="linkButton" ajax="false" /> 
                             </h:panelGrid>
@@ -146,7 +153,7 @@
                                              action="hr_report_leave_summery_by_staff" 
                                              actionListener="#{hrReportController.makeNull()}" 
                                              styleClass="linkButton" ajax="false" />
-                            
+
                             <p:commandButton value="(4) Leave Report Extra " 
                                              action="hr_report_leave_system" 
                                              actionListener="#{hrReportController.makeNull()}" 

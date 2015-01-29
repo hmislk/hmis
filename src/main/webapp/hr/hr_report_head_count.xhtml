@@ -34,6 +34,11 @@
                             <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            <h:outputText  value="Gender" ></h:outputText>
+                            <p:selectOneMenu   value="#{hrReportController.reportKeyWord.sex}" >
+                                <f:selectItem itemLabel="Select Gender"/>
+                                <f:selectItems value="#{enumController.gender}"/>
+                            </p:selectOneMenu>
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffAttendanceAggregate()}"/>
@@ -53,6 +58,9 @@
                                 </p:column>
                                 <p:column headerText="Head Count">
                                     #{ss.present}
+                                    <f:facet name="footer">
+                                        #{hrReportController.totalAttendance}
+                                    </f:facet>
                                 </p:column>
 
                             </p:dataTable>

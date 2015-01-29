@@ -200,7 +200,7 @@ public class StaffSalaryController implements Serializable {
         getHumanResourceBean().setEtf(tmp, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
         tmp.setLastEditedAt(new Date());
         tmp.setLastEditor(getSessionController().getLoggedUser());
-      
+
         if (tmp.getId() != null) {
             getStaffSalaryComponantFacade().edit(tmp);
         }
@@ -355,7 +355,7 @@ public class StaffSalaryController implements Serializable {
 
             ss.setComponantValue(overTime * basicPerSecond * finalVariables.getOverTimeMultiply());
             getCurrent().setOverTimeMinute(overTime / 60);
-
+            getCurrent().setOverTimeRatePerMinute(basicPerSecond / 60);
         } else {
             return;
         }
@@ -569,7 +569,8 @@ public class StaffSalaryController implements Serializable {
                 }
 
                 if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForNoPay()
-                        && staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() != PaysheetComponentType.BasicSalary) {
+                        && staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() != PaysheetComponentType.BasicSalary
+                        && staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType().is(PaysheetComponentType.addition)) {
                     salaryValue += staffSalaryComponant.getComponantValue();
                 }
             }

@@ -5,10 +5,11 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.MonthEndRecord;
 import com.divudi.data.dataStructure.WeekDayWork;
 import com.divudi.data.hr.DayType;
-import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.facade.FormFacade;
 import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
@@ -20,6 +21,7 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Department;
+import com.divudi.entity.Form;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
@@ -27,6 +29,7 @@ import com.divudi.entity.hr.FingerPrintRecordHistory;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffPaysheetComponent;
+import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.DepartmentFacade;
@@ -36,6 +39,7 @@ import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
+import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
 import javax.inject.Named;
@@ -47,6 +51,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
@@ -80,6 +85,96 @@ public class HrReportController implements Serializable {
     List<Department> selectDepartments;
     @EJB
     DepartmentFacade departmentFacade;
+    @Inject
+    SessionController sessionController;
+    @EJB
+    FormFacade formFacade;
+    List<FingerPrintRecord> selectedFingerPrintRecords;
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public List<FingerPrintRecord> getSelectedFingerPrintRecords() {
+        return selectedFingerPrintRecords;
+    }
+
+    public void setSelectedFingerPrintRecords(List<FingerPrintRecord> selectedFingerPrintRecords) {
+        this.selectedFingerPrintRecords = selectedFingerPrintRecords;
+    }
+
+    public StaffSalaryFacade getStaffSalaryFacade() {
+        return staffSalaryFacade;
+    }
+
+    public void setStaffSalaryFacade(StaffSalaryFacade staffSalaryFacade) {
+        this.staffSalaryFacade = staffSalaryFacade;
+    }
+
+    public void delete(StaffLeave ss) {
+        if (ss == null) {
+            return;
+        }
+
+        Form form = ss.getForm();
+        if (form != null) {
+            form.setRetired(true);
+            form.setRetiredAt(new Date());
+            form.setRetireComments(ss.getRetireComments());
+            form.setRetirer(sessionController.getLoggedUser());
+            formFacade.edit(form);
+        }
+
+        ss.setRetired(true);
+        ss.setRetiredAt(new Date());
+        ss.setRetirer(sessionController.getLoggedUser());
+        staffLeaveFacade.edit(ss);
+
+        StaffShift staffShift = ss.getStaffShift();
+
+        if (staffShift != null) {
+            staffShift.setAutoLeave(false);
+            staffShift.setConsiderForEarlyOut(false);
+            staffShift.setConsiderForLateIn(false);
+            staffShift.resetLeaveData(ss.getLeaveType());
+            staffShift.calLeaveTime();
+            staffShiftFacade.edit(staffShift);
+
+            String sql = "Select s from StaffShift s "
+                    + " where s.retired=false "
+                    + " and s.referenceStaffShiftLateIn=:ref "
+                    + " and s.considerForLateIn=true ";
+            HashMap hm = new HashMap();
+            hm.put("ref", staffShift);
+            List<StaffShift> list = staffShiftFacade.findBySQL(sql, hm);
+            if (list != null) {
+                for (StaffShift s : list) {
+                    s.setConsiderForLateIn(false);
+                    staffShiftFacade.edit(s);
+                }
+            }
+
+            sql = "Select s from StaffShift s "
+                    + " where s.retired=false "
+                    + " and s.referenceStaffShiftEarlyOut=:ref "
+                    + " and s.considerForEarlyOut=true ";
+            hm = new HashMap();
+            hm.put("ref", staffShift);
+            list = staffShiftFacade.findBySQL(sql, hm);
+            if (list != null) {
+                for (StaffShift s : list) {
+                    s.setConsiderForEarlyOut(false);
+                    staffShiftFacade.edit(s);
+                }
+            }
+
+        }
+
+    }
 
     public List<StaffShift> getStaffShiftsAllowance() {
         return staffShiftsAllowance;
@@ -154,8 +249,6 @@ public class HrReportController implements Serializable {
     public void setShiftFacade(ShiftFacade shiftFacade) {
         this.shiftFacade = shiftFacade;
     }
-    
-    
 
     public void createFingerPrintRecordLogged() {
         String sql = "";
@@ -195,6 +288,72 @@ public class HrReportController implements Serializable {
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
         fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void approve() {
+        if (selectedFingerPrintRecords == null) {
+            UtilityController.addErrorMessage("Select Fingerprint");
+            return;
+        }
+
+        for (FingerPrintRecord fpr : selectedFingerPrintRecords) {
+            fpr.setApproved(true);
+            fpr.setApprovedAt(new Date());
+            fpr.setApprover(sessionController.getLoggedUser());
+            fingerPrintRecordFacade.edit(fpr);
+        }
+    }
+
+    public void createFingerPrintNotApproved() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createFingerPrintQuary(hm);
+        sql += " and ss.fingerPrintRecordType=:ftp "
+                + " and ss.approved=false "
+                + " and ss.staffShift is not null "
+                + " and (ss.loggedRecord is null "
+                + " or (ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp))";
+        hm.put("ftp", FingerPrintRecordType.Varified);
+//        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+        //////////////////////////
+//        sql = "";
+//        hm = new HashMap();
+//        sql = createFingerPrintQuary(hm);
+//        sql += " and ss.fingerPrintRecordType=:ftp  "
+//                + " and ss.staffShift is not null "
+//                + " and ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp ";
+//        hm.put("ftp", FingerPrintRecordType.Varified);
+//        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
+//        List<FingerPrintRecord> list2 = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
+    public void createFingerPrintApproved() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createFingerPrintQuary(hm);
+        sql += " and ss.fingerPrintRecordType=:ftp "
+                + " and ss.approved=true "
+                + " and ss.staffShift is not null "
+                + " and (ss.loggedRecord is null "
+                + " or (ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp))";
+        hm.put("ftp", FingerPrintRecordType.Varified);
+//        sql += " order by ss.staff,ss.recordTimeStamp";
+        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
+        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+
+        //////////////////////////
+//        sql = "";
+//        hm = new HashMap();
+//        sql = createFingerPrintQuary(hm);
+//        sql += " and ss.fingerPrintRecordType=:ftp  "
+//                + " and ss.staffShift is not null "
+//                + " and ss.loggedRecord.recordTimeStamp!=ss.recordTimeStamp ";
+//        hm.put("ftp", FingerPrintRecordType.Varified);
+//        sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
+//        List<FingerPrintRecord> list2 = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
 
     public void createFingerPrintRecordVarifiedWithLogged() {
@@ -418,6 +577,41 @@ public class HrReportController implements Serializable {
         return sql;
     }
 
+    public String createStaffSalaryQuary(HashMap hm) {
+        String sql = "";
+        sql = "select ss from StaffSalary ss "
+                + " where ss.retired=false "
+                + " and ss.salaryCycle=:scl";
+        hm.put("scl", getReportKeyWord().getSalaryCycle());
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        return sql;
+    }
+
     public String createStaffShiftExtraQuary(HashMap hm) {
         String sql = "";
         sql = "select ss from StaffShiftExtra ss "
@@ -628,8 +822,6 @@ public class HrReportController implements Serializable {
     public void setShiftLists(List<Shift> shiftLists) {
         this.shiftLists = shiftLists;
     }
-    
-    
 
     List<StaffShift> staffShiftExtraDuties;
 
@@ -787,6 +979,11 @@ public class HrReportController implements Serializable {
             hm.put("stf", getReportKeyWord().getStaff());
         }
 
+        if (getReportKeyWord().getSex() != null) {
+            sql += " and ss.staff.person.sex=:sx ";
+            hm.put("sx", getReportKeyWord().getStaff());
+        }
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and ss.staff.department=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
@@ -811,6 +1008,29 @@ public class HrReportController implements Serializable {
                 + " order by ss.shiftDate,ss.staff.department.name";
 
         departmentAttendances = (List<DepartmentAttendance>) (Object) staffLeaveFacade.findAggregates(sql, hm, TemporalType.DATE);
+        calTotal();
+    }
+
+    double totalAttendance;
+
+    public double getTotalAttendance() {
+        return totalAttendance;
+    }
+
+    public void setTotalAttendance(double totalAttendance) {
+        this.totalAttendance = totalAttendance;
+    }
+
+    private void calTotal() {
+        totalAttendance = 0;
+
+        if (departmentAttendances == null) {
+            return;
+        }
+        for (DepartmentAttendance d : departmentAttendances) {
+            totalAttendance += d.getPresent();
+        }
+
     }
 
     private List<Staff> fetchStaff() {
@@ -1567,14 +1787,12 @@ public class HrReportController implements Serializable {
         for (StaffShift s : list2) {
             s.setConsiderForEarlyOut(false);
             s.setConsiderForLateIn(false);
+            s.setAutoLeave(false);
             s.setLeaveType(null);
             staffShiftFacade.edit(s);
         }
 
     }
-
-    @EJB
-    FormFacade formFacade;
 
     public void createStaffShift() {
         String sql = "";
@@ -1585,23 +1803,42 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
+
+    List<StaffSalary> staffSalarys;
+
+    public List<StaffSalary> getStaffSalarys() {
+        return staffSalarys;
+    }
+
+    public void setStaffSalarys(List<StaffSalary> staffSalarys) {
+        this.staffSalarys = staffSalarys;
+    }
+
+    @EJB
+    StaffSalaryFacade staffSalaryFacade;
+
+    public void createStaffSalary() {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createStaffSalaryQuary(hm);
+        sql += " order by ss.staff.codeInterger ";
+        staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
     public void createShiftTable() {
         String sql = "Select s From Shift s "
                 + " where s.retired=false ";
         //   + " order by s.shiftOrder ";
         System.out.println("sql = " + sql);
         HashMap hm = new HashMap();
-        
-        
-        
-        if(getReportKeyWord().getRoster() != null){
-           sql += " and s.roster=:rs ";
-           hm.put("rs", getReportKeyWord().getRoster());
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and s.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
         }
-        
-        sql+= " order by s.roster.id";
-        
+
+        sql += " order by s.roster.id";
+
         shiftLists = getShiftFacade().findBySQL(sql, hm);
     }
 

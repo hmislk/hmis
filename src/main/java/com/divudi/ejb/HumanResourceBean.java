@@ -337,7 +337,7 @@ public class HumanResourceBean {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("s", staff);
-        m.put("tp", Arrays.asList(new DayType[]{DayType.MurchantileHoliday,DayType.Poya,DayType.DayOff,DayType.SleepingDay}));
+        m.put("tp", Arrays.asList(new DayType[]{DayType.MurchantileHoliday, DayType.Poya, DayType.DayOff, DayType.SleepingDay}));
         String sql = "Select ss from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.staff=:s "
@@ -1516,33 +1516,32 @@ public class HumanResourceBean {
         return getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 
-    public double calValueForOverTime(Staff staff, Date date) {
-        double value = 0;
-        StaffPaysheetComponent staffPaysheetComponent = getBasic(staff, date);
-
-        if (staffPaysheetComponent != null) {
-            value = staffPaysheetComponent.getStaffPaySheetComponentValue();
-        }
-
-        PaysheetComponentType[] paysheetComponentTypes = {PaysheetComponentType.BasicSalary,
-            PaysheetComponentType.OT,
-            PaysheetComponentType.ExtraDuty,
-            PaysheetComponentType.No_Pay_Deduction};
-
-        String sql = " Select sum(s.staffPaySheetComponentValue)"
-                + "  From StaffPaysheetComponent s "
-                + " where s.retired=false "
-                + " and s.staff=:st"
-                + " and s.paysheetComponent.componentType not in :bs1 "
-                + " and s.fromDate<=:cu  "
-                + " and s.toDate>=:cu ";
-        HashMap hm = new HashMap();
-        hm.put("st", staff);
-        hm.put("cu", date);
-        hm.put("bs1", Arrays.asList(paysheetComponentTypes));
-        return value + getStaffPaysheetComponentFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
-    }
-
+//    public double calValueForOverTime(Staff staff, Date date) {
+//        double value = 0;
+//        StaffPaysheetComponent staffPaysheetComponent = getBasic(staff, date);
+//
+//        if (staffPaysheetComponent != null) {
+//            value = staffPaysheetComponent.getStaffPaySheetComponentValue();
+//        }
+//
+//        PaysheetComponentType[] paysheetComponentTypes = {PaysheetComponentType.BasicSalary,
+//            PaysheetComponentType.OT,
+//            PaysheetComponentType.ExtraDuty,
+//            PaysheetComponentType.No_Pay_Deduction};
+//
+//        String sql = " Select sum(s.staffPaySheetComponentValue)"
+//                + "  From StaffPaysheetComponent s "
+//                + " where s.retired=false "
+//                + " and s.staff=:st"
+//                + " and s.paysheetComponent.componentType not in :bs1 "
+//                + " and s.fromDate<=:cu  "
+//                + " and s.toDate>=:cu ";
+//        HashMap hm = new HashMap();
+//        hm.put("st", staff);
+//        hm.put("cu", date);
+//        hm.put("bs1", Arrays.asList(paysheetComponentTypes));
+//        return value + getStaffPaysheetComponentFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
+//    }
     @EJB
     StaffSalaryComponantFacade staffSalaryComponantFacade;
 
@@ -1609,6 +1608,33 @@ public class HumanResourceBean {
 //        }
         return tmp;
 
+    }
+
+    public double getBasicValue(Staff staff, Date date) {
+        //System.err.println("Getting Basic " + staff.getStaffEmployment());
+
+        String sql;
+        HashMap hm;
+        StaffPaysheetComponent tmp;
+
+        sql = "Select s From StaffPaysheetComponent s"
+                + " where s.retired=false "
+                + " and  s.staff=:stf "
+                + " and s.paysheetComponent.componentType=:type "
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
+
+        hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("type", PaysheetComponentType.BasicSalary);
+        hm.put("cu", date);
+        tmp = getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+
+        if (tmp != null) {
+            return tmp.getStaffPaySheetComponentValue();
+        } else {
+            return 0;
+        }
     }
 
     public StaffPaysheetComponent getComponent(Staff staff, WebUser user, PaysheetComponentType paysheetComponentType) {
