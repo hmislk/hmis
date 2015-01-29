@@ -63,6 +63,7 @@ public class HrReportController implements Serializable {
     @EJB
     StaffFacade staffFacade;
     List<StaffShift> staffShifts;
+    List<StaffShift> staffShiftsAllowance;
     List<Staff> staffs;
     List<FingerPrintRecord> fingerPrintRecords;
     @EJB
@@ -74,6 +75,30 @@ public class HrReportController implements Serializable {
     List<Department> selectDepartments;
     @EJB
     DepartmentFacade departmentFacade;
+
+    public List<StaffShift> getStaffShiftsAllowance() {
+        return staffShiftsAllowance;
+    }
+
+    public void setStaffShiftsAllowance(List<StaffShift> staffShiftsAllowance) {
+        this.staffShiftsAllowance = staffShiftsAllowance;
+    }
+
+    public StaffPaysheetComponentFacade getStaffPaysheetComponentFacade() {
+        return staffPaysheetComponentFacade;
+    }
+
+    public void setStaffPaysheetComponentFacade(StaffPaysheetComponentFacade staffPaysheetComponentFacade) {
+        this.staffPaysheetComponentFacade = staffPaysheetComponentFacade;
+    }
+
+    public FormFacade getFormFacade() {
+        return formFacade;
+    }
+
+    public void setFormFacade(FormFacade formFacade) {
+        this.formFacade = formFacade;
+    }
 
     public Institution getInstitution() {
         return institution;
@@ -598,7 +623,8 @@ public class HrReportController implements Serializable {
             return;
         }
 
-        staffShifts = humanResourceBean.fetchStaffShift(fromDate, toDate, getReportKeyWord().getStaff());
+        staffShiftsAllowance = humanResourceBean.fetchStaffShiftAllowance(fromDate, toDate, getReportKeyWord().getStaff());
+        staffLeavesNoPay = createStaffLeave(LeaveType.No_Pay, getReportKeyWord().getStaff(), getFromDate(), getToDate());
         staffShiftExtraDuties = humanResourceBean.fetchStaffShiftExtraDuty(fromDate, toDate, getReportKeyWord().getStaff());
     }
 
@@ -1500,20 +1526,20 @@ public class HrReportController implements Serializable {
                 formFacade.edit(ss.getForm());
             }
         }
-        
-         sql = "select s from StaffShift s"
-                 + " where  (s.considerForEarlyOut=true "
-                 + " or s.considerForLateIn=true "
-                 + " or s.referenceStaffShiftLateIn is not null "
-                 + " or s.referenceStaffShiftEarlyOut is not null "
-                 + " or s.referenceStaffShift is not null )";
+
+        sql = "select s from StaffShift s"
+                + " where  (s.considerForEarlyOut=true "
+                + " or s.considerForLateIn=true "
+                + " or s.referenceStaffShiftLateIn is not null "
+                + " or s.referenceStaffShiftEarlyOut is not null "
+                + " or s.referenceStaffShift is not null )";
 
         List<StaffShift> list2 = staffShiftFacade.findBySQL(sql);
         if (list2 == null) {
             return;
         }
-        
-        for(StaffShift s:list2){
+
+        for (StaffShift s : list2) {
             s.setConsiderForEarlyOut(false);
             s.setConsiderForLateIn(false);
             s.setLeaveType(null);

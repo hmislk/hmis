@@ -332,6 +332,22 @@ public class HumanResourceBean {
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
 
+    public List<StaffShift> fetchStaffShiftAllowance(Date fromDate, Date toDate, Staff staff) {
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("s", staff);
+        m.put("tp", Arrays.asList(new DayType[]{DayType.MurchantileHoliday,DayType.Poya,DayType.DayOff,DayType.SleepingDay}));
+        String sql = "Select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.staff=:s "
+                + " and ss.shiftDate between :fd and :td "
+                + " and ss.dayType in :tp"
+                + " order by ss.dayType,ss.shiftDate ";
+
+        return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
     public List<StaffShift> fetchStaffShiftExtraDuty(Date fromDate, Date toDate, Staff staff) {
         Map m = new HashMap();
         m.put("fd", fromDate);
