@@ -1745,7 +1745,7 @@ public class HrReportController implements Serializable {
 
         for (StaffShift ss : list) {
             System.err.println(ss.getId());
-            double valueForOverTime = humanResourceBean.calValueForOverTime(ss.getStaff(), ss.getShiftDate());
+            double valueForOverTime = humanResourceBean.getBasicValue(ss.getStaff(), ss.getShiftDate());
             ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
             staffShiftFacade.edit(ss);
         }

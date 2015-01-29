@@ -1321,7 +1321,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.reset();
 
                 //Fetch Value for Oer Time per Month
-                double valueForOverTime = humanResourceBean.getBasic(ss.getStaff(), ss.getShiftDate());
+                double valueForOverTime = humanResourceBean.getBasicValue(ss.getStaff(), ss.getShiftDate());
 
                 //Chang to Second
                 ss.setOverTimeValuePerSecond(valueForOverTime / (200 * 60 * 60));
