@@ -469,13 +469,13 @@ public class StaffSalary implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public double getPhValue() {
-        return phValue;
-    }
-
-    public void setPhValue(double phValue) {
-        this.phValue = phValue;
-    }
+//    public double getPhValue() {
+//        return phValue;
+//    }
+//
+//    public void setPhValue(double phValue) {
+//        this.phValue = phValue;
+//    }
 
     public boolean isExist() {
         return exist;
