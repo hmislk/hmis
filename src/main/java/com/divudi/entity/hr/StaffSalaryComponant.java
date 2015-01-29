@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -57,18 +58,26 @@ public class StaffSalaryComponant implements Serializable {
     private Date lastEditedAt;
     @ManyToOne
     private WebUser lastEditor;
+    @Transient
+    String transName;
+
+    public String getTransName() {
+        return transName;
+    }
+
+    public void setTransName(String transName) {
+        this.transName = transName;
+    }
 
     public StaffSalaryComponant() {
     }
-    
-    
 
-    public StaffSalaryComponant(double componantValue) {
+    public StaffSalaryComponant(double componantValue, PaysheetComponent paysheetComponent) {
         this.componantValue = componantValue;
+        this.staffPaysheetComponent = new StaffPaysheetComponent();
+        this.staffPaysheetComponent.setPaysheetComponent(paysheetComponent);
+
     }
-
-
-    
 
     public SalaryCycle getSalaryCycle() {
         return salaryCycle;
