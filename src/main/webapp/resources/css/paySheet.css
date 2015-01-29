@@ -183,3 +183,19 @@ root {
 
 }
 
+.textAlignRight{
+   text-align: right!important; 
+}
+
+#textAlignRight{
+   text-align: right!important; 
+}
+
+.textAlignLeft{
+    text-align: left!important;
+}
+
+#textAlignLeft{
+    text-align: left!important;
+}
+
