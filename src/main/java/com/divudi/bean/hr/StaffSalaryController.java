@@ -656,7 +656,7 @@ public class StaffSalaryController implements Serializable {
             Long count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
             getCurrent().setMerchantileCount(count.doubleValue());
             count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
-            getCurrent().setMerchantileCount(count.doubleValue());
+            getCurrent().setPoyaCount(count.doubleValue());
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.DayOffAllowance, DayType.DayOff);
             getCurrent().setDayOffCount(count.doubleValue());
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.SleepingDayAllowance, DayType.SleepingDay);

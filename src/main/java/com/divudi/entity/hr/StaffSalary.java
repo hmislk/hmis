@@ -42,7 +42,7 @@ public class StaffSalary implements Serializable {
     private Long id;
     private double payeeValue;
 //    private double otValue;
-    private double phValue;
+//    private double phValue;
     @ManyToOne
     private SalaryCycle salaryCycle;
     @ManyToOne
@@ -278,8 +278,8 @@ public class StaffSalary implements Serializable {
 
     public double getTransGrossSalary() {
         return basicValue
-                + phValue
                 + merchantileAllowanceValue
+                +poyaAllowanceValue
                 + dayOffAllowance
                 + sleepingDayAllowance
                 + adjustmentToBasic;
