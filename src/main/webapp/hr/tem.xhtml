@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+
+        <h:form >
+
+            <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
+             
+             
+            <a download="somedata.xls" href="#" onclick="return ExcellentExport.excel(this, 'datatable', 'Sheet Name Here');">Export to Excel</a>
+            <br/>
+
+            <a download="somedata.csv" href="#" onclick="return ExcellentExport.csv(this, 'datatable');">Export to CSV</a>
+            <br/>
+
+            <table id="datatable">
+                <tr>
+                    <th>Column 1</th>
+                    <th>Column "cool" 2</th>
+                    <th>Column 3</th>
+                    <th>Column 4</th>
+                </tr>
+                <tr>
+                    <td>100,111</td>
+                    <td>200</td>
+                    <td>300</td>
+                    <td>Ã¡Ã©Ã­Ã³Ãº</td>
+                </tr>
+                <tr>
+                    <td>400</td>
+                    <td>500</td>
+                    <td>600</td>
+                    <td>Ã Ã¨Ã¬Ã²Ã¹</td>
+                </tr>
+                <tr>
+                    <td>Text</td>
+                    <td>More text</td>
+                    <td>Text with
+                        new line</td>
+                    <td>Ã§ Ã± Ã„Ã‹Ã�Ã–Ãœ Ã¤Ã«Ã¯Ã¶Ã¼</td>
+                </tr>
+            </table>
+
+
+        </h:form>
+
+    </h:body>
+</html>
+
