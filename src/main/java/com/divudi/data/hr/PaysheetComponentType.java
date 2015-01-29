@@ -20,7 +20,13 @@ public enum PaysheetComponentType {
     VariableAllowance(addition),
     Bonus(addition),
     OT(addition),
+    @Deprecated
     ExtraDuty(addition),
+    ExtraDutyNormal(addition),
+    ExtraDutyMerchantile(addition),
+    ExtraDutyPoya(addition),
+    ExtraDutyDayOff(addition),
+    ExtraDutySleepingDay(addition),
     @Deprecated
     HolidayAllowance(addition),
     MerchantileAllowance(addition),
@@ -99,9 +105,13 @@ public enum PaysheetComponentType {
     public List<PaysheetComponentType> getSystemDefinedComponents() {
 
         return Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.BasicSalary,
-            PaysheetComponentType.DayOffAllowance, 
+            PaysheetComponentType.DayOffAllowance,
             PaysheetComponentType.SleepingDayAllowance,
-            PaysheetComponentType.ExtraDuty,
+            PaysheetComponentType.ExtraDutyNormal,
+            PaysheetComponentType.ExtraDutyMerchantile,
+            PaysheetComponentType.ExtraDutyPoya,
+            PaysheetComponentType.ExtraDutyDayOff,
+            PaysheetComponentType.ExtraDutySleepingDay,
             PaysheetComponentType.No_Pay_Deduction_Basic,
             PaysheetComponentType.No_Pay_Deduction_Allowance,
             PaysheetComponentType.OT,

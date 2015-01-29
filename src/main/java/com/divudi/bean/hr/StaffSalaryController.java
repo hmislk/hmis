@@ -13,6 +13,7 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
+import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
@@ -51,6 +52,7 @@ public class StaffSalaryController implements Serializable {
     private StaffSalary current;
     //////////   
     List<StaffSalary> items;
+    List<StaffSalary> getSelectedStaffSalaryList;
     ///////
     @EJB
     private StaffSalaryFacade staffSalaryFacade;
@@ -74,6 +76,7 @@ public class StaffSalaryController implements Serializable {
     @Inject
     private StaffController staffController;
     SalaryCycle salaryCycle;
+    boolean printPreview = false;
 
     public SalaryCycle getSalaryCycle() {
         return salaryCycle;
@@ -89,6 +92,32 @@ public class StaffSalaryController implements Serializable {
 
     public void setFinalVariables(FinalVariables finalVariables) {
         this.finalVariables = finalVariables;
+    }
+
+    public List<StaffSalary> getGetSelectedStaffSalaryList() {
+        return getSelectedStaffSalaryList;
+    }
+
+    public void setGetSelectedStaffSalaryList(List<StaffSalary> getSelectedStaffSalaryList) {
+        this.getSelectedStaffSalaryList = getSelectedStaffSalaryList;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public void printPreview() {
+        printPreview = true;
+    }
+
+    public void recreateModel() {
+        getSelectedStaffSalaryList = null;
+        current = null;
+        printPreview = false;
     }
 
     public void remove() {
@@ -204,17 +233,30 @@ public class StaffSalaryController implements Serializable {
         return current;
     }
 
+    @Inject
+    SalaryCycleController salaryCycleController;
+
     public void onEditListener(StaffSalary staffSalary) {
         current = staffSalary;
-        System.err.println("1 " + current);
 
-//        if (current != null) {
-////            current.setTmpOtNormalSpecial(getHumanResourceBean().calculateOt(getOverTimeFromDate(), getOverTimeToDate(), getCurrent().getStaff()));
-//            current.setTransStaffShiftsSalary(getHumanResourceBean().getStaffShiftFromRecordSlaryCalculated(getSalaryFromDate(), getSalaryToDate(), getCurrent().getStaff()));
-//            current.setTransStaffShiftsOverTime(getHumanResourceBean().getStaffShiftFromRecordOtCalculated(getOverTimeFromDate(), getOverTimeToDate(), getCurrent().getStaff()));
-//            current.setTransStaffShiftsExtraDuty(getHumanResourceBean().getStaffShiftFromRecordExtraDutyCalculated(getExtraDutyFromDate(), getExtraDutyToDate(), getCurrent().getStaff()));
-//            current.setTmpExtraDutyCount(getHumanResourceBean().calExtraDuty(getExtraDutyFromDate(), getExtraDutyToDate(), getCurrent().getStaff()));
-//        }
+        if (current == null) {
+            return;
+        }
+
+        List<PaysheetComponent> paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponentsUserDefinded(PaysheetComponentType.addition.getUserDefinedComponentsAddidtions());
+        List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponentsUserDefinded(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductions());
+
+        for (PaysheetComponent psc : paysheetComponentsAddition) {
+            List<StaffSalaryComponant> c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc);
+            getCurrent().getTransStaffSalaryComponantsAddition().addAll(c);
+
+        }
+        for (PaysheetComponent psc : paysheetComponentsSubstraction) {
+            List<StaffSalaryComponant> c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc);
+            getCurrent().getTransStaffSalaryComponantsSubtraction().addAll(c);
+
+        }
+
     }
 
     public void setCurrent(StaffSalary current) {
@@ -311,7 +353,7 @@ public class StaffSalaryController implements Serializable {
             }
 
             ss.setComponantValue(overTime * basicPerSecond * finalVariables.getOverTimeMultiply());
-            getCurrent().setOverTimeMinute(overTime);
+            getCurrent().setOverTimeMinute(overTime / 60);
 
         } else {
             return;
@@ -371,15 +413,15 @@ public class StaffSalaryController implements Serializable {
 //        getCurrent().getStaffSalaryComponants().add(ss);
 //
 //    }
-    private void setExtraDuty() {
-        StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.ExtraDuty);
-        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff()));
+    private double setExtraDuty(PaysheetComponentType paysheetComponentType, DayType dayType) {
+        StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
+        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
 
-        getCurrent().setExtraDutyMinute(humanResourceBean.calculateExtraWorkTime(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff()));
 //        System.err.println("EXTRA " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
+        return humanResourceBean.calculateExtraWorkTime(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType);
 
     }
 
@@ -594,7 +636,23 @@ public class StaffSalaryController implements Serializable {
             }
 
             setOT();
-            setExtraDuty();
+
+            //Set Extra Duty Value
+            double extraTime = setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Normal);
+            getCurrent().setExtraDutyNormalMinute(extraTime / 60);
+
+            extraTime = setExtraDuty(PaysheetComponentType.ExtraDutyMerchantile, DayType.MurchantileHoliday);
+            getCurrent().setExtraDutyMerchantileMinute(extraTime / 60);
+
+            extraTime = setExtraDuty(PaysheetComponentType.ExtraDutyPoya, DayType.Poya);
+            getCurrent().setExtraDutyPoyaMinute(extraTime / 60);
+
+            extraTime = setExtraDuty(PaysheetComponentType.ExtraDutyDayOff, DayType.DayOff);
+            getCurrent().setExtraDutyDayOffMinute(extraTime / 60);
+
+            extraTime = setExtraDuty(PaysheetComponentType.ExtraDutySleepingDay, DayType.SleepingDay);
+            getCurrent().setExtraDutySleepingDayMinute(extraTime / 60);
+
             Long count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
             getCurrent().setMerchantileCount(count.doubleValue());
             count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
