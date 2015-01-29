@@ -200,6 +200,7 @@ public class StaffSalaryController implements Serializable {
         getHumanResourceBean().setEtf(tmp, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
         tmp.setLastEditedAt(new Date());
         tmp.setLastEditor(getSessionController().getLoggedUser());
+      
         if (tmp.getId() != null) {
             getStaffSalaryComponantFacade().edit(tmp);
         }

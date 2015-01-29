@@ -86,30 +86,29 @@ public class SalaryCycleController implements Serializable {
                 + " order by c.id desc";
         salaryCycles = getFacade().findBySQL(sql, 20);
     }
-    
-    
+
     double brVal = 0.0;
-        double basicVal = 0.0;
-        double mercAll = 0.0;
-        double poyaAll = 0.0;
-        double dayOffAll = 0.0;
-        double slpAll = 0.0;
-        double noPayBasic = 0.0;
-        double adjstBasic = 0.0;
-        double epfDeduct = 0.0;
-        double tranGrossSal = 0.0;
-        double adjustAll = 0.0;
-        double noPayCount = 0.0;
-        double transTotAll = 0.0;
-        double epfStaffVal = 0.0;
-        double transTotDeduct = 0.0;
-        double transNetSal = 0.0;
-        double epfComVal = 0.0;
-        double etfComVal = 0.0;
-        double noPayValAll = 0.0;
+    double basicVal = 0.0;
+    double mercAll = 0.0;
+    double poyaAll = 0.0;
+    double dayOffAll = 0.0;
+    double slpAll = 0.0;
+    double noPayBasic = 0.0;
+    double adjstBasic = 0.0;
+    double epfDeduct = 0.0;
+    double tranGrossSal = 0.0;
+    double adjustAll = 0.0;
+    double noPayCount = 0.0;
+    double transTotAll = 0.0;
+    double epfStaffVal = 0.0;
+    double transTotDeduct = 0.0;
+    double transNetSal = 0.0;
+    double epfComVal = 0.0;
+    double etfComVal = 0.0;
+    double noPayValAll = 0.0;
 
     public void SalaryTotalCalculation(List<StaffSalary> stfSalary) {
-        
+
         for (StaffSalary stfsal : stfSalary) {
             brVal += stfsal.getBrValue();
             basicVal += (stfsal.getBasicValue() - stfsal.getBrValue());
@@ -130,11 +129,9 @@ public class SalaryCycleController implements Serializable {
             epfComVal += stfsal.getEpfCompanyValue();
             etfComVal += stfsal.getEtfCompanyValue();
             noPayValAll += stfsal.getNoPayValueAllowance();
-            
-            
+
         }
 
-        
     }
 
     @EJB
@@ -473,7 +470,6 @@ public class SalaryCycleController implements Serializable {
     public void setNoPayValAll(double noPayValAll) {
         this.noPayValAll = noPayValAll;
     }
-        
 
 //    public void fillStaffAndSalaryComponents2() {
 //
@@ -652,19 +648,23 @@ public class SalaryCycleController implements Serializable {
                 List<StaffSalaryComponant> c = fetchSalaryComponents(s, psc);
                 if (c != null) {
                     s.getTransStaffSalaryComponantsAddition().addAll(c);
+                } else {
+                    s.getTransStaffSalaryComponantsAddition().add(new StaffSalaryComponant(0));
                 }
             }
             for (PaysheetComponent psc : paysheetComponentsSubstraction) {
                 List<StaffSalaryComponant> c = fetchSalaryComponents(s, psc);
                 if (c != null) {
                     s.getTransStaffSalaryComponantsSubtraction().addAll(c);
+                } else {
+                    s.getTransStaffSalaryComponantsSubtraction().add(new StaffSalaryComponant(0));
                 }
             }
 
         }
-        
+
         SalaryTotalCalculation(staffSalarys);
-      
+
     }
 
     public List<StaffSalaryComponant> fetchSalaryComponents(Staff s, PaysheetComponent psc) {
