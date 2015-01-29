@@ -291,10 +291,22 @@ public class StaffBasicController implements Serializable {
     }
 
     PaysheetComponent paysheetComponent;
+    
+     PaysheetComponent paysheetComponent2;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
     }
+
+    public PaysheetComponent getPaysheetComponent2() {
+        return paysheetComponent2;
+    }
+
+    public void setPaysheetComponent2(PaysheetComponent paysheetComponent2) {
+        this.paysheetComponent2 = paysheetComponent2;
+    }
+    
+    
 
     public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
         this.paysheetComponent = paysheetComponent;
@@ -302,13 +314,19 @@ public class StaffBasicController implements Serializable {
 
     public void createTable() {
         String sql = "Select s from StaffPaysheetComponent s"
-                + " where s.retired=false ";
+                + " where s.retired=false"
+                + " and s.staffPaySheetComponentValue!=0 ";
 
         HashMap hm = new HashMap();
 
         if (paysheetComponent != null) {
             sql += " and s.paysheetComponent=:tp ";
             hm.put("tp", paysheetComponent);
+        }
+        
+        if (paysheetComponent2 != null) {
+            sql += " and s.paysheetComponent=:tp2 ";
+            hm.put("tp2", paysheetComponent2);
         }
 
         sql += " order by s.staff.codeInterger,s.paysheetComponent.orderNo";

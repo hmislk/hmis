@@ -188,7 +188,7 @@ public class Shift implements Serializable {
     }
 
     public double getDurationMin() {
-        if (getStartingTime() == null && getEndingTime() == null) {
+        if (getStartingTime() == null || getEndingTime() == null) {
             return 0;
         }
 
