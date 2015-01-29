@@ -66,6 +66,11 @@
                                 <p:column headerText="Lieu Allowed">
                                     #{ss.lieuAllowed}
                                 </p:column>
+                                  <p:column headerText="Shift Date">
+                                     <h:outputLabel value="#{ss.shiftDate}">                                        
+                                        
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Worked Time">
                                      <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">                                        
                                         <f:converter converterId="longToTime"/>
@@ -81,7 +86,12 @@
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Multiplying Factor">
+                                <p:column headerText="Multiplying Factor Salary">
+                                    <h:outputLabel value="#{ss.multiplyingFactorSalary}">                                        
+                                        <f:convertNumber pattern="0.0000" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Multiplying Factor Over Time">
                                     <h:outputLabel value="#{ss.multiplyingFactorOverTime}">                                        
                                         <f:convertNumber pattern="0.0000" />
                                     </h:outputLabel>

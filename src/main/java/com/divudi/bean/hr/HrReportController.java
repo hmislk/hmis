@@ -24,6 +24,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.FingerPrintRecordHistory;
+import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffShift;
@@ -31,6 +32,7 @@ import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.FingerPrintRecordHistoryFacade;
+import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
@@ -65,9 +67,12 @@ public class HrReportController implements Serializable {
     List<StaffShift> staffShifts;
     List<StaffShift> staffShiftsAllowance;
     List<Staff> staffs;
+    List<Shift> shiftLists;
     List<FingerPrintRecord> fingerPrintRecords;
     @EJB
     StaffShiftFacade staffShiftFacade;
+    @EJB
+    ShiftFacade shiftFacade;
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
     List<WeekDayWork> weekDayWorks;
@@ -141,6 +146,16 @@ public class HrReportController implements Serializable {
     public void setHumanResourceBean(HumanResourceBean humanResourceBean) {
         this.humanResourceBean = humanResourceBean;
     }
+
+    public ShiftFacade getShiftFacade() {
+        return shiftFacade;
+    }
+
+    public void setShiftFacade(ShiftFacade shiftFacade) {
+        this.shiftFacade = shiftFacade;
+    }
+    
+    
 
     public void createFingerPrintRecordLogged() {
         String sql = "";
@@ -605,6 +620,16 @@ public class HrReportController implements Serializable {
     public void setAnnualUtilized(double annualUtilized) {
         this.annualUtilized = annualUtilized;
     }
+
+    public List<Shift> getShiftLists() {
+        return shiftLists;
+    }
+
+    public void setShiftLists(List<Shift> shiftLists) {
+        this.shiftLists = shiftLists;
+    }
+    
+    
 
     List<StaffShift> staffShiftExtraDuties;
 
@@ -1559,6 +1584,25 @@ public class HrReportController implements Serializable {
                 + " and ss.endRecord.recordTimeStamp is not null ";
         sql += " order by ss.staff.codeInterger ";
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+    
+    public void createShiftTable() {
+        String sql = "Select s From Shift s "
+                + " where s.retired=false ";
+        //   + " order by s.shiftOrder ";
+        System.out.println("sql = " + sql);
+        HashMap hm = new HashMap();
+        
+        
+        
+        if(getReportKeyWord().getRoster() != null){
+           sql += " and s.roster=:rs ";
+           hm.put("rs", getReportKeyWord().getRoster());
+        }
+        
+        sql+= " order by s.roster.id";
+        
+        shiftLists = getShiftFacade().findBySQL(sql, hm);
     }
 
     public void createStaffShiftExtra() {

@@ -130,16 +130,24 @@
                             <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
                         </p:column>
                         <p:column headerText="Gross">
-                            <h:outputLabel value="#{i.transGrossSalary}"/>
+                            <h:outputLabel value="#{i.transGrossSalary}">
+                                <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="EPF">
-                            <h:outputLabel value="#{i.epfStaffValue}"/>
+                            <h:outputLabel value="#{i.epfStaffValue}">
+                            <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="EPF Company">
-                            <h:outputLabel value="#{i.epfCompanyValue}"/>
+                            <h:outputLabel value="#{i.epfCompanyValue}">
+                            <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="ETF Company">
-                            <h:outputLabel value="#{i.etfCompanyValue}"/>
+                            <h:outputLabel value="#{i.etfCompanyValue}">
+                            <f:convertNumber pattern="0.00"/>
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Net Salary">
 

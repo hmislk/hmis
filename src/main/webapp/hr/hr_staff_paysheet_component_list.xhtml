@@ -14,6 +14,10 @@
                     <f:selectItem itemLabel="Please select component Type "/>
                     <f:selectItems value="#{paysheetComponentController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                 </p:selectOneMenu> 
+                <p:selectOneMenu   value="#{staffBasicController.paysheetComponent2}">
+                    <f:selectItem itemLabel="Please select component Type "/>
+                    <f:selectItems  value="#{paysheetComponentSystemController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>                    
+                </p:selectOneMenu> 
                 <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="lst" ></p:printer>
@@ -67,7 +71,7 @@
                     <p:column headerText="Staff Code" filterBy="#{i.staff.code}" filterMatchMode="contains">
                         <h:outputLabel value="#{i.staff.code}"/>
                     </p:column>
-                    <p:column headerText="Basic"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains">
+                    <p:column headerText="Value"  filterBy="#{i.staffPaySheetComponentValue}" filterMatchMode="contains">
 
                         <h:outputLabel value="#{i.staffPaySheetComponentValue}">
                             <f:convertNumber pattern="#,##0.00" />

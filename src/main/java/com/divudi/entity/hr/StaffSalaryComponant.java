@@ -10,7 +10,6 @@ import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -59,6 +58,26 @@ public class StaffSalaryComponant implements Serializable {
     private Date lastEditedAt;
     @ManyToOne
     private WebUser lastEditor;
+    @Transient
+    String transName;
+
+    public String getTransName() {
+        return transName;
+    }
+
+    public void setTransName(String transName) {
+        this.transName = transName;
+    }
+
+    public StaffSalaryComponant() {
+    }
+
+    public StaffSalaryComponant(double componantValue, PaysheetComponent paysheetComponent) {
+        this.componantValue = componantValue;
+        this.staffPaysheetComponent = new StaffPaysheetComponent();
+        this.staffPaysheetComponent.setPaysheetComponent(paysheetComponent);
+
+    }
 
     public SalaryCycle getSalaryCycle() {
         return salaryCycle;

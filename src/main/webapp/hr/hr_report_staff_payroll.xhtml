@@ -39,16 +39,16 @@
                 <p:printer target="print" ></p:printer>
             </p:commandButton>
             <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRoll()}" ></p:commandButton>
-            
+
             <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
             <p:commandLink style="padding: .3em 1em;" 
                            styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c" 
                            ajax="false" value="Download as Excel" 
-                           download="staff_payrall" 
+                           download="staff_payrall.xls" 
                            onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');" ></p:commandLink>
-           
+
             <p:panel id="print">
-                <table id="tbl" border="1">
+                <table id="tbl" border="1" >
                     <thead>
                         <tr>  
                             <th>Staff Code</th>
@@ -61,7 +61,6 @@
                             <th>Merchatile</th>
                             <th>Poya</th>
                             <th>Off Days</th>
-                            <th>Sleeping Days</th>
                             <th>No Pay Basic</th>
                             <th>Basic Adjust</th>
                             <th>Tot Salary</th>
@@ -92,7 +91,7 @@
                                 <td><h:outputLabel value="#{scc.staff.designation}" /></td>  
                                 <td><h:outputText value="#{scc.basicValue-scc.brValue}" >
                                         <f:convertNumber pattern="0.00" />
-                                    </h:outputText>
+                                    </h:outputText>                                   
                                 </td>
                                 <td><h:outputText value="#{scc.brValue}" >
                                         <f:convertNumber pattern="0.00" />
@@ -107,10 +106,6 @@
                                     </h:outputText>
                                 </td>
                                 <td><h:outputText value="#{scc.dayOffAllowance}" >
-                                        <f:convertNumber pattern="0.00" />
-                                    </h:outputText>
-                                </td>
-                                <td><h:outputText value="#{scc.sleepingDayAllowance}" >
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputText>
                                 </td>
@@ -178,9 +173,36 @@
                                 </td>
                             </tr>
                         </ui:repeat>
+                        <tr>
+                            <td colspan="5"><h:outputLabel value="Totals"/></td>
+                            <td><h:outputText value="#{salaryCycleController.basicVal}" ></h:outputText></td>
+                            <td><h:outputText value="#{salaryCycleController.brVal}" ></h:outputText></td>
+                            <td><h:outputText value="#{salaryCycleController.mercAll}" ></h:outputText></td>
+                            <td><h:outputText value="#{salaryCycleController.poyaAll}" ></h:outputText></td>
+                            <td><h:outputText value="#{salaryCycleController.dayOffAll}" ></h:outputText></td>
+                            <td><h:outputText value="#{salaryCycleController.noPayBasic}" ></h:outputText></td>
+                            <td><h:outputText value="#{salaryCycleController.adjstBasic}" ></h:outputText></td>
+                            <td><h:outputText value="#{salaryCycleController.tranGrossSal}" ></h:outputText></td>
+                            <td><h:outputText value="#{salaryCycleController.epfDeduct}" ></h:outputText></td>                            
+                            <ui:repeat value="#{salaryCycleController.footerAdd}" var="f">
+                                <td>#{f}</td>
+                            </ui:repeat>
+                            <td><h:outputLabel value="#{salaryCycleController.adjustAll}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{salaryCycleController.noPayValAll}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{salaryCycleController.transTotAll}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{salaryCycleController.epfStaffVal}" ></h:outputLabel></td>
+                            <ui:repeat value="#{salaryCycleController.footerSub}" var="ff">
+                                <td>#{ff}</td>
+                            </ui:repeat>
+                            <td><h:outputLabel value="#{salaryCycleController.transTotDeduct}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{salaryCycleController.transNetSal}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{salaryCycleController.epfComVal}" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{salaryCycleController.etfComVal}" ></h:outputLabel></td>
+                        </tr>
                     </tbody>
                 </table>
-
+                #{salaryCycleController.footerAdd.size()}
+                            #{salaryCycleController.footerSub.size()}
             </p:panel>
 
 
