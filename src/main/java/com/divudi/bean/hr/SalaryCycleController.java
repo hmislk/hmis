@@ -8,6 +8,8 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.SalaryCycle;
@@ -55,6 +57,24 @@ public class SalaryCycleController implements Serializable {
     List<String> headersAdd;
     List<Double> footerAdd;
     List<Double> footerSub;
+    Institution institution;
+    Department department;
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
 
     public List<String> getHeadersAdd() {
         if (headersAdd == null) {
@@ -660,8 +680,19 @@ public class SalaryCycleController implements Serializable {
         jpql = "select spc"
                 + " from StaffSalary spc "
                 + " where spc.salaryCycle=:sc "
-                + " and spc.retired=false "
-                + " order by spc.staff.codeInterger ";
+                + " and spc.retired=false ";
+
+        if (institution != null) {
+            jpql += " and spc.institution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and spc.department=:dep ";
+            m.put("dep", department);
+        }
+
+        jpql += " order by spc.staff.codeInterger ";
         m.put("sc", current);
         staffSalarys = staffSalaryFacade.findBySQL(jpql, m);
 

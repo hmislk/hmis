@@ -23,11 +23,14 @@
                                 <p:commandButton value="(3) Staff Payroll" 
                                                  action="/hr/hr_report_staff_payroll" 
                                                  styleClass="linkButton" ajax="false" />                                 
-                                <p:commandButton value="(3) Staff Over Time " 
+                                <p:commandButton value="(4) Staff Over Time " 
                                                  action="/hr/hr_report_staff_over_time" 
-                                                 styleClass="linkButton" ajax="false" />                                 
+                                                 styleClass="linkButton" ajax="false" />  
+                                <p:commandButton value="(5)No Pay And Late No Pay  Report " 
+                                                 action="/hr/hr_report_staff_no_pay_and_late" 
+                                                 styleClass="linkButton" ajax="false" />  
                                 <p:commandButton  ajax="false"  action="/hr/hr_staff_paysheet_component_list"
-                                                  value="(4) Staff Paysheet Component  List" 
+                                                  value="(6) Staff Paysheet Component  List" 
                                                   styleClass="linkButton"
                                                   actionListener="#{staffBasicController.makeItemNul()}"  />
                             </h:panelGrid>
