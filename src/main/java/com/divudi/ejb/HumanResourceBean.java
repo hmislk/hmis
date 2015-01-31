@@ -2012,12 +2012,12 @@ public class HumanResourceBean {
     }
 
     public long calculateHolidayWork(Date fromDate, Date toDate, Staff staff, DayType dayType) {
-        String sql = "Select count(distinct(ss.shiftDate)) "
+        String sql = "Select count(distinct(FUNC('Date',ss.shiftDate))) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and ss.lieuAllowed=false "
                 + " and ss.lieuQtyUtilized=0"
-                + " and ( ss.startRecord.recordTimeStamp is not null "
+                + " and (ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null ) "
                 + " and ss.dayType=:dtp "
                 + " and ss.shiftDate between :fd  and :td "

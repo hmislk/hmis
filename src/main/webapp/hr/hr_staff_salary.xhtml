@@ -5,7 +5,8 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:salary="http://java.sun.com/jsf/composite/hr">
 
     <ui:define name="content">
         <h:form>
@@ -230,6 +231,9 @@
                         <h:outputLabel value="Gross Salary : "/>
                         <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}"/>                        
                     </h:panelGrid>
+                </p:tab>
+                <p:tab title="Preview">
+                    <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
                 </p:tab>
 
             </p:tabView>

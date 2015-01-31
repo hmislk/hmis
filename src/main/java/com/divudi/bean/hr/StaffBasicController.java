@@ -314,8 +314,7 @@ public class StaffBasicController implements Serializable {
 
     public void createTable() {
         String sql = "Select s from StaffPaysheetComponent s"
-                + " where s.retired=false"
-                + " and s.staffPaySheetComponentValue!=0 ";
+                + " where s.retired=false ";
 
         HashMap hm = new HashMap();
 

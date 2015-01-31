@@ -330,11 +330,11 @@ public class StaffSalary implements Serializable {
 
             if (paysheetComponentType != null) {
 
-                if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
+                //if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
                     value = spc.getComponantValue();
-                } else {
-                    value = 0 - spc.getComponantValue();
-                }
+//                } else {
+//                    value = 0 - spc.getComponantValue();
+//                }
 
                 switch (paysheetComponentType) {
                     case BasicSalary:

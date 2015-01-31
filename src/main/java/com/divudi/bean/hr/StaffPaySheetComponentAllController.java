@@ -129,10 +129,10 @@ public class StaffPaySheetComponentAllController implements Serializable {
             return true;
         }
 
-        if (getFromDate() == null) {
-            UtilityController.addErrorMessage("Check Date");
-            return true;
-        }
+//        if (getFromDate() == null) {
+//            UtilityController.addErrorMessage("Check Date");
+//            return true;
+//        }
 
         return false;
     }

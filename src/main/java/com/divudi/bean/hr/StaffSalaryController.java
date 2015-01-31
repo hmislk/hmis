@@ -437,7 +437,7 @@ public class StaffSalaryController implements Serializable {
             double salaryValue = 0;
 
             if (getCurrent().getStaffSalaryComponants() == null) {
-                return 0L;
+                return count;
             }
 
             for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
@@ -456,8 +456,8 @@ public class StaffSalaryController implements Serializable {
             //Need Calculation Sum
             ss.setComponantValue(value);
 
-            System.err.println("Sal Val " + salaryValue);
-            System.err.println("No Pa " + count);
+            System.err.println(dayType + " Salary Allowance " + salaryValue);
+            System.err.println(dayType + " count " + count);
         } else {
             return 0L;
         }
@@ -465,7 +465,7 @@ public class StaffSalaryController implements Serializable {
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
 
-        System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
+//        System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
 
         return count;
@@ -855,7 +855,6 @@ public class StaffSalaryController implements Serializable {
             }
 
         }
-        
 
         for (StaffShift ss : staffShiftsTmp) {
             if (ss.getStaff().isAllowedLateInLeave()
