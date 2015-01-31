@@ -456,22 +456,23 @@ public class StaffLeaveApplicationFormController implements Serializable {
         while (toDateCal.getTime().after(nowDate.getTime())
                 || toDateCal.get(Calendar.DATE) == nowDate.get(Calendar.DATE)) {
 
-            StaffLeave staffLeave = fetchStaffLeave(nowDate.getTime(), getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType());
-            if (staffLeave != null) {
+            StaffLeave stfLeave = fetchStaffLeave(nowDate.getTime(), getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType());
+            if (stfLeave != null) {
+                nowDate.add(Calendar.DATE, 1);
                 continue;
             }
 
-            staffLeave = new StaffLeave();
-            staffLeave.setCreatedAt(new Date());
-            staffLeave.setCreater(sessionController.getLoggedUser());
-            staffLeave.setLeaveType(getCurrentLeaveForm().getLeaveType());
-            staffLeave.setRoster(getCurrentLeaveForm().getStaff().getRoster());
-            staffLeave.setStaff(getCurrentLeaveForm().getStaff());
-            staffLeave.setLeaveDate(nowDate.getTime());
-            staffLeave.setForm(getCurrentLeaveForm());
-            staffLeave.calLeaveQty();
-            staffLeaveFacade.create(staffLeave);
-            addLeaveDataToStaffShift(staffLeave.getLeaveDate(), staffLeave.getStaff(), staffLeave.getLeaveType());
+            stfLeave = new StaffLeave();
+            stfLeave.setCreatedAt(new Date());
+            stfLeave.setCreater(sessionController.getLoggedUser());
+            stfLeave.setLeaveType(getCurrentLeaveForm().getLeaveType());
+            stfLeave.setRoster(getCurrentLeaveForm().getStaff().getRoster());
+            stfLeave.setStaff(getCurrentLeaveForm().getStaff());
+            stfLeave.setLeaveDate(nowDate.getTime());
+            stfLeave.setForm(getCurrentLeaveForm());
+            stfLeave.calLeaveQty();
+            staffLeaveFacade.create(stfLeave);
+            addLeaveDataToStaffShift(stfLeave.getLeaveDate(), stfLeave.getStaff(), stfLeave.getLeaveType());
             nowDate.add(Calendar.DATE, 1);
         }
 
