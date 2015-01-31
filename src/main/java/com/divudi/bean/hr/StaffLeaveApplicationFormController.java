@@ -233,7 +233,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("stf", staff);
         hm.put("ltp", list);
-
+        
         return staffLeaveEntitleFacade.findFirstBySQL(sql, hm);
     }
 

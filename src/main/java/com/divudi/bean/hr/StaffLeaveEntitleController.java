@@ -89,13 +89,18 @@ public class StaffLeaveEntitleController implements Serializable {
 
     public void saveSelected() {
 
-        if (date == null) {
-            UtilityController.addErrorMessage("Pls Select Date");
+        if (fromDate == null) {
+            UtilityController.addErrorMessage("Please Select From Date");
             return;
         }
 
-        current.setFromDate(commonFunctions.getFirstDayOfYear(date));
-        current.setToDate(commonFunctions.getLastDayOfYear(date));
+        if (toDate == null) {
+            UtilityController.addErrorMessage("Please Select To Date");
+            return;
+        }
+
+        current.setFromDate(fromDate);
+        current.setToDate(toDate);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -186,6 +191,32 @@ public class StaffLeaveEntitleController implements Serializable {
     }
 
     Date date;
+    Date fromDate;
+    Date toDate;
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
 
     public Date getDate() {
         return date;

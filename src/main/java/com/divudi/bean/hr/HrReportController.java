@@ -1794,6 +1794,34 @@ public class HrReportController implements Serializable {
 
     }
 
+    @Inject
+    StaffSalaryController staffSalaryController;
+
+    public void updateLateLeaveData() {
+        String sql = "select s from StaffSalary s "
+                + " where s.retired=false"
+                + " and s.salaryCycle.retired=false ";
+
+        List<StaffSalary> list = staffSalaryFacade.findBySQL(sql);
+        if (list == null) {
+            return;
+        }
+
+        for (StaffSalary ss : list) {
+
+            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
+            ss.setLateNoPayCount(noPayCountLate);
+            ss.setLateNoPayBasicValue((ss.getBasicValue() / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+
+            double all = staffSalaryController.calAllowanceValueForNoPay(ss.getStaffSalaryComponants());
+
+            ss.setLateNoPayAllovanceValue((all / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+
+            staffSalaryFacade.edit(ss);
+        }
+
+    }
+
     public void createStaffShift() {
         String sql = "";
         HashMap hm = new HashMap();
