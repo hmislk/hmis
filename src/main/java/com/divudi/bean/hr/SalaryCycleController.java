@@ -130,6 +130,25 @@ public class SalaryCycleController implements Serializable {
     double noPayValAll = 0.0;
 
     public void SalaryTotalCalculation(List<StaffSalary> stfSalary) {
+        brVal = 0.0;
+        basicVal = 0.0;
+        mercAll = 0.0;
+        poyaAll = 0.0;
+        dayOffAll = 0.0;
+        slpAll = 0.0;
+        noPayBasic = 0.0;
+        adjstBasic = 0.0;
+        epfDeduct = 0.0;
+        tranGrossSal = 0.0;
+        adjustAll = 0.0;
+        noPayCount = 0.0;
+        transTotAll = 0.0;
+        epfStaffVal = 0.0;
+        transTotDeduct = 0.0;
+        transNetSal = 0.0;
+        epfComVal = 0.0;
+        etfComVal = 0.0;
+        noPayValAll = 0.0;
 
         for (StaffSalary stfsal : stfSalary) {
             brVal += stfsal.getBrValue();
@@ -663,13 +682,12 @@ public class SalaryCycleController implements Serializable {
     double etfTotal = 0.0;
     double netStaffSalaryTotal = 0.0;
 
-    public void calTotalStaffSalary(List<StaffAndSalarySalaryComponent> stfSalCom){
-        
-        for (StaffAndSalarySalaryComponent sassc : stfSalCom){
+    public void calTotalStaffSalary(List<StaffAndSalarySalaryComponent> stfSalCom) {
+
+        for (StaffAndSalarySalaryComponent sassc : stfSalCom) {
         }
     }
-    
-    
+
     public void fillStaffPayRoll() {
 
         List<PaysheetComponent> paysheetComponentsAddition;
@@ -807,7 +825,7 @@ public class SalaryCycleController implements Serializable {
         staffSalary = staffSalaryFacade.findBySQL(jpql, m);
         allStaffSalaryTotal(staffSalary);
     }
-    
+
     double basicValueTotal;
     double overTimeValueTotal;
     double noPayValueTotal;
@@ -818,12 +836,12 @@ public class SalaryCycleController implements Serializable {
     double deductionalComponentTotal;
     double adjustmentToBasicTotal;
     double adjustmentToBasic;
-    
-public void allStaffSalaryTotal(List<StaffSalary> stfSal){
-    for (StaffSalary staffSalary : stfSal){
-        
+
+    public void allStaffSalaryTotal(List<StaffSalary> stfSal) {
+        for (StaffSalary staffSalary : stfSal) {
+
+        }
     }
-}
     @EJB
     StaffSalaryComponantFacade staffSalaryComponantFacade;
 
@@ -1053,9 +1071,6 @@ public void allStaffSalaryTotal(List<StaffSalary> stfSal){
         this.adjustmentToBasic = adjustmentToBasic;
     }
 
-    
-    
-    
     @FacesConverter(forClass = SalaryCycle.class)
     public static class SalaryCycleConverter implements Converter {
 
