@@ -109,6 +109,17 @@ public class StaffSalary implements Serializable {
     double lateNoPayCount;
     double lateNoPayBasicValue;
     double lateNoPayAllovanceValue;
+    boolean blocked;
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+    
+    
 
     public double getLateNoPayCount() {
         return lateNoPayCount;

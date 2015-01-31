@@ -586,11 +586,13 @@ public class StaffSalaryController implements Serializable {
 
     }
 
-    private double setNoPay_Allowance(double noPayCount) {
+    private double setNoPay_Allowance() {
         double noPayValue = 0;
         double allownaceValue = 0;
+        double noPayCount = 0;
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction_Allowance);
         if (ss.getStaffPaysheetComponent() != null) {
+            noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
             allownaceValue = calAllowanceValueForNoPay(getCurrent().getStaffSalaryComponants());
 
             //Need Calculation Sum
@@ -691,7 +693,7 @@ public class StaffSalaryController implements Serializable {
 
             double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
             double basicValue = setNoPay_Basic(noPayCount);
-            double allowanceValue = setNoPay_Allowance(noPayCount);
+            setNoPay_Allowance();
             getCurrent().setNoPayCount(noPayCount);
             setAdjustments();
 
@@ -700,8 +702,8 @@ public class StaffSalaryController implements Serializable {
             //only for reporting purpose
             double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
             getCurrent().setLateNoPayCount(noPayCountLate);
-            getCurrent().setLateNoPayBasicValue((basicValue / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
-            getCurrent().setLateNoPayAllovanceValue((allowanceValue / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+            getCurrent().setLateNoPayBasicValue(0 - (basicValue / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+//            getCurrent().setLateNoPayAllovanceValue((allowanceValue / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
 
         }
 

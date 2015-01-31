@@ -1808,14 +1808,19 @@ public class HrReportController implements Serializable {
         }
 
         for (StaffSalary ss : list) {
+            double noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
+            double all = staffSalaryController.calAllowanceValueForNoPay(ss.getStaffSalaryComponants());
+            if (all != 0) {
+                ss.setNoPayValueAllowance(0 - noPayCount * (all / finalVariables.getWorkingDaysPerMonth()));
+            } else {
+                ss.setNoPayValueAllowance(0);
+            }
 
+            ////////
             double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
             ss.setLateNoPayCount(noPayCountLate);
-            ss.setLateNoPayBasicValue((ss.getBasicValue() / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
-
-            double all = staffSalaryController.calAllowanceValueForNoPay(ss.getStaffSalaryComponants());
-
-            ss.setLateNoPayAllovanceValue((all / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+            ss.setLateNoPayBasicValue(0 - (ss.getBasicValue() / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+            ss.setLateNoPayAllovanceValue(0.0);
 
             staffSalaryFacade.edit(ss);
         }
@@ -1863,7 +1868,7 @@ public class HrReportController implements Serializable {
     double noPayValueAllowanceTotal = 0;
     double noPayValueBasicTotal = 0;
     double lateNoPayCountTotal = 0;
-    double noPayCountTotal=0;
+    double noPayCountTotal = 0;
 
     private void calTotalNoPay() {
         if (staffSalarys == null) {
@@ -1879,7 +1884,7 @@ public class HrReportController implements Serializable {
         noPayValueAllowanceTotal = 0;
         noPayValueBasicTotal = 0;
         lateNoPayCountTotal = 0;
-        noPayCountTotal=0;
+        noPayCountTotal = 0;
 
         for (StaffSalary s : staffSalarys) {
             merchantileAllowanceValueTotal += s.getMerchantileAllowanceValue();
@@ -1891,13 +1896,11 @@ public class HrReportController implements Serializable {
             noPayValueAllowanceTotal += s.getNoPayValueAllowance();
             noPayValueBasicTotal += s.getNoPayValueBasic();
             lateNoPayCountTotal += s.getLateNoPayCount();
-            noPayCountTotal+=s.getNoPayCount();
-            
+            noPayCountTotal += s.getNoPayCount();
+
         }
 
     }
-    
-    
 
     public StaffSalaryController getStaffSalaryController() {
         return staffSalaryController;
@@ -1986,8 +1989,6 @@ public class HrReportController implements Serializable {
     public void setNoPayCountTotal(double noPayCountTotal) {
         this.noPayCountTotal = noPayCountTotal;
     }
-    
-    
 
     public void createShiftTable() {
         String sql = "Select s From Shift s "
