@@ -114,7 +114,8 @@
                 </p:tab>
                 <p:tab title="Staff Salary">
                     <p:commandButton ajax="false" value="Delete All"
-                                     action="#{staffSalaryController.deleteAll()}"/>
+                                     action="#{staffSalaryController.deleteAll()}"
+                                     />
                     <p:dataTable value="#{staffSalaryController.items}" var="i" 
                                  rowStyleClass="#{i.exist eq true ? 'exist':null}">
                         <p:column headerText="From">
@@ -164,7 +165,9 @@
                             <p:commandButton process="@this"
                                              update="@all"
                                              value="Delete"  
-                                             actionListener="#{staffSalaryController.deleteSalaryComponent(i)}" onclick="onSubmitButton();">                              
+                                             actionListener="#{staffSalaryController.deleteSalaryComponent(i)}" 
+                                             onclick="if (!confirm('Are you sure you want to Activate this record?'))
+                                                return false;" action="#{serviceController.activateService()}">                              
                             </p:commandButton>                          
                         </p:column>
 
