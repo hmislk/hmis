@@ -126,6 +126,36 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         shiftTables = null;
         errorMessage = null;
     }
+    
+    public void checkFromdateBeforeToDate(StaffShift staffShift){
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(staffShift.getShiftStartTime());
+        cal2.setTime(staffShift.getShiftEndTime());
+
+        if (cal1.getTimeInMillis() > cal2.getTimeInMillis()) {
+            UtilityController.addErrorMessage("To Date Must Be lager Than From Date");
+            return;
+        }
+    }
+    
+    public void calDayCount(StaffShift staffShift){
+        
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(staffShift.getShiftStartTime());
+        cal2.setTime(staffShift.getShiftEndTime());
+
+        Long daycount = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
+        
+        System.out.println("daycount = " + daycount);
+        
+        if (daycount>2) {
+            UtilityController.addErrorMessage("Date Must Be less Than 2 Days");
+            return;
+        }
+        
+    }
 
     public void listenStart(StaffShift staffShift) {
         if (staffShift == null) {
@@ -147,6 +177,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             staffShift.getStartRecord().setRecordTimeStamp(cal.getTime());
             return;
         }
+        
+        checkFromdateBeforeToDate(staffShift);
+        calDayCount(staffShift);
 
         staffShift.getStartRecord().setRecordTimeStamp(staffShift.getShiftStartTime());
 //        fingerPrintRecordFacade.edit(staffShift.getStartRecord());
@@ -173,6 +206,9 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             staffShift.getEndRecord().setRecordTimeStamp(cal.getTime());
             return;
         }
+        
+        checkFromdateBeforeToDate(staffShift);
+        calDayCount(staffShift);
 
         staffShift.getEndRecord().setRecordTimeStamp(staffShift.getShiftEndTime());
 
