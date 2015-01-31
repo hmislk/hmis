@@ -90,16 +90,24 @@
                                     <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
                                 </p:column>
                                 <p:column headerText="Gross">
-                                    <h:outputLabel value="#{i.transGrossSalary}"/>
+                                    <h:outputLabel value="#{i.transGrossSalary}">
+                                    <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="EPF">
-                                    <h:outputLabel value="#{i.epfStaffValue}"/>
+                                    <h:outputLabel value="#{i.epfStaffValue}">
+                                    <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="EPF Company">
-                                    <h:outputLabel value="#{i.epfCompanyValue}"/>
+                                    <h:outputLabel value="#{i.epfCompanyValue}">
+                                    <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="ETF Company">
-                                    <h:outputLabel value="#{i.etfCompanyValue}"/>
+                                    <h:outputLabel value="#{i.etfCompanyValue}">
+                                    <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Net Salary">
 
@@ -142,25 +150,33 @@
                                     </f:facet>
                                 </p:cellEditor>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}"/>
+                                    <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}">
+                                    <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column headerText="EPF">
                                 <h:outputLabel  value="#{i.epfValue}"/>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{staffSalaryController.current.epfStaffValue}"/>
+                                    <h:outputLabel value="#{staffSalaryController.current.epfStaffValue}">
+                                    <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
                                 </f:facet>
                             </p:column>       
                             <p:column headerText="EPF Company">
                                 <h:outputLabel value="#{i.epfCompanyValue}"/>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{staffSalaryController.current.epfCompanyValue}"/>
+                                    <h:outputLabel value="#{staffSalaryController.current.epfCompanyValue}">
+                                    <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column headerText="ETF Company">
                                 <h:outputLabel value="#{i.etfCompanyValue}"/>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{staffSalaryController.current.etfCompanyValue}"/>
+                                    <h:outputLabel value="#{staffSalaryController.current.etfCompanyValue}">
+                                    <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
                                 </f:facet>
                             </p:column>
                         </p:dataTable>

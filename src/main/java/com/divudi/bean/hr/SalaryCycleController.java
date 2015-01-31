@@ -652,8 +652,24 @@ public class SalaryCycleController implements Serializable {
             sc.calValue();
             staffAnsAndSalarySalaryComponents.add(sc);
         }
+
+        calTotalStaffSalary(staffAnsAndSalarySalaryComponents);
     }
 
+    double staffSalaryComponentAdjustmentotal = 0.0;
+    double valueAddingTotal = 0.0;
+    double staffSalaryComponantsSubstractionTotal = 0.0;
+    double epfTotal = 0.0;
+    double etfTotal = 0.0;
+    double netStaffSalaryTotal = 0.0;
+
+    public void calTotalStaffSalary(List<StaffAndSalarySalaryComponent> stfSalCom){
+        
+        for (StaffAndSalarySalaryComponent sassc : stfSalCom){
+        }
+    }
+    
+    
     public void fillStaffPayRoll() {
 
         List<PaysheetComponent> paysheetComponentsAddition;
@@ -787,9 +803,25 @@ public class SalaryCycleController implements Serializable {
         HashMap m = new HashMap();
         m.put("sc", current);
         staffSalary = staffSalaryFacade.findBySQL(jpql, m);
-
+        allStaffSalaryTotal(staffSalary);
     }
-
+    
+    double basicValueTotal;
+    double overTimeValueTotal;
+    double noPayValueTotal;
+    double extraDutyValueTotal;
+    double holyDayAllowancesTotal;
+    double dayOffValueTotal;
+    double additionalComponentTotal;
+    double deductionalComponentTotal;
+    double adjustmentToBasicTotal;
+    double adjustmentToBasic;
+    
+public void allStaffSalaryTotal(List<StaffSalary> stfSal){
+    for (StaffSalary staffSalary : stfSal){
+        
+    }
+}
     @EJB
     StaffSalaryComponantFacade staffSalaryComponantFacade;
 
@@ -891,6 +923,137 @@ public class SalaryCycleController implements Serializable {
 
     }
 
+    public double getStaffSalaryComponentAdjustmentotal() {
+        return staffSalaryComponentAdjustmentotal;
+    }
+
+    public void setStaffSalaryComponentAdjustmentotal(double staffSalaryComponentAdjustmentotal) {
+        this.staffSalaryComponentAdjustmentotal = staffSalaryComponentAdjustmentotal;
+    }
+
+    public double getValueAddingTotal() {
+        return valueAddingTotal;
+    }
+
+    public void setValueAddingTotal(double valueAddingTotal) {
+        this.valueAddingTotal = valueAddingTotal;
+    }
+
+    public double getStaffSalaryComponantsSubstractionTotal() {
+        return staffSalaryComponantsSubstractionTotal;
+    }
+
+    public void setStaffSalaryComponantsSubstractionTotal(double staffSalaryComponantsSubstractionTotal) {
+        this.staffSalaryComponantsSubstractionTotal = staffSalaryComponantsSubstractionTotal;
+    }
+
+    public double getEpfTotal() {
+        return epfTotal;
+    }
+
+    public void setEpfTotal(double epfTotal) {
+        this.epfTotal = epfTotal;
+    }
+
+    public double getEtfTotal() {
+        return etfTotal;
+    }
+
+    public void setEtfTotal(double etfTotal) {
+        this.etfTotal = etfTotal;
+    }
+
+    public double getNetStaffSalaryTotal() {
+        return netStaffSalaryTotal;
+    }
+
+    public void setNetStaffSalaryTotal(double netStaffSalaryTotal) {
+        this.netStaffSalaryTotal = netStaffSalaryTotal;
+    }
+
+    public double getBasicValueTotal() {
+        return basicValueTotal;
+    }
+
+    public void setBasicValueTotal(double basicValueTotal) {
+        this.basicValueTotal = basicValueTotal;
+    }
+
+    public double getOverTimeValueTotal() {
+        return overTimeValueTotal;
+    }
+
+    public void setOverTimeValueTotal(double overTimeValueTotal) {
+        this.overTimeValueTotal = overTimeValueTotal;
+    }
+
+    public double getNoPayValueTotal() {
+        return noPayValueTotal;
+    }
+
+    public void setNoPayValueTotal(double noPayValueTotal) {
+        this.noPayValueTotal = noPayValueTotal;
+    }
+
+    public double getExtraDutyValueTotal() {
+        return extraDutyValueTotal;
+    }
+
+    public void setExtraDutyValueTotal(double extraDutyValueTotal) {
+        this.extraDutyValueTotal = extraDutyValueTotal;
+    }
+
+    public double getHolyDayAllowancesTotal() {
+        return holyDayAllowancesTotal;
+    }
+
+    public void setHolyDayAllowancesTotal(double holyDayAllowancesTotal) {
+        this.holyDayAllowancesTotal = holyDayAllowancesTotal;
+    }
+
+    public double getDayOffValueTotal() {
+        return dayOffValueTotal;
+    }
+
+    public void setDayOffValueTotal(double dayOffValueTotal) {
+        this.dayOffValueTotal = dayOffValueTotal;
+    }
+
+    public double getAdditionalComponentTotal() {
+        return additionalComponentTotal;
+    }
+
+    public void setAdditionalComponentTotal(double additionalComponentTotal) {
+        this.additionalComponentTotal = additionalComponentTotal;
+    }
+
+    public double getDeductionalComponentTotal() {
+        return deductionalComponentTotal;
+    }
+
+    public void setDeductionalComponentTotal(double deductionalComponentTotal) {
+        this.deductionalComponentTotal = deductionalComponentTotal;
+    }
+
+    public double getAdjustmentToBasicTotal() {
+        return adjustmentToBasicTotal;
+    }
+
+    public void setAdjustmentToBasicTotal(double adjustmentToBasicTotal) {
+        this.adjustmentToBasicTotal = adjustmentToBasicTotal;
+    }
+
+    public double getAdjustmentToBasic() {
+        return adjustmentToBasic;
+    }
+
+    public void setAdjustmentToBasic(double adjustmentToBasic) {
+        this.adjustmentToBasic = adjustmentToBasic;
+    }
+
+    
+    
+    
     @FacesConverter(forClass = SalaryCycle.class)
     public static class SalaryCycleConverter implements Converter {
 
