@@ -140,6 +140,8 @@ public class StaffSalaryController implements Serializable {
         List<StaffSalaryComponant> list = getCurrent().getStaffSalaryComponants();
 
         if (getCurrent().getId() == null) {
+            getCurrent().setInstitution(getCurrent().getStaff().getInstitution());
+            getCurrent().setDepartment(getCurrent().getStaff().getWorkingDepartment());
             getCurrent().setSalaryCycle(salaryCycle);
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
@@ -515,15 +517,16 @@ public class StaffSalaryController implements Serializable {
         return count;
     }
 
-    private void setNoPay_Basic() {
-        Double noPayCount = 0.0;
+    private double setNoPay_Basic(double noPayCount) {
+        double noPayValue = 0;
+        double salaryValue = 0;
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction_Basic);
         if (ss.getStaffPaysheetComponent() != null) {
             noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
-            double salaryValue = 0;
+            salaryValue = 0;
 
             if (getCurrent().getStaffSalaryComponants() == null) {
-                return;
+                return 0;
             }
 
             for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
@@ -538,11 +541,12 @@ public class StaffSalaryController implements Serializable {
             }
 
             //Need Calculation Sum
-            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * noPayCount);
+            noPayValue = (salaryValue / finalVariables.getWorkingDaysPerMonth()) * noPayCount;
+            ss.setComponantValue(noPayValue);
             System.err.println("Sal Val " + salaryValue);
 //            System.err.println("No Pa " + noPayTime);
         } else {
-            return;
+            return 0;
         }
 
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
@@ -550,18 +554,21 @@ public class StaffSalaryController implements Serializable {
 
         System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
+        getCurrent().setNoPayValueBasic(noPayValue);
 
-        getCurrent().setNoPayCount(noPayCount);
+        return salaryValue;
     }
 
-    private void setNoPay_Allowance() {
+    private double setNoPay_Allowance(double noPayCount) {
+        double noPayValue = 0;
+        double allownaceValue = 0;
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction_Allowance);
         if (ss.getStaffPaysheetComponent() != null) {
-            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
-            double salaryValue = 0;
+
+            allownaceValue = 0;
 
             if (getCurrent().getStaffSalaryComponants() == null) {
-                return;
+                return 0;
             }
 
             for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
@@ -573,16 +580,17 @@ public class StaffSalaryController implements Serializable {
                 if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludedForNoPay()
                         && staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() != PaysheetComponentType.BasicSalary
                         && staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType().is(PaysheetComponentType.addition)) {
-                    salaryValue += staffSalaryComponant.getComponantValue();
+                    allownaceValue += staffSalaryComponant.getComponantValue();
                 }
             }
 
             //Need Calculation Sum
-            ss.setComponantValue((salaryValue / finalVariables.getWorkingDaysPerMonth()) * noPayCount);
-            System.err.println("Sal Val " + salaryValue);
+            noPayValue = (allownaceValue / finalVariables.getWorkingDaysPerMonth()) * noPayCount;
+            ss.setComponantValue(noPayValue);
+            System.err.println("Sal Val " + allownaceValue);
 //            System.err.println("No Pa " + noPayTime);
         } else {
-            return;
+            return 0;
         }
 
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
@@ -590,7 +598,8 @@ public class StaffSalaryController implements Serializable {
 
         System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
-
+        getCurrent().setNoPayValueAllowance(noPayValue);
+        return allownaceValue;
     }
 
     private boolean dateCheck() {
@@ -665,9 +674,19 @@ public class StaffSalaryController implements Serializable {
             getCurrent().setDayOffCount(count.doubleValue());
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.SleepingDayAllowance, DayType.SleepingDay);
             getCurrent().setSleepingDayCount(count.doubleValue());
-            setNoPay_Basic();
-            setNoPay_Allowance();
+
+            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+            double basicValue = setNoPay_Basic(noPayCount);
+            double allowanceValue = setNoPay_Allowance(noPayCount);
+            getCurrent().setNoPayCount(noPayCount);
             setAdjustments();
+
+            //Record NO Late Leave Not consider in any calcualtion is alredy with general NO Pay only for reporting purpose
+            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+            getCurrent().setLateNoPayCount(noPayCountLate);
+            getCurrent().setNoPayValueBasic((basicValue / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+            getCurrent().setNoPayValueAllowance((allowanceValue / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+
         }
 
     }
