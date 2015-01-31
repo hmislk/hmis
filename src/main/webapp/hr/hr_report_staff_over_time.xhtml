@@ -70,63 +70,63 @@
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
                                     </p:outputLabel>
                                 </p:column>                              
-                                <p:column headerText="Over 45 OT Minute">
+                                <p:column headerText="Over 45 OT Minute" style="text-align: right;">
                                     <p:outputLabel value="#{ss.overTimeMinute}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Extra Normal OT Minute">
+                                <p:column headerText="Extra Normal OT Minute" style="text-align: right;">
                                     <p:outputLabel value="#{ss.extraDutyNormalMinute}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Rate Per Minute">
+                                <p:column headerText="Rate Per Minute" style="text-align: right;">
                                     <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="OT Value">
+                                <p:column headerText="OT Value" style="text-align: right;">
                                     <p:outputLabel value="#{ss.overTimeValue+ss.extraDutyNormalValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column/>
 
-                                <p:column headerText="PH OT Min">
+                                <p:column headerText="PH OT Min" style="text-align: right;">
                                     <p:outputLabel value="#{ss.extraDutyPoyaMinute+ss.extraDutyMerchantileMinute}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Rate Per Minute">
+                                <p:column headerText="RPM OT(1.5)" style="text-align: right;">
                                     <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="PH OT Value">
+                                <p:column headerText="PH OT Value" style="text-align: right;">
                                     <p:outputLabel value="#{ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
                                 
                                 <p:column/>
-                                <p:column headerText="OFF DAY OT Min">
+                                <p:column headerText="OFF DAY OT Min" style="text-align: right;">
                                     <p:outputLabel value="#{ss.extraDutySleepingDayMinute+ss.extraDutyDayOffMinute}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Rate Per Minute">
+                                <p:column headerText="RPM(2.5)" style="text-align: right;">
                                     <p:outputLabel value="#{ss.overTimeRatePerMinute*2.5}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="OFF DAY OT Value">
+                                <p:column headerText="OFF DAY OT Value" style="text-align: right;">
                                     <p:outputLabel value="#{ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column/>
 
-                                <p:column headerText="Total">
+                                <p:column headerText="Total" style="text-align: right;">
                                     <p:outputLabel value="#{ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>

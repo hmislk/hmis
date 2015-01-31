@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
@@ -267,6 +268,21 @@ public class StaffSalaryController implements Serializable {
 
     }
 
+    public void onEditBlockedUpdate(StaffSalary staffSalary) {
+        current = staffSalary;
+
+        if (current == null) {
+            return;
+        }
+
+        if (current.isBlocked()) {
+            current.setBlockedUser(sessionController.getLoggedUser());
+            current.setBlockedDate(new Date());
+        }
+
+        staffSalaryFacade.edit(current);
+    }
+
     public void setCurrent(StaffSalary current) {
         this.current = current;
 
@@ -337,39 +353,49 @@ public class StaffSalaryController implements Serializable {
     @EJB
     FinalVariables finalVariables;
 
-    private void setOT() {
+    public double calCulateOtValue() {
+        double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOt(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff());
+        workedWithinTimeFrameVarified += getHumanResourceBean().calculateWorkTimeLeave(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff());
+        Long dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+        Long numOfWeeks = dateCount / 7;
+        double overTime = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), numOfWeeks, workedWithinTimeFrameVarified);
+        return overTime;
+    }
+
+    public double getBasicPerSecond() {
+
+        for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
+            if (staffSalaryComponant.getStaffPaysheetComponent() == null
+                    || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
+                continue;
+            }
+
+            if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
+                return staffSalaryComponant.getComponantValue() / (200 * 60 * 60);
+            }
+        }
+
+        return 0;
+
+    }
+
+    public void setOT() {
 
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.OT);
 
         if (ss.getStaffPaysheetComponent() != null) {
-            double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeAndLeave(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff());
-            Long dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
-            Long numOfWeeks = dateCount / 7;
-
-            double overTime = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), numOfWeeks, workedWithinTimeFrameVarified);
-            double basicPerSecond = 0;
-
-            for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
-                if (staffSalaryComponant.getStaffPaysheetComponent() == null
-                        || staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent() == null) {
-                    continue;
-                }
-
-                if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
-                    basicPerSecond = staffSalaryComponant.getComponantValue() / (200 * 60 * 60);
-                }
-            }
-
+            double overTime = calCulateOtValue();
+            double basicPerSecond = getBasicPerSecond();
             ss.setComponantValue(overTime * basicPerSecond * finalVariables.getOverTimeMultiply());
             getCurrent().setOverTimeMinute(overTime / 60);
-            getCurrent().setOverTimeRatePerMinute(basicPerSecond / 60);
+            getCurrent().setBasicRatePerMinute(basicPerSecond * 60);
+            getCurrent().setOverTimeRatePerMinute(basicPerSecond * 60);
         } else {
             return;
         }
 
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
-
         System.err.println("OT " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
 
@@ -943,6 +969,35 @@ public class StaffSalaryController implements Serializable {
         //   createStaffSalaryTable();
     }
 
+    ReportKeyWord reportKeyWord;
+
+    public SalaryCycleController getSalaryCycleController() {
+        return salaryCycleController;
+    }
+
+    public void setSalaryCycleController(SalaryCycleController salaryCycleController) {
+        this.salaryCycleController = salaryCycleController;
+    }
+
+    public StaffLeaveFromLateAndEarlyController getStaffLeaveFromLateAndEarlyController() {
+        return staffLeaveFromLateAndEarlyController;
+    }
+
+    public void setStaffLeaveFromLateAndEarlyController(StaffLeaveFromLateAndEarlyController staffLeaveFromLateAndEarlyController) {
+        this.staffLeaveFromLateAndEarlyController = staffLeaveFromLateAndEarlyController;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
     public void fetchStaffSalay() {
         String sql;
         HashMap hm = new HashMap();
@@ -952,6 +1007,32 @@ public class StaffSalaryController implements Serializable {
                 + " and ss.salaryCycle=:sc ";
 
         hm.put("sc", getSalaryCycle());
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
         items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
