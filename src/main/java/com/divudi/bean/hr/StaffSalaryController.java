@@ -681,7 +681,9 @@ public class StaffSalaryController implements Serializable {
             getCurrent().setNoPayCount(noPayCount);
             setAdjustments();
 
-            //Record NO Late Leave Not consider in any calcualtion is alredy with general NO Pay only for reporting purpose
+            //Record Late No Pay Leave 
+            //Not consider in any calcualtion is alredy with general NO Pay 
+            //only for reporting purpose
             double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
             getCurrent().setLateNoPayCount(noPayCountLate);
             getCurrent().setNoPayValueBasic((basicValue / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
