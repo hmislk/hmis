@@ -37,19 +37,21 @@
                             <h:outputLabel value="Basi Per Sec"/>
                             <p:inputText value="#{staffShiftController.staffshift.overTimeValuePerSecond}"/>
 
+                            <h:outputLabel value="Slary Mul Factor"/>
+                            <p:inputText value="#{staffShiftController.staffshift.multiplyingFactorSalary}"/>
 
 
-                                <h:outputLabel value="Roster"/>
-                                <p:autoComplete completeMethod="#{rosterController.completeRoster}" value="#{staffShiftController.staffshift.roster}" forceSelection="true"
-                                                var="ros" itemLabel="#{ros.name}" itemValue="#{ros}"></p:autoComplete>
+                            <h:outputLabel value="Roster"/>
+                            <p:autoComplete completeMethod="#{rosterController.completeRoster}" value="#{staffShiftController.staffshift.roster}" forceSelection="true"
+                                            var="ros" itemLabel="#{ros.name}" itemValue="#{ros}"></p:autoComplete>
 
-                                <h:outputLabel value="Delete StaffShift: "/>
-                                <h:selectBooleanCheckbox value="#{staffShiftController.staffshift.retired}" />
+                            <h:outputLabel value="Delete StaffShift: "/>
+                            <h:selectBooleanCheckbox value="#{staffShiftController.staffshift.retired}" />
 
-                                <h:panelGroup>
-                                    <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                                     action="#{staffShiftController.saveStaffShift()}"/>
-                                </h:panelGroup>                     
+                            <h:panelGroup>
+                                <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                                                 action="#{staffShiftController.saveStaffShift()}"/>
+                            </h:panelGroup>                     
                         </h:panelGrid>
                     </p:panel> 
                 </h:panelGrid>              

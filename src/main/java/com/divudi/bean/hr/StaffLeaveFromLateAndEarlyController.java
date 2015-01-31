@@ -183,10 +183,10 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
-        sql += " and ss.lateInLogged!=0";
+        sql += " and ss.lateInVarified!=0";
 
-        sql += " and ss.lateInLogged>= :frmTime  "
-                + " and ss.lateInLogged<= :toTime";
+        sql += " and ss.lateInVarified>= :frmTime  "
+                + " and ss.lateInVarified<= :toTime";
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
@@ -224,9 +224,9 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + "  and ss.staff=:stf ";
         hm.put("stf", staff);
 
-        sql += " and ss.earlyOutLogged!=0";
-        sql += " and ss.earlyOutLogged>= :frmTime  "
-                + " and ss.earlyOutLogged<= :toTime";
+        sql += " and ss.earlyOutVarified!=0";
+        sql += " and ss.earlyOutVarified>= :frmTime  "
+                + " and ss.earlyOutVarified<= :toTime";
         hm.put("frmTime", from);
         hm.put("toTime", to);
 

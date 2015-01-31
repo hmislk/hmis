@@ -84,6 +84,12 @@
                                 <p:column headerText="Comments" >
                                     #{ss.form.comments}
                                 </p:column> 
+                                  <p:column headerText="Delete Comments" >
+                                      <p:inputText value="#{ss.retireComments}"/>                                    
+                                </p:column> 
+                                <p:column headerText="Delete">                                    
+                                    <p:commandButton disabled="#{ss.retired}" ajax="false" value="Delete" action="#{hrReportController.delete(ss)}"></p:commandButton>                                    
+                                </p:column>
 
                             </p:dataTable>
                         </p:panel>

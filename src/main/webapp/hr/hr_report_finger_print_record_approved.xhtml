@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Staff Shift Report (Staff Shift)" />
+                            <h:outputLabel value="Attendance Report" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
@@ -35,18 +35,24 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShift()}"/>
+                        <p:commandButton ajax="false" value="Process Not Approved" action="#{hrReportController.createFingerPrintNotApproved()}"/>
+                        <p:commandButton ajax="false" value="Process Approved" action="#{hrReportController.createFingerPrintApproved()}"/>
+                        <p:commandButton ajax="false" value="Approve Selected" action="#{hrReportController.approve()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >
-                            
-                            <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
-                                <p:column headerText="Department Name">
-                                    #{ss.staff.department.name}
+                        <p:panel id="gpBillPreview" >                     
+                            <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecords}" var="ss"
+                                         rowKey="#{ss.id}" 
+                                         selection="#{hrReportController.selectedFingerPrintRecords}">                               
+                                <p:column  selectionMode="multiple" >                            
+                                </p:column>
+
+                                <p:column >
+                                    #{i+1}
                                 </p:column>
                                 <p:column headerText="Emp No">
                                     #{ss.staff.code}
@@ -54,52 +60,35 @@
                                 <p:column headerText="Emp Name">
                                     #{ss.staff.person.nameWithTitle}
                                 </p:column>
-                                
-                                <p:column headerText="Created by">
-                                    #{ss.shift.creater.staff.person.nameWithInitials}
+                                <p:column headerText="Time Type">
+                                    #{ss.times}
                                 </p:column>
-                                
-                                <p:column headerText="Staff Shift">
-                                    #{ss.shift.name}
+                                <p:column headerText="Verified Date">
+                                    <h:outputLabel  value="#{ss.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="Shift Start">
-                                    #{ss.shift.startingTime}
+                                <p:column headerText="Verified Time">
+                                    <h:outputLabel  value="#{ss.recordTimeStamp}">
+                                        <f:convertDateTime pattern="hh:mm:s a"/>
+                                    </h:outputLabel>                                    
                                 </p:column>
-                                
-                                <p:column headerText="Shift Ending">
-                                    #{ss.shift.endingTime}
+                                <p:column headerText="Logged Date">
+                                    <h:outputLabel  value="#{ss.loggedRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                    </h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="Previous Shift">
-                                    #{ss.shift.previousShift.name}
+                                <p:column headerText="Logged Time">
+                                    <h:outputLabel  value="#{ss.loggedRecord.recordTimeStamp}">
+                                        <f:convertDateTime pattern="hh:mm:s a"/>
+                                    </h:outputLabel>                                    
                                 </p:column>
-                                
-                                <p:column headerText="Next Shift">
-                                    #{ss.shift.nextShift.name}
+                                <p:column headerText="Approved By">
+                                    #{ss.approver.staff.code}
                                 </p:column>
-                                
-                                <p:column headerText="Leave Hour Full">
-                                    #{ss.shift.leaveHourFull}
+                                 <p:column headerText="Approved At">
+                                    #{ss.approvedAt}
                                 </p:column>
-                                
-                                <p:column headerText="Leave Hour Half">
-                                    #{ss.shift.leaveHourHalf}
-                                </p:column>
-                                
-                                <p:column headerText="Duration Hour">
-                                    #{ss.shift.durationHour}
-                                </p:column>
-                                
-                                <p:column headerText="Half Shift">
-                                    #{ss.shift.halfShift}
-                                </p:column>
-                                
-                                <p:column headerText="Hide Shift">
-                                    #{ss.shift.hideShift}
-                                </p:column>
-                                
-
                             </p:dataTable>
                         </p:panel>
 

@@ -50,6 +50,7 @@ public class FingerPrintRecord implements Serializable {
     Staff staff;
     @ManyToOne
     Roster roster;
+    
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date recordTimeStamp;
@@ -71,6 +72,14 @@ public class FingerPrintRecord implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    //Approving Properties
+    private boolean approved;
+    @ManyToOne
+    private WebUser approver;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date approvedAt;
+    private String approveComments;
+    
     //private Boolean begining;
     @Enumerated(EnumType.STRING)
     private Times times;
@@ -79,6 +88,40 @@ public class FingerPrintRecord implements Serializable {
     String comments = "";
     @Transient
     boolean transNew;
+
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
+    }
+
+    public WebUser getApprover() {
+        return approver;
+    }
+
+    public void setApprover(WebUser approver) {
+        this.approver = approver;
+    }
+
+    public Date getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(Date approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public String getApproveComments() {
+        return approveComments;
+    }
+
+    public void setApproveComments(String approveComments) {
+        this.approveComments = approveComments;
+    }
+    
+    
 
     public boolean isTransNew() {
         return transNew;

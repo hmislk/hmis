@@ -6,6 +6,7 @@
 package com.divudi.entity.hr;
 
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -94,12 +95,55 @@ public class StaffSalary implements Serializable {
     double sleepingDayCount;
     double componentValueAddition;
     double componentValueSubstraction;
+    double overTimeRatePerMinute;
+    double basicRatePerMinute;
     @ManyToOne
     Institution institution;
+    @ManyToOne
+    Department department;
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsAddition;
     @Transient
     private List<StaffSalaryComponant> transStaffSalaryComponantsSubtraction;
+    //Not Consider For Any Calculation it's Already included for No Pay
+    double lateNoPayCount;
+    double lateNoPayBasicValue;
+    double lateNoPayAllovanceValue;
+
+    public double getLateNoPayCount() {
+        return lateNoPayCount;
+    }
+
+    public void setLateNoPayCount(double lateNoPayCount) {
+        this.lateNoPayCount = lateNoPayCount;
+    }
+
+    public double getLateNoPayBasicValue() {
+        return lateNoPayBasicValue;
+    }
+
+    public void setLateNoPayBasicValue(double lateNoPayBasicValue) {
+        this.lateNoPayBasicValue = lateNoPayBasicValue;
+    }
+
+    public double getLateNoPayAllovanceValue() {
+        return lateNoPayAllovanceValue;
+    }
+
+    public void setLateNoPayAllovanceValue(double lateNoPayAllovanceValue) {
+        this.lateNoPayAllovanceValue = lateNoPayAllovanceValue;
+    }
+
+    
+   
+
+    public double getOverTimeRatePerMinute() {
+        return overTimeRatePerMinute;
+    }
+
+    public void setOverTimeRatePerMinute(double overTimeRatePerMinute) {
+        this.overTimeRatePerMinute = overTimeRatePerMinute;
+    }
 
     public double getTransExtraDutyValue() {
         return extraDutyNormalValue + extraDutyMerchantileValue + extraDutyPoyaValue + extraDutyDayOffValue + extraDutySleepingDayValue;
@@ -159,6 +203,22 @@ public class StaffSalary implements Serializable {
 
     public void setDayOffAllowance(double dayOffAllowance) {
         this.dayOffAllowance = dayOffAllowance;
+    }
+
+    public double getBasicRatePerMinute() {
+        return basicRatePerMinute;
+    }
+
+    public void setBasicRatePerMinute(double basicRatePerMinute) {
+        this.basicRatePerMinute = basicRatePerMinute;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public double getSleepingDayAllowance() {
@@ -279,7 +339,7 @@ public class StaffSalary implements Serializable {
     public double getTransGrossSalary() {
         return basicValue
                 + merchantileAllowanceValue
-                +poyaAllowanceValue
+                + poyaAllowanceValue
                 + dayOffAllowance
                 + sleepingDayAllowance
                 + adjustmentToBasic;
@@ -320,11 +380,11 @@ public class StaffSalary implements Serializable {
 
             if (paysheetComponentType != null) {
 
-                if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
-                    value = spc.getComponantValue();
-                } else {
-                    value = 0 - spc.getComponantValue();
-                }
+                //if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
+                value = spc.getComponantValue();
+//                } else {
+//                    value = 0 - spc.getComponantValue();
+//                }
 
                 switch (paysheetComponentType) {
                     case BasicSalary:
@@ -477,6 +537,7 @@ public class StaffSalary implements Serializable {
 //        this.phValue = phValue;
 //    }
 //
+
     public boolean isExist() {
         return exist;
     }
