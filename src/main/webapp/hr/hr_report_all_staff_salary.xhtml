@@ -51,7 +51,6 @@
                     <thead>
                         <tr>
                             <th>EMP Code</th>
-                            
                             <th>Staff Name</th>
                             <ui:repeat value="#{salaryCycleController.headersAdd}" var="h">
                                 <th>#{h}</th>
@@ -98,7 +97,45 @@
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </td>
-                            </tr>
+                            </tr
+                            
+                            
+<!--                            <tr>
+                                <td></td>
+                                <td></td>
+                                <ui:repeat value="#{scc.staffSalaryComponantsAddition}"  var="col">
+                                    <td><h:outputText value="#{col.componantValue}" >
+                                            <f:convertNumber pattern="0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </ui:repeat>
+                                <ui:repeat value="#{salaryCycleController.footerAdd}" var="f">
+                                <td>#{f}</td>
+                            </ui:repeat>
+                                <td><h:outputLabel value="#{scc.valueAdding}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <ui:repeat value="#{scc.staffSalaryComponantsSubstraction}"  var="col2">
+                                    <td><h:outputText value="#{col2.componantValue}" >
+                                            <f:convertNumber pattern="0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </ui:repeat>
+                                <td><h:outputLabel value="#{scc.epf}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td><h:outputLabel value="#{scc.etf}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td><h:outputLabel value="#{scc.valueAdding+(scc.valueSubstarction+scc.epf+scc.etf)}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>-->
+                            
                         </ui:repeat>
                     </tbody>
                 </table>
