@@ -22,6 +22,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -109,6 +110,45 @@ public class StaffSalary implements Serializable {
     double lateNoPayCount;
     double lateNoPayBasicValue;
     double lateNoPayAllovanceValue;
+    //Blocked Propertied
+    boolean blocked;
+    @ManyToOne
+    WebUser blockedUser;
+    @Temporal(TemporalType.TIMESTAMP)
+    Date blockedDate;
+    String blockedComment;
+
+    public WebUser getBlockedUser() {
+        return blockedUser;
+    }
+
+    public void setBlockedUser(WebUser blockedUser) {
+        this.blockedUser = blockedUser;
+    }
+
+    public Date getBlockedDate() {
+        return blockedDate;
+    }
+
+    public void setBlockedDate(Date blockedDate) {
+        this.blockedDate = blockedDate;
+    }
+
+    public String getBlockedComment() {
+        return blockedComment;
+    }
+
+    public void setBlockedComment(String blockedComment) {
+        this.blockedComment = blockedComment;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
 
     public double getLateNoPayCount() {
         return lateNoPayCount;
@@ -133,9 +173,6 @@ public class StaffSalary implements Serializable {
     public void setLateNoPayAllovanceValue(double lateNoPayAllovanceValue) {
         this.lateNoPayAllovanceValue = lateNoPayAllovanceValue;
     }
-
-    
-   
 
     public double getOverTimeRatePerMinute() {
         return overTimeRatePerMinute;
@@ -346,7 +383,7 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransEpfEtfDiductableSalary() {
-        return getTransGrossSalary() - noPayValueBasic;
+        return getTransGrossSalary() + noPayValueBasic;
     }
 
     public void calculateComponentTotal() {
@@ -458,7 +495,7 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransNetSalry() {
-        return getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction();
+        return getTransGrossSalary() + getNoPayValueBasic() + getNoPayValueAllowance() + getTransTotalAllowance() + getTransTotalDeduction();
     }
 
     public SalaryCycle getSalaryCycle() {

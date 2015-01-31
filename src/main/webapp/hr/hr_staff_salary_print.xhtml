@@ -6,7 +6,6 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete"
                 xmlns:salary="http://java.sun.com/jsf/composite/hr">
 
     <ui:define name="content">
@@ -62,6 +61,19 @@
                                 <f:convertDateTime pattern="dd MMMM yyyy"/>
                             </h:outputLabel>
                         </h:panelGrid>
+                        <h:panelGrid columns="2"> 
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{staffSalaryController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{staffSalaryController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Staff Category : "/>
+                            <hr:completeStaffCategory value="#{staffSalaryController.reportKeyWord.staffCategory}"/>
+                            <h:outputLabel value="Designation : "/>
+                            <hr:completeDesignation value="#{staffSalaryController.reportKeyWord.designation}"/>
+                            <h:outputLabel value="Roster : "/>
+                            <hr:completeRoster value="#{staffSalaryController.reportKeyWord.roster}"/>                      
+                        </h:panelGrid>
+
                     </p:tab>
 
                     <p:tab title="Staff Salary">
@@ -109,14 +121,23 @@
                                         <f:convertNumber pattern="0.00" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Net Salary">
-
+                                  <p:column headerText="Block">
+                                       <p:selectBooleanCheckbox value="#{i.blocked}" />                                    
+                                </p:column>
+                              
+                                <p:column>
+                                    <p:commandButton process="@this" 
+                                                     update=":#{p:component('lst')} " 
+                                                     value="View"  
+                                                     actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
+                                    </p:commandButton>                          
                                 </p:column>
                                 <p:column>
                                     <p:commandButton process="@this" 
-                                                     update=":#{p:component('lst')} :#{p:component('lst')}" 
-                                                     value="View"  
-                                                     actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
+                                                     update=":#{p:component('lst')} " 
+                                                     value="Blocked"  
+                                                     actionListener="#{staffSalaryController.onEditBlockedUpdate(i)}" 
+                                                     onclick="onSubmitButton();">                              
                                     </p:commandButton>                          
                                 </p:column>
 

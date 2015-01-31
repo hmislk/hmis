@@ -46,6 +46,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -581,7 +582,8 @@ public class HrReportController implements Serializable {
         String sql = "";
         sql = "select ss from StaffSalary ss "
                 + " where ss.retired=false "
-                + " and ss.salaryCycle=:scl";
+                + " and ss.salaryCycle=:scl "
+                + " and ss.blocked=false ";
         hm.put("scl", getReportKeyWord().getSalaryCycle());
 
         if (getReportKeyWord().getStaff() != null) {
@@ -1189,7 +1191,7 @@ public class HrReportController implements Serializable {
                 + " sum(ss.leavedTimeNoPay),"
                 + " sum(ss.leavedTimeOther)"
                 + " from StaffShift ss "
-                + " where ss.retired=false"
+                + " where ss.retired=false "
                 //                + " and ((ss.startRecord.recordTimeStamp is not null "
                 //                + " and ss.endRecord.recordTimeStamp is not null) "
                 //                + " or (ss.leaveType is not null)) "
@@ -1800,7 +1802,8 @@ public class HrReportController implements Serializable {
     public void updateLateLeaveData() {
         String sql = "select s from StaffSalary s "
                 + " where s.retired=false"
-                + " and s.salaryCycle.retired=false ";
+                + " and s.salaryCycle.retired=false "
+                + " and s.blocked=false";
 
         List<StaffSalary> list = staffSalaryFacade.findBySQL(sql);
         if (list == null) {
@@ -1808,16 +1811,28 @@ public class HrReportController implements Serializable {
         }
 
         for (StaffSalary ss : list) {
+//            double noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
+//            double all = staffSalaryController.calAllowanceValueForNoPay(ss.getStaffSalaryComponants());
+//            if (all != 0) {
+//                ss.setNoPayValueAllowance(0 - noPayCount * (all / finalVariables.getWorkingDaysPerMonth()));
+//            } else {
+//                ss.setNoPayValueAllowance(0);
+//            }
+//
+//            ////////
+//            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
+//            ss.setLateNoPayCount(noPayCountLate);
+//            ss.setLateNoPayBasicValue(0 - (ss.getBasicValue() / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+//            ss.setLateNoPayAllovanceValue(0.0);
 
-            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
-            ss.setLateNoPayCount(noPayCountLate);
-            ss.setLateNoPayBasicValue((ss.getBasicValue() / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
-
-            double all = staffSalaryController.calAllowanceValueForNoPay(ss.getStaffSalaryComponants());
-
-            ss.setLateNoPayAllovanceValue((all / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+            staffSalaryController.setSalaryCycle(ss.getSalaryCycle());
+            staffSalaryController.setCurrent(ss);
+            staffSalaryController.setOT();
+            ss.calculateComponentTotal();
+            ss.calcualteEpfAndEtf();
 
             staffSalaryFacade.edit(ss);
+
         }
 
     }

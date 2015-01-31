@@ -696,7 +696,8 @@ public class SalaryCycleController implements Serializable {
         jpql = "select spc"
                 + " from StaffSalary spc "
                 + " where spc.salaryCycle=:sc "
-                + " and spc.retired=false ";
+                + " and spc.retired=false "
+                + " and spc.blocked=false ";
 
         if (institution != null) {
             jpql += " and spc.institution=:ins ";
@@ -799,6 +800,7 @@ public class SalaryCycleController implements Serializable {
         String jpql = "select spc from StaffSalary spc "
                 + " where spc.retired=false"
                 + " and spc.salaryCycle=:sc"
+                + " and ss.blocked=false "
                 + " order by spc.staff.codeInterger ";
         HashMap m = new HashMap();
         m.put("sc", current);

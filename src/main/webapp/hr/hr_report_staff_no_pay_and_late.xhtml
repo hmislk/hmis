@@ -96,7 +96,8 @@
                                 <p:column headerText="Poya Count">
                                     <p:outputLabel value="#{ss.poyaCount}"></p:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{hrReportController.poyaCountTotal}">                                            
+                                        <p:outputLabel value="#{hrReportController.poyaCountTotal}">
+                                            <f:convertNumber pattern="0.00" />
                                         </p:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -111,27 +112,28 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="No Pay Value">
-                                    <p:outputLabel value="#{(ss.noPayValueAllowance+ss.noPayValueBasic)-
-                                                            (ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue)}">
+                                    <p:outputLabel value="#{(ss.noPayValueAllowance+ss.noPayValueBasic)-(ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue)}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{hrReportController.noPayValueAllowanceTotal
+                                                                +hrReportController.noPayValueBasicTotal
+                                                                -hrReportController.lateNoPayAllovanceValueTotal
+                                                                +hrReportController.lateNoPayBasicValueTotal}">                                            
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="No Pay Total">
+                                    <p:outputLabel value="#{ss.noPayValueAllowance+ss.noPayValueBasic}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{(hrReportController.noPayValueAllowanceTotal
-                                                                +hrReportController.noPayValueBasicTotal)-
-                                                                (hrReportController.lateNoPayAllovanceValueTotal
-                                                                +hrReportController.lateNoPayBasicValueTotal)} ">                                            
+                                                                +hrReportController.noPayValueBasicTotal)}">                                            
                                             <f:convertNumber pattern="0.00" />
                                         </p:outputLabel>
                                     </f:facet>
-                                </p:column>
-                                <p:column headerText="No Pay Total">
-                                    <p:outputLabel value="#{(ss.noPayValueAllowance+ss.noPayValueBasic)}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel>
-                                    <p:outputLabel value="#{(hrReportController.noPayValueAllowanceTotal
-                                                            +hrReportController.noPayValueBasicTotal)}">                                            
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="No Pay For Basic">
                                     <p:outputLabel value="#{(ss.noPayValueBasic)}">
@@ -166,9 +168,9 @@
                                 <p:column headerText="No Pay Count">
                                     <p:outputLabel value="#{ss.noPayCount-ss.lateNoPayCount}">
                                     </p:outputLabel>
-                                      <f:facet name="footer">
-                                          <p:outputLabel value="#{hrReportController.noPayCountTotal
-                                                                  -hrReportController.lateNoPayCountTotal}">                                            
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.noPayCountTotal
+                                                                -hrReportController.lateNoPayCountTotal}">                                            
                                             <f:convertNumber pattern="0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -176,12 +178,13 @@
                                 <p:column headerText="Total">
                                     <p:outputLabel value="#{ss.noPayCount}">                                          
                                     </p:outputLabel>
-                                </p:column>
-                                 <f:facet name="footer">
-                                          <p:outputLabel value="#{hrReportController.noPayCountTotal}">                                            
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.noPayCountTotal}">                                            
                                             <f:convertNumber pattern="0.00" />
                                         </p:outputLabel>
                                     </f:facet>
+                                </p:column>
+
                             </p:dataTable>
                         </p:panel>
 
