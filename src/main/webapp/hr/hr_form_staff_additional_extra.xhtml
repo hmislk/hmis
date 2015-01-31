@@ -22,10 +22,29 @@
                                         pattern="yyyy MM dd HH:mm:ss">
                             </p:calendar> 
                             <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShift()}" />
-                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"   >
+                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.staffShift}"
+                                             var="t" >
                                 <f:selectItem itemLabel="Select Staff Shift"/>
                                 <f:selectItems value="#{staffAdditionalFormController.staffShifts}"
                                                var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
+                                <p:column style="width:10%" headerText="Name">
+                                    <h:outputText value="#{t.shift.name}" />
+                                </p:column>
+
+                                <p:column headerText="Start">
+                                    <h:outputText value="#{t.shiftStartTime}" >
+                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="End">
+                                    <h:outputText value="#{t.shiftEndTime}" >
+                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss"/>
+                                    </h:outputText>
+                                </p:column>
+                                  <p:column headerText="Class">
+                                    <h:outputText value="#{t.class}" >
+                                    </h:outputText>
+                                </p:column>
                             </p:selectOneMenu>
                             <h:outputLabel value="From Time"/>
                             <p:calendar id="requestedDate" 
@@ -58,7 +77,7 @@
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
                             <p:commandButton ajax="false" value="Delete" action="#{staffAdditionalFormController.deleteAdditionalForm()}"/>
                             <p:inputText id="recomment" value="#{staffAdditionalFormController.currentAdditionalForm.retireComments}" />
-                            
+
                             <p:watermark for="recomment" value="Comment"/>
 
                         </h:panelGrid>

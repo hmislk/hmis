@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+
+    <body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Over Time " />
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="Salary Cycle"/>
+                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}" 
+                                             var="t">
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
+                                               var="theme" 
+                                               itemLabel="#{theme.name}" 
+                                               itemValue="#{theme}" ></f:selectItems>
+
+                                <p:column style="width:10%" headerText="Name">
+                                    <h:outputText value="#{t.name}" />
+                                </p:column>
+
+                                <p:column headerText="Year">
+                                    <h:outputText value="#{t.salaryYear}" />
+                                </p:column>
+                                <p:column headerText="Month">
+                                    <h:outputText value="#{t.salaryMonth}" />
+                                </p:column>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Staff Category : "/>
+                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                            <h:outputLabel value="Staff Designation : "/>
+                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                            <h:outputLabel value="Staff Roster : "/>
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+
+
+                        </h:panelGrid>
+
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalary()}"/>
+
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
+                        </p:commandButton>
+                        <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:panel id="gpBillPreview" >                     
+                            <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
+                                <p:column headerText="Emp No">
+                                    #{ss.staff.code}
+                                </p:column>
+                                <p:column headerText="Emp Name">
+                                    #{ss.staff.person.nameWithTitle}
+                                </p:column>                              
+                                <p:column headerText="Over 45 OT Minute">
+                                    #{ss.overTimeMinute}
+                                </p:column>
+                                <p:column headerText="Extra Normal OT Minute">
+                                    #{ss.extraDutyNormalMinute}
+                                </p:column>
+                                <p:column headerText="Rate Per Minute">
+                                    #{ss.overTimeRatePerMinute*1.5}
+                                </p:column>
+                                <p:column headerText="OT Value">
+                                    #{ss.overTimeValue+ss.extraDutyNormalValue}
+                                </p:column>
+                                <p:column/>
+                               
+                                <p:column headerText="PH OT Min">
+                                    #{ss.extraDutyPoyaMinute+ss.extraDutyMerchantileMinute}
+                                </p:column>
+                                <p:column headerText="Rate Per Minute">
+                                    #{ss.overTimeRatePerMinute*1.5}
+                                </p:column>
+                                 <p:column headerText="PH OT Value">
+                                    #{ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue}
+                                </p:column>
+                                <p:column/>
+                                
+                                <p:column headerText="OFF DAY OT Min">
+                                    #{ss.extraDutySleepingDayMinute+ss.extraDutyDayOffMinute}
+                                </p:column>
+                                <p:column headerText="Rate Per Minute">
+                                    #{ss.overTimeRatePerMinute*2.5}
+                                </p:column>
+                                 <p:column headerText="OFF DAY OT Value">
+                                    #{ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}
+                                </p:column>
+                                <p:column/>
+                                
+                                <p:column headerText="Total">
+                                    #{ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue}
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>
