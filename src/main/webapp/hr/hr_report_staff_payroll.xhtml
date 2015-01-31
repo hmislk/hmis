@@ -33,6 +33,9 @@
                     <h:outputText value="#{t.salaryMonth}" />
                 </p:column>
             </p:selectOneMenu>
+            
+            <hr:department value="#{salaryCycleController.department}"/>
+            <hr:institution value="#{salaryCycleController.institution}"/>
 
             <p:commandButton value="Print" ajax="false" action="#"  >
                 <p:printer target="print" ></p:printer>
