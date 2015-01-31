@@ -63,51 +63,59 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <p:column headerText="Emp No">
-                                    #{ss.staff.code}
+                                    <p:outputLabel value="#{ss.staff.code}"></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="EPF NO">
-                                    #{ss.staff.epfNo}
+                                    <p:outputLabel value="#{ss.staff.epfNo}"></p:outputLabel>
                                 </p:column>    
                                 <p:column headerText="Emp Name">
-                                    #{ss.staff.person.nameWithTitle}
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
                                 </p:column>                              
                                 <p:column headerText="Merchantile Amount">
-                                    #{ss.merchantileAllowanceValue}
+                                    <p:outputLabel value="#{ss.merchantileAllowanceValue}"></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Merchantile Count">
-                                    #{ss.merchantileCount}
+                                    <p:outputLabel value="#{ss.merchantileCount}"></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Poya Amount">
-                                    #{ss.poyaAllowanceValue}
+                                    <p:outputLabel value="#{ss.poyaAllowanceValue}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Poya Count">
-                                    #{ss.poyaCount}
+                                    <p:outputLabel value="#{ss.poyaCount}"></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Late No Pay">
-                                    #{ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue}
+                                    <p:outputLabel value="#{ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="No Pay Value">
-                                    #{(ss.noPayValueAllowance+ss.noPayValueBasic)-
-                                      (ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue)}
+                                    <p:outputLabel value="#{(ss.noPayValueAllowance+ss.noPayValueBasic)-
+                                                            (ss.lateNoPayAllovanceValue+ss.lateNoPayBasicValue)}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="No Pay Total">
-                                    #{(ss.noPayValueAllowance+ss.noPayValueBasic)}
+                                    <p:outputLabel value="#{(ss.noPayValueAllowance+ss.noPayValueBasic)}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="No Pay For Basic">
-                                    #{(ss.noPayValueBasic)}
+                                    <p:outputLabel value="#{(ss.noPayValueBasic)}"></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="No Pay For Allovance">
-                                    #{(ss.noPayValueAllowance)}
+                                    <p:outputLabel value="#{(ss.noPayValueAllowance)}"></p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Late No Pay Count">
-                                    #{ss.lateNoPayCount}
+                                    <p:outputLabel value="#{ss.lateNoPayCount}"></p:outputLabel>
                                 </p:column>                                
                                 <p:column headerText="No Pay Count">
-                                    #{ss.noPayCount-ss.lateNoPayCount}
+                                    <p:outputLabel value="#{ss.noPayCount-ss.lateNoPayCount}"></p:outputLabel>
                                 </p:column>
-                                 <p:column headerText="Total">
-                                    #{ss.noPayCount}
+                                <p:column headerText="Total">
+                                    <p:outputLabel value="#{ss.noPayCount}"></p:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
