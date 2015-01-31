@@ -23,6 +23,7 @@ import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffLeaveEntitle;
+import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffSalaryComponant;
@@ -307,6 +308,44 @@ public class HumanResourceBean {
                 + " and l.leaveType in  :ltp "
                 + " and l.leaveDate between  :fd and :td ";
         HashMap hm = new HashMap();
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+
+    }
+
+    public double fetchStaffLeaveAddedLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select sum(l.qty) "
+                + " from StaffLeave l"
+                + " where l.retired=false "
+                + " and type(l)!=:cl"
+                + " and l.staff=:stf "
+                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+        hm.put("cl", StaffLeaveSystem.class);
+        hm.put("stf", staff);
+        hm.put("ltp", leaveType.getLeaveTypes());
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+
+    }
+
+    public double fetchStaffLeaveSystemLeave(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+        String sql = "select sum(l.qty) "
+                + " from StaffLeaveSystem l"
+                + " where l.retired=false "
+                //                + " and type(l)!=:cl"
+                + " and l.staff=:stf "
+                + " and l.leaveType in  :ltp "
+                + " and l.leaveDate between  :fd and :td ";
+        HashMap hm = new HashMap();
+//        hm.put("l", StaffLeaveSystem.class)
         hm.put("stf", staff);
         hm.put("ltp", leaveType.getLeaveTypes());
         hm.put("fd", fromDate);
@@ -1550,7 +1589,7 @@ public class HumanResourceBean {
 
         String sql = " Select s From StaffPaysheetComponent s "
                 + " where s.retired=false "
-                + " and s.staff=:st "                
+                + " and s.staff=:st "
                 + " and s.paysheetComponent.componentType in :bs1 "
                 + " and s.fromDate<=:cu  "
                 + " and s.toDate>=:cu ";
@@ -1927,16 +1966,36 @@ public class HumanResourceBean {
 //        return otNormalSpecial;
 //
 //    }
-    public double calculateWorkTimeAndLeave(Date fromDate, Date toDate, Staff staff) {
-        String sql = "Select sum(ss.workedWithinTimeFrameVarified+ss.leavedTime) "
+    public double calculateWorkTimeForOt(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select sum(ss.workedWithinTimeFrameVarified) "
                 + " from StaffShift ss "
-                + " where ss.retired=false"
+                + " where ss.retired=false "
+                + " and ss.leavedTime=0 "
+                + " and ss.dayType not in :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         hm.put("stf", staff);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+
+        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
+
+    public double calculateWorkTimeLeave(Date fromDate, Date toDate, Staff staff) {
+        String sql = "Select sum(ss.leavedTime) "
+                + " from StaffShift ss "
+                + " where ss.retired=false "
+                + " and ss.workedWithinTimeFrameVarified!=0 "
+                + " and ss.dayType not in :dtp "
+                + " and ss.shiftDate between :fd  and :td "
+                + " and ss.staff=:stf ";
+        HashMap hm = new HashMap();
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        hm.put("stf", staff);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
 
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
