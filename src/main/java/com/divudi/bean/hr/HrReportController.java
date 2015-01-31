@@ -1852,6 +1852,38 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
         calTotalNoPay();
+        calTableTotal(staffSalarys);
+
+    }
+
+    double totalOvertimeMinit = 0.0; //overTimeMinute
+    double totalExtraDutyNormalMinute = 0.0; //extraDutyNormalMinute
+    double totalRatePerMinut = 0.0;  //overTimeRatePerMinute*1.5
+    double totalOtValue = 0.0; //overTimeValue+ss.extraDutyNormalValue
+    double totalPhOtMin = 0.0; //extraDutyPoyaMinute+ss.extraDutyMerchantileMinute
+    double totalRatePerMinutPhOt = 0.0;  //ss.overTimeRatePerMinute*1.5
+    double totalPhOtValue = 0.0;//extraDutyMerchantileValue+ss.extraDutyPoyaValue
+    double totalOffDayOtMin = 0.0; //extraDutySleepingDayMinute+ss.extraDutyDayOffMinute
+    double totalRatePerMinuts = 0.0;  //overTimeRatePerMinute*2.5
+    double totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
+    double totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
+
+    public void calTableTotal(List<StaffSalary> stfSal) {
+
+        for (StaffSalary totStaffSalary : stfSal) {
+            totalOvertimeMinit += totStaffSalary.getOverTimeMinute();
+            totalExtraDutyNormalMinute += totStaffSalary.getExtraDutyNormalMinute();
+            totalRatePerMinut += totStaffSalary.getOverTimeRatePerMinute() * 1.5;
+            totalOtValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue();
+            totalPhOtMin += totStaffSalary.getExtraDutyPoyaMinute() + totStaffSalary.getExtraDutyMerchantileMinute();
+            totalRatePerMinutPhOt += totStaffSalary.getOverTimeMinute() * 1.5;
+            totalPhOtValue += totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue();
+            totalOffDayOtMin += totStaffSalary.getExtraDutySleepingDayMinute() + totStaffSalary.getExtraDutyDayOffMinute();
+            totalRatePerMinuts += totStaffSalary.getOverTimeRatePerMinute()*2.5;
+            totalOffdyOtValue += totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
+            totalValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue() + totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue() + totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
+        }
+
     }
 
     double merchantileAllowanceValueTotal = 0;
@@ -1863,7 +1895,7 @@ public class HrReportController implements Serializable {
     double noPayValueAllowanceTotal = 0;
     double noPayValueBasicTotal = 0;
     double lateNoPayCountTotal = 0;
-    double noPayCountTotal=0;
+    double noPayCountTotal = 0;
 
     private void calTotalNoPay() {
         if (staffSalarys == null) {
@@ -1879,7 +1911,7 @@ public class HrReportController implements Serializable {
         noPayValueAllowanceTotal = 0;
         noPayValueBasicTotal = 0;
         lateNoPayCountTotal = 0;
-        noPayCountTotal=0;
+        noPayCountTotal = 0;
 
         for (StaffSalary s : staffSalarys) {
             merchantileAllowanceValueTotal += s.getMerchantileAllowanceValue();
@@ -1891,13 +1923,11 @@ public class HrReportController implements Serializable {
             noPayValueAllowanceTotal += s.getNoPayValueAllowance();
             noPayValueBasicTotal += s.getNoPayValueBasic();
             lateNoPayCountTotal += s.getLateNoPayCount();
-            noPayCountTotal+=s.getNoPayCount();
-            
+            noPayCountTotal += s.getNoPayCount();
+
         }
 
     }
-    
-    
 
     public StaffSalaryController getStaffSalaryController() {
         return staffSalaryController;
@@ -1986,8 +2016,6 @@ public class HrReportController implements Serializable {
     public void setNoPayCountTotal(double noPayCountTotal) {
         this.noPayCountTotal = noPayCountTotal;
     }
-    
-    
 
     public void createShiftTable() {
         String sql = "Select s From Shift s "
@@ -2513,6 +2541,94 @@ public class HrReportController implements Serializable {
 
     public void setStaffShiftsNoPay(List<StaffShift> staffShiftsNoPay) {
         this.staffShiftsNoPay = staffShiftsNoPay;
+    }
+
+    public double getTotalOvertimeMinit() {
+        return totalOvertimeMinit;
+    }
+
+    public void setTotalOvertimeMinit(double totalOvertimeMinit) {
+        this.totalOvertimeMinit = totalOvertimeMinit;
+    }
+
+    public double getTotalExtraDutyNormalMinute() {
+        return totalExtraDutyNormalMinute;
+    }
+
+    public void setTotalExtraDutyNormalMinute(double totalExtraDutyNormalMinute) {
+        this.totalExtraDutyNormalMinute = totalExtraDutyNormalMinute;
+    }
+
+    public double getTotalRatePerMinut() {
+        return totalRatePerMinut;
+    }
+
+    public void setTotalRatePerMinut(double totalRatePerMinut) {
+        this.totalRatePerMinut = totalRatePerMinut;
+    }
+
+    public double getTotalOtValue() {
+        return totalOtValue;
+    }
+
+    public void setTotalOtValue(double totalOtValue) {
+        this.totalOtValue = totalOtValue;
+    }
+
+    public double getTotalPhOtMin() {
+        return totalPhOtMin;
+    }
+
+    public void setTotalPhOtMin(double totalPhOtMin) {
+        this.totalPhOtMin = totalPhOtMin;
+    }
+
+    public double getTotalRatePerMinutPhOt() {
+        return totalRatePerMinutPhOt;
+    }
+
+    public void setTotalRatePerMinutPhOt(double totalRatePerMinutPhOt) {
+        this.totalRatePerMinutPhOt = totalRatePerMinutPhOt;
+    }
+
+    public double getTotalPhOtValue() {
+        return totalPhOtValue;
+    }
+
+    public void setTotalPhOtValue(double totalPhOtValue) {
+        this.totalPhOtValue = totalPhOtValue;
+    }
+
+    public double getTotalOffDayOtMin() {
+        return totalOffDayOtMin;
+    }
+
+    public void setTotalOffDayOtMin(double totalOffDayOtMin) {
+        this.totalOffDayOtMin = totalOffDayOtMin;
+    }
+
+    public double getTotalRatePerMinuts() {
+        return totalRatePerMinuts;
+    }
+
+    public void setTotalRatePerMinuts(double totalRatePerMinuts) {
+        this.totalRatePerMinuts = totalRatePerMinuts;
+    }
+
+    public double getTotalOffdyOtValue() {
+        return totalOffdyOtValue;
+    }
+
+    public void setTotalOffdyOtValue(double totalOffdyOtValue) {
+        this.totalOffdyOtValue = totalOffdyOtValue;
+    }
+
+    public double getTotalValue() {
+        return totalValue;
+    }
+
+    public void setTotalValue(double totalValue) {
+        this.totalValue = totalValue;
     }
 
 }

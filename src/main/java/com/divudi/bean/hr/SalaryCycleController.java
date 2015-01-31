@@ -815,11 +815,29 @@ public class SalaryCycleController implements Serializable {
     double additionalComponentTotal;
     double deductionalComponentTotal;
     double adjustmentToBasicTotal;
-    double adjustmentToBasic;
+    double adjustmentToAllowancesTotal;
+    double epfStaffValueTotal;
+    double epfCompanyValueTotal;
+    double etfStaffValueTotal;
+    double etfCompanValueTotal;
+    
     
 public void allStaffSalaryTotal(List<StaffSalary> stfSal){
-    for (StaffSalary staffSalary : stfSal){
-        
+    for (StaffSalary staffSalaryTotal : stfSal){
+      basicValueTotal += staffSalaryTotal.getBasicValue();
+      overTimeValueTotal += staffSalaryTotal.getOverTimeValue();
+      noPayValueTotal += staffSalaryTotal.getNoPayValueBasic()+staffSalaryTotal.getNoPayValueAllowance();
+      extraDutyValueTotal += staffSalaryTotal.getTransExtraDutyValue();
+      holyDayAllowancesTotal += staffSalaryTotal.getMerchantileAllowanceValue() + staffSalaryTotal.getPoyaAllowanceValue();
+      dayOffValueTotal += staffSalaryTotal.getDayOffAllowance() + staffSalaryTotal.getSleepingDayAllowance();
+      additionalComponentTotal += staffSalaryTotal.getComponentValueAddition();
+      deductionalComponentTotal += staffSalaryTotal.getComponentValueSubstraction();
+      adjustmentToBasicTotal += staffSalaryTotal.getAdjustmentToBasic();
+      adjustmentToAllowancesTotal += staffSalaryTotal.getAdjustmentToAllowance();
+      epfStaffValueTotal += staffSalaryTotal.getEpfStaffValue();
+      epfCompanyValueTotal += staffSalaryTotal.getEpfCompanyValue();
+      etfStaffValueTotal += staffSalaryTotal.getEtfSatffValue();
+      etfCompanValueTotal += staffSalaryTotal.getEtfCompanyValue();
     }
 }
     @EJB
@@ -1043,12 +1061,46 @@ public void allStaffSalaryTotal(List<StaffSalary> stfSal){
         this.adjustmentToBasicTotal = adjustmentToBasicTotal;
     }
 
-    public double getAdjustmentToBasic() {
-        return adjustmentToBasic;
+    public double getAdjustmentToAllowancesTotal() {
+        return adjustmentToAllowancesTotal;
     }
 
-    public void setAdjustmentToBasic(double adjustmentToBasic) {
-        this.adjustmentToBasic = adjustmentToBasic;
+    public void setAdjustmentToAllowancesTotal(double adjustmentToAllowancesTotal) {
+        this.adjustmentToAllowancesTotal = adjustmentToAllowancesTotal;
+    }
+
+    
+
+    public double getEpfStaffValueTotal() {
+        return epfStaffValueTotal;
+    }
+
+    public void setEpfStaffValueTotal(double epfStaffValueTotal) {
+        this.epfStaffValueTotal = epfStaffValueTotal;
+    }
+
+    public double getEpfCompanyValueTotal() {
+        return epfCompanyValueTotal;
+    }
+
+    public void setEpfCompanyValueTotal(double epfCompanyValueTotal) {
+        this.epfCompanyValueTotal = epfCompanyValueTotal;
+    }
+
+    public double getEtfStaffValueTotal() {
+        return etfStaffValueTotal;
+    }
+
+    public void setEtfStaffValueTotal(double etfStaffValueTotal) {
+        this.etfStaffValueTotal = etfStaffValueTotal;
+    }
+
+    public double getEtfCompanValueTotal() {
+        return etfCompanValueTotal;
+    }
+
+    public void setEtfCompanValueTotal(double etfCompanValueTotal) {
+        this.etfCompanValueTotal = etfCompanValueTotal;
     }
 
     
