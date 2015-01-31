@@ -131,6 +131,103 @@
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                 </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column colspan="2">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Total"></h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOvertimeMinit}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalExtraDutyNormalMinute}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinut}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOtValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalPhOtMin}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinutPhOt}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalPhOtValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOffDayOtMin}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinuts}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOffdyOtValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputLabel style="text-align: right;" value="#{hrReportController.totalValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
                             </p:dataTable>
                         </p:panel>
 

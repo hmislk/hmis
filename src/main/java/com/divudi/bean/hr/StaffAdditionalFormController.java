@@ -25,6 +25,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -360,6 +361,10 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Select From Time");
             return true;
         }
+        if (calDayCount(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime())>1) {
+            JsfUtil.addErrorMessage("Please Can Select Only One Date");
+            return true;
+        }
         if (currentAdditionalForm.getApprovedStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Approved Person");
             return true;
@@ -396,6 +401,20 @@ public class StaffAdditionalFormController implements Serializable {
         //NEED To Check StaffSHift  if not selected is there any shift time on that day
         return false;
     }
+    
+    public long calDayCount(Date frDate,Date tDate){
+        
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(tDate);
+        cal2.setTime(frDate);
+
+        Long daycount = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
+        
+        System.out.println("daycount = " + daycount);
+        
+        return daycount;
+    }
 
     public boolean errorCheckShift() {
         if (currentAdditionalForm.getStaff() == null) {
@@ -414,6 +433,10 @@ public class StaffAdditionalFormController implements Serializable {
         }
         if (currentAdditionalForm.getToTime() == null) {
             JsfUtil.addErrorMessage("Please Select From Time");
+            return true;
+        }
+        if (calDayCount(currentAdditionalForm.getFromTime(), currentAdditionalForm.getToTime())>1) {
+            JsfUtil.addErrorMessage("Please Can Select Only One Date");
             return true;
         }
         if (currentAdditionalForm.getApprovedStaff() == null) {

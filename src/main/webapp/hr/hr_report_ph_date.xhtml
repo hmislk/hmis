@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel header="Holiday Report" >
+                <p:panel>
+                    <h:outputLabel value="From Time"/>
+                    <p:calendar id="requestedDate" 
+                                value="#{phDateController.frDate}"
+                                pattern="yyyy MM dd HH:mm:ss">
+                    </p:calendar> 
+                    <h:outputLabel value="To Time"/>
+                    <p:calendar id="forDate" value="#{phDateController.toDate}"
+                                pattern="yyyy MM dd HH:mm:ss" >
+                    </p:calendar> 
+                    <p:commandButton value="Fill" action="#{phDateController.createHollydays}" />
+                </p:panel>
+                <p:panel>
+                    <p:dataTable id="tb1" value="#{phDateController.phDates}" var="ph">
+                        <p:column headerText="Date">
+                            <p:outputLabel value="#{ph.phDate}" >
+                                <f:convertDateTime pattern="yyyy MM dd" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Hollyday Name">
+                            <p:outputLabel value="#{ph.name}" >
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Hollyday Type">
+                            <p:outputLabel value="#{ph.phType}" >
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Creater">
+                            <p:outputLabel value="#{ph.creater.webUserPerson.nameWithTitle}" >
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Created At">
+                            <p:outputLabel value="#{ph.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                            </p:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

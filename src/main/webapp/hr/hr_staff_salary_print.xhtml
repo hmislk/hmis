@@ -205,7 +205,9 @@
                     <p:tab title="Value">
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Gross Salary : "/>
-                            <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}"/>                        
+                            <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}">
+                                <f:convertNumber pattern="0.00" />
+                            </h:outputLabel>                        
                         </h:panelGrid>
                     </p:tab>
 
