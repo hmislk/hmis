@@ -48,7 +48,9 @@
             <p:panel id="print">
                 <table id="tbl" border="1">
                     <thead>
-                        <tr>  
+                        <tr>
+                            <th>EMP Code</th>
+                            
                             <th>Staff Name</th>
                             <ui:repeat value="#{salaryCycleController.headersAdd}" var="h">
                                 <th>#{h}</th>
@@ -65,6 +67,7 @@
                     <tbody>                   
                         <ui:repeat value="#{salaryCycleController.staffAnsAndSalarySalaryComponents}" var="scc">
                             <tr>
+                                <td><h:outputLabel value="#{scc.staff.code}" /></td>
                                 <td><h:outputLabel value="#{scc.staff.person.nameWithTitle}" /></td>
                                 <ui:repeat value="#{scc.staffSalaryComponantsAddition}"  var="col">
                                     <td><h:outputText value="#{col.componantValue}" >
