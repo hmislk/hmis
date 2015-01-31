@@ -315,8 +315,8 @@ public class HumanResourceBean {
         return staffLeaveEntitleFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
 
     }
-    
-     public double fetchStaffLeaveSystem(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
+
+    public double fetchStaffLeaveSystem(Staff staff, LeaveType leaveType, Date fromDate, Date toDate) {
         String sql = "select sum(l.qty) "
                 + " from StaffLeaveSystem l"
                 + " where l.retired=false "
@@ -365,7 +365,7 @@ public class HumanResourceBean {
 
         return getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
     }
-    
+
     public LeaveType getLeaveType(Staff staff, Date fromDate, Date toDate) {
         double staffLeaveEntitle = fetchStaffLeaveEntitle(staff, LeaveType.Annual, fromDate, toDate);
 
@@ -1547,23 +1547,17 @@ public class HumanResourceBean {
     }
 
     public List<StaffPaysheetComponent> fetchStaffPaysheetComponent(Staff staff, Date date) {
-        PaysheetComponentType[] paysheetComponentTypes = {PaysheetComponentType.BasicSalary,
-            PaysheetComponentType.OT,
-            PaysheetComponentType.ExtraDuty,
-            PaysheetComponentType.No_Pay_Deduction,
-            PaysheetComponentType.HolidayAllowance,
-            PaysheetComponentType.DayOffAllowance};
 
         String sql = " Select s From StaffPaysheetComponent s "
                 + " where s.retired=false "
-                + " and s.staff=:st"
-                + " and s.paysheetComponent.componentType not in :bs1 "
+                + " and s.staff=:st "                
+                + " and s.paysheetComponent.componentType in :bs1 "
                 + " and s.fromDate<=:cu  "
                 + " and s.toDate>=:cu ";
         HashMap hm = new HashMap();
         hm.put("st", staff);
         hm.put("cu", date);
-        hm.put("bs1", Arrays.asList(paysheetComponentTypes));
+        hm.put("bs1", PaysheetComponentType.addition.getUserDefinedComponents());
         return getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
     }
 

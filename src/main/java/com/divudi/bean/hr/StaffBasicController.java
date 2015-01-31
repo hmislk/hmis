@@ -74,14 +74,17 @@ public class StaffBasicController implements Serializable {
     private boolean checkStaff() {
         repeatedComponent = null;
 
-        String sql = "Select s From StaffPaysheetComponent s where s.retired=false"
-                + " and s.paysheetComponent.componentType=:tp and s.staff=:st "
-                + " and s.toDate>:dt";
+        String sql = "Select s From StaffPaysheetComponent s "
+                + " where s.retired=false"
+                + " and s.paysheetComponent.componentType=:tp "
+                + " and s.staff=:st "
+                + " and s.fromDate<=:cu  "
+                + " and s.toDate>=:cu ";
 
         HashMap hm = new HashMap();
         hm.put("tp", PaysheetComponentType.BasicSalary);
         hm.put("st", getCurrent().getStaff());
-        hm.put("dt", getCurrent().getFromDate());
+        hm.put("cu", getCurrent().getToDate());
         List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
 
         if (!tmp.isEmpty()) {
@@ -116,10 +119,15 @@ public class StaffBasicController implements Serializable {
             UtilityController.addErrorMessage("Select From Date");
             return true;
         }
-//
-//        if (checkStaff()) {
-//            return true;
-//        }
+
+        if (getCurrent().getToDate() == null) {
+            UtilityController.addErrorMessage("Select To Date");
+            return true;
+        }
+
+        if (checkStaff()) {
+            return true;
+        }
 
         return false;
     }
@@ -291,8 +299,8 @@ public class StaffBasicController implements Serializable {
     }
 
     PaysheetComponent paysheetComponent;
-    
-     PaysheetComponent paysheetComponent2;
+
+    PaysheetComponent paysheetComponent2;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -305,8 +313,6 @@ public class StaffBasicController implements Serializable {
     public void setPaysheetComponent2(PaysheetComponent paysheetComponent2) {
         this.paysheetComponent2 = paysheetComponent2;
     }
-    
-    
 
     public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
         this.paysheetComponent = paysheetComponent;
@@ -322,7 +328,7 @@ public class StaffBasicController implements Serializable {
             sql += " and s.paysheetComponent=:tp ";
             hm.put("tp", paysheetComponent);
         }
-        
+
         if (paysheetComponent2 != null) {
             sql += " and s.paysheetComponent=:tp2 ";
             hm.put("tp2", paysheetComponent2);

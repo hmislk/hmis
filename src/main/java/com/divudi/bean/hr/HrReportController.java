@@ -1794,6 +1794,34 @@ public class HrReportController implements Serializable {
 
     }
 
+    @Inject
+    StaffSalaryController staffSalaryController;
+
+    public void updateLateLeaveData() {
+        String sql = "select s from StaffSalary s "
+                + " where s.retired=false"
+                + " and s.salaryCycle.retired=false ";
+
+        List<StaffSalary> list = staffSalaryFacade.findBySQL(sql);
+        if (list == null) {
+            return;
+        }
+
+        for (StaffSalary ss : list) {
+
+            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(ss.getStaff(), LeaveType.No_Pay, ss.getSalaryCycle().getWorkedFromDate(), ss.getSalaryCycle().getWorkedToDate());
+            ss.setLateNoPayCount(noPayCountLate);
+            ss.setLateNoPayBasicValue((ss.getBasicValue() / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+
+            double all = staffSalaryController.calAllowanceValueForNoPay(ss.getStaffSalaryComponants());
+
+            ss.setLateNoPayAllovanceValue((all / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
+
+            staffSalaryFacade.edit(ss);
+        }
+
+    }
+
     public void createStaffShift() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -1823,7 +1851,143 @@ public class HrReportController implements Serializable {
         sql = createStaffSalaryQuary(hm);
         sql += " order by ss.staff.codeInterger ";
         staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
+        calTotalNoPay();
     }
+
+    double merchantileAllowanceValueTotal = 0;
+    double merchantileCountTotal = 0;
+    double poyaAllowanceValueTotal = 0;
+    double poyaCountTotal = 0;
+    double lateNoPayAllovanceValueTotal = 0;
+    double lateNoPayBasicValueTotal = 0;
+    double noPayValueAllowanceTotal = 0;
+    double noPayValueBasicTotal = 0;
+    double lateNoPayCountTotal = 0;
+    double noPayCountTotal=0;
+
+    private void calTotalNoPay() {
+        if (staffSalarys == null) {
+            return;
+        }
+
+        merchantileAllowanceValueTotal = 0;
+        merchantileCountTotal = 0;
+        poyaAllowanceValueTotal = 0;
+        poyaCountTotal = 0;
+        lateNoPayAllovanceValueTotal = 0;
+        lateNoPayBasicValueTotal = 0;
+        noPayValueAllowanceTotal = 0;
+        noPayValueBasicTotal = 0;
+        lateNoPayCountTotal = 0;
+        noPayCountTotal=0;
+
+        for (StaffSalary s : staffSalarys) {
+            merchantileAllowanceValueTotal += s.getMerchantileAllowanceValue();
+            merchantileCountTotal += s.getMerchantileCount();
+            poyaAllowanceValueTotal += s.getPoyaAllowanceValue();
+            poyaCountTotal += s.getPoyaCount();
+            lateNoPayAllovanceValueTotal += s.getLateNoPayAllovanceValue();
+            lateNoPayBasicValueTotal += s.getLateNoPayBasicValue();
+            noPayValueAllowanceTotal += s.getNoPayValueAllowance();
+            noPayValueBasicTotal += s.getNoPayValueBasic();
+            lateNoPayCountTotal += s.getLateNoPayCount();
+            noPayCountTotal+=s.getNoPayCount();
+            
+        }
+
+    }
+    
+    
+
+    public StaffSalaryController getStaffSalaryController() {
+        return staffSalaryController;
+    }
+
+    public void setStaffSalaryController(StaffSalaryController staffSalaryController) {
+        this.staffSalaryController = staffSalaryController;
+    }
+
+    public double getMerchantileAllowanceValueTotal() {
+        return merchantileAllowanceValueTotal;
+    }
+
+    public void setMerchantileAllowanceValueTotal(double merchantileAllowanceValueTotal) {
+        this.merchantileAllowanceValueTotal = merchantileAllowanceValueTotal;
+    }
+
+    public double getMerchantileCountTotal() {
+        return merchantileCountTotal;
+    }
+
+    public void setMerchantileCountTotal(double merchantileCountTotal) {
+        this.merchantileCountTotal = merchantileCountTotal;
+    }
+
+    public double getPoyaAllowanceValueTotal() {
+        return poyaAllowanceValueTotal;
+    }
+
+    public void setPoyaAllowanceValueTotal(double poyaAllowanceValueTotal) {
+        this.poyaAllowanceValueTotal = poyaAllowanceValueTotal;
+    }
+
+    public double getPoyaCountTotal() {
+        return poyaCountTotal;
+    }
+
+    public void setPoyaCountTotal(double poyaCountTotal) {
+        this.poyaCountTotal = poyaCountTotal;
+    }
+
+    public double getLateNoPayAllovanceValueTotal() {
+        return lateNoPayAllovanceValueTotal;
+    }
+
+    public void setLateNoPayAllovanceValueTotal(double lateNoPayAllovanceValueTotal) {
+        this.lateNoPayAllovanceValueTotal = lateNoPayAllovanceValueTotal;
+    }
+
+    public double getLateNoPayBasicValueTotal() {
+        return lateNoPayBasicValueTotal;
+    }
+
+    public void setLateNoPayBasicValueTotal(double lateNoPayBasicValueTotal) {
+        this.lateNoPayBasicValueTotal = lateNoPayBasicValueTotal;
+    }
+
+    public double getNoPayValueAllowanceTotal() {
+        return noPayValueAllowanceTotal;
+    }
+
+    public void setNoPayValueAllowanceTotal(double noPayValueAllowanceTotal) {
+        this.noPayValueAllowanceTotal = noPayValueAllowanceTotal;
+    }
+
+    public double getNoPayValueBasicTotal() {
+        return noPayValueBasicTotal;
+    }
+
+    public void setNoPayValueBasicTotal(double noPayValueBasicTotal) {
+        this.noPayValueBasicTotal = noPayValueBasicTotal;
+    }
+
+    public double getLateNoPayCountTotal() {
+        return lateNoPayCountTotal;
+    }
+
+    public void setLateNoPayCountTotal(double lateNoPayCountTotal) {
+        this.lateNoPayCountTotal = lateNoPayCountTotal;
+    }
+
+    public double getNoPayCountTotal() {
+        return noPayCountTotal;
+    }
+
+    public void setNoPayCountTotal(double noPayCountTotal) {
+        this.noPayCountTotal = noPayCountTotal;
+    }
+    
+    
 
     public void createShiftTable() {
         String sql = "Select s From Shift s "

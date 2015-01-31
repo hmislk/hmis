@@ -15,7 +15,9 @@
                         <h:panelGrid columns="2">                            
                             <h:outputLabel value="Staff : "/>
                             <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
-                            <h:outputLabel value="Date : "/>
+                            <h:outputLabel value="From Date : "/>
+                            <p:calendar value="#{staffLeaveEntitleController.fromDate}"/>
+                             <h:outputLabel value="To Date : "/>
                             <p:calendar value="#{staffLeaveEntitleController.date}"/>
                             <h:outputLabel value="Leave Type : "/>
                             <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
