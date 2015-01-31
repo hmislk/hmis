@@ -211,6 +211,9 @@ public class StaffSalaryController implements Serializable {
 
         getCurrent().calculateComponentTotal();
         getCurrent().calcualteEpfAndEtf();
+        if (getCurrent().getId() != null) {
+            getStaffSalaryFacade().edit(getCurrent());
+        }
 
     }
 
@@ -554,7 +557,6 @@ public class StaffSalaryController implements Serializable {
 
         System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
-    
 
         return salaryValue;
     }
@@ -598,7 +600,7 @@ public class StaffSalaryController implements Serializable {
 
         System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
-      
+
         return allownaceValue;
     }
 
