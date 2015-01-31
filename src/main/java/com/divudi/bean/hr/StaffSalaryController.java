@@ -554,7 +554,7 @@ public class StaffSalaryController implements Serializable {
 
         System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
-        getCurrent().setNoPayValueBasic(noPayValue);
+    
 
         return salaryValue;
     }
@@ -598,7 +598,7 @@ public class StaffSalaryController implements Serializable {
 
         System.err.println("NO " + ss.getStaffPaysheetComponent().getPaysheetComponent().getName());
         getCurrent().getStaffSalaryComponants().add(ss);
-        getCurrent().setNoPayValueAllowance(noPayValue);
+      
         return allownaceValue;
     }
 
