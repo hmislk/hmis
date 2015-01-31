@@ -1966,7 +1966,7 @@ public class HumanResourceBean {
 //        return otNormalSpecial;
 //
 //    }
-    public double calculateWorkTimeForOt(Date fromDate, Date toDate, Staff staff) {
+    public double calculateWorkTimeForOverTime(Date fromDate, Date toDate, Staff staff) {
         String sql = "Select sum(ss.workedWithinTimeFrameVarified) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
@@ -1983,7 +1983,7 @@ public class HumanResourceBean {
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
-    public double calculateWorkTimeLeave(Date fromDate, Date toDate, Staff staff) {
+    public double calculateLeaveTimeForOverTime(Date fromDate, Date toDate, Staff staff) {
         String sql = "Select sum(ss.leavedTime) "
                 + " from StaffShift ss "
                 + " where ss.retired=false "
@@ -2016,7 +2016,7 @@ public class HumanResourceBean {
         return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 
-    public double calculateExtraWorkTime(Date fromDate, Date toDate, Staff staff, DayType dayType) {
+    public Long calculateExtraWorkMinute(Date fromDate, Date toDate, Staff staff, DayType dayType) {
         String sql = "Select sum((ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified))"
                 + " from StaffShift ss "
                 + " where ss.retired=false"
@@ -2029,7 +2029,12 @@ public class HumanResourceBean {
         hm.put("stf", staff);
         hm.put("dtp", dayType);
 
-        return staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        Double timeSecond = staffShiftFacade.findDoubleByJpql(sql, hm, TemporalType.DATE);
+        if (timeSecond != null) {
+            return (timeSecond.longValue() / 60);
+        } else {
+            return 0l;
+        }
     }
 
     public double calculateNoPay(Date fromDate, Date toDate, Staff staff) {

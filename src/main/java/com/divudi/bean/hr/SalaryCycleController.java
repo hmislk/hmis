@@ -8,6 +8,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
@@ -57,24 +58,6 @@ public class SalaryCycleController implements Serializable {
     List<String> headersAdd;
     List<Double> footerAdd;
     List<Double> footerSub;
-    Institution institution;
-    Department department;
-
-    public Institution getInstitution() {
-        return institution;
-    }
-
-    public void setInstitution(Institution institution) {
-        this.institution = institution;
-    }
-
-    public Department getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(Department department) {
-        this.department = department;
-    }
 
     public List<String> getHeadersAdd() {
         if (headersAdd == null) {
@@ -688,6 +671,19 @@ public class SalaryCycleController implements Serializable {
         }
     }
 
+    ReportKeyWord reportKeyWord;
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
     public void fillStaffPayRoll() {
 
         List<PaysheetComponent> paysheetComponentsAddition;
@@ -717,14 +713,34 @@ public class SalaryCycleController implements Serializable {
                 + " and spc.retired=false "
                 + " and spc.blocked=false ";
 
-        if (institution != null) {
+        if (getReportKeyWord().getInstitution() != null) {
             jpql += " and spc.institution=:ins ";
-            m.put("ins", institution);
+            m.put("ins", getReportKeyWord().getInstitution());
         }
 
-        if (department != null) {
+        if (getReportKeyWord().getDepartment() != null) {
             jpql += " and spc.department=:dep ";
-            m.put("dep", department);
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaff() != null) {
+            jpql += " and spc.staff=:stf ";
+            m.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            jpql += " and spc.staff.staffCategory=:stfCat ";
+            m.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            jpql += " and spc.staff.designation=:des ";
+            m.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            jpql += " and spc.staff.roster=:rs ";
+            m.put("rs", getReportKeyWord().getRoster());
         }
 
         jpql += " order by spc.staff.codeInterger ";
@@ -757,11 +773,15 @@ public class SalaryCycleController implements Serializable {
         }
 
         for (PaysheetComponent psc : paysheetComponentsAddition) {
-            footerAdd.add(fetchSalaryComponents(psc, current));
+            double val = fetchSalaryComponents(psc, current);
+            footerAdd.add(val);
+            psc.setTransValue(val);
         }
 
         for (PaysheetComponent psc : paysheetComponentsSubstraction) {
-            footerSub.add(fetchSalaryComponents(psc, current));
+            double val = fetchSalaryComponents(psc, current);
+            footerSub.add(val);
+            psc.setTransValue(val);
         }
 
         SalaryTotalCalculation(staffSalarys);
