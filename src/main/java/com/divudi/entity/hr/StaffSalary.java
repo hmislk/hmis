@@ -11,6 +11,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -386,6 +387,15 @@ public class StaffSalary implements Serializable {
         return getTransGrossSalary() + noPayValueBasic;
     }
 
+    private double roundOff(double d) {
+        DecimalFormat newFormat = new DecimalFormat("#.##");
+        try {
+            return Double.valueOf(newFormat.format(d));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     public void calculateComponentTotal() {
         basicValue = 0;
         brValue = 0;
@@ -418,7 +428,7 @@ public class StaffSalary implements Serializable {
             if (paysheetComponentType != null) {
 
                 //if (paysheetComponentType.getParent(paysheetComponentType) == PaysheetComponentType.addition) {
-                value = spc.getComponantValue();
+                value = roundOff(spc.getComponantValue());
 //                } else {
 //                    value = 0 - spc.getComponantValue();
 //                }
