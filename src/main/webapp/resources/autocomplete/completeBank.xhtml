@@ -12,9 +12,11 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete completeMethod="#{institutionController.completeCompany}" 
-                        var="dept" itemLabel="#{dept.name}"
-                        itemValue="#{dept}" forceSelection="true" 
+        <p:autoComplete completeMethod="#{institutionController.completeBank}" 
+                        var="dept" 
+                        itemLabel="#{dept.name}"
+                        itemValue="#{dept}"
+                        forceSelection="true" 
                         value="#{cc.attrs.value}" 
                         converter="institutionConverter" >
             <p:column headerText="Name">

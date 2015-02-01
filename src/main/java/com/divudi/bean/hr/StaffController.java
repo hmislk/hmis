@@ -263,7 +263,7 @@ public class StaffController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -282,6 +282,7 @@ public class StaffController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
+        sql+=" order by ss.codeInterger ";
         //System.out.println(sql);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
 

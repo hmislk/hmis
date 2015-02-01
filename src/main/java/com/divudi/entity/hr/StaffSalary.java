@@ -184,7 +184,7 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransExtraDutyValue() {
-        return extraDutyNormalValue + extraDutyMerchantileValue + extraDutyPoyaValue + extraDutyDayOffValue + extraDutySleepingDayValue;
+        return roundOff(extraDutyNormalValue + extraDutyMerchantileValue + extraDutyPoyaValue + extraDutyDayOffValue + extraDutySleepingDayValue);
     }
 
     public double getOverTimeMinute() {
@@ -375,16 +375,16 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransGrossSalary() {
-        return basicValue
+        return roundOff(basicValue
                 + merchantileAllowanceValue
                 + poyaAllowanceValue
                 + dayOffAllowance
                 + sleepingDayAllowance
-                + adjustmentToBasic;
+                + adjustmentToBasic);
     }
 
     public double getTransEpfEtfDiductableSalary() {
-        return getTransGrossSalary() + noPayValueBasic;
+        return roundOff(getTransGrossSalary() + noPayValueBasic);
     }
 
     private double roundOff(double d) {
@@ -497,15 +497,15 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransTotalAllowance() {
-        return componentValueAddition + adjustmentToAllowance + noPayValueAllowance;
+        return roundOff(componentValueAddition + adjustmentToAllowance + noPayValueAllowance);
     }
 
     public double getTransTotalDeduction() {
-        return componentValueSubstraction + epfStaffValue;
+        return roundOff(componentValueSubstraction + noPayValueBasic + noPayValueAllowance + epfStaffValue);
     }
 
     public double getTransNetSalry() {
-        return getTransGrossSalary() + getNoPayValueBasic() + getNoPayValueAllowance() + getTransTotalAllowance() + getTransTotalDeduction();
+        return roundOff(getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction());
     }
 
     public SalaryCycle getSalaryCycle() {

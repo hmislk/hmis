@@ -685,10 +685,17 @@ public class SalaryCycleController implements Serializable {
     }
 
     public void fillStaffPayRoll() {
+        fillStaffPayRoll(false);
+    }
+
+    public void fillStaffPayRollBlocked() {
+        fillStaffPayRoll(true);
+    }
+
+    public void fillStaffPayRoll(boolean blocked) {
 
         List<PaysheetComponent> paysheetComponentsAddition;
         List<PaysheetComponent> paysheetComponentsSubstraction;
-        List<Staff> staffes;
         String jpql;
         Map m;
 
@@ -711,7 +718,7 @@ public class SalaryCycleController implements Serializable {
                 + " from StaffSalary spc "
                 + " where spc.salaryCycle=:sc "
                 + " and spc.retired=false "
-                + " and spc.blocked=false ";
+                + " and spc.blocked=" + blocked;
 
         if (getReportKeyWord().getInstitution() != null) {
             jpql += " and spc.institution=:ins ";
@@ -753,7 +760,7 @@ public class SalaryCycleController implements Serializable {
 
         for (StaffSalary s : staffSalarys) {
             for (PaysheetComponent psc : paysheetComponentsAddition) {
-                StaffSalaryComponant c = fetchSalaryComponents(s, psc);
+                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked);
                 if (c != null) {
                     s.getTransStaffSalaryComponantsAddition().add(c);
                 } else {
@@ -762,7 +769,7 @@ public class SalaryCycleController implements Serializable {
                 }
             }
             for (PaysheetComponent psc : paysheetComponentsSubstraction) {
-                StaffSalaryComponant c = fetchSalaryComponents(s, psc);
+                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked);
                 if (c != null) {
                     s.getTransStaffSalaryComponantsSubtraction().add(c);
                 } else {
@@ -773,13 +780,13 @@ public class SalaryCycleController implements Serializable {
         }
 
         for (PaysheetComponent psc : paysheetComponentsAddition) {
-            double val = fetchSalaryComponents(psc, current);
+            double val = fetchSalaryComponents(psc, current, blocked);
             footerAdd.add(val);
             psc.setTransValue(val);
         }
 
         for (PaysheetComponent psc : paysheetComponentsSubstraction) {
-            double val = fetchSalaryComponents(psc, current);
+            double val = fetchSalaryComponents(psc, current, blocked);
             footerSub.add(val);
             psc.setTransValue(val);
         }
@@ -803,11 +810,11 @@ public class SalaryCycleController implements Serializable {
 
     }
 
-    public Double fetchSalaryComponents(PaysheetComponent psc, SalaryCycle salaryCycle) {
+    public Double fetchSalaryComponents(PaysheetComponent psc, SalaryCycle salaryCycle, boolean blocked) {
         String jpql = "select sum(spc.componantValue) "
                 + " from StaffSalaryComponant spc "
-                + " where spc.staffSalary.staff=:st"
-                + " and spc.retired=false"
+                + " where spc.retired=false "
+                + " and spc.staffSalary.blocked=" + blocked
                 + " and spc.staffSalary.retired=false"
                 + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
                 + " and spc.salaryCycle=:sc ";
@@ -818,11 +825,12 @@ public class SalaryCycleController implements Serializable {
 
     }
 
-    public StaffSalaryComponant fetchSalaryComponents(StaffSalary s, PaysheetComponent psc) {
+    public StaffSalaryComponant fetchSalaryComponents(StaffSalary s, PaysheetComponent psc, boolean blocked) {
         String jpql = "select spc from StaffSalaryComponant spc "
                 + " where spc.staffSalary=:st"
                 + " and spc.retired=false"
-                + " and spc.staffSalary.retired=false"
+                + " and spc.staffSalary.retired=false "
+                + " and spc.staffSalary.blocked=" + blocked
                 + " and spc.staffPaysheetComponent.paysheetComponent=:pc "
                 + " and spc.salaryCycle=:sc ";
         HashMap m = new HashMap();

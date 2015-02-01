@@ -98,6 +98,9 @@
                                         <f:convertDateTime pattern="dd MMMM" />
                                     </h:outputLabel>
                                 </p:column>
+                                 <p:column headerText="Staff Code">
+                                    <h:outputLabel value="#{i.staff.codeInterger}"/>
+                                </p:column>
                                 <p:column headerText="Staff">
                                     <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
                                 </p:column>
@@ -212,7 +215,8 @@
                     </p:tab>
 
                     <p:tab id="print" title="Print">
-                        <p:commandButton value="Print" ajax="false" action="#" >
+                        <p:commandButton value="Print" ajax="false" action="#"
+                                         disabled="#{staffSalaryController.current.blocked}">
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <h:panelGroup   id="gpBillPreview">

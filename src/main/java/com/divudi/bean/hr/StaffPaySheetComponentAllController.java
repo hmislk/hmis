@@ -225,7 +225,6 @@ public class StaffPaySheetComponentAllController implements Serializable {
         String sql = "Select ss "
                 + " from StaffPaysheetComponent ss"
                 + " where ss.retired=false "
-                //                + " and ss.paysheetComponent=:tp "
                 + " and ss.fromDate <=:fd"
                 + " and ss.toDate >=:fd ";
 
@@ -233,6 +232,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
         hm.put("fd", getFromDate());
 
         if (paysheetComponent != null) {
+            sql += " and ss.paysheetComponent=:tp ";
             hm.put("tp", getPaysheetComponent());
         }
 
@@ -242,7 +242,7 @@ public class StaffPaySheetComponentAllController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 

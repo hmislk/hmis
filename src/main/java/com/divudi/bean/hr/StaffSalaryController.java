@@ -257,12 +257,12 @@ public class StaffSalaryController implements Serializable {
         List<PaysheetComponent> paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponentsUserDefinded(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductions());
 
         for (PaysheetComponent psc : paysheetComponentsAddition) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc);
+            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
             getCurrent().getTransStaffSalaryComponantsAddition().add(c);
 
         }
         for (PaysheetComponent psc : paysheetComponentsSubstraction) {
-            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc);
+            StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false);
             getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
 
         }
@@ -318,7 +318,7 @@ public class StaffSalaryController implements Serializable {
         ss.setSalaryCycle(salaryCycle);
         ss.setCreater(getSessionController().getLoggedUser());
         ss.setStaffPaysheetComponent(getHumanResourceBean().getBasic(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate()));
-        if (ss.getStaffPaysheetComponent() != null) {
+        if (ss.getStaffPaysheetComponent() != null) {          
             ss.setComponantValue(ss.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
         } else {
             return;
@@ -472,7 +472,7 @@ public class StaffSalaryController implements Serializable {
         long count = 0;
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
-            count = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType);
+            count = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType);
 
             double salaryValue = 0;
 
@@ -493,7 +493,7 @@ public class StaffSalaryController implements Serializable {
 
             if (salaryValue != 0) {
                 double salaryPerDay = roundOff(salaryValue / finalVariables.getWorkingDaysPerMonth());
-                double value = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
+                double value = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
                 ss.setComponantValue(value);
             }
 
@@ -515,7 +515,7 @@ public class StaffSalaryController implements Serializable {
         Long count = 0L;
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
-            count = getHumanResourceBean().calculateOffDays(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType);
+            count = getHumanResourceBean().calculateOffDays(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType);
             double salaryValue = 0;
             for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
                 if (staffSalaryComponant.getStaffPaysheetComponent() == null
@@ -530,7 +530,7 @@ public class StaffSalaryController implements Serializable {
 
             if (salaryValue != 0) {
                 double salaryPerDay = roundOff(salaryValue / finalVariables.getWorkingDaysPerMonth());
-                double value = getHumanResourceBean().calculateOffDays(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
+                double value = getHumanResourceBean().calculateOffDays(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
                 //Need Calculation Sum
                 ss.setComponantValue(value);
             }
@@ -551,7 +551,7 @@ public class StaffSalaryController implements Serializable {
         double salaryValue = 0;
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction_Basic);
         if (ss.getStaffPaysheetComponent() != null) {
-            noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+            noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             salaryValue = 0;
 
             if (getCurrent().getStaffSalaryComponants() == null) {
@@ -616,7 +616,7 @@ public class StaffSalaryController implements Serializable {
         double noPayCount = 0;
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction_Allowance);
         if (ss.getStaffPaysheetComponent() != null) {
-            noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+            noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             allownaceValue = calAllowanceValueForNoPay(getCurrent().getStaffSalaryComponants());
 
             //Need Calculation Sum
@@ -676,14 +676,20 @@ public class StaffSalaryController implements Serializable {
                     ss.setCreatedAt(new Date());
                     ss.setSalaryCycle(salaryCycle);
                     ss.setCreater(getSessionController().getLoggedUser());
-                    ss.setComponantValue(spc.getStaffPaySheetComponentValue());
                     ss.setStaffPaysheetComponent(spc);
+                    ss.setComponantValue(spc.getStaffPaySheetComponentValue());
+//
+//                    System.err.println("Name " + spc.getPaysheetComponent().getName());
+//                    System.err.println("Value " + spc.getStaffPaySheetComponentValue());
+//                    System.err.println(" Value 2 " + ss.getComponantValue());
+
                     getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
                     getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
 
                     getCurrent().getStaffSalaryComponants().add(ss);
                 }
             }
+
             setOT();
 
             //Set Extra Duty Value
@@ -708,8 +714,7 @@ public class StaffSalaryController implements Serializable {
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.SleepingDayAllowance, DayType.SleepingDay);
             getCurrent().setSleepingDayCount(count.doubleValue());
 
-            
-            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             double basicValue = setNoPay_Basic(noPayCount);
             setNoPay_Allowance();
             getCurrent().setNoPayCount(noPayCount);
@@ -718,7 +723,7 @@ public class StaffSalaryController implements Serializable {
             //Record Late No Pay Leave 
             //Not consider in any calcualtion is alredy with general NO Pay 
             //only for reporting purpose
-            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             getCurrent().setLateNoPayCount(noPayCountLate);
             getCurrent().setLateNoPayBasicValue(0 - roundOff(basicValue / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
 
@@ -890,7 +895,7 @@ public class StaffSalaryController implements Serializable {
                     && !ss.isConsiderForLateIn()) {
                 System.err.println("******Automatic Late In Leave " + ss.getStaff().getCodeInterger());
 
-                if (ss.getLateInVarified() >= fromMinute) {
+                if (ss.getLateInVarified() > fromMinute) {
                     calStaffLeaveFromLateIn(ss, 90 * 60);
                 } else {
                     staffShiftsTmp.add(ss);
@@ -901,7 +906,7 @@ public class StaffSalaryController implements Serializable {
                     && !ss.isConsiderForEarlyOut()) {
                 System.err.println("******Automatic Early Out Leave " + ss.getStaff().getCodeInterger());
 //                        calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
-                if (ss.getEarlyOutVarified() >= fromMinute) {
+                if (ss.getEarlyOutVarified() > fromMinute) {
                     calStaffLeaveFromEarlyOut(ss, 90 * 60);
                 } else {
                     staffShiftsTmp.add(ss);
@@ -913,14 +918,14 @@ public class StaffSalaryController implements Serializable {
         for (StaffShift ss : staffShiftsTmp) {
             if (ss.getStaff().isAllowedLateInLeave()
                     && !ss.isConsiderForLateIn()) {
-                System.err.println("******Automatic Late In Leave (Out)" + ss.getStaff().getCodeInterger());
+                System.err.println("******Automatic Late In Leave (Out) " + ss.getStaff().getCodeInterger());
                 calStaffLeaveFromLateIn(ss, 10 * 60, 90 * 60, 3);
 
             }
 
             if (ss.getStaff().isAllowedEarlyOutLeave()
                     && !ss.isConsiderForEarlyOut()) {
-                System.err.println("******Automatic Early Out Leave (Out)" + ss.getStaff().getCodeInterger());
+                System.err.println("******Automatic Early Out Leave (Out) " + ss.getStaff().getCodeInterger());
                 calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
 
             }
@@ -941,7 +946,7 @@ public class StaffSalaryController implements Serializable {
 
         for (Staff s : getStaffController().getSelectedList()) {
             setCurrent(getHumanResourceBean().getStaffSalary(s, getSalaryCycle()));
-            generateAutoLeave(s, getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+            generateAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             if (getCurrent().getId() == null) {
                 addSalaryComponent();
 //                save();
@@ -1005,7 +1010,7 @@ public class StaffSalaryController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.department=:dep ";
+            sql += " and ss.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
@@ -1020,9 +1025,11 @@ public class StaffSalaryController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.roster=:rs ";
+            sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
+
+        sql += " order by ss.staff.codeInterger";
 
         items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
