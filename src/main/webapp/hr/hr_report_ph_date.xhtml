@@ -19,7 +19,7 @@
                     <p:calendar id="forDate" value="#{phDateController.toDate}"
                                 pattern="yyyy MM dd HH:mm:ss" >
                     </p:calendar> 
-                    <p:commandButton value="Fill" action="#{phDateController.createHollydays}" />
+                    <p:commandButton value="Fill" action="#{phDateController.createHollydays}" ajax="false" />
                 </p:panel>
                 <p:panel>
                     <p:dataTable id="tb1" value="#{phDateController.phDates}" var="ph">
