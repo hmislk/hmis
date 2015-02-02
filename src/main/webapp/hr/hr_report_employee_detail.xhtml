@@ -17,7 +17,9 @@
                 <h:form>
                     <p:panel header="Employe List" >
                         <p:panel>
-                            <h:panelGrid columns="2" >          
+                            <h:panelGrid columns="2" >  
+                                <h:outputLabel value="Institution"/>
+                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                                 <h:outputLabel value="Department : "/>
                                 <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                                 <h:outputLabel value="Staff Category : "/>
@@ -59,6 +61,12 @@
                                         <p:outputLabel value="Code NO" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.codeInterger}" />
+                                </p:column>
+                                <p:column headerText="EPF Code" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="EPF Code" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.epfNo}" />
                                 </p:column>
                                 <p:column headerText="Roster" >
                                     <f:facet name="header" >
@@ -105,6 +113,18 @@
                                         <p:outputLabel value="DEPARTMENT" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.workingDepartment.name}" />
+                                </p:column>
+                                <p:column headerText="Account Number" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Account Number" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.accountNo}" />
+                                </p:column>
+                                <p:column headerText="Bank" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Bank" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.bankBranch.institution.name}" />
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
