@@ -76,7 +76,11 @@
                         <h:outputLabel value="#{i.staffPaySheetComponentValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-
+                        <f:facet name="footer">
+                            <p:outputLabel value="#{staffBasicController.totalStaffPaySheetComponentValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </f:facet>
                     </p:column>
 
 
